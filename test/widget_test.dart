@@ -35,17 +35,24 @@ void main() {
     await tester.tap(find.widgetWithText(FilterChip, 'C'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const ValueKey('allow-tensions-toggle')));
+    final tensionToggleFinder = find.byKey(
+      const ValueKey('allow-tensions-toggle'),
+    );
+    await tester.ensureVisible(tensionToggleFinder);
+    await tester.tap(tensionToggleFinder, warnIfMissed: false);
     await tester.pumpAndSettle();
 
     final b9Finder = find.byKey(const ValueKey('tension-chip-b9'));
+    await tester.ensureVisible(b9Finder);
     expect(tester.widget<FilterChip>(b9Finder).selected, isTrue);
 
-    await tester.tap(b9Finder);
+    await tester.tap(b9Finder, warnIfMissed: false);
     await tester.pumpAndSettle();
     expect(tester.widget<FilterChip>(b9Finder).selected, isFalse);
 
-    await tester.tap(find.byKey(const ValueKey('allow-v7sus4-chip')));
+    final v7sus4Finder = find.byKey(const ValueKey('allow-v7sus4-chip'));
+    await tester.ensureVisible(v7sus4Finder);
+    await tester.tap(v7sus4Finder, warnIfMissed: false);
     await tester.pumpAndSettle();
     expect(tester.widget<FilterChip>(b9Finder).selected, isFalse);
 
