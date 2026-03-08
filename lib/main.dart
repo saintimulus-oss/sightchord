@@ -1,9 +1,11 @@
-ï»¿import 'dart:async';
+import 'dart:async';
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'smart_generator.dart';
 
 class GeneratedChord {
   const GeneratedChord({
@@ -290,7 +292,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ];
 
   List<String> get _practiceModeTags {
-    final tags = <String>[_usesKeyMode ? 'ì¡°ì„± ëª¨ë“œ' : 'ëœë¤ ëª¨ë“œ'];
+    final tags = <String>[_usesKeyMode ? 'Á¶¼º ¸ğµå' : '·£´ı ¸ğµå'];
     if (_usesKeyMode) {
       tags.addAll(_orderedKeys);
       if (_smartGeneratorMode) {
@@ -312,27 +314,26 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String get _currentStatusLabel {
     if (_currentChord == null) {
-      return 'ì½”ë“œë¥¼ ìƒì„±í•´ ë³´ì„¸ìš”';
+      return 'ÄÚµå¸¦ »ı¼ºÇØ º¸¼¼¿ä';
     }
     final analysisLabel = _currentChord!.analysisLabel;
-    return analysisLabel.isEmpty ? 'ëœë¤ ëª¨ë“œ' : analysisLabel;
+    return analysisLabel.isEmpty ? '·£´ı ¸ğµå' : analysisLabel;
   }
 
   String get _practiceModeDescription {
     if (!_usesKeyMode) {
-      return '12ê°œ ìŒê³¼ ë‹¤ì–‘í•œ ì½”ë“œ ì„±ê²©ì—ì„œ ë¬´ì‘ìœ„ë¡œ ì½”ë“œë¥¼ ìƒì„±í•©ë‹ˆë‹¤.';
+      return '12°³ À½°ú ´Ù¾çÇÑ ÄÚµå ¼º°İ¿¡¼­ ¹«ÀÛÀ§·Î ÄÚµå¸¦ »ı¼ºÇÕ´Ï´Ù.';
     }
     if (_smartGeneratorMode) {
-      return 'ì„ íƒí•œ í‚¤ì™€ ì§ì „ í™”ìŒ íë¦„ì„ ë°”íƒ•ìœ¼ë¡œ ë” ìì—°ìŠ¤ëŸ¬ìš´ ì§„í–‰ì„ ìš°ì„  ìƒì„±í•©ë‹ˆë‹¤.';
+      return '¼±ÅÃÇÑ Å°¿Í Á÷Àü È­À½ Èå¸§À» ¹ÙÅÁÀ¸·Î ´õ ÀÚ¿¬½º·¯¿î ÁøÇàÀ» ¿ì¼± »ı¼ºÇÕ´Ï´Ù.';
     }
-    return 'ì„ íƒí•œ í‚¤ ì•ˆì—ì„œ ë‹¤ì´ì•„í† ë‹‰ ë˜ëŠ” ì˜µì…˜ í™”ìŒì„ ìƒì„±í•©ë‹ˆë‹¤.';
+    return '¼±ÅÃÇÑ Å° ¾È¿¡¼­ ´ÙÀÌ¾ÆÅä´Ğ ¶Ç´Â ¿É¼Ç È­À½À» »ı¼ºÇÕ´Ï´Ù.';
   }
 
   void _ensureChordQueueInitialized() {
     _currentChord ??= _generateChord();
     _nextChord ??= _generateChord(
       excluding: {_currentChord!.chord},
-      previous: _previousChord,
       current: _currentChord,
     );
   }
@@ -357,7 +358,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   GeneratedChord _generateChord({
     Set<String> excluding = const {},
-    GeneratedChord? previous,
     GeneratedChord? current,
   }) {
     if (!_usesKeyMode) {
@@ -379,19 +379,15 @@ class _MyHomePageState extends State<MyHomePage> {
         keys: keys,
         romanNumerals: romanNumerals,
         excluding: excluding,
-        previous: previous,
         current: current,
       );
     }
 
-    while (true) {
-      final key = keys[_random.nextInt(keys.length)];
-      final romanNumeral = romanNumerals[_random.nextInt(romanNumerals.length)];
-      final generatedChord = _buildGeneratedChord(key, romanNumeral);
-      if (!excluding.contains(generatedChord.chord)) {
-        return generatedChord;
-      }
-    }
+    return _generateRandomKeyModeChord(
+      keys: keys,
+      romanNumerals: romanNumerals,
+      excluding: excluding,
+    );
   }
 
   GeneratedChord _buildGeneratedChord(String key, String romanNumeral) {
@@ -404,157 +400,130 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  GeneratedChord _generateSmartChord({
+  List<GeneratedChord> _buildKeyModeCandidates({
     required List<String> keys,
     required List<String> romanNumerals,
     required Set<String> excluding,
-    GeneratedChord? previous,
-    GeneratedChord? current,
   }) {
-    final candidates = <GeneratedChord>[
+    return [
       for (final key in keys)
         for (final romanNumeral in romanNumerals)
           _buildGeneratedChord(key, romanNumeral),
     ].where((candidate) => !excluding.contains(candidate.chord)).toList();
-
-    if (candidates.isEmpty) {
-      return _buildGeneratedChord(keys.first, _baseRomanNumerals.first);
-    }
-
-    final weights = [
-      for (final candidate in candidates)
-        _smartWeight(candidate, previous: previous, current: current),
-    ];
-
-    return _pickWeightedChord(candidates, weights);
   }
 
-  GeneratedChord _pickWeightedChord(
-    List<GeneratedChord> candidates,
-    List<double> weights,
-  ) {
-    final totalWeight = weights.fold<double>(0, (sum, weight) => sum + weight);
-    if (totalWeight <= 0) {
-      return candidates[_random.nextInt(candidates.length)];
-    }
-
-    var threshold = _random.nextDouble() * totalWeight;
-    for (var index = 0; index < candidates.length; index++) {
-      threshold -= weights[index];
-      if (threshold <= 0) {
-        return candidates[index];
-      }
-    }
-
-    return candidates.last;
+  GeneratedChord _pickUniformChord(List<GeneratedChord> candidates) {
+    return candidates[_random.nextInt(candidates.length)];
   }
 
-  double _smartWeight(
-    GeneratedChord candidate, {
-    GeneratedChord? previous,
+  GeneratedChord _generateRandomKeyModeChord({
+    required List<String> keys,
+    required List<String> romanNumerals,
+    required Set<String> excluding,
+  }) {
+    final candidates = _buildKeyModeCandidates(
+      keys: keys,
+      romanNumerals: romanNumerals,
+      excluding: excluding,
+    );
+    if (candidates.isNotEmpty) {
+      return _pickUniformChord(candidates);
+    }
+    return _buildGeneratedChord(keys.first, _baseRomanNumerals.first);
+  }
+
+  GeneratedChord _generateRandomDiatonicChord({
+    required List<String> keys,
+    required Set<String> excluding,
+    String? preferredKey,
+  }) {
+    final preferredKeys =
+        preferredKey != null && keys.contains(preferredKey) ? [preferredKey] : keys;
+    final preferredCandidates = _buildKeyModeCandidates(
+      keys: preferredKeys,
+      romanNumerals: _baseRomanNumerals,
+      excluding: excluding,
+    );
+    if (preferredCandidates.isNotEmpty) {
+      return _pickUniformChord(preferredCandidates);
+    }
+
+    final fallbackCandidates = _buildKeyModeCandidates(
+      keys: keys,
+      romanNumerals: _baseRomanNumerals,
+      excluding: excluding,
+    );
+    if (fallbackCandidates.isNotEmpty) {
+      return _pickUniformChord(fallbackCandidates);
+    }
+
+    return _buildGeneratedChord(keys.first, _baseRomanNumerals.first);
+  }
+
+  GeneratedChord _generateSmartChord({
+    required List<String> keys,
+    required List<String> romanNumerals,
+    required Set<String> excluding,
     GeneratedChord? current,
   }) {
-    var weight = 1.0;
-
-    if (current == null) {
-      if (candidate.romanNumeral == 'IM7') {
-        weight *= 3.0;
-      } else if (candidate.harmonicFunction == 'tonic') {
-        weight *= 2.0;
-      } else if (candidate.harmonicFunction == 'predominant') {
-        weight *= 1.3;
-      } else if (candidate.isAppliedDominant) {
-        weight *= 0.9;
-      }
-      return weight;
+    if (current?.keyName == null ||
+        current?.romanNumeral == null ||
+        !keys.contains(current!.keyName)) {
+      return _generateRandomKeyModeChord(
+        keys: keys,
+        romanNumerals: romanNumerals,
+        excluding: excluding,
+      );
     }
 
-    if (candidate.keyName == current.keyName) {
-      weight *= 1.8;
-    } else {
-      weight *= 0.55;
+    final currentKey = current.keyName!;
+    final allowedDiatonicRomans = romanNumerals
+        .where((romanNumeral) => _baseRomanNumerals.contains(romanNumeral))
+        .toList();
+
+    // selection.debug.describe() is intentionally easy to inspect in the
+    // debugger when tuning Smart Mode bias.
+    final selection = SmartGeneratorHelper.selectNextRoman(
+      random: _random,
+      currentRomanNumeral: current.romanNumeral,
+      allowedRomanNumerals: allowedDiatonicRomans,
+    );
+
+    if (!selection.hasSelection) {
+      assert(() {
+        debugPrint(selection.debug.describe());
+        return true;
+      }());
+      return _generateRandomDiatonicChord(
+        keys: keys,
+        excluding: excluding,
+        preferredKey: currentKey,
+      );
     }
 
-    if (candidate.chord == current.chord) {
-      weight *= 0.08;
-    }
-    if (candidate.romanNumeral == current.romanNumeral) {
-      weight *= 0.45;
-    }
-    if (previous != null && candidate.chord == previous.chord) {
-      weight *= 0.4;
-    }
-    if (candidate.harmonicFunction == current.harmonicFunction) {
-      weight *= 0.72;
-    }
-    if (candidate.isAppliedDominant && current.isAppliedDominant) {
-      weight *= 0.5;
-    }
-    if (previous != null &&
-        previous.harmonicFunction == current.harmonicFunction &&
-        current.harmonicFunction == candidate.harmonicFunction) {
-      weight *= 0.45;
+    final generatedChord = _buildGeneratedChord(
+      currentKey,
+      selection.selectedRomanNumeral!,
+    );
+    if (!excluding.contains(generatedChord.chord)) {
+      return generatedChord;
     }
 
-    final expectedResolution = current.resolutionRomanNumeral;
-    if (current.isAppliedDominant && expectedResolution != null) {
-      if (candidate.keyName == current.keyName &&
-          candidate.romanNumeral == expectedResolution) {
-        weight *= current.harmonicFunction == 'substituteDominant' ? 6.5 : 8.0;
-      } else if (candidate.harmonicFunction == 'dominant' ||
-          candidate.harmonicFunction == 'appliedDominant' ||
-          candidate.harmonicFunction == 'substituteDominant') {
-        weight *= 0.45;
-      } else {
-        weight *= 0.9;
-      }
-      return max(weight, 0.01);
-    }
-
-    switch (current.harmonicFunction) {
-      case 'tonic':
-        if (candidate.harmonicFunction == 'predominant') {
-          weight *= 2.5;
-        } else if (candidate.harmonicFunction == 'dominant') {
-          weight *= 1.7;
-        } else if (candidate.harmonicFunction == 'appliedDominant') {
-          weight *= 1.8;
-        } else if (candidate.harmonicFunction == 'substituteDominant') {
-          weight *= 1.5;
-        } else {
-          weight *= 0.8;
-        }
-        break;
-      case 'predominant':
-        if (candidate.harmonicFunction == 'dominant') {
-          weight *= 2.7;
-        } else if (candidate.harmonicFunction == 'appliedDominant') {
-          weight *= 1.9;
-        } else if (candidate.harmonicFunction == 'substituteDominant') {
-          weight *= 1.6;
-        } else if (candidate.harmonicFunction == 'tonic') {
-          weight *= 1.15;
-        } else {
-          weight *= 0.75;
-        }
-        break;
-      case 'dominant':
-        if (candidate.harmonicFunction == 'tonic') {
-          weight *= 2.9;
-        } else if (candidate.harmonicFunction == 'predominant') {
-          weight *= 1.35;
-        } else {
-          weight *= 0.7;
-        }
-        break;
-      default:
-        if (candidate.harmonicFunction == 'tonic') {
-          weight *= 1.4;
-        }
-        break;
-    }
-
-    return max(weight, 0.01);
+    assert(() {
+      debugPrint(
+        selection.debug
+            .withFallbackReason(
+              'The weighted Roman numeral was excluded by the current queue.',
+            )
+            .describe(),
+      );
+      return true;
+    }());
+    return _generateRandomDiatonicChord(
+      keys: keys,
+      excluding: excluding,
+      preferredKey: currentKey,
+    );
   }
 
   String _harmonicFunctionForRoman(String romanNumeral) {
@@ -635,21 +604,49 @@ class _MyHomePageState extends State<MyHomePage> {
     unawaited(_advanceChord());
   }
 
+  void _handleAutoTickUnawaited() {
+    unawaited(_handleAutoTick());
+  }
+
   Future<void> _advanceChord() async {
     setState(() {
       _previousChord = _currentChord;
-      _currentChord = _nextChord ??
-          _generateChord(previous: _previousChord, current: _currentChord);
+      _currentChord = _nextChord ?? _generateChord(current: _currentChord);
       _nextChord = _generateChord(
         excluding: {
           if (_currentChord != null) _currentChord!.chord,
         },
-        previous: _previousChord,
         current: _currentChord,
       );
       _currentBeat = ((_currentBeat ?? -1) + 1) % _beatsPerBar;
     });
     await _playMetronomeIfNeeded();
+  }
+
+  Future<void> _handleAutoTick() async {
+    var shouldAdvanceChord = false;
+    setState(() {
+      final nextBeat = ((_currentBeat ?? -1) + 1) % _beatsPerBar;
+      _currentBeat = nextBeat;
+      shouldAdvanceChord = nextBeat == 0;
+    });
+
+    await _playMetronomeIfNeeded();
+
+    if (!shouldAdvanceChord) {
+      return;
+    }
+
+    setState(() {
+      _previousChord = _currentChord;
+      _currentChord = _nextChord ?? _generateChord(current: _currentChord);
+      _nextChord = _generateChord(
+        excluding: {
+          if (_currentChord != null) _currentChord!.chord,
+        },
+        current: _currentChord,
+      );
+    });
   }
 
   void _toggleAutoPlay() {
@@ -664,15 +661,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
     setState(() {
       _autoRunning = true;
-      _currentBeat = _beatsPerBar - 1;
+      _currentBeat = null;
     });
-    _advanceChordUnawaited();
+    _handleAutoTickUnawaited();
     _autoTimer = Timer.periodic(
       Duration(milliseconds: (60000 / _effectiveBpm()).round()),
-      (_) => _advanceChord(),
+      (_) => _handleAutoTickUnawaited(),
     );
   }
-
   void _adjustBpm(int delta) {
     final next = (_effectiveBpm() + delta).clamp(_minBpm, _maxBpm);
     _bpmController.text = '$next';
@@ -717,7 +713,7 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _usesKeyMode ? 'ì¡°ì„± ê¸°ë°˜ ì—°ìŠµ' : 'ëœë¤ ëª¨ë“œ',
+              _usesKeyMode ? 'Á¶¼º ±â¹İ ¿¬½À' : '·£´ı ¸ğµå',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
@@ -743,7 +739,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const SizedBox(height: 10),
             Text(
-              'Space: ë‹¤ìŒ ì½”ë“œ  Â·  Enter: ìë™ ì§„í–‰ ì‹œì‘/ì¤‘ì§€  Â·  Up/Down: BPM ì¡°ì ˆ',
+              'Space: ´ÙÀ½ ÄÚµå  ¡¤  Enter: ÀÚµ¿ ÁøÇà ½ÃÀÛ/ÁßÁö  ¡¤  Up/Down: BPM Á¶Àı',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -769,7 +765,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: [
                     const Expanded(
                       child: Text(
-                        'ì„¤ì •',
+                        '¼³Á¤',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -779,7 +775,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     IconButton(
                       onPressed: () => Navigator.of(context).maybePop(),
                       icon: const Icon(Icons.close),
-                      tooltip: 'ë‹«ê¸°',
+                      tooltip: '´İ±â',
                     ),
                   ],
                 ),
@@ -793,8 +789,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: [
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('ë©”íŠ¸ë¡œë†ˆ'),
-                        subtitle: Text(_metronomeEnabled ? 'ì¼œì§' : 'êº¼ì§'),
+                        title: const Text('¸ŞÆ®·Î³ğ'),
+                        subtitle: Text(_metronomeEnabled ? 'ÄÑÁü' : '²¨Áü'),
                         value: _metronomeEnabled,
                         onChanged: (value) {
                           setState(() {
@@ -804,13 +800,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'ì„¤ì •ì€ ì¦‰ì‹œ ë°˜ì˜ë©ë‹ˆë‹¤.',
+                        '¼³Á¤Àº Áï½Ã ¹İ¿µµË´Ï´Ù.',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Text('ë©”íŠ¸ë¡œë†ˆ ë³¼ë¥¨', style: theme.textTheme.titleMedium),
+                      Text('¸ŞÆ®·Î³ğ º¼·ı', style: theme.textTheme.titleMedium),
                       Slider(
                         value: _metronomeVolume,
                         onChanged: _metronomeEnabled
@@ -826,12 +822,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Text('${(_metronomeVolume * 100).round()}%'),
                       ),
                       const SizedBox(height: 20),
-                      Text('ì¡° ì„ íƒ', style: theme.textTheme.titleMedium),
+                      Text('Á¶ ¼±ÅÃ', style: theme.textTheme.titleMedium),
                       const SizedBox(height: 8),
                       Text(
                         _activeKeys.isEmpty
-                            ? 'ì„ íƒí•˜ì§€ ì•Šìœ¼ë©´ ëœë¤ ëª¨ë“œë¡œ ë™ì‘í•©ë‹ˆë‹¤.'
-                            : 'ì„ íƒí•œ í‚¤ ì•ˆì—ì„œ ì½”ë“œë¥¼ ìƒì„±í•©ë‹ˆë‹¤.',
+                            ? '¼±ÅÃÇÏÁö ¾ÊÀ¸¸é ·£´ı ¸ğµå·Î µ¿ÀÛÇÕ´Ï´Ù.'
+                            : '¼±ÅÃÇÑ Å° ¾È¿¡¼­ ÄÚµå¸¦ »ı¼ºÇÕ´Ï´Ù.',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -862,7 +858,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       SwitchListTile.adaptive(
                         contentPadding: EdgeInsets.zero,
                         title: const Text('Smart Generator Mode'),
-                        subtitle: const Text('ì§ì „ í™”ìŒê³¼ í•´ê²° ë°©í–¥ì„ ë°˜ì˜í•´ íë¦„ì„ ë” ìì—°ìŠ¤ëŸ½ê²Œ ë§Œë“­ë‹ˆë‹¤.'),
+                        subtitle: const Text('Á÷Àü È­À½°ú ÇØ°á ¹æÇâÀ» ¹İ¿µÇØ Èå¸§À» ´õ ÀÚ¿¬½º·´°Ô ¸¸µì´Ï´Ù.'),
                         value: _smartGeneratorMode,
                         onChanged: (value) {
                           setState(() {
@@ -948,7 +944,7 @@ class _MyHomePageState extends State<MyHomePage> {
               IconButton(
                 onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
                 icon: const Icon(Icons.settings),
-                tooltip: 'ì„¤ì •',
+                tooltip: '¼³Á¤',
               ),
             ],
           ),
@@ -1085,7 +1081,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   width: double.infinity,
                                   child: ElevatedButton(
                                     onPressed: _advanceChordUnawaited,
-                                    child: const Text('ë‹¤ìŒ ì½”ë“œ'),
+                                    child: const Text('´ÙÀ½ ÄÚµå'),
                                   ),
                                 ),
                                 const SizedBox(height: 12),
@@ -1095,8 +1091,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                     onPressed: _toggleAutoPlay,
                                     child: Text(
                                       _autoRunning
-                                          ? 'ìë™ ì§„í–‰ ì¤‘ì§€'
-                                          : 'ìë™ ì§„í–‰ ì‹œì‘',
+                                          ? 'ÀÚµ¿ ÁøÇà ÁßÁö'
+                                          : 'ÀÚµ¿ ÁøÇà ½ÃÀÛ',
                                     ),
                                   ),
                                 ),
@@ -1107,7 +1103,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     IconButton.outlined(
                                       onPressed: () => _adjustBpm(-5),
                                       icon: const Icon(Icons.remove),
-                                      tooltip: 'BPM ë‚®ì¶”ê¸°',
+                                      tooltip: 'BPM ³·Ãß±â',
                                     ),
                                     const SizedBox(width: 8),
                                     SizedBox(
@@ -1141,7 +1137,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     IconButton.outlined(
                                       onPressed: () => _adjustBpm(5),
                                       icon: const Icon(Icons.add),
-                                      tooltip: 'BPM ë†’ì´ê¸°',
+                                      tooltip: 'BPM ³ôÀÌ±â',
                                     ),
                                     const SizedBox(width: 10),
                                     Text(
@@ -1155,7 +1151,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'ì…ë ¥ ë²”ìœ„: $_minBpm-$_maxBpm',
+                                  'ÀÔ·Â ¹üÀ§: $_minBpm-$_maxBpm',
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color:
                                         theme.colorScheme.onSurfaceVariant,
@@ -1177,4 +1173,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+
 
