@@ -292,7 +292,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ];
 
   List<String> get _practiceModeTags {
-    final tags = <String>[_usesKeyMode ? 'Á¶¼º ¸ğµå' : '·£´ı ¸ğµå'];
+    final tags = <String>[_usesKeyMode ? 'ì¡°ì„± ëª¨ë“œ' : 'ëœë¤ ëª¨ë“œ'];
     if (_usesKeyMode) {
       tags.addAll(_orderedKeys);
       if (_smartGeneratorMode) {
@@ -314,20 +314,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String get _currentStatusLabel {
     if (_currentChord == null) {
-      return 'ÄÚµå¸¦ »ı¼ºÇØ º¸¼¼¿ä';
+      return 'ì½”ë“œë¥¼ ìƒì„±í•´ ë³´ì„¸ìš”';
     }
     final analysisLabel = _currentChord!.analysisLabel;
-    return analysisLabel.isEmpty ? '·£´ı ¸ğµå' : analysisLabel;
+    return analysisLabel.isEmpty ? 'ëœë¤ ëª¨ë“œ' : analysisLabel;
   }
 
   String get _practiceModeDescription {
     if (!_usesKeyMode) {
-      return '12°³ À½°ú ´Ù¾çÇÑ ÄÚµå ¼º°İ¿¡¼­ ¹«ÀÛÀ§·Î ÄÚµå¸¦ »ı¼ºÇÕ´Ï´Ù.';
+      return '12ê°œ ìŒê³¼ ë‹¤ì–‘í•œ ì½”ë“œ ì„±ê²©ì—ì„œ ë¬´ì‘ìœ„ë¡œ ì½”ë“œë¥¼ ìƒì„±í•©ë‹ˆë‹¤.';
     }
     if (_smartGeneratorMode) {
-      return '¼±ÅÃÇÑ Å°¿Í Á÷Àü È­À½ Èå¸§À» ¹ÙÅÁÀ¸·Î ´õ ÀÚ¿¬½º·¯¿î ÁøÇàÀ» ¿ì¼± »ı¼ºÇÕ´Ï´Ù.';
+      return 'ì„ íƒí•œ í‚¤ì™€ ì§ì „ í™”ìŒ íë¦„ì„ ë°”íƒ•ìœ¼ë¡œ ë” ìì—°ìŠ¤ëŸ¬ìš´ ì§„í–‰ì„ ìš°ì„  ìƒì„±í•©ë‹ˆë‹¤.';
     }
-    return '¼±ÅÃÇÑ Å° ¾È¿¡¼­ ´ÙÀÌ¾ÆÅä´Ğ ¶Ç´Â ¿É¼Ç È­À½À» »ı¼ºÇÕ´Ï´Ù.';
+    return 'ì„ íƒí•œ í‚¤ ì•ˆì—ì„œ ë‹¤ì´ì•„í† ë‹‰ ë˜ëŠ” ì˜µì…˜ í™”ìŒì„ ìƒì„±í•©ë‹ˆë‹¤.';
   }
 
   void _ensureChordQueueInitialized() {
@@ -713,7 +713,7 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _usesKeyMode ? 'Á¶¼º ±â¹İ ¿¬½À' : '·£´ı ¸ğµå',
+              _usesKeyMode ? 'ì¡°ì„± ê¸°ë°˜ ì—°ìŠµ' : 'ëœë¤ ëª¨ë“œ',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
@@ -739,7 +739,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const SizedBox(height: 10),
             Text(
-              'Space: ´ÙÀ½ ÄÚµå  ¡¤  Enter: ÀÚµ¿ ÁøÇà ½ÃÀÛ/ÁßÁö  ¡¤  Up/Down: BPM Á¶Àı',
+              'Space: ë‹¤ìŒ ì½”ë“œ  Â·  Enter: ìë™ ì§„í–‰ ì‹œì‘/ì¤‘ì§€  Â·  Up/Down: BPM ì¡°ì ˆ',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -765,7 +765,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: [
                     const Expanded(
                       child: Text(
-                        '¼³Á¤',
+                        'ì„¤ì •',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -775,7 +775,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     IconButton(
                       onPressed: () => Navigator.of(context).maybePop(),
                       icon: const Icon(Icons.close),
-                      tooltip: '´İ±â',
+                      tooltip: 'ë‹«ê¸°',
                     ),
                   ],
                 ),
@@ -789,8 +789,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: [
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('¸ŞÆ®·Î³ğ'),
-                        subtitle: Text(_metronomeEnabled ? 'ÄÑÁü' : '²¨Áü'),
+                        title: const Text('ë©”íŠ¸ë¡œë†ˆ'),
+                        subtitle: Text(_metronomeEnabled ? 'ì¼œì§' : 'êº¼ì§'),
                         value: _metronomeEnabled,
                         onChanged: (value) {
                           setState(() {
@@ -800,13 +800,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        '¼³Á¤Àº Áï½Ã ¹İ¿µµË´Ï´Ù.',
+                        'ì„¤ì •ì€ ì¦‰ì‹œ ë°˜ì˜ë©ë‹ˆë‹¤.',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Text('¸ŞÆ®·Î³ğ º¼·ı', style: theme.textTheme.titleMedium),
+                      Text('ë©”íŠ¸ë¡œë†ˆ ë³¼ë¥¨', style: theme.textTheme.titleMedium),
                       Slider(
                         value: _metronomeVolume,
                         onChanged: _metronomeEnabled
@@ -822,12 +822,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Text('${(_metronomeVolume * 100).round()}%'),
                       ),
                       const SizedBox(height: 20),
-                      Text('Á¶ ¼±ÅÃ', style: theme.textTheme.titleMedium),
+                      Text('ì¡° ì„ íƒ', style: theme.textTheme.titleMedium),
                       const SizedBox(height: 8),
                       Text(
                         _activeKeys.isEmpty
-                            ? '¼±ÅÃÇÏÁö ¾ÊÀ¸¸é ·£´ı ¸ğµå·Î µ¿ÀÛÇÕ´Ï´Ù.'
-                            : '¼±ÅÃÇÑ Å° ¾È¿¡¼­ ÄÚµå¸¦ »ı¼ºÇÕ´Ï´Ù.',
+                            ? 'ì„ íƒí•˜ì§€ ì•Šìœ¼ë©´ ëœë¤ ëª¨ë“œë¡œ ë™ì‘í•©ë‹ˆë‹¤.'
+                            : 'ì„ íƒí•œ í‚¤ ì•ˆì—ì„œ ì½”ë“œë¥¼ ìƒì„±í•©ë‹ˆë‹¤.',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -858,7 +858,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       SwitchListTile.adaptive(
                         contentPadding: EdgeInsets.zero,
                         title: const Text('Smart Generator Mode'),
-                        subtitle: const Text('Á÷Àü È­À½°ú ÇØ°á ¹æÇâÀ» ¹İ¿µÇØ Èå¸§À» ´õ ÀÚ¿¬½º·´°Ô ¸¸µì´Ï´Ù.'),
+                        subtitle: const Text('ì§ì „ í™”ìŒê³¼ í•´ê²° ë°©í–¥ì„ ë°˜ì˜í•´ íë¦„ì„ ë” ìì—°ìŠ¤ëŸ½ê²Œ ë§Œë“­ë‹ˆë‹¤.'),
                         value: _smartGeneratorMode,
                         onChanged: (value) {
                           setState(() {
@@ -944,7 +944,7 @@ class _MyHomePageState extends State<MyHomePage> {
               IconButton(
                 onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
                 icon: const Icon(Icons.settings),
-                tooltip: '¼³Á¤',
+                tooltip: 'ì„¤ì •',
               ),
             ],
           ),
@@ -1081,7 +1081,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   width: double.infinity,
                                   child: ElevatedButton(
                                     onPressed: _advanceChordUnawaited,
-                                    child: const Text('´ÙÀ½ ÄÚµå'),
+                                    child: const Text('ë‹¤ìŒ ì½”ë“œ'),
                                   ),
                                 ),
                                 const SizedBox(height: 12),
@@ -1091,8 +1091,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                     onPressed: _toggleAutoPlay,
                                     child: Text(
                                       _autoRunning
-                                          ? 'ÀÚµ¿ ÁøÇà ÁßÁö'
-                                          : 'ÀÚµ¿ ÁøÇà ½ÃÀÛ',
+                                          ? 'ìë™ ì§„í–‰ ì¤‘ì§€'
+                                          : 'ìë™ ì§„í–‰ ì‹œì‘',
                                     ),
                                   ),
                                 ),
@@ -1103,7 +1103,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     IconButton.outlined(
                                       onPressed: () => _adjustBpm(-5),
                                       icon: const Icon(Icons.remove),
-                                      tooltip: 'BPM ³·Ãß±â',
+                                      tooltip: 'BPM ë‚®ì¶”ê¸°',
                                     ),
                                     const SizedBox(width: 8),
                                     SizedBox(
@@ -1137,7 +1137,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     IconButton.outlined(
                                       onPressed: () => _adjustBpm(5),
                                       icon: const Icon(Icons.add),
-                                      tooltip: 'BPM ³ôÀÌ±â',
+                                      tooltip: 'BPM ë†’ì´ê¸°',
                                     ),
                                     const SizedBox(width: 10),
                                     Text(
@@ -1151,7 +1151,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'ÀÔ·Â ¹üÀ§: $_minBpm-$_maxBpm',
+                                  'ì…ë ¥ ë²”ìœ„: $_minBpm-$_maxBpm',
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color:
                                         theme.colorScheme.onSurfaceVariant,
