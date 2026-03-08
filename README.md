@@ -24,6 +24,20 @@ flutter pub get
 flutter run
 ```
 
+## Deploy to GitHub Pages
+
+This repository includes a GitHub Actions workflow at `.github/workflows/deploy-pages.yml`.
+
+To publish the Flutter web app to `https://saintimulus-oss.github.io/sightchord/`:
+
+```bash
+flutter build web --release --base-href /sightchord/
+```
+
+Then push to `main`. The workflow will rebuild the app and deploy `build/web` to GitHub Pages.
+
+In the GitHub repository settings, make sure Pages is configured to use `GitHub Actions` as the source.
+
 ## Notes
 
 - The metronome uses `assets/tick.mp3` through `audioplayers`.
