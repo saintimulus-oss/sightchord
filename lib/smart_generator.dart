@@ -1,13 +1,42 @@
 import 'dart:math';
 
+enum AppliedType { secondary, substitute }
+
+enum PlannedChordKind { resolvedRoman, tonicDominant7, tonicSix }
+
+enum SurfaceVariant { dominantSus4 }
+
 class WeightedNextRoman {
-  const WeightedNextRoman({
-    required this.romanNumeral,
-    required this.weight,
-  });
+  const WeightedNextRoman({required this.romanNumeral, required this.weight});
 
   final String romanNumeral;
   final int weight;
+}
+
+class QueuedSmartChord {
+  const QueuedSmartChord({
+    required this.finalRomanNumeral,
+    required this.plannedChordKind,
+    required this.patternTag,
+    this.suppressTensions = false,
+  });
+
+  final String finalRomanNumeral;
+  final PlannedChordKind plannedChordKind;
+  final String patternTag;
+  final bool suppressTensions;
+}
+
+class QueuedSmartChordDecision {
+  const QueuedSmartChordDecision({
+    required this.queuedChord,
+    required this.remainingQueuedChords,
+  });
+
+  final QueuedSmartChord queuedChord;
+  final List<QueuedSmartChord> remainingQueuedChords;
+
+  bool get returnedToNormalFlow => remainingQueuedChords.isEmpty;
 }
 
 class SmartTransitionDebug {
@@ -69,18 +98,21 @@ class SmartApproachDecision {
   const SmartApproachDecision({
     required this.destinationRomanNumeral,
     required this.selectedRomanNumeral,
-    this.insertedAppliedApproach,
+    required this.appliedType,
     this.appliedTargetRomanNumeral,
     this.roll,
   });
 
   final String destinationRomanNumeral;
   final String selectedRomanNumeral;
-  final String? insertedAppliedApproach;
+  final AppliedType? appliedType;
   final String? appliedTargetRomanNumeral;
   final int? roll;
 
-  bool get insertedApproach => insertedAppliedApproach != null;
+  String? get insertedAppliedApproach =>
+      appliedType == null ? null : selectedRomanNumeral;
+
+  bool get insertedApproach => appliedType != null;
 }
 
 class AppliedResolutionDecision {
@@ -109,6 +141,7 @@ class SmartGenerationDebug {
     required this.currentRomanNumeral,
     this.selectedDiatonicDestination,
     this.insertedAppliedApproach,
+    this.appliedType,
     this.appliedTargetRomanNumeral,
     this.modulationCandidateKeys = const [],
     this.finalKey,
@@ -116,12 +149,19 @@ class SmartGenerationDebug {
     this.finalChord,
     this.decision,
     this.transitionDebugSummary,
+    this.wasExcludedFallback = false,
+    this.renderedIsNonDiatonic = false,
+    this.activePatternTag,
+    this.lineClicheQueueLength = 0,
+    this.returnedToNormalFlow = false,
+    this.plannedChordKind = PlannedChordKind.resolvedRoman,
   });
 
   final String currentKey;
   final String currentRomanNumeral;
   final String? selectedDiatonicDestination;
   final String? insertedAppliedApproach;
+  final AppliedType? appliedType;
   final String? appliedTargetRomanNumeral;
   final List<String> modulationCandidateKeys;
   final String? finalKey;
@@ -129,6 +169,12 @@ class SmartGenerationDebug {
   final String? finalChord;
   final String? decision;
   final String? transitionDebugSummary;
+  final bool wasExcludedFallback;
+  final bool renderedIsNonDiatonic;
+  final String? activePatternTag;
+  final int lineClicheQueueLength;
+  final bool returnedToNormalFlow;
+  final PlannedChordKind plannedChordKind;
 
   SmartGenerationDebug withDecision(String nextDecision) {
     return SmartGenerationDebug(
@@ -136,6 +182,7 @@ class SmartGenerationDebug {
       currentRomanNumeral: currentRomanNumeral,
       selectedDiatonicDestination: selectedDiatonicDestination,
       insertedAppliedApproach: insertedAppliedApproach,
+      appliedType: appliedType,
       appliedTargetRomanNumeral: appliedTargetRomanNumeral,
       modulationCandidateKeys: modulationCandidateKeys,
       finalKey: finalKey,
@@ -143,6 +190,12 @@ class SmartGenerationDebug {
       finalChord: finalChord,
       decision: nextDecision,
       transitionDebugSummary: transitionDebugSummary,
+      wasExcludedFallback: wasExcludedFallback,
+      renderedIsNonDiatonic: renderedIsNonDiatonic,
+      activePatternTag: activePatternTag,
+      lineClicheQueueLength: lineClicheQueueLength,
+      returnedToNormalFlow: returnedToNormalFlow,
+      plannedChordKind: plannedChordKind,
     );
   }
 
@@ -150,12 +203,15 @@ class SmartGenerationDebug {
     required String finalKey,
     required String finalRomanNumeral,
     required String finalChord,
+    required bool renderedIsNonDiatonic,
+    required bool wasExcludedFallback,
   }) {
     return SmartGenerationDebug(
       currentKey: currentKey,
       currentRomanNumeral: currentRomanNumeral,
       selectedDiatonicDestination: selectedDiatonicDestination,
       insertedAppliedApproach: insertedAppliedApproach,
+      appliedType: appliedType,
       appliedTargetRomanNumeral: appliedTargetRomanNumeral,
       modulationCandidateKeys: modulationCandidateKeys,
       finalKey: finalKey,
@@ -163,6 +219,12 @@ class SmartGenerationDebug {
       finalChord: finalChord,
       decision: decision,
       transitionDebugSummary: transitionDebugSummary,
+      wasExcludedFallback: wasExcludedFallback,
+      renderedIsNonDiatonic: renderedIsNonDiatonic,
+      activePatternTag: activePatternTag,
+      lineClicheQueueLength: lineClicheQueueLength,
+      returnedToNormalFlow: returnedToNormalFlow,
+      plannedChordKind: plannedChordKind,
     );
   }
 
@@ -174,7 +236,14 @@ class SmartGenerationDebug {
         'currentRoman=$currentRomanNumeral '
         'destination=${selectedDiatonicDestination ?? '-'} '
         'appliedApproach=${insertedAppliedApproach ?? '-'} '
+        'appliedType=${appliedType?.name ?? '-'} '
         'appliedTarget=${appliedTargetRomanNumeral ?? '-'} '
+        'pattern=${activePatternTag ?? '-'} '
+        'plannedKind=${plannedChordKind.name} '
+        'queueLength=$lineClicheQueueLength '
+        'returnedToNormalFlow=$returnedToNormalFlow '
+        'excludedFallback=$wasExcludedFallback '
+        'renderedNonDiatonic=$renderedIsNonDiatonic '
         'modulationCandidates=[$modulationKeys] '
         'finalKey=${finalKey ?? '-'} '
         'finalRoman=${finalRomanNumeral ?? '-'} '
@@ -184,45 +253,85 @@ class SmartGenerationDebug {
   }
 }
 
+class SmartRenderingPlan {
+  const SmartRenderingPlan({
+    this.plannedChordKind = PlannedChordKind.resolvedRoman,
+    this.patternTag,
+    this.suppressTensions = false,
+  });
+
+  final PlannedChordKind plannedChordKind;
+  final String? patternTag;
+  final bool suppressTensions;
+}
+
 class SmartStepRequest {
   const SmartStepRequest({
     required this.currentKey,
     required this.currentRomanNumeral,
     required this.currentResolutionRomanNumeral,
+    required this.currentHarmonicFunction,
     required this.allowedDiatonicRomanNumerals,
     required this.secondaryDominantEnabled,
     required this.substituteDominantEnabled,
     required this.modulationCandidateKeys,
+    required this.previousRomanNumeral,
+    required this.previousHarmonicFunction,
+    required this.previousWasAppliedDominant,
+    required this.currentPatternTag,
+    required this.plannedQueue,
   });
 
   final String currentKey;
   final String currentRomanNumeral;
   final String? currentResolutionRomanNumeral;
+  final String currentHarmonicFunction;
   final List<String> allowedDiatonicRomanNumerals;
   final bool secondaryDominantEnabled;
   final bool substituteDominantEnabled;
   final List<String> modulationCandidateKeys;
+  final String? previousRomanNumeral;
+  final String? previousHarmonicFunction;
+  final bool previousWasAppliedDominant;
+  final String? currentPatternTag;
+  final List<QueuedSmartChord> plannedQueue;
 }
 
 class SmartStepPlan {
   const SmartStepPlan({
     required this.finalKey,
     required this.finalRomanNumeral,
+    required this.appliedType,
+    required this.resolutionTargetRoman,
+    required this.plannedChordKind,
+    required this.patternTag,
+    required this.remainingQueuedChords,
+    required this.returnedToNormalFlow,
+    required this.renderingPlan,
     required this.debug,
   });
 
   final String finalKey;
   final String finalRomanNumeral;
+  final AppliedType? appliedType;
+  final String? resolutionTargetRoman;
+  final PlannedChordKind plannedChordKind;
+  final String? patternTag;
+  final List<QueuedSmartChord> remainingQueuedChords;
+  final bool returnedToNormalFlow;
+  final SmartRenderingPlan renderingPlan;
   final SmartGenerationDebug debug;
 }
 
 class SmartGeneratorHelper {
   const SmartGeneratorHelper._();
 
-  static const int secondaryApproachChance = 28;
-  static const int substituteApproachChance = 12;
-  static const int appliedResolutionChance = 90;
+  static const int secondaryApproachChance = 30;
+  static const int substituteApproachChance = 14;
+  static const int appliedResolutionChance = 88;
   static const int modulationChance = 30;
+  static const int nonDiatonicVisibilityBoost = 8;
+  static const int lineClicheTriggerChance = 6;
 
   static const Map<String, String> secondaryDominantByResolution = {
     'IIm7': 'V7/II',
@@ -240,9 +349,6 @@ class SmartGeneratorHelper {
     'VIm7': 'subV7/VI',
   };
 
-  // These weights bias common jazz-functional tendencies without making the
-  // generator deterministic: ii-V-I, I-vi-ii-V, and weaker descending-fifth
-  // circle motion still leave room for surprise.
   static const Map<String, List<WeightedNextRoman>> majorDiatonicTransitions = {
     'IM7': [
       WeightedNextRoman(romanNumeral: 'VIm7', weight: 40),
@@ -387,36 +493,58 @@ class SmartGeneratorHelper {
     final substituteDominant =
         substituteDominantByResolution[destinationRomanNumeral];
 
-    var diatonicWeight = 100;
-    final candidates = <WeightedNextRoman>[];
+    var secondaryWeight = secondaryDominantEnabled && secondaryDominant != null
+        ? secondaryApproachChance
+        : 0;
+    var substituteWeight =
+        substituteDominantEnabled && substituteDominant != null
+        ? substituteApproachChance
+        : 0;
 
-    if (secondaryDominantEnabled && secondaryDominant != null) {
+    final totalAppliedWeight = secondaryWeight + substituteWeight;
+    if (totalAppliedWeight > 0) {
+      final secondaryBoost = secondaryWeight == 0
+          ? 0
+          : substituteWeight == 0
+          ? nonDiatonicVisibilityBoost
+          : (nonDiatonicVisibilityBoost *
+                secondaryWeight ~/
+                totalAppliedWeight);
+      final substituteBoost = substituteWeight == 0
+          ? 0
+          : secondaryWeight == 0
+          ? nonDiatonicVisibilityBoost
+          : nonDiatonicVisibilityBoost - secondaryBoost;
+      secondaryWeight += secondaryBoost;
+      substituteWeight += substituteBoost;
+    }
+
+    final diatonicWeight = (100 - secondaryWeight - substituteWeight).clamp(
+      1,
+      100,
+    );
+    final candidates = <WeightedNextRoman>[
+      WeightedNextRoman(
+        romanNumeral: destinationRomanNumeral,
+        weight: diatonicWeight,
+      ),
+    ];
+    if (secondaryWeight > 0 && secondaryDominant != null) {
       candidates.add(
         WeightedNextRoman(
           romanNumeral: secondaryDominant,
-          weight: secondaryApproachChance,
+          weight: secondaryWeight,
         ),
       );
-      diatonicWeight -= secondaryApproachChance;
     }
-
-    if (substituteDominantEnabled && substituteDominant != null) {
+    if (substituteWeight > 0 && substituteDominant != null) {
       candidates.add(
         WeightedNextRoman(
           romanNumeral: substituteDominant,
-          weight: substituteApproachChance,
+          weight: substituteWeight,
         ),
       );
-      diatonicWeight -= substituteApproachChance;
     }
-
-    candidates.insert(
-      0,
-      WeightedNextRoman(
-        romanNumeral: destinationRomanNumeral,
-        weight: diatonicWeight.clamp(1, 100),
-      ),
-    );
 
     final totalWeight = candidates.fold<int>(
       0,
@@ -426,15 +554,16 @@ class SmartGeneratorHelper {
     var remaining = roll;
     for (final candidate in candidates) {
       if (remaining < candidate.weight) {
-        final insertedApproach = candidate.romanNumeral == destinationRomanNumeral
+        final appliedType = candidate.romanNumeral == destinationRomanNumeral
             ? null
-            : candidate.romanNumeral;
+            : _appliedTypeForRoman(candidate.romanNumeral);
         return SmartApproachDecision(
           destinationRomanNumeral: destinationRomanNumeral,
           selectedRomanNumeral: candidate.romanNumeral,
-          insertedAppliedApproach: insertedApproach,
-          appliedTargetRomanNumeral:
-              insertedApproach == null ? null : destinationRomanNumeral,
+          appliedType: appliedType,
+          appliedTargetRomanNumeral: appliedType == null
+              ? null
+              : destinationRomanNumeral,
           roll: roll,
         );
       }
@@ -444,6 +573,7 @@ class SmartGeneratorHelper {
     return SmartApproachDecision(
       destinationRomanNumeral: destinationRomanNumeral,
       selectedRomanNumeral: destinationRomanNumeral,
+      appliedType: null,
       roll: roll,
     );
   }
@@ -462,7 +592,8 @@ class SmartGeneratorHelper {
         currentRomanNumeral: appliedTargetRomanNumeral,
         allowedRomanNumerals: allowedDiatonicRomanNumerals,
       );
-      final fallbackRoman = continuationSelection.selectedRomanNumeral ??
+      final fallbackRoman =
+          continuationSelection.selectedRomanNumeral ??
           _fallbackDiatonicRoman(
             random: random,
             allowedDiatonicRomanNumerals: allowedDiatonicRomanNumerals,
@@ -477,9 +608,12 @@ class SmartGeneratorHelper {
     }
 
     final modulationRoll = random.nextInt(100);
-    if (modulationCandidateKeys.isNotEmpty && modulationRoll < modulationChance) {
+    if (modulationCandidateKeys.isNotEmpty &&
+        modulationRoll < modulationChance) {
       final modulationKey =
-          modulationCandidateKeys[random.nextInt(modulationCandidateKeys.length)];
+          modulationCandidateKeys[random.nextInt(
+            modulationCandidateKeys.length,
+          )];
       return AppliedResolutionDecision(
         finalKey: modulationKey,
         finalRomanNumeral: 'IM7',
@@ -507,15 +641,106 @@ class SmartGeneratorHelper {
   }) {
     return [
       for (final key in activeKeys)
-        if (key != currentKey && keyTonicSemitoneResolver(key) == targetSemitone)
+        if (key != currentKey &&
+            keyTonicSemitoneResolver(key) == targetSemitone)
           key,
     ];
+  }
+
+  static List<QueuedSmartChord> maybeQueueLineCliche({
+    required Random random,
+    required SmartStepRequest request,
+  }) {
+    if (request.plannedQueue.isNotEmpty || request.currentPatternTag != null) {
+      return const [];
+    }
+    if (request.currentRomanNumeral != 'IM7') {
+      return const [];
+    }
+
+    final tonicResting =
+        request.currentHarmonicFunction == 'tonic' &&
+        request.previousHarmonicFunction == 'tonic' &&
+        request.previousRomanNumeral == 'IM7';
+    final cadenceArrival =
+        request.previousWasAppliedDominant ||
+        request.previousHarmonicFunction == 'dominant';
+
+    if (!tonicResting && !cadenceArrival) {
+      return const [];
+    }
+
+    if (random.nextInt(100) >= lineClicheTriggerChance) {
+      return const [];
+    }
+
+    return const [
+      QueuedSmartChord(
+        finalRomanNumeral: 'IM7',
+        plannedChordKind: PlannedChordKind.tonicDominant7,
+        patternTag: 'major-tonic-cliche',
+        suppressTensions: true,
+      ),
+      QueuedSmartChord(
+        finalRomanNumeral: 'IM7',
+        plannedChordKind: PlannedChordKind.tonicSix,
+        patternTag: 'major-tonic-cliche',
+        suppressTensions: true,
+      ),
+    ];
+  }
+
+  static QueuedSmartChordDecision dequeuePlannedSmartChord({
+    required List<QueuedSmartChord> plannedQueue,
+  }) {
+    final queuedChord = plannedQueue.first;
+    final remainingQueuedChords = plannedQueue.sublist(1);
+    return QueuedSmartChordDecision(
+      queuedChord: queuedChord,
+      remainingQueuedChords: remainingQueuedChords,
+    );
   }
 
   static SmartStepPlan planNextStep({
     required Random random,
     required SmartStepRequest request,
   }) {
+    final seededQueue = request.plannedQueue.isNotEmpty
+        ? request.plannedQueue
+        : maybeQueueLineCliche(random: random, request: request);
+    if (seededQueue.isNotEmpty) {
+      final queuedDecision = dequeuePlannedSmartChord(
+        plannedQueue: seededQueue,
+      );
+      return SmartStepPlan(
+        finalKey: request.currentKey,
+        finalRomanNumeral: queuedDecision.queuedChord.finalRomanNumeral,
+        appliedType: null,
+        resolutionTargetRoman: null,
+        plannedChordKind: queuedDecision.queuedChord.plannedChordKind,
+        patternTag: queuedDecision.queuedChord.patternTag,
+        remainingQueuedChords: queuedDecision.remainingQueuedChords,
+        returnedToNormalFlow: queuedDecision.returnedToNormalFlow,
+        renderingPlan: SmartRenderingPlan(
+          plannedChordKind: queuedDecision.queuedChord.plannedChordKind,
+          patternTag: queuedDecision.queuedChord.patternTag,
+          suppressTensions: queuedDecision.queuedChord.suppressTensions,
+        ),
+        debug: SmartGenerationDebug(
+          currentKey: request.currentKey,
+          currentRomanNumeral: request.currentRomanNumeral,
+          selectedDiatonicDestination: request.currentRomanNumeral,
+          finalKey: request.currentKey,
+          finalRomanNumeral: queuedDecision.queuedChord.finalRomanNumeral,
+          decision: 'queued-line-cliche',
+          activePatternTag: queuedDecision.queuedChord.patternTag,
+          lineClicheQueueLength: queuedDecision.remainingQueuedChords.length,
+          returnedToNormalFlow: queuedDecision.returnedToNormalFlow,
+          plannedChordKind: queuedDecision.queuedChord.plannedChordKind,
+        ),
+      );
+    }
+
     if (_isAppliedDominant(request.currentRomanNumeral)) {
       final appliedTargetRomanNumeral =
           request.currentResolutionRomanNumeral ??
@@ -530,15 +755,23 @@ class SmartGeneratorHelper {
         allowedDiatonicRomanNumerals: request.allowedDiatonicRomanNumerals,
         modulationCandidateKeys: request.modulationCandidateKeys,
       );
-
+      final appliedType = _appliedTypeForRoman(request.currentRomanNumeral);
       return SmartStepPlan(
         finalKey: resolutionDecision.finalKey,
         finalRomanNumeral: resolutionDecision.finalRomanNumeral,
+        appliedType: appliedType,
+        resolutionTargetRoman: appliedTargetRomanNumeral,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        patternTag: null,
+        remainingQueuedChords: const [],
+        returnedToNormalFlow: false,
+        renderingPlan: const SmartRenderingPlan(),
         debug: SmartGenerationDebug(
           currentKey: request.currentKey,
           currentRomanNumeral: request.currentRomanNumeral,
           selectedDiatonicDestination: appliedTargetRomanNumeral,
           insertedAppliedApproach: request.currentRomanNumeral,
+          appliedType: appliedType,
           appliedTargetRomanNumeral: appliedTargetRomanNumeral,
           modulationCandidateKeys: resolutionDecision.modulationCandidateKeys,
           finalKey: resolutionDecision.finalKey,
@@ -546,8 +779,9 @@ class SmartGeneratorHelper {
           decision: resolutionDecision.didModulate
               ? 'modulated-via-applied-resolution'
               : resolutionDecision.resolvedToTarget
-                  ? 'resolved-applied-target'
-                  : 'continued-after-applied',
+              ? 'resolved-applied-target'
+              : 'continued-after-applied',
+          plannedChordKind: PlannedChordKind.resolvedRoman,
         ),
       );
     }
@@ -557,7 +791,8 @@ class SmartGeneratorHelper {
       currentRomanNumeral: request.currentRomanNumeral,
       allowedRomanNumerals: request.allowedDiatonicRomanNumerals,
     );
-    final selectedDestination = destinationSelection.selectedRomanNumeral ??
+    final selectedDestination =
+        destinationSelection.selectedRomanNumeral ??
         _fallbackDiatonicRoman(
           random: random,
           allowedDiatonicRomanNumerals: request.allowedDiatonicRomanNumerals,
@@ -572,11 +807,19 @@ class SmartGeneratorHelper {
     return SmartStepPlan(
       finalKey: request.currentKey,
       finalRomanNumeral: approachDecision.selectedRomanNumeral,
+      appliedType: approachDecision.appliedType,
+      resolutionTargetRoman: approachDecision.appliedTargetRomanNumeral,
+      plannedChordKind: PlannedChordKind.resolvedRoman,
+      patternTag: null,
+      remainingQueuedChords: const [],
+      returnedToNormalFlow: false,
+      renderingPlan: const SmartRenderingPlan(),
       debug: SmartGenerationDebug(
         currentKey: request.currentKey,
         currentRomanNumeral: request.currentRomanNumeral,
         selectedDiatonicDestination: selectedDestination,
         insertedAppliedApproach: approachDecision.insertedAppliedApproach,
+        appliedType: approachDecision.appliedType,
         appliedTargetRomanNumeral: approachDecision.appliedTargetRomanNumeral,
         modulationCandidateKeys: const [],
         finalKey: request.currentKey,
@@ -585,6 +828,7 @@ class SmartGeneratorHelper {
             ? 'inserted-applied-approach'
             : 'selected-diatonic-destination',
         transitionDebugSummary: destinationSelection.debug.describe(),
+        plannedChordKind: PlannedChordKind.resolvedRoman,
       ),
     );
   }
@@ -593,11 +837,22 @@ class SmartGeneratorHelper {
     return romanNumeral.startsWith('V7/') || romanNumeral.startsWith('subV7/');
   }
 
+  static AppliedType? _appliedTypeForRoman(String romanNumeral) {
+    if (romanNumeral.startsWith('subV7/')) {
+      return AppliedType.substitute;
+    }
+    if (romanNumeral.startsWith('V7/')) {
+      return AppliedType.secondary;
+    }
+    return null;
+  }
+
   static String _fallbackDiatonicRoman({
     required Random random,
     required List<String> allowedDiatonicRomanNumerals,
   }) {
-    return allowedDiatonicRomanNumerals[
-        random.nextInt(allowedDiatonicRomanNumerals.length)];
+    return allowedDiatonicRomanNumerals[random.nextInt(
+      allowedDiatonicRomanNumerals.length,
+    )];
   }
 }

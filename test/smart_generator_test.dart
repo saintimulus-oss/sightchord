@@ -49,6 +49,37 @@ void main() {
     'VIIm7b5',
   ];
 
+  SmartStepRequest buildRequest({
+    String currentKey = 'C',
+    String currentRomanNumeral = 'IM7',
+    String? currentResolutionRomanNumeral,
+    String currentHarmonicFunction = 'tonic',
+    bool secondaryDominantEnabled = false,
+    bool substituteDominantEnabled = false,
+    List<String> modulationCandidateKeys = const [],
+    String? previousRomanNumeral,
+    String? previousHarmonicFunction,
+    bool previousWasAppliedDominant = false,
+    String? currentPatternTag,
+    List<QueuedSmartChord> plannedQueue = const [],
+  }) {
+    return SmartStepRequest(
+      currentKey: currentKey,
+      currentRomanNumeral: currentRomanNumeral,
+      currentResolutionRomanNumeral: currentResolutionRomanNumeral,
+      currentHarmonicFunction: currentHarmonicFunction,
+      allowedDiatonicRomanNumerals: diatonicRomans,
+      secondaryDominantEnabled: secondaryDominantEnabled,
+      substituteDominantEnabled: substituteDominantEnabled,
+      modulationCandidateKeys: modulationCandidateKeys,
+      previousRomanNumeral: previousRomanNumeral,
+      previousHarmonicFunction: previousHarmonicFunction,
+      previousWasAppliedDominant: previousWasAppliedDominant,
+      currentPatternTag: currentPatternTag,
+      plannedQueue: plannedQueue,
+    );
+  }
+
   test('weighted selection follows configured Roman numeral bands', () {
     final tonicStart = SmartGeneratorHelper.selectNextRoman(
       random: _FixedRandom(0),
@@ -74,76 +105,53 @@ void main() {
   test('non-diatonic off keeps diatonic smart flow intact', () {
     final plan = SmartGeneratorHelper.planNextStep(
       random: _SequenceRandom([50]),
-      request: const SmartStepRequest(
-        currentKey: 'C',
-        currentRomanNumeral: 'IM7',
-        currentResolutionRomanNumeral: null,
-        allowedDiatonicRomanNumerals: diatonicRomans,
-        secondaryDominantEnabled: false,
-        substituteDominantEnabled: false,
-        modulationCandidateKeys: [],
-      ),
+      request: buildRequest(),
     );
 
     expect(plan.finalKey, 'C');
     expect(plan.finalRomanNumeral, 'IIm7');
     expect(plan.debug.selectedDiatonicDestination, 'IIm7');
     expect(plan.debug.insertedAppliedApproach, isNull);
+    expect(plan.appliedType, isNull);
   });
 
   test('secondary dominant inserts a destination-oriented applied chord', () {
     final plan = SmartGeneratorHelper.planNextStep(
       random: _SequenceRandom([50, 80]),
-      request: const SmartStepRequest(
-        currentKey: 'C',
-        currentRomanNumeral: 'IM7',
-        currentResolutionRomanNumeral: null,
-        allowedDiatonicRomanNumerals: diatonicRomans,
-        secondaryDominantEnabled: true,
-        substituteDominantEnabled: false,
-        modulationCandidateKeys: [],
-      ),
+      request: buildRequest(secondaryDominantEnabled: true),
     );
 
     expect(plan.finalKey, 'C');
     expect(plan.debug.selectedDiatonicDestination, 'IIm7');
     expect(plan.debug.insertedAppliedApproach, 'V7/II');
     expect(plan.debug.appliedTargetRomanNumeral, 'IIm7');
+    expect(plan.appliedType, AppliedType.secondary);
     expect(plan.finalRomanNumeral, 'V7/II');
   });
 
   test('substitute dominant inserts a tritone substitute approach chord', () {
     final plan = SmartGeneratorHelper.planNextStep(
       random: _SequenceRandom([50, 95]),
-      request: const SmartStepRequest(
-        currentKey: 'C',
-        currentRomanNumeral: 'IM7',
-        currentResolutionRomanNumeral: null,
-        allowedDiatonicRomanNumerals: diatonicRomans,
-        secondaryDominantEnabled: false,
-        substituteDominantEnabled: true,
-        modulationCandidateKeys: [],
-      ),
+      request: buildRequest(substituteDominantEnabled: true),
     );
 
     expect(plan.finalKey, 'C');
     expect(plan.debug.selectedDiatonicDestination, 'IIm7');
     expect(plan.debug.insertedAppliedApproach, 'subV7/II');
     expect(plan.debug.appliedTargetRomanNumeral, 'IIm7');
+    expect(plan.appliedType, AppliedType.substitute);
     expect(plan.finalRomanNumeral, 'subV7/II');
   });
 
   test('applied resolution can modulate into another active key', () {
     final plan = SmartGeneratorHelper.planNextStep(
       random: _SequenceRandom([0, 0, 0]),
-      request: const SmartStepRequest(
-        currentKey: 'C',
+      request: buildRequest(
         currentRomanNumeral: 'V7/V',
         currentResolutionRomanNumeral: 'V7',
-        allowedDiatonicRomanNumerals: diatonicRomans,
+        currentHarmonicFunction: 'appliedDominant',
         secondaryDominantEnabled: true,
-        substituteDominantEnabled: false,
-        modulationCandidateKeys: ['G'],
+        modulationCandidateKeys: const ['G'],
       ),
     );
 
@@ -151,48 +159,68 @@ void main() {
     expect(plan.finalRomanNumeral, 'IM7');
     expect(plan.debug.appliedTargetRomanNumeral, 'V7');
     expect(plan.debug.modulationCandidateKeys, ['G']);
+    expect(plan.resolutionTargetRoman, 'V7');
   });
 
-  test('modulation keeps the new key context for the following smart step', () {
-    final modulationPlan = SmartGeneratorHelper.planNextStep(
-      random: _SequenceRandom([0, 0, 0]),
-      request: const SmartStepRequest(
-        currentKey: 'C',
-        currentRomanNumeral: 'V7/V',
-        currentResolutionRomanNumeral: 'V7',
-        allowedDiatonicRomanNumerals: diatonicRomans,
-        secondaryDominantEnabled: true,
-        substituteDominantEnabled: false,
-        modulationCandidateKeys: ['G'],
+  test('major tonic line cliche queues on tonic resting context', () {
+    final plan = SmartGeneratorHelper.planNextStep(
+      random: _SequenceRandom([0]),
+      request: buildRequest(
+        previousRomanNumeral: 'IM7',
+        previousHarmonicFunction: 'tonic',
       ),
     );
 
-    final nextPlan = SmartGeneratorHelper.planNextStep(
-      random: _SequenceRandom([50]),
-      request: SmartStepRequest(
-        currentKey: modulationPlan.finalKey,
-        currentRomanNumeral: modulationPlan.finalRomanNumeral,
-        currentResolutionRomanNumeral: null,
-        allowedDiatonicRomanNumerals: diatonicRomans,
-        secondaryDominantEnabled: false,
-        substituteDominantEnabled: false,
-        modulationCandidateKeys: const [],
+    expect(plan.finalRomanNumeral, 'IM7');
+    expect(plan.plannedChordKind, PlannedChordKind.tonicDominant7);
+    expect(plan.patternTag, 'major-tonic-cliche');
+    expect(plan.remainingQueuedChords, hasLength(1));
+    expect(
+      plan.remainingQueuedChords.first.plannedChordKind,
+      PlannedChordKind.tonicSix,
+    );
+    expect(plan.renderingPlan.suppressTensions, isTrue);
+    expect(plan.returnedToNormalFlow, isFalse);
+  });
+
+  test('major tonic line cliche can start after dominant arrival', () {
+    final plan = SmartGeneratorHelper.planNextStep(
+      random: _SequenceRandom([0]),
+      request: buildRequest(
+        previousRomanNumeral: 'V7',
+        previousHarmonicFunction: 'dominant',
       ),
     );
 
-    expect(modulationPlan.finalKey, 'G');
-    expect(nextPlan.finalKey, 'G');
-    expect(nextPlan.finalRomanNumeral, 'IIm7');
-    expect(nextPlan.debug.currentKey, 'G');
+    expect(plan.plannedChordKind, PlannedChordKind.tonicDominant7);
+    expect(plan.patternTag, 'major-tonic-cliche');
+  });
+
+  test('queued line cliche chord returns to normal flow on last step', () {
+    final plan = SmartGeneratorHelper.planNextStep(
+      random: _SequenceRandom([99]),
+      request: buildRequest(
+        currentPatternTag: 'major-tonic-cliche',
+        plannedQueue: const [
+          QueuedSmartChord(
+            finalRomanNumeral: 'IM7',
+            plannedChordKind: PlannedChordKind.tonicSix,
+            patternTag: 'major-tonic-cliche',
+            suppressTensions: true,
+          ),
+        ],
+      ),
+    );
+
+    expect(plan.finalRomanNumeral, 'IM7');
+    expect(plan.plannedChordKind, PlannedChordKind.tonicSix);
+    expect(plan.returnedToNormalFlow, isTrue);
+    expect(plan.remainingQueuedChords, isEmpty);
+    expect(plan.debug.returnedToNormalFlow, isTrue);
   });
 
   test('compatible modulation keys are matched by tonic semitone', () {
-    const tonicSemitones = {
-      'C': 0,
-      'C#/Db': 1,
-      'D': 2,
-      'G': 7,
-    };
+    const tonicSemitones = {'C': 0, 'C#/Db': 1, 'D': 2, 'G': 7};
 
     final candidates = SmartGeneratorHelper.findCompatibleModulationKeys(
       activeKeys: tonicSemitones.keys,
