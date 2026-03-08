@@ -10,11 +10,19 @@ class GeneratedChord {
     required this.chord,
     this.keyName,
     this.romanNumeral,
+    this.resolutionRomanNumeral,
+    this.harmonicFunction = 'free',
   });
 
   final String chord;
   final String? keyName;
   final String? romanNumeral;
+  final String? resolutionRomanNumeral;
+  final String harmonicFunction;
+
+  bool get isAppliedDominant =>
+      romanNumeral?.startsWith('V7/') == true ||
+      romanNumeral?.startsWith('subV7/') == true;
 
   String get analysisLabel {
     if (keyName == null || romanNumeral == null) {
@@ -143,17 +151,90 @@ class _MyHomePageState extends State<MyHomePage> {
     'B': ['BM7', 'C#m7', 'D#m7', 'EM7', 'F#7', 'G#m7', 'A#m7b5'],
   };
 
-  static const Map<String, String> _secondaryDominantChordMap = {
-    'V7/II': 'A7',
-    'V7/III': 'B7',
-    'V7/IV': 'C7',
-    'V7/V': 'D7',
-    'V7/VI': 'E7',
-    'subV7/II': 'Eb7',
-    'subV7/III': 'F7',
-    'subV7/IV': 'Gb7',
-    'subV7/V': 'Ab7',
-    'subV7/VI': 'Bb7',
+  static const Map<String, String> _appliedResolutionMap = {
+    'V7/II': 'IIm7',
+    'V7/III': 'IIIm7',
+    'V7/IV': 'IVM7',
+    'V7/V': 'V7',
+    'V7/VI': 'VIm7',
+    'subV7/II': 'IIm7',
+    'subV7/III': 'IIIm7',
+    'subV7/IV': 'IVM7',
+    'subV7/V': 'V7',
+    'subV7/VI': 'VIm7',
+  };
+
+  static const Map<String, String> _harmonicFunctionMap = {
+    'IM7': 'tonic',
+    'IIIm7': 'tonic',
+    'VIm7': 'tonic',
+    'IIm7': 'predominant',
+    'IVM7': 'predominant',
+    'V7': 'dominant',
+    'VIIm7b5': 'dominant',
+  };
+
+  static const Map<String, int> _noteToSemitone = {
+    'C': 0,
+    'B#': 0,
+    'C#': 1,
+    'Db': 1,
+    'D': 2,
+    'D#': 3,
+    'Eb': 3,
+    'E': 4,
+    'Fb': 4,
+    'F': 5,
+    'E#': 5,
+    'F#': 6,
+    'Gb': 6,
+    'G': 7,
+    'G#': 8,
+    'Ab': 8,
+    'A': 9,
+    'A#': 10,
+    'Bb': 10,
+    'B': 11,
+    'Cb': 11,
+  };
+
+  static const List<String> _sharpNoteNames = [
+    'C',
+    'C#',
+    'D',
+    'D#',
+    'E',
+    'F',
+    'F#',
+    'G',
+    'G#',
+    'A',
+    'A#',
+    'B',
+  ];
+
+  static const List<String> _flatNoteNames = [
+    'C',
+    'Db',
+    'D',
+    'Eb',
+    'E',
+    'F',
+    'Gb',
+    'G',
+    'Ab',
+    'A',
+    'Bb',
+    'B',
+  ];
+
+  static const Set<String> _flatPreferredKeys = {
+    'F',
+    'C#/Db',
+    'D#/Eb',
+    'F#/Gb',
+    'G#/Ab',
+    'A#/Bb',
   };
 
   final Random _random = Random();
@@ -237,9 +318,30 @@ class _MyHomePageState extends State<MyHomePage> {
     return analysisLabel.isEmpty ? '랜덤 모드' : analysisLabel;
   }
 
+  String get _practiceModeDescription {
+    if (!_usesKeyMode) {
+      return '12개 음과 다양한 코드 성격에서 무작위로 코드를 생성합니다.';
+    }
+    if (_smartGeneratorMode) {
+      return '선택한 키와 직전 화음 흐름을 바탕으로 더 자연스러운 진행을 우선 생성합니다.';
+    }
+    return '선택한 키 안에서 다이아토닉 또는 옵션 화음을 생성합니다.';
+  }
+
   void _ensureChordQueueInitialized() {
     _currentChord ??= _generateChord();
-    _nextChord ??= _generateChord(excluding: {_currentChord!.chord});
+    _nextChord ??= _generateChord(
+      excluding: {_currentChord!.chord},
+      previous: _previousChord,
+      current: _currentChord,
+    );
+  }
+
+  void _reseedChordQueue() {
+    _previousChord = null;
+    _currentChord = null;
+    _nextChord = null;
+    _ensureChordQueueInitialized();
   }
 
   List<String> _enabledRomanNumerals() {
@@ -253,7 +355,11 @@ class _MyHomePageState extends State<MyHomePage> {
     return pool;
   }
 
-  GeneratedChord _generateChord({Set<String> excluding = const {}}) {
+  GeneratedChord _generateChord({
+    Set<String> excluding = const {},
+    GeneratedChord? previous,
+    GeneratedChord? current,
+  }) {
     if (!_usesKeyMode) {
       while (true) {
         final root = _allRoots[_random.nextInt(_allRoots.length)];
@@ -267,18 +373,198 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final keys = _orderedKeys;
     final romanNumerals = _enabledRomanNumerals();
+
+    if (_smartGeneratorMode) {
+      return _generateSmartChord(
+        keys: keys,
+        romanNumerals: romanNumerals,
+        excluding: excluding,
+        previous: previous,
+        current: current,
+      );
+    }
+
     while (true) {
       final key = keys[_random.nextInt(keys.length)];
       final romanNumeral = romanNumerals[_random.nextInt(romanNumerals.length)];
-      final chord = _resolveChord(key, romanNumeral);
-      if (!excluding.contains(chord)) {
-        return GeneratedChord(
-          chord: chord,
-          keyName: key,
-          romanNumeral: romanNumeral,
-        );
+      final generatedChord = _buildGeneratedChord(key, romanNumeral);
+      if (!excluding.contains(generatedChord.chord)) {
+        return generatedChord;
       }
     }
+  }
+
+  GeneratedChord _buildGeneratedChord(String key, String romanNumeral) {
+    return GeneratedChord(
+      chord: _resolveChord(key, romanNumeral),
+      keyName: key,
+      romanNumeral: romanNumeral,
+      resolutionRomanNumeral: _appliedResolutionMap[romanNumeral],
+      harmonicFunction: _harmonicFunctionForRoman(romanNumeral),
+    );
+  }
+
+  GeneratedChord _generateSmartChord({
+    required List<String> keys,
+    required List<String> romanNumerals,
+    required Set<String> excluding,
+    GeneratedChord? previous,
+    GeneratedChord? current,
+  }) {
+    final candidates = <GeneratedChord>[
+      for (final key in keys)
+        for (final romanNumeral in romanNumerals)
+          _buildGeneratedChord(key, romanNumeral),
+    ].where((candidate) => !excluding.contains(candidate.chord)).toList();
+
+    if (candidates.isEmpty) {
+      return _buildGeneratedChord(keys.first, _baseRomanNumerals.first);
+    }
+
+    final weights = [
+      for (final candidate in candidates)
+        _smartWeight(candidate, previous: previous, current: current),
+    ];
+
+    return _pickWeightedChord(candidates, weights);
+  }
+
+  GeneratedChord _pickWeightedChord(
+    List<GeneratedChord> candidates,
+    List<double> weights,
+  ) {
+    final totalWeight = weights.fold<double>(0, (sum, weight) => sum + weight);
+    if (totalWeight <= 0) {
+      return candidates[_random.nextInt(candidates.length)];
+    }
+
+    var threshold = _random.nextDouble() * totalWeight;
+    for (var index = 0; index < candidates.length; index++) {
+      threshold -= weights[index];
+      if (threshold <= 0) {
+        return candidates[index];
+      }
+    }
+
+    return candidates.last;
+  }
+
+  double _smartWeight(
+    GeneratedChord candidate, {
+    GeneratedChord? previous,
+    GeneratedChord? current,
+  }) {
+    var weight = 1.0;
+
+    if (current == null) {
+      if (candidate.romanNumeral == 'IM7') {
+        weight *= 3.0;
+      } else if (candidate.harmonicFunction == 'tonic') {
+        weight *= 2.0;
+      } else if (candidate.harmonicFunction == 'predominant') {
+        weight *= 1.3;
+      } else if (candidate.isAppliedDominant) {
+        weight *= 0.9;
+      }
+      return weight;
+    }
+
+    if (candidate.keyName == current.keyName) {
+      weight *= 1.8;
+    } else {
+      weight *= 0.55;
+    }
+
+    if (candidate.chord == current.chord) {
+      weight *= 0.08;
+    }
+    if (candidate.romanNumeral == current.romanNumeral) {
+      weight *= 0.45;
+    }
+    if (previous != null && candidate.chord == previous.chord) {
+      weight *= 0.4;
+    }
+    if (candidate.harmonicFunction == current.harmonicFunction) {
+      weight *= 0.72;
+    }
+    if (candidate.isAppliedDominant && current.isAppliedDominant) {
+      weight *= 0.5;
+    }
+    if (previous != null &&
+        previous.harmonicFunction == current.harmonicFunction &&
+        current.harmonicFunction == candidate.harmonicFunction) {
+      weight *= 0.45;
+    }
+
+    final expectedResolution = current.resolutionRomanNumeral;
+    if (current.isAppliedDominant && expectedResolution != null) {
+      if (candidate.keyName == current.keyName &&
+          candidate.romanNumeral == expectedResolution) {
+        weight *= current.harmonicFunction == 'substituteDominant' ? 6.5 : 8.0;
+      } else if (candidate.harmonicFunction == 'dominant' ||
+          candidate.harmonicFunction == 'appliedDominant' ||
+          candidate.harmonicFunction == 'substituteDominant') {
+        weight *= 0.45;
+      } else {
+        weight *= 0.9;
+      }
+      return max(weight, 0.01);
+    }
+
+    switch (current.harmonicFunction) {
+      case 'tonic':
+        if (candidate.harmonicFunction == 'predominant') {
+          weight *= 2.5;
+        } else if (candidate.harmonicFunction == 'dominant') {
+          weight *= 1.7;
+        } else if (candidate.harmonicFunction == 'appliedDominant') {
+          weight *= 1.8;
+        } else if (candidate.harmonicFunction == 'substituteDominant') {
+          weight *= 1.5;
+        } else {
+          weight *= 0.8;
+        }
+        break;
+      case 'predominant':
+        if (candidate.harmonicFunction == 'dominant') {
+          weight *= 2.7;
+        } else if (candidate.harmonicFunction == 'appliedDominant') {
+          weight *= 1.9;
+        } else if (candidate.harmonicFunction == 'substituteDominant') {
+          weight *= 1.6;
+        } else if (candidate.harmonicFunction == 'tonic') {
+          weight *= 1.15;
+        } else {
+          weight *= 0.75;
+        }
+        break;
+      case 'dominant':
+        if (candidate.harmonicFunction == 'tonic') {
+          weight *= 2.9;
+        } else if (candidate.harmonicFunction == 'predominant') {
+          weight *= 1.35;
+        } else {
+          weight *= 0.7;
+        }
+        break;
+      default:
+        if (candidate.harmonicFunction == 'tonic') {
+          weight *= 1.4;
+        }
+        break;
+    }
+
+    return max(weight, 0.01);
+  }
+
+  String _harmonicFunctionForRoman(String romanNumeral) {
+    if (romanNumeral.startsWith('subV7/')) {
+      return 'substituteDominant';
+    }
+    if (romanNumeral.startsWith('V7/')) {
+      return 'appliedDominant';
+    }
+    return _harmonicFunctionMap[romanNumeral] ?? 'free';
   }
 
   String _resolveChord(String key, String romanNumeral) {
@@ -286,10 +572,48 @@ class _MyHomePageState extends State<MyHomePage> {
     if (diatonicIndex >= 0) {
       return _diatonicChordMap[key]![diatonicIndex];
     }
-    if (_secondaryDominantChordMap.containsKey(romanNumeral)) {
-      return _secondaryDominantChordMap[romanNumeral]!;
+
+    final resolutionRomanNumeral = _appliedResolutionMap[romanNumeral];
+    if (resolutionRomanNumeral != null) {
+      return _resolveAppliedDominantChord(
+        key,
+        resolutionRomanNumeral,
+        isSubstitute: romanNumeral.startsWith('subV7/'),
+      );
     }
+
     return _diatonicChordMap[key]!.first;
+  }
+
+  String _resolveAppliedDominantChord(
+    String key,
+    String resolutionRomanNumeral, {
+    required bool isSubstitute,
+  }) {
+    final targetChord = _resolveChord(key, resolutionRomanNumeral);
+    final targetRoot = _extractChordRoot(targetChord);
+    final targetSemitone = _noteToSemitone[targetRoot];
+    if (targetSemitone == null) {
+      return _diatonicChordMap[key]!.first;
+    }
+
+    final dominantSemitone = isSubstitute
+        ? (targetSemitone + 1) % 12
+        : (targetSemitone + 7) % 12;
+    final dominantRoot = _spellPitchForKey(dominantSemitone, key);
+    return '${dominantRoot}7';
+  }
+
+  String _extractChordRoot(String chord) {
+    final match = RegExp(r'^[A-G](?:#|b)?').firstMatch(chord);
+    return match?.group(0) ?? 'C';
+  }
+
+  String _spellPitchForKey(int semitone, String key) {
+    final spellings = _flatPreferredKeys.contains(key)
+        ? _flatNoteNames
+        : _sharpNoteNames;
+    return spellings[semitone % 12];
   }
 
   Future<void> _playMetronomeIfNeeded() async {
@@ -314,10 +638,15 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _advanceChord() async {
     setState(() {
       _previousChord = _currentChord;
-      _currentChord = _nextChord ?? _generateChord();
-      _nextChord = _generateChord(excluding: {
-        if (_currentChord != null) _currentChord!.chord,
-      });
+      _currentChord = _nextChord ??
+          _generateChord(previous: _previousChord, current: _currentChord);
+      _nextChord = _generateChord(
+        excluding: {
+          if (_currentChord != null) _currentChord!.chord,
+        },
+        previous: _previousChord,
+        current: _currentChord,
+      );
       _currentBeat = ((_currentBeat ?? -1) + 1) % _beatsPerBar;
     });
     await _playMetronomeIfNeeded();
@@ -335,7 +664,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     setState(() {
       _autoRunning = true;
-      _currentBeat = 0;
+      _currentBeat = _beatsPerBar - 1;
     });
     _advanceChordUnawaited();
     _autoTimer = Timer.periodic(
@@ -395,9 +724,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const SizedBox(height: 8),
             Text(
-              _usesKeyMode
-                  ? '선택한 키 안에서 다이아토닉 또는 옵션 화음을 생성합니다.'
-                  : '12개 음과 다양한 코드 성격에서 무작위로 코드를 생성합니다.',
+              _practiceModeDescription,
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 12),
@@ -476,6 +803,13 @@ class _MyHomePageState extends State<MyHomePage> {
                         },
                       ),
                       const SizedBox(height: 16),
+                      Text(
+                        '설정은 즉시 반영됩니다.',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                       Text('메트로놈 볼륨', style: theme.textTheme.titleMedium),
                       Slider(
                         value: _metronomeVolume,
@@ -518,10 +852,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 } else {
                                   _activeKeys.remove(key);
                                 }
-                                _previousChord = null;
-                                _currentChord = null;
-                                _nextChord = null;
-                                _ensureChordQueueInitialized();
+                                _reseedChordQueue();
                               });
                             },
                           );
@@ -531,11 +862,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       SwitchListTile.adaptive(
                         contentPadding: EdgeInsets.zero,
                         title: const Text('Smart Generator Mode'),
-                        subtitle: const Text('후속 화음 흐름을 조금 더 자연스럽게 섞습니다.'),
+                        subtitle: const Text('직전 화음과 해결 방향을 반영해 흐름을 더 자연스럽게 만듭니다.'),
                         value: _smartGeneratorMode,
                         onChanged: (value) {
                           setState(() {
                             _smartGeneratorMode = value;
+                            _reseedChordQueue();
                           });
                         },
                       ),
@@ -553,6 +885,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             onSelected: (selected) {
                               setState(() {
                                 _secondaryDominantEnabled = selected;
+                                _reseedChordQueue();
                               });
                             },
                           ),
@@ -563,6 +896,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             onSelected: (selected) {
                               setState(() {
                                 _substituteDominantEnabled = selected;
+                                _reseedChordQueue();
                               });
                             },
                           ),
