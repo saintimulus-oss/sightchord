@@ -116,10 +116,7 @@ class ChordExclusionContext {
 }
 
 class ChordSymbolParts {
-  const ChordSymbolParts({
-    required this.root,
-    required this.quality,
-  });
+  const ChordSymbolParts({required this.root, required this.quality});
 
   final String root;
   final String quality;
@@ -152,12 +149,7 @@ class ChordRenderingHelper {
     'b13',
   ];
 
-  static const Set<String> _alteredTensions = {
-    '#11',
-    'b9',
-    '#9',
-    'b13',
-  };
+  static const Set<String> _alteredTensions = {'#11', 'b9', '#9', 'b13'};
 
   static const Map<String, List<String>> _tensionProfiles = {
     'IM7': ['9', '13'],
@@ -205,10 +197,7 @@ class ChordRenderingHelper {
   static ChordSymbolParts parseChordSymbol(String chord) {
     final match = RegExp(r'^[A-G](?:#|b)?').firstMatch(chord);
     final root = match?.group(0) ?? 'C';
-    return ChordSymbolParts(
-      root: root,
-      quality: chord.substring(root.length),
-    );
+    return ChordSymbolParts(root: root, quality: chord.substring(root.length));
   }
 
   static String harmonicFamily({
@@ -301,6 +290,7 @@ class ChordRenderingHelper {
       baseChord,
     ].join('|');
   }
+
   static SurfaceVariant? selectSurfaceVariant({
     required Random random,
     required bool allowV7sus4,
@@ -349,7 +339,8 @@ class ChordRenderingHelper {
     }
 
     final pairCandidates = [
-      for (final pair in _safeTensionPairs[profileKey] ?? const <List<String>>[])
+      for (final pair
+          in _safeTensionPairs[profileKey] ?? const <List<String>>[])
         if (pair.every(selectedTensionOptions.contains)) pair,
     ];
     if (pairCandidates.isNotEmpty && random.nextInt(100) < 20) {
@@ -383,8 +374,7 @@ class ChordRenderingHelper {
     if (surfaceVariant == SurfaceVariant.dominantSus4 && quality == '7') {
       quality = '7sus4';
     }
-    final tensionSuffix =
-        tensions.isEmpty ? '' : '(${tensions.join(',')})';
+    final tensionSuffix = tensions.isEmpty ? '' : '(${tensions.join(',')})';
     return '${parts.root}$quality$tensionSuffix';
   }
 
@@ -611,8 +601,9 @@ class _MyHomePageState extends State<MyHomePage> {
   final Random _random = Random();
   final AudioPlayer _audioPlayer = AudioPlayer();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final TextEditingController _bpmController =
-      TextEditingController(text: '$_defaultBpm');
+  final TextEditingController _bpmController = TextEditingController(
+    text: '$_defaultBpm',
+  );
 
   Timer? _autoTimer;
   Future<void>? _audioInitFuture;
@@ -662,12 +653,12 @@ class _MyHomePageState extends State<MyHomePage> {
   bool get _usesKeyMode => _activeKeys.isNotEmpty;
 
   List<String> get _orderedKeys => [
-        for (final key in _keyOptions)
-          if (_activeKeys.contains(key)) key,
-      ];
+    for (final key in _keyOptions)
+      if (_activeKeys.contains(key)) key,
+  ];
 
   List<String> get _practiceModeTags {
-    final tags = <String>[_usesKeyMode ? '????®ÏÄ´Î???È∂?Ö∫??????ÖÎ???È•îÎÇÖ?????????îÎá°??? : '???ÍøîÍ∫Ç???ÂΩ±¬Ä?úÍ≥∏???È•îÎÇÖ?????????îÎá°???];
+    final tags = <String>[_usesKeyMode ? 'Key Mode' : 'Free Mode'];
     if (_usesKeyMode) {
       tags.addAll(_orderedKeys);
       if (_smartGeneratorMode) {
@@ -689,20 +680,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String get _currentStatusLabel {
     if (_currentChord == null) {
-      return '?????Î∞∏Î∏∂?????Â£§Íµø???ìÎÇØ??????¨Í≥£Î´ñÔßù?????????∞ÎÆõ???????;
+      return 'Press Next Chord to begin';
     }
     final analysisLabel = _currentChord!.analysisLabel;
-    return analysisLabel.isEmpty ? '???ÍøîÍ∫Ç???ÂΩ±¬Ä?úÍ≥∏???È•îÎÇÖ?????????îÎá°??? : analysisLabel;
+    return analysisLabel.isEmpty ? 'Free mode active' : analysisLabel;
   }
 
   String get _practiceModeDescription {
     if (!_usesKeyMode) {
-      return '12?????????????úÔßü????????Î∞∏Î∏∂?????????éÏ≤é???‰∫?ªãÍº®Áå∑Î≥†ÍΩ¥????????Ô¶´ÎöÆƒ≤????????Ë´õÎ™ÉÎß??Œª????????Î∞∏Î∏∂?????Â£§Íµø???ìÎÇØ??????¨Í≥£Î´ñÔßù?????ÍøîÍ∫Ç??????';
+      return 'Uses all 12 chromatic roots with random chord qualities for broad reading practice.';
     }
     if (_smartGeneratorMode) {
-      return '????ÂΩ±¬Ä??•¬Ä?????? ?È•îÎÇÖ???????????Â´???????????????πÎïüÔßíÎÖπ????????????????????????øÌèé????È•îÎÇÖ??????Ô¶´ÎöÆ?????????????? ????¨Í≥£Î´ñÔßù?????ÍøîÍ∫Ç??????';
+      return 'Follows harmonic function flow in the selected keys while allowing tasteful smart-generator movement.';
     }
-    return '????ÂΩ±¬Ä??•¬Ä???????????úÔßü???????•Ïã≤Í∞?Åî??ÅÏòÉÔß?????¨Í≥ª?¢Â§∑?†Îáæ?????????????????Â´?????????¨Í≥£Î´ñÔßù?????ÍøîÍ∫Ç??????';
+    return 'Uses the selected keys and enabled Roman numerals to generate diatonic practice material.';
   }
 
   void _ensureChordQueueInitialized() {
@@ -757,8 +748,9 @@ class _MyHomePageState extends State<MyHomePage> {
   ) {
     return exclusionContext.renderedSymbols.contains(candidate.chord) ||
         exclusionContext.repeatGuardKeys.contains(candidate.repeatGuardKey) ||
-        exclusionContext.harmonicComparisonKeys
-            .contains(candidate.harmonicComparisonKey);
+        exclusionContext.harmonicComparisonKeys.contains(
+          candidate.harmonicComparisonKey,
+        );
   }
 
   GeneratedChord _generateChord({
@@ -817,13 +809,14 @@ class _MyHomePageState extends State<MyHomePage> {
       plannedChordKind: PlannedChordKind.resolvedRoman,
       baseChord: baseChord,
     );
-    final harmonicComparisonKey = ChordRenderingHelper.buildHarmonicComparisonKey(
-      keyName: null,
-      romanNumeral: null,
-      harmonicFunction: 'free',
-      plannedChordKind: PlannedChordKind.resolvedRoman,
-      baseChord: baseChord,
-    );
+    final harmonicComparisonKey =
+        ChordRenderingHelper.buildHarmonicComparisonKey(
+          keyName: null,
+          romanNumeral: null,
+          harmonicFunction: 'free',
+          plannedChordKind: PlannedChordKind.resolvedRoman,
+          baseChord: baseChord,
+        );
     return GeneratedChord(
       chord: chord,
       baseChord: baseChord,
@@ -882,7 +875,8 @@ class _MyHomePageState extends State<MyHomePage> {
     SmartGenerationDebug? smartDebug,
     bool wasExcludedFallback = false,
   }) {
-    final normalizedAppliedType = appliedType ?? _appliedTypeForRoman(romanNumeral);
+    final normalizedAppliedType =
+        appliedType ?? _appliedTypeForRoman(romanNumeral);
     final normalizedResolutionTargetRoman =
         resolutionTargetRoman ?? _appliedResolutionMap[romanNumeral];
     final baseChord = _resolvePlannedBaseChord(
@@ -914,15 +908,15 @@ class _MyHomePageState extends State<MyHomePage> {
     );
     final harmonicComparisonKey =
         ChordRenderingHelper.buildHarmonicComparisonKey(
-      keyName: key,
-      romanNumeral: romanNumeral,
-      harmonicFunction: harmonicFunction,
-      plannedChordKind: plannedChordKind,
-      baseChord: baseChord,
-      appliedType: normalizedAppliedType,
-      resolutionTargetRoman: normalizedResolutionTargetRoman,
-      patternTag: patternTag,
-    );
+          keyName: key,
+          romanNumeral: romanNumeral,
+          harmonicFunction: harmonicFunction,
+          plannedChordKind: plannedChordKind,
+          baseChord: baseChord,
+          appliedType: normalizedAppliedType,
+          resolutionTargetRoman: normalizedResolutionTargetRoman,
+          patternTag: patternTag,
+        );
     return GeneratedChord(
       chord: renderingSelection.chord,
       baseChord: baseChord,
@@ -987,10 +981,14 @@ class _MyHomePageState extends State<MyHomePage> {
     required ChordExclusionContext exclusionContext,
   }) {
     return [
-      for (final key in keys)
-        for (final romanNumeral in romanNumerals)
-          _buildGeneratedChord(key, romanNumeral),
-    ].where((candidate) => !_isExcludedCandidate(candidate, exclusionContext)).toList();
+          for (final key in keys)
+            for (final romanNumeral in romanNumerals)
+              _buildGeneratedChord(key, romanNumeral),
+        ]
+        .where(
+          (candidate) => !_isExcludedCandidate(candidate, exclusionContext),
+        )
+        .toList();
   }
 
   GeneratedChord _pickUniformChord(List<GeneratedChord> candidates) {
@@ -1022,8 +1020,9 @@ class _MyHomePageState extends State<MyHomePage> {
     required ChordExclusionContext exclusionContext,
     String? preferredKey,
   }) {
-    final preferredKeys =
-        preferredKey != null && keys.contains(preferredKey) ? [preferredKey] : keys;
+    final preferredKeys = preferredKey != null && keys.contains(preferredKey)
+        ? [preferredKey]
+        : keys;
     final preferredCandidates = _buildKeyModeCandidates(
       keys: preferredKeys,
       romanNumerals: _baseRomanNumerals,
@@ -1092,8 +1091,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final currentResolutionRoman =
         current.resolutionTargetRoman ?? current.resolutionRomanNumeral;
-    final modulationCandidateKeys = current.isAppliedDominant &&
-            currentResolutionRoman != null
+    final modulationCandidateKeys =
+        current.isAppliedDominant && currentResolutionRoman != null
         ? _findCompatibleModulationKeys(
             keys: keys,
             currentKey: currentKey,
@@ -1254,6 +1253,7 @@ class _MyHomePageState extends State<MyHomePage> {
         : _sharpNoteNames;
     return spellings[semitone % 12];
   }
+
   Future<void> _playMetronomeIfNeeded() async {
     if (!_metronomeEnabled) {
       return;
@@ -1405,16 +1405,13 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _usesKeyMode ? '????®ÏÄ´Î???È∂?Ö∫??????ÖÎ?????????Ô¶??â¬Ä?????????' : '???ÍøîÍ∫Ç???ÂΩ±¬Ä?úÍ≥∏???È•îÎÇÖ?????????îÎá°???,
+              _usesKeyMode ? 'Key Practice Overview' : 'Free Practice Overview',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              _practiceModeDescription,
-              style: theme.textTheme.bodyMedium,
-            ),
+            Text(_practiceModeDescription, style: theme.textTheme.bodyMedium),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -1431,7 +1428,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const SizedBox(height: 10),
             Text(
-              'Space: ????•Ïã≤Í∞?Åî????????Î∞∏Î∏∂???? ?? Enter: ??????È•îÎÇÖ??????Ô¶´ÎöÆ???????ÍøîÍ∫Ç???ÂΩ±¬Ä??∞ƒ??????Íæ®„Åç???¨Í≥•Î£??  ?? Up/Down: BPM ????®ÏÄ´Î?????,
+              'Space: next chord  Enter: start or stop autoplay  Up/Down: adjust BPM',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -1457,7 +1454,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: [
                     const Expanded(
                       child: Text(
-                        '????•Ïã≤Í∞?Åî???,
+                        'Settings',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -1467,7 +1464,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     IconButton(
                       onPressed: () => Navigator.of(context).maybePop(),
                       icon: const Icon(Icons.close),
-                      tooltip: '???????,
+                      tooltip: 'Close settings',
                     ),
                   ],
                 ),
@@ -1481,8 +1478,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: [
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('?È•îÎÇÖ??????????∑ÏÇ∞????ÍøîÍ∫Ç?????),
-                        subtitle: Text(_metronomeEnabled ? '???Ë¢Å‚ë∏Ï¶¥Á≠å??Î∏êÎàñ?? : '?????????´ÏµÇ??),
+                        title: const Text('Metronome'),
+                        subtitle: Text(
+                          _metronomeEnabled ? 'Enabled' : 'Disabled',
+                        ),
                         value: _metronomeEnabled,
                         onChanged: (value) {
                           setState(() {
@@ -1492,13 +1491,16 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        '????•Ïã≤Í∞?Åî???? ?È•îÎÇÖ???ÂΩ±¬Ä?Í≥óÎ™°Ô¶´ÎöÆ??ÍªÜÎπä???????πÎïüÔßíÎÖπ??????ÍøîÍ∫Ç??????',
+                        'Turn the metronome on to hear a click on every beat while you practice.',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Text('?È•îÎÇÖ??????????∑ÏÇ∞????ÍøîÍ∫Ç??????????∞ÎÆõ????, style: theme.textTheme.titleMedium),
+                      Text(
+                        'Metronome Volume',
+                        style: theme.textTheme.titleMedium,
+                      ),
                       Slider(
                         value: _metronomeVolume,
                         onChanged: _metronomeEnabled
@@ -1514,12 +1516,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Text('${(_metronomeVolume * 100).round()}%'),
                       ),
                       const SizedBox(height: 20),
-                      Text('??????ÂΩ±¬Ä??•¬Ä??, style: theme.textTheme.titleMedium),
+                      Text('Keys', style: theme.textTheme.titleMedium),
                       const SizedBox(height: 8),
                       Text(
                         _activeKeys.isEmpty
-                            ? '????ÂΩ±¬Ä??•¬Ä???? ???????±Ï∂ÆÔ¶ÑÍ≥å???øÎÄ????ÍøîÍ∫Ç???ÂΩ±¬Ä?úÍ≥∏???È•îÎÇÖ?????????îÎá°??????????ÊøöÎ∞∏√û??ßÎåÜ???ÍøîÍ∫Ç??????'
-                            : '????ÂΩ±¬Ä??•¬Ä???????????úÔßü????????Î∞∏Î∏∂?????Â£§Íµø???ìÎÇØ??????¨Í≥£Î´ñÔßù?????ÍøîÍ∫Ç??????',
+                            ? 'No keys selected. Leave all keys off to practice in free mode across every root.'
+                            : 'Selected keys are used for key-aware random mode and Smart Generator mode.',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -1550,7 +1552,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       SwitchListTile.adaptive(
                         contentPadding: EdgeInsets.zero,
                         title: const Text('Smart Generator Mode'),
-                        subtitle: const Text('?È•îÎÇÖ???????????Â´????????????•¬Ä?£Îü∫ ?????πÎïü??Ë≤´Ê≤Ö??????????πÎïüÔßíÎÖπ??????????????????????????È•îÎÇÖ???????????????ÅÏ°Ñ.'),
+                        subtitle: const Text(
+                          'Prioritizes functional harmonic motion while preserving the enabled non-diatonic options.',
+                        ),
                         value: _smartGeneratorMode,
                         onChanged: _usesKeyMode
                             ? (value) {
@@ -1622,7 +1626,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         key: const ValueKey('allow-tensions-toggle'),
                         contentPadding: EdgeInsets.zero,
                         title: const Text('Allow Tensions'),
-                        subtitle: const Text('Roman numeral profile and selected chips only'),
+                        subtitle: const Text(
+                          'Roman numeral profile and selected chips only',
+                        ),
                         value: _allowTensions,
                         onChanged: (value) {
                           setState(() {
@@ -1637,26 +1643,34 @@ class _MyHomePageState extends State<MyHomePage> {
                         runSpacing: 8,
                         children: ChordRenderingHelper.supportedTensionOptions
                             .map((tension) {
-                          return FilterChip(
-                            key: ValueKey('tension-chip-$tension'),
-                            label: Text(tension),
-                            selected: _selectedTensionOptions.contains(tension),
-                            showCheckmark: false,
-                            onSelected: _allowTensions
-                                ? (selected) {
-                                    setState(() {
-                                      if (selected) {
-                                        _selectedTensionOptions.add(tension);
-                                      } else {
-                                        _selectedTensionOptions.remove(tension);
+                              return FilterChip(
+                                key: ValueKey('tension-chip-$tension'),
+                                label: Text(tension),
+                                selected: _selectedTensionOptions.contains(
+                                  tension,
+                                ),
+                                showCheckmark: false,
+                                onSelected: _allowTensions
+                                    ? (selected) {
+                                        setState(() {
+                                          if (selected) {
+                                            _selectedTensionOptions.add(
+                                              tension,
+                                            );
+                                          } else {
+                                            _selectedTensionOptions.remove(
+                                              tension,
+                                            );
+                                          }
+                                          _reseedChordQueue();
+                                        });
                                       }
-                                      _reseedChordQueue();
-                                    });
-                                  }
-                                : null,
-                          );
-                        }).toList(),
-                      ),                    ],
+                                    : null,
+                              );
+                            })
+                            .toList(),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -1687,7 +1701,8 @@ class _MyHomePageState extends State<MyHomePage> {
         const SingleActivator(LogicalKeyboardKey.space): _advanceChordUnawaited,
         const SingleActivator(LogicalKeyboardKey.enter): _toggleAutoPlay,
         const SingleActivator(LogicalKeyboardKey.arrowUp): () => _adjustBpm(5),
-        const SingleActivator(LogicalKeyboardKey.arrowDown): () => _adjustBpm(-5),
+        const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
+            _adjustBpm(-5),
       },
       child: Focus(
         autofocus: true,
@@ -1702,7 +1717,7 @@ class _MyHomePageState extends State<MyHomePage> {
               IconButton(
                 onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
                 icon: const Icon(Icons.settings),
-                tooltip: '????•Ïã≤Í∞?Åî???,
+                tooltip: 'Settings',
               ),
             ],
           ),
@@ -1769,7 +1784,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                                 child: FittedBox(
                                                   fit: BoxFit.scaleDown,
                                                   child: Text(
-                                                    key: const ValueKey('current-chord-text'),
+                                                    key: const ValueKey(
+                                                      'current-chord-text',
+                                                    ),
                                                     currentDisplay,
                                                     style: theme
                                                         .textTheme
@@ -1818,10 +1835,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                             overflow: TextOverflow.ellipsis,
                                             style: theme.textTheme.titleSmall
                                                 ?.copyWith(
-                                              color: theme.colorScheme
-                                                  .onSurfaceVariant,
-                                              fontWeight: FontWeight.w700,
-                                            ),
+                                                  color: theme
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
                                           ),
                                         ),
                                       ),
@@ -1840,7 +1858,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   width: double.infinity,
                                   child: ElevatedButton(
                                     onPressed: _advanceChordUnawaited,
-                                    child: const Text('????•Ïã≤Í∞?Åî????????Î∞∏Î∏∂????),
+                                    child: const Text('Next Chord'),
                                   ),
                                 ),
                                 const SizedBox(height: 12),
@@ -1850,8 +1868,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                     onPressed: _toggleAutoPlay,
                                     child: Text(
                                       _autoRunning
-                                          ? '??????È•îÎÇÖ??????Ô¶´ÎöÆ?????????Íæ®„Åç???¨Í≥•Î£??'
-                                          : '??????È•îÎÇÖ??????Ô¶´ÎöÆ???????ÍøîÍ∫Ç???ÂΩ±¬Ä??∞ƒ?,
+                                          ? 'Stop Autoplay'
+                                          : 'Start Autoplay',
                                     ),
                                   ),
                                 ),
@@ -1862,7 +1880,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     IconButton.outlined(
                                       onPressed: () => _adjustBpm(-5),
                                       icon: const Icon(Icons.remove),
-                                      tooltip: 'BPM ???????,
+                                      tooltip: 'Decrease BPM',
                                     ),
                                     const SizedBox(width: 8),
                                     SizedBox(
@@ -1872,16 +1890,17 @@ class _MyHomePageState extends State<MyHomePage> {
                                         controller: _bpmController,
                                         keyboardType:
                                             const TextInputType.numberWithOptions(
-                                          signed: false,
-                                          decimal: false,
-                                        ),
+                                              signed: false,
+                                              decimal: false,
+                                            ),
                                         textInputAction: TextInputAction.done,
                                         textAlign: TextAlign.center,
                                         onChanged: _handleBpmChanged,
                                         onSubmitted: (_) => _normalizeBpm(),
                                         onTapOutside: (_) => _normalizeBpm(),
                                         inputFormatters: [
-                                          FilteringTextInputFormatter.digitsOnly,
+                                          FilteringTextInputFormatter
+                                              .digitsOnly,
                                           LengthLimitingTextInputFormatter(3),
                                         ],
                                         decoration: const InputDecoration(
@@ -1898,24 +1917,23 @@ class _MyHomePageState extends State<MyHomePage> {
                                     IconButton.outlined(
                                       onPressed: () => _adjustBpm(5),
                                       icon: const Icon(Icons.add),
-                                      tooltip: 'BPM ?????∫Î∏ç???Î™Ñƒ?????´‚ÄòÔß£??,
+                                      tooltip: 'Increase BPM',
                                     ),
                                     const SizedBox(width: 10),
                                     Text(
                                       'BPM',
-                                      style:
-                                          theme.textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  '???????ºÍµ£Â°???????? $_minBpm-$_maxBpm',
+                                  'Allowed range: -',
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                    color:
-                                        theme.colorScheme.onSurfaceVariant,
+                                    color: theme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               ],
@@ -1934,13 +1952,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-

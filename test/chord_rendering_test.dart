@@ -156,4 +156,3 @@ void main() {
     expect(rendered, 'G7sus4(b9)');
   });
 }
-
