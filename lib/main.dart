@@ -14,6 +14,7 @@ class GeneratedChord {
     this.romanNumeral,
     this.resolutionRomanNumeral,
     this.harmonicFunction = 'free',
+    this.smartDebug,
   });
 
   final String chord;
@@ -21,6 +22,7 @@ class GeneratedChord {
   final String? romanNumeral;
   final String? resolutionRomanNumeral;
   final String harmonicFunction;
+  final SmartGenerationDebug? smartDebug;
 
   bool get isAppliedDominant =>
       romanNumeral?.startsWith('V7/') == true ||
@@ -390,14 +392,55 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  GeneratedChord _buildGeneratedChord(String key, String romanNumeral) {
+  GeneratedChord _buildGeneratedChord(
+    String key,
+    String romanNumeral, {
+    SmartGenerationDebug? smartDebug,
+  }) {
+    final chord = _resolveChord(key, romanNumeral);
     return GeneratedChord(
-      chord: _resolveChord(key, romanNumeral),
+      chord: chord,
       keyName: key,
       romanNumeral: romanNumeral,
       resolutionRomanNumeral: _appliedResolutionMap[romanNumeral],
       harmonicFunction: _harmonicFunctionForRoman(romanNumeral),
+      smartDebug: smartDebug?.withFinalSelection(
+        finalKey: key,
+        finalRomanNumeral: romanNumeral,
+        finalChord: chord,
+      ),
     );
+  }
+
+  GeneratedChord _attachSmartDebug(
+    GeneratedChord chord,
+    SmartGenerationDebug smartDebug,
+  ) {
+    return GeneratedChord(
+      chord: chord.chord,
+      keyName: chord.keyName,
+      romanNumeral: chord.romanNumeral,
+      resolutionRomanNumeral: chord.resolutionRomanNumeral,
+      harmonicFunction: chord.harmonicFunction,
+      smartDebug: chord.keyName != null && chord.romanNumeral != null
+          ? smartDebug.withFinalSelection(
+              finalKey: chord.keyName!,
+              finalRomanNumeral: chord.romanNumeral!,
+              finalChord: chord.chord,
+            )
+          : smartDebug,
+    );
+  }
+
+  GeneratedChord _emitSmartDebug(GeneratedChord chord) {
+    assert(() {
+      final smartDebug = chord.smartDebug;
+      if (smartDebug != null) {
+        debugPrint(smartDebug.describe());
+      }
+      return true;
+    }());
+    return chord;
   }
 
   List<GeneratedChord> _buildKeyModeCandidates({
@@ -414,6 +457,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   GeneratedChord _pickUniformChord(List<GeneratedChord> candidates) {
     return candidates[_random.nextInt(candidates.length)];
+  }
+
+  String _pickFallbackDiatonicRoman(List<String> allowedDiatonicRomans) {
+    return allowedDiatonicRomans[_random.nextInt(allowedDiatonicRomans.length)];
   }
 
   GeneratedChord _generateRandomKeyModeChord({
@@ -460,6 +507,66 @@ class _MyHomePageState extends State<MyHomePage> {
     return _buildGeneratedChord(keys.first, _baseRomanNumerals.first);
   }
 
+  SmartTransitionSelection _selectNextDiatonicDestination({
+    required String currentRomanNumeral,
+    required List<String> allowedDiatonicRomans,
+  }) {
+    return SmartGeneratorHelper.selectNextRoman(
+      random: _random,
+      currentRomanNumeral: currentRomanNumeral,
+      allowedRomanNumerals: allowedDiatonicRomans,
+    );
+  }
+
+  SmartApproachDecision _maybeInsertAppliedApproach({
+    required String destinationRomanNumeral,
+  }) {
+    return SmartGeneratorHelper.maybeInsertAppliedApproach(
+      random: _random,
+      destinationRomanNumeral: destinationRomanNumeral,
+      secondaryDominantEnabled: _secondaryDominantEnabled,
+      substituteDominantEnabled: _substituteDominantEnabled,
+    );
+  }
+
+  AppliedResolutionDecision _resolveAppliedOrModulate({
+    required String currentKey,
+    required String appliedTargetRomanNumeral,
+    required List<String> allowedDiatonicRomans,
+    required List<String> modulationCandidateKeys,
+  }) {
+    return SmartGeneratorHelper.resolveAppliedOrModulate(
+      random: _random,
+      currentKey: currentKey,
+      appliedTargetRomanNumeral: appliedTargetRomanNumeral,
+      allowedDiatonicRomanNumerals: allowedDiatonicRomans,
+      modulationCandidateKeys: modulationCandidateKeys,
+    );
+  }
+
+  int? _keyTonicSemitone(String key) {
+    return _noteToSemitone[_extractChordRoot(key)];
+  }
+
+  List<String> _findCompatibleModulationKeys({
+    required List<String> keys,
+    required String currentKey,
+    required String resolutionRomanNumeral,
+  }) {
+    final targetChord = _resolveChord(currentKey, resolutionRomanNumeral);
+    final targetSemitone = _noteToSemitone[_extractChordRoot(targetChord)];
+    if (targetSemitone == null) {
+      return const [];
+    }
+
+    return SmartGeneratorHelper.findCompatibleModulationKeys(
+      activeKeys: keys,
+      currentKey: currentKey,
+      targetSemitone: targetSemitone,
+      keyTonicSemitoneResolver: _keyTonicSemitone,
+    );
+  }
+
   GeneratedChord _generateSmartChord({
     required List<String> keys,
     required List<String> romanNumerals,
@@ -477,52 +584,107 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     final currentKey = current.keyName!;
+    final currentRomanNumeral = current.romanNumeral!;
     final allowedDiatonicRomans = romanNumerals
         .where((romanNumeral) => _baseRomanNumerals.contains(romanNumeral))
         .toList();
 
-    // selection.debug.describe() is intentionally easy to inspect in the
-    // debugger when tuning Smart Mode bias.
-    final selection = SmartGeneratorHelper.selectNextRoman(
-      random: _random,
-      currentRomanNumeral: current.romanNumeral,
-      allowedRomanNumerals: allowedDiatonicRomans,
-    );
+    if (current.isAppliedDominant) {
+      final appliedTargetRomanNumeral = current.resolutionRomanNumeral ??
+          _pickFallbackDiatonicRoman(allowedDiatonicRomans);
+      final modulationCandidateKeys = _findCompatibleModulationKeys(
+        keys: keys,
+        currentKey: currentKey,
+        resolutionRomanNumeral: appliedTargetRomanNumeral,
+      );
+      final resolutionDecision = _resolveAppliedOrModulate(
+        currentKey: currentKey,
+        appliedTargetRomanNumeral: appliedTargetRomanNumeral,
+        allowedDiatonicRomans: allowedDiatonicRomans,
+        modulationCandidateKeys: modulationCandidateKeys,
+      );
+      final smartDebug = SmartGenerationDebug(
+        currentKey: currentKey,
+        currentRomanNumeral: currentRomanNumeral,
+        selectedDiatonicDestination: appliedTargetRomanNumeral,
+        insertedAppliedApproach: currentRomanNumeral,
+        appliedTargetRomanNumeral: appliedTargetRomanNumeral,
+        modulationCandidateKeys: modulationCandidateKeys,
+        finalKey: resolutionDecision.finalKey,
+        finalRomanNumeral: resolutionDecision.finalRomanNumeral,
+        decision: resolutionDecision.didModulate
+            ? 'modulated-via-applied-resolution'
+            : resolutionDecision.resolvedToTarget
+                ? 'resolved-applied-target'
+                : 'continued-after-applied',
+      );
+      final generatedChord = _buildGeneratedChord(
+        resolutionDecision.finalKey,
+        resolutionDecision.finalRomanNumeral,
+        smartDebug: smartDebug,
+      );
+      if (!excluding.contains(generatedChord.chord)) {
+        return _emitSmartDebug(generatedChord);
+      }
 
-    if (!selection.hasSelection) {
-      assert(() {
-        debugPrint(selection.debug.describe());
-        return true;
-      }());
-      return _generateRandomDiatonicChord(
+      final fallbackChord = _generateRandomDiatonicChord(
         keys: keys,
         excluding: excluding,
-        preferredKey: currentKey,
+        preferredKey: keys.contains(resolutionDecision.finalKey)
+            ? resolutionDecision.finalKey
+            : currentKey,
+      );
+      return _emitSmartDebug(
+        _attachSmartDebug(
+          fallbackChord,
+          smartDebug.withDecision('excluded-fallback'),
+        ),
       );
     }
 
+    final destinationSelection = _selectNextDiatonicDestination(
+      currentRomanNumeral: currentRomanNumeral,
+      allowedDiatonicRomans: allowedDiatonicRomans,
+    );
+    final selectedDiatonicDestination =
+        destinationSelection.selectedRomanNumeral ??
+            _pickFallbackDiatonicRoman(allowedDiatonicRomans);
+    final approachDecision = _maybeInsertAppliedApproach(
+      destinationRomanNumeral: selectedDiatonicDestination,
+    );
+    final smartDebug = SmartGenerationDebug(
+      currentKey: currentKey,
+      currentRomanNumeral: currentRomanNumeral,
+      selectedDiatonicDestination: selectedDiatonicDestination,
+      insertedAppliedApproach: approachDecision.insertedAppliedApproach,
+      appliedTargetRomanNumeral: approachDecision.appliedTargetRomanNumeral,
+      modulationCandidateKeys: const [],
+      finalKey: currentKey,
+      finalRomanNumeral: approachDecision.selectedRomanNumeral,
+      decision: approachDecision.insertedApproach
+          ? 'inserted-applied-approach'
+          : 'selected-diatonic-destination',
+      transitionDebugSummary: destinationSelection.debug.describe(),
+    );
     final generatedChord = _buildGeneratedChord(
       currentKey,
-      selection.selectedRomanNumeral!,
+      approachDecision.selectedRomanNumeral,
+      smartDebug: smartDebug,
     );
     if (!excluding.contains(generatedChord.chord)) {
-      return generatedChord;
+      return _emitSmartDebug(generatedChord);
     }
 
-    assert(() {
-      debugPrint(
-        selection.debug
-            .withFallbackReason(
-              'The weighted Roman numeral was excluded by the current queue.',
-            )
-            .describe(),
-      );
-      return true;
-    }());
-    return _generateRandomDiatonicChord(
+    final fallbackChord = _generateRandomDiatonicChord(
       keys: keys,
       excluding: excluding,
       preferredKey: currentKey,
+    );
+    return _emitSmartDebug(
+      _attachSmartDebug(
+        fallbackChord,
+        smartDebug.withDecision('excluded-fallback'),
+      ),
     );
   }
 
@@ -649,40 +811,66 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _toggleAutoPlay() {
-    if (_autoRunning) {
-      _autoTimer?.cancel();
-      setState(() {
-        _autoRunning = false;
-        _currentBeat = null;
-      });
-      return;
-    }
-
-    setState(() {
-      _autoRunning = true;
-      _currentBeat = null;
-    });
-    _handleAutoTickUnawaited();
+  void _scheduleAutoTimer() {
+    _autoTimer?.cancel();
     _autoTimer = Timer.periodic(
       Duration(milliseconds: (60000 / _effectiveBpm()).round()),
       (_) => _handleAutoTickUnawaited(),
     );
   }
+
+  void _stopAutoPlay({bool resetBeat = true}) {
+    _autoTimer?.cancel();
+    setState(() {
+      _autoRunning = false;
+      if (resetBeat) {
+        _currentBeat = null;
+      }
+    });
+  }
+
+  void _startAutoPlay() {
+    setState(() {
+      _autoRunning = true;
+      _currentBeat = null;
+    });
+    _handleAutoTickUnawaited();
+    _scheduleAutoTimer();
+  }
+
+  void _rescheduleAutoTimer() {
+    if (!_autoRunning) {
+      return;
+    }
+    _scheduleAutoTimer();
+  }
+
+  void _toggleAutoPlay() {
+    if (_autoRunning) {
+      _stopAutoPlay();
+      return;
+    }
+
+    _startAutoPlay();
+  }
+
   void _adjustBpm(int delta) {
     final next = (_effectiveBpm() + delta).clamp(_minBpm, _maxBpm);
     _bpmController.text = '$next';
-    if (_autoRunning) {
-      _autoTimer?.cancel();
-      _autoRunning = false;
-      _toggleAutoPlay();
-    } else {
-      setState(() {});
+    _rescheduleAutoTimer();
+    setState(() {});
+  }
+
+  void _handleBpmChanged(String value) {
+    if (_autoRunning && int.tryParse(value) != null) {
+      _rescheduleAutoTimer();
     }
+    setState(() {});
   }
 
   void _normalizeBpm() {
     _bpmController.text = '${_effectiveBpm()}';
+    _rescheduleAutoTimer();
     setState(() {});
   }
 
@@ -860,12 +1048,14 @@ class _MyHomePageState extends State<MyHomePage> {
                         title: const Text('Smart Generator Mode'),
                         subtitle: const Text('직전 화음과 해결 방향을 반영해 흐름을 더 자연스럽게 만듭니다.'),
                         value: _smartGeneratorMode,
-                        onChanged: (value) {
-                          setState(() {
-                            _smartGeneratorMode = value;
-                            _reseedChordQueue();
-                          });
-                        },
+                        onChanged: _usesKeyMode
+                            ? (value) {
+                                setState(() {
+                                  _smartGeneratorMode = value;
+                                  _reseedChordQueue();
+                                });
+                              }
+                            : null,
                       ),
                       const SizedBox(height: 12),
                       Text('Non-Diatonic', style: theme.textTheme.titleMedium),
@@ -878,23 +1068,27 @@ class _MyHomePageState extends State<MyHomePage> {
                             label: const Text('Secondary Dominant'),
                             selected: _secondaryDominantEnabled,
                             showCheckmark: false,
-                            onSelected: (selected) {
-                              setState(() {
-                                _secondaryDominantEnabled = selected;
-                                _reseedChordQueue();
-                              });
-                            },
+                            onSelected: _usesKeyMode
+                                ? (selected) {
+                                    setState(() {
+                                      _secondaryDominantEnabled = selected;
+                                      _reseedChordQueue();
+                                    });
+                                  }
+                                : null,
                           ),
                           FilterChip(
                             label: const Text('Substitute Dominant'),
                             selected: _substituteDominantEnabled,
                             showCheckmark: false,
-                            onSelected: (selected) {
-                              setState(() {
-                                _substituteDominantEnabled = selected;
-                                _reseedChordQueue();
-                              });
-                            },
+                            onSelected: _usesKeyMode
+                                ? (selected) {
+                                    setState(() {
+                                      _substituteDominantEnabled = selected;
+                                      _reseedChordQueue();
+                                    });
+                                  }
+                                : null,
                           ),
                         ],
                       ),
@@ -1011,6 +1205,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                 child: FittedBox(
                                                   fit: BoxFit.scaleDown,
                                                   child: Text(
+                                                    key: const ValueKey('current-chord-text'),
                                                     currentDisplay,
                                                     style: theme
                                                         .textTheme
@@ -1109,6 +1304,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     SizedBox(
                                       width: 96,
                                       child: TextField(
+                                        key: const ValueKey('bpm-input'),
                                         controller: _bpmController,
                                         keyboardType:
                                             const TextInputType.numberWithOptions(
@@ -1117,8 +1313,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                         ),
                                         textInputAction: TextInputAction.done,
                                         textAlign: TextAlign.center,
-                                        onChanged: (_) => setState(() {}),
+                                        onChanged: _handleBpmChanged,
                                         onSubmitted: (_) => _normalizeBpm(),
+                                        onTapOutside: (_) => _normalizeBpm(),
                                         inputFormatters: [
                                           FilteringTextInputFormatter.digitsOnly,
                                           LengthLimitingTextInputFormatter(3),
@@ -1173,6 +1370,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
-
-
