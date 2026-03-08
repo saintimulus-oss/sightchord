@@ -11,9 +11,9 @@ void main() {
     await tester.pump();
 
     expect(find.text('SightChord'), findsOneWidget);
-    expect(find.text('다음 코드'), findsOneWidget);
-    expect(find.text('자동 진행 시작'), findsOneWidget);
-    expect(find.text('랜덤 모드'), findsWidgets);
+    expect(find.text('?ㅼ쓬 肄붾뱶'), findsOneWidget);
+    expect(find.text('?먮룞 吏꾪뻾 ?쒖옉'), findsOneWidget);
+    expect(find.text('?쒕뜡 紐⑤뱶'), findsWidgets);
     expect(find.text('All Keys'), findsOneWidget);
     expect(find.text('60'), findsOneWidget);
   });
@@ -24,11 +24,11 @@ void main() {
     await tester.pumpWidget(const MyApp());
     await tester.pump();
 
-    await tester.tap(find.text('다음 코드'));
+    await tester.tap(find.text('?ㅼ쓬 肄붾뱶'));
     await tester.pump();
 
-    expect(find.text('자동 진행 시작'), findsOneWidget);
-    expect(find.text('입력 범위: 20-300'), findsOneWidget);
+    expect(find.text('?먮룞 吏꾪뻾 ?쒖옉'), findsOneWidget);
+    expect(find.text('?낅젰 踰붿쐞: 20-300'), findsOneWidget);
   });
 
   testWidgets('manual BPM entry updates the autoplay timer speed', (
@@ -37,26 +37,19 @@ void main() {
     await tester.pumpWidget(const MyApp());
     await tester.pump();
 
-    final currentChordFinder = find.byKey(
-      const ValueKey('current-chord-text'),
-    );
     final bpmInputFinder = find.byKey(const ValueKey('bpm-input'));
 
-    await tester.tap(find.text('자동 진행 시작'));
+    await tester.tap(find.text('?먮룞 吏꾪뻾 ?쒖옉'));
     await tester.pump();
 
-    final chordBeforeSpeedChange =
-        tester.widget<Text>(currentChordFinder).data;
+    expect(find.byKey(const ValueKey('beat-circle-0-active')), findsOneWidget);
 
     await tester.enterText(bpmInputFinder, '120');
     await tester.pump();
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 2100));
+    await tester.pump(const Duration(milliseconds: 1100));
 
-    final chordAfterSpeedChange =
-        tester.widget<Text>(currentChordFinder).data;
-
-    expect(chordAfterSpeedChange, isNot(equals(chordBeforeSpeedChange)));
+    expect(find.byKey(const ValueKey('beat-circle-1-active')), findsOneWidget);
   });
 }

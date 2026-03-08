@@ -294,7 +294,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ];
 
   List<String> get _practiceModeTags {
-    final tags = <String>[_usesKeyMode ? '조성 모드' : '랜덤 모드'];
+    final tags = <String>[_usesKeyMode ? '???怨쀫뮡??鶯ㅺ동????딅뭽??饔낅떽????ш낄?뉔뇡??? : '???꿔꺂???影瑜곸떻??饔낅떽????ш낄?뉔뇡???];
     if (_usesKeyMode) {
       tags.addAll(_orderedKeys);
       if (_smartGeneratorMode) {
@@ -316,20 +316,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String get _currentStatusLabel {
     if (_currentChord == null) {
-      return '코드를 생성해 보세요';
+      return '?????밸븶?????壤굿?쒓낯?????熬곣뫖利????????쇰뮛???????;
     }
     final analysisLabel = _currentChord!.analysisLabel;
-    return analysisLabel.isEmpty ? '랜덤 모드' : analysisLabel;
+    return analysisLabel.isEmpty ? '???꿔꺂???影瑜곸떻??饔낅떽????ш낄?뉔뇡??? : analysisLabel;
   }
 
   String get _practiceModeDescription {
     if (!_usesKeyMode) {
-      return '12개 음과 다양한 코드 성격에서 무작위로 코드를 생성합니다.';
+      return '12????????????關履????????밸븶??????關?쒎첎???亦껋꼨猷볠꽴????????嶺뚮Ĳ????????諛몃마??λ????????밸븶?????壤굿?쒓낯?????熬곣뫖利?????꿔꺂??????';
     }
     if (_smartGeneratorMode) {
-      return '선택한 키와 직전 화음 흐름을 바탕으로 더 자연스러운 진행을 우선 생성합니다.';
+      return '????影?력?????? ?饔낅떽??????????嫄??????????????썹땟戮녹???????????????????????ㅿ폎????饔낅떽?????嶺뚮ㅎ????????????? ???熬곣뫖利?????꿔꺂??????';
     }
-    return '선택한 키 안에서 다이아토닉 또는 옵션 화음을 생성합니다.';
+    return '????影?력??????????關履??????嚥싲갭큔?댁옃紐????熬곻퐢夷①뇾?????????????????嫄????????熬곣뫖利?????꿔꺂??????';
   }
 
   void _ensureChordQueueInitialized() {
@@ -877,6 +877,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildBeatCircle(int index) {
     final isActive = _currentBeat == index;
     return AnimatedContainer(
+      key: ValueKey("beat-circle-$index-${isActive ? 'active' : 'inactive'}"),
       duration: const Duration(milliseconds: 180),
       width: 12,
       height: 12,
@@ -901,7 +902,7 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _usesKeyMode ? '조성 기반 연습' : '랜덤 모드',
+              _usesKeyMode ? '???怨쀫뮡??鶯ㅺ동????딅뭽????????力?肉?????????' : '???꿔꺂???影瑜곸떻??饔낅떽????ш낄?뉔뇡???,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
@@ -927,7 +928,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const SizedBox(height: 10),
             Text(
-              'Space: 다음 코드  ·  Enter: 자동 진행 시작/중지  ·  Up/Down: BPM 조절',
+              'Space: ???嚥싲갭큔????????밸븶???? ?? Enter: ??????饔낅떽?????嶺뚮ㅎ??????꿔꺂???影?우Ŀ??關???꾨き??熬곥룊??  ?? Up/Down: BPM ???怨쀫뮡????,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -953,7 +954,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: [
                     const Expanded(
                       child: Text(
-                        '설정',
+                        '???嚥싲갭큔???,
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -963,7 +964,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     IconButton(
                       onPressed: () => Navigator.of(context).maybePop(),
                       icon: const Icon(Icons.close),
-                      tooltip: '닫기',
+                      tooltip: '???????,
                     ),
                   ],
                 ),
@@ -977,8 +978,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: [
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('메트로놈'),
-                        subtitle: Text(_metronomeEnabled ? '켜짐' : '꺼짐'),
+                        title: const Text('?饔낅떽????????猷산샵???꿔꺂?????),
+                        subtitle: Text(_metronomeEnabled ? '???袁⑸즴筌??븐눖釉? : '????????ル쵂??),
                         value: _metronomeEnabled,
                         onChanged: (value) {
                           setState(() {
@@ -988,13 +989,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        '설정은 즉시 반영됩니다.',
+                        '???嚥싲갭큔???? ?饔낅떽??影?곗몡嶺뚮??껆빊??????썹땟戮녹??????꿔꺂??????',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Text('메트로놈 볼륨', style: theme.textTheme.titleMedium),
+                      Text('?饔낅떽????????猷산샵???꿔꺂?????????쇰뮛????, style: theme.textTheme.titleMedium),
                       Slider(
                         value: _metronomeVolume,
                         onChanged: _metronomeEnabled
@@ -1010,12 +1011,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Text('${(_metronomeVolume * 100).round()}%'),
                       ),
                       const SizedBox(height: 20),
-                      Text('조 선택', style: theme.textTheme.titleMedium),
+                      Text('??????影?력??, style: theme.textTheme.titleMedium),
                       const SizedBox(height: 8),
                       Text(
                         _activeKeys.isEmpty
-                            ? '선택하지 않으면 랜덤 모드로 동작합니다.'
-                            : '선택한 키 안에서 코드를 생성합니다.',
+                            ? '????影?력???? ??????쇱춮濾곌풁?녿뀋????꿔꺂???影瑜곸떻??饔낅떽????ш낄?뉔뇡??????????濚밸Þ?쀧댆???꿔꺂??????'
+                            : '????影?력??????????關履????????밸븶?????壤굿?쒓낯?????熬곣뫖利?????꿔꺂??????',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -1046,7 +1047,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       SwitchListTile.adaptive(
                         contentPadding: EdgeInsets.zero,
                         title: const Text('Smart Generator Mode'),
-                        subtitle: const Text('직전 화음과 해결 방향을 반영해 흐름을 더 자연스럽게 만듭니다.'),
+                        subtitle: const Text('?饔낅떽??????????嫄???????????⑥ャ럺 ????썹땟??貫沅?????????썹땟戮녹??????????????????????????饔낅떽?????????????놁졄.'),
                         value: _smartGeneratorMode,
                         onChanged: _usesKeyMode
                             ? (value) {
@@ -1138,7 +1139,7 @@ class _MyHomePageState extends State<MyHomePage> {
               IconButton(
                 onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
                 icon: const Icon(Icons.settings),
-                tooltip: '설정',
+                tooltip: '???嚥싲갭큔???,
               ),
             ],
           ),
@@ -1276,7 +1277,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   width: double.infinity,
                                   child: ElevatedButton(
                                     onPressed: _advanceChordUnawaited,
-                                    child: const Text('다음 코드'),
+                                    child: const Text('???嚥싲갭큔????????밸븶????),
                                   ),
                                 ),
                                 const SizedBox(height: 12),
@@ -1286,8 +1287,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                     onPressed: _toggleAutoPlay,
                                     child: Text(
                                       _autoRunning
-                                          ? '자동 진행 중지'
-                                          : '자동 진행 시작',
+                                          ? '??????饔낅떽?????嶺뚮ㅎ????關???꾨き??熬곥룊??'
+                                          : '??????饔낅떽?????嶺뚮ㅎ??????꿔꺂???影?우Ŀ?,
                                     ),
                                   ),
                                 ),
@@ -1298,7 +1299,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     IconButton.outlined(
                                       onPressed: () => _adjustBpm(-5),
                                       icon: const Icon(Icons.remove),
-                                      tooltip: 'BPM 낮추기',
+                                      tooltip: 'BPM ???????,
                                     ),
                                     const SizedBox(width: 8),
                                     SizedBox(
@@ -1334,7 +1335,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     IconButton.outlined(
                                       onPressed: () => _adjustBpm(5),
                                       icon: const Icon(Icons.add),
-                                      tooltip: 'BPM 높이기',
+                                      tooltip: 'BPM ????遺븍き??몄Ŀ????ル‘泥??,
                                     ),
                                     const SizedBox(width: 10),
                                     Text(
@@ -1348,7 +1349,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  '입력 범위: $_minBpm-$_maxBpm',
+                                  '??????ㅼ굣塋??癲????? $_minBpm-$_maxBpm',
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color:
                                         theme.colorScheme.onSurfaceVariant,
