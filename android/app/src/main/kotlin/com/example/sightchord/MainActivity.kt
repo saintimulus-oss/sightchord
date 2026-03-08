@@ -1,0 +1,5 @@
+package com.example.sightchord
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity()
