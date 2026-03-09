@@ -3,10 +3,7 @@ import 'dart:math';
 import 'music/chord_theory.dart';
 
 class WeightedNextRoman {
-  const WeightedNextRoman({
-    required this.romanNumeralId,
-    required this.weight,
-  });
+  const WeightedNextRoman({required this.romanNumeralId, required this.weight});
 
   final RomanNumeralId romanNumeralId;
   final int weight;
@@ -558,7 +555,8 @@ class SmartGeneratorHelper {
     required Iterable<RomanNumeralId> allowedRomanNumerals,
   }) {
     final allowedSet = allowedRomanNumerals.toSet();
-    final configuredCandidates = majorDiatonicTransitions[currentRomanNumeralId];
+    final configuredCandidates =
+        majorDiatonicTransitions[currentRomanNumeralId];
 
     if (currentRomanNumeralId == null || configuredCandidates == null) {
       return SmartTransitionSelection(
@@ -615,7 +613,8 @@ class SmartGeneratorHelper {
           ? 0
           : substituteWeight == 0
           ? nonDiatonicVisibilityBoost
-          : (nonDiatonicVisibilityBoost * secondaryWeight ~/
+          : (nonDiatonicVisibilityBoost *
+                secondaryWeight ~/
                 totalAppliedWeight);
       final substituteBoost = substituteWeight == 0
           ? 0
@@ -661,15 +660,17 @@ class SmartGeneratorHelper {
     var remaining = roll;
     for (final candidate in candidates) {
       if (remaining < candidate.weight) {
-        final appliedType = candidate.romanNumeralId == destinationRomanNumeralId
+        final appliedType =
+            candidate.romanNumeralId == destinationRomanNumeralId
             ? null
             : _appliedTypeForRoman(candidate.romanNumeralId);
         return SmartApproachDecision(
           destinationRomanNumeralId: destinationRomanNumeralId,
           selectedRomanNumeralId: candidate.romanNumeralId,
           appliedType: appliedType,
-          appliedTargetRomanNumeralId:
-              appliedType == null ? null : destinationRomanNumeralId,
+          appliedTargetRomanNumeralId: appliedType == null
+              ? null
+              : destinationRomanNumeralId,
           roll: roll,
         );
       }
@@ -691,6 +692,9 @@ class SmartGeneratorHelper {
     required List<RomanNumeralId> allowedDiatonicRomanNumerals,
     required List<String> modulationCandidateKeys,
   }) {
+    // Current modulation only reinterprets an applied-dominant resolution into
+    // the destination key. Future: common-chord modulation via shared diatonic
+    // pivot chords, excluding dominants.
     final resolutionRoll = random.nextInt(100);
     if (resolutionRoll >= appliedResolutionChance) {
       final continuationSelection = selectNextRoman(
@@ -757,6 +761,8 @@ class SmartGeneratorHelper {
     required Random random,
     required SmartStepRequest request,
   }) {
+    // Surface-only tonic decoration: queue I7 -> I6 after a major-tonic arrival.
+    // This is not a general 6/m6/mM7/augM7 color-chord system.
     if (request.plannedQueue.isNotEmpty || request.currentPatternTag != null) {
       return const [];
     }
@@ -890,9 +896,9 @@ class SmartGeneratorHelper {
               ? 'resolved-applied-target'
               : 'continued-after-applied',
           plannedChordKind: PlannedChordKind.resolvedRoman,
-          finalSourceKind: MusicTheory
-              .specFor(resolutionDecision.finalRomanNumeralId)
-              .sourceKind,
+          finalSourceKind: MusicTheory.specFor(
+            resolutionDecision.finalRomanNumeralId,
+          ).sourceKind,
         ),
       );
     }
@@ -949,9 +955,9 @@ class SmartGeneratorHelper {
       request: request,
     );
     if (modalDecision != null) {
-      final finalSourceKind = MusicTheory
-          .specFor(modalDecision.selectedRomanNumeralId)
-          .sourceKind;
+      final finalSourceKind = MusicTheory.specFor(
+        modalDecision.selectedRomanNumeralId,
+      ).sourceKind;
       return SmartStepPlan(
         finalKey: request.currentKey,
         finalRomanNumeralId: modalDecision.selectedRomanNumeralId,
@@ -1005,7 +1011,8 @@ class SmartGeneratorHelper {
         selectedDiatonicDestination: selectedDestination,
         insertedAppliedApproach: approachDecision.insertedAppliedApproach,
         appliedType: approachDecision.appliedType,
-        appliedTargetRomanNumeralId: approachDecision.appliedTargetRomanNumeralId,
+        appliedTargetRomanNumeralId:
+            approachDecision.appliedTargetRomanNumeralId,
         finalKey: request.currentKey,
         finalRomanNumeralId: approachDecision.selectedRomanNumeralId,
         decision: approachDecision.insertedApproach
@@ -1013,9 +1020,9 @@ class SmartGeneratorHelper {
             : 'selected-diatonic-destination',
         transitionDebugSummary: destinationSelection.debug.describe(),
         plannedChordKind: PlannedChordKind.resolvedRoman,
-        finalSourceKind: MusicTheory
-            .specFor(approachDecision.selectedRomanNumeralId)
-            .sourceKind,
+        finalSourceKind: MusicTheory.specFor(
+          approachDecision.selectedRomanNumeralId,
+        ).sourceKind,
       ),
     );
   }
@@ -1032,7 +1039,8 @@ class SmartGeneratorHelper {
       return null;
     }
 
-    final pool = modalPoolByContext[request.currentHarmonicFunction] ??
+    final pool =
+        modalPoolByContext[request.currentHarmonicFunction] ??
         modalPoolByContext[HarmonicFunction.tonic]!;
     final selection = _selectWeightedCandidate(
       random: random,
@@ -1043,8 +1051,7 @@ class SmartGeneratorHelper {
           'Modal interchange candidates produced a non-positive total weight.',
     );
     final selectedRoman =
-        selection.selectedRomanNumeralId ??
-        RomanNumeralId.borrowedIvMin7;
+        selection.selectedRomanNumeralId ?? RomanNumeralId.borrowedIvMin7;
     final queuedFollowers = _queuedFollowersForModalSelection(
       random: random,
       selectedRomanNumeralId: selectedRoman,

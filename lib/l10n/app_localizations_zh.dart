@@ -88,7 +88,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get styleDeltaJazz => 'DeltaJazz';
 
   @override
-  String get allowV7sus4 => '允许 V7sus4';
+  String get allowV7sus4 => '允许 V7sus4（仅 V7、V7/x）';
 
   @override
   String get allowTensions => '允许张力音';
@@ -103,7 +103,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enableInversions => '启用转位';
 
   @override
-  String get inversionHelp => '在和弦确定后以斜杠低音的形式显示。';
+  String get inversionHelp => '在和弦确定后随机应用斜杠低音显示，不跟踪前一个低音进行。';
 
   @override
   String get firstInversion => '第一转位';
@@ -259,7 +259,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get styleDeltaJazz => 'DeltaJazz';
 
   @override
-  String get allowV7sus4 => '允许 V7sus4';
+  String get allowV7sus4 => '允许 V7sus4（仅 V7、V7/x）';
 
   @override
   String get allowTensions => '允许张力音';
@@ -274,7 +274,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get enableInversions => '启用转位';
 
   @override
-  String get inversionHelp => '在和弦确定后以斜杠低音的形式显示。';
+  String get inversionHelp => '在和弦确定后随机应用斜杠低音显示，不跟踪前一个低音进行。';
 
   @override
   String get firstInversion => '第一转位';

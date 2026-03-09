@@ -90,7 +90,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get styleDeltaJazz => 'DeltaJazz';
 
   @override
-  String get allowV7sus4 => 'V7sus4 허용';
+  String get allowV7sus4 => 'V7sus4 허용 (V7, V7/x)';
 
   @override
   String get allowTensions => '텐션 허용';
@@ -105,7 +105,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get enableInversions => '전위 사용';
 
   @override
-  String get inversionHelp => '코드가 결정된 뒤 슬래시 베이스 표기로 적용합니다.';
+  String get inversionHelp =>
+      '코드가 결정된 뒤 임의 슬래시 베이스 표기로 적용하며, 이전 베이스 진행은 추적하지 않습니다.';
 
   @override
   String get firstInversion => '1전위';

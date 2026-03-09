@@ -11,18 +11,21 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  Future<void> pumpApp(WidgetTester tester) async {
+  Future<void> pumpAppWithSettings(
+    WidgetTester tester,
+    PracticeSettings settings,
+  ) async {
     await tester.pumpWidget(
-      MyApp(
-        controller: AppSettingsController(
-          initialSettings: PracticeSettings(),
-        ),
-      ),
+      MyApp(controller: AppSettingsController(initialSettings: settings)),
     );
     await tester.pumpAndSettle();
   }
 
-  testWidgets('renders practice UI and rendering controls', (
+  Future<void> pumpApp(WidgetTester tester) async {
+    await pumpAppWithSettings(tester, PracticeSettings());
+  }
+
+  testWidgets('hides Roman-numeral tension controls in free mode', (
     WidgetTester tester,
   ) async {
     await pumpApp(tester);
@@ -34,12 +37,39 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('allow-v7sus4-chip')), findsOneWidget);
-    expect(find.byKey(const ValueKey('allow-tensions-toggle')), findsOneWidget);
-    expect(find.byKey(const ValueKey('tension-chip-9')), findsOneWidget);
+    expect(
+      tester
+          .widget<FilterChip>(find.byKey(const ValueKey('allow-v7sus4-chip')))
+          .onSelected,
+      isNull,
+    );
+    expect(find.byKey(const ValueKey('allow-tensions-toggle')), findsNothing);
+    expect(find.byKey(const ValueKey('tension-chip-9')), findsNothing);
     expect(
       find.byKey(const ValueKey('modal-interchange-chip')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('shows tension controls when key mode is active', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(
+      tester,
+      PracticeSettings(activeKeys: const {'C'}),
+    );
+
+    await tester.tap(find.byIcon(Icons.settings));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<FilterChip>(find.byKey(const ValueKey('allow-v7sus4-chip')))
+          .onSelected,
+      isNotNull,
+    );
+    expect(find.byKey(const ValueKey('allow-tensions-toggle')), findsOneWidget);
+    expect(find.byKey(const ValueKey('tension-chip-9')), findsOneWidget);
   });
 
   testWidgets('manual advance keeps the practice UI responsive', (

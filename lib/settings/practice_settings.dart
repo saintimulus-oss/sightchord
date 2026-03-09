@@ -4,6 +4,8 @@ import '../music/chord_theory.dart';
 
 enum AppLanguage { en, es, zhHans, ja, ko }
 
+enum MetronomeSound { tick, tickB, tickC, tickD, tickE, tickF }
+
 extension AppLanguageX on AppLanguage {
   Locale get locale {
     switch (this) {
@@ -58,6 +60,66 @@ extension AppLanguageX on AppLanguage {
   }
 }
 
+extension MetronomeSoundX on MetronomeSound {
+  String get storageKey {
+    switch (this) {
+      case MetronomeSound.tick:
+        return 'tick';
+      case MetronomeSound.tickB:
+        return 'tickB';
+      case MetronomeSound.tickC:
+        return 'tickC';
+      case MetronomeSound.tickD:
+        return 'tickD';
+      case MetronomeSound.tickE:
+        return 'tickE';
+      case MetronomeSound.tickF:
+        return 'tickF';
+    }
+  }
+
+  String get assetFileName {
+    switch (this) {
+      case MetronomeSound.tick:
+        return 'tick.mp3';
+      case MetronomeSound.tickB:
+        return 'tickB.mp3';
+      case MetronomeSound.tickC:
+        return 'tickC.mp3';
+      case MetronomeSound.tickD:
+        return 'tickD.mp3';
+      case MetronomeSound.tickE:
+        return 'tickE.mp3';
+      case MetronomeSound.tickF:
+        return 'tickF.mp3';
+    }
+  }
+
+  String get label {
+    switch (this) {
+      case MetronomeSound.tick:
+        return 'Classic';
+      case MetronomeSound.tickB:
+        return 'Click B';
+      case MetronomeSound.tickC:
+        return 'Click C';
+      case MetronomeSound.tickD:
+        return 'Click D';
+      case MetronomeSound.tickE:
+        return 'Click E';
+      case MetronomeSound.tickF:
+        return 'Click F';
+    }
+  }
+
+  static MetronomeSound fromStorageKey(String? value) {
+    return MetronomeSound.values.firstWhere(
+      (sound) => sound.storageKey == value,
+      orElse: () => MetronomeSound.tick,
+    );
+  }
+}
+
 class InversionSettings {
   const InversionSettings({
     this.enabled = false,
@@ -108,6 +170,7 @@ class PracticeSettings {
     this.language = AppLanguage.en,
     this.metronomeEnabled = true,
     this.metronomeVolume = 1,
+    this.metronomeSound = MetronomeSound.tick,
     Set<String>? activeKeys,
     this.smartGeneratorMode = false,
     this.secondaryDominantEnabled = false,
@@ -129,6 +192,7 @@ class PracticeSettings {
   final AppLanguage language;
   final bool metronomeEnabled;
   final double metronomeVolume;
+  final MetronomeSound metronomeSound;
   final Set<String> activeKeys;
   final bool smartGeneratorMode;
   final bool secondaryDominantEnabled;
@@ -148,6 +212,7 @@ class PracticeSettings {
     AppLanguage? language,
     bool? metronomeEnabled,
     double? metronomeVolume,
+    MetronomeSound? metronomeSound,
     Set<String>? activeKeys,
     bool? smartGeneratorMode,
     bool? secondaryDominantEnabled,
@@ -164,6 +229,7 @@ class PracticeSettings {
       language: language ?? this.language,
       metronomeEnabled: metronomeEnabled ?? this.metronomeEnabled,
       metronomeVolume: metronomeVolume ?? this.metronomeVolume,
+      metronomeSound: metronomeSound ?? this.metronomeSound,
       activeKeys: activeKeys ?? this.activeKeys,
       smartGeneratorMode: smartGeneratorMode ?? this.smartGeneratorMode,
       secondaryDominantEnabled:

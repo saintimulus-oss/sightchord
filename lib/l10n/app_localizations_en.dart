@@ -95,7 +95,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get styleDeltaJazz => 'DeltaJazz';
 
   @override
-  String get allowV7sus4 => 'Allow V7sus4';
+  String get allowV7sus4 => 'Allow V7sus4 (V7, V7/x)';
 
   @override
   String get allowTensions => 'Allow Tensions';
@@ -111,7 +111,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inversionHelp =>
-      'Applies slash-bass rendering after the chord is chosen.';
+      'Random slash-bass rendering after chord selection; it does not track the previous bass.';
 
   @override
   String get firstInversion => '1st Inversion';

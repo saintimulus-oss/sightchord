@@ -1,6 +1,12 @@
 enum AppliedType { secondary, substitute }
 
-enum PlannedChordKind { resolvedRoman, tonicDominant7, tonicSix }
+enum PlannedChordKind {
+  resolvedRoman,
+  // Surface-only major-tonic line-cliche variant (I7).
+  tonicDominant7,
+  // Surface-only major-tonic line-cliche variant (I6), not a full 6/m6/mM7/augM7 system.
+  tonicSix,
+}
 
 enum ChordQuality {
   majorTriad,
@@ -239,7 +245,10 @@ class ChordToneFormulaLibrary {
   static List<int> validInversionsFor(ChordQuality quality) {
     final chordSize = formulaFor(quality).length;
     final maxInversion = chordSize > 4 ? 3 : chordSize - 1;
-    return [for (var inversion = 1; inversion <= maxInversion; inversion += 1) inversion];
+    return [
+      for (var inversion = 1; inversion <= maxInversion; inversion += 1)
+        inversion,
+    ];
   }
 }
 
@@ -579,6 +588,20 @@ class MusicTheory {
   static String romanTokenOf(RomanNumeralId romanNumeralId) =>
       specFor(romanNumeralId).token;
 
+  static const int diatonicV7sus4Chance = 7;
+  static const int appliedV7sus4Chance = 4;
+
+  static int v7sus4ChanceForRoman(RomanNumeralId romanNumeralId) {
+    if (romanNumeralId == RomanNumeralId.vDom7) {
+      return diatonicV7sus4Chance;
+    }
+    if (specFor(romanNumeralId).sourceKind ==
+        ChordSourceKind.secondaryDominant) {
+      return appliedV7sus4Chance;
+    }
+    return 0;
+  }
+
   static int? keyTonicSemitone(String key) {
     final tonicRoot = _majorScaleRootsByKey[key]?.first;
     return tonicRoot == null ? null : noteToSemitone[tonicRoot];
@@ -665,7 +688,8 @@ class MusicTheory {
           return scale[0];
         }
         final targetRoot = resolveChordRoot(key, targetId);
-        final isSubstitute = spec.sourceKind == ChordSourceKind.substituteDominant;
+        final isSubstitute =
+            spec.sourceKind == ChordSourceKind.substituteDominant;
         return _resolveAppliedDominantRoot(
           key: key,
           targetRoot: targetRoot,
@@ -679,10 +703,7 @@ class MusicTheory {
     if (tonicSemitone == null) {
       return 'C';
     }
-    return spellPitch(
-      (tonicSemitone + semitoneOffset) % 12,
-      preferFlat: true,
-    );
+    return spellPitch((tonicSemitone + semitoneOffset) % 12, preferFlat: true);
   }
 
   static String _resolveAppliedDominantRoot({
@@ -717,9 +738,13 @@ class MusicTheory {
         return ChordQuality.six;
       case PlannedChordKind.resolvedRoman:
         final baseQuality = specFor(romanNumeralId).quality;
-        if (allowV7sus4 &&
-            baseQuality == ChordQuality.dominant7 &&
-            randomRoll < 5) {
+        // Limit sus4 rendering to canonical V7 and applied V7/x identities.
+        final sus4Chance = allowV7sus4
+            ? v7sus4ChanceForRoman(romanNumeralId)
+            : 0;
+        if (baseQuality == ChordQuality.dominant7 &&
+            sus4Chance > 0 &&
+            randomRoll < sus4Chance) {
           return ChordQuality.dominant7sus4;
         }
         return baseQuality;

@@ -264,7 +264,7 @@ abstract class AppLocalizations {
   /// No description provided for @allowV7sus4.
   ///
   /// In en, this message translates to:
-  /// **'Allow V7sus4'**
+  /// **'Allow V7sus4 (V7, V7/x)'**
   String get allowV7sus4;
 
   /// No description provided for @allowTensions.
@@ -294,7 +294,7 @@ abstract class AppLocalizations {
   /// No description provided for @inversionHelp.
   ///
   /// In en, this message translates to:
-  /// **'Applies slash-bass rendering after the chord is chosen.'**
+  /// **'Random slash-bass rendering after chord selection; it does not track the previous bass.'**
   String get inversionHelp;
 
   /// No description provided for @firstInversion.

@@ -91,7 +91,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get styleDeltaJazz => 'DeltaJazz';
 
   @override
-  String get allowV7sus4 => 'V7sus4 を許可';
+  String get allowV7sus4 => 'V7sus4 を許可 (V7, V7/x)';
 
   @override
   String get allowTensions => 'テンションを許可';
@@ -106,7 +106,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get enableInversions => '転回形を有効化';
 
   @override
-  String get inversionHelp => 'コード決定後にスラッシュベース表記を適用します。';
+  String get inversionHelp => 'コード決定後にランダムなスラッシュベース表記を適用します。前のベース進行は追跡しません。';
 
   @override
   String get firstInversion => '第1転回形';

@@ -158,6 +158,65 @@ void main() {
     });
   });
 
+  group('V7sus4 gating', () {
+    test('allows diatonic V7 to render as sus4', () {
+      expect(
+        MusicTheory.resolveRenderQuality(
+          romanNumeralId: RomanNumeralId.vDom7,
+          plannedChordKind: PlannedChordKind.resolvedRoman,
+          allowV7sus4: true,
+          randomRoll: 0,
+        ),
+        ChordQuality.dominant7sus4,
+      );
+    });
+
+    test('allows applied V7/x to render as sus4', () {
+      expect(
+        MusicTheory.resolveRenderQuality(
+          romanNumeralId: RomanNumeralId.secondaryOfV,
+          plannedChordKind: PlannedChordKind.resolvedRoman,
+          allowV7sus4: true,
+          randomRoll: 0,
+        ),
+        ChordQuality.dominant7sus4,
+      );
+    });
+
+    test('gives diatonic V7 a higher sus4 chance than V7/x', () {
+      expect(
+        MusicTheory.v7sus4ChanceForRoman(RomanNumeralId.vDom7),
+        greaterThan(
+          MusicTheory.v7sus4ChanceForRoman(RomanNumeralId.secondaryOfV),
+        ),
+      );
+    });
+
+    test('blocks substitute dominant from rendering as sus4', () {
+      expect(
+        MusicTheory.resolveRenderQuality(
+          romanNumeralId: RomanNumeralId.substituteOfV,
+          plannedChordKind: PlannedChordKind.resolvedRoman,
+          allowV7sus4: true,
+          randomRoll: 0,
+        ),
+        ChordQuality.dominant7,
+      );
+    });
+
+    test('blocks modal-interchange dominant from rendering as sus4', () {
+      expect(
+        MusicTheory.resolveRenderQuality(
+          romanNumeralId: RomanNumeralId.borrowedFlatVII7,
+          plannedChordKind: PlannedChordKind.resolvedRoman,
+          allowV7sus4: true,
+          randomRoll: 0,
+        ),
+        ChordQuality.dominant7,
+      );
+    });
+  });
+
   group('Inversions', () {
     test('renders major seventh slash chords', () {
       final settings = const InversionSettings(
@@ -225,23 +284,26 @@ void main() {
       );
     });
 
-    test('falls back to root position when only invalid inversion is enabled', () {
-      final result = ChordRenderingHelper.maybeApplyInversion(
-        random: _SequenceRandom([0, 0]),
-        symbolData: _symbol('C', ChordQuality.majorTriad),
-        inversionSettings: const InversionSettings(
-          enabled: true,
-          firstInversionEnabled: false,
-          secondInversionEnabled: false,
-          thirdInversionEnabled: true,
-        ),
-      );
+    test(
+      'falls back to root position when only invalid inversion is enabled',
+      () {
+        final result = ChordRenderingHelper.maybeApplyInversion(
+          random: _SequenceRandom([0, 0]),
+          symbolData: _symbol('C', ChordQuality.majorTriad),
+          inversionSettings: const InversionSettings(
+            enabled: true,
+            firstInversionEnabled: false,
+            secondInversionEnabled: false,
+            thirdInversionEnabled: true,
+          ),
+        );
 
-      expect(
-        ChordSymbolFormatter.format(result, ChordSymbolStyle.majText),
-        'C',
-      );
-    });
+        expect(
+          ChordSymbolFormatter.format(result, ChordSymbolStyle.majText),
+          'C',
+        );
+      },
+    );
   });
 
   group('Tensions', () {
@@ -256,6 +318,69 @@ void main() {
       );
 
       expect(tensions, ['9', '#11']);
+    });
+
+    test('does not mark IVmaj7 sharp eleven as rendered non-diatonic', () {
+      final selection = ChordRenderingHelper.buildRenderingSelection(
+        random: _FixedRandom(0),
+        root: 'F',
+        harmonicQuality: ChordQuality.major7,
+        renderQuality: ChordQuality.major7,
+        romanNumeralId: RomanNumeralId.ivMaj7,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        sourceKind: ChordSourceKind.diatonic,
+        allowTensions: true,
+        selectedTensionOptions: {'#11'},
+        suppressTensions: false,
+        inversionSettings: const InversionSettings(),
+      );
+
+      expect(selection.symbolData.tensions, ['#11']);
+      expect(selection.isRenderedNonDiatonic, isFalse);
+    });
+
+    test(
+      'honors suppressTensions when an exception requests a clean surface',
+      () {
+        final selection = ChordRenderingHelper.buildRenderingSelection(
+          random: _FixedRandom(0),
+          root: 'G',
+          harmonicQuality: ChordQuality.dominant7,
+          renderQuality: ChordQuality.dominant7,
+          romanNumeralId: RomanNumeralId.vDom7,
+          plannedChordKind: PlannedChordKind.resolvedRoman,
+          sourceKind: ChordSourceKind.diatonic,
+          allowTensions: true,
+          selectedTensionOptions: {'9', '#11'},
+          suppressTensions: true,
+          inversionSettings: const InversionSettings(),
+        );
+
+        expect(selection.symbolData.tensions, isEmpty);
+      },
+    );
+  });
+
+  group('Repeat guard', () {
+    test('free mode keeps same quality available across different roots', () {
+      final cMajor = ChordRenderingHelper.buildRepeatGuardKey(
+        keyName: null,
+        romanNumeralId: null,
+        harmonicFunction: HarmonicFunction.free,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        symbolData: _symbol('C', ChordQuality.major7),
+        sourceKind: ChordSourceKind.free,
+      );
+      final dMajor = ChordRenderingHelper.buildRepeatGuardKey(
+        keyName: null,
+        romanNumeralId: null,
+        harmonicFunction: HarmonicFunction.free,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        symbolData: _symbol('D', ChordQuality.major7),
+        sourceKind: ChordSourceKind.free,
+      );
+
+      expect(cMajor, isNot(dMajor));
     });
   });
 }

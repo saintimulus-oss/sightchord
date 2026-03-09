@@ -71,11 +71,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({
-    super.key,
-    required this.title,
-    required this.controller,
-  });
+  const MyHomePage({super.key, required this.title, required this.controller});
 
   final String title;
   final AppSettingsController controller;
@@ -88,7 +84,6 @@ class _MyHomePageState extends State<MyHomePage> {
   static const int _minBpm = 20;
   static const int _maxBpm = 300;
   static const int _beatsPerBar = 4;
-  static const String _tickAsset = 'tick.mp3';
 
   final Random _random = Random();
   final AudioPlayer _audioPlayer = AudioPlayer();
@@ -119,8 +114,17 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _initAudio() async {
     try {
       await _audioPlayer.setReleaseMode(ReleaseMode.stop);
-      await _audioPlayer.setSource(AssetSource(_tickAsset));
+      await _loadMetronomeSound(_settings.metronomeSound);
       await _audioPlayer.setVolume(_settings.metronomeVolume);
+    } catch (_) {
+      _audioReady = false;
+    }
+  }
+
+  Future<void> _loadMetronomeSound(MetronomeSound sound) async {
+    try {
+      await _audioPlayer.stop();
+      await _audioPlayer.setSource(AssetSource(sound.assetFileName));
       _audioReady = true;
     } catch (_) {
       _audioReady = false;
@@ -144,6 +148,9 @@ class _MyHomePageState extends State<MyHomePage> {
     bool reseed = false,
     bool syncBpmText = false,
   }) {
+    if (nextSettings.metronomeSound != _settings.metronomeSound) {
+      _audioInitFuture = _loadMetronomeSound(nextSettings.metronomeSound);
+    }
     unawaited(widget.controller.update(nextSettings));
     setState(() {
       if (syncBpmText) {
@@ -156,9 +163,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   List<String> _practiceModeTags(AppLocalizations l10n) {
-    final tags = <String>[
-      _usesKeyMode ? l10n.keyModeTag : l10n.freeModeTag,
-    ];
+    final tags = <String>[_usesKeyMode ? l10n.keyModeTag : l10n.freeModeTag];
     if (_usesKeyMode) {
       tags.addAll(_orderedKeys);
       if (_settings.smartGeneratorMode) {
@@ -178,9 +183,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     tags.add('${_effectiveBpm()} BPM');
     tags.add(
-      _settings.metronomeEnabled
-          ? l10n.metronomeOnTag
-          : l10n.metronomeOffTag,
+      _settings.metronomeEnabled ? l10n.metronomeOnTag : l10n.metronomeOffTag,
     );
     return tags;
   }
@@ -261,10 +264,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }) {
     if (!_usesKeyMode) {
       while (true) {
-        final root = MusicTheory.freeModeRoots[
-            _random.nextInt(MusicTheory.freeModeRoots.length)];
-        final quality = MusicTheory.freeModeQualities[
-            _random.nextInt(MusicTheory.freeModeQualities.length)];
+        final root = MusicTheory
+            .freeModeRoots[_random.nextInt(MusicTheory.freeModeRoots.length)];
+        final quality =
+            MusicTheory.freeModeQualities[_random.nextInt(
+              MusicTheory.freeModeQualities.length,
+            )];
         final generatedChord = _buildFreeGeneratedChord(root, quality);
         if (!_isExcludedCandidate(generatedChord, exclusionContext)) {
           return generatedChord;
@@ -293,12 +298,8 @@ class _MyHomePageState extends State<MyHomePage> {
     SmartGenerationDebug? smartDebug,
     bool wasExcludedFallback = false,
   }) {
-    final renderQuality =
-        quality == ChordQuality.dominant7 &&
-            _settings.allowV7sus4 &&
-            _random.nextInt(100) < ChordRenderingHelper.dominantSus4Chance
-        ? ChordQuality.dominant7sus4
-        : quality;
+    // Free mode has no Roman identity, so V7sus4 stays unavailable here.
+    final renderQuality = quality;
     final renderingSelection = ChordRenderingHelper.buildRenderingSelection(
       random: _random,
       root: root,
@@ -530,7 +531,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 weight: entry.value,
               );
             }(),
-      ].whereType<_WeightedGeneratedChordCandidate>().toList();
+    ].whereType<_WeightedGeneratedChordCandidate>().toList();
   }
 
   GeneratedChord _pickWeightedChord(
@@ -587,8 +588,7 @@ class _MyHomePageState extends State<MyHomePage> {
       exclusionContext: exclusionContext,
     );
     if (preferredCandidates.isNotEmpty) {
-      return preferredCandidates[
-              _random.nextInt(preferredCandidates.length)]
+      return preferredCandidates[_random.nextInt(preferredCandidates.length)]
           .chord;
     }
 
@@ -606,8 +606,7 @@ class _MyHomePageState extends State<MyHomePage> {
       exclusionContext: exclusionContext,
     );
     if (fallbackCandidates.isNotEmpty) {
-      return fallbackCandidates[
-              _random.nextInt(fallbackCandidates.length)]
+      return fallbackCandidates[_random.nextInt(fallbackCandidates.length)]
           .chord;
     }
 
@@ -852,10 +851,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _adjustBpm(int delta) {
     final next = (_effectiveBpm() + delta).clamp(_minBpm, _maxBpm);
-    _applySettings(
-      _settings.copyWith(bpm: next),
-      syncBpmText: true,
-    );
+    _applySettings(_settings.copyWith(bpm: next), syncBpmText: true);
     _rescheduleAutoTimer();
   }
 
@@ -868,17 +864,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _normalizeBpm() {
     final normalized = _effectiveBpm();
-    _applySettings(
-      _settings.copyWith(bpm: normalized),
-      syncBpmText: true,
-    );
+    _applySettings(_settings.copyWith(bpm: normalized), syncBpmText: true);
     _rescheduleAutoTimer();
   }
 
   Widget _buildBeatCircle(int index) {
     final isActive = _currentBeat == index;
     return AnimatedContainer(
-      key: ValueKey("beat-circle-$index-${isActive ? 'active' : 'inactive'}"),
+      key: ValueKey('beat-circle-$index'),
       duration: const Duration(milliseconds: 180),
       width: 12,
       height: 12,
@@ -1035,6 +1028,32 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      DropdownButtonFormField<MetronomeSound>(
+                        key: const ValueKey('metronome-sound-selector'),
+                        initialValue: _settings.metronomeSound,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'Metronome Sound',
+                        ),
+                        items: MetronomeSound.values
+                            .map(
+                              (sound) => DropdownMenuItem<MetronomeSound>(
+                                value: sound,
+                                child: Text(sound.label),
+                              ),
+                            )
+                            .toList(growable: false),
+                        onChanged: (value) {
+                          if (value == null) {
+                            return;
+                          }
+                          _applySettings(
+                            _settings.copyWith(metronomeSound: value),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16),
                       Text(
                         l10n.metronomeVolume,
                         style: theme.textTheme.titleMedium,
@@ -1058,7 +1077,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       const SizedBox(height: 24),
                       _buildSettingsSectionTitle(l10n.keys),
                       Text(
-                        _usesKeyMode ? l10n.keysSelectedHelp : l10n.noKeysSelected,
+                        _usesKeyMode
+                            ? l10n.keysSelectedHelp
+                            : l10n.noKeysSelected,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -1073,7 +1094,9 @@ class _MyHomePageState extends State<MyHomePage> {
                             selected: _settings.activeKeys.contains(key),
                             showCheckmark: false,
                             onSelected: (selected) {
-                              final nextKeys = <String>{..._settings.activeKeys};
+                              final nextKeys = <String>{
+                                ..._settings.activeKeys,
+                              };
                               if (selected) {
                                 nextKeys.add(key);
                               } else {
@@ -1100,9 +1123,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         onChanged: _usesKeyMode
                             ? (value) {
                                 _applySettings(
-                                  _settings.copyWith(
-                                    smartGeneratorMode: value,
-                                  ),
+                                  _settings.copyWith(smartGeneratorMode: value),
                                   reseed: true,
                                 );
                               }
@@ -1215,7 +1236,10 @@ class _MyHomePageState extends State<MyHomePage> {
                             };
                             return Align(
                               alignment: Alignment.centerLeft,
-                              child: Text(label, overflow: TextOverflow.ellipsis),
+                              child: Text(
+                                label,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             );
                           }).toList();
                         },
@@ -1238,65 +1262,69 @@ class _MyHomePageState extends State<MyHomePage> {
                             label: Text(l10n.allowV7sus4),
                             selected: _settings.allowV7sus4,
                             showCheckmark: false,
-                            onSelected: (selected) {
-                              _applySettings(
-                                _settings.copyWith(allowV7sus4: selected),
-                                reseed: true,
-                              );
-                            },
+                            onSelected: _usesKeyMode
+                                ? (selected) {
+                                    _applySettings(
+                                      _settings.copyWith(allowV7sus4: selected),
+                                      reseed: true,
+                                    );
+                                  }
+                                : null,
                           ),
                         ],
                       ),
                       const SizedBox(height: 12),
-                      SwitchListTile.adaptive(
-                        key: const ValueKey('allow-tensions-toggle'),
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(l10n.allowTensions),
-                        subtitle: Text(l10n.tensionHelp),
-                        value: _settings.allowTensions,
-                        onChanged: (value) {
-                          _applySettings(
-                            _settings.copyWith(allowTensions: value),
-                            reseed: true,
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: ChordRenderingHelper.supportedTensionOptions
-                            .map((tension) {
-                              return FilterChip(
-                                key: ValueKey('tension-chip-$tension'),
-                                label: Text(tension),
-                                selected: _settings.selectedTensionOptions
-                                    .contains(tension),
-                                showCheckmark: false,
-                                onSelected: _settings.allowTensions
-                                    ? (selected) {
-                                        final nextTensions = <String>{
-                                          ..._settings.selectedTensionOptions,
-                                        };
-                                        if (selected) {
-                                          nextTensions.add(tension);
-                                        } else {
-                                          nextTensions.remove(tension);
+                      if (_usesKeyMode) ...[
+                        SwitchListTile.adaptive(
+                          key: const ValueKey('allow-tensions-toggle'),
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(l10n.allowTensions),
+                          subtitle: Text(l10n.tensionHelp),
+                          value: _settings.allowTensions,
+                          onChanged: (value) {
+                            _applySettings(
+                              _settings.copyWith(allowTensions: value),
+                              reseed: true,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: ChordRenderingHelper.supportedTensionOptions
+                              .map((tension) {
+                                return FilterChip(
+                                  key: ValueKey('tension-chip-$tension'),
+                                  label: Text(tension),
+                                  selected: _settings.selectedTensionOptions
+                                      .contains(tension),
+                                  showCheckmark: false,
+                                  onSelected: _settings.allowTensions
+                                      ? (selected) {
+                                          final nextTensions = <String>{
+                                            ..._settings.selectedTensionOptions,
+                                          };
+                                          if (selected) {
+                                            nextTensions.add(tension);
+                                          } else {
+                                            nextTensions.remove(tension);
+                                          }
+                                          _applySettings(
+                                            _settings.copyWith(
+                                              selectedTensionOptions:
+                                                  nextTensions,
+                                            ),
+                                            reseed: true,
+                                          );
                                         }
-                                        _applySettings(
-                                          _settings.copyWith(
-                                            selectedTensionOptions:
-                                                nextTensions,
-                                          ),
-                                          reseed: true,
-                                        );
-                                      }
-                                    : null,
-                              );
-                            })
-                            .toList(),
-                      ),
-                      const SizedBox(height: 20),
+                                      : null,
+                                );
+                              })
+                              .toList(),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
                       Text(l10n.inversions, style: theme.textTheme.titleMedium),
                       SwitchListTile.adaptive(
                         key: const ValueKey('enable-inversions-toggle'),

@@ -18,8 +18,9 @@ class ChordSymbolFormatter {
 
   static String format(ChordSymbolData chord, ChordSymbolStyle style) {
     final suffix = _qualitySuffixForStyle(chord.renderQuality, style);
-    final tensionSuffix =
-        chord.tensions.isEmpty ? '' : '(${chord.tensions.join(',')})';
+    final tensionSuffix = chord.tensions.isEmpty
+        ? ''
+        : '(${chord.tensions.join(',')})';
     final bassSuffix = chord.bass == null ? '' : '/${chord.bass}';
     return '${chord.root}$suffix$tensionSuffix$bassSuffix';
   }
@@ -101,7 +102,6 @@ class ChordRenderingHelper {
 
   static const Set<String> alteredTensions = {'#11', 'b9', '#9', 'b13'};
 
-  static const int dominantSus4Chance = 5;
   static const int triadInversionChance = 25;
   static const int extendedInversionChance = 30;
 
@@ -140,10 +140,7 @@ class ChordRenderingHelper {
     ],
   };
 
-  static String renderedSymbol(
-    GeneratedChord chord,
-    ChordSymbolStyle style,
-  ) {
+  static String renderedSymbol(GeneratedChord chord, ChordSymbolStyle style) {
     return ChordSymbolFormatter.format(chord.symbolData, style);
   }
 
@@ -188,7 +185,7 @@ class ChordRenderingHelper {
     RomanNumeralId? resolutionTargetRomanId,
     String? patternTag,
   }) {
-    return [
+    final parts = [
       keyName ?? '-',
       romanNumeralId == null ? '-' : MusicTheory.romanTokenOf(romanNumeralId),
       harmonicFamily(
@@ -204,7 +201,12 @@ class ChordRenderingHelper {
           ? '-'
           : MusicTheory.romanTokenOf(resolutionTargetRomanId),
       patternTag ?? '-',
-    ].join('|');
+    ];
+    if (sourceKind == ChordSourceKind.free) {
+      parts.add(symbolData.root);
+      parts.add(symbolData.harmonicQuality.name);
+    }
+    return parts.join('|');
   }
 
   static String buildHarmonicComparisonKey({
@@ -269,7 +271,8 @@ class ChordRenderingHelper {
     }
 
     final pairCandidates = [
-      for (final pair in _safeTensionPairs[profileKey] ?? const <List<String>>[])
+      for (final pair
+          in _safeTensionPairs[profileKey] ?? const <List<String>>[])
         if (pair.every(selectedTensionOptions.contains)) pair,
     ];
     if (pairCandidates.isNotEmpty && random.nextInt(100) < 20) {
@@ -317,11 +320,15 @@ class ChordRenderingHelper {
     required ChordSymbolData symbolData,
     required InversionSettings inversionSettings,
   }) {
+    // This is random slash-bass rendering only; it does not inspect any
+    // previous bass note or try to optimize voice-leading.
     if (!inversionSettings.enabled) {
       return symbolData;
     }
 
-    final isTriad = ChordToneFormulaLibrary.isTriadLike(symbolData.renderQuality);
+    final isTriad = ChordToneFormulaLibrary.isTriadLike(
+      symbolData.renderQuality,
+    );
     final chance = isTriad ? triadInversionChance : extendedInversionChance;
     if (random.nextInt(100) >= chance) {
       return symbolData;
@@ -353,7 +360,9 @@ class ChordRenderingHelper {
       remaining -= weight;
     }
 
-    final formula = ChordToneFormulaLibrary.formulaFor(symbolData.renderQuality);
+    final formula = ChordToneFormulaLibrary.formulaFor(
+      symbolData.renderQuality,
+    );
     final bass = MusicTheory.transposePitch(
       symbolData.root,
       formula[selectedInversion],
@@ -363,6 +372,7 @@ class ChordRenderingHelper {
   }
 
   static bool isRenderedNonDiatonic({
+    required RomanNumeralId? romanNumeralId,
     required PlannedChordKind plannedChordKind,
     required ChordSourceKind sourceKind,
     required List<String> tensions,
@@ -375,7 +385,27 @@ class ChordRenderingHelper {
     if (plannedChordKind == PlannedChordKind.tonicDominant7) {
       return true;
     }
-    return tensions.any(alteredTensions.contains);
+    return tensions.any(
+      (tension) =>
+          alteredTensions.contains(tension) &&
+          !_isDiatonicRenderedTension(
+            romanNumeralId: romanNumeralId,
+            tension: tension,
+          ),
+    );
+  }
+
+  static bool _isDiatonicRenderedTension({
+    required RomanNumeralId? romanNumeralId,
+    required String tension,
+  }) {
+    if (romanNumeralId == null) {
+      return false;
+    }
+    return switch (_tensionProfileKey(romanNumeralId)) {
+      'major7Sharp11' => tension == '#11',
+      _ => false,
+    };
   }
 
   static ChordRenderingSelection buildRenderingSelection({
@@ -413,6 +443,7 @@ class ChordRenderingHelper {
     return ChordRenderingSelection(
       symbolData: inverted,
       isRenderedNonDiatonic: isRenderedNonDiatonic(
+        romanNumeralId: romanNumeralId,
         plannedChordKind: plannedChordKind,
         sourceKind: sourceKind,
         tensions: tensions,

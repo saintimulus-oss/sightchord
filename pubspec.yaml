@@ -65,6 +65,11 @@ flutter:
 
   assets:
     - assets/tick.mp3
+    - assets/tickB.mp3
+    - assets/tickC.mp3
+    - assets/tickD.mp3
+    - assets/tickE.mp3
+    - assets/tickF.mp3
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -95,7 +95,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get styleDeltaJazz => 'DeltaJazz';
 
   @override
-  String get allowV7sus4 => 'Permitir V7sus4';
+  String get allowV7sus4 => 'Permitir V7sus4 (V7, V7/x)';
 
   @override
   String get allowTensions => 'Permitir tensiones';
@@ -112,7 +112,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get inversionHelp =>
-      'Aplica la notación con bajo en slash después de elegir el acorde.';
+      'Aplica aleatoriamente la notación con bajo en slash después de elegir el acorde; no sigue el bajo anterior.';
 
   @override
   String get firstInversion => '1.ª inversión';

@@ -11,10 +11,10 @@ class AppSettingsController extends ChangeNotifier {
   static const String _languageKey = 'language';
   static const String _metronomeEnabledKey = 'metronomeEnabled';
   static const String _metronomeVolumeKey = 'metronomeVolume';
+  static const String _metronomeSoundKey = 'metronomeSound';
   static const String _activeKeysKey = 'activeKeys';
   static const String _smartGeneratorModeKey = 'smartGeneratorMode';
-  static const String _secondaryDominantEnabledKey =
-      'secondaryDominantEnabled';
+  static const String _secondaryDominantEnabledKey = 'secondaryDominantEnabled';
   static const String _substituteDominantEnabledKey =
       'substituteDominantEnabled';
   static const String _modalInterchangeEnabledKey = 'modalInterchangeEnabled';
@@ -29,6 +29,7 @@ class AppSettingsController extends ChangeNotifier {
   static const String _thirdInversionEnabledKey = 'thirdInversionEnabled';
 
   PracticeSettings _settings;
+  Future<void> _saveQueue = Future<void>.value();
 
   PracticeSettings get settings => _settings;
 
@@ -44,7 +45,13 @@ class AppSettingsController extends ChangeNotifier {
       metronomeVolume:
           preferences.getDouble(_metronomeVolumeKey) ??
           _settings.metronomeVolume,
-      activeKeys: preferences.getStringList(_activeKeysKey)?.toSet(),
+      metronomeSound: MetronomeSoundX.fromStorageKey(
+        preferences.getString(_metronomeSoundKey),
+      ),
+      activeKeys: preferences
+          .getStringList(_activeKeysKey)
+          ?.where(MusicTheory.keyOptions.contains)
+          .toSet(),
       smartGeneratorMode:
           preferences.getBool(_smartGeneratorModeKey) ??
           _settings.smartGeneratorMode,
@@ -65,8 +72,9 @@ class AppSettingsController extends ChangeNotifier {
           preferences.getBool(_allowV7sus4Key) ?? _settings.allowV7sus4,
       allowTensions:
           preferences.getBool(_allowTensionsKey) ?? _settings.allowTensions,
-      selectedTensionOptions:
-          preferences.getStringList(_selectedTensionsKey)?.toSet(),
+      selectedTensionOptions: preferences
+          .getStringList(_selectedTensionsKey)
+          ?.toSet(),
       inversionSettings: InversionSettings(
         enabled:
             preferences.getBool(_inversionsEnabledKey) ??
@@ -89,7 +97,9 @@ class AppSettingsController extends ChangeNotifier {
   Future<void> update(PracticeSettings nextSettings) async {
     _settings = nextSettings;
     notifyListeners();
-    await _save();
+    final snapshot = nextSettings;
+    _saveQueue = _saveQueue.catchError((_) {}).then((_) => _save(snapshot));
+    await _saveQueue;
   }
 
   Future<void> mutate(
@@ -98,57 +108,62 @@ class AppSettingsController extends ChangeNotifier {
     await update(updater(_settings));
   }
 
-  Future<void> _save() async {
+  Future<void> _save(PracticeSettings settings) async {
     final preferences = await SharedPreferences.getInstance();
-    await preferences.setString(_languageKey, _settings.language.storageKey);
-    await preferences.setBool(
-      _metronomeEnabledKey,
-      _settings.metronomeEnabled,
+    await preferences.setString(_languageKey, settings.language.storageKey);
+    await preferences.setBool(_metronomeEnabledKey, settings.metronomeEnabled);
+    await preferences.setDouble(_metronomeVolumeKey, settings.metronomeVolume);
+    await preferences.setString(
+      _metronomeSoundKey,
+      settings.metronomeSound.storageKey,
     );
-    await preferences.setDouble(_metronomeVolumeKey, _settings.metronomeVolume);
-    await preferences.setStringList(_activeKeysKey, _settings.activeKeys.toList());
+    await preferences.setStringList(
+      _activeKeysKey,
+      settings.activeKeys.toList(),
+    );
     await preferences.setBool(
       _smartGeneratorModeKey,
-      _settings.smartGeneratorMode,
+      settings.smartGeneratorMode,
     );
     await preferences.setBool(
       _secondaryDominantEnabledKey,
-      _settings.secondaryDominantEnabled,
+      settings.secondaryDominantEnabled,
     );
     await preferences.setBool(
       _substituteDominantEnabledKey,
-      _settings.substituteDominantEnabled,
+      settings.substituteDominantEnabled,
     );
     await preferences.setBool(
       _modalInterchangeEnabledKey,
-      _settings.modalInterchangeEnabled,
+      settings.modalInterchangeEnabled,
     );
     await preferences.setString(
       _chordSymbolStyleKey,
-      _settings.chordSymbolStyle.name,
+      settings.chordSymbolStyle.name,
     );
-    await preferences.setBool(_allowV7sus4Key, _settings.allowV7sus4);
-    await preferences.setBool(_allowTensionsKey, _settings.allowTensions);
+    await preferences.setBool(_allowV7sus4Key, settings.allowV7sus4);
+    await preferences.setBool(_allowTensionsKey, settings.allowTensions);
     await preferences.setStringList(
       _selectedTensionsKey,
-      _settings.selectedTensionOptions.toList(),
+      settings.selectedTensionOptions.toList(),
     );
-    await preferences.setInt(_bpmKey, _settings.bpm);
+    await preferences.setInt(_bpmKey, settings.bpm);
     await preferences.setBool(
       _inversionsEnabledKey,
-      _settings.inversionSettings.enabled,
+      settings.inversionSettings.enabled,
     );
     await preferences.setBool(
       _firstInversionEnabledKey,
-      _settings.inversionSettings.firstInversionEnabled,
+      settings.inversionSettings.firstInversionEnabled,
     );
     await preferences.setBool(
       _secondInversionEnabledKey,
-      _settings.inversionSettings.secondInversionEnabled,
+      settings.inversionSettings.secondInversionEnabled,
     );
     await preferences.setBool(
       _thirdInversionEnabledKey,
-      _settings.inversionSettings.thirdInversionEnabled,
+      settings.inversionSettings.thirdInversionEnabled,
     );
   }
 }
+
