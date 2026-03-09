@@ -1,27 +1,26 @@
 import 'dart:math';
 
-enum AppliedType { secondary, substitute }
-
-enum PlannedChordKind { resolvedRoman, tonicDominant7, tonicSix }
-
-enum SurfaceVariant { dominantSus4 }
+import 'music/chord_theory.dart';
 
 class WeightedNextRoman {
-  const WeightedNextRoman({required this.romanNumeral, required this.weight});
+  const WeightedNextRoman({
+    required this.romanNumeralId,
+    required this.weight,
+  });
 
-  final String romanNumeral;
+  final RomanNumeralId romanNumeralId;
   final int weight;
 }
 
 class QueuedSmartChord {
   const QueuedSmartChord({
-    required this.finalRomanNumeral,
+    required this.finalRomanNumeralId,
     required this.plannedChordKind,
     required this.patternTag,
     this.suppressTensions = false,
   });
 
-  final String finalRomanNumeral;
+  final RomanNumeralId finalRomanNumeralId;
   final PlannedChordKind plannedChordKind;
   final String patternTag;
   final bool suppressTensions;
@@ -41,93 +40,103 @@ class QueuedSmartChordDecision {
 
 class SmartTransitionDebug {
   const SmartTransitionDebug({
-    required this.currentRomanNumeral,
+    required this.currentRomanNumeralId,
     required this.availableCandidates,
     required this.totalWeight,
     required this.roll,
-    required this.selectedRomanNumeral,
+    required this.selectedRomanNumeralId,
     this.fallbackReason,
   });
 
-  final String? currentRomanNumeral;
+  final RomanNumeralId? currentRomanNumeralId;
   final List<WeightedNextRoman> availableCandidates;
   final int totalWeight;
   final int? roll;
-  final String? selectedRomanNumeral;
+  final RomanNumeralId? selectedRomanNumeralId;
   final String? fallbackReason;
 
   bool get usedFallback => fallbackReason != null;
 
-  SmartTransitionDebug withFallbackReason(String reason) {
-    return SmartTransitionDebug(
-      currentRomanNumeral: currentRomanNumeral,
-      availableCandidates: availableCandidates,
-      totalWeight: totalWeight,
-      roll: roll,
-      selectedRomanNumeral: selectedRomanNumeral,
-      fallbackReason: reason,
-    );
-  }
-
   String describe() {
     final candidates = availableCandidates
-        .map((candidate) => '${candidate.romanNumeral}(${candidate.weight})')
+        .map(
+          (candidate) =>
+              '${MusicTheory.romanTokenOf(candidate.romanNumeralId)}(${candidate.weight})',
+        )
         .join(', ');
-    return 'currentRoman=${currentRomanNumeral ?? '-'} '
+    return 'currentRoman=${_token(currentRomanNumeralId)} '
         'candidates=[$candidates] '
         'totalWeight=$totalWeight '
         'roll=${roll ?? '-'} '
-        'selected=${selectedRomanNumeral ?? '-'} '
+        'selected=${_token(selectedRomanNumeralId)} '
         'fallback=${fallbackReason ?? '-'}';
+  }
+
+  String _token(RomanNumeralId? value) {
+    return value == null ? '-' : MusicTheory.romanTokenOf(value);
   }
 }
 
 class SmartTransitionSelection {
   const SmartTransitionSelection({
-    required this.selectedRomanNumeral,
+    required this.selectedRomanNumeralId,
     required this.debug,
   });
 
-  final String? selectedRomanNumeral;
+  final RomanNumeralId? selectedRomanNumeralId;
   final SmartTransitionDebug debug;
 
-  bool get hasSelection => selectedRomanNumeral != null;
+  bool get hasSelection => selectedRomanNumeralId != null;
 }
 
 class SmartApproachDecision {
   const SmartApproachDecision({
-    required this.destinationRomanNumeral,
-    required this.selectedRomanNumeral,
+    required this.destinationRomanNumeralId,
+    required this.selectedRomanNumeralId,
     required this.appliedType,
-    this.appliedTargetRomanNumeral,
+    this.appliedTargetRomanNumeralId,
     this.roll,
   });
 
-  final String destinationRomanNumeral;
-  final String selectedRomanNumeral;
+  final RomanNumeralId destinationRomanNumeralId;
+  final RomanNumeralId selectedRomanNumeralId;
   final AppliedType? appliedType;
-  final String? appliedTargetRomanNumeral;
+  final RomanNumeralId? appliedTargetRomanNumeralId;
   final int? roll;
 
-  String? get insertedAppliedApproach =>
-      appliedType == null ? null : selectedRomanNumeral;
+  RomanNumeralId? get insertedAppliedApproach =>
+      appliedType == null ? null : selectedRomanNumeralId;
 
   bool get insertedApproach => appliedType != null;
+}
+
+class ModalInterchangeDecision {
+  const ModalInterchangeDecision({
+    required this.selectedRomanNumeralId,
+    required this.remainingQueuedChords,
+    required this.patternTag,
+    required this.decision,
+  });
+
+  final RomanNumeralId selectedRomanNumeralId;
+  final List<QueuedSmartChord> remainingQueuedChords;
+  final String? patternTag;
+  final String decision;
 }
 
 class AppliedResolutionDecision {
   const AppliedResolutionDecision({
     required this.finalKey,
-    required this.finalRomanNumeral,
-    required this.appliedTargetRomanNumeral,
+    required this.finalRomanNumeralId,
+    required this.appliedTargetRomanNumeralId,
     required this.modulationCandidateKeys,
     required this.resolvedToTarget,
     this.modulationKey,
   });
 
   final String finalKey;
-  final String finalRomanNumeral;
-  final String appliedTargetRomanNumeral;
+  final RomanNumeralId finalRomanNumeralId;
+  final RomanNumeralId appliedTargetRomanNumeralId;
   final List<String> modulationCandidateKeys;
   final bool resolvedToTarget;
   final String? modulationKey;
@@ -135,121 +144,136 @@ class AppliedResolutionDecision {
   bool get didModulate => modulationKey != null;
 }
 
-class SmartGenerationDebug {
+class SmartGenerationDebug implements SmartDebugInfo {
   const SmartGenerationDebug({
     required this.currentKey,
-    required this.currentRomanNumeral,
+    required this.currentRomanNumeralId,
     this.selectedDiatonicDestination,
     this.insertedAppliedApproach,
+    this.selectedModalInterchange,
     this.appliedType,
-    this.appliedTargetRomanNumeral,
+    this.appliedTargetRomanNumeralId,
     this.modulationCandidateKeys = const [],
     this.finalKey,
-    this.finalRomanNumeral,
+    this.finalRomanNumeralId,
     this.finalChord,
     this.decision,
     this.transitionDebugSummary,
     this.wasExcludedFallback = false,
     this.renderedIsNonDiatonic = false,
     this.activePatternTag,
-    this.lineClicheQueueLength = 0,
+    this.queuedPatternLength = 0,
     this.returnedToNormalFlow = false,
     this.plannedChordKind = PlannedChordKind.resolvedRoman,
+    this.finalSourceKind = ChordSourceKind.diatonic,
   });
 
   final String currentKey;
-  final String currentRomanNumeral;
-  final String? selectedDiatonicDestination;
-  final String? insertedAppliedApproach;
+  final RomanNumeralId currentRomanNumeralId;
+  final RomanNumeralId? selectedDiatonicDestination;
+  final RomanNumeralId? insertedAppliedApproach;
+  final RomanNumeralId? selectedModalInterchange;
   final AppliedType? appliedType;
-  final String? appliedTargetRomanNumeral;
+  final RomanNumeralId? appliedTargetRomanNumeralId;
   final List<String> modulationCandidateKeys;
   final String? finalKey;
-  final String? finalRomanNumeral;
+  final RomanNumeralId? finalRomanNumeralId;
   final String? finalChord;
   final String? decision;
   final String? transitionDebugSummary;
   final bool wasExcludedFallback;
   final bool renderedIsNonDiatonic;
   final String? activePatternTag;
-  final int lineClicheQueueLength;
+  final int queuedPatternLength;
   final bool returnedToNormalFlow;
   final PlannedChordKind plannedChordKind;
+  final ChordSourceKind finalSourceKind;
 
   SmartGenerationDebug withDecision(String nextDecision) {
     return SmartGenerationDebug(
       currentKey: currentKey,
-      currentRomanNumeral: currentRomanNumeral,
+      currentRomanNumeralId: currentRomanNumeralId,
       selectedDiatonicDestination: selectedDiatonicDestination,
       insertedAppliedApproach: insertedAppliedApproach,
+      selectedModalInterchange: selectedModalInterchange,
       appliedType: appliedType,
-      appliedTargetRomanNumeral: appliedTargetRomanNumeral,
+      appliedTargetRomanNumeralId: appliedTargetRomanNumeralId,
       modulationCandidateKeys: modulationCandidateKeys,
       finalKey: finalKey,
-      finalRomanNumeral: finalRomanNumeral,
+      finalRomanNumeralId: finalRomanNumeralId,
       finalChord: finalChord,
       decision: nextDecision,
       transitionDebugSummary: transitionDebugSummary,
       wasExcludedFallback: wasExcludedFallback,
       renderedIsNonDiatonic: renderedIsNonDiatonic,
       activePatternTag: activePatternTag,
-      lineClicheQueueLength: lineClicheQueueLength,
+      queuedPatternLength: queuedPatternLength,
       returnedToNormalFlow: returnedToNormalFlow,
       plannedChordKind: plannedChordKind,
+      finalSourceKind: finalSourceKind,
     );
   }
 
   SmartGenerationDebug withFinalSelection({
     required String finalKey,
-    required String finalRomanNumeral,
+    required RomanNumeralId finalRomanNumeralId,
     required String finalChord,
     required bool renderedIsNonDiatonic,
     required bool wasExcludedFallback,
   }) {
     return SmartGenerationDebug(
       currentKey: currentKey,
-      currentRomanNumeral: currentRomanNumeral,
+      currentRomanNumeralId: currentRomanNumeralId,
       selectedDiatonicDestination: selectedDiatonicDestination,
       insertedAppliedApproach: insertedAppliedApproach,
+      selectedModalInterchange: selectedModalInterchange,
       appliedType: appliedType,
-      appliedTargetRomanNumeral: appliedTargetRomanNumeral,
+      appliedTargetRomanNumeralId: appliedTargetRomanNumeralId,
       modulationCandidateKeys: modulationCandidateKeys,
       finalKey: finalKey,
-      finalRomanNumeral: finalRomanNumeral,
+      finalRomanNumeralId: finalRomanNumeralId,
       finalChord: finalChord,
       decision: decision,
       transitionDebugSummary: transitionDebugSummary,
       wasExcludedFallback: wasExcludedFallback,
       renderedIsNonDiatonic: renderedIsNonDiatonic,
       activePatternTag: activePatternTag,
-      lineClicheQueueLength: lineClicheQueueLength,
+      queuedPatternLength: queuedPatternLength,
       returnedToNormalFlow: returnedToNormalFlow,
       plannedChordKind: plannedChordKind,
+      finalSourceKind: finalSourceKind,
     );
   }
 
+  @override
   String describe() {
     final modulationKeys = modulationCandidateKeys.isEmpty
         ? '-'
         : modulationCandidateKeys.join(', ');
     return 'currentKey=$currentKey '
-        'currentRoman=$currentRomanNumeral '
-        'destination=${selectedDiatonicDestination ?? '-'} '
-        'appliedApproach=${insertedAppliedApproach ?? '-'} '
+        'currentRoman=${_token(currentRomanNumeralId)} '
+        'destination=${_token(selectedDiatonicDestination)} '
+        'modal=${_token(selectedModalInterchange)} '
+        'appliedApproach=${_token(insertedAppliedApproach)} '
         'appliedType=${appliedType?.name ?? '-'} '
-        'appliedTarget=${appliedTargetRomanNumeral ?? '-'} '
+        'appliedTarget=${_token(appliedTargetRomanNumeralId)} '
         'pattern=${activePatternTag ?? '-'} '
         'plannedKind=${plannedChordKind.name} '
-        'queueLength=$lineClicheQueueLength '
+        'queueLength=$queuedPatternLength '
         'returnedToNormalFlow=$returnedToNormalFlow '
         'excludedFallback=$wasExcludedFallback '
         'renderedNonDiatonic=$renderedIsNonDiatonic '
+        'finalSource=${finalSourceKind.name} '
         'modulationCandidates=[$modulationKeys] '
         'finalKey=${finalKey ?? '-'} '
-        'finalRoman=${finalRomanNumeral ?? '-'} '
+        'finalRoman=${_token(finalRomanNumeralId)} '
         'finalChord=${finalChord ?? '-'} '
         'decision=${decision ?? '-'} '
         'transition=${transitionDebugSummary ?? '-'}';
+  }
+
+  String _token(RomanNumeralId? value) {
+    return value == null ? '-' : MusicTheory.romanTokenOf(value);
   }
 }
 
@@ -268,41 +292,45 @@ class SmartRenderingPlan {
 class SmartStepRequest {
   const SmartStepRequest({
     required this.currentKey,
-    required this.currentRomanNumeral,
-    required this.currentResolutionRomanNumeral,
+    required this.currentRomanNumeralId,
+    required this.currentResolutionRomanNumeralId,
     required this.currentHarmonicFunction,
     required this.allowedDiatonicRomanNumerals,
     required this.secondaryDominantEnabled,
     required this.substituteDominantEnabled,
+    required this.modalInterchangeEnabled,
     required this.modulationCandidateKeys,
-    required this.previousRomanNumeral,
+    required this.previousRomanNumeralId,
     required this.previousHarmonicFunction,
     required this.previousWasAppliedDominant,
     required this.currentPatternTag,
     required this.plannedQueue,
+    required this.currentRenderedNonDiatonic,
   });
 
   final String currentKey;
-  final String currentRomanNumeral;
-  final String? currentResolutionRomanNumeral;
-  final String currentHarmonicFunction;
-  final List<String> allowedDiatonicRomanNumerals;
+  final RomanNumeralId currentRomanNumeralId;
+  final RomanNumeralId? currentResolutionRomanNumeralId;
+  final HarmonicFunction currentHarmonicFunction;
+  final List<RomanNumeralId> allowedDiatonicRomanNumerals;
   final bool secondaryDominantEnabled;
   final bool substituteDominantEnabled;
+  final bool modalInterchangeEnabled;
   final List<String> modulationCandidateKeys;
-  final String? previousRomanNumeral;
-  final String? previousHarmonicFunction;
+  final RomanNumeralId? previousRomanNumeralId;
+  final HarmonicFunction? previousHarmonicFunction;
   final bool previousWasAppliedDominant;
   final String? currentPatternTag;
   final List<QueuedSmartChord> plannedQueue;
+  final bool currentRenderedNonDiatonic;
 }
 
 class SmartStepPlan {
   const SmartStepPlan({
     required this.finalKey,
-    required this.finalRomanNumeral,
+    required this.finalRomanNumeralId,
     required this.appliedType,
-    required this.resolutionTargetRoman,
+    required this.resolutionTargetRomanId,
     required this.plannedChordKind,
     required this.patternTag,
     required this.remainingQueuedChords,
@@ -312,9 +340,9 @@ class SmartStepPlan {
   });
 
   final String finalKey;
-  final String finalRomanNumeral;
+  final RomanNumeralId finalRomanNumeralId;
   final AppliedType? appliedType;
-  final String? resolutionTargetRoman;
+  final RomanNumeralId? resolutionTargetRomanId;
   final PlannedChordKind plannedChordKind;
   final String? patternTag;
   final List<QueuedSmartChord> remainingQueuedChords;
@@ -333,79 +361,214 @@ class SmartGeneratorHelper {
   static const int nonDiatonicVisibilityBoost = 8;
   static const int lineClicheTriggerChance = 6;
 
-  static const Map<String, String> secondaryDominantByResolution = {
-    'IIm7': 'V7/II',
-    'IIIm7': 'V7/III',
-    'IVM7': 'V7/IV',
-    'V7': 'V7/V',
-    'VIm7': 'V7/VI',
+  static const int modalChanceTonic = 14;
+  static const int modalChancePredominant = 18;
+  static const int modalChanceDominant = 6;
+  static const int modalChanceAfterNonDiatonic = 4;
+
+  static const int backdoorTriggerChance = 55;
+  static const int borrowedMinorTwoFiveTriggerChance = 70;
+  static const int neapolitanDirectResolutionChance = 60;
+
+  static const Map<RomanNumeralId, RomanNumeralId>
+  secondaryDominantByResolution = {
+    RomanNumeralId.iiMin7: RomanNumeralId.secondaryOfII,
+    RomanNumeralId.iiiMin7: RomanNumeralId.secondaryOfIII,
+    RomanNumeralId.ivMaj7: RomanNumeralId.secondaryOfIV,
+    RomanNumeralId.vDom7: RomanNumeralId.secondaryOfV,
+    RomanNumeralId.viMin7: RomanNumeralId.secondaryOfVI,
   };
 
-  static const Map<String, String> substituteDominantByResolution = {
-    'IIm7': 'subV7/II',
-    'IIIm7': 'subV7/III',
-    'IVM7': 'subV7/IV',
-    'V7': 'subV7/V',
-    'VIm7': 'subV7/VI',
+  static const Map<RomanNumeralId, RomanNumeralId>
+  substituteDominantByResolution = {
+    RomanNumeralId.iiMin7: RomanNumeralId.substituteOfII,
+    RomanNumeralId.iiiMin7: RomanNumeralId.substituteOfIII,
+    RomanNumeralId.ivMaj7: RomanNumeralId.substituteOfIV,
+    RomanNumeralId.vDom7: RomanNumeralId.substituteOfV,
+    RomanNumeralId.viMin7: RomanNumeralId.substituteOfVI,
   };
 
-  static const Map<String, List<WeightedNextRoman>> majorDiatonicTransitions = {
-    'IM7': [
-      WeightedNextRoman(romanNumeral: 'VIm7', weight: 40),
-      WeightedNextRoman(romanNumeral: 'IIm7', weight: 35),
-      WeightedNextRoman(romanNumeral: 'IIIm7', weight: 10),
-      WeightedNextRoman(romanNumeral: 'IVM7', weight: 10),
-      WeightedNextRoman(romanNumeral: 'V7', weight: 5),
+  static const Map<RomanNumeralId, List<WeightedNextRoman>>
+  majorDiatonicTransitions = {
+    RomanNumeralId.iMaj7: [
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.viMin7, weight: 40),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iiMin7, weight: 35),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iiiMin7, weight: 10),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.ivMaj7, weight: 10),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.vDom7, weight: 5),
     ],
-    'IIm7': [
-      WeightedNextRoman(romanNumeral: 'V7', weight: 85),
-      WeightedNextRoman(romanNumeral: 'VIIm7b5', weight: 10),
-      WeightedNextRoman(romanNumeral: 'IVM7', weight: 5),
+    RomanNumeralId.iiMin7: [
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.vDom7, weight: 85),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.viiHalfDiminished7,
+        weight: 10,
+      ),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.ivMaj7, weight: 5),
     ],
-    'IIIm7': [
-      WeightedNextRoman(romanNumeral: 'VIm7', weight: 80),
-      WeightedNextRoman(romanNumeral: 'IIm7', weight: 10),
-      WeightedNextRoman(romanNumeral: 'IVM7', weight: 10),
+    RomanNumeralId.iiiMin7: [
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.viMin7, weight: 80),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iiMin7, weight: 10),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.ivMaj7, weight: 10),
     ],
-    'IVM7': [
-      WeightedNextRoman(romanNumeral: 'V7', weight: 70),
-      WeightedNextRoman(romanNumeral: 'IIm7', weight: 20),
-      WeightedNextRoman(romanNumeral: 'VIIm7b5', weight: 10),
+    RomanNumeralId.ivMaj7: [
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.vDom7, weight: 70),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iiMin7, weight: 20),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.viiHalfDiminished7,
+        weight: 10,
+      ),
     ],
-    'V7': [
-      WeightedNextRoman(romanNumeral: 'IM7', weight: 75),
-      WeightedNextRoman(romanNumeral: 'VIm7', weight: 20),
-      WeightedNextRoman(romanNumeral: 'IVM7', weight: 5),
+    RomanNumeralId.vDom7: [
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iMaj7, weight: 75),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.viMin7, weight: 20),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.ivMaj7, weight: 5),
     ],
-    'VIm7': [
-      WeightedNextRoman(romanNumeral: 'IIm7', weight: 75),
-      WeightedNextRoman(romanNumeral: 'IVM7', weight: 15),
-      WeightedNextRoman(romanNumeral: 'V7', weight: 10),
+    RomanNumeralId.viMin7: [
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iiMin7, weight: 75),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.ivMaj7, weight: 15),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.vDom7, weight: 10),
     ],
-    'VIIm7b5': [
-      WeightedNextRoman(romanNumeral: 'IM7', weight: 70),
-      WeightedNextRoman(romanNumeral: 'V7', weight: 20),
-      WeightedNextRoman(romanNumeral: 'IIIm7', weight: 10),
+    RomanNumeralId.viiHalfDiminished7: [
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iMaj7, weight: 70),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.vDom7, weight: 20),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iiiMin7, weight: 10),
+    ],
+  };
+
+  static const Map<HarmonicFunction, List<WeightedNextRoman>>
+  modalPoolByContext = {
+    HarmonicFunction.tonic: [
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedIvMin7,
+        weight: 24,
+      ),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedFlatVIMaj7,
+        weight: 22,
+      ),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedFlatIIIMaj7,
+        weight: 18,
+      ),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedFlatVII7,
+        weight: 16,
+      ),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedIiHalfDiminished7,
+        weight: 12,
+      ),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedFlatIIMaj7,
+        weight: 8,
+      ),
+    ],
+    HarmonicFunction.predominant: [
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedIvMin7,
+        weight: 28,
+      ),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedIiHalfDiminished7,
+        weight: 24,
+      ),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedFlatVIMaj7,
+        weight: 18,
+      ),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedFlatVII7,
+        weight: 14,
+      ),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedFlatIIMaj7,
+        weight: 10,
+      ),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedFlatIIIMaj7,
+        weight: 6,
+      ),
+    ],
+    HarmonicFunction.dominant: [
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedFlatVIMaj7,
+        weight: 32,
+      ),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedFlatIIMaj7,
+        weight: 24,
+      ),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedIvMin7,
+        weight: 18,
+      ),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedFlatVII7,
+        weight: 16,
+      ),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedFlatIIIMaj7,
+        weight: 10,
+      ),
+    ],
+  };
+
+  static const Map<RomanNumeralId, List<WeightedNextRoman>>
+  modalExitTransitions = {
+    RomanNumeralId.borrowedIvMin7: [
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedFlatVII7,
+        weight: 45,
+      ),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iMaj7, weight: 30),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.vDom7, weight: 25),
+    ],
+    RomanNumeralId.borrowedFlatVII7: [
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iMaj7, weight: 75),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.viMin7, weight: 15),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iiMin7, weight: 10),
+    ],
+    RomanNumeralId.borrowedFlatVIMaj7: [
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.vDom7, weight: 55),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iiMin7, weight: 25),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iMaj7, weight: 20),
+    ],
+    RomanNumeralId.borrowedFlatIIIMaj7: [
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iiMin7, weight: 45),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iMaj7, weight: 35),
+      WeightedNextRoman(
+        romanNumeralId: RomanNumeralId.borrowedFlatVIMaj7,
+        weight: 20,
+      ),
+    ],
+    RomanNumeralId.borrowedIiHalfDiminished7: [
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.vDom7, weight: 80),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iMaj7, weight: 20),
+    ],
+    RomanNumeralId.borrowedFlatIIMaj7: [
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iMaj7, weight: 60),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.vDom7, weight: 25),
+      WeightedNextRoman(romanNumeralId: RomanNumeralId.iiMin7, weight: 15),
     ],
   };
 
   static SmartTransitionSelection selectNextRoman({
     required Random random,
-    required String? currentRomanNumeral,
-    required Iterable<String> allowedRomanNumerals,
+    required RomanNumeralId? currentRomanNumeralId,
+    required Iterable<RomanNumeralId> allowedRomanNumerals,
   }) {
     final allowedSet = allowedRomanNumerals.toSet();
-    final configuredCandidates = majorDiatonicTransitions[currentRomanNumeral];
+    final configuredCandidates = majorDiatonicTransitions[currentRomanNumeralId];
 
-    if (currentRomanNumeral == null || configuredCandidates == null) {
+    if (currentRomanNumeralId == null || configuredCandidates == null) {
       return SmartTransitionSelection(
-        selectedRomanNumeral: null,
+        selectedRomanNumeralId: null,
         debug: SmartTransitionDebug(
-          currentRomanNumeral: currentRomanNumeral,
+          currentRomanNumeralId: currentRomanNumeralId,
           availableCandidates: const [],
           totalWeight: 0,
           roll: null,
-          selectedRomanNumeral: null,
+          selectedRomanNumeralId: null,
           fallbackReason:
               'No weighted transition is configured for the current Roman numeral.',
         ),
@@ -414,84 +577,29 @@ class SmartGeneratorHelper {
 
     final filteredCandidates = [
       for (final candidate in configuredCandidates)
-        if (allowedSet.contains(candidate.romanNumeral)) candidate,
+        if (allowedSet.contains(candidate.romanNumeralId)) candidate,
     ];
-
-    if (filteredCandidates.isEmpty) {
-      return SmartTransitionSelection(
-        selectedRomanNumeral: null,
-        debug: SmartTransitionDebug(
-          currentRomanNumeral: currentRomanNumeral,
-          availableCandidates: const [],
-          totalWeight: 0,
-          roll: null,
-          selectedRomanNumeral: null,
-          fallbackReason:
-              'All weighted transition candidates were filtered out by the current settings.',
-        ),
-      );
-    }
-
-    final totalWeight = filteredCandidates.fold<int>(
-      0,
-      (sum, candidate) => sum + candidate.weight,
-    );
-    if (totalWeight <= 0) {
-      return SmartTransitionSelection(
-        selectedRomanNumeral: null,
-        debug: SmartTransitionDebug(
-          currentRomanNumeral: currentRomanNumeral,
-          availableCandidates: filteredCandidates,
-          totalWeight: 0,
-          roll: null,
-          selectedRomanNumeral: null,
-          fallbackReason:
-              'Weighted transition candidates produced a non-positive total weight.',
-        ),
-      );
-    }
-
-    final roll = random.nextInt(totalWeight);
-    var remaining = roll;
-    for (final candidate in filteredCandidates) {
-      if (remaining < candidate.weight) {
-        return SmartTransitionSelection(
-          selectedRomanNumeral: candidate.romanNumeral,
-          debug: SmartTransitionDebug(
-            currentRomanNumeral: currentRomanNumeral,
-            availableCandidates: filteredCandidates,
-            totalWeight: totalWeight,
-            roll: roll,
-            selectedRomanNumeral: candidate.romanNumeral,
-          ),
-        );
-      }
-      remaining -= candidate.weight;
-    }
-
-    final fallbackCandidate = filteredCandidates.last;
-    return SmartTransitionSelection(
-      selectedRomanNumeral: fallbackCandidate.romanNumeral,
-      debug: SmartTransitionDebug(
-        currentRomanNumeral: currentRomanNumeral,
-        availableCandidates: filteredCandidates,
-        totalWeight: totalWeight,
-        roll: roll,
-        selectedRomanNumeral: fallbackCandidate.romanNumeral,
-      ),
+    return _selectWeightedCandidate(
+      random: random,
+      currentRomanNumeralId: currentRomanNumeralId,
+      filteredCandidates: filteredCandidates,
+      emptyReason:
+          'All weighted transition candidates were filtered out by the current settings.',
+      nonPositiveReason:
+          'Weighted transition candidates produced a non-positive total weight.',
     );
   }
 
   static SmartApproachDecision maybeInsertAppliedApproach({
     required Random random,
-    required String destinationRomanNumeral,
+    required RomanNumeralId destinationRomanNumeralId,
     required bool secondaryDominantEnabled,
     required bool substituteDominantEnabled,
   }) {
     final secondaryDominant =
-        secondaryDominantByResolution[destinationRomanNumeral];
+        secondaryDominantByResolution[destinationRomanNumeralId];
     final substituteDominant =
-        substituteDominantByResolution[destinationRomanNumeral];
+        substituteDominantByResolution[destinationRomanNumeralId];
 
     var secondaryWeight = secondaryDominantEnabled && secondaryDominant != null
         ? secondaryApproachChance
@@ -507,8 +615,7 @@ class SmartGeneratorHelper {
           ? 0
           : substituteWeight == 0
           ? nonDiatonicVisibilityBoost
-          : (nonDiatonicVisibilityBoost *
-                secondaryWeight ~/
+          : (nonDiatonicVisibilityBoost * secondaryWeight ~/
                 totalAppliedWeight);
       final substituteBoost = substituteWeight == 0
           ? 0
@@ -525,14 +632,14 @@ class SmartGeneratorHelper {
     );
     final candidates = <WeightedNextRoman>[
       WeightedNextRoman(
-        romanNumeral: destinationRomanNumeral,
+        romanNumeralId: destinationRomanNumeralId,
         weight: diatonicWeight,
       ),
     ];
     if (secondaryWeight > 0 && secondaryDominant != null) {
       candidates.add(
         WeightedNextRoman(
-          romanNumeral: secondaryDominant,
+          romanNumeralId: secondaryDominant,
           weight: secondaryWeight,
         ),
       );
@@ -540,7 +647,7 @@ class SmartGeneratorHelper {
     if (substituteWeight > 0 && substituteDominant != null) {
       candidates.add(
         WeightedNextRoman(
-          romanNumeral: substituteDominant,
+          romanNumeralId: substituteDominant,
           weight: substituteWeight,
         ),
       );
@@ -554,16 +661,15 @@ class SmartGeneratorHelper {
     var remaining = roll;
     for (final candidate in candidates) {
       if (remaining < candidate.weight) {
-        final appliedType = candidate.romanNumeral == destinationRomanNumeral
+        final appliedType = candidate.romanNumeralId == destinationRomanNumeralId
             ? null
-            : _appliedTypeForRoman(candidate.romanNumeral);
+            : _appliedTypeForRoman(candidate.romanNumeralId);
         return SmartApproachDecision(
-          destinationRomanNumeral: destinationRomanNumeral,
-          selectedRomanNumeral: candidate.romanNumeral,
+          destinationRomanNumeralId: destinationRomanNumeralId,
+          selectedRomanNumeralId: candidate.romanNumeralId,
           appliedType: appliedType,
-          appliedTargetRomanNumeral: appliedType == null
-              ? null
-              : destinationRomanNumeral,
+          appliedTargetRomanNumeralId:
+              appliedType == null ? null : destinationRomanNumeralId,
           roll: roll,
         );
       }
@@ -571,8 +677,8 @@ class SmartGeneratorHelper {
     }
 
     return SmartApproachDecision(
-      destinationRomanNumeral: destinationRomanNumeral,
-      selectedRomanNumeral: destinationRomanNumeral,
+      destinationRomanNumeralId: destinationRomanNumeralId,
+      selectedRomanNumeralId: destinationRomanNumeralId,
       appliedType: null,
       roll: roll,
     );
@@ -581,27 +687,27 @@ class SmartGeneratorHelper {
   static AppliedResolutionDecision resolveAppliedOrModulate({
     required Random random,
     required String currentKey,
-    required String appliedTargetRomanNumeral,
-    required List<String> allowedDiatonicRomanNumerals,
+    required RomanNumeralId appliedTargetRomanNumeralId,
+    required List<RomanNumeralId> allowedDiatonicRomanNumerals,
     required List<String> modulationCandidateKeys,
   }) {
     final resolutionRoll = random.nextInt(100);
     if (resolutionRoll >= appliedResolutionChance) {
       final continuationSelection = selectNextRoman(
         random: random,
-        currentRomanNumeral: appliedTargetRomanNumeral,
+        currentRomanNumeralId: appliedTargetRomanNumeralId,
         allowedRomanNumerals: allowedDiatonicRomanNumerals,
       );
       final fallbackRoman =
-          continuationSelection.selectedRomanNumeral ??
+          continuationSelection.selectedRomanNumeralId ??
           _fallbackDiatonicRoman(
             random: random,
             allowedDiatonicRomanNumerals: allowedDiatonicRomanNumerals,
           );
       return AppliedResolutionDecision(
         finalKey: currentKey,
-        finalRomanNumeral: fallbackRoman,
-        appliedTargetRomanNumeral: appliedTargetRomanNumeral,
+        finalRomanNumeralId: fallbackRoman,
+        appliedTargetRomanNumeralId: appliedTargetRomanNumeralId,
         modulationCandidateKeys: modulationCandidateKeys,
         resolvedToTarget: false,
       );
@@ -616,8 +722,8 @@ class SmartGeneratorHelper {
           )];
       return AppliedResolutionDecision(
         finalKey: modulationKey,
-        finalRomanNumeral: 'IM7',
-        appliedTargetRomanNumeral: appliedTargetRomanNumeral,
+        finalRomanNumeralId: RomanNumeralId.iMaj7,
+        appliedTargetRomanNumeralId: appliedTargetRomanNumeralId,
         modulationCandidateKeys: modulationCandidateKeys,
         resolvedToTarget: true,
         modulationKey: modulationKey,
@@ -626,8 +732,8 @@ class SmartGeneratorHelper {
 
     return AppliedResolutionDecision(
       finalKey: currentKey,
-      finalRomanNumeral: appliedTargetRomanNumeral,
-      appliedTargetRomanNumeral: appliedTargetRomanNumeral,
+      finalRomanNumeralId: appliedTargetRomanNumeralId,
+      appliedTargetRomanNumeralId: appliedTargetRomanNumeralId,
       modulationCandidateKeys: modulationCandidateKeys,
       resolvedToTarget: true,
     );
@@ -654,35 +760,34 @@ class SmartGeneratorHelper {
     if (request.plannedQueue.isNotEmpty || request.currentPatternTag != null) {
       return const [];
     }
-    if (request.currentRomanNumeral != 'IM7') {
+    if (request.currentRomanNumeralId != RomanNumeralId.iMaj7) {
       return const [];
     }
 
     final tonicResting =
-        request.currentHarmonicFunction == 'tonic' &&
-        request.previousHarmonicFunction == 'tonic' &&
-        request.previousRomanNumeral == 'IM7';
+        request.currentHarmonicFunction == HarmonicFunction.tonic &&
+        request.previousHarmonicFunction == HarmonicFunction.tonic &&
+        request.previousRomanNumeralId == RomanNumeralId.iMaj7;
     final cadenceArrival =
         request.previousWasAppliedDominant ||
-        request.previousHarmonicFunction == 'dominant';
+        request.previousHarmonicFunction == HarmonicFunction.dominant;
 
     if (!tonicResting && !cadenceArrival) {
       return const [];
     }
-
     if (random.nextInt(100) >= lineClicheTriggerChance) {
       return const [];
     }
 
     return const [
       QueuedSmartChord(
-        finalRomanNumeral: 'IM7',
+        finalRomanNumeralId: RomanNumeralId.iMaj7,
         plannedChordKind: PlannedChordKind.tonicDominant7,
         patternTag: 'major-tonic-cliche',
         suppressTensions: true,
       ),
       QueuedSmartChord(
-        finalRomanNumeral: 'IM7',
+        finalRomanNumeralId: RomanNumeralId.iMaj7,
         plannedChordKind: PlannedChordKind.tonicSix,
         patternTag: 'major-tonic-cliche',
         suppressTensions: true,
@@ -712,11 +817,13 @@ class SmartGeneratorHelper {
       final queuedDecision = dequeuePlannedSmartChord(
         plannedQueue: seededQueue,
       );
+      final queuedRoman = queuedDecision.queuedChord.finalRomanNumeralId;
+      final queuedSourceKind = MusicTheory.specFor(queuedRoman).sourceKind;
       return SmartStepPlan(
         finalKey: request.currentKey,
-        finalRomanNumeral: queuedDecision.queuedChord.finalRomanNumeral,
+        finalRomanNumeralId: queuedRoman,
         appliedType: null,
-        resolutionTargetRoman: null,
+        resolutionTargetRomanId: null,
         plannedChordKind: queuedDecision.queuedChord.plannedChordKind,
         patternTag: queuedDecision.queuedChord.patternTag,
         remainingQueuedChords: queuedDecision.remainingQueuedChords,
@@ -728,22 +835,23 @@ class SmartGeneratorHelper {
         ),
         debug: SmartGenerationDebug(
           currentKey: request.currentKey,
-          currentRomanNumeral: request.currentRomanNumeral,
-          selectedDiatonicDestination: request.currentRomanNumeral,
+          currentRomanNumeralId: request.currentRomanNumeralId,
+          selectedDiatonicDestination: request.currentRomanNumeralId,
           finalKey: request.currentKey,
-          finalRomanNumeral: queuedDecision.queuedChord.finalRomanNumeral,
+          finalRomanNumeralId: queuedRoman,
           decision: 'queued-line-cliche',
           activePatternTag: queuedDecision.queuedChord.patternTag,
-          lineClicheQueueLength: queuedDecision.remainingQueuedChords.length,
+          queuedPatternLength: queuedDecision.remainingQueuedChords.length,
           returnedToNormalFlow: queuedDecision.returnedToNormalFlow,
           plannedChordKind: queuedDecision.queuedChord.plannedChordKind,
+          finalSourceKind: queuedSourceKind,
         ),
       );
     }
 
-    if (_isAppliedDominant(request.currentRomanNumeral)) {
-      final appliedTargetRomanNumeral =
-          request.currentResolutionRomanNumeral ??
+    if (_isAppliedDominant(request.currentRomanNumeralId)) {
+      final appliedTargetRomanNumeralId =
+          request.currentResolutionRomanNumeralId ??
           _fallbackDiatonicRoman(
             random: random,
             allowedDiatonicRomanNumerals: request.allowedDiatonicRomanNumerals,
@@ -751,16 +859,16 @@ class SmartGeneratorHelper {
       final resolutionDecision = resolveAppliedOrModulate(
         random: random,
         currentKey: request.currentKey,
-        appliedTargetRomanNumeral: appliedTargetRomanNumeral,
+        appliedTargetRomanNumeralId: appliedTargetRomanNumeralId,
         allowedDiatonicRomanNumerals: request.allowedDiatonicRomanNumerals,
         modulationCandidateKeys: request.modulationCandidateKeys,
       );
-      final appliedType = _appliedTypeForRoman(request.currentRomanNumeral);
+      final appliedType = _appliedTypeForRoman(request.currentRomanNumeralId);
       return SmartStepPlan(
         finalKey: resolutionDecision.finalKey,
-        finalRomanNumeral: resolutionDecision.finalRomanNumeral,
+        finalRomanNumeralId: resolutionDecision.finalRomanNumeralId,
         appliedType: appliedType,
-        resolutionTargetRoman: appliedTargetRomanNumeral,
+        resolutionTargetRomanId: appliedTargetRomanNumeralId,
         plannedChordKind: PlannedChordKind.resolvedRoman,
         patternTag: null,
         remainingQueuedChords: const [],
@@ -768,47 +876,124 @@ class SmartGeneratorHelper {
         renderingPlan: const SmartRenderingPlan(),
         debug: SmartGenerationDebug(
           currentKey: request.currentKey,
-          currentRomanNumeral: request.currentRomanNumeral,
-          selectedDiatonicDestination: appliedTargetRomanNumeral,
-          insertedAppliedApproach: request.currentRomanNumeral,
+          currentRomanNumeralId: request.currentRomanNumeralId,
+          selectedDiatonicDestination: appliedTargetRomanNumeralId,
+          insertedAppliedApproach: request.currentRomanNumeralId,
           appliedType: appliedType,
-          appliedTargetRomanNumeral: appliedTargetRomanNumeral,
+          appliedTargetRomanNumeralId: appliedTargetRomanNumeralId,
           modulationCandidateKeys: resolutionDecision.modulationCandidateKeys,
           finalKey: resolutionDecision.finalKey,
-          finalRomanNumeral: resolutionDecision.finalRomanNumeral,
+          finalRomanNumeralId: resolutionDecision.finalRomanNumeralId,
           decision: resolutionDecision.didModulate
               ? 'modulated-via-applied-resolution'
               : resolutionDecision.resolvedToTarget
               ? 'resolved-applied-target'
               : 'continued-after-applied',
           plannedChordKind: PlannedChordKind.resolvedRoman,
+          finalSourceKind: MusicTheory
+              .specFor(resolutionDecision.finalRomanNumeralId)
+              .sourceKind,
+        ),
+      );
+    }
+
+    if (_isModalInterchange(request.currentRomanNumeralId)) {
+      final modalExitSelection = _selectModalExit(
+        random: random,
+        currentRomanNumeralId: request.currentRomanNumeralId,
+      );
+      final selectedModalExit =
+          modalExitSelection.selectedRomanNumeralId ??
+          _fallbackDiatonicRoman(
+            random: random,
+            allowedDiatonicRomanNumerals: request.allowedDiatonicRomanNumerals,
+          );
+      return SmartStepPlan(
+        finalKey: request.currentKey,
+        finalRomanNumeralId: selectedModalExit,
+        appliedType: null,
+        resolutionTargetRomanId: null,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        patternTag: null,
+        remainingQueuedChords: const [],
+        returnedToNormalFlow: false,
+        renderingPlan: const SmartRenderingPlan(),
+        debug: SmartGenerationDebug(
+          currentKey: request.currentKey,
+          currentRomanNumeralId: request.currentRomanNumeralId,
+          selectedModalInterchange: request.currentRomanNumeralId,
+          finalKey: request.currentKey,
+          finalRomanNumeralId: selectedModalExit,
+          decision: 'resolved-modal-interchange',
+          transitionDebugSummary: modalExitSelection.debug.describe(),
+          plannedChordKind: PlannedChordKind.resolvedRoman,
+          finalSourceKind: MusicTheory.specFor(selectedModalExit).sourceKind,
         ),
       );
     }
 
     final destinationSelection = selectNextRoman(
       random: random,
-      currentRomanNumeral: request.currentRomanNumeral,
+      currentRomanNumeralId: request.currentRomanNumeralId,
       allowedRomanNumerals: request.allowedDiatonicRomanNumerals,
     );
     final selectedDestination =
-        destinationSelection.selectedRomanNumeral ??
+        destinationSelection.selectedRomanNumeralId ??
         _fallbackDiatonicRoman(
           random: random,
           allowedDiatonicRomanNumerals: request.allowedDiatonicRomanNumerals,
         );
+
+    final modalDecision = maybeSelectModalInterchange(
+      random: random,
+      request: request,
+    );
+    if (modalDecision != null) {
+      final finalSourceKind = MusicTheory
+          .specFor(modalDecision.selectedRomanNumeralId)
+          .sourceKind;
+      return SmartStepPlan(
+        finalKey: request.currentKey,
+        finalRomanNumeralId: modalDecision.selectedRomanNumeralId,
+        appliedType: null,
+        resolutionTargetRomanId: null,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        patternTag: modalDecision.patternTag,
+        remainingQueuedChords: modalDecision.remainingQueuedChords,
+        returnedToNormalFlow: false,
+        renderingPlan: SmartRenderingPlan(
+          plannedChordKind: PlannedChordKind.resolvedRoman,
+          patternTag: modalDecision.patternTag,
+        ),
+        debug: SmartGenerationDebug(
+          currentKey: request.currentKey,
+          currentRomanNumeralId: request.currentRomanNumeralId,
+          selectedDiatonicDestination: selectedDestination,
+          selectedModalInterchange: modalDecision.selectedRomanNumeralId,
+          finalKey: request.currentKey,
+          finalRomanNumeralId: modalDecision.selectedRomanNumeralId,
+          decision: modalDecision.decision,
+          activePatternTag: modalDecision.patternTag,
+          queuedPatternLength: modalDecision.remainingQueuedChords.length,
+          transitionDebugSummary: destinationSelection.debug.describe(),
+          plannedChordKind: PlannedChordKind.resolvedRoman,
+          finalSourceKind: finalSourceKind,
+        ),
+      );
+    }
+
     final approachDecision = maybeInsertAppliedApproach(
       random: random,
-      destinationRomanNumeral: selectedDestination,
+      destinationRomanNumeralId: selectedDestination,
       secondaryDominantEnabled: request.secondaryDominantEnabled,
       substituteDominantEnabled: request.substituteDominantEnabled,
     );
 
     return SmartStepPlan(
       finalKey: request.currentKey,
-      finalRomanNumeral: approachDecision.selectedRomanNumeral,
+      finalRomanNumeralId: approachDecision.selectedRomanNumeralId,
       appliedType: approachDecision.appliedType,
-      resolutionTargetRoman: approachDecision.appliedTargetRomanNumeral,
+      resolutionTargetRomanId: approachDecision.appliedTargetRomanNumeralId,
       plannedChordKind: PlannedChordKind.resolvedRoman,
       patternTag: null,
       remainingQueuedChords: const [],
@@ -816,40 +1001,257 @@ class SmartGeneratorHelper {
       renderingPlan: const SmartRenderingPlan(),
       debug: SmartGenerationDebug(
         currentKey: request.currentKey,
-        currentRomanNumeral: request.currentRomanNumeral,
+        currentRomanNumeralId: request.currentRomanNumeralId,
         selectedDiatonicDestination: selectedDestination,
         insertedAppliedApproach: approachDecision.insertedAppliedApproach,
         appliedType: approachDecision.appliedType,
-        appliedTargetRomanNumeral: approachDecision.appliedTargetRomanNumeral,
-        modulationCandidateKeys: const [],
+        appliedTargetRomanNumeralId: approachDecision.appliedTargetRomanNumeralId,
         finalKey: request.currentKey,
-        finalRomanNumeral: approachDecision.selectedRomanNumeral,
+        finalRomanNumeralId: approachDecision.selectedRomanNumeralId,
         decision: approachDecision.insertedApproach
             ? 'inserted-applied-approach'
             : 'selected-diatonic-destination',
         transitionDebugSummary: destinationSelection.debug.describe(),
         plannedChordKind: PlannedChordKind.resolvedRoman,
+        finalSourceKind: MusicTheory
+            .specFor(approachDecision.selectedRomanNumeralId)
+            .sourceKind,
       ),
     );
   }
 
-  static bool _isAppliedDominant(String romanNumeral) {
-    return romanNumeral.startsWith('V7/') || romanNumeral.startsWith('subV7/');
+  static ModalInterchangeDecision? maybeSelectModalInterchange({
+    required Random random,
+    required SmartStepRequest request,
+  }) {
+    if (!request.modalInterchangeEnabled) {
+      return null;
+    }
+    final chance = _modalInsertionChance(request);
+    if (chance <= 0 || random.nextInt(100) >= chance) {
+      return null;
+    }
+
+    final pool = modalPoolByContext[request.currentHarmonicFunction] ??
+        modalPoolByContext[HarmonicFunction.tonic]!;
+    final selection = _selectWeightedCandidate(
+      random: random,
+      currentRomanNumeralId: request.currentRomanNumeralId,
+      filteredCandidates: pool,
+      emptyReason: 'No modal interchange candidates were configured.',
+      nonPositiveReason:
+          'Modal interchange candidates produced a non-positive total weight.',
+    );
+    final selectedRoman =
+        selection.selectedRomanNumeralId ??
+        RomanNumeralId.borrowedIvMin7;
+    final queuedFollowers = _queuedFollowersForModalSelection(
+      random: random,
+      selectedRomanNumeralId: selectedRoman,
+    );
+    final patternTag = queuedFollowers.isEmpty
+        ? null
+        : queuedFollowers.first.patternTag;
+    return ModalInterchangeDecision(
+      selectedRomanNumeralId: selectedRoman,
+      remainingQueuedChords: queuedFollowers,
+      patternTag: patternTag,
+      decision: queuedFollowers.isEmpty
+          ? 'inserted-modal-interchange'
+          : 'inserted-modal-pattern',
+    );
   }
 
-  static AppliedType? _appliedTypeForRoman(String romanNumeral) {
-    if (romanNumeral.startsWith('subV7/')) {
+  static SmartTransitionSelection _selectModalExit({
+    required Random random,
+    required RomanNumeralId currentRomanNumeralId,
+  }) {
+    final candidates = modalExitTransitions[currentRomanNumeralId] ?? const [];
+    return _selectWeightedCandidate(
+      random: random,
+      currentRomanNumeralId: currentRomanNumeralId,
+      filteredCandidates: candidates,
+      emptyReason: 'No modal interchange exit candidates were configured.',
+      nonPositiveReason:
+          'Modal interchange exit candidates produced a non-positive total weight.',
+    );
+  }
+
+  static SmartTransitionSelection _selectWeightedCandidate({
+    required Random random,
+    required RomanNumeralId? currentRomanNumeralId,
+    required List<WeightedNextRoman> filteredCandidates,
+    required String emptyReason,
+    required String nonPositiveReason,
+  }) {
+    if (filteredCandidates.isEmpty) {
+      return SmartTransitionSelection(
+        selectedRomanNumeralId: null,
+        debug: SmartTransitionDebug(
+          currentRomanNumeralId: currentRomanNumeralId,
+          availableCandidates: const [],
+          totalWeight: 0,
+          roll: null,
+          selectedRomanNumeralId: null,
+          fallbackReason: emptyReason,
+        ),
+      );
+    }
+
+    final totalWeight = filteredCandidates.fold<int>(
+      0,
+      (sum, candidate) => sum + candidate.weight,
+    );
+    if (totalWeight <= 0) {
+      return SmartTransitionSelection(
+        selectedRomanNumeralId: null,
+        debug: SmartTransitionDebug(
+          currentRomanNumeralId: currentRomanNumeralId,
+          availableCandidates: filteredCandidates,
+          totalWeight: 0,
+          roll: null,
+          selectedRomanNumeralId: null,
+          fallbackReason: nonPositiveReason,
+        ),
+      );
+    }
+
+    final roll = random.nextInt(totalWeight);
+    var remaining = roll;
+    for (final candidate in filteredCandidates) {
+      if (remaining < candidate.weight) {
+        return SmartTransitionSelection(
+          selectedRomanNumeralId: candidate.romanNumeralId,
+          debug: SmartTransitionDebug(
+            currentRomanNumeralId: currentRomanNumeralId,
+            availableCandidates: filteredCandidates,
+            totalWeight: totalWeight,
+            roll: roll,
+            selectedRomanNumeralId: candidate.romanNumeralId,
+          ),
+        );
+      }
+      remaining -= candidate.weight;
+    }
+
+    final fallbackCandidate = filteredCandidates.last;
+    return SmartTransitionSelection(
+      selectedRomanNumeralId: fallbackCandidate.romanNumeralId,
+      debug: SmartTransitionDebug(
+        currentRomanNumeralId: currentRomanNumeralId,
+        availableCandidates: filteredCandidates,
+        totalWeight: totalWeight,
+        roll: roll,
+        selectedRomanNumeralId: fallbackCandidate.romanNumeralId,
+      ),
+    );
+  }
+
+  static int _modalInsertionChance(SmartStepRequest request) {
+    if (request.currentRenderedNonDiatonic) {
+      return modalChanceAfterNonDiatonic;
+    }
+    switch (request.currentHarmonicFunction) {
+      case HarmonicFunction.tonic:
+        return modalChanceTonic;
+      case HarmonicFunction.predominant:
+        return modalChancePredominant;
+      case HarmonicFunction.dominant:
+        return modalChanceDominant;
+      case HarmonicFunction.free:
+        return 0;
+    }
+  }
+
+  static List<QueuedSmartChord> _queuedFollowersForModalSelection({
+    required Random random,
+    required RomanNumeralId selectedRomanNumeralId,
+  }) {
+    switch (selectedRomanNumeralId) {
+      case RomanNumeralId.borrowedIvMin7:
+        if (random.nextInt(100) < backdoorTriggerChance) {
+          return const [
+            QueuedSmartChord(
+              finalRomanNumeralId: RomanNumeralId.borrowedFlatVII7,
+              plannedChordKind: PlannedChordKind.resolvedRoman,
+              patternTag: 'backdoor-cadence',
+            ),
+            QueuedSmartChord(
+              finalRomanNumeralId: RomanNumeralId.iMaj7,
+              plannedChordKind: PlannedChordKind.resolvedRoman,
+              patternTag: 'backdoor-cadence',
+            ),
+          ];
+        }
+        return const [];
+      case RomanNumeralId.borrowedIiHalfDiminished7:
+        if (random.nextInt(100) < borrowedMinorTwoFiveTriggerChance) {
+          return const [
+            QueuedSmartChord(
+              finalRomanNumeralId: RomanNumeralId.vDom7,
+              plannedChordKind: PlannedChordKind.resolvedRoman,
+              patternTag: 'borrowed-minor-ii-v-i',
+            ),
+            QueuedSmartChord(
+              finalRomanNumeralId: RomanNumeralId.iMaj7,
+              plannedChordKind: PlannedChordKind.resolvedRoman,
+              patternTag: 'borrowed-minor-ii-v-i',
+            ),
+          ];
+        }
+        return const [];
+      case RomanNumeralId.borrowedFlatIIMaj7:
+        if (random.nextInt(100) < neapolitanDirectResolutionChance) {
+          return const [
+            QueuedSmartChord(
+              finalRomanNumeralId: RomanNumeralId.iMaj7,
+              plannedChordKind: PlannedChordKind.resolvedRoman,
+              patternTag: 'neapolitan-color',
+            ),
+          ];
+        }
+        return const [
+          QueuedSmartChord(
+            finalRomanNumeralId: RomanNumeralId.vDom7,
+            plannedChordKind: PlannedChordKind.resolvedRoman,
+            patternTag: 'neapolitan-color',
+          ),
+          QueuedSmartChord(
+            finalRomanNumeralId: RomanNumeralId.iMaj7,
+            plannedChordKind: PlannedChordKind.resolvedRoman,
+            patternTag: 'neapolitan-color',
+          ),
+        ];
+      default:
+        return const [];
+    }
+  }
+
+  static bool _isAppliedDominant(RomanNumeralId romanNumeralId) {
+    final sourceKind = MusicTheory.specFor(romanNumeralId).sourceKind;
+    return sourceKind == ChordSourceKind.secondaryDominant ||
+        sourceKind == ChordSourceKind.substituteDominant;
+  }
+
+  static bool _isModalInterchange(RomanNumeralId romanNumeralId) {
+    return MusicTheory.specFor(romanNumeralId).sourceKind ==
+        ChordSourceKind.modalInterchange;
+  }
+
+  static AppliedType? _appliedTypeForRoman(RomanNumeralId romanNumeralId) {
+    final sourceKind = MusicTheory.specFor(romanNumeralId).sourceKind;
+    if (sourceKind == ChordSourceKind.substituteDominant) {
       return AppliedType.substitute;
     }
-    if (romanNumeral.startsWith('V7/')) {
+    if (sourceKind == ChordSourceKind.secondaryDominant) {
       return AppliedType.secondary;
     }
     return null;
   }
 
-  static String _fallbackDiatonicRoman({
+  static RomanNumeralId _fallbackDiatonicRoman({
     required Random random,
-    required List<String> allowedDiatonicRomanNumerals,
+    required List<RomanNumeralId> allowedDiatonicRomanNumerals,
   }) {
     return allowedDiatonicRomanNumerals[random.nextInt(
       allowedDiatonicRomanNumerals.length,

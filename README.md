@@ -1,21 +1,18 @@
-﻿# SightChord
+# SightChord
 
-SightChord is a cross-platform Flutter app for improvisation and harmony practice. It generates random chords, supports key-based diatonic practice, and can advance automatically with a metronome-driven pulse.
+SightChord is a Flutter chord practice app for improvisation, reading, and harmonic vocabulary work.
 
 ## Current Features
 
-- Random chord generation with cleaner enharmonic spelling
-- Key-based generation using diatonic Roman numerals
-- Optional `Secondary Dominant` and `Substitute Dominant` pools
+- Free mode across all 12 roots
+- Key mode with diatonic Roman numerals
+- Smart Generator mode with weighted harmonic motion
+- Secondary dominants, substitute dominants, and modal interchange
+- Chord symbol styles: `Compact`, `MajText`, `DeltaJazz`
+- Tensions, `V7sus4`, and slash-bass inversions
 - Previous / current / next chord preview
-- Auto-advance mode with BPM control and metronome volume
-- Keyboard shortcuts for desktop and web
-
-## Keyboard Shortcuts
-
-- `Space`: next chord
-- `Enter`: start or stop auto-advance
-- `Up / Down`: raise or lower BPM by 5
+- Metronome, autoplay, BPM control, and keyboard shortcuts
+- Official Flutter localization for English, Espanol, Simplified Chinese, Japanese, and Korean
 
 ## Run
 
@@ -24,21 +21,41 @@ flutter pub get
 flutter run
 ```
 
-## Deploy to GitHub Pages
-
-This repository includes a GitHub Actions workflow at `.github/workflows/deploy-pages.yml`.
-
-To publish the Flutter web app to `https://saintimulus-oss.github.io/sightchord/`:
+## Verify
 
 ```bash
+flutter analyze
+flutter test
 flutter build web --release --base-href /sightchord/
 ```
 
-Then push to `main`. The workflow will rebuild the app and deploy `build/web` to GitHub Pages.
+For GitHub Pages project sites, the workflow auto-detects the repository name and sets the correct `base-href`. If the repository is a user/org Pages repository such as `owner.github.io`, it will build with `/`.
 
-In the GitHub repository settings, make sure Pages is configured to use `GitHub Actions` as the source.
+## GitHub Pages
+
+This repository includes `.github/workflows/deploy-pages.yml` using the official Pages custom workflow flow:
+
+1. Checkout
+2. Configure Pages
+3. Set up Flutter
+4. `flutter pub get`
+5. `flutter analyze`
+6. `flutter test`
+7. `flutter build web --release`
+8. Upload the Pages artifact
+9. Deploy with `actions/deploy-pages`
+
+Expected project Pages URL for this repository:
+
+- `https://saintimulus-oss.github.io/sightchord/`
+
+To publish:
+
+1. In GitHub repository settings, set Pages source to `GitHub Actions`.
+2. Push the default branch or run the workflow manually from Actions.
 
 ## Notes
 
+- Chord symbols, note names, Roman numeral tokens, tensions, and key names are not localized.
+- Settings are persisted with `shared_preferences`.
 - The metronome uses `assets/tick.mp3` through `audioplayers`.
-- Widget tests now target the actual practice UI instead of the default Flutter counter template.

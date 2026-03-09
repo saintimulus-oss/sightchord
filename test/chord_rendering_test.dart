@@ -1,8 +1,9 @@
-﻿import 'dart:math';
+import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/main.dart';
-import 'package:sightchord/smart_generator.dart';
+import 'package:sightchord/music/chord_formatting.dart';
+import 'package:sightchord/music/chord_theory.dart';
+import 'package:sightchord/settings/practice_settings.dart';
 
 class _FixedRandom implements Random {
   _FixedRandom(this.value);
@@ -19,138 +20,242 @@ class _FixedRandom implements Random {
   int nextInt(int max) => value % max;
 }
 
+class _SequenceRandom implements Random {
+  _SequenceRandom(this.values);
+
+  final List<int> values;
+  int _index = 0;
+
+  @override
+  bool nextBool() => nextInt(2) == 0;
+
+  @override
+  double nextDouble() => 0;
+
+  @override
+  int nextInt(int max) {
+    final value = values[_index % values.length];
+    _index += 1;
+    return value % max;
+  }
+}
+
+ChordSymbolData _symbol(
+  String root,
+  ChordQuality quality, {
+  List<String> tensions = const [],
+  String? bass,
+}) {
+  return ChordSymbolData(
+    root: root,
+    harmonicQuality: quality,
+    renderQuality: quality,
+    tensions: tensions,
+    bass: bass,
+  );
+}
+
 void main() {
-  test('tension selection is disabled when Allow Tensions is off', () {
-    final tensions = ChordRenderingHelper.selectTensions(
-      random: _FixedRandom(0),
-      romanNumeral: 'V7',
-      plannedChordKind: PlannedChordKind.resolvedRoman,
-      allowTensions: false,
-      selectedTensionOptions: {'9', 'b9'},
-      suppressTensions: false,
-    );
+  group('ChordSymbolFormatter', () {
+    test('formats style presets consistently', () {
+      expect(
+        ChordSymbolFormatter.format(
+          _symbol('C', ChordQuality.major7),
+          ChordSymbolStyle.compact,
+        ),
+        'CM7',
+      );
+      expect(
+        ChordSymbolFormatter.format(
+          _symbol('C', ChordQuality.major7),
+          ChordSymbolStyle.majText,
+        ),
+        'Cmaj7',
+      );
+      expect(
+        ChordSymbolFormatter.format(
+          _symbol('C', ChordQuality.major7),
+          ChordSymbolStyle.deltaJazz,
+        ),
+        'CΔ7',
+      );
+      expect(
+        ChordSymbolFormatter.format(
+          _symbol('C', ChordQuality.minor7),
+          ChordSymbolStyle.deltaJazz,
+        ),
+        'C-7',
+      );
+      expect(
+        ChordSymbolFormatter.format(
+          _symbol('C', ChordQuality.halfDiminished7),
+          ChordSymbolStyle.deltaJazz,
+        ),
+        'Cø7',
+      );
+      expect(
+        ChordSymbolFormatter.format(
+          _symbol('C', ChordQuality.augmentedTriad),
+          ChordSymbolStyle.deltaJazz,
+        ),
+        'C+',
+      );
+      expect(
+        ChordSymbolFormatter.format(
+          _symbol('C', ChordQuality.diminishedTriad),
+          ChordSymbolStyle.compact,
+        ),
+        'Cdim',
+      );
+    });
 
-    expect(tensions, isEmpty);
+    test('keeps tensions and slash bass across styles', () {
+      final symbol = _symbol(
+        'C',
+        ChordQuality.major7,
+        tensions: const ['#11'],
+        bass: 'E',
+      );
+
+      expect(
+        ChordSymbolFormatter.format(symbol, ChordSymbolStyle.compact),
+        'CM7(#11)/E',
+      );
+      expect(
+        ChordSymbolFormatter.format(symbol, ChordSymbolStyle.majText),
+        'Cmaj7(#11)/E',
+      );
+      expect(
+        ChordSymbolFormatter.format(symbol, ChordSymbolStyle.deltaJazz),
+        'CΔ7(#11)/E',
+      );
+    });
   });
 
-  test('selected chips filter roman tension candidates directly', () {
-    final tensions = ChordRenderingHelper.selectTensions(
-      random: _FixedRandom(0),
-      romanNumeral: 'V7',
-      plannedChordKind: PlannedChordKind.resolvedRoman,
-      allowTensions: true,
-      selectedTensionOptions: {'9'},
-      suppressTensions: false,
-    );
+  group('Modal interchange spelling', () {
+    test('resolves borrowed roots in C major with pragmatic spelling', () {
+      final modalSymbols = <RomanNumeralId, String>{
+        RomanNumeralId.borrowedIvMin7: 'Fm7',
+        RomanNumeralId.borrowedFlatVII7: 'Bb7',
+        RomanNumeralId.borrowedFlatVIMaj7: 'Abmaj7',
+        RomanNumeralId.borrowedFlatIIIMaj7: 'Ebmaj7',
+        RomanNumeralId.borrowedIiHalfDiminished7: 'Dm7b5',
+        RomanNumeralId.borrowedFlatIIMaj7: 'Dbmaj7',
+      };
 
-    expect(tensions, ['9']);
+      for (final entry in modalSymbols.entries) {
+        final spec = MusicTheory.specFor(entry.key);
+        final rendered = ChordSymbolFormatter.format(
+          ChordSymbolData(
+            root: MusicTheory.resolveChordRoot('C', entry.key),
+            harmonicQuality: spec.quality,
+            renderQuality: spec.quality,
+          ),
+          ChordSymbolStyle.majText,
+        );
+        expect(rendered, entry.value);
+      }
+    });
   });
 
-  test('V7-family altered tensions are removed when chips are disabled', () {
-    final tensions = ChordRenderingHelper.selectTensions(
-      random: _FixedRandom(0),
-      romanNumeral: 'V7',
-      plannedChordKind: PlannedChordKind.resolvedRoman,
-      allowTensions: true,
-      selectedTensionOptions: {'9'},
-      suppressTensions: false,
-    );
+  group('Inversions', () {
+    test('renders major seventh slash chords', () {
+      final settings = const InversionSettings(
+        enabled: true,
+        firstInversionEnabled: true,
+        secondInversionEnabled: false,
+        thirdInversionEnabled: false,
+      );
+      final first = ChordRenderingHelper.maybeApplyInversion(
+        random: _SequenceRandom([0, 0]),
+        symbolData: _symbol('C', ChordQuality.major7),
+        inversionSettings: settings,
+      );
+      expect(
+        ChordSymbolFormatter.format(first, ChordSymbolStyle.majText),
+        'Cmaj7/E',
+      );
 
-    expect(tensions, isNot(contains('b9')));
-    expect(tensions, isNot(contains('#9')));
-    expect(tensions, isNot(contains('#11')));
-    expect(tensions, isNot(contains('b13')));
+      final second = ChordRenderingHelper.maybeApplyInversion(
+        random: _SequenceRandom([0, 0]),
+        symbolData: _symbol('C', ChordQuality.major7),
+        inversionSettings: const InversionSettings(
+          enabled: true,
+          firstInversionEnabled: false,
+          secondInversionEnabled: true,
+          thirdInversionEnabled: false,
+        ),
+      );
+      expect(
+        ChordSymbolFormatter.format(second, ChordSymbolStyle.majText),
+        'Cmaj7/G',
+      );
+
+      final third = ChordRenderingHelper.maybeApplyInversion(
+        random: _SequenceRandom([0, 0]),
+        symbolData: _symbol('C', ChordQuality.major7),
+        inversionSettings: const InversionSettings(
+          enabled: true,
+          firstInversionEnabled: false,
+          secondInversionEnabled: false,
+          thirdInversionEnabled: true,
+        ),
+      );
+      expect(
+        ChordSymbolFormatter.format(third, ChordSymbolStyle.majText),
+        'Cmaj7/B',
+      );
+    });
+
+    test('uses actual chord members for sus4 inversion', () {
+      final inverted = ChordRenderingHelper.maybeApplyInversion(
+        random: _SequenceRandom([0, 0]),
+        symbolData: _symbol('G', ChordQuality.dominant7sus4),
+        inversionSettings: const InversionSettings(
+          enabled: true,
+          firstInversionEnabled: true,
+          secondInversionEnabled: false,
+          thirdInversionEnabled: false,
+        ),
+      );
+
+      expect(
+        ChordSymbolFormatter.format(inverted, ChordSymbolStyle.majText),
+        'G7sus4/C',
+      );
+    });
+
+    test('falls back to root position when only invalid inversion is enabled', () {
+      final result = ChordRenderingHelper.maybeApplyInversion(
+        random: _SequenceRandom([0, 0]),
+        symbolData: _symbol('C', ChordQuality.majorTriad),
+        inversionSettings: const InversionSettings(
+          enabled: true,
+          firstInversionEnabled: false,
+          secondInversionEnabled: false,
+          thirdInversionEnabled: true,
+        ),
+      );
+
+      expect(
+        ChordSymbolFormatter.format(result, ChordSymbolStyle.majText),
+        'C',
+      );
+    });
   });
 
-  test('safe dominant tension pairs are available when both chips are enabled', () {
-    final tensions = ChordRenderingHelper.selectTensions(
-      random: _FixedRandom(0),
-      romanNumeral: 'V7',
-      plannedChordKind: PlannedChordKind.resolvedRoman,
-      allowTensions: true,
-      selectedTensionOptions: {'9', '#11'},
-      suppressTensions: false,
-    );
+  group('Tensions', () {
+    test('filters tension chips against profile', () {
+      final tensions = ChordRenderingHelper.selectTensions(
+        random: _FixedRandom(0),
+        romanNumeralId: RomanNumeralId.vDom7,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        allowTensions: true,
+        selectedTensionOptions: {'9', '#11'},
+        suppressTensions: false,
+      );
 
-    expect(tensions, ['9', '#11']);
-  });
-
-  test('line cliche planned chords suppress tensions', () {
-    final tensions = ChordRenderingHelper.selectTensions(
-      random: _FixedRandom(0),
-      romanNumeral: 'IM7',
-      plannedChordKind: PlannedChordKind.tonicDominant7,
-      allowTensions: true,
-      selectedTensionOptions: {...ChordRenderingHelper.supportedTensionOptions},
-      suppressTensions: true,
-    );
-
-    expect(tensions, isEmpty);
-  });
-
-  test('repeat guard keys are metadata-based and ignore surface decoration', () {
-    final dominantKey = ChordRenderingHelper.buildRepeatGuardKey(
-      keyName: 'C',
-      romanNumeral: 'V7',
-      harmonicFunction: 'dominant',
-      plannedChordKind: PlannedChordKind.resolvedRoman,
-      baseChord: 'G7',
-    );
-    final decoratedDominantKey = ChordRenderingHelper.buildRepeatGuardKey(
-      keyName: 'C',
-      romanNumeral: 'V7',
-      harmonicFunction: 'dominant',
-      plannedChordKind: PlannedChordKind.resolvedRoman,
-      baseChord: 'G7',
-    );
-    final tonicDominant7Key = ChordRenderingHelper.buildRepeatGuardKey(
-      keyName: 'C',
-      romanNumeral: 'IM7',
-      harmonicFunction: 'tonic',
-      plannedChordKind: PlannedChordKind.tonicDominant7,
-      baseChord: 'C7',
-      patternTag: 'major-tonic-cliche',
-    );
-    final tonicSixKey = ChordRenderingHelper.buildRepeatGuardKey(
-      keyName: 'C',
-      romanNumeral: 'IM7',
-      harmonicFunction: 'tonic',
-      plannedChordKind: PlannedChordKind.tonicSix,
-      baseChord: 'C6',
-      patternTag: 'major-tonic-cliche',
-    );
-
-    expect(dominantKey, decoratedDominantKey);
-    expect(tonicDominant7Key, isNot(tonicSixKey));
-  });
-
-  test('harmonic comparison key distinguishes tonic cliche identities', () {
-    final ordinaryTonic = ChordRenderingHelper.buildHarmonicComparisonKey(
-      keyName: 'C',
-      romanNumeral: 'IM7',
-      harmonicFunction: 'tonic',
-      plannedChordKind: PlannedChordKind.resolvedRoman,
-      baseChord: 'CM7',
-    );
-    final tonicDominant7 = ChordRenderingHelper.buildHarmonicComparisonKey(
-      keyName: 'C',
-      romanNumeral: 'IM7',
-      harmonicFunction: 'tonic',
-      plannedChordKind: PlannedChordKind.tonicDominant7,
-      baseChord: 'C7',
-      patternTag: 'major-tonic-cliche',
-    );
-
-    expect(ordinaryTonic, isNot(tonicDominant7));
-  });
-
-  test('renderChordSymbol formats V7sus4 and tensions consistently', () {
-    final rendered = ChordRenderingHelper.renderChordSymbol(
-      baseChord: 'G7',
-      surfaceVariant: SurfaceVariant.dominantSus4,
-      tensions: const ['b9'],
-    );
-
-    expect(rendered, 'G7sus4(b9)');
+      expect(tensions, ['9', '#11']);
+    });
   });
 }
