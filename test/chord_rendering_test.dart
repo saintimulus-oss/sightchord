@@ -77,7 +77,7 @@ void main() {
           _symbol('C', ChordQuality.major7),
           ChordSymbolStyle.deltaJazz,
         ),
-        'CΔ7',
+        'C?7',
       );
       expect(
         ChordSymbolFormatter.format(
@@ -91,7 +91,7 @@ void main() {
           _symbol('C', ChordQuality.halfDiminished7),
           ChordSymbolStyle.deltaJazz,
         ),
-        'Cø7',
+        'C첩7',
       );
       expect(
         ChordSymbolFormatter.format(
@@ -127,7 +127,45 @@ void main() {
       );
       expect(
         ChordSymbolFormatter.format(symbol, ChordSymbolStyle.deltaJazz),
-        'CΔ7(#11)/E',
+        'C?7(#11)/E',
+      );
+    });
+
+    test('renders new jazz qualities consistently', () {
+      expect(
+        ChordSymbolFormatter.format(
+          _symbol('A', ChordQuality.minorMajor7),
+          ChordSymbolStyle.majText,
+        ),
+        'AmMaj7',
+      );
+      expect(
+        ChordSymbolFormatter.format(
+          _symbol('A', ChordQuality.minor6),
+          ChordSymbolStyle.compact,
+        ),
+        'Am6',
+      );
+      expect(
+        ChordSymbolFormatter.format(
+          _symbol('C', ChordQuality.major69),
+          ChordSymbolStyle.majText,
+        ),
+        'C6/9',
+      );
+      expect(
+        ChordSymbolFormatter.format(
+          _symbol('E', ChordQuality.dominant7Alt),
+          ChordSymbolStyle.majText,
+        ),
+        'E7alt',
+      );
+      expect(
+        ChordSymbolFormatter.format(
+          _symbol('D', ChordQuality.dominant13sus4),
+          ChordSymbolStyle.majText,
+        ),
+        'D13sus4',
       );
     });
   });
@@ -359,6 +397,58 @@ void main() {
         expect(selection.symbolData.tensions, isEmpty);
       },
     );
+
+    test('uses context-specific altered profile for minor dominant', () {
+      final selection = ChordRenderingHelper.buildRenderingSelection(
+        random: _FixedRandom(0),
+        root: 'E',
+        harmonicQuality: ChordQuality.dominant7,
+        renderQuality: ChordQuality.dominant7Alt,
+        romanNumeralId: RomanNumeralId.secondaryOfVI,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        sourceKind: ChordSourceKind.secondaryDominant,
+        allowTensions: true,
+        selectedTensionOptions: {'b9', '#9', 'b13'},
+        suppressTensions: false,
+        inversionSettings: const InversionSettings(),
+        dominantContext: DominantContext.secondaryToMinor,
+      );
+
+      expect(selection.symbolData.renderQuality, ChordQuality.dominant7Alt);
+      expect(selection.symbolData.tensions, isEmpty);
+      expect(selection.isRenderedNonDiatonic, isTrue);
+    });
+
+    test('uses dominant-II tension profile when context is lydian dominant', () {
+      final selection = ChordRenderingHelper.buildRenderingSelection(
+        random: _FixedRandom(0),
+        root: 'D',
+        harmonicQuality: ChordQuality.dominant7,
+        renderQuality: ChordQuality.dominant7Sharp11,
+        romanNumeralId: RomanNumeralId.vDom7,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        sourceKind: ChordSourceKind.diatonic,
+        allowTensions: true,
+        selectedTensionOptions: {'#11', '13'},
+        suppressTensions: false,
+        inversionSettings: const InversionSettings(),
+        dominantContext: DominantContext.dominantIILydian,
+      );
+
+      expect(selection.symbolData.tensions, ['#11', '13']);
+    });
+
+    test('marks tonicization source as rendered non-diatonic', () {
+      final renderedNonDiatonic = ChordRenderingHelper.isRenderedNonDiatonic(
+        romanNumeralId: RomanNumeralId.secondaryOfV,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        sourceKind: ChordSourceKind.tonicization,
+        renderQuality: ChordQuality.dominant7,
+        tensions: const [],
+      );
+
+      expect(renderedNonDiatonic, isTrue);
+    });
   });
 
   group('Repeat guard', () {
@@ -382,5 +472,33 @@ void main() {
 
       expect(cMajor, isNot(dMajor));
     });
+
+    test('includes dominant context in applied repeat guard keys', () {
+      final primaryMinor = ChordRenderingHelper.buildRepeatGuardKey(
+        keyName: 'C',
+        romanNumeralId: RomanNumeralId.secondaryOfVI,
+        harmonicFunction: HarmonicFunction.dominant,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        symbolData: _symbol('E', ChordQuality.dominant7),
+        sourceKind: ChordSourceKind.secondaryDominant,
+        appliedType: AppliedType.secondary,
+        resolutionTargetRomanId: RomanNumeralId.viMin7,
+        dominantContext: DominantContext.primaryMinor,
+      );
+      final secondaryMinor = ChordRenderingHelper.buildRepeatGuardKey(
+        keyName: 'C',
+        romanNumeralId: RomanNumeralId.secondaryOfVI,
+        harmonicFunction: HarmonicFunction.dominant,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        symbolData: _symbol('E', ChordQuality.dominant7),
+        sourceKind: ChordSourceKind.secondaryDominant,
+        appliedType: AppliedType.secondary,
+        resolutionTargetRomanId: RomanNumeralId.viMin7,
+        dominantContext: DominantContext.secondaryToMinor,
+      );
+
+      expect(primaryMinor, isNot(secondaryMinor));
+    });
   });
 }
+

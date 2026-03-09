@@ -39,15 +39,42 @@ class _SequenceRandom implements Random {
   }
 }
 
+SmartStartRequest buildStartRequest({
+  List<String> activeKeys = const ['C', 'G', 'A'],
+  bool secondaryDominantEnabled = true,
+  bool substituteDominantEnabled = true,
+  bool modalInterchangeEnabled = true,
+  ModulationIntensity modulationIntensity = ModulationIntensity.medium,
+  JazzPreset jazzPreset = JazzPreset.standardsCore,
+  SourceProfile sourceProfile = SourceProfile.fakebookStandard,
+  bool smartDiagnosticsEnabled = true,
+}) {
+  return SmartStartRequest(
+    activeKeys: activeKeys,
+    secondaryDominantEnabled: secondaryDominantEnabled,
+    substituteDominantEnabled: substituteDominantEnabled,
+    modalInterchangeEnabled: modalInterchangeEnabled,
+    modulationIntensity: modulationIntensity,
+    jazzPreset: jazzPreset,
+    sourceProfile: sourceProfile,
+    smartDiagnosticsEnabled: smartDiagnosticsEnabled,
+  );
+}
+
 SmartStepRequest buildRequest({
-  String currentKey = 'C',
-  RomanNumeralId currentRomanNumeralId = RomanNumeralId.iMaj7,
+  int stepIndex = 3,
+  List<String> activeKeys = const ['C', 'G', 'A'],
+  KeyCenter? currentKeyCenter,
+  RomanNumeralId currentRomanNumeralId = RomanNumeralId.iMaj69,
   RomanNumeralId? currentResolutionRomanNumeralId,
   HarmonicFunction currentHarmonicFunction = HarmonicFunction.tonic,
-  bool secondaryDominantEnabled = false,
-  bool substituteDominantEnabled = false,
-  bool modalInterchangeEnabled = false,
-  List<String> modulationCandidateKeys = const [],
+  bool secondaryDominantEnabled = true,
+  bool substituteDominantEnabled = true,
+  bool modalInterchangeEnabled = true,
+  ModulationIntensity modulationIntensity = ModulationIntensity.medium,
+  JazzPreset jazzPreset = JazzPreset.modulationStudy,
+  SourceProfile sourceProfile = SourceProfile.fakebookStandard,
+  bool smartDiagnosticsEnabled = true,
   RomanNumeralId? previousRomanNumeralId,
   HarmonicFunction? previousHarmonicFunction,
   bool previousWasAppliedDominant = false,
@@ -56,15 +83,21 @@ SmartStepRequest buildRequest({
   bool currentRenderedNonDiatonic = false,
 }) {
   return SmartStepRequest(
-    currentKey: currentKey,
+    stepIndex: stepIndex,
+    activeKeys: activeKeys,
+    currentKeyCenter:
+        currentKeyCenter ??
+        const KeyCenter(tonicName: 'C', mode: KeyMode.major),
     currentRomanNumeralId: currentRomanNumeralId,
     currentResolutionRomanNumeralId: currentResolutionRomanNumeralId,
     currentHarmonicFunction: currentHarmonicFunction,
-    allowedDiatonicRomanNumerals: MusicTheory.diatonicRomans,
     secondaryDominantEnabled: secondaryDominantEnabled,
     substituteDominantEnabled: substituteDominantEnabled,
     modalInterchangeEnabled: modalInterchangeEnabled,
-    modulationCandidateKeys: modulationCandidateKeys,
+    modulationIntensity: modulationIntensity,
+    jazzPreset: jazzPreset,
+    sourceProfile: sourceProfile,
+    smartDiagnosticsEnabled: smartDiagnosticsEnabled,
     previousRomanNumeralId: previousRomanNumeralId,
     previousHarmonicFunction: previousHarmonicFunction,
     previousWasAppliedDominant: previousWasAppliedDominant,
@@ -75,167 +108,197 @@ SmartStepRequest buildRequest({
 }
 
 void main() {
-  test('weighted selection follows configured Roman numeral bands', () {
-    final tonicStart = SmartGeneratorHelper.selectNextRoman(
-      random: _FixedRandom(0),
-      currentRomanNumeralId: RomanNumeralId.iMaj7,
-      allowedRomanNumerals: MusicTheory.diatonicRomans,
-    );
-    final tonicMiddle = SmartGeneratorHelper.selectNextRoman(
-      random: _FixedRandom(62),
-      currentRomanNumeralId: RomanNumeralId.iMaj7,
-      allowedRomanNumerals: MusicTheory.diatonicRomans,
-    );
-    final tonicEnd = SmartGeneratorHelper.selectNextRoman(
-      random: _FixedRandom(97),
-      currentRomanNumeralId: RomanNumeralId.iMaj7,
-      allowedRomanNumerals: MusicTheory.diatonicRomans,
-    );
-
-    expect(tonicStart.selectedRomanNumeralId, RomanNumeralId.viMin7);
-    expect(tonicMiddle.selectedRomanNumeralId, RomanNumeralId.iiMin7);
-    expect(tonicEnd.selectedRomanNumeralId, RomanNumeralId.vDom7);
-  });
-
-  test('non-diatonic off keeps diatonic smart flow intact', () {
-    final plan = SmartGeneratorHelper.planNextStep(
-      random: _SequenceRandom([50]),
-      request: buildRequest(),
-    );
-
-    expect(plan.finalKey, 'C');
-    expect(plan.finalRomanNumeralId, RomanNumeralId.iiMin7);
-    expect(plan.debug.selectedDiatonicDestination, RomanNumeralId.iiMin7);
-    expect(plan.debug.insertedAppliedApproach, isNull);
-    expect(plan.appliedType, isNull);
-  });
-
-  test('secondary dominant inserts a destination-oriented applied chord', () {
-    final plan = SmartGeneratorHelper.planNextStep(
-      random: _SequenceRandom([50, 80]),
-      request: buildRequest(secondaryDominantEnabled: true),
-    );
-
-    expect(plan.finalKey, 'C');
-    expect(plan.debug.selectedDiatonicDestination, RomanNumeralId.iiMin7);
-    expect(plan.debug.insertedAppliedApproach, RomanNumeralId.secondaryOfII);
-    expect(
-      plan.debug.appliedTargetRomanNumeralId,
-      RomanNumeralId.iiMin7,
-    );
-    expect(plan.appliedType, AppliedType.secondary);
-    expect(plan.finalRomanNumeralId, RomanNumeralId.secondaryOfII);
-  });
-
-  test('substitute dominant inserts a tritone substitute approach chord', () {
-    final plan = SmartGeneratorHelper.planNextStep(
-      random: _SequenceRandom([50, 95]),
-      request: buildRequest(substituteDominantEnabled: true),
-    );
-
-    expect(plan.finalKey, 'C');
-    expect(plan.debug.selectedDiatonicDestination, RomanNumeralId.iiMin7);
-    expect(plan.debug.insertedAppliedApproach, RomanNumeralId.substituteOfII);
-    expect(
-      plan.debug.appliedTargetRomanNumeralId,
-      RomanNumeralId.iiMin7,
-    );
-    expect(plan.appliedType, AppliedType.substitute);
-    expect(plan.finalRomanNumeralId, RomanNumeralId.substituteOfII);
-  });
-
-  test('applied resolution can modulate into another active key', () {
-    final plan = SmartGeneratorHelper.planNextStep(
-      random: _SequenceRandom([0, 0, 0]),
-      request: buildRequest(
-        currentRomanNumeralId: RomanNumeralId.secondaryOfV,
-        currentResolutionRomanNumeralId: RomanNumeralId.vDom7,
-        currentHarmonicFunction: HarmonicFunction.dominant,
-        secondaryDominantEnabled: true,
-        modulationCandidateKeys: const ['G'],
-        currentRenderedNonDiatonic: true,
+  test('one-key mode does not produce real modulation', () {
+    final summary = SmartGeneratorHelper.simulateSteps(
+      random: Random(1),
+      steps: 400,
+      request: buildStartRequest(
+        activeKeys: const ['C'],
+        jazzPreset: JazzPreset.modulationStudy,
+        modulationIntensity: ModulationIntensity.high,
       ),
     );
 
-    expect(plan.finalKey, 'G');
-    expect(plan.finalRomanNumeralId, RomanNumeralId.iMaj7);
+    expect(summary.modulationSuccessCount, 0);
     expect(
-      plan.debug.appliedTargetRomanNumeralId,
-      RomanNumeralId.vDom7,
+      summary.blockedReasonHistogram[SmartBlockedReason.singleActiveKey] ?? 0,
+      greaterThan(0),
     );
-    expect(plan.debug.modulationCandidateKeys, ['G']);
-    expect(plan.resolutionTargetRomanId, RomanNumeralId.vDom7);
   });
 
-  test('major tonic line cliche queues on tonic resting context', () {
-    final plan = SmartGeneratorHelper.planNextStep(
-      random: _SequenceRandom([0]),
-      request: buildRequest(
-        previousRomanNumeralId: RomanNumeralId.iMaj7,
-        previousHarmonicFunction: HarmonicFunction.tonic,
+  test('multi-key mode can produce cadence-based real modulation', () {
+    final summary = SmartGeneratorHelper.simulateSteps(
+      random: Random(2),
+      steps: 500,
+      request: buildStartRequest(
+        activeKeys: const ['C', 'G', 'A'],
+        jazzPreset: JazzPreset.modulationStudy,
+        modulationIntensity: ModulationIntensity.high,
       ),
     );
 
-    expect(plan.finalRomanNumeralId, RomanNumeralId.iMaj7);
-    expect(plan.plannedChordKind, PlannedChordKind.tonicDominant7);
-    expect(plan.patternTag, 'major-tonic-cliche');
-    expect(plan.remainingQueuedChords, hasLength(1));
+    expect(summary.modulationSuccessCount, greaterThan(0));
     expect(
-      plan.remainingQueuedChords.first.plannedChordKind,
-      PlannedChordKind.tonicSix,
-    );
-    expect(plan.renderingPlan.suppressTensions, isTrue);
-    expect(plan.returnedToNormalFlow, isFalse);
-  });
-
-  test('modal interchange can queue a backdoor cadence', () {
-    final plan = SmartGeneratorHelper.planNextStep(
-      random: _SequenceRandom([0, 0, 0, 0]),
-      request: buildRequest(
-        modalInterchangeEnabled: true,
-        currentHarmonicFunction: HarmonicFunction.tonic,
-      ),
-    );
-
-    expect(plan.finalRomanNumeralId, RomanNumeralId.borrowedIvMin7);
-    expect(plan.patternTag, 'backdoor-cadence');
-    expect(
-      plan.remainingQueuedChords.map((chord) => chord.finalRomanNumeralId),
-      [RomanNumeralId.borrowedFlatVII7, RomanNumeralId.iMaj7],
+      summary.familyHistogram['cadence_based_real_modulation'] ?? 0,
+      greaterThan(0),
     );
   });
 
-  test('modal interchange can queue borrowed minor ii-V-I', () {
-    final plan = SmartGeneratorHelper.planNextStep(
-      random: _SequenceRandom([0, 0, 40, 0]),
-      request: buildRequest(
-        currentRomanNumeralId: RomanNumeralId.iiMin7,
-        currentHarmonicFunction: HarmonicFunction.predominant,
+  test(
+    'modulation uses a cadence path instead of direct applied-to-I jump',
+    () {
+      final plan = SmartGeneratorHelper.planNextStep(
+        random: _FixedRandom(0),
+        request: buildRequest(
+          activeKeys: const ['C', 'G'],
+          currentRomanNumeralId: RomanNumeralId.secondaryOfV,
+          currentResolutionRomanNumeralId: RomanNumeralId.vDom7,
+          currentHarmonicFunction: HarmonicFunction.dominant,
+          modulationIntensity: ModulationIntensity.high,
+        ),
+      );
+
+      expect(plan.patternTag, 'cadence_based_real_modulation');
+      expect(plan.finalKeyCenter.tonicName, 'G');
+      expect(plan.finalRomanNumeralId, RomanNumeralId.iiMin7);
+      expect(
+        plan.remainingQueuedChords.map((item) => item.finalRomanNumeralId),
+        [RomanNumeralId.vDom7, RomanNumeralId.iMaj69],
+      );
+    },
+  );
+
+  test('modal interchange does not fully choke modulation paths', () {
+    final summary = SmartGeneratorHelper.simulateSteps(
+      random: Random(3),
+      steps: 700,
+      request: buildStartRequest(
+        activeKeys: const ['C', 'G', 'A'],
+        jazzPreset: JazzPreset.modulationStudy,
+        modulationIntensity: ModulationIntensity.high,
         modalInterchangeEnabled: true,
       ),
     );
 
-    expect(
-      plan.finalRomanNumeralId,
-      RomanNumeralId.borrowedIiHalfDiminished7,
+    expect(summary.modulationSuccessCount, greaterThan(0));
+    expect(summary.modalBranchCount, greaterThan(0));
+  });
+
+  test('excluded fallback leaves a trace blocked reason', () {
+    final plan = SmartGeneratorHelper.planInitialStep(
+      random: _SequenceRandom(const [0, 0, 0, 0]),
+      request: buildStartRequest(
+        activeKeys: const ['C', 'G'],
+        jazzPreset: JazzPreset.standardsCore,
+      ),
     );
-    expect(plan.patternTag, 'borrowed-minor-ii-v-i');
+    final trace = plan.debug.withDecision(
+      'excluded-fallback',
+      nextBlockedReason: SmartBlockedReason.excludedFallback,
+      nextFallbackOccurred: true,
+    );
+
+    expect(trace.blockedReason, SmartBlockedReason.excludedFallback);
+    expect(trace.fallbackOccurred, isTrue);
+  });
+
+  test('minor key centers render as minor rather than major-ish tonic', () {
+    final root = MusicTheory.resolveChordRootForCenter(
+      const KeyCenter(tonicName: 'A', mode: KeyMode.minor),
+      RomanNumeralId.iMin6,
+    );
+
+    expect(root, 'A');
+    expect(MusicTheory.romanTokenOf(RomanNumeralId.iMin6), 'Im6');
+  });
+
+  test('applied dominant to minor target uses altered dominant rendering', () {
+    final quality = MusicTheory.resolveRenderQuality(
+      romanNumeralId: RomanNumeralId.secondaryOfVI,
+      plannedChordKind: PlannedChordKind.resolvedRoman,
+      allowV7sus4: true,
+      randomRoll: 0,
+      dominantContext: DominantContext.secondaryToMinor,
+    );
+
+    expect(quality, ChordQuality.dominant7Alt);
+  });
+
+  test('common-chord modulation can use a non-dominant pivot', () {
+    final summary = SmartGeneratorHelper.simulateSteps(
+      random: Random(4),
+      steps: 900,
+      request: buildStartRequest(
+        activeKeys: const ['C', 'A'],
+        jazzPreset: JazzPreset.modulationStudy,
+        modulationIntensity: ModulationIntensity.high,
+      ),
+    );
+
+    final pivotTrace = summary.traces.firstWhere(
+      (trace) => trace.activePatternTag == 'common_chord_modulation',
+    );
+
     expect(
-      plan.remainingQueuedChords.map((chord) => chord.finalRomanNumeralId),
-      [RomanNumeralId.vDom7, RomanNumeralId.iMaj7],
+      MusicTheory.specFor(pivotTrace.finalRomanNumeralId!).harmonicFunction,
+      isNot(HarmonicFunction.dominant),
     );
   });
 
-  test('compatible modulation keys are matched by tonic semitone', () {
-    const tonicSemitones = {'C': 0, 'C#/Db': 1, 'D': 2, 'G': 7};
+  test(
+    'standardsCore frequently emits ii-V-I, turnaround, and minor cadence families',
+    () {
+      final summary = SmartGeneratorHelper.simulateSteps(
+        random: Random(5),
+        steps: 1000,
+        request: buildStartRequest(
+          activeKeys: const ['C', 'G', 'A'],
+          jazzPreset: JazzPreset.standardsCore,
+          modulationIntensity: ModulationIntensity.low,
+        ),
+      );
 
-    final candidates = SmartGeneratorHelper.findCompatibleModulationKeys(
-      activeKeys: tonicSemitones.keys,
-      currentKey: 'C',
-      targetSemitone: 1,
-      keyTonicSemitoneResolver: (key) => tonicSemitones[key],
-    );
+      expect(
+        summary.familyHistogram['core_ii_v_i_major'] ?? 0,
+        greaterThan(10),
+      );
+      expect(
+        summary.familyHistogram['turnaround_i_vi_ii_v'] ?? 0,
+        greaterThan(5),
+      );
+      expect(
+        summary.familyHistogram['minor_ii_halfdim_v_alt_i'] ?? 0,
+        greaterThan(5),
+      );
+    },
+  );
 
-    expect(candidates, ['C#/Db']);
-  });
+  test(
+    'modulationStudy produces higher modulation density than standardsCore',
+    () {
+      final standardsCore = SmartGeneratorHelper.simulateSteps(
+        random: Random(6),
+        steps: 900,
+        request: buildStartRequest(
+          activeKeys: const ['C', 'G', 'A'],
+          jazzPreset: JazzPreset.standardsCore,
+          modulationIntensity: ModulationIntensity.low,
+        ),
+      );
+      final modulationStudy = SmartGeneratorHelper.simulateSteps(
+        random: Random(6),
+        steps: 900,
+        request: buildStartRequest(
+          activeKeys: const ['C', 'G', 'A'],
+          jazzPreset: JazzPreset.modulationStudy,
+          modulationIntensity: ModulationIntensity.high,
+        ),
+      );
+
+      expect(
+        modulationStudy.modulationSuccessCount,
+        greaterThan(standardsCore.modulationSuccessCount),
+      );
+    },
+  );
 }

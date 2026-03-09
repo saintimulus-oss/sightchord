@@ -1,12 +1,8 @@
+enum KeyMode { major, minor }
+
 enum AppliedType { secondary, substitute }
 
-enum PlannedChordKind {
-  resolvedRoman,
-  // Surface-only major-tonic line-cliche variant (I7).
-  tonicDominant7,
-  // Surface-only major-tonic line-cliche variant (I6), not a full 6/m6/mM7/augM7 system.
-  tonicSix,
-}
+enum PlannedChordKind { resolvedRoman, tonicDominant7, tonicSix }
 
 enum ChordQuality {
   majorTriad,
@@ -14,11 +10,17 @@ enum ChordQuality {
   dominant7,
   major7,
   minor7,
+  minorMajor7,
   halfDiminished7,
   diminishedTriad,
   diminished7,
   augmentedTriad,
   six,
+  minor6,
+  major69,
+  dominant7Alt,
+  dominant7Sharp11,
+  dominant13sus4,
   dominant7sus4,
 }
 
@@ -32,16 +34,28 @@ enum ChordSourceKind {
   secondaryDominant,
   substituteDominant,
   modalInterchange,
+  tonicization,
 }
 
 enum RomanNumeralId {
   iMaj7,
+  iMaj69,
   iiMin7,
   iiiMin7,
   ivMaj7,
   vDom7,
   viMin7,
   viiHalfDiminished7,
+  sharpIDim7,
+  iMinMaj7,
+  iMin7,
+  iMin6,
+  iiHalfDiminishedMinor,
+  flatIIIMaj7Minor,
+  ivMin7Minor,
+  flatVIMaj7Minor,
+  flatVIIDom7Minor,
+  relatedIiOfIII,
   secondaryOfII,
   secondaryOfIII,
   secondaryOfIV,
@@ -60,6 +74,89 @@ enum RomanNumeralId {
   borrowedFlatIIMaj7,
 }
 
+enum ModulationIntensity { off, low, medium, high }
+
+enum JazzPreset { standardsCore, modulationStudy, advanced }
+
+enum SourceProfile { fakebookStandard, recordingInspired }
+
+enum DominantContext {
+  primaryMajor,
+  primaryMinor,
+  secondaryToMajor,
+  secondaryToMinor,
+  tritoneSubstitute,
+  backdoor,
+  dominantIILydian,
+  susDominant,
+}
+
+enum ModulationKind { none, tonicization, real }
+
+enum SmartBlockedReason {
+  singleActiveKey,
+  noCompatibleKey,
+  modalBranchChosen,
+  appliedNotInserted,
+  phrasePositionLowPriority,
+  excludedFallback,
+  noCadentialPattern,
+}
+
+class KeyCenter {
+  const KeyCenter({
+    required this.tonicName,
+    required this.mode,
+    this.closenessClass = 0,
+  });
+
+  final String tonicName;
+  final KeyMode mode;
+  final int closenessClass;
+
+  String get displayName =>
+      '${MusicTheory.displayRootForKey(tonicName)} ${mode.name}';
+
+  bool get prefersFlatSpelling =>
+      MusicTheory.prefersFlatSpellingForKey(tonicName);
+
+  int? get tonicSemitone => MusicTheory.keyTonicSemitone(tonicName);
+
+  String serialize() => '$tonicName|${mode.name}';
+
+  KeyCenter copyWith({String? tonicName, KeyMode? mode, int? closenessClass}) {
+    return KeyCenter(
+      tonicName: tonicName ?? this.tonicName,
+      mode: mode ?? this.mode,
+      closenessClass: closenessClass ?? this.closenessClass,
+    );
+  }
+
+  static KeyCenter fromSerialized(String value) {
+    final parts = value.split('|');
+    if (parts.length != 2) {
+      return const KeyCenter(tonicName: 'C', mode: KeyMode.major);
+    }
+    return KeyCenter(
+      tonicName: parts.first,
+      mode: KeyMode.values.firstWhere(
+        (candidate) => candidate.name == parts.last,
+        orElse: () => KeyMode.major,
+      ),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is KeyCenter &&
+        other.tonicName == tonicName &&
+        other.mode == mode;
+  }
+
+  @override
+  int get hashCode => Object.hash(tonicName, mode);
+}
+
 class RomanSpec {
   const RomanSpec({
     required this.id,
@@ -67,7 +164,10 @@ class RomanSpec {
     required this.quality,
     required this.harmonicFunction,
     required this.sourceKind,
+    this.homeMode,
+    this.tonicSemitoneOffset,
     this.resolutionTargetId,
+    this.preferFlatSpelling,
   });
 
   final RomanNumeralId id;
@@ -75,12 +175,16 @@ class RomanSpec {
   final ChordQuality quality;
   final HarmonicFunction harmonicFunction;
   final ChordSourceKind sourceKind;
+  final KeyMode? homeMode;
+  final int? tonicSemitoneOffset;
   final RomanNumeralId? resolutionTargetId;
+  final bool? preferFlatSpelling;
 
   bool get isNonDiatonic =>
       sourceKind == ChordSourceKind.secondaryDominant ||
       sourceKind == ChordSourceKind.substituteDominant ||
-      sourceKind == ChordSourceKind.modalInterchange;
+      sourceKind == ChordSourceKind.modalInterchange ||
+      sourceKind == ChordSourceKind.tonicization;
 }
 
 class ChordSymbolData {
@@ -126,6 +230,7 @@ class GeneratedChord {
     required this.repeatGuardKey,
     required this.harmonicComparisonKey,
     this.keyName,
+    this.keyCenter,
     this.romanNumeralId,
     this.resolutionRomanNumeralId,
     this.harmonicFunction = HarmonicFunction.free,
@@ -134,6 +239,8 @@ class GeneratedChord {
     this.sourceKind = ChordSourceKind.free,
     this.appliedType,
     this.resolutionTargetRomanId,
+    this.dominantContext,
+    this.modulationKind = ModulationKind.none,
     this.wasExcludedFallback = false,
     this.isRenderedNonDiatonic = false,
     this.smartDebug,
@@ -143,6 +250,7 @@ class GeneratedChord {
   final String repeatGuardKey;
   final String harmonicComparisonKey;
   final String? keyName;
+  final KeyCenter? keyCenter;
   final RomanNumeralId? romanNumeralId;
   final RomanNumeralId? resolutionRomanNumeralId;
   final HarmonicFunction harmonicFunction;
@@ -151,6 +259,8 @@ class GeneratedChord {
   final ChordSourceKind sourceKind;
   final AppliedType? appliedType;
   final RomanNumeralId? resolutionTargetRomanId;
+  final DominantContext? dominantContext;
+  final ModulationKind modulationKind;
   final bool wasExcludedFallback;
   final bool isRenderedNonDiatonic;
   final SmartDebugInfo? smartDebug;
@@ -161,10 +271,14 @@ class GeneratedChord {
       sourceKind == ChordSourceKind.substituteDominant;
 
   String get analysisLabel {
-    if (keyName == null || romanNumeralId == null) {
+    if (romanNumeralId == null) {
       return '';
     }
-    return '$keyName: ${MusicTheory.romanTokenOf(romanNumeralId!)}';
+    final centerLabel = keyCenter?.displayName ?? keyName;
+    if (centerLabel == null || centerLabel.isEmpty) {
+      return MusicTheory.romanTokenOf(romanNumeralId!);
+    }
+    return '$centerLabel: ${MusicTheory.romanTokenOf(romanNumeralId!)}';
   }
 
   GeneratedChord copyWith({
@@ -172,6 +286,7 @@ class GeneratedChord {
     String? repeatGuardKey,
     String? harmonicComparisonKey,
     String? keyName,
+    KeyCenter? keyCenter,
     RomanNumeralId? romanNumeralId,
     RomanNumeralId? resolutionRomanNumeralId,
     HarmonicFunction? harmonicFunction,
@@ -180,6 +295,8 @@ class GeneratedChord {
     ChordSourceKind? sourceKind,
     AppliedType? appliedType,
     RomanNumeralId? resolutionTargetRomanId,
+    DominantContext? dominantContext,
+    ModulationKind? modulationKind,
     bool? wasExcludedFallback,
     bool? isRenderedNonDiatonic,
     SmartDebugInfo? smartDebug,
@@ -190,6 +307,7 @@ class GeneratedChord {
       harmonicComparisonKey:
           harmonicComparisonKey ?? this.harmonicComparisonKey,
       keyName: keyName ?? this.keyName,
+      keyCenter: keyCenter ?? this.keyCenter,
       romanNumeralId: romanNumeralId ?? this.romanNumeralId,
       resolutionRomanNumeralId:
           resolutionRomanNumeralId ?? this.resolutionRomanNumeralId,
@@ -200,6 +318,8 @@ class GeneratedChord {
       appliedType: appliedType ?? this.appliedType,
       resolutionTargetRomanId:
           resolutionTargetRomanId ?? this.resolutionTargetRomanId,
+      dominantContext: dominantContext ?? this.dominantContext,
+      modulationKind: modulationKind ?? this.modulationKind,
       wasExcludedFallback: wasExcludedFallback ?? this.wasExcludedFallback,
       isRenderedNonDiatonic:
           isRenderedNonDiatonic ?? this.isRenderedNonDiatonic,
@@ -229,11 +349,17 @@ class ChordToneFormulaLibrary {
     ChordQuality.dominant7: [0, 4, 7, 10],
     ChordQuality.major7: [0, 4, 7, 11],
     ChordQuality.minor7: [0, 3, 7, 10],
+    ChordQuality.minorMajor7: [0, 3, 7, 11],
     ChordQuality.halfDiminished7: [0, 3, 6, 10],
     ChordQuality.diminishedTriad: [0, 3, 6],
     ChordQuality.diminished7: [0, 3, 6, 9],
     ChordQuality.augmentedTriad: [0, 4, 8],
     ChordQuality.six: [0, 4, 7, 9],
+    ChordQuality.minor6: [0, 3, 7, 9],
+    ChordQuality.major69: [0, 4, 7, 9],
+    ChordQuality.dominant7Alt: [0, 4, 7, 10],
+    ChordQuality.dominant7Sharp11: [0, 4, 7, 10],
+    ChordQuality.dominant13sus4: [0, 5, 7, 10],
     ChordQuality.dominant7sus4: [0, 5, 7, 10],
   };
 
@@ -295,6 +421,29 @@ class MusicTheory {
     ChordQuality.augmentedTriad,
   ];
 
+  static const List<RomanNumeralId> majorDiatonicRomans = [
+    RomanNumeralId.iMaj7,
+    RomanNumeralId.iMaj69,
+    RomanNumeralId.iiMin7,
+    RomanNumeralId.iiiMin7,
+    RomanNumeralId.ivMaj7,
+    RomanNumeralId.vDom7,
+    RomanNumeralId.viMin7,
+    RomanNumeralId.viiHalfDiminished7,
+  ];
+
+  static const List<RomanNumeralId> minorDiatonicRomans = [
+    RomanNumeralId.iMinMaj7,
+    RomanNumeralId.iMin7,
+    RomanNumeralId.iMin6,
+    RomanNumeralId.iiHalfDiminishedMinor,
+    RomanNumeralId.flatIIIMaj7Minor,
+    RomanNumeralId.ivMin7Minor,
+    RomanNumeralId.vDom7,
+    RomanNumeralId.flatVIMaj7Minor,
+    RomanNumeralId.flatVIIDom7Minor,
+  ];
+
   static const List<RomanNumeralId> diatonicRomans = [
     RomanNumeralId.iMaj7,
     RomanNumeralId.iiMin7,
@@ -337,6 +486,17 @@ class MusicTheory {
       quality: ChordQuality.major7,
       harmonicFunction: HarmonicFunction.tonic,
       sourceKind: ChordSourceKind.diatonic,
+      homeMode: KeyMode.major,
+      tonicSemitoneOffset: 0,
+    ),
+    RomanNumeralId.iMaj69: RomanSpec(
+      id: RomanNumeralId.iMaj69,
+      token: 'I6/9',
+      quality: ChordQuality.major69,
+      harmonicFunction: HarmonicFunction.tonic,
+      sourceKind: ChordSourceKind.diatonic,
+      homeMode: KeyMode.major,
+      tonicSemitoneOffset: 0,
     ),
     RomanNumeralId.iiMin7: RomanSpec(
       id: RomanNumeralId.iiMin7,
@@ -344,6 +504,8 @@ class MusicTheory {
       quality: ChordQuality.minor7,
       harmonicFunction: HarmonicFunction.predominant,
       sourceKind: ChordSourceKind.diatonic,
+      homeMode: KeyMode.major,
+      tonicSemitoneOffset: 2,
     ),
     RomanNumeralId.iiiMin7: RomanSpec(
       id: RomanNumeralId.iiiMin7,
@@ -351,6 +513,8 @@ class MusicTheory {
       quality: ChordQuality.minor7,
       harmonicFunction: HarmonicFunction.tonic,
       sourceKind: ChordSourceKind.diatonic,
+      homeMode: KeyMode.major,
+      tonicSemitoneOffset: 4,
     ),
     RomanNumeralId.ivMaj7: RomanSpec(
       id: RomanNumeralId.ivMaj7,
@@ -358,6 +522,8 @@ class MusicTheory {
       quality: ChordQuality.major7,
       harmonicFunction: HarmonicFunction.predominant,
       sourceKind: ChordSourceKind.diatonic,
+      homeMode: KeyMode.major,
+      tonicSemitoneOffset: 5,
     ),
     RomanNumeralId.vDom7: RomanSpec(
       id: RomanNumeralId.vDom7,
@@ -365,6 +531,7 @@ class MusicTheory {
       quality: ChordQuality.dominant7,
       harmonicFunction: HarmonicFunction.dominant,
       sourceKind: ChordSourceKind.diatonic,
+      tonicSemitoneOffset: 7,
     ),
     RomanNumeralId.viMin7: RomanSpec(
       id: RomanNumeralId.viMin7,
@@ -372,13 +539,113 @@ class MusicTheory {
       quality: ChordQuality.minor7,
       harmonicFunction: HarmonicFunction.tonic,
       sourceKind: ChordSourceKind.diatonic,
+      homeMode: KeyMode.major,
+      tonicSemitoneOffset: 9,
     ),
     RomanNumeralId.viiHalfDiminished7: RomanSpec(
       id: RomanNumeralId.viiHalfDiminished7,
       token: 'VIIm7b5',
       quality: ChordQuality.halfDiminished7,
+      harmonicFunction: HarmonicFunction.predominant,
+      sourceKind: ChordSourceKind.diatonic,
+      homeMode: KeyMode.major,
+      tonicSemitoneOffset: 11,
+    ),
+    RomanNumeralId.sharpIDim7: RomanSpec(
+      id: RomanNumeralId.sharpIDim7,
+      token: '#Idim7',
+      quality: ChordQuality.diminished7,
+      harmonicFunction: HarmonicFunction.predominant,
+      sourceKind: ChordSourceKind.tonicization,
+      homeMode: KeyMode.major,
+      tonicSemitoneOffset: 1,
+      preferFlatSpelling: false,
+    ),
+    RomanNumeralId.iMinMaj7: RomanSpec(
+      id: RomanNumeralId.iMinMaj7,
+      token: 'ImMaj7',
+      quality: ChordQuality.minorMajor7,
+      harmonicFunction: HarmonicFunction.tonic,
+      sourceKind: ChordSourceKind.diatonic,
+      homeMode: KeyMode.minor,
+      tonicSemitoneOffset: 0,
+    ),
+    RomanNumeralId.iMin7: RomanSpec(
+      id: RomanNumeralId.iMin7,
+      token: 'Im7',
+      quality: ChordQuality.minor7,
+      harmonicFunction: HarmonicFunction.tonic,
+      sourceKind: ChordSourceKind.diatonic,
+      homeMode: KeyMode.minor,
+      tonicSemitoneOffset: 0,
+    ),
+    RomanNumeralId.iMin6: RomanSpec(
+      id: RomanNumeralId.iMin6,
+      token: 'Im6',
+      quality: ChordQuality.minor6,
+      harmonicFunction: HarmonicFunction.tonic,
+      sourceKind: ChordSourceKind.diatonic,
+      homeMode: KeyMode.minor,
+      tonicSemitoneOffset: 0,
+    ),
+    RomanNumeralId.iiHalfDiminishedMinor: RomanSpec(
+      id: RomanNumeralId.iiHalfDiminishedMinor,
+      token: 'IIm7b5',
+      quality: ChordQuality.halfDiminished7,
+      harmonicFunction: HarmonicFunction.predominant,
+      sourceKind: ChordSourceKind.diatonic,
+      homeMode: KeyMode.minor,
+      tonicSemitoneOffset: 2,
+    ),
+    RomanNumeralId.flatIIIMaj7Minor: RomanSpec(
+      id: RomanNumeralId.flatIIIMaj7Minor,
+      token: 'bIIImaj7',
+      quality: ChordQuality.major7,
+      harmonicFunction: HarmonicFunction.tonic,
+      sourceKind: ChordSourceKind.diatonic,
+      homeMode: KeyMode.minor,
+      tonicSemitoneOffset: 3,
+      preferFlatSpelling: true,
+    ),
+    RomanNumeralId.ivMin7Minor: RomanSpec(
+      id: RomanNumeralId.ivMin7Minor,
+      token: 'IVm7',
+      quality: ChordQuality.minor7,
+      harmonicFunction: HarmonicFunction.predominant,
+      sourceKind: ChordSourceKind.diatonic,
+      homeMode: KeyMode.minor,
+      tonicSemitoneOffset: 5,
+    ),
+    RomanNumeralId.flatVIMaj7Minor: RomanSpec(
+      id: RomanNumeralId.flatVIMaj7Minor,
+      token: 'bVImaj7',
+      quality: ChordQuality.major7,
+      harmonicFunction: HarmonicFunction.tonic,
+      sourceKind: ChordSourceKind.diatonic,
+      homeMode: KeyMode.minor,
+      tonicSemitoneOffset: 8,
+      preferFlatSpelling: true,
+    ),
+    RomanNumeralId.flatVIIDom7Minor: RomanSpec(
+      id: RomanNumeralId.flatVIIDom7Minor,
+      token: 'bVII7',
+      quality: ChordQuality.dominant7,
       harmonicFunction: HarmonicFunction.dominant,
       sourceKind: ChordSourceKind.diatonic,
+      homeMode: KeyMode.minor,
+      tonicSemitoneOffset: 10,
+      preferFlatSpelling: true,
+    ),
+    RomanNumeralId.relatedIiOfIII: RomanSpec(
+      id: RomanNumeralId.relatedIiOfIII,
+      token: 'IIm7b5/III',
+      quality: ChordQuality.halfDiminished7,
+      harmonicFunction: HarmonicFunction.predominant,
+      sourceKind: ChordSourceKind.tonicization,
+      homeMode: KeyMode.major,
+      tonicSemitoneOffset: 6,
+      resolutionTargetId: RomanNumeralId.iiiMin7,
+      preferFlatSpelling: false,
     ),
     RomanNumeralId.secondaryOfII: RomanSpec(
       id: RomanNumeralId.secondaryOfII,
@@ -466,6 +733,8 @@ class MusicTheory {
       quality: ChordQuality.minor7,
       harmonicFunction: HarmonicFunction.predominant,
       sourceKind: ChordSourceKind.modalInterchange,
+      homeMode: KeyMode.major,
+      tonicSemitoneOffset: 5,
     ),
     RomanNumeralId.borrowedFlatVII7: RomanSpec(
       id: RomanNumeralId.borrowedFlatVII7,
@@ -473,6 +742,9 @@ class MusicTheory {
       quality: ChordQuality.dominant7,
       harmonicFunction: HarmonicFunction.dominant,
       sourceKind: ChordSourceKind.modalInterchange,
+      homeMode: KeyMode.major,
+      tonicSemitoneOffset: 10,
+      preferFlatSpelling: true,
     ),
     RomanNumeralId.borrowedFlatVIMaj7: RomanSpec(
       id: RomanNumeralId.borrowedFlatVIMaj7,
@@ -480,6 +752,9 @@ class MusicTheory {
       quality: ChordQuality.major7,
       harmonicFunction: HarmonicFunction.predominant,
       sourceKind: ChordSourceKind.modalInterchange,
+      homeMode: KeyMode.major,
+      tonicSemitoneOffset: 8,
+      preferFlatSpelling: true,
     ),
     RomanNumeralId.borrowedFlatIIIMaj7: RomanSpec(
       id: RomanNumeralId.borrowedFlatIIIMaj7,
@@ -487,13 +762,18 @@ class MusicTheory {
       quality: ChordQuality.major7,
       harmonicFunction: HarmonicFunction.tonic,
       sourceKind: ChordSourceKind.modalInterchange,
+      homeMode: KeyMode.major,
+      tonicSemitoneOffset: 3,
+      preferFlatSpelling: true,
     ),
     RomanNumeralId.borrowedIiHalfDiminished7: RomanSpec(
       id: RomanNumeralId.borrowedIiHalfDiminished7,
-      token: 'iiø7',
+      token: 'iim7b5',
       quality: ChordQuality.halfDiminished7,
       harmonicFunction: HarmonicFunction.predominant,
       sourceKind: ChordSourceKind.modalInterchange,
+      homeMode: KeyMode.major,
+      tonicSemitoneOffset: 2,
     ),
     RomanNumeralId.borrowedFlatIIMaj7: RomanSpec(
       id: RomanNumeralId.borrowedFlatIIMaj7,
@@ -501,22 +781,40 @@ class MusicTheory {
       quality: ChordQuality.major7,
       harmonicFunction: HarmonicFunction.predominant,
       sourceKind: ChordSourceKind.modalInterchange,
+      homeMode: KeyMode.major,
+      tonicSemitoneOffset: 1,
+      preferFlatSpelling: true,
     ),
   };
 
-  static const Map<String, List<String>> _majorScaleRootsByKey = {
-    'C': ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
-    'C#/Db': ['Db', 'Eb', 'F', 'Gb', 'Ab', 'Bb', 'C'],
-    'D': ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'],
-    'D#/Eb': ['Eb', 'F', 'G', 'Ab', 'Bb', 'C', 'D'],
-    'E': ['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#'],
-    'F': ['F', 'G', 'A', 'Bb', 'C', 'D', 'E'],
-    'F#/Gb': ['Gb', 'Ab', 'Bb', 'Cb', 'Db', 'Eb', 'F'],
-    'G': ['G', 'A', 'B', 'C', 'D', 'E', 'F#'],
-    'G#/Ab': ['Ab', 'Bb', 'C', 'Db', 'Eb', 'F', 'G'],
-    'A': ['A', 'B', 'C#', 'D', 'E', 'F#', 'G#'],
-    'A#/Bb': ['Bb', 'C', 'D', 'Eb', 'F', 'G', 'A'],
-    'B': ['B', 'C#', 'D#', 'E', 'F#', 'G#', 'A#'],
+  static const Map<String, int> _keyTonicSemitones = {
+    'C': 0,
+    'C#/Db': 1,
+    'D': 2,
+    'D#/Eb': 3,
+    'E': 4,
+    'F': 5,
+    'F#/Gb': 6,
+    'G': 7,
+    'G#/Ab': 8,
+    'A': 9,
+    'A#/Bb': 10,
+    'B': 11,
+  };
+
+  static const Map<String, String> _displayRootsByKey = {
+    'C': 'C',
+    'C#/Db': 'Db',
+    'D': 'D',
+    'D#/Eb': 'Eb',
+    'E': 'E',
+    'F': 'F',
+    'F#/Gb': 'Gb',
+    'G': 'G',
+    'G#/Ab': 'Ab',
+    'A': 'A',
+    'A#/Bb': 'Bb',
+    'B': 'B',
   };
 
   static const Map<String, int> noteToSemitone = {
@@ -588,24 +886,17 @@ class MusicTheory {
   static String romanTokenOf(RomanNumeralId romanNumeralId) =>
       specFor(romanNumeralId).token;
 
-  static const int diatonicV7sus4Chance = 7;
-  static const int appliedV7sus4Chance = 4;
-
-  static int v7sus4ChanceForRoman(RomanNumeralId romanNumeralId) {
-    if (romanNumeralId == RomanNumeralId.vDom7) {
-      return diatonicV7sus4Chance;
-    }
-    if (specFor(romanNumeralId).sourceKind ==
-        ChordSourceKind.secondaryDominant) {
-      return appliedV7sus4Chance;
-    }
-    return 0;
+  static List<RomanNumeralId> diatonicRomansForMode(KeyMode mode) {
+    return mode == KeyMode.major ? majorDiatonicRomans : minorDiatonicRomans;
   }
 
-  static int? keyTonicSemitone(String key) {
-    final tonicRoot = _majorScaleRootsByKey[key]?.first;
-    return tonicRoot == null ? null : noteToSemitone[tonicRoot];
+  static KeyCenter keyCenterFor(String key, {KeyMode mode = KeyMode.major}) {
+    return KeyCenter(tonicName: key, mode: mode);
   }
+
+  static int? keyTonicSemitone(String key) => _keyTonicSemitones[key];
+
+  static String displayRootForKey(String key) => _displayRootsByKey[key] ?? key;
 
   static bool prefersFlatSpellingForKey(String key) =>
       _flatPreferredKeys.contains(key);
@@ -642,68 +933,44 @@ class MusicTheory {
   }
 
   static String resolveChordRoot(String key, RomanNumeralId romanNumeralId) {
-    final spec = specFor(romanNumeralId);
-    final scale = _majorScaleRootsByKey[key];
-    if (scale == null) {
-      return 'C';
-    }
-
-    switch (romanNumeralId) {
-      case RomanNumeralId.iMaj7:
-        return scale[0];
-      case RomanNumeralId.iiMin7:
-      case RomanNumeralId.borrowedIiHalfDiminished7:
-        return scale[1];
-      case RomanNumeralId.iiiMin7:
-        return scale[2];
-      case RomanNumeralId.ivMaj7:
-      case RomanNumeralId.borrowedIvMin7:
-        return scale[3];
-      case RomanNumeralId.vDom7:
-        return scale[4];
-      case RomanNumeralId.viMin7:
-        return scale[5];
-      case RomanNumeralId.viiHalfDiminished7:
-        return scale[6];
-      case RomanNumeralId.borrowedFlatVII7:
-        return _borrowedFlatRootForKey(key, 10);
-      case RomanNumeralId.borrowedFlatVIMaj7:
-        return _borrowedFlatRootForKey(key, 8);
-      case RomanNumeralId.borrowedFlatIIIMaj7:
-        return _borrowedFlatRootForKey(key, 3);
-      case RomanNumeralId.borrowedFlatIIMaj7:
-        return _borrowedFlatRootForKey(key, 1);
-      case RomanNumeralId.secondaryOfII:
-      case RomanNumeralId.secondaryOfIII:
-      case RomanNumeralId.secondaryOfIV:
-      case RomanNumeralId.secondaryOfV:
-      case RomanNumeralId.secondaryOfVI:
-      case RomanNumeralId.substituteOfII:
-      case RomanNumeralId.substituteOfIII:
-      case RomanNumeralId.substituteOfIV:
-      case RomanNumeralId.substituteOfV:
-      case RomanNumeralId.substituteOfVI:
-        final targetId = spec.resolutionTargetId;
-        if (targetId == null) {
-          return scale[0];
-        }
-        final targetRoot = resolveChordRoot(key, targetId);
-        final isSubstitute =
-            spec.sourceKind == ChordSourceKind.substituteDominant;
-        return _resolveAppliedDominantRoot(
-          key: key,
-          targetRoot: targetRoot,
-          isSubstitute: isSubstitute,
-        );
-    }
+    return resolveChordRootForCenter(
+      keyCenterFor(
+        key,
+        mode: specFor(romanNumeralId).homeMode ?? KeyMode.major,
+      ),
+      romanNumeralId,
+    );
   }
 
-  static String _borrowedFlatRootForKey(String key, int semitoneOffset) {
-    final tonicSemitone = keyTonicSemitone(key);
+  static String resolveChordRootForCenter(
+    KeyCenter keyCenter,
+    RomanNumeralId romanNumeralId,
+  ) {
+    final spec = specFor(romanNumeralId);
+    final tonicSemitone = keyCenter.tonicSemitone;
     if (tonicSemitone == null) {
       return 'C';
     }
-    return spellPitch((tonicSemitone + semitoneOffset) % 12, preferFlat: true);
+
+    if (spec.tonicSemitoneOffset != null) {
+      return spellPitch(
+        tonicSemitone + spec.tonicSemitoneOffset!,
+        preferFlat: spec.preferFlatSpelling ?? keyCenter.prefersFlatSpelling,
+      );
+    }
+
+    final targetId = spec.resolutionTargetId;
+    if (targetId == null) {
+      return displayRootForKey(keyCenter.tonicName);
+    }
+
+    final targetRoot = resolveChordRootForCenter(keyCenter, targetId);
+    final isSubstitute = spec.sourceKind == ChordSourceKind.substituteDominant;
+    return _resolveAppliedDominantRoot(
+      key: keyCenter.tonicName,
+      targetRoot: targetRoot,
+      isSubstitute: isSubstitute,
+    );
   }
 
   static String _resolveAppliedDominantRoot({
@@ -725,11 +992,26 @@ class MusicTheory {
     return spellPitch(dominantSemitone, preferFlat: preferFlat);
   }
 
+  static const int diatonicV7sus4Chance = 7;
+  static const int appliedV7sus4Chance = 4;
+
+  static int v7sus4ChanceForRoman(RomanNumeralId romanNumeralId) {
+    if (romanNumeralId == RomanNumeralId.vDom7) {
+      return diatonicV7sus4Chance;
+    }
+    if (specFor(romanNumeralId).sourceKind ==
+        ChordSourceKind.secondaryDominant) {
+      return appliedV7sus4Chance;
+    }
+    return 0;
+  }
+
   static ChordQuality resolveRenderQuality({
     required RomanNumeralId romanNumeralId,
     required PlannedChordKind plannedChordKind,
     required bool allowV7sus4,
     required int randomRoll,
+    DominantContext? dominantContext,
   }) {
     switch (plannedChordKind) {
       case PlannedChordKind.tonicDominant7:
@@ -738,13 +1020,40 @@ class MusicTheory {
         return ChordQuality.six;
       case PlannedChordKind.resolvedRoman:
         final baseQuality = specFor(romanNumeralId).quality;
-        // Limit sus4 rendering to canonical V7 and applied V7/x identities.
+        if (baseQuality != ChordQuality.dominant7) {
+          return baseQuality;
+        }
+        if (dominantContext == DominantContext.susDominant) {
+          return ChordQuality.dominant13sus4;
+        }
+        if (dominantContext == DominantContext.primaryMinor ||
+            dominantContext == DominantContext.secondaryToMinor) {
+          return randomRoll < 58
+              ? ChordQuality.dominant7Alt
+              : ChordQuality.dominant7;
+        }
+        if (dominantContext == DominantContext.tritoneSubstitute ||
+            dominantContext == DominantContext.dominantIILydian) {
+          return randomRoll < 68
+              ? ChordQuality.dominant7Sharp11
+              : ChordQuality.dominant7;
+        }
+        if (dominantContext == DominantContext.backdoor) {
+          return randomRoll < 36
+              ? ChordQuality.dominant7Sharp11
+              : ChordQuality.dominant7;
+        }
+        if ((dominantContext == DominantContext.primaryMajor ||
+                dominantContext == DominantContext.secondaryToMajor) &&
+            allowV7sus4 &&
+            randomRoll < 20) {
+          return ChordQuality.dominant13sus4;
+        }
+
         final sus4Chance = allowV7sus4
             ? v7sus4ChanceForRoman(romanNumeralId)
             : 0;
-        if (baseQuality == ChordQuality.dominant7 &&
-            sus4Chance > 0 &&
-            randomRoll < sus4Chance) {
+        if (sus4Chance > 0 && randomRoll < sus4Chance) {
           return ChordQuality.dominant7sus4;
         }
         return baseQuality;

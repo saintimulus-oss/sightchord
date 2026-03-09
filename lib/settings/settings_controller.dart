@@ -18,6 +18,10 @@ class AppSettingsController extends ChangeNotifier {
   static const String _substituteDominantEnabledKey =
       'substituteDominantEnabled';
   static const String _modalInterchangeEnabledKey = 'modalInterchangeEnabled';
+  static const String _modulationIntensityKey = 'modulationIntensity';
+  static const String _jazzPresetKey = 'jazzPreset';
+  static const String _sourceProfileKey = 'sourceProfile';
+  static const String _smartDiagnosticsEnabledKey = 'smartDiagnosticsEnabled';
   static const String _chordSymbolStyleKey = 'chordSymbolStyle';
   static const String _allowV7sus4Key = 'allowV7sus4';
   static const String _allowTensionsKey = 'allowTensions';
@@ -64,6 +68,21 @@ class AppSettingsController extends ChangeNotifier {
       modalInterchangeEnabled:
           preferences.getBool(_modalInterchangeEnabledKey) ??
           _settings.modalInterchangeEnabled,
+      modulationIntensity: ModulationIntensity.values.firstWhere(
+        (value) => value.name == preferences.getString(_modulationIntensityKey),
+        orElse: () => _settings.modulationIntensity,
+      ),
+      jazzPreset: JazzPreset.values.firstWhere(
+        (value) => value.name == preferences.getString(_jazzPresetKey),
+        orElse: () => _settings.jazzPreset,
+      ),
+      sourceProfile: SourceProfile.values.firstWhere(
+        (value) => value.name == preferences.getString(_sourceProfileKey),
+        orElse: () => _settings.sourceProfile,
+      ),
+      smartDiagnosticsEnabled:
+          preferences.getBool(_smartDiagnosticsEnabledKey) ??
+          _settings.smartDiagnosticsEnabled,
       chordSymbolStyle: ChordSymbolStyle.values.firstWhere(
         (style) => style.name == preferences.getString(_chordSymbolStyleKey),
         orElse: () => _settings.chordSymbolStyle,
@@ -138,6 +157,16 @@ class AppSettingsController extends ChangeNotifier {
       settings.modalInterchangeEnabled,
     );
     await preferences.setString(
+      _modulationIntensityKey,
+      settings.modulationIntensity.name,
+    );
+    await preferences.setString(_jazzPresetKey, settings.jazzPreset.name);
+    await preferences.setString(_sourceProfileKey, settings.sourceProfile.name);
+    await preferences.setBool(
+      _smartDiagnosticsEnabledKey,
+      settings.smartDiagnosticsEnabled,
+    );
+    await preferences.setString(
       _chordSymbolStyleKey,
       settings.chordSymbolStyle.name,
     );
@@ -166,4 +195,3 @@ class AppSettingsController extends ChangeNotifier {
     );
   }
 }
-

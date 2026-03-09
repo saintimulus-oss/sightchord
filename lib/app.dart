@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -344,25 +345,34 @@ class _MyHomePageState extends State<MyHomePage> {
   GeneratedChord _buildGeneratedChord(
     String key,
     RomanNumeralId romanNumeralId, {
+    KeyCenter? keyCenter,
+    KeyMode keyMode = KeyMode.major,
     PlannedChordKind plannedChordKind = PlannedChordKind.resolvedRoman,
     String? patternTag,
     AppliedType? appliedType,
     RomanNumeralId? resolutionTargetRomanId,
+    DominantContext? dominantContext,
     bool suppressTensions = false,
     SmartGenerationDebug? smartDebug,
     bool wasExcludedFallback = false,
   }) {
+    final effectiveKeyCenter =
+        keyCenter ?? MusicTheory.keyCenterFor(key, mode: keyMode);
     final spec = MusicTheory.specFor(romanNumeralId);
     final normalizedAppliedType =
         appliedType ?? _appliedTypeForRoman(romanNumeralId);
     final normalizedResolutionTargetRomanId =
         resolutionTargetRomanId ?? spec.resolutionTargetId;
-    final root = MusicTheory.resolveChordRoot(key, romanNumeralId);
+    final root = MusicTheory.resolveChordRootForCenter(
+      effectiveKeyCenter,
+      romanNumeralId,
+    );
     final renderQuality = MusicTheory.resolveRenderQuality(
       romanNumeralId: romanNumeralId,
       plannedChordKind: plannedChordKind,
       allowV7sus4: _settings.allowV7sus4,
       randomRoll: _random.nextInt(100),
+      dominantContext: dominantContext,
     );
     final harmonicFunction = _harmonicFunctionForGeneratedChord(
       romanNumeralId,
@@ -381,9 +391,10 @@ class _MyHomePageState extends State<MyHomePage> {
       selectedTensionOptions: _settings.selectedTensionOptions,
       suppressTensions: suppressTensions,
       inversionSettings: _settings.inversionSettings,
+      dominantContext: dominantContext,
     );
     final repeatGuardKey = ChordRenderingHelper.buildRepeatGuardKey(
-      keyName: key,
+      keyName: effectiveKeyCenter.tonicName,
       romanNumeralId: romanNumeralId,
       harmonicFunction: harmonicFunction,
       plannedChordKind: plannedChordKind,
@@ -392,10 +403,11 @@ class _MyHomePageState extends State<MyHomePage> {
       appliedType: normalizedAppliedType,
       resolutionTargetRomanId: normalizedResolutionTargetRomanId,
       patternTag: patternTag,
+      dominantContext: dominantContext,
     );
     final harmonicComparisonKey =
         ChordRenderingHelper.buildHarmonicComparisonKey(
-          keyName: key,
+          keyName: effectiveKeyCenter.tonicName,
           romanNumeralId: romanNumeralId,
           harmonicFunction: harmonicFunction,
           plannedChordKind: plannedChordKind,
@@ -404,12 +416,14 @@ class _MyHomePageState extends State<MyHomePage> {
           appliedType: normalizedAppliedType,
           resolutionTargetRomanId: normalizedResolutionTargetRomanId,
           patternTag: patternTag,
+          dominantContext: dominantContext,
         );
     return GeneratedChord(
       symbolData: renderingSelection.symbolData,
       repeatGuardKey: repeatGuardKey,
       harmonicComparisonKey: harmonicComparisonKey,
-      keyName: key,
+      keyName: effectiveKeyCenter.tonicName,
+      keyCenter: effectiveKeyCenter,
       romanNumeralId: romanNumeralId,
       resolutionRomanNumeralId: spec.resolutionTargetId,
       harmonicFunction: harmonicFunction,
@@ -418,10 +432,11 @@ class _MyHomePageState extends State<MyHomePage> {
       sourceKind: spec.sourceKind,
       appliedType: normalizedAppliedType,
       resolutionTargetRomanId: normalizedResolutionTargetRomanId,
+      dominantContext: dominantContext,
       wasExcludedFallback: wasExcludedFallback,
       isRenderedNonDiatonic: renderingSelection.isRenderedNonDiatonic,
       smartDebug: smartDebug?.withFinalSelection(
-        finalKey: key,
+        finalKeyCenter: effectiveKeyCenter,
         finalRomanNumeralId: romanNumeralId,
         finalChord: ChordRenderingHelper.renderedSymbol(
           GeneratedChord(
@@ -431,8 +446,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           _settings.chordSymbolStyle,
         ),
-        renderedIsNonDiatonic: renderingSelection.isRenderedNonDiatonic,
-        wasExcludedFallback: wasExcludedFallback,
+        fallbackOccurred: wasExcludedFallback,
       ),
     );
   }
@@ -442,16 +456,16 @@ class _MyHomePageState extends State<MyHomePage> {
     SmartGenerationDebug smartDebug, {
     bool wasExcludedFallback = false,
   }) {
-    final resolvedDebug = chord.keyName != null && chord.romanNumeralId != null
+    final resolvedDebug =
+        chord.keyCenter != null && chord.romanNumeralId != null
         ? smartDebug.withFinalSelection(
-            finalKey: chord.keyName!,
+            finalKeyCenter: chord.keyCenter!,
             finalRomanNumeralId: chord.romanNumeralId!,
             finalChord: ChordRenderingHelper.renderedSymbol(
               chord,
               _settings.chordSymbolStyle,
             ),
-            renderedIsNonDiatonic: chord.isRenderedNonDiatonic,
-            wasExcludedFallback: wasExcludedFallback,
+            fallbackOccurred: wasExcludedFallback,
           )
         : smartDebug;
     return chord.copyWith(
@@ -461,13 +475,16 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   GeneratedChord _emitSmartDebug(GeneratedChord chord) {
-    assert(() {
-      final smartDebug = chord.smartDebug;
-      if (smartDebug != null) {
-        debugPrint(smartDebug.describe());
+    final smartDebug = chord.smartDebug;
+    if (smartDebug is SmartDecisionTrace) {
+      SmartDiagnosticsStore.record(smartDebug);
+      if (_settings.smartDiagnosticsEnabled) {
+        developer.log(
+          smartDebug.describe(),
+          name: 'sightchord.smart_generator',
+        );
       }
-      return true;
-    }());
+    }
     return chord;
   }
 
@@ -643,37 +660,73 @@ class _MyHomePageState extends State<MyHomePage> {
     if (current?.keyName == null ||
         current?.romanNumeralId == null ||
         !keys.contains(current!.keyName)) {
-      return _generateRandomKeyModeChord(
-        keys: keys,
-        exclusionContext: exclusionContext,
+      final initialPlan = SmartGeneratorHelper.planInitialStep(
+        random: _random,
+        request: SmartStartRequest(
+          activeKeys: keys,
+          secondaryDominantEnabled: _settings.secondaryDominantEnabled,
+          substituteDominantEnabled: _settings.substituteDominantEnabled,
+          modalInterchangeEnabled: _settings.modalInterchangeEnabled,
+          modulationIntensity: _settings.modulationIntensity,
+          jazzPreset: _settings.jazzPreset,
+          sourceProfile: _settings.sourceProfile,
+          smartDiagnosticsEnabled: _settings.smartDiagnosticsEnabled,
+        ),
+      );
+      _plannedSmartChordQueue = initialPlan.remainingQueuedChords;
+      final seededChord = _buildGeneratedChord(
+        initialPlan.finalKey,
+        initialPlan.finalRomanNumeralId,
+        keyCenter: initialPlan.finalKeyCenter,
+        plannedChordKind: initialPlan.plannedChordKind,
+        patternTag: initialPlan.patternTag,
+        appliedType: initialPlan.appliedType,
+        resolutionTargetRomanId: initialPlan.resolutionTargetRomanId,
+        dominantContext: initialPlan.renderingPlan.dominantContext,
+        suppressTensions: initialPlan.renderingPlan.suppressTensions,
+        smartDebug: initialPlan.debug,
+      );
+      if (!_isExcludedCandidate(seededChord, exclusionContext)) {
+        return _emitSmartDebug(seededChord);
+      }
+      return _emitSmartDebug(
+        _attachSmartDebug(
+          _generateRandomKeyModeChord(
+            keys: keys,
+            exclusionContext: exclusionContext,
+          ),
+          initialPlan.debug.withDecision(
+            'excluded-fallback',
+            nextBlockedReason: SmartBlockedReason.excludedFallback,
+            nextFallbackOccurred: true,
+          ),
+          wasExcludedFallback: true,
+        ),
       );
     }
 
-    final currentKey = current.keyName!;
     final currentRomanNumeralId = current.romanNumeralId!;
     final currentResolutionRomanId =
         current.resolutionTargetRomanId ?? current.resolutionRomanNumeralId;
-    final modulationCandidateKeys =
-        current.isAppliedDominant && currentResolutionRomanId != null
-        ? _findCompatibleModulationKeys(
-            keys: keys,
-            currentKey: currentKey,
-            resolutionRomanNumeralId: currentResolutionRomanId,
-          )
-        : const <String>[];
 
     final plan = SmartGeneratorHelper.planNextStep(
       random: _random,
       request: SmartStepRequest(
-        currentKey: currentKey,
+        stepIndex:
+            ((current.smartDebug as SmartDecisionTrace?)?.stepIndex ?? 0) + 1,
+        activeKeys: keys,
+        currentKeyCenter:
+            current.keyCenter ?? MusicTheory.keyCenterFor(current.keyName!),
         currentRomanNumeralId: currentRomanNumeralId,
         currentResolutionRomanNumeralId: currentResolutionRomanId,
         currentHarmonicFunction: current.harmonicFunction,
-        allowedDiatonicRomanNumerals: MusicTheory.diatonicRomans,
         secondaryDominantEnabled: _settings.secondaryDominantEnabled,
         substituteDominantEnabled: _settings.substituteDominantEnabled,
         modalInterchangeEnabled: _settings.modalInterchangeEnabled,
-        modulationCandidateKeys: modulationCandidateKeys,
+        modulationIntensity: _settings.modulationIntensity,
+        jazzPreset: _settings.jazzPreset,
+        sourceProfile: _settings.sourceProfile,
+        smartDiagnosticsEnabled: _settings.smartDiagnosticsEnabled,
         previousRomanNumeralId: _previousChord?.romanNumeralId,
         previousHarmonicFunction: _previousChord?.harmonicFunction,
         previousWasAppliedDominant: _previousChord?.isAppliedDominant ?? false,
@@ -687,10 +740,12 @@ class _MyHomePageState extends State<MyHomePage> {
     final generatedChord = _buildGeneratedChord(
       plan.finalKey,
       plan.finalRomanNumeralId,
+      keyCenter: plan.finalKeyCenter,
       plannedChordKind: plan.plannedChordKind,
       patternTag: plan.patternTag,
       appliedType: plan.appliedType,
       resolutionTargetRomanId: plan.resolutionTargetRomanId,
+      dominantContext: plan.renderingPlan.dominantContext,
       suppressTensions: plan.renderingPlan.suppressTensions,
       smartDebug: plan.debug,
     );
@@ -704,12 +759,18 @@ class _MyHomePageState extends State<MyHomePage> {
     final fallbackChord = _generateRandomDiatonicChord(
       keys: keys,
       exclusionContext: exclusionContext,
-      preferredKey: keys.contains(plan.finalKey) ? plan.finalKey : currentKey,
+      preferredKey: keys.contains(plan.finalKey)
+          ? plan.finalKey
+          : current.keyName,
     );
     return _emitSmartDebug(
       _attachSmartDebug(
         fallbackChord,
-        plan.debug.withDecision('excluded-fallback'),
+        plan.debug.withDecision(
+          'excluded-fallback',
+          nextBlockedReason: SmartBlockedReason.excludedFallback,
+          nextFallbackOccurred: true,
+        ),
         wasExcludedFallback: true,
       ),
     );

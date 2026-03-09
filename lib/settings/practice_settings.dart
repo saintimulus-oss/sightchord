@@ -176,6 +176,10 @@ class PracticeSettings {
     this.secondaryDominantEnabled = false,
     this.substituteDominantEnabled = false,
     this.modalInterchangeEnabled = false,
+    this.modulationIntensity = ModulationIntensity.low,
+    this.jazzPreset = JazzPreset.standardsCore,
+    this.sourceProfile = SourceProfile.fakebookStandard,
+    this.smartDiagnosticsEnabled = false,
     this.chordSymbolStyle = ChordSymbolStyle.compact,
     this.allowV7sus4 = false,
     this.allowTensions = false,
@@ -198,6 +202,10 @@ class PracticeSettings {
   final bool secondaryDominantEnabled;
   final bool substituteDominantEnabled;
   final bool modalInterchangeEnabled;
+  final ModulationIntensity modulationIntensity;
+  final JazzPreset jazzPreset;
+  final SourceProfile sourceProfile;
+  final bool smartDiagnosticsEnabled;
   final ChordSymbolStyle chordSymbolStyle;
   final bool allowV7sus4;
   final bool allowTensions;
@@ -218,6 +226,10 @@ class PracticeSettings {
     bool? secondaryDominantEnabled,
     bool? substituteDominantEnabled,
     bool? modalInterchangeEnabled,
+    ModulationIntensity? modulationIntensity,
+    JazzPreset? jazzPreset,
+    SourceProfile? sourceProfile,
+    bool? smartDiagnosticsEnabled,
     ChordSymbolStyle? chordSymbolStyle,
     bool? allowV7sus4,
     bool? allowTensions,
@@ -238,6 +250,11 @@ class PracticeSettings {
           substituteDominantEnabled ?? this.substituteDominantEnabled,
       modalInterchangeEnabled:
           modalInterchangeEnabled ?? this.modalInterchangeEnabled,
+      modulationIntensity: modulationIntensity ?? this.modulationIntensity,
+      jazzPreset: jazzPreset ?? this.jazzPreset,
+      sourceProfile: sourceProfile ?? this.sourceProfile,
+      smartDiagnosticsEnabled:
+          smartDiagnosticsEnabled ?? this.smartDiagnosticsEnabled,
       chordSymbolStyle: chordSymbolStyle ?? this.chordSymbolStyle,
       allowV7sus4: allowV7sus4 ?? this.allowV7sus4,
       allowTensions: allowTensions ?? this.allowTensions,
