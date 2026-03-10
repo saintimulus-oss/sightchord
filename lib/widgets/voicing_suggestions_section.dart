@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
@@ -43,6 +45,16 @@ class VoicingSuggestionsSection extends StatelessWidget {
     if (recommendations.suggestions.isEmpty) {
       return const SizedBox.shrink();
     }
+    final sharedKeyboardRange = MiniKeyboard.resolveSharedDisplayRange(
+      recommendations.suggestions.map((item) => item.voicing.midiNotes),
+    );
+    final sharedNoteSlotCount = recommendations.suggestions
+        .fold<int>(
+          3,
+          (currentMax, item) => math.max(currentMax, item.voicing.noteCount),
+        )
+        .clamp(3, 5)
+        .toInt();
 
     return Card(
       key: const ValueKey('voicing-suggestions-section'),
@@ -81,6 +93,9 @@ class VoicingSuggestionsSection extends StatelessWidget {
                     familyLabel: _familyLabel(l10n, suggestion.voicing.family),
                     topNoteLabel:
                         '${l10n.voicingTopNoteLabel} ${suggestion.voicing.topNoteName}',
+                    sharedMinMidi: sharedKeyboardRange.minMidi,
+                    sharedMaxMidi: sharedKeyboardRange.maxMidi,
+                    noteSlotCount: sharedNoteSlotCount,
                     highlightsTopTarget:
                         recommendations.effectiveTopNotePitchClass ==
                         suggestion.voicing.topNotePitchClass,
@@ -230,6 +245,9 @@ class _SuggestionCard extends StatelessWidget {
     required this.suggestionSubtitle,
     required this.familyLabel,
     required this.topNoteLabel,
+    required this.sharedMinMidi,
+    required this.sharedMaxMidi,
+    required this.noteSlotCount,
     required this.highlightsTopTarget,
     required this.reasonLabels,
     required this.onSelect,
@@ -243,6 +261,9 @@ class _SuggestionCard extends StatelessWidget {
   final String suggestionSubtitle;
   final String familyLabel;
   final String topNoteLabel;
+  final int sharedMinMidi;
+  final int sharedMaxMidi;
+  final int noteSlotCount;
   final bool highlightsTopTarget;
   final List<String> reasonLabels;
   final VoidCallback onSelect;
@@ -373,19 +394,18 @@ class _SuggestionCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 6),
-                Text(
+                _NoteNameStrip(
                   key: ValueKey('voicing-notes-${suggestion.kind.name}'),
-                  suggestion.voicing.noteNames.join('  '),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.3,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  softWrap: false,
+                  kind: suggestion.kind,
+                  noteNames: suggestion.voicing.noteNames,
+                  slotCount: noteSlotCount,
                 ),
                 const SizedBox(height: 8),
-                MiniKeyboard(notes: suggestion.voicing.midiNotes),
+                MiniKeyboard(
+                  notes: suggestion.voicing.midiNotes,
+                  minMidi: sharedMinMidi,
+                  maxMidi: sharedMaxMidi,
+                ),
                 if (showReasons && reasonLabels.isNotEmpty) ...[
                   const SizedBox(height: 10),
                   Wrap(
@@ -413,6 +433,81 @@ class _SuggestionCard extends StatelessWidget {
                   ),
                 ],
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NoteNameStrip extends StatelessWidget {
+  const _NoteNameStrip({
+    super.key,
+    required this.kind,
+    required this.noteNames,
+    required this.slotCount,
+  });
+
+  final VoicingSuggestionKind kind;
+  final List<String> noteNames;
+  final int slotCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 30,
+      child: Row(
+        children: [
+          for (var index = 0; index < slotCount; index += 1) ...[
+            Expanded(
+              child: _NoteNameSlot(
+                key: ValueKey('voicing-note-slot-${kind.name}-$index'),
+                label: index < noteNames.length ? noteNames[index] : null,
+              ),
+            ),
+            if (index < slotCount - 1) const SizedBox(width: 6),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _NoteNameSlot extends StatelessWidget {
+  const _NoteNameSlot({super.key, required this.label});
+
+  final String? label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isFilled = label != null;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: isFilled
+            ? theme.colorScheme.surfaceContainerHigh
+            : theme.colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isFilled
+              ? theme.colorScheme.outlineVariant
+              : theme.colorScheme.outlineVariant.withValues(alpha: 0.55),
+        ),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+          child: Text(
+            label ?? '',
+            maxLines: 1,
+            overflow: TextOverflow.fade,
+            softWrap: false,
+            style: theme.textTheme.labelMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: isFilled
+                  ? theme.colorScheme.onSurface
+                  : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
             ),
           ),
         ),

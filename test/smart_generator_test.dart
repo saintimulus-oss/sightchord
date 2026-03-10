@@ -271,6 +271,65 @@ void main() {
   });
 
   test(
+    'generated family base priors cover every progression family for each preset',
+    () {
+      for (final jazzPreset in JazzPreset.values) {
+        final generated = SmartPriors.familyBaseWeights[jazzPreset];
+        expect(
+          generated,
+          isNotNull,
+          reason: 'Missing generated family priors for ${jazzPreset.name}.',
+        );
+        for (final family in SmartProgressionFamily.values) {
+          expect(
+            generated!.containsKey(family),
+            isTrue,
+            reason:
+                'Missing generated family prior for ${jazzPreset.name}/${family.name}.',
+          );
+        }
+      }
+    },
+  );
+
+  test(
+    'generated transition priors cover every legacy diatonic transition root',
+    () {
+      final legacyByMode =
+          <KeyMode, Map<RomanNumeralId, List<WeightedNextRoman>>>{
+            KeyMode.major: SmartGeneratorHelper.majorDiatonicTransitions,
+            KeyMode.minor: SmartGeneratorHelper.minorDiatonicTransitions,
+          };
+
+      for (final entry in legacyByMode.entries) {
+        final generated = SmartPriors.transitionPriors[entry.key];
+        expect(
+          generated,
+          isNotNull,
+          reason: 'Missing generated transition priors for ${entry.key.name}.',
+        );
+        for (final romanNumeralId in entry.value.keys) {
+          final generatedCandidates = generated![romanNumeralId];
+          expect(
+            generatedCandidates,
+            isNotNull,
+            reason:
+                'Missing generated transition priors for '
+                '${entry.key.name}/${romanNumeralId.name}.',
+          );
+          expect(
+            generatedCandidates,
+            isNotEmpty,
+            reason:
+                'Generated transition priors for '
+                '${entry.key.name}/${romanNumeralId.name} were empty.',
+          );
+        }
+      }
+    },
+  );
+
+  test(
     'continuation resolution helper falls back to stored resolution roman',
     () {
       final chord = GeneratedChord(

@@ -10,16 +10,68 @@ class MiniKeyboard extends StatelessWidget {
     this.maxMidi,
   });
 
+  static const int _displayMinMidi = 36;
+  static const int _displayMaxMidi = 84;
+  static const int _fallbackMinMidi = 48;
+  static const int _fallbackMaxMidi = 64;
+  static const int _defaultPadding = 3;
+  static const int _minimumSpan = 18;
+
   final List<int> notes;
   final int? minMidi;
   final int? maxMidi;
+
+  static ({int minMidi, int maxMidi}) resolveDisplayRange(
+    Iterable<int> midiNotes, {
+    int padding = _defaultPadding,
+    int minimumSpan = _minimumSpan,
+  }) {
+    final sortedNotes = midiNotes.toList()..sort();
+    if (sortedNotes.isEmpty) {
+      return (minMidi: _fallbackMinMidi, maxMidi: _fallbackMaxMidi);
+    }
+
+    final clampedMinimumSpan = minimumSpan
+        .clamp(0, _displayMaxMidi - _displayMinMidi)
+        .toInt();
+    var lower = _clampMidi(sortedNotes.first - padding);
+    var upper = _clampMidi(sortedNotes.last + padding);
+
+    if ((upper - lower) < clampedMinimumSpan) {
+      final shortfall = clampedMinimumSpan - (upper - lower);
+      lower = math.max(_displayMinMidi, lower - (shortfall ~/ 2));
+      upper = math.min(_displayMaxMidi, upper + (shortfall - (shortfall ~/ 2)));
+    }
+
+    if ((upper - lower) < clampedMinimumSpan) {
+      if (lower == _displayMinMidi) {
+        upper = math.min(_displayMaxMidi, lower + clampedMinimumSpan);
+      } else {
+        lower = math.max(_displayMinMidi, upper - clampedMinimumSpan);
+      }
+    }
+
+    return (minMidi: lower, maxMidi: upper);
+  }
+
+  static ({int minMidi, int maxMidi}) resolveSharedDisplayRange(
+    Iterable<Iterable<int>> noteGroups, {
+    int padding = _defaultPadding,
+    int minimumSpan = _minimumSpan,
+  }) {
+    return resolveDisplayRange(
+      noteGroups.expand((group) => group),
+      padding: padding,
+      minimumSpan: minimumSpan,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final noteSet = {for (final note in notes) note};
     final resolvedRange = _resolvedRange();
-    final totalKeys = resolvedRange.$2 - resolvedRange.$1 + 1;
+    final totalKeys = resolvedRange.maxMidi - resolvedRange.minMidi + 1;
 
     return SizedBox(
       height: 24,
@@ -34,8 +86,8 @@ class MiniKeyboard extends StatelessWidget {
                 Row(
                   children: [
                     for (
-                      var midi = resolvedRange.$1;
-                      midi <= resolvedRange.$2;
+                      var midi = resolvedRange.minMidi;
+                      midi <= resolvedRange.maxMidi;
                       midi += 1
                     )
                       Expanded(
@@ -56,9 +108,10 @@ class MiniKeyboard extends StatelessWidget {
                   ],
                 ),
                 for (final midi in noteSet)
-                  if (midi >= resolvedRange.$1 && midi <= resolvedRange.$2)
+                  if (midi >= resolvedRange.minMidi &&
+                      midi <= resolvedRange.maxMidi)
                     Positioned(
-                      left: (midi - resolvedRange.$1) * cellWidth,
+                      left: (midi - resolvedRange.minMidi) * cellWidth,
                       width: cellWidth,
                       top: 0,
                       bottom: 0,
@@ -85,30 +138,17 @@ class MiniKeyboard extends StatelessWidget {
     );
   }
 
-  (int, int) _resolvedRange() {
+  ({int minMidi, int maxMidi}) _resolvedRange() {
     if (minMidi != null && maxMidi != null) {
-      return (minMidi!, maxMidi!);
+      final lower = _clampMidi(math.min(minMidi!, maxMidi!));
+      final upper = _clampMidi(math.max(minMidi!, maxMidi!));
+      return (minMidi: lower, maxMidi: upper);
     }
-    if (notes.isEmpty) {
-      return (48, 64);
-    }
+    return resolveDisplayRange(notes);
+  }
 
-    var lower = math.max(36, notes.first - 4);
-    var upper = math.min(84, notes.last + 4);
-    const minimumSpan = 16;
-    if ((upper - lower) < minimumSpan) {
-      final extra = minimumSpan - (upper - lower);
-      lower = math.max(36, lower - (extra ~/ 2));
-      upper = math.min(84, upper + (extra - (extra ~/ 2)));
-    }
-    if ((upper - lower) < minimumSpan) {
-      if (lower == 36) {
-        upper = math.min(84, lower + minimumSpan);
-      } else {
-        lower = math.max(36, upper - minimumSpan);
-      }
-    }
-    return (lower, upper);
+  static int _clampMidi(int midi) {
+    return midi.clamp(_displayMinMidi, _displayMaxMidi).toInt();
   }
 
   bool _isBlackKey(int midi) {

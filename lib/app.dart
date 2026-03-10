@@ -10,10 +10,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
 import 'music/chord_formatting.dart';
 import 'music/chord_theory.dart';
+import 'music/practice_chord_queue_state.dart';
 import 'music/voicing_engine.dart';
 import 'music/voicing_models.dart';
-import 'settings/inversion_settings.dart';
+import 'music/voicing_session_state.dart';
 import 'settings/practice_settings.dart';
+import 'settings/practice_settings_effects.dart';
 import 'settings/practice_settings_drawer.dart';
 import 'settings/settings_controller.dart';
 import 'smart_generator.dart';
@@ -68,11 +70,200 @@ class MyApp extends StatelessWidget {
             scaffoldBackgroundColor: const Color(0xFFF6F2E8),
             useMaterial3: true,
           ),
-          home: MyHomePage(title: 'SightChord', controller: controller),
+          home: MainMenuPage(controller: controller),
         );
       },
     );
   }
+}
+
+class MainMenuPage extends StatelessWidget {
+  const MainMenuPage({super.key, required this.controller});
+
+  final AppSettingsController controller;
+
+  Future<void> _openLanguageSettings(BuildContext context) {
+    return showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => _MainLanguageSettingsSheet(controller: controller),
+    );
+  }
+
+  void _openCodeGenerator(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) =>
+            MyHomePage(title: 'SightChord', controller: controller),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Scaffold(
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              colorScheme.primaryContainer.withValues(alpha: 0.55),
+              theme.scaffoldBackgroundColor,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: Card(
+                  elevation: 0,
+                  color: colorScheme.surface.withValues(alpha: 0.9),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(28, 32, 28, 28),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.music_note_rounded,
+                            size: 34,
+                            color: colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'SightChord',
+                          style: theme.textTheme.displaySmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+                        FilledButton.icon(
+                          key: const ValueKey('main-open-generator-button'),
+                          onPressed: () => _openCodeGenerator(context),
+                          icon: const Icon(Icons.auto_awesome),
+                          label: const Text('Chord Generator'),
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          key: const ValueKey('main-open-settings-button'),
+                          onPressed: () => _openLanguageSettings(context),
+                          icon: const Icon(Icons.language_rounded),
+                          label: Text(l10n.settings),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MainLanguageSettingsSheet extends StatelessWidget {
+  const _MainLanguageSettingsSheet({required this.controller});
+
+  final AppSettingsController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        final settings = controller.settings;
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              8,
+              20,
+              24 + MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        l10n.language,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).maybePop(),
+                      icon: const Icon(Icons.close),
+                      tooltip: l10n.closeSettings,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<AppLanguage>(
+                  key: const ValueKey('main-language-selector'),
+                  initialValue: settings.language,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: l10n.language,
+                  ),
+                  items: AppLanguage.values
+                      .map(
+                        (language) => DropdownMenuItem<AppLanguage>(
+                          value: language,
+                          child: Text(_languageLabel(l10n, language)),
+                        ),
+                      )
+                      .toList(growable: false),
+                  onChanged: (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    unawaited(
+                      controller.mutate(
+                        (current) => current.copyWith(language: value),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+String _languageLabel(AppLocalizations l10n, AppLanguage language) {
+  return switch (language) {
+    AppLanguage.system => l10n.systemDefaultLanguage,
+    _ => language.nativeLabel,
+  };
 }
 
 class MyHomePage extends StatefulWidget {
@@ -103,19 +294,24 @@ class _MyHomePageState extends State<MyHomePage> {
   int? _currentBeat;
   bool _audioReady = false;
   bool _autoRunning = false;
-  List<QueuedSmartChord> _plannedSmartChordQueue = const <QueuedSmartChord>[];
-
-  GeneratedChord? _previousChord;
-  GeneratedChord? _currentChord;
-  GeneratedChord? _nextChord;
-  GeneratedChord? _lookAheadChord;
-  VoicingRecommendationSet? _voicingRecommendations;
-  ConcreteVoicing? _selectedVoicing;
-  ConcreteVoicing? _lockedCurrentVoicing;
-  ConcreteVoicing? _continuityReferenceVoicing;
-  String? _lastLoggedVoicingDiagnosticKey;
+  PracticeChordQueueState _queueState = const PracticeChordQueueState();
+  VoicingSessionState _voicingState = const VoicingSessionState();
 
   PracticeSettings get _settings => widget.controller.settings;
+  GeneratedChord? get _previousChord => _queueState.previousChord;
+  GeneratedChord? get _currentChord => _queueState.currentChord;
+  GeneratedChord? get _nextChord => _queueState.nextChord;
+  GeneratedChord? get _lookAheadChord => _queueState.lookAheadChord;
+  List<QueuedSmartChord> get _plannedSmartChordQueue =>
+      _queueState.plannedSmartChordQueue;
+  VoicingRecommendationSet? get _voicingRecommendations =>
+      _voicingState.recommendations;
+  ConcreteVoicing? get _lockedCurrentVoicing =>
+      _voicingState.lockedCurrentVoicing;
+  ConcreteVoicing? get _continuityReferenceVoicing =>
+      _voicingState.continuityReferenceVoicing;
+  String? get _lastLoggedVoicingDiagnosticKey =>
+      _voicingState.lastLoggedDiagnosticKey;
 
   @override
   void initState() {
@@ -200,65 +396,6 @@ class _MyHomePageState extends State<MyHomePage> {
         if (_settings.activeKeyCenters.contains(center)) center,
   ];
 
-  bool _setEquals<T>(Set<T> left, Set<T> right) {
-    if (identical(left, right)) {
-      return true;
-    }
-    if (left.length != right.length) {
-      return false;
-    }
-    for (final value in left) {
-      if (!right.contains(value)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  bool _sameInversionSettings(InversionSettings left, InversionSettings right) {
-    return left.enabled == right.enabled &&
-        left.firstInversionEnabled == right.firstInversionEnabled &&
-        left.secondInversionEnabled == right.secondInversionEnabled &&
-        left.thirdInversionEnabled == right.thirdInversionEnabled;
-  }
-
-  bool _queueAffectingSettingsChanged(
-    PracticeSettings previous,
-    PracticeSettings next,
-  ) {
-    return !_setEquals(previous.activeKeyCenters, next.activeKeyCenters) ||
-        previous.smartGeneratorMode != next.smartGeneratorMode ||
-        previous.secondaryDominantEnabled != next.secondaryDominantEnabled ||
-        previous.substituteDominantEnabled != next.substituteDominantEnabled ||
-        previous.modalInterchangeEnabled != next.modalInterchangeEnabled ||
-        previous.modulationIntensity != next.modulationIntensity ||
-        previous.jazzPreset != next.jazzPreset ||
-        previous.sourceProfile != next.sourceProfile ||
-        previous.allowV7sus4 != next.allowV7sus4 ||
-        previous.allowTensions != next.allowTensions ||
-        !_setEquals(
-          previous.selectedTensionOptions,
-          next.selectedTensionOptions,
-        ) ||
-        !_sameInversionSettings(
-          previous.inversionSettings,
-          next.inversionSettings,
-        );
-  }
-
-  bool _shouldForceLookAheadRefresh(
-    PracticeSettings previous,
-    PracticeSettings next,
-  ) {
-    if (!next.voicingSuggestionsEnabled || next.lookAheadDepth < 2) {
-      return false;
-    }
-    if (!previous.voicingSuggestionsEnabled || previous.lookAheadDepth < 2) {
-      return true;
-    }
-    return _queueAffectingSettingsChanged(previous, next);
-  }
-
   void _applySettings(
     PracticeSettings nextSettings, {
     bool reseed = false,
@@ -269,8 +406,12 @@ class _MyHomePageState extends State<MyHomePage> {
       _audioInitFuture = _queueMetronomeSoundLoad(nextSettings.metronomeSound);
     }
     final forceLookAheadRefresh =
-        !reseed && _shouldForceLookAheadRefresh(previousSettings, nextSettings);
-    unawaited(widget.controller.update(nextSettings));
+        !reseed &&
+        PracticeSettingsEffects.shouldForceLookAheadRefresh(
+          previousSettings,
+          nextSettings,
+        );
+    unawaited(_persistSettingsUpdate(nextSettings));
     setState(() {
       if (syncBpmText) {
         _bpmController.text = '${nextSettings.bpm}';
@@ -283,6 +424,21 @@ class _MyHomePageState extends State<MyHomePage> {
         );
       }
     });
+  }
+
+  Future<void> _persistSettingsUpdate(PracticeSettings nextSettings) async {
+    try {
+      await widget.controller.update(nextSettings);
+    } catch (error, stackTrace) {
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stackTrace,
+          library: 'sightchord',
+          context: ErrorDescription('while saving practice settings'),
+        ),
+      );
+    }
   }
 
   List<String> _practiceModeTags(AppLocalizations l10n) {
@@ -374,21 +530,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _ensureChordQueueInitialized() {
-    _nextChord ??= _generateChord();
+    _queueState = _queueState.ensureNextChord(_generateChord());
     _refreshLookAheadChord();
   }
 
   void _reseedChordQueue() {
-    _previousChord = null;
-    _currentChord = null;
-    _nextChord = null;
-    _lookAheadChord = null;
-    _plannedSmartChordQueue = const <QueuedSmartChord>[];
-    _selectedVoicing = null;
-    _lockedCurrentVoicing = null;
-    _continuityReferenceVoicing = null;
-    _voicingRecommendations = null;
-    _lastLoggedVoicingDiagnosticKey = null;
+    _queueState = _queueState.reset();
+    _voicingState = _voicingState.reset();
     _ensureChordQueueInitialized();
     _recomputeVoicingSuggestions();
   }
@@ -426,12 +574,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _refreshLookAheadChord({bool force = false}) {
     if (!_settings.voicingSuggestionsEnabled || _settings.lookAheadDepth < 2) {
-      _lookAheadChord = null;
+      _queueState = _queueState.withLookAheadChord(null);
       return;
     }
     final nextChord = _nextChord;
     if (nextChord == null) {
-      _lookAheadChord = null;
+      _queueState = _queueState.withLookAheadChord(null);
       return;
     }
     if (_lookAheadChord != null && !force) {
@@ -441,12 +589,14 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_currentChord != null) {
       renderedSymbols.add(_renderedSymbolForChord(_currentChord!));
     }
-    _lookAheadChord = _generateChord(
-      exclusionContext: _buildExclusionContext(
+    _queueState = _queueState.withLookAheadChord(
+      _generateChord(
+        exclusionContext: _buildExclusionContext(
+          current: nextChord,
+          renderedSymbols: renderedSymbols,
+        ),
         current: nextChord,
-        renderedSymbols: renderedSymbols,
       ),
-      current: nextChord,
     );
   }
 
@@ -471,51 +621,30 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  ConcreteVoicing? _matchVoicingBySignature(
-    ConcreteVoicing? existing,
-    VoicingRecommendationSet recommendations,
-  ) {
-    if (existing == null) {
-      return null;
-    }
-    final matched = recommendations.candidateBySignature(existing.signature);
-    return matched?.voicing;
-  }
-
   ConcreteVoicing? _authoritativeSelectedVoicing() {
-    return _lockedCurrentVoicing ?? _selectedVoicing;
-  }
-
-  ConcreteVoicing? _continuitySourceVoicing() {
-    return _authoritativeSelectedVoicing() ??
-        (_voicingRecommendations != null &&
-                _voicingRecommendations!.suggestions.isNotEmpty
-            ? _voicingRecommendations!.suggestions.first.voicing
-            : null);
+    return _voicingState.authoritativeSelectedVoicing;
   }
 
   void _promoteChordQueue() {
-    _continuityReferenceVoicing = _continuitySourceVoicing();
-    _previousChord = _currentChord;
-    _currentChord = _nextChord ?? _generateChord(current: _currentChord);
-    _nextChord =
+    _voicingState = _voicingState.promoteChordQueue();
+    final nextCurrentChord =
+        _nextChord ?? _generateChord(current: _currentChord);
+    final nextQueuedChord =
         _lookAheadChord ??
         _generateChord(
-          exclusionContext: _buildExclusionContext(current: _currentChord),
-          current: _currentChord,
+          exclusionContext: _buildExclusionContext(current: nextCurrentChord),
+          current: nextCurrentChord,
         );
-    _lookAheadChord = null;
-    _lockedCurrentVoicing = null;
-    _selectedVoicing = null;
+    _queueState = _queueState.promote(
+      nextCurrentChord: nextCurrentChord,
+      nextQueuedChord: nextQueuedChord,
+    );
     _recomputeVoicingSuggestions();
   }
 
   void _recomputeVoicingSuggestions({bool forceLookAheadRefresh = false}) {
     if (!_settings.voicingSuggestionsEnabled || _currentChord == null) {
-      _voicingRecommendations = null;
-      _selectedVoicing = null;
-      _lockedCurrentVoicing = null;
-      _lastLoggedVoicingDiagnosticKey = null;
+      _voicingState = _voicingState.clearRecommendations();
       return;
     }
 
@@ -523,22 +652,12 @@ class _MyHomePageState extends State<MyHomePage> {
       forceLookAheadRefresh: forceLookAheadRefresh,
     );
     if (context == null) {
-      _voicingRecommendations = null;
+      _voicingState = _voicingState.clearRecommendations();
       return;
     }
 
     final recommendations = VoicingEngine.recommend(context: context);
-    _voicingRecommendations = recommendations;
-    _lockedCurrentVoicing = _matchVoicingBySignature(
-      _lockedCurrentVoicing,
-      recommendations,
-    );
-    _selectedVoicing =
-        _lockedCurrentVoicing ??
-        _matchVoicingBySignature(_selectedVoicing, recommendations) ??
-        (recommendations.suggestions.isNotEmpty
-            ? recommendations.suggestions.first.voicing
-            : null);
+    _voicingState = _voicingState.applyRecommendations(recommendations);
 
     if (_settings.smartDiagnosticsEnabled &&
         recommendations.suggestions.isNotEmpty) {
@@ -553,18 +672,17 @@ class _MyHomePageState extends State<MyHomePage> {
           '${bestSuggestion.breakdown.describe()}',
           name: 'sightchord.voicing',
         );
-        _lastLoggedVoicingDiagnosticKey = diagnosticKey;
+        _voicingState = _voicingState.markDiagnosticLogged(diagnosticKey);
       }
     } else {
-      _lastLoggedVoicingDiagnosticKey = null;
+      _voicingState = _voicingState.clearDiagnosticLog();
     }
   }
 
   void _handleVoicingSelected(VoicingSuggestion suggestion) {
     setState(() {
-      _selectedVoicing = suggestion.voicing;
+      _voicingState = _voicingState.selectSuggestion(suggestion);
       if (_lockedCurrentVoicing != null) {
-        _lockedCurrentVoicing = suggestion.voicing;
         _recomputeVoicingSuggestions();
       }
     });
@@ -572,12 +690,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _handleVoicingLockToggle(VoicingSuggestion suggestion) {
     setState(() {
-      if (_lockedCurrentVoicing?.signature == suggestion.voicing.signature) {
-        _lockedCurrentVoicing = null;
-      } else {
-        _lockedCurrentVoicing = suggestion.voicing;
-        _selectedVoicing = suggestion.voicing;
-      }
+      _voicingState = _voicingState.toggleLock(suggestion);
       _recomputeVoicingSuggestions();
     });
   }
@@ -1029,7 +1142,9 @@ class _MyHomePageState extends State<MyHomePage> {
           smartDiagnosticsEnabled: _settings.smartDiagnosticsEnabled,
         ),
       );
-      _plannedSmartChordQueue = initialPlan.remainingQueuedChords;
+      _queueState = _queueState.withPlannedSmartChordQueue(
+        initialPlan.remainingQueuedChords,
+      );
       final seededChord = _buildGeneratedChord(
         initialPlan.finalKey,
         initialPlan.finalRomanNumeralId,
@@ -1110,7 +1225,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
-    _plannedSmartChordQueue = plan.remainingQueuedChords;
+    _queueState = _queueState.withPlannedSmartChordQueue(
+      plan.remainingQueuedChords,
+    );
 
     final generatedChord = _buildGeneratedChord(
       plan.finalKey,
@@ -1142,7 +1259,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     if (plan.patternTag != null) {
-      _plannedSmartChordQueue = const <QueuedSmartChord>[];
+      _queueState = _queueState.clearPlannedSmartChordQueue();
     }
     final fallbackChord = _generateRandomDiatonicChord(
       keyCenters: keyCenters,

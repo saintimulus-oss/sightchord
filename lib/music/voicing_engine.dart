@@ -1492,7 +1492,13 @@ class VoicingEngine {
         };
       }
       if (!sameNoteCount) {
-        bias += kind == VoicingSuggestionKind.natural ? 0.0 : 0.05;
+        final noteCountGap = (selected.noteCount - candidate.voicing.noteCount)
+            .abs();
+        bias += switch (kind) {
+          VoicingSuggestionKind.colorful => noteCountGap >= 2 ? 0.02 : 0.01,
+          VoicingSuggestionKind.easy => 0.0,
+          VoicingSuggestionKind.natural => 0.0,
+        };
       }
       if (sameFamily &&
           sameTopPitchClass &&
@@ -1741,9 +1747,19 @@ class VoicingEngine {
     int noteCount,
   ) {
     return switch (kind) {
-      VoicingSuggestionKind.easy => (5 - noteCount) * 0.12,
-      VoicingSuggestionKind.natural => (4 - (noteCount - 4).abs()) * 0.03,
-      VoicingSuggestionKind.colorful => (noteCount - 3) * 0.06,
+      VoicingSuggestionKind.easy =>
+        noteCount <= 3
+            ? 0.08
+            : noteCount == 4
+            ? 0.04
+            : 0.0,
+      VoicingSuggestionKind.natural => noteCount == 4 ? 0.04 : 0.02,
+      VoicingSuggestionKind.colorful =>
+        noteCount >= 5
+            ? 0.08
+            : noteCount == 4
+            ? 0.04
+            : 0.0,
     };
   }
 

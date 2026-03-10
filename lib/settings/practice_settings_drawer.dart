@@ -5,10 +5,8 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../music/chord_formatting.dart';
 import '../music/chord_theory.dart';
+import 'practice_settings_dispatcher.dart';
 import 'practice_settings.dart';
-
-typedef ApplyPracticeSettings =
-    void Function(PracticeSettings nextSettings, {bool reseed});
 
 class PracticeSettingsDrawer extends StatelessWidget {
   const PracticeSettingsDrawer({
@@ -28,6 +26,10 @@ class PracticeSettingsDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final dispatcher = PracticeSettingsDispatcher(
+      settings: settings,
+      onApplySettings: onApplySettings,
+    );
 
     return SizedBox(
       width: math.min(MediaQuery.of(context).size.width * 0.9, 430),
@@ -84,7 +86,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                           if (value == null) {
                             return;
                           }
-                          onApplySettings(settings.copyWith(language: value));
+                          dispatcher.apply(
+                            (current) => current.copyWith(language: value),
+                          );
                         },
                       ),
                       const SizedBox(height: 24),
@@ -99,8 +103,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                         ),
                         value: settings.metronomeEnabled,
                         onChanged: (value) {
-                          onApplySettings(
-                            settings.copyWith(metronomeEnabled: value),
+                          dispatcher.apply(
+                            (current) =>
+                                current.copyWith(metronomeEnabled: value),
                           );
                         },
                       ),
@@ -132,8 +137,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                           if (value == null) {
                             return;
                           }
-                          onApplySettings(
-                            settings.copyWith(metronomeSound: value),
+                          dispatcher.apply(
+                            (current) =>
+                                current.copyWith(metronomeSound: value),
                           );
                         },
                       ),
@@ -146,8 +152,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                         value: settings.metronomeVolume,
                         onChanged: settings.metronomeEnabled
                             ? (value) {
-                                onApplySettings(
-                                  settings.copyWith(metronomeVolume: value),
+                                dispatcher.apply(
+                                  (current) =>
+                                      current.copyWith(metronomeVolume: value),
                                 );
                               }
                             : null,
@@ -179,7 +186,10 @@ class PracticeSettingsDrawer extends StatelessWidget {
                         runSpacing: 8,
                         children:
                             MusicTheory.orderedKeyCentersForMode(KeyMode.major)
-                                .map((center) => _keyCenterChip(center))
+                                .map(
+                                  (center) =>
+                                      _keyCenterChip(center, dispatcher),
+                                )
                                 .toList(growable: false),
                       ),
                       const SizedBox(height: 12),
@@ -193,7 +203,10 @@ class PracticeSettingsDrawer extends StatelessWidget {
                         runSpacing: 8,
                         children:
                             MusicTheory.orderedKeyCentersForMode(KeyMode.minor)
-                                .map((center) => _keyCenterChip(center))
+                                .map(
+                                  (center) =>
+                                      _keyCenterChip(center, dispatcher),
+                                )
                                 .toList(growable: false),
                       ),
                       const SizedBox(height: 24),
@@ -208,8 +221,10 @@ class PracticeSettingsDrawer extends StatelessWidget {
                         value: settings.smartGeneratorMode,
                         onChanged: _usesKeyMode
                             ? (value) {
-                                onApplySettings(
-                                  settings.copyWith(smartGeneratorMode: value),
+                                dispatcher.apply(
+                                  (current) => current.copyWith(
+                                    smartGeneratorMode: value,
+                                  ),
                                   reseed: true,
                                 );
                               }
@@ -243,8 +258,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                             if (value == null) {
                               return;
                             }
-                            onApplySettings(
-                              settings.copyWith(modulationIntensity: value),
+                            dispatcher.apply(
+                              (current) =>
+                                  current.copyWith(modulationIntensity: value),
                               reseed: true,
                             );
                           },
@@ -270,8 +286,8 @@ class PracticeSettingsDrawer extends StatelessWidget {
                             if (value == null) {
                               return;
                             }
-                            onApplySettings(
-                              settings.copyWith(jazzPreset: value),
+                            dispatcher.apply(
+                              (current) => current.copyWith(jazzPreset: value),
                               reseed: true,
                             );
                           },
@@ -297,8 +313,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                             if (value == null) {
                               return;
                             }
-                            onApplySettings(
-                              settings.copyWith(sourceProfile: value),
+                            dispatcher.apply(
+                              (current) =>
+                                  current.copyWith(sourceProfile: value),
                               reseed: true,
                             );
                           },
@@ -311,8 +328,10 @@ class PracticeSettingsDrawer extends StatelessWidget {
                           subtitle: Text(l10n.smartDiagnosticsHelp),
                           value: settings.smartDiagnosticsEnabled,
                           onChanged: (value) {
-                            onApplySettings(
-                              settings.copyWith(smartDiagnosticsEnabled: value),
+                            dispatcher.apply(
+                              (current) => current.copyWith(
+                                smartDiagnosticsEnabled: value,
+                              ),
                             );
                           },
                         ),
@@ -339,8 +358,8 @@ class PracticeSettingsDrawer extends StatelessWidget {
                             showCheckmark: false,
                             onSelected: _usesKeyMode
                                 ? (selected) {
-                                    onApplySettings(
-                                      settings.copyWith(
+                                    dispatcher.apply(
+                                      (current) => current.copyWith(
                                         secondaryDominantEnabled: selected,
                                       ),
                                       reseed: true,
@@ -354,8 +373,8 @@ class PracticeSettingsDrawer extends StatelessWidget {
                             showCheckmark: false,
                             onSelected: _usesKeyMode
                                 ? (selected) {
-                                    onApplySettings(
-                                      settings.copyWith(
+                                    dispatcher.apply(
+                                      (current) => current.copyWith(
                                         substituteDominantEnabled: selected,
                                       ),
                                       reseed: true,
@@ -370,8 +389,8 @@ class PracticeSettingsDrawer extends StatelessWidget {
                             showCheckmark: false,
                             onSelected: _usesKeyMode
                                 ? (selected) {
-                                    onApplySettings(
-                                      settings.copyWith(
+                                    dispatcher.apply(
+                                      (current) => current.copyWith(
                                         modalInterchangeEnabled: selected,
                                       ),
                                       reseed: true,
@@ -441,8 +460,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                           if (value == null) {
                             return;
                           }
-                          onApplySettings(
-                            settings.copyWith(chordSymbolStyle: value),
+                          dispatcher.apply(
+                            (current) =>
+                                current.copyWith(chordSymbolStyle: value),
                           );
                         },
                       ),
@@ -470,8 +490,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                           if (value == null) {
                             return;
                           }
-                          onApplySettings(
-                            settings.copyWith(keyCenterLabelStyle: value),
+                          dispatcher.apply(
+                            (current) =>
+                                current.copyWith(keyCenterLabelStyle: value),
                           );
                         },
                       ),
@@ -487,8 +508,10 @@ class PracticeSettingsDrawer extends StatelessWidget {
                             showCheckmark: false,
                             onSelected: _usesKeyMode
                                 ? (selected) {
-                                    onApplySettings(
-                                      settings.copyWith(allowV7sus4: selected),
+                                    dispatcher.apply(
+                                      (current) => current.copyWith(
+                                        allowV7sus4: selected,
+                                      ),
                                       reseed: true,
                                     );
                                   }
@@ -505,8 +528,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                           subtitle: Text(l10n.tensionHelp),
                           value: settings.allowTensions,
                           onChanged: (value) {
-                            onApplySettings(
-                              settings.copyWith(allowTensions: value),
+                            dispatcher.apply(
+                              (current) =>
+                                  current.copyWith(allowTensions: value),
                               reseed: true,
                             );
                           },
@@ -533,8 +557,8 @@ class PracticeSettingsDrawer extends StatelessWidget {
                                           } else {
                                             nextTensions.remove(tension);
                                           }
-                                          onApplySettings(
-                                            settings.copyWith(
+                                          dispatcher.apply(
+                                            (current) => current.copyWith(
                                               selectedTensionOptions:
                                                   nextTensions,
                                             ),
@@ -556,8 +580,10 @@ class PracticeSettingsDrawer extends StatelessWidget {
                         subtitle: Text(l10n.voicingSuggestionsHelp),
                         value: settings.voicingSuggestionsEnabled,
                         onChanged: (value) {
-                          onApplySettings(
-                            settings.copyWith(voicingSuggestionsEnabled: value),
+                          dispatcher.apply(
+                            (current) => current.copyWith(
+                              voicingSuggestionsEnabled: value,
+                            ),
                           );
                         },
                       ),
@@ -586,8 +612,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                             if (value == null) {
                               return;
                             }
-                            onApplySettings(
-                              settings.copyWith(voicingComplexity: value),
+                            dispatcher.apply(
+                              (current) =>
+                                  current.copyWith(voicingComplexity: value),
                             );
                           },
                         ),
@@ -619,8 +646,8 @@ class PracticeSettingsDrawer extends StatelessWidget {
                             if (value == null) {
                               return;
                             }
-                            onApplySettings(
-                              settings.copyWith(
+                            dispatcher.apply(
+                              (current) => current.copyWith(
                                 voicingTopNotePreference: value,
                               ),
                             );
@@ -634,8 +661,10 @@ class PracticeSettingsDrawer extends StatelessWidget {
                           subtitle: Text(l10n.allowRootlessVoicingsHelp),
                           value: settings.allowRootlessVoicings,
                           onChanged: (value) {
-                            onApplySettings(
-                              settings.copyWith(allowRootlessVoicings: value),
+                            dispatcher.apply(
+                              (current) => current.copyWith(
+                                allowRootlessVoicings: value,
+                              ),
                             );
                           },
                         ),
@@ -660,8 +689,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                             if (value == null) {
                               return;
                             }
-                            onApplySettings(
-                              settings.copyWith(maxVoicingNotes: value),
+                            dispatcher.apply(
+                              (current) =>
+                                  current.copyWith(maxVoicingNotes: value),
                             );
                           },
                         ),
@@ -687,8 +717,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                             if (value == null) {
                               return;
                             }
-                            onApplySettings(
-                              settings.copyWith(lookAheadDepth: value),
+                            dispatcher.apply(
+                              (current) =>
+                                  current.copyWith(lookAheadDepth: value),
                             );
                           },
                         ),
@@ -700,8 +731,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                           subtitle: Text(l10n.showVoicingReasonsHelp),
                           value: settings.showVoicingReasons,
                           onChanged: (value) {
-                            onApplySettings(
-                              settings.copyWith(showVoicingReasons: value),
+                            dispatcher.apply(
+                              (current) =>
+                                  current.copyWith(showVoicingReasons: value),
                             );
                           },
                         ),
@@ -715,9 +747,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                         subtitle: Text(l10n.inversionHelp),
                         value: settings.inversionSettings.enabled,
                         onChanged: (value) {
-                          onApplySettings(
-                            settings.copyWith(
-                              inversionSettings: settings.inversionSettings
+                          dispatcher.apply(
+                            (current) => current.copyWith(
+                              inversionSettings: current.inversionSettings
                                   .copyWith(enabled: value),
                             ),
                             reseed: true,
@@ -740,9 +772,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                               showCheckmark: false,
                               onSelected: settings.inversionSettings.enabled
                                   ? (selected) {
-                                      onApplySettings(
-                                        settings.copyWith(
-                                          inversionSettings: settings
+                                      dispatcher.apply(
+                                        (current) => current.copyWith(
+                                          inversionSettings: current
                                               .inversionSettings
                                               .copyWith(
                                                 firstInversionEnabled: selected,
@@ -762,9 +794,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                               showCheckmark: false,
                               onSelected: settings.inversionSettings.enabled
                                   ? (selected) {
-                                      onApplySettings(
-                                        settings.copyWith(
-                                          inversionSettings: settings
+                                      dispatcher.apply(
+                                        (current) => current.copyWith(
+                                          inversionSettings: current
                                               .inversionSettings
                                               .copyWith(
                                                 secondInversionEnabled:
@@ -785,9 +817,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                               showCheckmark: false,
                               onSelected: settings.inversionSettings.enabled
                                   ? (selected) {
-                                      onApplySettings(
-                                        settings.copyWith(
-                                          inversionSettings: settings
+                                      dispatcher.apply(
+                                        (current) => current.copyWith(
+                                          inversionSettings: current
                                               .inversionSettings
                                               .copyWith(
                                                 thirdInversionEnabled: selected,
@@ -870,7 +902,10 @@ class PracticeSettingsDrawer extends StatelessWidget {
     return mode == KeyMode.major ? l10n.modeMajor : l10n.modeMinor;
   }
 
-  Widget _keyCenterChip(KeyCenter center) {
+  Widget _keyCenterChip(
+    KeyCenter center,
+    PracticeSettingsDispatcher dispatcher,
+  ) {
     final isSelected = settings.activeKeyCenters.contains(center);
     final label = center.mode == KeyMode.major
         ? MusicTheory.displayRootForKey(center.tonicName)
@@ -887,8 +922,8 @@ class PracticeSettingsDrawer extends StatelessWidget {
         } else {
           nextCenters.remove(center);
         }
-        onApplySettings(
-          settings.copyWith(activeKeyCenters: nextCenters),
+        dispatcher.apply(
+          (current) => current.copyWith(activeKeyCenters: nextCenters),
           reseed: true,
         );
       },

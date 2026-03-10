@@ -289,10 +289,6 @@ _parseTransitionPriors({
       );
     }
 
-    if (mode == KeyMode.major && currentRoman == RomanNumeralId.iMaj69) {
-      continue;
-    }
-
     final duplicateKey = '${mode.name}:${currentRoman.name}:${nextRoman.name}';
     if (!seen.add(duplicateKey)) {
       throw StateError('Duplicate transition row for $duplicateKey.');
@@ -309,7 +305,33 @@ _parseTransitionPriors({
       'Transition priors must include both major and minor maps.',
     );
   }
+  _backfillMissingLegacyTransitionRoots(transitions);
   return transitions;
+}
+
+void _backfillMissingLegacyTransitionRoots(
+  Map<KeyMode, Map<RomanNumeralId, List<_TransitionEntry>>> transitions,
+) {
+  final legacyByMode = <KeyMode, Map<RomanNumeralId, List<WeightedNextRoman>>>{
+    KeyMode.major: SmartGeneratorHelper.majorDiatonicTransitions,
+    KeyMode.minor: SmartGeneratorHelper.minorDiatonicTransitions,
+  };
+
+  for (final entry in legacyByMode.entries) {
+    final generatedByRoman = transitions[entry.key]!;
+    for (final legacyEntry in entry.value.entries) {
+      generatedByRoman.putIfAbsent(
+        legacyEntry.key,
+        () => <_TransitionEntry>[
+          for (final candidate in legacyEntry.value)
+            _TransitionEntry(
+              nextRoman: candidate.romanNumeralId,
+              weight: candidate.weight,
+            ),
+        ],
+      );
+    }
+  }
 }
 
 Map<SourceProfile, _BlendProfileEntry> _parsePriorBlendProfiles({

@@ -5,16 +5,24 @@ class SmartPriorLookup {
 
   static const bool _defaultGeneratedPriorsEnabled = true;
   static const Symbol _generatedPriorsZoneKey = #generatedPriorsEnabled;
+  static final Set<String> _reportedGeneratedFallbacks = <String>{};
 
   static bool get generatedPriorsEnabled =>
       Zone.current[_generatedPriorsZoneKey] as bool? ??
       _defaultGeneratedPriorsEnabled;
 
   static T runWithGeneratedPriorsEnabled<T>(bool enabled, T Function() body) {
-    return runZoned(
-      body,
-      zoneValues: {_generatedPriorsZoneKey: enabled},
-    );
+    return runZoned(body, zoneValues: {_generatedPriorsZoneKey: enabled});
+  }
+
+  static void _reportGeneratedFallback({
+    required String key,
+    required String message,
+  }) {
+    if (!_reportedGeneratedFallbacks.add(key)) {
+      return;
+    }
+    developer.log(message, name: 'sightchord.smart_priors');
   }
 
   static int familyBaseWeight({
@@ -31,6 +39,12 @@ class SmartPriorLookup {
     if (generated != null) {
       return generated;
     }
+    _reportGeneratedFallback(
+      key: 'family:${jazzPreset.name}:${family.name}',
+      message:
+          'Missing generated family prior for '
+          '${jazzPreset.name}/${family.name}; falling back to legacy weight.',
+    );
     return SmartGeneratorHelper._legacyFamilyBaseWeight(
       jazzPreset: jazzPreset,
       family: family,
@@ -106,6 +120,16 @@ class SmartPriorLookup {
     if (generated != null && generated.isNotEmpty) {
       return generated;
     }
+    _reportGeneratedFallback(
+      key: 'transition:${keyMode.name}:${currentRomanNumeralId.name}',
+      message: generated == null
+          ? 'Missing generated transition priors for '
+                '${keyMode.name}/${currentRomanNumeralId.name}; '
+                'falling back to legacy candidates.'
+          : 'Generated transition priors for '
+                '${keyMode.name}/${currentRomanNumeralId.name} were empty; '
+                'falling back to legacy candidates.',
+    );
     final legacyLookup = keyMode == KeyMode.major
         ? SmartGeneratorHelper.majorDiatonicTransitions
         : SmartGeneratorHelper.minorDiatonicTransitions;

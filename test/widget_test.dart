@@ -8,6 +8,7 @@ import 'package:sightchord/music/chord_theory.dart';
 import 'package:sightchord/music/voicing_models.dart';
 import 'package:sightchord/settings/practice_settings.dart';
 import 'package:sightchord/settings/settings_controller.dart';
+import 'package:sightchord/widgets/mini_keyboard.dart';
 import 'package:sightchord/widgets/voicing_suggestions_section.dart';
 
 GeneratedChord buildTestChord({
@@ -126,7 +127,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  Future<void> pumpAppWithSettings(
+  Future<void> pumpMainMenuWithSettings(
     WidgetTester tester,
     PracticeSettings settings,
   ) async {
@@ -136,7 +137,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<AppSettingsController> pumpAppWithController(
+  Future<AppSettingsController> pumpMainMenuWithController(
     WidgetTester tester,
     PracticeSettings settings,
   ) async {
@@ -146,14 +147,50 @@ void main() {
     return controller;
   }
 
+  Future<void> openChordGenerator(WidgetTester tester) async {
+    await tester.tap(find.byKey(const ValueKey('main-open-generator-button')));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> openMainMenuSettings(WidgetTester tester) async {
+    await tester.tap(find.byKey(const ValueKey('main-open-settings-button')));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> pumpAppWithSettings(
+    WidgetTester tester,
+    PracticeSettings settings,
+  ) async {
+    await pumpMainMenuWithSettings(tester, settings);
+    await openChordGenerator(tester);
+  }
+
+  Future<AppSettingsController> pumpAppWithController(
+    WidgetTester tester,
+    PracticeSettings settings,
+  ) async {
+    final controller = await pumpMainMenuWithController(tester, settings);
+    await openChordGenerator(tester);
+    return controller;
+  }
+
   Future<void> pumpApp(WidgetTester tester) async {
     await pumpAppWithSettings(tester, PracticeSettings());
   }
 
   String voicingNotesFor(WidgetTester tester, String kind) {
-    return tester
-        .widget<Text>(find.byKey(ValueKey('voicing-notes-$kind')))
-        .data!;
+    final textWidgets = tester
+        .widgetList<Text>(
+          find.descendant(
+            of: find.byKey(ValueKey('voicing-notes-$kind')),
+            matching: find.byType(Text),
+          ),
+        )
+        .toList();
+    return textWidgets
+        .map((widget) => widget.data ?? widget.textSpan?.toPlainText() ?? '')
+        .where((value) => value.isNotEmpty)
+        .join(' ');
   }
 
   String? voicingBadgeKind(WidgetTester tester, String badge) {
@@ -167,6 +204,54 @@ void main() {
     }
     return null;
   }
+
+  testWidgets('shows the main menu before entering the chord generator', (
+    WidgetTester tester,
+  ) async {
+    await pumpMainMenuWithSettings(tester, PracticeSettings());
+
+    expect(
+      find.byKey(const ValueKey('main-open-generator-button')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('main-open-settings-button')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('current-chord-text')), findsNothing);
+
+    await openChordGenerator(tester);
+
+    expect(find.byKey(const ValueKey('current-chord-text')), findsOneWidget);
+  });
+
+  testWidgets('main menu settings only allow changing language', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpMainMenuWithController(
+      tester,
+      PracticeSettings(language: AppLanguage.en, metronomeEnabled: false),
+    );
+
+    await openMainMenuSettings(tester);
+
+    expect(
+      find.byKey(const ValueKey('main-language-selector')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('metronome-sound-selector')),
+      findsNothing,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('main-language-selector')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('\uD55C\uAD6D\uC5B4').last);
+    await tester.pumpAndSettle();
+
+    expect(controller.settings.language, AppLanguage.ko);
+    expect(controller.settings.metronomeEnabled, isFalse);
+  });
 
   testWidgets('hides Roman-numeral tension controls in free mode', (
     WidgetTester tester,
@@ -382,6 +467,110 @@ void main() {
       controller.settings.voicingTopNotePreference,
       VoicingTopNotePreference.e,
     );
+  });
+
+  testWidgets('voicing suggestion cards share keyboard range and note slots', (
+    WidgetTester tester,
+  ) async {
+    final chord = buildTestChord(
+      root: 'G',
+      quality: ChordQuality.dominant7,
+      repeatKey: 'g7SharedAxis',
+      romanNumeralId: RomanNumeralId.vDom7,
+      keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+      harmonicFunction: HarmonicFunction.dominant,
+    );
+    final interpretation = ChordVoicingInterpretation(
+      root: 'G',
+      rootSemitone: 7,
+      preferFlatSpelling: false,
+      essentialTones: const [
+        VoicingTone(label: '3', semitone: 4),
+        VoicingTone(label: 'b7', semitone: 10),
+      ],
+      optionalTones: const [
+        VoicingTone(label: '9', semitone: 2),
+        VoicingTone(label: '13', semitone: 9),
+      ],
+      avoidTones: const [],
+      styleTags: const {'dominant'},
+      isDominantFamily: true,
+    );
+    final naturalVoicing = buildTestVoicing(
+      family: VoicingFamily.rootlessA,
+      midiNotes: const [43, 50, 57, 62],
+      noteNames: const ['G', 'D', 'A', 'D'],
+      toneLabels: const ['1', '5', '9', '5'],
+      tensions: const {'9'},
+      containsRoot: true,
+    );
+    final colorfulVoicing = buildTestVoicing(
+      family: VoicingFamily.upperStructure,
+      midiNotes: const [47, 54, 59, 64, 67],
+      noteNames: const ['B', 'F#', 'B', 'E', 'G'],
+      toneLabels: const ['3', '7', '3', '13', '#9'],
+      tensions: const {'13', '#9'},
+      containsThird: true,
+      containsSeventh: true,
+    );
+    final easyVoicing = buildTestVoicing(
+      family: VoicingFamily.shell,
+      midiNotes: const [40, 47, 52],
+      noteNames: const ['E', 'B', 'E'],
+      toneLabels: const ['13', '3', '13'],
+      tensions: const {'13'},
+      containsThird: true,
+    );
+    final recommendations = VoicingRecommendationSet(
+      currentChord: chord,
+      interpretation: interpretation,
+      rankedCandidates: const [],
+      suggestions: [
+        buildTestSuggestion(
+          kind: VoicingSuggestionKind.natural,
+          voicing: naturalVoicing,
+          reasonTags: const [VoicingReasonTag.gentleMotion],
+        ),
+        buildTestSuggestion(
+          kind: VoicingSuggestionKind.colorful,
+          voicing: colorfulVoicing,
+          reasonTags: const [VoicingReasonTag.upperStructureColor],
+        ),
+        buildTestSuggestion(
+          kind: VoicingSuggestionKind.easy,
+          voicing: easyVoicing,
+          reasonTags: const [VoicingReasonTag.compactReach],
+        ),
+      ],
+    );
+
+    await pumpVoicingSection(tester, recommendations: recommendations);
+
+    final keyboards = tester.widgetList<MiniKeyboard>(
+      find.byType(MiniKeyboard),
+    );
+
+    expect(keyboards, hasLength(3));
+    expect(
+      keyboards
+          .map((keyboard) => '${keyboard.minMidi}:${keyboard.maxMidi}')
+          .toSet(),
+      {'37:70'},
+    );
+    expect(
+      find.byKey(const ValueKey('voicing-note-slot-natural-4')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('voicing-note-slot-colorful-4')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('voicing-note-slot-easy-4')),
+      findsOneWidget,
+    );
+    expect(voicingNotesFor(tester, 'easy'), 'E B E');
+    expect(voicingNotesFor(tester, 'colorful'), 'B F# B E G');
   });
 
   testWidgets(
