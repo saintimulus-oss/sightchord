@@ -284,8 +284,14 @@ class SmartDecisionTrace implements SmartDebugInfo {
       'barsToBoundary': phraseContext.barsToBoundary,
       'phraseLength': phraseContext.phraseLength,
       'selectedDestination': _token(selectedDiatonicDestination),
+      'selectedModalInterchange': _token(selectedModalInterchange),
+      'selectedAppliedApproach': _token(selectedAppliedApproach),
+      'appliedType': appliedType?.name,
+      'appliedTarget': _token(appliedTargetRomanNumeralId),
       'selectedVariant': selectedVariant,
       'activePatternTag': activePatternTag,
+      'queuedPatternLength': queuedPatternLength,
+      'returnedToNormalFlow': returnedToNormalFlow,
       'modulationCandidates': modulationCandidateKeys,
       'blockedReason': blockedReason?.name,
       'fallbackOccurred': fallbackOccurred,
@@ -383,6 +389,22 @@ class SmartDiagnosticsStore {
 
   static List<SmartDecisionTrace> recent() =>
       List<SmartDecisionTrace>.unmodifiable(_recentTraces);
+
+  static T runIsolated<T>(T Function() body) {
+    final snapshot = List<SmartDecisionTrace>.from(_recentTraces);
+    _recentTraces.clear();
+    try {
+      return body();
+    } finally {
+      _recentTraces
+        ..clear()
+        ..addAll(
+          snapshot.length <= _maxTraceCount
+              ? snapshot
+              : snapshot.sublist(snapshot.length - _maxTraceCount),
+        );
+    }
+  }
 
   static String dumpJson({bool pretty = false}) {
     final payload = [for (final trace in _recentTraces) trace.toJson()];

@@ -82,9 +82,13 @@ class VoicingEngine {
       chord: context.currentChord,
       settings: context.settings,
     );
-    final candidates = _generateCandidates(
-      chord: context.currentChord,
-      settings: context.settings,
+    final candidates = _mergeLockedCandidate(
+      candidates: _generateCandidates(
+        chord: context.currentChord,
+        settings: context.settings,
+        interpretation: interpretation,
+      ),
+      lockedVoicing: context.lockedVoicing,
       interpretation: interpretation,
     );
     if (candidates.isEmpty) {
@@ -290,8 +294,8 @@ class VoicingEngine {
         isMinorFamily = true;
         break;
       case ChordQuality.major69:
-        essentialLabels = const ['3', '6'];
-        optionalLabels.addAll(const ['9', '5', '1']);
+        essentialLabels = const ['3', '6', '9'];
+        optionalLabels.addAll(const ['5', '1']);
         avoidLabels.add('11');
         isMajorFamily = true;
         qualityImpliesColor = true;
@@ -456,6 +460,59 @@ class VoicingEngine {
     });
 
     return candidates;
+  }
+
+  static List<ConcreteVoicing> _mergeLockedCandidate({
+    required List<ConcreteVoicing> candidates,
+    required ConcreteVoicing? lockedVoicing,
+    required ChordVoicingInterpretation interpretation,
+  }) {
+    if (lockedVoicing == null ||
+        candidates.any(
+          (candidate) => candidate.signature == lockedVoicing.signature,
+        ) ||
+        !_canReuseLockedVoicing(
+          lockedVoicing: lockedVoicing,
+          interpretation: interpretation,
+        )) {
+      return candidates;
+    }
+    return [...candidates, lockedVoicing];
+  }
+
+  static bool _canReuseLockedVoicing({
+    required ConcreteVoicing lockedVoicing,
+    required ChordVoicingInterpretation interpretation,
+  }) {
+    if (lockedVoicing.midiNotes.length < 3 ||
+        lockedVoicing.midiNotes.length != lockedVoicing.noteNames.length ||
+        lockedVoicing.midiNotes.length != lockedVoicing.toneLabels.length) {
+      return false;
+    }
+    for (var index = 1; index < lockedVoicing.midiNotes.length; index += 1) {
+      if (lockedVoicing.midiNotes[index] <=
+          lockedVoicing.midiNotes[index - 1]) {
+        return false;
+      }
+    }
+    for (var index = 0; index < lockedVoicing.midiNotes.length; index += 1) {
+      final expectedSemitone = _toneSemitones[lockedVoicing.toneLabels[index]];
+      if (expectedSemitone == null) {
+        return false;
+      }
+      final relativeSemitone =
+          (lockedVoicing.midiNotes[index] - interpretation.rootSemitone) % 12;
+      if (relativeSemitone != expectedSemitone % 12) {
+        return false;
+      }
+    }
+    final computedTensions = {
+      for (final label in lockedVoicing.toneLabels)
+        if (_tensionLabels.contains(label)) label,
+    };
+    return computedTensions.length == lockedVoicing.tensions.length &&
+        computedTensions.containsAll(lockedVoicing.tensions) &&
+        lockedVoicing.tensions.containsAll(computedTensions);
   }
 
   static RankedVoicingCandidate _rankCandidate({
@@ -1328,27 +1385,39 @@ class VoicingEngine {
         return left.voicing.signature.compareTo(right.voicing.signature);
       });
 
-    RankedVoicingCandidate selected = rankedByKind.first;
-    for (final candidate in rankedByKind) {
-      final isContinuityReuse =
-          allowContinuityReuse &&
-          continuityReference?.signature == candidate.voicing.signature &&
-          usedSignatures.contains(candidate.voicing.signature);
-      if (usedSignatures.contains(candidate.voicing.signature) &&
-          !isContinuityReuse) {
-        continue;
+    RankedVoicingCandidate? lockedCandidate;
+    if (selectedVoicings.isEmpty && lockedVoicing != null) {
+      for (final candidate in rankedByKind) {
+        if (candidate.voicing.signature == lockedVoicing.signature) {
+          lockedCandidate = candidate;
+          break;
+        }
       }
-      if (usedFamilies.contains(candidate.voicing.family) &&
-          !isContinuityReuse &&
-          rankedByKind.any(
-            (other) =>
-                !usedFamilies.contains(other.voicing.family) &&
-                !usedSignatures.contains(other.voicing.signature),
-          )) {
-        continue;
+    }
+
+    RankedVoicingCandidate selected = lockedCandidate ?? rankedByKind.first;
+    if (lockedCandidate == null) {
+      for (final candidate in rankedByKind) {
+        final isContinuityReuse =
+            allowContinuityReuse &&
+            continuityReference?.signature == candidate.voicing.signature &&
+            usedSignatures.contains(candidate.voicing.signature);
+        if (usedSignatures.contains(candidate.voicing.signature) &&
+            !isContinuityReuse) {
+          continue;
+        }
+        if (usedFamilies.contains(candidate.voicing.family) &&
+            !isContinuityReuse &&
+            rankedByKind.any(
+              (other) =>
+                  !usedFamilies.contains(other.voicing.family) &&
+                  !usedSignatures.contains(other.voicing.signature),
+            )) {
+          continue;
+        }
+        selected = candidate;
+        break;
       }
-      selected = candidate;
-      break;
     }
 
     usedSignatures.add(selected.voicing.signature);

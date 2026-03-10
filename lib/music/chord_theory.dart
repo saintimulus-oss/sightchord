@@ -516,7 +516,7 @@ class ChordToneFormulaLibrary {
     ChordQuality.augmentedTriad: [0, 4, 8],
     ChordQuality.six: [0, 4, 7, 9],
     ChordQuality.minor6: [0, 3, 7, 9],
-    ChordQuality.major69: [0, 4, 7, 9],
+    ChordQuality.major69: [0, 4, 7, 9, 14],
     ChordQuality.dominant7Alt: [0, 4, 7, 10],
     ChordQuality.dominant7Sharp11: [0, 4, 7, 10],
     ChordQuality.dominant13sus4: [0, 5, 7, 10],

@@ -256,6 +256,91 @@ void main() {
     SmartDiagnosticsStore.clear();
   });
 
+  test('runWithGeneratedPriorsEnabled keeps async scopes isolated', () async {
+    final observed = <bool>[];
+
+    await SmartPriorLookup.runWithGeneratedPriorsEnabled(false, () async {
+      observed.add(SmartPriorLookup.generatedPriorsEnabled);
+      await Future<void>.microtask(() {
+        observed.add(SmartPriorLookup.generatedPriorsEnabled);
+      });
+    });
+
+    expect(observed, [false, false]);
+    expect(SmartPriorLookup.generatedPriorsEnabled, isTrue);
+  });
+
+  test(
+    'continuation resolution helper falls back to stored resolution roman',
+    () {
+      final chord = GeneratedChord(
+        symbolData: const ChordSymbolData(
+          root: 'D',
+          harmonicQuality: ChordQuality.dominant7,
+          renderQuality: ChordQuality.dominant7,
+        ),
+        repeatGuardKey: 'continuation-test',
+        harmonicComparisonKey: 'continuation-test',
+        keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        keyName: 'C',
+        romanNumeralId: RomanNumeralId.secondaryOfV,
+        resolutionRomanNumeralId: RomanNumeralId.vDom7,
+        harmonicFunction: HarmonicFunction.dominant,
+      );
+
+      expect(
+        SmartGeneratorHelper.continuationResolutionRomanNumeralId(chord),
+        RomanNumeralId.vDom7,
+      );
+    },
+  );
+
+  test('simulateSteps preserves existing diagnostics history', () {
+    final existing = buildTrace();
+    SmartDiagnosticsStore.record(existing);
+
+    SmartGeneratorHelper.simulateSteps(
+      random: Random(1),
+      steps: 12,
+      request: buildStartRequest(
+        activeKeys: const ['C', 'G'],
+        jazzPreset: JazzPreset.standardsCore,
+      ),
+    );
+
+    final recent = SmartDiagnosticsStore.recent();
+    expect(recent, hasLength(1));
+    expect(recent.first.describe(), existing.describe());
+  });
+
+  test('decision trace json exports queued flow fields', () {
+    final trace = SmartDecisionTrace(
+      stepIndex: 4,
+      currentKeyCenter: 'C major',
+      currentRomanNumeralId: RomanNumeralId.vDom7,
+      currentHarmonicFunction: HarmonicFunction.dominant,
+      phraseContext: _testPhraseContext,
+      selectedAppliedApproach: RomanNumeralId.secondaryOfV,
+      appliedType: AppliedType.secondary,
+      appliedTargetRomanNumeralId: RomanNumeralId.vDom7,
+      queuedPatternLength: 2,
+      returnedToNormalFlow: true,
+    );
+
+    final json = trace.toJson();
+    expect(json['queuedPatternLength'], 2);
+    expect(json['returnedToNormalFlow'], isTrue);
+    expect(
+      json['selectedAppliedApproach'],
+      MusicTheory.romanTokenOf(RomanNumeralId.secondaryOfV),
+    );
+    expect(json['appliedType'], AppliedType.secondary.name);
+    expect(
+      json['appliedTarget'],
+      MusicTheory.romanTokenOf(RomanNumeralId.vDom7),
+    );
+  });
+
   test('one-key mode does not produce real modulation', () {
     final summary = SmartGeneratorHelper.simulateSteps(
       random: Random(1),
@@ -3057,6 +3142,104 @@ void main() {
       (comparison.selected.chord.smartDebug as SmartDecisionTrace?)
           ?.voiceLeadingSummary,
       isNotNull,
+    );
+  });
+
+  test('quality-implied color tones influence voice-leading ranking', () {
+    final previousChord = GeneratedChord(
+      symbolData: const ChordSymbolData(
+        root: 'A',
+        harmonicQuality: ChordQuality.dominant7,
+        renderQuality: ChordQuality.dominant7,
+      ),
+      repeatGuardKey: 'a7',
+      harmonicComparisonKey: 'a7',
+      keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+      keyName: 'C',
+      romanNumeralId: RomanNumeralId.secondaryOfII,
+      harmonicFunction: HarmonicFunction.dominant,
+    );
+
+    final comparison = compareVoiceLeading(
+      previousChord: previousChord,
+      candidates: const [
+        SmartRenderCandidate(
+          keyCenter: KeyCenter(tonicName: 'C', mode: KeyMode.major),
+          romanNumeralId: RomanNumeralId.vDom7,
+          renderQualityOverride: ChordQuality.dominant7,
+        ),
+        SmartRenderCandidate(
+          keyCenter: KeyCenter(tonicName: 'C', mode: KeyMode.major),
+          romanNumeralId: RomanNumeralId.vDom7,
+          renderQualityOverride: ChordQuality.dominant7Sharp11,
+          dominantIntent: DominantIntent.lydianDominant,
+        ),
+      ],
+    );
+    final plain = comparison.rankedCandidates.firstWhere(
+      (candidate) =>
+          candidate.chord.symbolData.renderQuality == ChordQuality.dominant7,
+    );
+    final sharp11 = comparison.rankedCandidates.firstWhere(
+      (candidate) =>
+          candidate.chord.symbolData.renderQuality ==
+          ChordQuality.dominant7Sharp11,
+    );
+
+    expect(
+      comparison.selected.chord.symbolData.renderQuality,
+      ChordQuality.dominant7Sharp11,
+    );
+    expect(
+      sharp11.voiceLeading.commonToneRetentionBonus,
+      greaterThan(plain.voiceLeading.commonToneRetentionBonus),
+    );
+  });
+
+  test('major69 sixth participates in guide-tone resolution scoring', () {
+    const center = KeyCenter(tonicName: 'C', mode: KeyMode.major);
+    final previousChord = GeneratedChord(
+      symbolData: const ChordSymbolData(
+        root: 'C',
+        harmonicQuality: ChordQuality.major69,
+        renderQuality: ChordQuality.major69,
+      ),
+      repeatGuardKey: 'c69GuideTone',
+      harmonicComparisonKey: 'c69GuideTone',
+      keyCenter: center,
+      keyName: 'C',
+      romanNumeralId: RomanNumeralId.iMaj69,
+      harmonicFunction: HarmonicFunction.tonic,
+    );
+
+    final comparison = compareVoiceLeading(
+      previousChord: previousChord,
+      candidates: const [
+        SmartRenderCandidate(
+          keyCenter: center,
+          romanNumeralId: RomanNumeralId.ivMaj7,
+        ),
+        SmartRenderCandidate(
+          keyCenter: center,
+          romanNumeralId: RomanNumeralId.borrowedFlatVII7,
+        ),
+      ],
+    );
+    final ivArrival = comparison.rankedCandidates.firstWhere(
+      (candidate) => candidate.chord.romanNumeralId == RomanNumeralId.ivMaj7,
+    );
+    final flatVIIArrival = comparison.rankedCandidates.firstWhere(
+      (candidate) =>
+          candidate.chord.romanNumeralId == RomanNumeralId.borrowedFlatVII7,
+    );
+
+    expect(
+      flatVIIArrival.voiceLeading.guideToneSemitoneBonus,
+      greaterThan(ivArrival.voiceLeading.guideToneSemitoneBonus),
+    );
+    expect(
+      comparison.selected.chord.romanNumeralId,
+      RomanNumeralId.borrowedFlatVII7,
     );
   });
 

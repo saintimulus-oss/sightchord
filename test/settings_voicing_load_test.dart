@@ -29,4 +29,21 @@ void main() {
     expect(controller.settings.maxVoicingNotes, 5);
     expect(controller.settings.lookAheadDepth, 0);
   });
+
+  test('clamps metronome volume and bpm from invalid storage', () async {
+    SharedPreferences.setMockInitialValues({
+      'metronomeVolume': 1.8,
+      'bpm': -15,
+    });
+
+    final controller = AppSettingsController();
+
+    await controller.load();
+
+    expect(
+      controller.settings.metronomeVolume,
+      PracticeSettings.maxMetronomeVolume,
+    );
+    expect(controller.settings.bpm, PracticeSettings.minBpm);
+  });
 }

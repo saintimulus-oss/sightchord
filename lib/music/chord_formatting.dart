@@ -126,6 +126,15 @@ class ChordRenderingHelper {
   ];
 
   static const Set<String> alteredTensions = {'#11', 'b9', '#9', 'b13'};
+  static const Map<String, int> _tensionPitchClassOffsets = {
+    'b9': 1,
+    '9': 2,
+    '#9': 3,
+    '11': 5,
+    '#11': 6,
+    'b13': 8,
+    '13': 9,
+  };
 
   static const int triadInversionChance = 25;
   static const int extendedInversionChance = 30;
@@ -279,6 +288,45 @@ class ChordRenderingHelper {
 
   static String renderedSymbol(GeneratedChord chord, ChordSymbolStyle style) {
     return ChordSymbolFormatter.format(chord.symbolData, style);
+  }
+
+  static Set<int> targetPitchClassesForChord(GeneratedChord chord) {
+    return targetPitchClassesForSymbolData(
+      symbolData: chord.symbolData,
+      romanNumeralId: chord.romanNumeralId,
+      dominantContext: chord.dominantContext,
+      dominantIntent: chord.dominantIntent,
+    );
+  }
+
+  static Set<int> targetPitchClassesForSymbolData({
+    required ChordSymbolData symbolData,
+    RomanNumeralId? romanNumeralId,
+    DominantContext? dominantContext,
+    DominantIntent? dominantIntent,
+  }) {
+    final rootSemitone = MusicTheory.noteToSemitone[symbolData.root];
+    if (rootSemitone == null) {
+      return const <int>{};
+    }
+    final offsets = <int>{
+      ..._basePitchClassOffsetsForRenderQuality(symbolData.renderQuality),
+    };
+    for (final tension in [
+      ...symbolData.tensions,
+      ..._impliedTargetTensionsForSymbolData(
+        symbolData: symbolData,
+        romanNumeralId: romanNumeralId,
+        dominantContext: dominantContext,
+        dominantIntent: dominantIntent,
+      ),
+    ]) {
+      final offset = _tensionPitchClassOffsets[tension];
+      if (offset != null) {
+        offsets.add(offset);
+      }
+    }
+    return {for (final offset in offsets) (rootSemitone + offset) % 12};
   }
 
   static String harmonicFamily({
@@ -736,5 +784,71 @@ class ChordRenderingHelper {
         dominantIntent: dominantIntent,
       ),
     );
+  }
+
+  static Iterable<int> _basePitchClassOffsetsForRenderQuality(
+    ChordQuality renderQuality,
+  ) {
+    return switch (renderQuality) {
+      ChordQuality.dominant7Alt => const [0, 4, 10],
+      _ => ChordToneFormulaLibrary.formulaFor(renderQuality),
+    };
+  }
+
+  static List<String> _impliedTargetTensionsForSymbolData({
+    required ChordSymbolData symbolData,
+    RomanNumeralId? romanNumeralId,
+    DominantContext? dominantContext,
+    DominantIntent? dominantIntent,
+  }) {
+    final explicit = symbolData.tensions.toSet();
+    final implied = <String>[];
+    switch (symbolData.renderQuality) {
+      case ChordQuality.major69:
+        implied.add('9');
+        break;
+      case ChordQuality.dominant7Alt:
+        final profileKey = romanNumeralId == null
+            ? null
+            : _tensionProfileKey(
+                romanNumeralId: romanNumeralId,
+                renderQuality: symbolData.renderQuality,
+                dominantContext: dominantContext,
+                dominantIntent: dominantIntent,
+              );
+        final alteredProfile = [
+          for (final tension
+              in _tensionProfiles[profileKey] ?? const <_WeightedTension>[])
+            if (alteredTensions.contains(tension.value)) tension.value,
+        ];
+        implied.addAll(
+          alteredProfile.isEmpty ? const ['b9', 'b13'] : alteredProfile.take(2),
+        );
+        break;
+      case ChordQuality.dominant7Sharp11:
+        implied.add('#11');
+        break;
+      case ChordQuality.dominant13sus4:
+        implied.add('13');
+        break;
+      case ChordQuality.majorTriad:
+      case ChordQuality.minorTriad:
+      case ChordQuality.dominant7:
+      case ChordQuality.major7:
+      case ChordQuality.minor7:
+      case ChordQuality.minorMajor7:
+      case ChordQuality.halfDiminished7:
+      case ChordQuality.diminishedTriad:
+      case ChordQuality.diminished7:
+      case ChordQuality.augmentedTriad:
+      case ChordQuality.six:
+      case ChordQuality.minor6:
+      case ChordQuality.dominant7sus4:
+        break;
+    }
+    return [
+      for (final tension in implied)
+        if (!explicit.contains(tension)) tension,
+    ];
   }
 }

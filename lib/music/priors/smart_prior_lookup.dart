@@ -3,25 +3,25 @@ part of '../../smart_generator.dart';
 class SmartPriorLookup {
   const SmartPriorLookup._();
 
-  static bool _generatedPriorsEnabled = true;
+  static const bool _defaultGeneratedPriorsEnabled = true;
+  static const Symbol _generatedPriorsZoneKey = #generatedPriorsEnabled;
 
-  static bool get generatedPriorsEnabled => _generatedPriorsEnabled;
+  static bool get generatedPriorsEnabled =>
+      Zone.current[_generatedPriorsZoneKey] as bool? ??
+      _defaultGeneratedPriorsEnabled;
 
   static T runWithGeneratedPriorsEnabled<T>(bool enabled, T Function() body) {
-    final previous = _generatedPriorsEnabled;
-    _generatedPriorsEnabled = enabled;
-    try {
-      return body();
-    } finally {
-      _generatedPriorsEnabled = previous;
-    }
+    return runZoned(
+      body,
+      zoneValues: {_generatedPriorsZoneKey: enabled},
+    );
   }
 
   static int familyBaseWeight({
     required JazzPreset jazzPreset,
     required SmartProgressionFamily family,
   }) {
-    if (!_generatedPriorsEnabled) {
+    if (!generatedPriorsEnabled) {
       return SmartGeneratorHelper._legacyFamilyBaseWeight(
         jazzPreset: jazzPreset,
         family: family,
@@ -41,7 +41,7 @@ class SmartPriorLookup {
     SmartProgressionFamily family,
     SmartPhraseContext phraseContext,
   ) {
-    if (!_generatedPriorsEnabled) {
+    if (!generatedPriorsEnabled) {
       return SmartGeneratorHelper._phraseRoleMultiplier(family, phraseContext);
     }
     final generated =
@@ -56,7 +56,7 @@ class SmartPriorLookup {
     SmartProgressionFamily family,
     SmartPhraseContext phraseContext,
   ) {
-    if (!_generatedPriorsEnabled) {
+    if (!generatedPriorsEnabled) {
       return SmartGeneratorHelper._sectionRoleMultiplier(family, phraseContext);
     }
     final generated =
@@ -71,7 +71,7 @@ class SmartPriorLookup {
     SmartProgressionFamily family,
     SourceProfile sourceProfile,
   ) {
-    if (!_generatedPriorsEnabled) {
+    if (!generatedPriorsEnabled) {
       return SmartGeneratorHelper._sourceProfileMultiplier(
         family,
         sourceProfile,
@@ -95,7 +95,7 @@ class SmartPriorLookup {
     if (currentRomanNumeralId == null) {
       return null;
     }
-    if (!_generatedPriorsEnabled) {
+    if (!generatedPriorsEnabled) {
       final legacyLookup = keyMode == KeyMode.major
           ? SmartGeneratorHelper.majorDiatonicTransitions
           : SmartGeneratorHelper.minorDiatonicTransitions;

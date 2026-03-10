@@ -156,6 +156,18 @@ void main() {
         .data!;
   }
 
+  String? voicingBadgeKind(WidgetTester tester, String badge) {
+    for (final kind in const ['natural', 'colorful', 'easy']) {
+      if (find
+          .byKey(ValueKey('voicing-$badge-badge-$kind'))
+          .evaluate()
+          .isNotEmpty) {
+        return kind;
+      }
+    }
+    return null;
+  }
+
   testWidgets('hides Roman-numeral tension controls in free mode', (
     WidgetTester tester,
   ) async {
@@ -849,6 +861,46 @@ void main() {
     );
   });
 
+  testWidgets('locked voicing keeps selected and locked state aligned', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(
+      tester,
+      PracticeSettings(
+        activeKeys: const {'C'},
+        voicingSuggestionsEnabled: true,
+        allowTensions: true,
+        lookAheadDepth: 2,
+      ),
+    );
+
+    await tester.tap(find.text('Next Chord'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('voicing-lock-natural')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('voicing-lock-natural')));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('voicing-suggestion-card-easy')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('voicing-suggestion-card-easy')),
+    );
+    await tester.pumpAndSettle();
+
+    final selectedKind = voicingBadgeKind(tester, 'selected');
+    final lockedKind = voicingBadgeKind(tester, 'locked');
+
+    expect(selectedKind, isNotNull);
+    expect(lockedKind, isNotNull);
+    expect(selectedKind, lockedKind);
+  });
+
   testWidgets('selection and display-only settings keep voicing notes stable', (
     WidgetTester tester,
   ) async {
@@ -932,12 +984,26 @@ void main() {
     expect(find.text('\uC124\uC815'), findsOneWidget);
     expect(find.text('\uBA54\uD2B8\uB85C\uB188'), findsWidgets);
     expect(find.text('\uBA54\uD2B8\uB85C\uB188 \uC18C\uB9AC'), findsOneWidget);
+    expect(find.text('\uC870\uC131 \uD45C\uAE30 \uBC29\uC2DD'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('metronome-sound-selector')));
     await tester.pumpAndSettle();
 
     expect(find.text('\uD074\uB798\uC2DD'), findsWidgets);
     expect(find.text('\uD074\uB9AD B'), findsWidgets);
+    await tester.tap(find.text('\uD074\uB798\uC2DD').last);
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('chord-symbol-style-dropdown')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('chord-symbol-style-dropdown')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('\uAC04\uACB0\uD615'), findsWidgets);
+    expect(find.textContaining('Maj \uD45C\uAE30'), findsWidgets);
+    expect(find.textContaining('\uB378\uD0C0 \uC7AC\uC988'), findsWidgets);
   });
 
   testWidgets('system language follows the platform locale', (
