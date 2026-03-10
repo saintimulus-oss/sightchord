@@ -174,6 +174,13 @@ class _MyHomePageState extends State<MyHomePage> {
     return Duration(microseconds: (60000000 / _effectiveBpm()).round());
   }
 
+  Duration _beatIndicatorAnimationDuration() {
+    final beatMilliseconds = _beatInterval().inMilliseconds;
+    final scaledMilliseconds = (beatMilliseconds * 0.42).round();
+    final clampedMilliseconds = scaledMilliseconds.clamp(55, 180);
+    return Duration(milliseconds: clampedMilliseconds);
+  }
+
   int _effectiveBpm() {
     final parsed = int.tryParse(_bpmController.text) ?? _settings.bpm;
     return parsed.clamp(_minBpm, _maxBpm);
@@ -1204,17 +1211,52 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget _buildBeatCircle(int index) {
     final isActive = _currentBeat == index;
-    return AnimatedContainer(
-      key: ValueKey('beat-circle-$index'),
-      duration: const Duration(milliseconds: 180),
-      width: 12,
-      height: 12,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: isActive
-            ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).colorScheme.outlineVariant,
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final animationDuration = _beatIndicatorAnimationDuration();
+    final activeColor = colorScheme.primary;
+    final inactiveColor = colorScheme.outlineVariant;
+
+    return AnimatedScale(
+      scale: isActive ? 1.18 : 1,
+      duration: animationDuration,
+      curve: Curves.easeOutCubic,
+      child: AnimatedContainer(
+        key: ValueKey('beat-circle-$index'),
+        duration: animationDuration,
+        curve: Curves.easeOutCubic,
+        width: 12,
+        height: 12,
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isActive
+                ? activeColor.withValues(alpha: 0.95)
+                : inactiveColor.withValues(alpha: 0.85),
+          ),
+          gradient: RadialGradient(
+            radius: isActive ? 0.95 : 0.8,
+            colors: isActive
+                ? [
+                    activeColor.withValues(alpha: 0.98),
+                    activeColor.withValues(alpha: 0.74),
+                  ]
+                : [
+                    inactiveColor.withValues(alpha: 0.82),
+                    inactiveColor.withValues(alpha: 0.42),
+                  ],
+          ),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: activeColor.withValues(alpha: 0.34),
+                    blurRadius: 12,
+                    spreadRadius: 1,
+                  ),
+                ]
+              : const [],
+        ),
       ),
     );
   }
