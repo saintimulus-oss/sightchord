@@ -314,6 +314,26 @@ void main() {
     expect(naturalSuggestion.breakdown.bassAnchorMatched, isTrue);
   });
 
+  test('major69 suggestions keep the ninth present', () {
+    final c69 = _buildChord(
+      root: 'C',
+      quality: ChordQuality.major69,
+      repeatKey: 'c69',
+      romanNumeralId: RomanNumeralId.iMaj69,
+      keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+      harmonicFunction: HarmonicFunction.tonic,
+    );
+
+    final result = VoicingEngine.recommend(
+      context: VoicingContext(currentChord: c69, settings: settings),
+    );
+
+    expect(result.suggestions, isNotEmpty);
+    for (final suggestion in result.suggestions) {
+      expect(suggestion.voicing.toneLabels, contains('9'));
+    }
+  });
+
   test('locked voicing is preserved on rebuild for the same chord', () {
     final g7 = _buildChord(
       root: 'G',
@@ -346,6 +366,55 @@ void main() {
           .breakdown
           .lockContinuityBonus,
       greaterThan(0),
+    );
+  });
+
+  test('locked voicing stays visible as the authoritative card choice', () {
+    final g7Sharp11 = _buildChord(
+      root: 'G',
+      quality: ChordQuality.dominant7Sharp11,
+      repeatKey: 'g7Sharp11Locked',
+      romanNumeralId: RomanNumeralId.vDom7,
+      keyCenter: const KeyCenter(tonicName: 'D', mode: KeyMode.major),
+      harmonicFunction: HarmonicFunction.dominant,
+      dominantContext: DominantContext.dominantIILydian,
+      dominantIntent: DominantIntent.lydianDominant,
+    );
+    final initial = VoicingEngine.recommend(
+      context: VoicingContext(
+        currentChord: g7Sharp11,
+        settings: settings.copyWith(
+          voicingComplexity: VoicingComplexity.modern,
+        ),
+      ),
+    );
+    final lockedVoicing = initial
+        .suggestionFor(VoicingSuggestionKind.colorful)!
+        .voicing;
+
+    final relocked = VoicingEngine.recommend(
+      context: VoicingContext(
+        currentChord: g7Sharp11,
+        settings: settings.copyWith(
+          voicingComplexity: VoicingComplexity.modern,
+        ),
+        lockedVoicing: lockedVoicing,
+      ),
+    );
+
+    expect(
+      relocked.suggestions.any(
+        (suggestion) => suggestion.voicing.signature == lockedVoicing.signature,
+      ),
+      isTrue,
+    );
+    expect(
+      relocked.suggestionFor(VoicingSuggestionKind.natural)!.voicing.signature,
+      lockedVoicing.signature,
+    );
+    expect(
+      relocked.suggestionFor(VoicingSuggestionKind.natural)!.locked,
+      isTrue,
     );
   });
 
@@ -813,7 +882,7 @@ void main() {
   );
 
   test(
-    'explicit top-note preference takes over when locked voicing is unavailable',
+    'locked voicing stays authoritative across same-chord settings changes',
     () {
       final g7Sharp11 = _buildChord(
         root: 'G',
@@ -859,6 +928,72 @@ void main() {
         result.suggestions.any(
           (suggestion) =>
               suggestion.voicing.signature == lockedVoicing.signature,
+        ),
+        isTrue,
+      );
+      expect(result.topNoteSource, VoicingTopNoteSource.lockedContinuity);
+      expect(
+        result.effectiveTopNotePitchClass,
+        lockedVoicing.topNotePitchClass,
+      );
+    },
+  );
+
+  test(
+    'explicit top-note preference takes over when locked voicing is stale',
+    () {
+      final dm7 = _buildChord(
+        root: 'D',
+        quality: ChordQuality.minor7,
+        repeatKey: 'dm7LockSource',
+        romanNumeralId: RomanNumeralId.iiMin7,
+        keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        harmonicFunction: HarmonicFunction.predominant,
+      );
+      final g7Sharp11 = _buildChord(
+        root: 'G',
+        quality: ChordQuality.dominant7Sharp11,
+        repeatKey: 'g7Sharp11StaleLock',
+        romanNumeralId: RomanNumeralId.vDom7,
+        keyCenter: const KeyCenter(tonicName: 'D', mode: KeyMode.major),
+        harmonicFunction: HarmonicFunction.dominant,
+        dominantContext: DominantContext.dominantIILydian,
+        dominantIntent: DominantIntent.lydianDominant,
+      );
+
+      final staleLock = VoicingEngine.recommend(
+        context: VoicingContext(
+          currentChord: dm7,
+          settings: settings.copyWith(
+            voicingComplexity: VoicingComplexity.modern,
+          ),
+        ),
+      ).suggestionFor(VoicingSuggestionKind.natural)!.voicing;
+      final preferredTopNotePitchClass = VoicingEngine.recommend(
+        context: VoicingContext(
+          currentChord: g7Sharp11,
+          settings: settings.copyWith(
+            voicingComplexity: VoicingComplexity.standard,
+            maxVoicingNotes: 4,
+          ),
+        ),
+      ).suggestionFor(VoicingSuggestionKind.natural)!.voicing.topNotePitchClass;
+
+      final result = VoicingEngine.recommend(
+        context: VoicingContext(
+          currentChord: g7Sharp11,
+          settings: settings.copyWith(
+            voicingComplexity: VoicingComplexity.standard,
+            maxVoicingNotes: 4,
+          ),
+          lockedVoicing: staleLock,
+          preferredTopNotePitchClass: preferredTopNotePitchClass,
+        ),
+      );
+
+      expect(
+        result.suggestions.any(
+          (suggestion) => suggestion.voicing.signature == staleLock.signature,
         ),
         isFalse,
       );

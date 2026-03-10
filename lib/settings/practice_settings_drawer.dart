@@ -453,15 +453,16 @@ class PracticeSettingsDrawer extends StatelessWidget {
                         isExpanded: true,
                         decoration: InputDecoration(
                           border: const OutlineInputBorder(),
-                          labelText: 'Key Label Style',
-                          helperText:
-                              'Choose between explicit mode names and classical case.',
+                          labelText: l10n.keyCenterLabelStyle,
+                          helperText: l10n.keyCenterLabelStyleHelp,
                         ),
                         items: KeyCenterLabelStyle.values
                             .map(
                               (style) => DropdownMenuItem<KeyCenterLabelStyle>(
                                 value: style,
-                                child: Text(_keyCenterLabelStyleLabel(style)),
+                                child: Text(
+                                  _keyCenterLabelStyleLabel(l10n, style),
+                                ),
                               ),
                             )
                             .toList(growable: false),
@@ -894,10 +895,14 @@ class PracticeSettingsDrawer extends StatelessWidget {
     );
   }
 
-  String _keyCenterLabelStyleLabel(KeyCenterLabelStyle style) {
+  String _keyCenterLabelStyleLabel(
+    AppLocalizations l10n,
+    KeyCenterLabelStyle style,
+  ) {
     return switch (style) {
-      KeyCenterLabelStyle.modeText => 'C major: / C minor:',
-      KeyCenterLabelStyle.classicalCase => 'C: / c:',
+      KeyCenterLabelStyle.modeText => l10n.keyCenterLabelStyleModeText,
+      KeyCenterLabelStyle.classicalCase =>
+        l10n.keyCenterLabelStyleClassicalCase,
     };
   }
 }

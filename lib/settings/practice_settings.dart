@@ -202,10 +202,15 @@ extension VoicingTopNotePreferenceX on VoicingTopNotePreference {
 }
 
 class PracticeSettings {
+  static const double minMetronomeVolume = 0;
+  static const double maxMetronomeVolume = 1;
+  static const int minBpm = 20;
+  static const int maxBpm = 300;
+
   PracticeSettings({
     this.language = AppLanguage.system,
     this.metronomeEnabled = true,
-    this.metronomeVolume = 1,
+    double metronomeVolume = 1,
     this.metronomeSound = MetronomeSound.tick,
     Set<String>? activeKeys,
     Set<KeyCenter>? activeKeyCenters,
@@ -229,9 +234,13 @@ class PracticeSettings {
     int maxVoicingNotes = 4,
     int lookAheadDepth = 1,
     this.showVoicingReasons = true,
-    this.bpm = 60,
+    int bpm = 60,
     this.keyCenterLabelStyle = KeyCenterLabelStyle.modeText,
-  }) : activeKeyCenters = Set.unmodifiable(
+  }) : metronomeVolume =
+           metronomeVolume
+               .clamp(minMetronomeVolume, maxMetronomeVolume)
+               .toDouble(),
+       activeKeyCenters = Set.unmodifiable(
          activeKeyCenters ??
              (activeKeys == null
                  ? const <KeyCenter>{}
@@ -245,7 +254,8 @@ class PracticeSettings {
        ),
        inversionSettings = inversionSettings ?? const InversionSettings(),
        maxVoicingNotes = maxVoicingNotes.clamp(3, 5),
-       lookAheadDepth = lookAheadDepth.clamp(0, 2);
+       lookAheadDepth = lookAheadDepth.clamp(0, 2),
+       bpm = bpm.clamp(minBpm, maxBpm).toInt();
 
   final AppLanguage language;
   final bool metronomeEnabled;

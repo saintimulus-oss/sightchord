@@ -148,11 +148,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rendering => '表記';
 
   @override
-  String get keyCenterLabelStyle => 'Key Label Style';
+  String get keyCenterLabelStyle => 'キー表示スタイル';
 
   @override
   String get keyCenterLabelStyleHelp =>
-      'Choose between explicit mode names and classical uppercase/lowercase tonic labels.';
+      'メジャー/マイナー表記と、クラシック式の大文字/小文字トニック表記から選べます。';
 
   @override
   String get chordSymbolStyle => 'コード記号スタイル';
@@ -171,7 +171,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get styleDeltaJazz => 'DeltaJazz';
 
   @override
-  String get keyCenterLabelStyleModeText => 'C major: / C minor:';
+  String get keyCenterLabelStyleModeText => 'C メジャー: / C マイナー:';
 
   @override
   String get keyCenterLabelStyleClassicalCase => 'C: / c:';

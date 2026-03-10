@@ -86,8 +86,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  static const int _minBpm = 20;
-  static const int _maxBpm = 300;
+  static const int _minBpm = PracticeSettings.minBpm;
+  static const int _maxBpm = PracticeSettings.maxBpm;
   static const int _beatsPerBar = 4;
 
   final Random _random = Random();
@@ -146,10 +146,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _loadMetronomeSound(MetronomeSound sound) async {
     final previousPool = _metronomePool;
+    AudioPool? nextPool;
     try {
       // Use a small player pool for metronome clicks so rapid beats do not
       // contend with a single stop/resume cycle.
-      final nextPool = await AudioPool.createFromAsset(
+      nextPool = await AudioPool.createFromAsset(
         path: sound.assetFileName,
         minPlayers: _metronomePoolMinPlayers,
         maxPlayers: _metronomePoolMaxPlayers,
@@ -162,6 +163,11 @@ class _MyHomePageState extends State<MyHomePage> {
       _audioReady = true;
       await previousPool?.dispose();
     } catch (_) {
+      if (nextPool != null && !identical(nextPool, previousPool)) {
+        try {
+          await nextPool.dispose();
+        } catch (_) {}
+      }
       if (!mounted) {
         return;
       }
@@ -476,9 +482,12 @@ class _MyHomePageState extends State<MyHomePage> {
     return matched?.voicing;
   }
 
+  ConcreteVoicing? _authoritativeSelectedVoicing() {
+    return _lockedCurrentVoicing ?? _selectedVoicing;
+  }
+
   ConcreteVoicing? _continuitySourceVoicing() {
-    return _lockedCurrentVoicing ??
-        _selectedVoicing ??
+    return _authoritativeSelectedVoicing() ??
         (_voicingRecommendations != null &&
                 _voicingRecommendations!.suggestions.isNotEmpty
             ? _voicingRecommendations!.suggestions.first.voicing
@@ -554,6 +563,10 @@ class _MyHomePageState extends State<MyHomePage> {
   void _handleVoicingSelected(VoicingSuggestion suggestion) {
     setState(() {
       _selectedVoicing = suggestion.voicing;
+      if (_lockedCurrentVoicing != null) {
+        _lockedCurrentVoicing = suggestion.voicing;
+        _recomputeVoicingSuggestions();
+      }
     });
   }
 
@@ -1061,7 +1074,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final currentRomanNumeralId = current.romanNumeralId!;
     final currentResolutionRomanId =
-        current.resolutionTargetRomanId ?? current.resolutionRomanNumeralId;
+        SmartGeneratorHelper.continuationResolutionRomanNumeralId(current);
     final activeKeys = {
       for (final center in keyCenters) center.tonicName,
     }.toList(growable: false);
@@ -1596,7 +1609,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                   VoicingSuggestionsSection(
                                     recommendations: _voicingRecommendations!,
                                     selectedSignature:
-                                        _selectedVoicing?.signature,
+                                        _authoritativeSelectedVoicing()
+                                            ?.signature,
                                     showReasons: _settings.showVoicingReasons,
                                     onSelectSuggestion: _handleVoicingSelected,
                                     onToggleLock: _handleVoicingLockToggle,

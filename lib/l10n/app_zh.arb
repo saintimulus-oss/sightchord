@@ -10,28 +10,71 @@
   "metronomeHelp": "練習時若想在每一拍都聽到點擊聲，請開啟節拍器。",
   "metronomeSound": "節拍器音色",
   "metronomeSoundClassic": "經典",
+  "metronomeSoundClickB": "Click B",
+  "metronomeSoundClickC": "Click C",
+  "metronomeSoundClickD": "Click D",
+  "metronomeSoundClickE": "Click E",
+  "metronomeSoundClickF": "Click F",
   "metronomeVolume": "節拍器音量",
   "keys": "調性",
+  "noKeysSelected": "No keys selected. Leave all keys off to practice in free mode across every root.",
+  "keysSelectedHelp": "Selected keys are used for key-aware random mode and Smart Generator mode.",
   "smartGeneratorMode": "Smart Generator 模式",
+  "smartGeneratorHelp": "Prioritizes functional harmonic motion while preserving the enabled non-diatonic options.",
   "advancedSmartGenerator": "進階 Smart Generator",
   "modulationIntensity": "轉調強度",
+  "modulationIntensityOff": "Off",
+  "modulationIntensityLow": "Low",
+  "modulationIntensityMedium": "Medium",
+  "modulationIntensityHigh": "High",
   "jazzPreset": "爵士預設",
+  "jazzPresetStandardsCore": "Standards Core",
+  "jazzPresetModulationStudy": "Modulation Study",
+  "jazzPresetAdvanced": "Advanced",
   "sourceProfile": "來源設定",
+  "sourceProfileFakebookStandard": "Fakebook Standard",
+  "sourceProfileRecordingInspired": "Recording Inspired",
   "smartDiagnostics": "Smart 診斷",
+  "smartDiagnosticsHelp": "Logs Smart Generator decision traces for debugging.",
+  "keyModeRequiredForSmartGenerator": "Select at least one key to use Smart Generator mode.",
+  "nonDiatonic": "Non-Diatonic",
+  "nonDiatonicRequiresKeyMode": "Non-diatonic options are available in key mode only.",
   "secondaryDominant": "副屬和弦",
   "substituteDominant": "替代屬和弦",
   "modalInterchange": "調式借用",
+  "modalInterchangeDisabledHelp": "Modal interchange only appears in key mode, so this option is disabled in free mode.",
   "rendering": "顯示",
+  "keyCenterLabelStyle": "調性標籤樣式",
+  "keyCenterLabelStyleHelp": "可選擇顯示 major/minor 文字，或使用古典的大寫/小寫主音標記。",
   "chordSymbolStyle": "和弦符號樣式",
+  "chordSymbolStyleHelp": "Changes the display layer only. Harmonic logic stays canonical.",
+  "styleCompact": "Compact",
+  "styleMajText": "MajText",
+  "styleDeltaJazz": "DeltaJazz",
+  "keyCenterLabelStyleModeText": "C 大調: / C 小調:",
+  "keyCenterLabelStyleClassicalCase": "C: / c:",
+  "allowV7sus4": "Allow V7sus4 (V7, V7/x)",
   "allowTensions": "允許張力音",
+  "tensionHelp": "Roman numeral profile and selected chips only",
   "inversions": "轉位",
+  "enableInversions": "Enable Inversions",
+  "inversionHelp": "Random slash-bass rendering after chord selection; it does not track the previous bass.",
+  "firstInversion": "1st Inversion",
+  "secondInversion": "2nd Inversion",
+  "thirdInversion": "3rd Inversion",
   "keyPracticeOverview": "調性練習概覽",
   "freePracticeOverview": "自由練習概覽",
   "keyModeTag": "調性模式",
   "freeModeTag": "自由模式",
   "allKeysTag": "所有調性",
+  "metronomeOnTag": "Metronome On",
+  "metronomeOffTag": "Metronome Off",
   "pressNextChordToBegin": "按下 Next Chord 開始",
   "freeModeActive": "自由模式啟用",
+  "freePracticeDescription": "Uses all 12 chromatic roots with random chord qualities for broad reading practice.",
+  "smartPracticeDescription": "Follows harmonic function flow in the selected keys while allowing tasteful smart-generator movement.",
+  "keyPracticeDescription": "Uses the selected keys and enabled Roman numerals to generate diatonic practice material.",
+  "keyboardShortcutHelp": "Space: next chord  Enter: start or stop autoplay  Up/Down: adjust BPM",
   "nextChord": "下一個和弦",
   "startAutoplay": "開始自動播放",
   "stopAutoplay": "停止自動播放",
@@ -60,9 +103,110 @@
   "voicingSuggestionsTitle": "Voicing 建議",
   "voicingSuggestionsSubtitle": "查看這個和弦可用的具體音符選擇。",
   "voicingSuggestionsEnabled": "啟用 Voicing 建議",
+  "voicingSuggestionsHelp": "Shows three playable note-level voicing ideas for the current chord.",
+  "voicingComplexity": "Voicing Complexity",
+  "voicingComplexityHelp": "Controls how colorful the suggestions may become.",
+  "voicingComplexityBasic": "Basic",
+  "voicingComplexityStandard": "Standard",
+  "voicingComplexityModern": "Modern",
   "voicingTopNotePreference": "高音偏好",
+  "voicingTopNotePreferenceHelp": "Leans suggestions toward a chosen top line. Locked voicings win first, then repeated chords keep it steady.",
   "voicingTopNotePreferenceAuto": "自動",
+  "allowRootlessVoicings": "Allow Rootless Voicings",
+  "allowRootlessVoicingsHelp": "Lets suggestions omit the root when the guide tones stay clear.",
+  "maxVoicingNotes": "Max Voicing Notes",
+  "lookAheadDepth": "Look-Ahead Depth",
+  "lookAheadDepthHelp": "How many future chords the ranking may consider.",
+  "showVoicingReasons": "Show Voicing Reasons",
+  "showVoicingReasonsHelp": "Displays short explanation chips on each suggestion card.",
+  "voicingSuggestionNatural": "Most Natural",
+  "voicingSuggestionColorful": "Most Colorful",
+  "voicingSuggestionEasy": "Easiest",
+  "voicingSuggestionNaturalSubtitle": "Voice-leading first",
+  "voicingSuggestionColorfulSubtitle": "Leans into color tones",
+  "voicingSuggestionEasySubtitle": "Compact hand shape",
+  "voicingSuggestionNaturalConnectedSubtitle": "Connection and resolution first",
+  "voicingSuggestionNaturalStableSubtitle": "Same shape, steady comping",
+  "voicingSuggestionTopLineSubtitle": "Top line leads",
+  "voicingSuggestionColorfulAlteredSubtitle": "Altered tension up front",
+  "voicingSuggestionColorfulQuartalSubtitle": "Modern quartal color",
+  "voicingSuggestionColorfulTritoneSubtitle": "Tritone-sub edge with bright guide tones",
+  "voicingSuggestionColorfulUpperStructureSubtitle": "Guide tones with bright extensions",
+  "voicingSuggestionEasyAnchoredSubtitle": "Core tones, smaller reach",
+  "voicingSuggestionEasyStableSubtitle": "Repeat-friendly hand shape",
   "voicingTopNoteLabel": "高音",
+  "voicingTopNoteContextExplicit": "Top line target: {note}",
+  "@voicingTopNoteContextExplicit": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextLocked": "Locked top line: {note}",
+  "@voicingTopNoteContextLocked": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextCarry": "Repeated top line: {note}",
+  "@voicingTopNoteContextCarry": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextNearby": "Nearest top line to {note}",
+  "@voicingTopNoteContextNearby": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextFallback": "No exact top line for {note}",
+  "@voicingTopNoteContextFallback": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingFamilyShell": "Shell",
+  "voicingFamilyRootlessA": "Rootless A",
+  "voicingFamilyRootlessB": "Rootless B",
+  "voicingFamilySpread": "Spread",
+  "voicingFamilySus": "Sus",
+  "voicingFamilyQuartal": "Quartal",
+  "voicingFamilyAltered": "Altered",
+  "voicingFamilyUpperStructure": "Upper Structure",
+  "voicingLockSuggestion": "Lock suggestion",
+  "voicingUnlockSuggestion": "Unlock suggestion",
   "voicingSelected": "已選取",
-  "voicingLocked": "已鎖定"
+  "voicingLocked": "已鎖定",
+  "voicingReasonEssentialCore": "Essential tones covered",
+  "voicingReasonGuideToneAnchor": "3rd/7th anchor",
+  "voicingReasonGuideResolution": "{count} guide-tone resolves",
+  "@voicingReasonGuideResolution": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "voicingReasonCommonToneRetention": "{count} common tones kept",
+  "@voicingReasonCommonToneRetention": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "voicingReasonStableRepeat": "Stable repeat",
+  "voicingReasonTopLineTarget": "Top line target",
+  "voicingReasonLowMudAvoided": "Low-register clarity",
+  "voicingReasonCompactReach": "Comfortable reach",
+  "voicingReasonBassAnchor": "Bass anchor respected",
+  "voicingReasonNextChordReady": "Next chord ready",
+  "voicingReasonAlteredColor": "Altered tensions",
+  "voicingReasonRootlessClarity": "Light rootless shape",
+  "voicingReasonSusRelease": "Sus release set up",
+  "voicingReasonQuartalColor": "Quartal color",
+  "voicingReasonUpperStructureColor": "Upper-structure color",
+  "voicingReasonTritoneSubFlavor": "Tritone-sub flavor",
+  "voicingReasonLockedContinuity": "Locked continuity",
+  "voicingReasonGentleMotion": "Smooth hand move"
 }

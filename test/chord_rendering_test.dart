@@ -345,6 +345,47 @@ void main() {
   });
 
   group('Tensions', () {
+    test('treats major69 as a real 6/9 pitch-class target', () {
+      final pitchClasses = ChordRenderingHelper.targetPitchClassesForSymbolData(
+        symbolData: _symbol('C', ChordQuality.major69),
+        romanNumeralId: RomanNumeralId.iMaj69,
+      );
+
+      expect(pitchClasses, {0, 2, 4, 7, 9});
+    });
+
+    test(
+      'quality-implied dominant colors get distinct target pitch classes',
+      () {
+        final plain = ChordRenderingHelper.targetPitchClassesForSymbolData(
+          symbolData: _symbol('G', ChordQuality.dominant7),
+          romanNumeralId: RomanNumeralId.vDom7,
+        );
+        final sharp11 = ChordRenderingHelper.targetPitchClassesForSymbolData(
+          symbolData: _symbol('G', ChordQuality.dominant7Sharp11),
+          romanNumeralId: RomanNumeralId.vDom7,
+          dominantIntent: DominantIntent.lydianDominant,
+        );
+        final sus13 = ChordRenderingHelper.targetPitchClassesForSymbolData(
+          symbolData: _symbol('G', ChordQuality.dominant13sus4),
+          romanNumeralId: RomanNumeralId.vDom7,
+          dominantIntent: DominantIntent.susDelay,
+        );
+        final altered = ChordRenderingHelper.targetPitchClassesForSymbolData(
+          symbolData: _symbol('G', ChordQuality.dominant7Alt),
+          romanNumeralId: RomanNumeralId.vDom7,
+          dominantIntent: DominantIntent.primaryAuthenticMinor,
+        );
+
+        expect(sharp11, isNot(plain));
+        expect(sus13, isNot(plain));
+        expect(altered, isNot(plain));
+        expect(sharp11, contains(1));
+        expect(sus13, contains(4));
+        expect(altered, containsAll(<int>{3, 8}));
+      },
+    );
+
     test('filters tension chips against profile', () {
       final tensions = ChordRenderingHelper.selectTensions(
         random: _FixedRandom(0),

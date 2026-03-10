@@ -56,6 +56,30 @@ void main() {
     expect(preferences.getBool('showVoicingReasons'), isFalse);
   });
 
+  test('persists ordered settings collections deterministically', () async {
+    final controller = AppSettingsController();
+
+    await controller.update(
+      controller.settings.copyWith(
+        activeKeyCenters: {
+          const KeyCenter(tonicName: 'G', mode: KeyMode.minor),
+          const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+          const KeyCenter(tonicName: 'A', mode: KeyMode.major),
+          const KeyCenter(tonicName: 'D', mode: KeyMode.minor),
+        },
+        selectedTensionOptions: {'b13', '9', '#11'},
+      ),
+    );
+
+    final preferences = await SharedPreferences.getInstance();
+    expect(preferences.getStringList('activeKeys'), ['C', 'D', 'G', 'A']);
+    expect(
+      preferences.getStringList('activeKeyCenters'),
+      ['C|major', 'A|major', 'D|minor', 'G|minor'],
+    );
+    expect(preferences.getStringList('selectedTensions'), ['9', '#11', 'b13']);
+  });
+
   test('loads new smart generation settings from storage', () async {
     SharedPreferences.setMockInitialValues({
       'language': 'zh',
@@ -114,12 +138,14 @@ void main() {
         'modulationIntensity': 'invalid',
         'jazzPreset': 'broken',
         'sourceProfile': 'unknown',
+        'selectedTensions': ['bogus'],
       });
       final controller = AppSettingsController(
         initialSettings: PracticeSettings(
           modulationIntensity: ModulationIntensity.medium,
           jazzPreset: JazzPreset.modulationStudy,
           sourceProfile: SourceProfile.recordingInspired,
+          selectedTensionOptions: {'9', '13'},
         ),
       );
 
@@ -135,6 +161,7 @@ void main() {
         controller.settings.sourceProfile,
         SourceProfile.recordingInspired,
       );
+      expect(controller.settings.selectedTensionOptions, {'9', '13'});
     },
   );
 }

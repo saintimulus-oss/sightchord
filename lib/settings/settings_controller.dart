@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../music/chord_formatting.dart';
 import '../music/chord_theory.dart';
 import 'inversion_settings.dart';
 import 'practice_settings.dart';
@@ -45,6 +46,7 @@ class AppSettingsController extends ChangeNotifier {
 
   PracticeSettings _settings;
   Future<void> _saveQueue = Future<void>.value();
+  PracticeSettings? _pendingSaveSnapshot;
 
   PracticeSettings get settings => _settings;
 
@@ -115,9 +117,9 @@ class AppSettingsController extends ChangeNotifier {
           preferences.getBool(_allowV7sus4Key) ?? _settings.allowV7sus4,
       allowTensions:
           preferences.getBool(_allowTensionsKey) ?? _settings.allowTensions,
-      selectedTensionOptions: preferences
-          .getStringList(_selectedTensionsKey)
-          ?.toSet(),
+      selectedTensionOptions: _sanitizeStoredTensionOptions(
+        preferences.getStringList(_selectedTensionsKey),
+      ),
       voicingSuggestionsEnabled:
           preferences.getBool(_voicingSuggestionsEnabledKey) ??
           _settings.voicingSuggestionsEnabled,
@@ -164,8 +166,15 @@ class AppSettingsController extends ChangeNotifier {
   Future<void> update(PracticeSettings nextSettings) async {
     _settings = nextSettings;
     notifyListeners();
-    final snapshot = nextSettings;
-    _saveQueue = _saveQueue.catchError((_) {}).then((_) => _save(snapshot));
+    _pendingSaveSnapshot = nextSettings;
+    _saveQueue = _saveQueue.catchError((_) {}).then((_) async {
+      final snapshot = _pendingSaveSnapshot;
+      if (snapshot == null) {
+        return;
+      }
+      _pendingSaveSnapshot = null;
+      await _save(snapshot);
+    });
     await _saveQueue;
   }
 
@@ -186,11 +195,11 @@ class AppSettingsController extends ChangeNotifier {
     );
     await preferences.setStringList(
       _activeKeysKey,
-      settings.activeKeys.toList(),
+      _sortedActiveKeys(settings.activeKeys),
     );
     await preferences.setStringList(
       _activeKeyCentersKey,
-      settings.activeKeyCenters.map((center) => center.serialize()).toList(),
+      _sortedActiveKeyCenters(settings.activeKeyCenters),
     );
     await preferences.setBool(
       _smartGeneratorModeKey,
@@ -226,7 +235,7 @@ class AppSettingsController extends ChangeNotifier {
     await preferences.setBool(_allowTensionsKey, settings.allowTensions);
     await preferences.setStringList(
       _selectedTensionsKey,
-      settings.selectedTensionOptions.toList(),
+      _sortedTensionOptions(settings.selectedTensionOptions),
     );
     await preferences.setBool(
       _voicingSuggestionsEnabledKey,
@@ -271,5 +280,48 @@ class AppSettingsController extends ChangeNotifier {
       _thirdInversionEnabledKey,
       settings.inversionSettings.thirdInversionEnabled,
     );
+  }
+
+  Set<String>? _sanitizeStoredTensionOptions(List<String>? storedOptions) {
+    if (storedOptions == null) {
+      return null;
+    }
+    final ordered = _sortedTensionOptions(storedOptions.toSet());
+    if (ordered.isNotEmpty || storedOptions.isEmpty) {
+      return ordered.toSet();
+    }
+    return _settings.selectedTensionOptions;
+  }
+
+  List<String> _sortedActiveKeys(Set<String> activeKeys) {
+    final ordered = activeKeys.toList(growable: false);
+    ordered.sort((left, right) => _keyOrder(left).compareTo(_keyOrder(right)));
+    return ordered;
+  }
+
+  List<String> _sortedActiveKeyCenters(Set<KeyCenter> activeKeyCenters) {
+    final ordered = activeKeyCenters.toList(growable: false);
+    ordered.sort((left, right) {
+      final modeCompare = left.mode.index.compareTo(right.mode.index);
+      if (modeCompare != 0) {
+        return modeCompare;
+      }
+      return _keyOrder(left.tonicName).compareTo(_keyOrder(right.tonicName));
+    });
+    return [
+      for (final center in ordered) center.serialize(),
+    ];
+  }
+
+  List<String> _sortedTensionOptions(Set<String> selectedTensions) {
+    return [
+      for (final tension in ChordRenderingHelper.supportedTensionOptions)
+        if (selectedTensions.contains(tension)) tension,
+    ];
+  }
+
+  int _keyOrder(String key) {
+    final index = MusicTheory.keyOptions.indexOf(key);
+    return index == -1 ? MusicTheory.keyOptions.length : index;
   }
 }

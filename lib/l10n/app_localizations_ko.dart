@@ -157,13 +157,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chordSymbolStyleHelp => '표시 방식만 바뀌며 화성 로직은 그대로 유지됩니다.';
 
   @override
-  String get styleCompact => 'Compact';
+  String get styleCompact => '간결형';
 
   @override
-  String get styleMajText => 'MajText';
+  String get styleMajText => 'Maj 표기';
 
   @override
-  String get styleDeltaJazz => 'DeltaJazz';
+  String get styleDeltaJazz => '델타 재즈';
 
   @override
   String get keyCenterLabelStyleModeText => 'C 장조: / C 단조:';
