@@ -56,6 +56,7 @@ enum RomanNumeralId {
   flatVIMaj7Minor,
   flatVIIDom7Minor,
   relatedIiOfIII,
+  relatedIiOfIV,
   secondaryOfII,
   secondaryOfIII,
   secondaryOfIV,
@@ -80,6 +81,36 @@ enum JazzPreset { standardsCore, modulationStudy, advanced }
 
 enum SourceProfile { fakebookStandard, recordingInspired }
 
+enum KeyRelation {
+  same,
+  relative,
+  dominant,
+  subdominant,
+  parallel,
+  mediant,
+  distant,
+}
+
+enum CenterEntryMethod {
+  diatonic,
+  tonicization,
+  cadenceModulation,
+  pivot,
+  commonTone,
+  symmetric,
+}
+
+enum ScopeHeadType { tonicHead, dominantHead, pivotArea }
+
+enum ResolutionDebtType {
+  dominantResolve,
+  susResolve,
+  modulationConfirm,
+  returnHomeCadence,
+  predominantToDominant,
+  rareColorPayoff,
+}
+
 enum DominantContext {
   primaryMajor,
   primaryMinor,
@@ -89,6 +120,18 @@ enum DominantContext {
   backdoor,
   dominantIILydian,
   susDominant,
+}
+
+enum DominantIntent {
+  primaryAuthenticMajor,
+  primaryAuthenticMinor,
+  secondaryToMajor,
+  secondaryToMinor,
+  tritoneSub,
+  backdoor,
+  lydianDominant,
+  susDelay,
+  dominantHeadedScope,
 }
 
 enum ModulationKind { none, tonicization, real }
@@ -101,6 +144,9 @@ enum SmartBlockedReason {
   phrasePositionLowPriority,
   excludedFallback,
   noCadentialPattern,
+  insufficientConfirmationWindow,
+  surpriseBudgetExhausted,
+  recentDistantModulationLockout,
 }
 
 class KeyCenter {
@@ -108,11 +154,19 @@ class KeyCenter {
     required this.tonicName,
     required this.mode,
     this.closenessClass = 0,
+    this.relationToParent = KeyRelation.same,
+    this.enteredBy = CenterEntryMethod.diatonic,
+    this.confidence = 1,
+    this.confirmationsRemaining = 0,
   });
 
   final String tonicName;
   final KeyMode mode;
   final int closenessClass;
+  final KeyRelation relationToParent;
+  final CenterEntryMethod enteredBy;
+  final double confidence;
+  final int confirmationsRemaining;
 
   String get displayName =>
       '${MusicTheory.displayRootForKey(tonicName)} ${mode.name}';
@@ -124,11 +178,24 @@ class KeyCenter {
 
   String serialize() => '$tonicName|${mode.name}';
 
-  KeyCenter copyWith({String? tonicName, KeyMode? mode, int? closenessClass}) {
+  KeyCenter copyWith({
+    String? tonicName,
+    KeyMode? mode,
+    int? closenessClass,
+    KeyRelation? relationToParent,
+    CenterEntryMethod? enteredBy,
+    double? confidence,
+    int? confirmationsRemaining,
+  }) {
     return KeyCenter(
       tonicName: tonicName ?? this.tonicName,
       mode: mode ?? this.mode,
       closenessClass: closenessClass ?? this.closenessClass,
+      relationToParent: relationToParent ?? this.relationToParent,
+      enteredBy: enteredBy ?? this.enteredBy,
+      confidence: confidence ?? this.confidence,
+      confirmationsRemaining:
+          confirmationsRemaining ?? this.confirmationsRemaining,
     );
   }
 
@@ -155,6 +222,93 @@ class KeyCenter {
 
   @override
   int get hashCode => Object.hash(tonicName, mode);
+}
+
+class LocalScope {
+  const LocalScope({
+    required this.center,
+    required this.headType,
+    required this.confidence,
+    required this.expiresIn,
+  });
+
+  final KeyCenter center;
+  final ScopeHeadType headType;
+  final double confidence;
+  final int expiresIn;
+
+  bool get isExpired => expiresIn <= 0 || confidence <= 0;
+
+  LocalScope tick() {
+    return LocalScope(
+      center: center,
+      headType: headType,
+      confidence: confidence,
+      expiresIn: expiresIn - 1,
+    );
+  }
+
+  LocalScope copyWith({
+    KeyCenter? center,
+    ScopeHeadType? headType,
+    double? confidence,
+    int? expiresIn,
+  }) {
+    return LocalScope(
+      center: center ?? this.center,
+      headType: headType ?? this.headType,
+      confidence: confidence ?? this.confidence,
+      expiresIn: expiresIn ?? this.expiresIn,
+    );
+  }
+
+  String describe() {
+    return '${center.displayName}:${headType.name}:'
+        '${confidence.toStringAsFixed(2)}:$expiresIn';
+  }
+}
+
+class ResolutionDebt {
+  const ResolutionDebt({
+    required this.debtType,
+    required this.targetLabel,
+    required this.deadline,
+    required this.severity,
+  });
+
+  final ResolutionDebtType debtType;
+  final String targetLabel;
+  final int deadline;
+  final int severity;
+
+  bool get isExpired => deadline <= 0;
+
+  ResolutionDebt tick() {
+    return ResolutionDebt(
+      debtType: debtType,
+      targetLabel: targetLabel,
+      deadline: deadline - 1,
+      severity: severity,
+    );
+  }
+
+  ResolutionDebt copyWith({
+    ResolutionDebtType? debtType,
+    String? targetLabel,
+    int? deadline,
+    int? severity,
+  }) {
+    return ResolutionDebt(
+      debtType: debtType ?? this.debtType,
+      targetLabel: targetLabel ?? this.targetLabel,
+      deadline: deadline ?? this.deadline,
+      severity: severity ?? this.severity,
+    );
+  }
+
+  String describe() {
+    return '${debtType.name}:$targetLabel:$deadline:$severity';
+  }
 }
 
 class RomanSpec {
@@ -240,6 +394,7 @@ class GeneratedChord {
     this.appliedType,
     this.resolutionTargetRomanId,
     this.dominantContext,
+    this.dominantIntent,
     this.modulationKind = ModulationKind.none,
     this.wasExcludedFallback = false,
     this.isRenderedNonDiatonic = false,
@@ -260,6 +415,7 @@ class GeneratedChord {
   final AppliedType? appliedType;
   final RomanNumeralId? resolutionTargetRomanId;
   final DominantContext? dominantContext;
+  final DominantIntent? dominantIntent;
   final ModulationKind modulationKind;
   final bool wasExcludedFallback;
   final bool isRenderedNonDiatonic;
@@ -296,6 +452,7 @@ class GeneratedChord {
     AppliedType? appliedType,
     RomanNumeralId? resolutionTargetRomanId,
     DominantContext? dominantContext,
+    DominantIntent? dominantIntent,
     ModulationKind? modulationKind,
     bool? wasExcludedFallback,
     bool? isRenderedNonDiatonic,
@@ -319,6 +476,7 @@ class GeneratedChord {
       resolutionTargetRomanId:
           resolutionTargetRomanId ?? this.resolutionTargetRomanId,
       dominantContext: dominantContext ?? this.dominantContext,
+      dominantIntent: dominantIntent ?? this.dominantIntent,
       modulationKind: modulationKind ?? this.modulationKind,
       wasExcludedFallback: wasExcludedFallback ?? this.wasExcludedFallback,
       isRenderedNonDiatonic:
@@ -645,6 +803,17 @@ class MusicTheory {
       homeMode: KeyMode.major,
       tonicSemitoneOffset: 6,
       resolutionTargetId: RomanNumeralId.iiiMin7,
+      preferFlatSpelling: false,
+    ),
+    RomanNumeralId.relatedIiOfIV: RomanSpec(
+      id: RomanNumeralId.relatedIiOfIV,
+      token: 'IIm7/IV',
+      quality: ChordQuality.minor7,
+      harmonicFunction: HarmonicFunction.predominant,
+      sourceKind: ChordSourceKind.tonicization,
+      homeMode: KeyMode.major,
+      tonicSemitoneOffset: 7,
+      resolutionTargetId: RomanNumeralId.ivMaj7,
       preferFlatSpelling: false,
     ),
     RomanNumeralId.secondaryOfII: RomanSpec(
@@ -1006,12 +1175,90 @@ class MusicTheory {
     return 0;
   }
 
+  static DominantContext? dominantContextForIntent(
+    DominantIntent? dominantIntent,
+  ) {
+    return switch (dominantIntent) {
+      DominantIntent.primaryAuthenticMajor => DominantContext.primaryMajor,
+      DominantIntent.primaryAuthenticMinor => DominantContext.primaryMinor,
+      DominantIntent.secondaryToMajor => DominantContext.secondaryToMajor,
+      DominantIntent.secondaryToMinor => DominantContext.secondaryToMinor,
+      DominantIntent.tritoneSub => DominantContext.tritoneSubstitute,
+      DominantIntent.backdoor => DominantContext.backdoor,
+      DominantIntent.lydianDominant => DominantContext.dominantIILydian,
+      DominantIntent.susDelay => DominantContext.susDominant,
+      DominantIntent.dominantHeadedScope => DominantContext.secondaryToMajor,
+      null => null,
+    };
+  }
+
+  static DominantIntent? dominantIntentForContext(
+    DominantContext? dominantContext,
+  ) {
+    return switch (dominantContext) {
+      DominantContext.primaryMajor => DominantIntent.primaryAuthenticMajor,
+      DominantContext.primaryMinor => DominantIntent.primaryAuthenticMinor,
+      DominantContext.secondaryToMajor => DominantIntent.secondaryToMajor,
+      DominantContext.secondaryToMinor => DominantIntent.secondaryToMinor,
+      DominantContext.tritoneSubstitute => DominantIntent.tritoneSub,
+      DominantContext.backdoor => DominantIntent.backdoor,
+      DominantContext.dominantIILydian => DominantIntent.lydianDominant,
+      DominantContext.susDominant => DominantIntent.susDelay,
+      null => null,
+    };
+  }
+
+  static KeyRelation relationBetweenCenters(
+    KeyCenter currentCenter,
+    KeyCenter targetCenter,
+  ) {
+    if (currentCenter == targetCenter) {
+      return KeyRelation.same;
+    }
+    final currentSemitone = currentCenter.tonicSemitone;
+    final targetSemitone = targetCenter.tonicSemitone;
+    if (currentSemitone == null || targetSemitone == null) {
+      return KeyRelation.distant;
+    }
+    if (currentCenter.mode != targetCenter.mode &&
+        ((currentSemitone + 3) % 12 == targetSemitone ||
+            (currentSemitone + 9) % 12 == targetSemitone)) {
+      return KeyRelation.relative;
+    }
+    if (currentSemitone == targetSemitone &&
+        currentCenter.mode != targetCenter.mode) {
+      return KeyRelation.parallel;
+    }
+    final directedInterval = (targetSemitone - currentSemitone + 12) % 12;
+    if (directedInterval == 7) {
+      return KeyRelation.dominant;
+    }
+    if (directedInterval == 5) {
+      return KeyRelation.subdominant;
+    }
+    final foldedInterval = directedInterval > 6
+        ? 12 - directedInterval
+        : directedInterval;
+    if (foldedInterval == 3 || foldedInterval == 4) {
+      return KeyRelation.mediant;
+    }
+    return KeyRelation.distant;
+  }
+
+  static DominantIntent? _normalizedDominantIntent({
+    DominantIntent? dominantIntent,
+    DominantContext? dominantContext,
+  }) {
+    return dominantIntent ?? dominantIntentForContext(dominantContext);
+  }
+
   static ChordQuality resolveRenderQuality({
     required RomanNumeralId romanNumeralId,
     required PlannedChordKind plannedChordKind,
     required bool allowV7sus4,
     required int randomRoll,
     DominantContext? dominantContext,
+    DominantIntent? dominantIntent,
   }) {
     switch (plannedChordKind) {
       case PlannedChordKind.tonicDominant7:
@@ -1023,28 +1270,33 @@ class MusicTheory {
         if (baseQuality != ChordQuality.dominant7) {
           return baseQuality;
         }
-        if (dominantContext == DominantContext.susDominant) {
+        final effectiveIntent = _normalizedDominantIntent(
+          dominantIntent: dominantIntent,
+          dominantContext: dominantContext,
+        );
+        if (effectiveIntent == DominantIntent.susDelay) {
           return ChordQuality.dominant13sus4;
         }
-        if (dominantContext == DominantContext.primaryMinor ||
-            dominantContext == DominantContext.secondaryToMinor) {
+        if (effectiveIntent == DominantIntent.primaryAuthenticMinor ||
+            effectiveIntent == DominantIntent.secondaryToMinor) {
           return randomRoll < 58
               ? ChordQuality.dominant7Alt
               : ChordQuality.dominant7;
         }
-        if (dominantContext == DominantContext.tritoneSubstitute ||
-            dominantContext == DominantContext.dominantIILydian) {
+        if (effectiveIntent == DominantIntent.tritoneSub ||
+            effectiveIntent == DominantIntent.lydianDominant) {
           return randomRoll < 68
               ? ChordQuality.dominant7Sharp11
               : ChordQuality.dominant7;
         }
-        if (dominantContext == DominantContext.backdoor) {
+        if (effectiveIntent == DominantIntent.backdoor) {
           return randomRoll < 36
               ? ChordQuality.dominant7Sharp11
               : ChordQuality.dominant7;
         }
-        if ((dominantContext == DominantContext.primaryMajor ||
-                dominantContext == DominantContext.secondaryToMajor) &&
+        if ((effectiveIntent == DominantIntent.primaryAuthenticMajor ||
+                effectiveIntent == DominantIntent.secondaryToMajor ||
+                effectiveIntent == DominantIntent.dominantHeadedScope) &&
             allowV7sus4 &&
             randomRoll < 20) {
           return ChordQuality.dominant13sus4;

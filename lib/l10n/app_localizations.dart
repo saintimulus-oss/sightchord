@@ -123,6 +123,12 @@ abstract class AppLocalizations {
   /// **'Language'**
   String get language;
 
+  /// No description provided for @systemDefaultLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'System default'**
+  String get systemDefaultLanguage;
+
   /// No description provided for @metronome.
   ///
   /// In en, this message translates to:
@@ -146,6 +152,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Turn the metronome on to hear a click on every beat while you practice.'**
   String get metronomeHelp;
+
+  /// No description provided for @metronomeSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Metronome Sound'**
+  String get metronomeSound;
+
+  /// No description provided for @metronomeSoundClassic.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get metronomeSoundClassic;
+
+  /// No description provided for @metronomeSoundClickB.
+  ///
+  /// In en, this message translates to:
+  /// **'Click B'**
+  String get metronomeSoundClickB;
+
+  /// No description provided for @metronomeSoundClickC.
+  ///
+  /// In en, this message translates to:
+  /// **'Click C'**
+  String get metronomeSoundClickC;
+
+  /// No description provided for @metronomeSoundClickD.
+  ///
+  /// In en, this message translates to:
+  /// **'Click D'**
+  String get metronomeSoundClickD;
+
+  /// No description provided for @metronomeSoundClickE.
+  ///
+  /// In en, this message translates to:
+  /// **'Click E'**
+  String get metronomeSoundClickE;
+
+  /// No description provided for @metronomeSoundClickF.
+  ///
+  /// In en, this message translates to:
+  /// **'Click F'**
+  String get metronomeSoundClickF;
 
   /// No description provided for @metronomeVolume.
   ///
@@ -182,6 +230,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Prioritizes functional harmonic motion while preserving the enabled non-diatonic options.'**
   String get smartGeneratorHelp;
+
+  /// No description provided for @advancedSmartGenerator.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced Smart Generator'**
+  String get advancedSmartGenerator;
+
+  /// No description provided for @modulationIntensity.
+  ///
+  /// In en, this message translates to:
+  /// **'Modulation Intensity'**
+  String get modulationIntensity;
+
+  /// No description provided for @modulationIntensityOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get modulationIntensityOff;
+
+  /// No description provided for @modulationIntensityLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get modulationIntensityLow;
+
+  /// No description provided for @modulationIntensityMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get modulationIntensityMedium;
+
+  /// No description provided for @modulationIntensityHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get modulationIntensityHigh;
+
+  /// No description provided for @jazzPreset.
+  ///
+  /// In en, this message translates to:
+  /// **'Jazz Preset'**
+  String get jazzPreset;
+
+  /// No description provided for @jazzPresetStandardsCore.
+  ///
+  /// In en, this message translates to:
+  /// **'Standards Core'**
+  String get jazzPresetStandardsCore;
+
+  /// No description provided for @jazzPresetModulationStudy.
+  ///
+  /// In en, this message translates to:
+  /// **'Modulation Study'**
+  String get jazzPresetModulationStudy;
+
+  /// No description provided for @jazzPresetAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get jazzPresetAdvanced;
+
+  /// No description provided for @sourceProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Source Profile'**
+  String get sourceProfile;
+
+  /// No description provided for @sourceProfileFakebookStandard.
+  ///
+  /// In en, this message translates to:
+  /// **'Fakebook Standard'**
+  String get sourceProfileFakebookStandard;
+
+  /// No description provided for @sourceProfileRecordingInspired.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording Inspired'**
+  String get sourceProfileRecordingInspired;
+
+  /// No description provided for @smartDiagnostics.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Diagnostics'**
+  String get smartDiagnostics;
+
+  /// No description provided for @smartDiagnosticsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs Smart Generator decision traces for debugging.'**
+  String get smartDiagnosticsHelp;
 
   /// No description provided for @keyModeRequiredForSmartGenerator.
   ///
@@ -426,8 +564,416 @@ abstract class AppLocalizations {
   /// No description provided for @allowedRange.
   ///
   /// In en, this message translates to:
-  /// **'Allowed range: {min}–{max}'**
+  /// **'Allowed range: {min}-{max}'**
   String allowedRange(int min, int max);
+
+  /// No description provided for @voicingSuggestionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Voicing Suggestions'**
+  String get voicingSuggestionsTitle;
+
+  /// No description provided for @voicingSuggestionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'See concrete note choices for this chord.'**
+  String get voicingSuggestionsSubtitle;
+
+  /// No description provided for @voicingSuggestionsEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Voicing Suggestions'**
+  String get voicingSuggestionsEnabled;
+
+  /// No description provided for @voicingSuggestionsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows three playable note-level voicing ideas for the current chord.'**
+  String get voicingSuggestionsHelp;
+
+  /// No description provided for @voicingComplexity.
+  ///
+  /// In en, this message translates to:
+  /// **'Voicing Complexity'**
+  String get voicingComplexity;
+
+  /// No description provided for @voicingComplexityHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Controls how colorful the suggestions may become.'**
+  String get voicingComplexityHelp;
+
+  /// No description provided for @voicingComplexityBasic.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic'**
+  String get voicingComplexityBasic;
+
+  /// No description provided for @voicingComplexityStandard.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard'**
+  String get voicingComplexityStandard;
+
+  /// No description provided for @voicingComplexityModern.
+  ///
+  /// In en, this message translates to:
+  /// **'Modern'**
+  String get voicingComplexityModern;
+
+  /// No description provided for @voicingTopNotePreference.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Note Preference'**
+  String get voicingTopNotePreference;
+
+  /// No description provided for @voicingTopNotePreferenceHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Biases suggestions toward a chosen top line. Locked voicings override it, then same-chord carry keeps the line steady.'**
+  String get voicingTopNotePreferenceHelp;
+
+  /// No description provided for @voicingTopNotePreferenceAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get voicingTopNotePreferenceAuto;
+
+  /// No description provided for @allowRootlessVoicings.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Rootless Voicings'**
+  String get allowRootlessVoicings;
+
+  /// No description provided for @allowRootlessVoicingsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Lets suggestions omit the root when the guide tones stay clear.'**
+  String get allowRootlessVoicingsHelp;
+
+  /// No description provided for @maxVoicingNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Voicing Notes'**
+  String get maxVoicingNotes;
+
+  /// No description provided for @lookAheadDepth.
+  ///
+  /// In en, this message translates to:
+  /// **'Look-Ahead Depth'**
+  String get lookAheadDepth;
+
+  /// No description provided for @lookAheadDepthHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'How many future chords the ranking may consider.'**
+  String get lookAheadDepthHelp;
+
+  /// No description provided for @showVoicingReasons.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Voicing Reasons'**
+  String get showVoicingReasons;
+
+  /// No description provided for @showVoicingReasonsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Displays short explanation chips on each suggestion card.'**
+  String get showVoicingReasonsHelp;
+
+  /// No description provided for @voicingSuggestionNatural.
+  ///
+  /// In en, this message translates to:
+  /// **'Most Natural'**
+  String get voicingSuggestionNatural;
+
+  /// No description provided for @voicingSuggestionColorful.
+  ///
+  /// In en, this message translates to:
+  /// **'Most Colorful'**
+  String get voicingSuggestionColorful;
+
+  /// No description provided for @voicingSuggestionEasy.
+  ///
+  /// In en, this message translates to:
+  /// **'Easiest'**
+  String get voicingSuggestionEasy;
+
+  /// No description provided for @voicingSuggestionNaturalSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice-leading first'**
+  String get voicingSuggestionNaturalSubtitle;
+
+  /// No description provided for @voicingSuggestionColorfulSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leans into color tones'**
+  String get voicingSuggestionColorfulSubtitle;
+
+  /// No description provided for @voicingSuggestionEasySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Compact hand shape'**
+  String get voicingSuggestionEasySubtitle;
+
+  /// No description provided for @voicingSuggestionNaturalConnectedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection and resolution first'**
+  String get voicingSuggestionNaturalConnectedSubtitle;
+
+  /// No description provided for @voicingSuggestionNaturalStableSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Same shape, steady comping'**
+  String get voicingSuggestionNaturalStableSubtitle;
+
+  /// No description provided for @voicingSuggestionTopLineSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Top line stays in focus'**
+  String get voicingSuggestionTopLineSubtitle;
+
+  /// No description provided for @voicingSuggestionColorfulAlteredSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Altered tension up front'**
+  String get voicingSuggestionColorfulAlteredSubtitle;
+
+  /// No description provided for @voicingSuggestionColorfulQuartalSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Modern quartal color'**
+  String get voicingSuggestionColorfulQuartalSubtitle;
+
+  /// No description provided for @voicingSuggestionColorfulTritoneSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tritone-sub edge with bright guide tones'**
+  String get voicingSuggestionColorfulTritoneSubtitle;
+
+  /// No description provided for @voicingSuggestionColorfulUpperStructureSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide tones with bright extensions'**
+  String get voicingSuggestionColorfulUpperStructureSubtitle;
+
+  /// No description provided for @voicingSuggestionEasyAnchoredSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Core tones, smaller reach'**
+  String get voicingSuggestionEasyAnchoredSubtitle;
+
+  /// No description provided for @voicingSuggestionEasyStableSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat-friendly hand shape'**
+  String get voicingSuggestionEasyStableSubtitle;
+
+  /// No description provided for @voicingTopNoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Top'**
+  String get voicingTopNoteLabel;
+
+  /// No description provided for @voicingTopNoteContextExplicit.
+  ///
+  /// In en, this message translates to:
+  /// **'Target top note: {note}'**
+  String voicingTopNoteContextExplicit(Object note);
+
+  /// No description provided for @voicingTopNoteContextLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked top line: {note}'**
+  String voicingTopNoteContextLocked(Object note);
+
+  /// No description provided for @voicingTopNoteContextCarry.
+  ///
+  /// In en, this message translates to:
+  /// **'Carry top line: {note}'**
+  String voicingTopNoteContextCarry(Object note);
+
+  /// No description provided for @voicingFamilyShell.
+  ///
+  /// In en, this message translates to:
+  /// **'Shell'**
+  String get voicingFamilyShell;
+
+  /// No description provided for @voicingFamilyRootlessA.
+  ///
+  /// In en, this message translates to:
+  /// **'Rootless A'**
+  String get voicingFamilyRootlessA;
+
+  /// No description provided for @voicingFamilyRootlessB.
+  ///
+  /// In en, this message translates to:
+  /// **'Rootless B'**
+  String get voicingFamilyRootlessB;
+
+  /// No description provided for @voicingFamilySpread.
+  ///
+  /// In en, this message translates to:
+  /// **'Spread'**
+  String get voicingFamilySpread;
+
+  /// No description provided for @voicingFamilySus.
+  ///
+  /// In en, this message translates to:
+  /// **'Sus'**
+  String get voicingFamilySus;
+
+  /// No description provided for @voicingFamilyQuartal.
+  ///
+  /// In en, this message translates to:
+  /// **'Quartal'**
+  String get voicingFamilyQuartal;
+
+  /// No description provided for @voicingFamilyAltered.
+  ///
+  /// In en, this message translates to:
+  /// **'Altered'**
+  String get voicingFamilyAltered;
+
+  /// No description provided for @voicingFamilyUpperStructure.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper Structure'**
+  String get voicingFamilyUpperStructure;
+
+  /// No description provided for @voicingLockSuggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock suggestion'**
+  String get voicingLockSuggestion;
+
+  /// No description provided for @voicingUnlockSuggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock suggestion'**
+  String get voicingUnlockSuggestion;
+
+  /// No description provided for @voicingSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected'**
+  String get voicingSelected;
+
+  /// No description provided for @voicingLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get voicingLocked;
+
+  /// No description provided for @voicingReasonEssentialCore.
+  ///
+  /// In en, this message translates to:
+  /// **'Essential tones covered'**
+  String get voicingReasonEssentialCore;
+
+  /// No description provided for @voicingReasonGuideToneAnchor.
+  ///
+  /// In en, this message translates to:
+  /// **'3rd/7th anchor'**
+  String get voicingReasonGuideToneAnchor;
+
+  /// No description provided for @voicingReasonGuideResolution.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} guide-tone resolves'**
+  String voicingReasonGuideResolution(int count);
+
+  /// No description provided for @voicingReasonCommonToneRetention.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} common tones kept'**
+  String voicingReasonCommonToneRetention(int count);
+
+  /// No description provided for @voicingReasonStableRepeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Stable repeat'**
+  String get voicingReasonStableRepeat;
+
+  /// No description provided for @voicingReasonTopLineTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Top-line target'**
+  String get voicingReasonTopLineTarget;
+
+  /// No description provided for @voicingReasonLowMudAvoided.
+  ///
+  /// In en, this message translates to:
+  /// **'Low-register clarity'**
+  String get voicingReasonLowMudAvoided;
+
+  /// No description provided for @voicingReasonCompactReach.
+  ///
+  /// In en, this message translates to:
+  /// **'Comfortable reach'**
+  String get voicingReasonCompactReach;
+
+  /// No description provided for @voicingReasonBassAnchor.
+  ///
+  /// In en, this message translates to:
+  /// **'Bass anchor respected'**
+  String get voicingReasonBassAnchor;
+
+  /// No description provided for @voicingReasonNextChordReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Next chord ready'**
+  String get voicingReasonNextChordReady;
+
+  /// No description provided for @voicingReasonAlteredColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Altered tensions'**
+  String get voicingReasonAlteredColor;
+
+  /// No description provided for @voicingReasonRootlessClarity.
+  ///
+  /// In en, this message translates to:
+  /// **'Light rootless shape'**
+  String get voicingReasonRootlessClarity;
+
+  /// No description provided for @voicingReasonSusRelease.
+  ///
+  /// In en, this message translates to:
+  /// **'Sus release set up'**
+  String get voicingReasonSusRelease;
+
+  /// No description provided for @voicingReasonQuartalColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Quartal color'**
+  String get voicingReasonQuartalColor;
+
+  /// No description provided for @voicingReasonUpperStructureColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper-structure color'**
+  String get voicingReasonUpperStructureColor;
+
+  /// No description provided for @voicingReasonTritoneSubFlavor.
+  ///
+  /// In en, this message translates to:
+  /// **'Tritone-sub flavor'**
+  String get voicingReasonTritoneSubFlavor;
+
+  /// No description provided for @voicingReasonLockedContinuity.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked continuity'**
+  String get voicingReasonLockedContinuity;
+
+  /// No description provided for @voicingReasonGentleMotion.
+  ///
+  /// In en, this message translates to:
+  /// **'Smooth hand move'**
+  String get voicingReasonGentleMotion;
 }
 
 class _AppLocalizationsDelegate

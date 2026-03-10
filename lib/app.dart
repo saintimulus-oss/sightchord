@@ -10,9 +10,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
 import 'music/chord_formatting.dart';
 import 'music/chord_theory.dart';
+import 'music/voicing_engine.dart';
+import 'music/voicing_models.dart';
+import 'settings/inversion_settings.dart';
 import 'settings/practice_settings.dart';
+import 'settings/practice_settings_drawer.dart';
 import 'settings/settings_controller.dart';
 import 'smart_generator.dart';
+import 'widgets/voicing_suggestions_section.dart';
 
 Future<void> bootstrapApp() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,9 +42,8 @@ class MyApp extends StatelessWidget {
 
   final AppSettingsController controller;
 
-  static final List<Locale> supportedLocales = AppLanguage.values
-      .map((language) => language.locale)
-      .toList(growable: false);
+  static const List<Locale> supportedLocales =
+      AppLocalizations.supportedLocales;
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +91,10 @@ class _MyHomePageState extends State<MyHomePage> {
   static const int _beatsPerBar = 4;
 
   final Random _random = Random();
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  static const int _metronomePoolMinPlayers = 2;
+  static const int _metronomePoolMaxPlayers = 4;
+
+  AudioPool? _metronomePool;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late final TextEditingController _bpmController;
 
@@ -101,6 +108,12 @@ class _MyHomePageState extends State<MyHomePage> {
   GeneratedChord? _previousChord;
   GeneratedChord? _currentChord;
   GeneratedChord? _nextChord;
+  GeneratedChord? _lookAheadChord;
+  VoicingRecommendationSet? _voicingRecommendations;
+  ConcreteVoicing? _selectedVoicing;
+  ConcreteVoicing? _lockedCurrentVoicing;
+  ConcreteVoicing? _continuityReferenceVoicing;
+  String? _lastLoggedVoicingDiagnosticKey;
 
   PracticeSettings get _settings => widget.controller.settings;
 
@@ -110,26 +123,55 @@ class _MyHomePageState extends State<MyHomePage> {
     _bpmController = TextEditingController(text: '${_settings.bpm}');
     _audioInitFuture = _initAudio();
     _ensureChordQueueInitialized();
+    _recomputeVoicingSuggestions();
   }
 
   Future<void> _initAudio() async {
-    try {
-      await _audioPlayer.setReleaseMode(ReleaseMode.stop);
-      await _loadMetronomeSound(_settings.metronomeSound);
-      await _audioPlayer.setVolume(_settings.metronomeVolume);
-    } catch (_) {
-      _audioReady = false;
-    }
+    await _queueMetronomeSoundLoad(_settings.metronomeSound);
+  }
+
+  Future<void> _queueMetronomeSoundLoad(MetronomeSound sound) {
+    final previousInit = _audioInitFuture;
+    final loadFuture = () async {
+      if (previousInit != null) {
+        try {
+          await previousInit;
+        } catch (_) {}
+      }
+      await _loadMetronomeSound(sound);
+    }();
+    _audioInitFuture = loadFuture;
+    return loadFuture;
   }
 
   Future<void> _loadMetronomeSound(MetronomeSound sound) async {
+    final previousPool = _metronomePool;
     try {
-      await _audioPlayer.stop();
-      await _audioPlayer.setSource(AssetSource(sound.assetFileName));
+      // Use a small player pool for metronome clicks so rapid beats do not
+      // contend with a single stop/resume cycle.
+      final nextPool = await AudioPool.createFromAsset(
+        path: sound.assetFileName,
+        minPlayers: _metronomePoolMinPlayers,
+        maxPlayers: _metronomePoolMaxPlayers,
+      );
+      if (!mounted) {
+        await nextPool.dispose();
+        return;
+      }
+      _metronomePool = nextPool;
       _audioReady = true;
+      await previousPool?.dispose();
     } catch (_) {
-      _audioReady = false;
+      if (!mounted) {
+        return;
+      }
+      _metronomePool = previousPool;
+      _audioReady = _metronomePool != null;
     }
+  }
+
+  Duration _beatInterval() {
+    return Duration(microseconds: (60000000 / _effectiveBpm()).round());
   }
 
   int _effectiveBpm() {
@@ -144,14 +186,76 @@ class _MyHomePageState extends State<MyHomePage> {
       if (_settings.activeKeys.contains(key)) key,
   ];
 
+  bool _setEquals<T>(Set<T> left, Set<T> right) {
+    if (identical(left, right)) {
+      return true;
+    }
+    if (left.length != right.length) {
+      return false;
+    }
+    for (final value in left) {
+      if (!right.contains(value)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool _sameInversionSettings(InversionSettings left, InversionSettings right) {
+    return left.enabled == right.enabled &&
+        left.firstInversionEnabled == right.firstInversionEnabled &&
+        left.secondInversionEnabled == right.secondInversionEnabled &&
+        left.thirdInversionEnabled == right.thirdInversionEnabled;
+  }
+
+  bool _queueAffectingSettingsChanged(
+    PracticeSettings previous,
+    PracticeSettings next,
+  ) {
+    return !_setEquals(previous.activeKeys, next.activeKeys) ||
+        previous.smartGeneratorMode != next.smartGeneratorMode ||
+        previous.secondaryDominantEnabled != next.secondaryDominantEnabled ||
+        previous.substituteDominantEnabled != next.substituteDominantEnabled ||
+        previous.modalInterchangeEnabled != next.modalInterchangeEnabled ||
+        previous.modulationIntensity != next.modulationIntensity ||
+        previous.jazzPreset != next.jazzPreset ||
+        previous.sourceProfile != next.sourceProfile ||
+        previous.allowV7sus4 != next.allowV7sus4 ||
+        previous.allowTensions != next.allowTensions ||
+        !_setEquals(
+          previous.selectedTensionOptions,
+          next.selectedTensionOptions,
+        ) ||
+        !_sameInversionSettings(
+          previous.inversionSettings,
+          next.inversionSettings,
+        );
+  }
+
+  bool _shouldForceLookAheadRefresh(
+    PracticeSettings previous,
+    PracticeSettings next,
+  ) {
+    if (!next.voicingSuggestionsEnabled || next.lookAheadDepth < 2) {
+      return false;
+    }
+    if (!previous.voicingSuggestionsEnabled || previous.lookAheadDepth < 2) {
+      return true;
+    }
+    return _queueAffectingSettingsChanged(previous, next);
+  }
+
   void _applySettings(
     PracticeSettings nextSettings, {
     bool reseed = false,
     bool syncBpmText = false,
   }) {
-    if (nextSettings.metronomeSound != _settings.metronomeSound) {
-      _audioInitFuture = _loadMetronomeSound(nextSettings.metronomeSound);
+    final previousSettings = _settings;
+    if (nextSettings.metronomeSound != previousSettings.metronomeSound) {
+      _audioInitFuture = _queueMetronomeSoundLoad(nextSettings.metronomeSound);
     }
+    final forceLookAheadRefresh =
+        !reseed && _shouldForceLookAheadRefresh(previousSettings, nextSettings);
     unawaited(widget.controller.update(nextSettings));
     setState(() {
       if (syncBpmText) {
@@ -159,6 +263,10 @@ class _MyHomePageState extends State<MyHomePage> {
       }
       if (reseed) {
         _reseedChordQueue();
+      } else {
+        _recomputeVoicingSuggestions(
+          forceLookAheadRefresh: forceLookAheadRefresh,
+        );
       }
     });
   }
@@ -209,14 +317,22 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _ensureChordQueueInitialized() {
     _nextChord ??= _generateChord();
+    _refreshLookAheadChord();
   }
 
   void _reseedChordQueue() {
     _previousChord = null;
     _currentChord = null;
     _nextChord = null;
+    _lookAheadChord = null;
     _plannedSmartChordQueue = const <QueuedSmartChord>[];
+    _selectedVoicing = null;
+    _lockedCurrentVoicing = null;
+    _continuityReferenceVoicing = null;
+    _voicingRecommendations = null;
+    _lastLoggedVoicingDiagnosticKey = null;
     _ensureChordQueueInitialized();
+    _recomputeVoicingSuggestions();
   }
 
   ChordExclusionContext _buildExclusionContext({
@@ -241,6 +357,164 @@ class _MyHomePageState extends State<MyHomePage> {
       repeatGuardKeys: repeatGuardKeys,
       harmonicComparisonKeys: harmonicComparisonKeys,
     );
+  }
+
+  String _renderedSymbolForChord(GeneratedChord chord) {
+    return ChordRenderingHelper.renderedSymbol(
+      chord,
+      _settings.chordSymbolStyle,
+    );
+  }
+
+  void _refreshLookAheadChord({bool force = false}) {
+    if (!_settings.voicingSuggestionsEnabled || _settings.lookAheadDepth < 2) {
+      _lookAheadChord = null;
+      return;
+    }
+    final nextChord = _nextChord;
+    if (nextChord == null) {
+      _lookAheadChord = null;
+      return;
+    }
+    if (_lookAheadChord != null && !force) {
+      return;
+    }
+    final renderedSymbols = <String>{};
+    if (_currentChord != null) {
+      renderedSymbols.add(_renderedSymbolForChord(_currentChord!));
+    }
+    _lookAheadChord = _generateChord(
+      exclusionContext: _buildExclusionContext(
+        current: nextChord,
+        renderedSymbols: renderedSymbols,
+      ),
+      current: nextChord,
+    );
+  }
+
+  List<GeneratedChord> _voicingFutureChords() => [?_lookAheadChord];
+
+  VoicingContext? _composeVoicingContext({bool forceLookAheadRefresh = false}) {
+    final currentChord = _currentChord;
+    if (!_settings.voicingSuggestionsEnabled || currentChord == null) {
+      return null;
+    }
+    _refreshLookAheadChord(force: forceLookAheadRefresh);
+    return VoicingContext(
+      previousChord: _previousChord,
+      currentChord: currentChord,
+      nextChord: _nextChord,
+      futureChords: _voicingFutureChords(),
+      previousVoicing: _continuityReferenceVoicing,
+      lockedVoicing: _lockedCurrentVoicing,
+      preferredTopNotePitchClass: _settings.voicingTopNotePreference.pitchClass,
+      settings: _settings,
+      lookAheadDepth: _settings.lookAheadDepth,
+    );
+  }
+
+  ConcreteVoicing? _matchVoicingBySignature(
+    ConcreteVoicing? existing,
+    VoicingRecommendationSet recommendations,
+  ) {
+    if (existing == null) {
+      return null;
+    }
+    final matched = recommendations.candidateBySignature(existing.signature);
+    return matched?.voicing;
+  }
+
+  ConcreteVoicing? _continuitySourceVoicing() {
+    return _lockedCurrentVoicing ??
+        _selectedVoicing ??
+        (_voicingRecommendations != null &&
+                _voicingRecommendations!.suggestions.isNotEmpty
+            ? _voicingRecommendations!.suggestions.first.voicing
+            : null);
+  }
+
+  void _promoteChordQueue() {
+    _continuityReferenceVoicing = _continuitySourceVoicing();
+    _previousChord = _currentChord;
+    _currentChord = _nextChord ?? _generateChord(current: _currentChord);
+    _nextChord =
+        _lookAheadChord ??
+        _generateChord(
+          exclusionContext: _buildExclusionContext(current: _currentChord),
+          current: _currentChord,
+        );
+    _lookAheadChord = null;
+    _lockedCurrentVoicing = null;
+    _selectedVoicing = null;
+    _recomputeVoicingSuggestions();
+  }
+
+  void _recomputeVoicingSuggestions({bool forceLookAheadRefresh = false}) {
+    if (!_settings.voicingSuggestionsEnabled || _currentChord == null) {
+      _voicingRecommendations = null;
+      _selectedVoicing = null;
+      _lockedCurrentVoicing = null;
+      _lastLoggedVoicingDiagnosticKey = null;
+      return;
+    }
+
+    final context = _composeVoicingContext(
+      forceLookAheadRefresh: forceLookAheadRefresh,
+    );
+    if (context == null) {
+      _voicingRecommendations = null;
+      return;
+    }
+
+    final recommendations = VoicingEngine.recommend(context: context);
+    _voicingRecommendations = recommendations;
+    _lockedCurrentVoicing = _matchVoicingBySignature(
+      _lockedCurrentVoicing,
+      recommendations,
+    );
+    _selectedVoicing =
+        _lockedCurrentVoicing ??
+        _matchVoicingBySignature(_selectedVoicing, recommendations) ??
+        (recommendations.suggestions.isNotEmpty
+            ? recommendations.suggestions.first.voicing
+            : null);
+
+    if (_settings.smartDiagnosticsEnabled &&
+        recommendations.suggestions.isNotEmpty) {
+      final bestSuggestion = recommendations.suggestions.first;
+      final diagnosticKey =
+          '${context.currentChord.harmonicComparisonKey}|'
+          '${bestSuggestion.voicing.signature}';
+      if (_lastLoggedVoicingDiagnosticKey != diagnosticKey) {
+        developer.log(
+          '${context.diagnosticSummary} '
+          '${bestSuggestion.voicing.noteNames.join('-')} '
+          '${bestSuggestion.breakdown.describe()}',
+          name: 'sightchord.voicing',
+        );
+        _lastLoggedVoicingDiagnosticKey = diagnosticKey;
+      }
+    } else {
+      _lastLoggedVoicingDiagnosticKey = null;
+    }
+  }
+
+  void _handleVoicingSelected(VoicingSuggestion suggestion) {
+    setState(() {
+      _selectedVoicing = suggestion.voicing;
+    });
+  }
+
+  void _handleVoicingLockToggle(VoicingSuggestion suggestion) {
+    setState(() {
+      if (_lockedCurrentVoicing?.signature == suggestion.voicing.signature) {
+        _lockedCurrentVoicing = null;
+      } else {
+        _lockedCurrentVoicing = suggestion.voicing;
+        _selectedVoicing = suggestion.voicing;
+      }
+      _recomputeVoicingSuggestions();
+    });
   }
 
   bool _isExcludedCandidate(
@@ -279,6 +553,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     final keys = _orderedKeys;
+    if (keys.isEmpty) {
+      return _buildGeneratedChord(
+        MusicTheory.keyOptions.first,
+        RomanNumeralId.iMaj7,
+      );
+    }
     if (_settings.smartGeneratorMode) {
       return _generateSmartChord(
         keys: keys,
@@ -348,107 +628,52 @@ class _MyHomePageState extends State<MyHomePage> {
     KeyCenter? keyCenter,
     KeyMode keyMode = KeyMode.major,
     PlannedChordKind plannedChordKind = PlannedChordKind.resolvedRoman,
+    ChordQuality? renderQualityOverride,
     String? patternTag,
     AppliedType? appliedType,
     RomanNumeralId? resolutionTargetRomanId,
     DominantContext? dominantContext,
+    DominantIntent? dominantIntent,
     bool suppressTensions = false,
     SmartGenerationDebug? smartDebug,
     bool wasExcludedFallback = false,
+    ChordExclusionContext exclusionContext = const ChordExclusionContext(),
+    GeneratedChord? previousChord,
   }) {
     final effectiveKeyCenter =
         keyCenter ?? MusicTheory.keyCenterFor(key, mode: keyMode);
-    final spec = MusicTheory.specFor(romanNumeralId);
-    final normalizedAppliedType =
-        appliedType ?? _appliedTypeForRoman(romanNumeralId);
-    final normalizedResolutionTargetRomanId =
-        resolutionTargetRomanId ?? spec.resolutionTargetId;
-    final root = MusicTheory.resolveChordRootForCenter(
-      effectiveKeyCenter,
-      romanNumeralId,
-    );
-    final renderQuality = MusicTheory.resolveRenderQuality(
-      romanNumeralId: romanNumeralId,
-      plannedChordKind: plannedChordKind,
-      allowV7sus4: _settings.allowV7sus4,
-      randomRoll: _random.nextInt(100),
-      dominantContext: dominantContext,
-    );
-    final harmonicFunction = _harmonicFunctionForGeneratedChord(
-      romanNumeralId,
-      plannedChordKind: plannedChordKind,
-      appliedType: normalizedAppliedType,
-    );
-    final renderingSelection = ChordRenderingHelper.buildRenderingSelection(
+    final smartTrace = smartDebug is SmartDecisionTrace ? smartDebug : null;
+    final comparison = SmartGeneratorHelper.compareVoiceLeadingCandidates(
       random: _random,
-      root: root,
-      harmonicQuality: spec.quality,
-      renderQuality: renderQuality,
-      romanNumeralId: romanNumeralId,
-      plannedChordKind: plannedChordKind,
-      sourceKind: spec.sourceKind,
+      previousChord: previousChord,
+      allowV7sus4: _settings.allowV7sus4,
       allowTensions: _settings.allowTensions,
       selectedTensionOptions: _settings.selectedTensionOptions,
-      suppressTensions: suppressTensions,
       inversionSettings: _settings.inversionSettings,
-      dominantContext: dominantContext,
-    );
-    final repeatGuardKey = ChordRenderingHelper.buildRepeatGuardKey(
-      keyName: effectiveKeyCenter.tonicName,
-      romanNumeralId: romanNumeralId,
-      harmonicFunction: harmonicFunction,
-      plannedChordKind: plannedChordKind,
-      symbolData: renderingSelection.symbolData,
-      sourceKind: spec.sourceKind,
-      appliedType: normalizedAppliedType,
-      resolutionTargetRomanId: normalizedResolutionTargetRomanId,
-      patternTag: patternTag,
-      dominantContext: dominantContext,
-    );
-    final harmonicComparisonKey =
-        ChordRenderingHelper.buildHarmonicComparisonKey(
-          keyName: effectiveKeyCenter.tonicName,
+      debugChordStyle: _settings.chordSymbolStyle,
+      candidates: [
+        SmartRenderCandidate(
+          keyCenter: effectiveKeyCenter,
           romanNumeralId: romanNumeralId,
-          harmonicFunction: harmonicFunction,
           plannedChordKind: plannedChordKind,
-          symbolData: renderingSelection.symbolData,
-          sourceKind: spec.sourceKind,
-          appliedType: normalizedAppliedType,
-          resolutionTargetRomanId: normalizedResolutionTargetRomanId,
+          renderQualityOverride: renderQualityOverride,
           patternTag: patternTag,
+          appliedType: appliedType,
+          resolutionTargetRomanId: resolutionTargetRomanId,
           dominantContext: dominantContext,
-        );
-    return GeneratedChord(
-      symbolData: renderingSelection.symbolData,
-      repeatGuardKey: repeatGuardKey,
-      harmonicComparisonKey: harmonicComparisonKey,
-      keyName: effectiveKeyCenter.tonicName,
-      keyCenter: effectiveKeyCenter,
-      romanNumeralId: romanNumeralId,
-      resolutionRomanNumeralId: spec.resolutionTargetId,
-      harmonicFunction: harmonicFunction,
-      patternTag: patternTag,
-      plannedChordKind: plannedChordKind,
-      sourceKind: spec.sourceKind,
-      appliedType: normalizedAppliedType,
-      resolutionTargetRomanId: normalizedResolutionTargetRomanId,
-      dominantContext: dominantContext,
-      wasExcludedFallback: wasExcludedFallback,
-      isRenderedNonDiatonic: renderingSelection.isRenderedNonDiatonic,
-      smartDebug: smartDebug?.withFinalSelection(
-        finalKeyCenter: effectiveKeyCenter,
-        finalRomanNumeralId: romanNumeralId,
-        finalChord: ChordRenderingHelper.renderedSymbol(
-          GeneratedChord(
-            symbolData: renderingSelection.symbolData,
-            repeatGuardKey: repeatGuardKey,
-            harmonicComparisonKey: harmonicComparisonKey,
-          ),
-          _settings.chordSymbolStyle,
+          dominantIntent: dominantIntent,
+          suppressTensions: suppressTensions,
+          smartDebug: smartTrace,
+          wasExcludedFallback: wasExcludedFallback,
         ),
-        fallbackOccurred: wasExcludedFallback,
-      ),
+      ],
     );
+    for (final candidate in comparison.rankedCandidates) {
+      if (!_isExcludedCandidate(candidate.chord, exclusionContext)) {
+        return candidate.chord;
+      }
+    }
+    return comparison.selected.chord;
   }
 
   GeneratedChord _attachSmartDebug(
@@ -466,6 +691,9 @@ class _MyHomePageState extends State<MyHomePage> {
               _settings.chordSymbolStyle,
             ),
             fallbackOccurred: wasExcludedFallback,
+            finalRoot: chord.symbolData.root,
+            finalRenderQuality: chord.symbolData.renderQuality,
+            finalTensions: chord.symbolData.tensions,
           )
         : smartDebug;
     return chord.copyWith(
@@ -630,26 +858,62 @@ class _MyHomePageState extends State<MyHomePage> {
     return _buildGeneratedChord(keys.first, RomanNumeralId.iMaj7);
   }
 
-  List<String> _findCompatibleModulationKeys({
-    required List<String> keys,
-    required String currentKey,
-    required RomanNumeralId resolutionRomanNumeralId,
+  GeneratedChord? _buildFamilyAwareFallbackChord({
+    required SmartStepPlan plan,
+    required ChordExclusionContext exclusionContext,
+    GeneratedChord? previousChord,
   }) {
-    final targetRoot = MusicTheory.resolveChordRoot(
-      currentKey,
-      resolutionRomanNumeralId,
+    final harmonicFunction = _harmonicFunctionForGeneratedChord(
+      plan.finalRomanNumeralId,
+      plannedChordKind: plan.plannedChordKind,
+      appliedType: plan.appliedType,
     );
-    final targetSemitone = MusicTheory.noteToSemitone[targetRoot];
-    if (targetSemitone == null) {
-      return const [];
+    final comparison = SmartGeneratorHelper.compareVoiceLeadingCandidates(
+      random: _random,
+      previousChord: previousChord,
+      allowV7sus4: _settings.allowV7sus4,
+      allowTensions: _settings.allowTensions,
+      selectedTensionOptions: _settings.selectedTensionOptions,
+      inversionSettings: _settings.inversionSettings,
+      debugChordStyle: _settings.chordSymbolStyle,
+      candidates: [
+        for (final roman in SmartGeneratorHelper.prioritizedFallbackRomans(
+          keyMode: plan.finalKeyCenter.mode,
+          finalRomanNumeralId: plan.finalRomanNumeralId,
+          harmonicFunction: harmonicFunction,
+          patternTag: plan.patternTag,
+        ))
+          SmartRenderCandidate(
+            keyCenter: plan.finalKeyCenter,
+            romanNumeralId: roman,
+            plannedChordKind: roman == plan.finalRomanNumeralId
+                ? plan.plannedChordKind
+                : PlannedChordKind.resolvedRoman,
+            renderQualityOverride: roman == plan.finalRomanNumeralId
+                ? plan.renderingPlan.renderQualityOverride
+                : null,
+            patternTag: plan.patternTag,
+            dominantContext: roman == plan.finalRomanNumeralId
+                ? plan.renderingPlan.dominantContext
+                : null,
+            dominantIntent: roman == plan.finalRomanNumeralId
+                ? plan.renderingPlan.dominantIntent
+                : null,
+            smartDebug: plan.debug.withDecision(
+              'excluded-fallback-hierarchy',
+              nextBlockedReason: SmartBlockedReason.excludedFallback,
+              nextFallbackOccurred: true,
+            ),
+            wasExcludedFallback: true,
+          ),
+      ],
+    );
+    for (final candidate in comparison.rankedCandidates) {
+      if (!_isExcludedCandidate(candidate.chord, exclusionContext)) {
+        return candidate.chord;
+      }
     }
-
-    return SmartGeneratorHelper.findCompatibleModulationKeys(
-      activeKeys: keys,
-      currentKey: currentKey,
-      targetSemitone: targetSemitone,
-      keyTonicSemitoneResolver: MusicTheory.keyTonicSemitone,
-    );
+    return null;
   }
 
   GeneratedChord _generateSmartChord({
@@ -679,15 +943,26 @@ class _MyHomePageState extends State<MyHomePage> {
         initialPlan.finalRomanNumeralId,
         keyCenter: initialPlan.finalKeyCenter,
         plannedChordKind: initialPlan.plannedChordKind,
+        renderQualityOverride: initialPlan.renderingPlan.renderQualityOverride,
         patternTag: initialPlan.patternTag,
         appliedType: initialPlan.appliedType,
         resolutionTargetRomanId: initialPlan.resolutionTargetRomanId,
         dominantContext: initialPlan.renderingPlan.dominantContext,
+        dominantIntent: initialPlan.renderingPlan.dominantIntent,
         suppressTensions: initialPlan.renderingPlan.suppressTensions,
         smartDebug: initialPlan.debug,
+        exclusionContext: exclusionContext,
       );
       if (!_isExcludedCandidate(seededChord, exclusionContext)) {
         return _emitSmartDebug(seededChord);
+      }
+      final initialFallback = _buildFamilyAwareFallbackChord(
+        plan: initialPlan,
+        exclusionContext: exclusionContext,
+        previousChord: current,
+      );
+      if (initialFallback != null) {
+        return _emitSmartDebug(initialFallback);
       }
       return _emitSmartDebug(
         _attachSmartDebug(
@@ -733,6 +1008,10 @@ class _MyHomePageState extends State<MyHomePage> {
         currentPatternTag: current.patternTag,
         plannedQueue: _plannedSmartChordQueue,
         currentRenderedNonDiatonic: current.isRenderedNonDiatonic,
+        currentTrace: current.smartDebug as SmartDecisionTrace?,
+        phraseContext: SmartPhraseContext.rollingForm(
+          ((current.smartDebug as SmartDecisionTrace?)?.stepIndex ?? 0) + 1,
+        ),
       ),
     );
     _plannedSmartChordQueue = plan.remainingQueuedChords;
@@ -742,15 +1021,28 @@ class _MyHomePageState extends State<MyHomePage> {
       plan.finalRomanNumeralId,
       keyCenter: plan.finalKeyCenter,
       plannedChordKind: plan.plannedChordKind,
+      renderQualityOverride: plan.renderingPlan.renderQualityOverride,
       patternTag: plan.patternTag,
       appliedType: plan.appliedType,
       resolutionTargetRomanId: plan.resolutionTargetRomanId,
       dominantContext: plan.renderingPlan.dominantContext,
+      dominantIntent: plan.renderingPlan.dominantIntent,
       suppressTensions: plan.renderingPlan.suppressTensions,
       smartDebug: plan.debug,
+      exclusionContext: exclusionContext,
+      previousChord: current,
     );
     if (!_isExcludedCandidate(generatedChord, exclusionContext)) {
       return _emitSmartDebug(generatedChord);
+    }
+
+    final familyAwareFallback = _buildFamilyAwareFallbackChord(
+      plan: plan,
+      exclusionContext: exclusionContext,
+      previousChord: current,
+    );
+    if (familyAwareFallback != null) {
+      return _emitSmartDebug(familyAwareFallback);
     }
 
     if (plan.patternTag != null) {
@@ -791,57 +1083,43 @@ class _MyHomePageState extends State<MyHomePage> {
     return MusicTheory.specFor(romanNumeralId).harmonicFunction;
   }
 
-  AppliedType? _appliedTypeForRoman(RomanNumeralId romanNumeralId) {
-    final sourceKind = MusicTheory.specFor(romanNumeralId).sourceKind;
-    if (sourceKind == ChordSourceKind.substituteDominant) {
-      return AppliedType.substitute;
-    }
-    if (sourceKind == ChordSourceKind.secondaryDominant) {
-      return AppliedType.secondary;
-    }
-    return null;
-  }
-
-  Future<void> _playMetronomeIfNeeded() async {
+  void _playMetronomeIfNeeded() {
     if (!_settings.metronomeEnabled) {
       return;
     }
-    await (_audioInitFuture ?? Future<void>.value());
-    if (!_audioReady) {
+    final pool = _metronomePool;
+    if (!_audioReady || pool == null) {
       return;
     }
+    unawaited(_startMetronomePlayback(pool));
+  }
+
+  Future<void> _startMetronomePlayback(AudioPool pool) async {
     try {
-      await _audioPlayer.stop();
-      await _audioPlayer.setVolume(_settings.metronomeVolume);
-      await _audioPlayer.resume();
+      await pool.start(volume: _settings.metronomeVolume);
     } catch (_) {}
   }
 
   void _advanceChordUnawaited() {
-    unawaited(_advanceChord());
+    _advanceChord();
   }
 
   void _handleAutoTickUnawaited() {
-    unawaited(_handleAutoTick());
+    _handleAutoTick();
   }
 
-  Future<void> _advanceChord() async {
+  void _advanceChord() {
     if (!mounted) {
       return;
     }
     setState(() {
-      _previousChord = _currentChord;
-      _currentChord = _nextChord ?? _generateChord(current: _currentChord);
-      _nextChord = _generateChord(
-        exclusionContext: _buildExclusionContext(current: _currentChord),
-        current: _currentChord,
-      );
+      _promoteChordQueue();
       _currentBeat = ((_currentBeat ?? -1) + 1) % _beatsPerBar;
     });
-    await _playMetronomeIfNeeded();
+    _playMetronomeIfNeeded();
   }
 
-  Future<void> _handleAutoTick() async {
+  void _handleAutoTick() {
     if (!mounted) {
       return;
     }
@@ -852,26 +1130,21 @@ class _MyHomePageState extends State<MyHomePage> {
       shouldAdvanceChord = nextBeat == 0;
     });
 
-    await _playMetronomeIfNeeded();
+    _playMetronomeIfNeeded();
 
     if (!mounted || !shouldAdvanceChord) {
       return;
     }
 
     setState(() {
-      _previousChord = _currentChord;
-      _currentChord = _nextChord ?? _generateChord(current: _currentChord);
-      _nextChord = _generateChord(
-        exclusionContext: _buildExclusionContext(current: _currentChord),
-        current: _currentChord,
-      );
+      _promoteChordQueue();
     });
   }
 
   void _scheduleAutoTimer() {
     _autoTimer?.cancel();
     _autoTimer = Timer.periodic(
-      Duration(milliseconds: (60000 / _effectiveBpm()).round()),
+      _beatInterval(),
       (_) => _handleAutoTickUnawaited(),
     );
   }
@@ -996,498 +1269,13 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildSettingsSectionTitle(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(text, style: Theme.of(context).textTheme.titleMedium),
-    );
-  }
-
-  Widget _buildSettingsDrawer(AppLocalizations l10n) {
-    final theme = Theme.of(context);
-
-    return SizedBox(
-      width: min(MediaQuery.of(context).size.width * 0.9, 430),
-      child: Drawer(
-        child: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 12, 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.settings,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).maybePop(),
-                      icon: const Icon(Icons.close),
-                      tooltip: l10n.closeSettings,
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSettingsSectionTitle(l10n.language),
-                      DropdownButtonFormField<AppLanguage>(
-                        key: const ValueKey('language-selector'),
-                        initialValue: _settings.language,
-                        decoration: InputDecoration(
-                          border: const OutlineInputBorder(),
-                          labelText: l10n.language,
-                          isDense: true,
-                        ),
-                        items: AppLanguage.values
-                            .map(
-                              (language) => DropdownMenuItem<AppLanguage>(
-                                value: language,
-                                child: Text(language.nativeLabel),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (value) {
-                          if (value == null) {
-                            return;
-                          }
-                          _applySettings(_settings.copyWith(language: value));
-                        },
-                      ),
-                      const SizedBox(height: 24),
-                      _buildSettingsSectionTitle(l10n.metronome),
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(l10n.metronome),
-                        subtitle: Text(
-                          _settings.metronomeEnabled
-                              ? l10n.enabled
-                              : l10n.disabled,
-                        ),
-                        value: _settings.metronomeEnabled,
-                        onChanged: (value) {
-                          _applySettings(
-                            _settings.copyWith(metronomeEnabled: value),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        l10n.metronomeHelp,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<MetronomeSound>(
-                        key: const ValueKey('metronome-sound-selector'),
-                        initialValue: _settings.metronomeSound,
-                        isExpanded: true,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Metronome Sound',
-                        ),
-                        items: MetronomeSound.values
-                            .map(
-                              (sound) => DropdownMenuItem<MetronomeSound>(
-                                value: sound,
-                                child: Text(sound.label),
-                              ),
-                            )
-                            .toList(growable: false),
-                        onChanged: (value) {
-                          if (value == null) {
-                            return;
-                          }
-                          _applySettings(
-                            _settings.copyWith(metronomeSound: value),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        l10n.metronomeVolume,
-                        style: theme.textTheme.titleMedium,
-                      ),
-                      Slider(
-                        value: _settings.metronomeVolume,
-                        onChanged: _settings.metronomeEnabled
-                            ? (value) {
-                                _applySettings(
-                                  _settings.copyWith(metronomeVolume: value),
-                                );
-                              }
-                            : null,
-                      ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          '${(_settings.metronomeVolume * 100).round()}%',
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      _buildSettingsSectionTitle(l10n.keys),
-                      Text(
-                        _usesKeyMode
-                            ? l10n.keysSelectedHelp
-                            : l10n.noKeysSelected,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: MusicTheory.keyOptions.map((key) {
-                          return FilterChip(
-                            label: Text(key),
-                            selected: _settings.activeKeys.contains(key),
-                            showCheckmark: false,
-                            onSelected: (selected) {
-                              final nextKeys = <String>{
-                                ..._settings.activeKeys,
-                              };
-                              if (selected) {
-                                nextKeys.add(key);
-                              } else {
-                                nextKeys.remove(key);
-                              }
-                              _applySettings(
-                                _settings.copyWith(activeKeys: nextKeys),
-                                reseed: true,
-                              );
-                            },
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 24),
-                      SwitchListTile.adaptive(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(l10n.smartGeneratorMode),
-                        subtitle: Text(
-                          _usesKeyMode
-                              ? l10n.smartGeneratorHelp
-                              : l10n.keyModeRequiredForSmartGenerator,
-                        ),
-                        value: _settings.smartGeneratorMode,
-                        onChanged: _usesKeyMode
-                            ? (value) {
-                                _applySettings(
-                                  _settings.copyWith(smartGeneratorMode: value),
-                                  reseed: true,
-                                );
-                              }
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
-                      _buildSettingsSectionTitle(l10n.nonDiatonic),
-                      if (!_usesKeyMode)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Text(
-                            l10n.nonDiatonicRequiresKeyMode,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          FilterChip(
-                            label: Text(l10n.secondaryDominant),
-                            selected: _settings.secondaryDominantEnabled,
-                            showCheckmark: false,
-                            onSelected: _usesKeyMode
-                                ? (selected) {
-                                    _applySettings(
-                                      _settings.copyWith(
-                                        secondaryDominantEnabled: selected,
-                                      ),
-                                      reseed: true,
-                                    );
-                                  }
-                                : null,
-                          ),
-                          FilterChip(
-                            label: Text(l10n.substituteDominant),
-                            selected: _settings.substituteDominantEnabled,
-                            showCheckmark: false,
-                            onSelected: _usesKeyMode
-                                ? (selected) {
-                                    _applySettings(
-                                      _settings.copyWith(
-                                        substituteDominantEnabled: selected,
-                                      ),
-                                      reseed: true,
-                                    );
-                                  }
-                                : null,
-                          ),
-                          FilterChip(
-                            key: const ValueKey('modal-interchange-chip'),
-                            label: Text(l10n.modalInterchange),
-                            selected: _settings.modalInterchangeEnabled,
-                            showCheckmark: false,
-                            onSelected: _usesKeyMode
-                                ? (selected) {
-                                    _applySettings(
-                                      _settings.copyWith(
-                                        modalInterchangeEnabled: selected,
-                                      ),
-                                      reseed: true,
-                                    );
-                                  }
-                                : null,
-                          ),
-                        ],
-                      ),
-                      if (!_usesKeyMode)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            l10n.modalInterchangeDisabledHelp,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                      const SizedBox(height: 24),
-                      _buildSettingsSectionTitle(l10n.rendering),
-                      DropdownButtonFormField<ChordSymbolStyle>(
-                        key: const ValueKey('chord-symbol-style-dropdown'),
-                        initialValue: _settings.chordSymbolStyle,
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          border: const OutlineInputBorder(),
-                          labelText: l10n.chordSymbolStyle,
-                          helperText: l10n.chordSymbolStyleHelp,
-                        ),
-                        items: ChordSymbolStyle.values.map((style) {
-                          final label = switch (style) {
-                            ChordSymbolStyle.compact => l10n.styleCompact,
-                            ChordSymbolStyle.majText => l10n.styleMajText,
-                            ChordSymbolStyle.deltaJazz => l10n.styleDeltaJazz,
-                          };
-                          return DropdownMenuItem<ChordSymbolStyle>(
-                            value: style,
-                            child: Text(
-                              '$label  ${ChordSymbolFormatter.example(style)}',
-                            ),
-                          );
-                        }).toList(),
-                        selectedItemBuilder: (context) {
-                          return ChordSymbolStyle.values.map((style) {
-                            final label = switch (style) {
-                              ChordSymbolStyle.compact => l10n.styleCompact,
-                              ChordSymbolStyle.majText => l10n.styleMajText,
-                              ChordSymbolStyle.deltaJazz => l10n.styleDeltaJazz,
-                            };
-                            return Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                label,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          }).toList();
-                        },
-                        onChanged: (value) {
-                          if (value == null) {
-                            return;
-                          }
-                          _applySettings(
-                            _settings.copyWith(chordSymbolStyle: value),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          FilterChip(
-                            key: const ValueKey('allow-v7sus4-chip'),
-                            label: Text(l10n.allowV7sus4),
-                            selected: _settings.allowV7sus4,
-                            showCheckmark: false,
-                            onSelected: _usesKeyMode
-                                ? (selected) {
-                                    _applySettings(
-                                      _settings.copyWith(allowV7sus4: selected),
-                                      reseed: true,
-                                    );
-                                  }
-                                : null,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      if (_usesKeyMode) ...[
-                        SwitchListTile.adaptive(
-                          key: const ValueKey('allow-tensions-toggle'),
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(l10n.allowTensions),
-                          subtitle: Text(l10n.tensionHelp),
-                          value: _settings.allowTensions,
-                          onChanged: (value) {
-                            _applySettings(
-                              _settings.copyWith(allowTensions: value),
-                              reseed: true,
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: ChordRenderingHelper.supportedTensionOptions
-                              .map((tension) {
-                                return FilterChip(
-                                  key: ValueKey('tension-chip-$tension'),
-                                  label: Text(tension),
-                                  selected: _settings.selectedTensionOptions
-                                      .contains(tension),
-                                  showCheckmark: false,
-                                  onSelected: _settings.allowTensions
-                                      ? (selected) {
-                                          final nextTensions = <String>{
-                                            ..._settings.selectedTensionOptions,
-                                          };
-                                          if (selected) {
-                                            nextTensions.add(tension);
-                                          } else {
-                                            nextTensions.remove(tension);
-                                          }
-                                          _applySettings(
-                                            _settings.copyWith(
-                                              selectedTensionOptions:
-                                                  nextTensions,
-                                            ),
-                                            reseed: true,
-                                          );
-                                        }
-                                      : null,
-                                );
-                              })
-                              .toList(),
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-                      Text(l10n.inversions, style: theme.textTheme.titleMedium),
-                      SwitchListTile.adaptive(
-                        key: const ValueKey('enable-inversions-toggle'),
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(l10n.enableInversions),
-                        subtitle: Text(l10n.inversionHelp),
-                        value: _settings.inversionSettings.enabled,
-                        onChanged: (value) {
-                          _applySettings(
-                            _settings.copyWith(
-                              inversionSettings: _settings.inversionSettings
-                                  .copyWith(enabled: value),
-                            ),
-                            reseed: true,
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            FilterChip(
-                              key: const ValueKey('first-inversion-chip'),
-                              label: Text(l10n.firstInversion),
-                              selected: _settings
-                                  .inversionSettings
-                                  .firstInversionEnabled,
-                              showCheckmark: false,
-                              onSelected: _settings.inversionSettings.enabled
-                                  ? (selected) {
-                                      _applySettings(
-                                        _settings.copyWith(
-                                          inversionSettings: _settings
-                                              .inversionSettings
-                                              .copyWith(
-                                                firstInversionEnabled: selected,
-                                              ),
-                                        ),
-                                        reseed: true,
-                                      );
-                                    }
-                                  : null,
-                            ),
-                            FilterChip(
-                              key: const ValueKey('second-inversion-chip'),
-                              label: Text(l10n.secondInversion),
-                              selected: _settings
-                                  .inversionSettings
-                                  .secondInversionEnabled,
-                              showCheckmark: false,
-                              onSelected: _settings.inversionSettings.enabled
-                                  ? (selected) {
-                                      _applySettings(
-                                        _settings.copyWith(
-                                          inversionSettings: _settings
-                                              .inversionSettings
-                                              .copyWith(
-                                                secondInversionEnabled:
-                                                    selected,
-                                              ),
-                                        ),
-                                        reseed: true,
-                                      );
-                                    }
-                                  : null,
-                            ),
-                            FilterChip(
-                              key: const ValueKey('third-inversion-chip'),
-                              label: Text(l10n.thirdInversion),
-                              selected: _settings
-                                  .inversionSettings
-                                  .thirdInversionEnabled,
-                              showCheckmark: false,
-                              onSelected: _settings.inversionSettings.enabled
-                                  ? (selected) {
-                                      _applySettings(
-                                        _settings.copyWith(
-                                          inversionSettings: _settings
-                                              .inversionSettings
-                                              .copyWith(
-                                                thirdInversionEnabled: selected,
-                                              ),
-                                        ),
-                                        reseed: true,
-                                      );
-                                    }
-                                  : null,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+  Widget _buildSettingsDrawer() {
+    return PracticeSettingsDrawer(
+      settings: _settings,
+      onClose: () => Navigator.of(context).maybePop(),
+      onApplySettings: (nextSettings, {bool reseed = false}) {
+        _applySettings(nextSettings, reseed: reseed);
+      },
     );
   }
 
@@ -1495,7 +1283,11 @@ class _MyHomePageState extends State<MyHomePage> {
   void dispose() {
     _autoTimer?.cancel();
     _bpmController.dispose();
-    _audioPlayer.dispose();
+    final metronomePool = _metronomePool;
+    _metronomePool = null;
+    if (metronomePool != null) {
+      unawaited(metronomePool.dispose());
+    }
     super.dispose();
   }
 
@@ -1535,7 +1327,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Scaffold(
           key: _scaffoldKey,
           endDrawerEnableOpenDragGesture: false,
-          endDrawer: _buildSettingsDrawer(l10n),
+          endDrawer: _buildSettingsDrawer(),
           appBar: AppBar(
             backgroundColor: theme.colorScheme.inversePrimary,
             title: Text(widget.title),
@@ -1674,6 +1466,21 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                                 const SizedBox(height: 12),
                                 _buildSummaryCard(l10n),
+                                if (_settings.voicingSuggestionsEnabled &&
+                                    _voicingRecommendations != null &&
+                                    _voicingRecommendations!
+                                        .suggestions
+                                        .isNotEmpty) ...[
+                                  const SizedBox(height: 12),
+                                  VoicingSuggestionsSection(
+                                    recommendations: _voicingRecommendations!,
+                                    selectedSignature:
+                                        _selectedVoicing?.signature,
+                                    showReasons: _settings.showVoicingReasons,
+                                    onSelectSuggestion: _handleVoicingSelected,
+                                    onToggleLock: _handleVoicingLockToggle,
+                                  ),
+                                ],
                               ],
                             ),
                             const SizedBox(height: 20),

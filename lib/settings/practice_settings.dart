@@ -1,18 +1,28 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../music/chord_theory.dart';
+import 'inversion_settings.dart';
 
-enum AppLanguage { en, es, zhHans, ja, ko }
+enum AppLanguage { system, en, es, zh, zhHans, ja, ko }
 
 enum MetronomeSound { tick, tickB, tickC, tickD, tickE, tickF }
 
+enum VoicingComplexity { basic, standard, modern }
+
+enum VoicingTopNotePreference { auto, c, db, d, eb, e, f, gb, g, ab, a, bb, b }
+
 extension AppLanguageX on AppLanguage {
-  Locale get locale {
+  Locale? get locale {
     switch (this) {
+      case AppLanguage.system:
+        return null;
       case AppLanguage.en:
         return const Locale('en');
       case AppLanguage.es:
         return const Locale('es');
+      case AppLanguage.zh:
+        return const Locale('zh');
       case AppLanguage.zhHans:
         return const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans');
       case AppLanguage.ja:
@@ -24,10 +34,14 @@ extension AppLanguageX on AppLanguage {
 
   String get storageKey {
     switch (this) {
+      case AppLanguage.system:
+        return 'system';
       case AppLanguage.en:
         return 'en';
       case AppLanguage.es:
         return 'es';
+      case AppLanguage.zh:
+        return 'zh';
       case AppLanguage.zhHans:
         return 'zh_Hans';
       case AppLanguage.ja:
@@ -39,10 +53,14 @@ extension AppLanguageX on AppLanguage {
 
   String get nativeLabel {
     switch (this) {
+      case AppLanguage.system:
+        return 'System';
       case AppLanguage.en:
         return 'English';
       case AppLanguage.es:
         return 'Español';
+      case AppLanguage.zh:
+        return '繁體中文';
       case AppLanguage.zhHans:
         return '简体中文';
       case AppLanguage.ja:
@@ -55,7 +73,7 @@ extension AppLanguageX on AppLanguage {
   static AppLanguage fromStorageKey(String? value) {
     return AppLanguage.values.firstWhere(
       (language) => language.storageKey == value,
-      orElse: () => AppLanguage.en,
+      orElse: () => AppLanguage.system,
     );
   }
 }
@@ -95,20 +113,20 @@ extension MetronomeSoundX on MetronomeSound {
     }
   }
 
-  String get label {
+  String localizedLabel(AppLocalizations l10n) {
     switch (this) {
       case MetronomeSound.tick:
-        return 'Classic';
+        return l10n.metronomeSoundClassic;
       case MetronomeSound.tickB:
-        return 'Click B';
+        return l10n.metronomeSoundClickB;
       case MetronomeSound.tickC:
-        return 'Click C';
+        return l10n.metronomeSoundClickC;
       case MetronomeSound.tickD:
-        return 'Click D';
+        return l10n.metronomeSoundClickD;
       case MetronomeSound.tickE:
-        return 'Click E';
+        return l10n.metronomeSoundClickE;
       case MetronomeSound.tickF:
-        return 'Click F';
+        return l10n.metronomeSoundClickF;
     }
   }
 
@@ -120,54 +138,72 @@ extension MetronomeSoundX on MetronomeSound {
   }
 }
 
-class InversionSettings {
-  const InversionSettings({
-    this.enabled = false,
-    this.firstInversionEnabled = true,
-    this.secondInversionEnabled = true,
-    this.thirdInversionEnabled = false,
-  });
-
-  final bool enabled;
-  final bool firstInversionEnabled;
-  final bool secondInversionEnabled;
-  final bool thirdInversionEnabled;
-
-  InversionSettings copyWith({
-    bool? enabled,
-    bool? firstInversionEnabled,
-    bool? secondInversionEnabled,
-    bool? thirdInversionEnabled,
-  }) {
-    return InversionSettings(
-      enabled: enabled ?? this.enabled,
-      firstInversionEnabled:
-          firstInversionEnabled ?? this.firstInversionEnabled,
-      secondInversionEnabled:
-          secondInversionEnabled ?? this.secondInversionEnabled,
-      thirdInversionEnabled:
-          thirdInversionEnabled ?? this.thirdInversionEnabled,
-    );
+extension VoicingTopNotePreferenceX on VoicingTopNotePreference {
+  String get storageKey {
+    return switch (this) {
+      VoicingTopNotePreference.auto => 'auto',
+      VoicingTopNotePreference.c => 'c',
+      VoicingTopNotePreference.db => 'db',
+      VoicingTopNotePreference.d => 'd',
+      VoicingTopNotePreference.eb => 'eb',
+      VoicingTopNotePreference.e => 'e',
+      VoicingTopNotePreference.f => 'f',
+      VoicingTopNotePreference.gb => 'gb',
+      VoicingTopNotePreference.g => 'g',
+      VoicingTopNotePreference.ab => 'ab',
+      VoicingTopNotePreference.a => 'a',
+      VoicingTopNotePreference.bb => 'bb',
+      VoicingTopNotePreference.b => 'b',
+    };
   }
 
-  List<int> get enabledInversions {
-    final inversions = <int>[];
-    if (firstInversionEnabled) {
-      inversions.add(1);
-    }
-    if (secondInversionEnabled) {
-      inversions.add(2);
-    }
-    if (thirdInversionEnabled) {
-      inversions.add(3);
-    }
-    return inversions;
+  int? get pitchClass {
+    return switch (this) {
+      VoicingTopNotePreference.auto => null,
+      VoicingTopNotePreference.c => 0,
+      VoicingTopNotePreference.db => 1,
+      VoicingTopNotePreference.d => 2,
+      VoicingTopNotePreference.eb => 3,
+      VoicingTopNotePreference.e => 4,
+      VoicingTopNotePreference.f => 5,
+      VoicingTopNotePreference.gb => 6,
+      VoicingTopNotePreference.g => 7,
+      VoicingTopNotePreference.ab => 8,
+      VoicingTopNotePreference.a => 9,
+      VoicingTopNotePreference.bb => 10,
+      VoicingTopNotePreference.b => 11,
+    };
+  }
+
+  String get noteLabel {
+    return switch (this) {
+      VoicingTopNotePreference.auto => 'Auto',
+      VoicingTopNotePreference.c => 'C',
+      VoicingTopNotePreference.db => 'Db',
+      VoicingTopNotePreference.d => 'D',
+      VoicingTopNotePreference.eb => 'Eb',
+      VoicingTopNotePreference.e => 'E',
+      VoicingTopNotePreference.f => 'F',
+      VoicingTopNotePreference.gb => 'Gb',
+      VoicingTopNotePreference.g => 'G',
+      VoicingTopNotePreference.ab => 'Ab',
+      VoicingTopNotePreference.a => 'A',
+      VoicingTopNotePreference.bb => 'Bb',
+      VoicingTopNotePreference.b => 'B',
+    };
+  }
+
+  static VoicingTopNotePreference fromStorageKey(String? value) {
+    return VoicingTopNotePreference.values.firstWhere(
+      (preference) => preference.storageKey == value,
+      orElse: () => VoicingTopNotePreference.auto,
+    );
   }
 }
 
 class PracticeSettings {
   PracticeSettings({
-    this.language = AppLanguage.en,
+    this.language = AppLanguage.system,
     this.metronomeEnabled = true,
     this.metronomeVolume = 1,
     this.metronomeSound = MetronomeSound.tick,
@@ -185,13 +221,22 @@ class PracticeSettings {
     this.allowTensions = false,
     Set<String>? selectedTensionOptions,
     InversionSettings? inversionSettings,
+    this.voicingSuggestionsEnabled = true,
+    this.voicingComplexity = VoicingComplexity.standard,
+    this.voicingTopNotePreference = VoicingTopNotePreference.auto,
+    this.allowRootlessVoicings = true,
+    int maxVoicingNotes = 4,
+    int lookAheadDepth = 1,
+    this.showVoicingReasons = true,
     this.bpm = 60,
   }) : activeKeys = Set.unmodifiable(activeKeys ?? const <String>{}),
        selectedTensionOptions = Set.unmodifiable(
          selectedTensionOptions ??
              const <String>{'9', '11', '13', '#11', 'b9', '#9', 'b13'},
        ),
-       inversionSettings = inversionSettings ?? const InversionSettings();
+       inversionSettings = inversionSettings ?? const InversionSettings(),
+       maxVoicingNotes = maxVoicingNotes.clamp(3, 5),
+       lookAheadDepth = lookAheadDepth.clamp(0, 2);
 
   final AppLanguage language;
   final bool metronomeEnabled;
@@ -211,9 +256,16 @@ class PracticeSettings {
   final bool allowTensions;
   final Set<String> selectedTensionOptions;
   final InversionSettings inversionSettings;
+  final bool voicingSuggestionsEnabled;
+  final VoicingComplexity voicingComplexity;
+  final VoicingTopNotePreference voicingTopNotePreference;
+  final bool allowRootlessVoicings;
+  final int maxVoicingNotes;
+  final int lookAheadDepth;
+  final bool showVoicingReasons;
   final int bpm;
 
-  Locale get locale => language.locale;
+  Locale? get locale => language.locale;
   bool get usesKeyMode => activeKeys.isNotEmpty;
 
   PracticeSettings copyWith({
@@ -235,6 +287,13 @@ class PracticeSettings {
     bool? allowTensions,
     Set<String>? selectedTensionOptions,
     InversionSettings? inversionSettings,
+    bool? voicingSuggestionsEnabled,
+    VoicingComplexity? voicingComplexity,
+    VoicingTopNotePreference? voicingTopNotePreference,
+    bool? allowRootlessVoicings,
+    int? maxVoicingNotes,
+    int? lookAheadDepth,
+    bool? showVoicingReasons,
     int? bpm,
   }) {
     return PracticeSettings(
@@ -261,6 +320,16 @@ class PracticeSettings {
       selectedTensionOptions:
           selectedTensionOptions ?? this.selectedTensionOptions,
       inversionSettings: inversionSettings ?? this.inversionSettings,
+      voicingSuggestionsEnabled:
+          voicingSuggestionsEnabled ?? this.voicingSuggestionsEnabled,
+      voicingComplexity: voicingComplexity ?? this.voicingComplexity,
+      voicingTopNotePreference:
+          voicingTopNotePreference ?? this.voicingTopNotePreference,
+      allowRootlessVoicings:
+          allowRootlessVoicings ?? this.allowRootlessVoicings,
+      maxVoicingNotes: maxVoicingNotes ?? this.maxVoicingNotes,
+      lookAheadDepth: lookAheadDepth ?? this.lookAheadDepth,
+      showVoicingReasons: showVoicingReasons ?? this.showVoicingReasons,
       bpm: bpm ?? this.bpm,
     );
   }

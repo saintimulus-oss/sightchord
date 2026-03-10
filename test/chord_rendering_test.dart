@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sightchord/music/chord_formatting.dart';
 import 'package:sightchord/music/chord_theory.dart';
-import 'package:sightchord/settings/practice_settings.dart';
+import 'package:sightchord/settings/inversion_settings.dart';
 
 class _FixedRandom implements Random {
   _FixedRandom(this.value);
@@ -91,7 +91,7 @@ void main() {
           _symbol('C', ChordQuality.halfDiminished7),
           ChordSymbolStyle.deltaJazz,
         ),
-        'C첩7',
+        'Cø7',
       );
       expect(
         ChordSymbolFormatter.format(
@@ -419,24 +419,27 @@ void main() {
       expect(selection.isRenderedNonDiatonic, isTrue);
     });
 
-    test('uses dominant-II tension profile when context is lydian dominant', () {
-      final selection = ChordRenderingHelper.buildRenderingSelection(
-        random: _FixedRandom(0),
-        root: 'D',
-        harmonicQuality: ChordQuality.dominant7,
-        renderQuality: ChordQuality.dominant7Sharp11,
-        romanNumeralId: RomanNumeralId.vDom7,
-        plannedChordKind: PlannedChordKind.resolvedRoman,
-        sourceKind: ChordSourceKind.diatonic,
-        allowTensions: true,
-        selectedTensionOptions: {'#11', '13'},
-        suppressTensions: false,
-        inversionSettings: const InversionSettings(),
-        dominantContext: DominantContext.dominantIILydian,
-      );
+    test(
+      'uses dominant-II tension profile when context is lydian dominant',
+      () {
+        final selection = ChordRenderingHelper.buildRenderingSelection(
+          random: _FixedRandom(0),
+          root: 'D',
+          harmonicQuality: ChordQuality.dominant7,
+          renderQuality: ChordQuality.dominant7Sharp11,
+          romanNumeralId: RomanNumeralId.vDom7,
+          plannedChordKind: PlannedChordKind.resolvedRoman,
+          sourceKind: ChordSourceKind.diatonic,
+          allowTensions: true,
+          selectedTensionOptions: {'#11', '13'},
+          suppressTensions: false,
+          inversionSettings: const InversionSettings(),
+          dominantContext: DominantContext.dominantIILydian,
+        );
 
-      expect(selection.symbolData.tensions, ['#11', '13']);
-    });
+        expect(selection.symbolData.tensions, ['#11', '13']);
+      },
+    );
 
     test('marks tonicization source as rendered non-diatonic', () {
       final renderedNonDiatonic = ChordRenderingHelper.isRenderedNonDiatonic(
@@ -448,6 +451,20 @@ void main() {
       );
 
       expect(renderedNonDiatonic, isTrue);
+    });
+
+
+    test('prioritizes dominant headed scope tensions by profile weight', () {
+      final prioritized = ChordRenderingHelper.prioritizedTensionOptionsFor(
+        romanNumeralId: RomanNumeralId.vDom7,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        allowTensions: true,
+        selectedTensionOptions: {'#9', '13', '9'},
+        suppressTensions: false,
+        renderQuality: ChordQuality.dominant7,
+        dominantIntent: DominantIntent.dominantHeadedScope,
+      );
+      expect(prioritized, ['9', '13', '#9']);
     });
   });
 
@@ -499,6 +516,38 @@ void main() {
 
       expect(primaryMinor, isNot(secondaryMinor));
     });
+
+    test('includes dominant intent in applied repeat guard keys', () {
+      final primary = ChordRenderingHelper.buildRepeatGuardKey(
+        keyName: 'C',
+        romanNumeralId: RomanNumeralId.secondaryOfV,
+        harmonicFunction: HarmonicFunction.dominant,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        symbolData: _symbol('D', ChordQuality.dominant7),
+        sourceKind: ChordSourceKind.secondaryDominant,
+        appliedType: AppliedType.secondary,
+        resolutionTargetRomanId: RomanNumeralId.vDom7,
+        dominantContext: DominantContext.secondaryToMajor,
+        dominantIntent: DominantIntent.secondaryToMajor,
+      );
+      final scopeHeaded = ChordRenderingHelper.buildRepeatGuardKey(
+        keyName: 'C',
+        romanNumeralId: RomanNumeralId.secondaryOfV,
+        harmonicFunction: HarmonicFunction.dominant,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        symbolData: _symbol('D', ChordQuality.dominant7),
+        sourceKind: ChordSourceKind.secondaryDominant,
+        appliedType: AppliedType.secondary,
+        resolutionTargetRomanId: RomanNumeralId.vDom7,
+        dominantContext: DominantContext.secondaryToMajor,
+        dominantIntent: DominantIntent.dominantHeadedScope,
+      );
+      expect(primary, isNot(scopeHeaded));
+    });
   });
 }
+
+
+
+
 

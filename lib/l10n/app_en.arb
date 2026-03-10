@@ -3,16 +3,39 @@
   "settings": "Settings",
   "closeSettings": "Close settings",
   "language": "Language",
+  "systemDefaultLanguage": "System default",
   "metronome": "Metronome",
   "enabled": "Enabled",
   "disabled": "Disabled",
   "metronomeHelp": "Turn the metronome on to hear a click on every beat while you practice.",
+  "metronomeSound": "Metronome Sound",
+  "metronomeSoundClassic": "Classic",
+  "metronomeSoundClickB": "Click B",
+  "metronomeSoundClickC": "Click C",
+  "metronomeSoundClickD": "Click D",
+  "metronomeSoundClickE": "Click E",
+  "metronomeSoundClickF": "Click F",
   "metronomeVolume": "Metronome Volume",
   "keys": "Keys",
   "noKeysSelected": "No keys selected. Leave all keys off to practice in free mode across every root.",
   "keysSelectedHelp": "Selected keys are used for key-aware random mode and Smart Generator mode.",
   "smartGeneratorMode": "Smart Generator Mode",
   "smartGeneratorHelp": "Prioritizes functional harmonic motion while preserving the enabled non-diatonic options.",
+  "advancedSmartGenerator": "Advanced Smart Generator",
+  "modulationIntensity": "Modulation Intensity",
+  "modulationIntensityOff": "Off",
+  "modulationIntensityLow": "Low",
+  "modulationIntensityMedium": "Medium",
+  "modulationIntensityHigh": "High",
+  "jazzPreset": "Jazz Preset",
+  "jazzPresetStandardsCore": "Standards Core",
+  "jazzPresetModulationStudy": "Modulation Study",
+  "jazzPresetAdvanced": "Advanced",
+  "sourceProfile": "Source Profile",
+  "sourceProfileFakebookStandard": "Fakebook Standard",
+  "sourceProfileRecordingInspired": "Recording Inspired",
+  "smartDiagnostics": "Smart Diagnostics",
+  "smartDiagnosticsHelp": "Logs Smart Generator decision traces for debugging.",
   "keyModeRequiredForSmartGenerator": "Select at least one key to use Smart Generator mode.",
   "nonDiatonic": "Non-Diatonic",
   "nonDiatonicRequiresKeyMode": "Non-diatonic options are available in key mode only.",
@@ -53,7 +76,7 @@
   "stopAutoplay": "Stop Autoplay",
   "decreaseBpm": "Decrease BPM",
   "increaseBpm": "Increase BPM",
-  "allowedRange": "Allowed range: {min}–{max}",
+  "allowedRange": "Allowed range: {min}-{max}",
   "@allowedRange": {
     "placeholders": {
       "min": {
@@ -63,5 +86,102 @@
         "type": "int"
       }
     }
-  }
+  },
+  "voicingSuggestionsTitle": "Voicing Suggestions",
+  "voicingSuggestionsSubtitle": "See concrete note choices for this chord.",
+  "voicingSuggestionsEnabled": "Enable Voicing Suggestions",
+  "voicingSuggestionsHelp": "Shows three playable note-level voicing ideas for the current chord.",
+  "voicingComplexity": "Voicing Complexity",
+  "voicingComplexityHelp": "Controls how colorful the suggestions may become.",
+  "voicingComplexityBasic": "Basic",
+  "voicingComplexityStandard": "Standard",
+  "voicingComplexityModern": "Modern",
+  "voicingTopNotePreference": "Top Note Preference",
+  "voicingTopNotePreferenceHelp": "Biases suggestions toward a chosen top line. Locked voicings override it, then same-chord carry keeps the line steady.",
+  "voicingTopNotePreferenceAuto": "Auto",
+  "allowRootlessVoicings": "Allow Rootless Voicings",
+  "allowRootlessVoicingsHelp": "Lets suggestions omit the root when the guide tones stay clear.",
+  "maxVoicingNotes": "Max Voicing Notes",
+  "lookAheadDepth": "Look-Ahead Depth",
+  "lookAheadDepthHelp": "How many future chords the ranking may consider.",
+  "showVoicingReasons": "Show Voicing Reasons",
+  "showVoicingReasonsHelp": "Displays short explanation chips on each suggestion card.",
+  "voicingSuggestionNatural": "Most Natural",
+  "voicingSuggestionColorful": "Most Colorful",
+  "voicingSuggestionEasy": "Easiest",
+  "voicingSuggestionNaturalSubtitle": "Voice-leading first",
+  "voicingSuggestionColorfulSubtitle": "Leans into color tones",
+  "voicingSuggestionEasySubtitle": "Compact hand shape",
+  "voicingSuggestionNaturalConnectedSubtitle": "Connection and resolution first",
+  "voicingSuggestionNaturalStableSubtitle": "Same shape, steady comping",
+  "voicingSuggestionTopLineSubtitle": "Top line stays in focus",
+  "voicingSuggestionColorfulAlteredSubtitle": "Altered tension up front",
+  "voicingSuggestionColorfulQuartalSubtitle": "Modern quartal color",
+  "voicingSuggestionColorfulTritoneSubtitle": "Tritone-sub edge with bright guide tones",
+  "voicingSuggestionColorfulUpperStructureSubtitle": "Guide tones with bright extensions",
+  "voicingSuggestionEasyAnchoredSubtitle": "Core tones, smaller reach",
+  "voicingSuggestionEasyStableSubtitle": "Repeat-friendly hand shape",
+  "voicingTopNoteLabel": "Top",
+  "voicingTopNoteContextExplicit": "Target top note: {note}",
+  "@voicingTopNoteContextExplicit": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextLocked": "Locked top line: {note}",
+  "@voicingTopNoteContextLocked": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextCarry": "Carry top line: {note}",
+  "@voicingTopNoteContextCarry": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingFamilyShell": "Shell",
+  "voicingFamilyRootlessA": "Rootless A",
+  "voicingFamilyRootlessB": "Rootless B",
+  "voicingFamilySpread": "Spread",
+  "voicingFamilySus": "Sus",
+  "voicingFamilyQuartal": "Quartal",
+  "voicingFamilyAltered": "Altered",
+  "voicingFamilyUpperStructure": "Upper Structure",
+  "voicingLockSuggestion": "Lock suggestion",
+  "voicingUnlockSuggestion": "Unlock suggestion",
+  "voicingSelected": "Selected",
+  "voicingLocked": "Locked",
+  "voicingReasonEssentialCore": "Essential tones covered",
+  "voicingReasonGuideToneAnchor": "3rd/7th anchor",
+  "voicingReasonGuideResolution": "{count} guide-tone resolves",
+  "@voicingReasonGuideResolution": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "voicingReasonCommonToneRetention": "{count} common tones kept",
+  "@voicingReasonCommonToneRetention": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "voicingReasonStableRepeat": "Stable repeat",
+  "voicingReasonTopLineTarget": "Top-line target",
+  "voicingReasonLowMudAvoided": "Low-register clarity",
+  "voicingReasonCompactReach": "Comfortable reach",
+  "voicingReasonBassAnchor": "Bass anchor respected",
+  "voicingReasonNextChordReady": "Next chord ready",
+  "voicingReasonAlteredColor": "Altered tensions",
+  "voicingReasonRootlessClarity": "Light rootless shape",
+  "voicingReasonSusRelease": "Sus release set up",
+  "voicingReasonQuartalColor": "Quartal color",
+  "voicingReasonUpperStructureColor": "Upper-structure color",
+  "voicingReasonTritoneSubFlavor": "Tritone-sub flavor",
+  "voicingReasonLockedContinuity": "Locked continuity",
+  "voicingReasonGentleMotion": "Smooth hand move"
 }

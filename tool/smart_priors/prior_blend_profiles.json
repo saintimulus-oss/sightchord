@@ -1,0 +1,12 @@
+{
+  "fakebookStandard": {
+    "id": "lead_sheet_structural",
+    "useStructuralLeadSheetPriors": true,
+    "useRecordingSurfaceOverlay": false
+  },
+  "recordingInspired": {
+    "id": "lead_sheet_plus_recording_overlay",
+    "useStructuralLeadSheetPriors": true,
+    "useRecordingSurfaceOverlay": true
+  }
+}

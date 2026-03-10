@@ -1,17 +1,36 @@
 import 'dart:math';
+import 'dart:convert';
 
 import 'music/chord_formatting.dart';
 import 'music/chord_theory.dart';
-import 'settings/practice_settings.dart';
+import 'settings/inversion_settings.dart';
+
+part 'smart_generator_diagnostics.dart';
+part 'music/priors/smart_prior_models.dart';
+part 'music/priors/smart_prior_lookup.dart';
+part 'music/priors/smart_priors.dart';
+part 'music/priors/generated/smart_family_priors.g.dart';
+part 'music/priors/generated/smart_transition_priors.g.dart';
+part 'music/priors/generated/smart_prior_profiles.g.dart';
 
 enum SmartProgressionFamily {
   coreIiVIMajor,
   turnaroundIViIiV,
   turnaroundISharpIdimIiV,
   turnaroundIIIviIiV,
+  relativeMinorReframe,
+  dominantHeadedScopeChain,
+  closingPlagalAuthenticHybrid,
+  bridgeIVStabilizedByLocalIiVI,
   minorIiVAltI,
   minorLineCliche,
   backdoorIvmBviiI,
+  backdoorRecursivePrep,
+  classicalPredominantColor,
+  mixturePivotModulation,
+  chromaticMediantCommonToneModulation,
+  coltraneBurst,
+  bridgeReturnHomeCadence,
   dominantChainBridgeStyle,
   appliedDominantWithRelatedIi,
   passingDimToIi,
@@ -19,7 +38,86 @@ enum SmartProgressionFamily {
   cadenceBasedRealModulation,
 }
 
+enum PhraseRole { opener, continuation, preCadence, cadence, release }
+
+enum SectionRole { aLike, bridgeLike, turnaroundTail, tag }
+
+enum HarmonicDensity { oneChordPerBar, twoChordsPerBar, turnaroundSplit }
+
 enum _PhrasePriority { low, cadence, boundary }
+
+class SmartPhraseContext {
+  const SmartPhraseContext({
+    required this.phraseRole,
+    required this.sectionRole,
+    required this.harmonicDensity,
+    required this.barInPhrase,
+    required this.barsToBoundary,
+    required this.phraseLength,
+  });
+
+  final PhraseRole phraseRole;
+  final SectionRole sectionRole;
+  final HarmonicDensity harmonicDensity;
+  final int barInPhrase;
+  final int barsToBoundary;
+  final int phraseLength;
+
+  static SmartPhraseContext rollingForm(int stepIndex) {
+    final cycleBar = stepIndex % 32;
+    SectionRole sectionRole;
+    HarmonicDensity density;
+    int phraseLength;
+    int barInPhrase;
+    if (cycleBar < 8) {
+      sectionRole = SectionRole.aLike;
+      density = HarmonicDensity.oneChordPerBar;
+      phraseLength = 8;
+      barInPhrase = cycleBar;
+    } else if (cycleBar < 16) {
+      sectionRole = SectionRole.aLike;
+      density = HarmonicDensity.oneChordPerBar;
+      phraseLength = 8;
+      barInPhrase = cycleBar - 8;
+    } else if (cycleBar < 24) {
+      sectionRole = SectionRole.bridgeLike;
+      density = HarmonicDensity.twoChordsPerBar;
+      phraseLength = 8;
+      barInPhrase = cycleBar - 16;
+    } else if (cycleBar < 28) {
+      sectionRole = SectionRole.turnaroundTail;
+      density = HarmonicDensity.turnaroundSplit;
+      phraseLength = 4;
+      barInPhrase = cycleBar - 24;
+    } else {
+      sectionRole = SectionRole.tag;
+      density = HarmonicDensity.turnaroundSplit;
+      phraseLength = 4;
+      barInPhrase = cycleBar - 28;
+    }
+    final barsToBoundary = phraseLength - 1 - barInPhrase;
+    final phraseRole = switch (barsToBoundary) {
+      0 => PhraseRole.release,
+      1 => PhraseRole.cadence,
+      2 => PhraseRole.preCadence,
+      _ => barInPhrase == 0 ? PhraseRole.opener : PhraseRole.continuation,
+    };
+    return SmartPhraseContext(
+      phraseRole: phraseRole,
+      sectionRole: sectionRole,
+      harmonicDensity: density,
+      barInPhrase: barInPhrase,
+      barsToBoundary: barsToBoundary,
+      phraseLength: phraseLength,
+    );
+  }
+
+  String describe() {
+    return '${phraseRole.name}/${sectionRole.name}/'
+        '${harmonicDensity.name}:bar=$barInPhrase/'
+        '$phraseLength:toBoundary=$barsToBoundary';
+  }
+}
 
 class WeightedNextRoman {
   const WeightedNextRoman({required this.romanNumeralId, required this.weight});
@@ -41,54 +139,96 @@ class QueuedSmartChord {
     required this.finalRomanNumeralId,
     required this.plannedChordKind,
     required this.patternTag,
+    this.variantTag,
+    this.renderQualityOverride,
     this.suppressTensions = false,
     this.appliedType,
     this.resolutionTargetRomanId,
     this.dominantContext,
+    this.dominantIntent,
     this.modulationKind = ModulationKind.none,
     this.cadentialArrival = false,
     this.modulationAttempt = false,
+    this.surfaceTags = const [],
+    this.openScope,
+    this.closeScope = false,
+    this.openedDebts = const [],
+    this.satisfiedDebtTypes = const [],
+    this.modulationConfidence = 0,
+    this.postModulationConfirmationsRemaining = 0,
   });
 
   final KeyCenter keyCenter;
   final RomanNumeralId finalRomanNumeralId;
   final PlannedChordKind plannedChordKind;
   final String patternTag;
+  final String? variantTag;
+  final ChordQuality? renderQualityOverride;
   final bool suppressTensions;
   final AppliedType? appliedType;
   final RomanNumeralId? resolutionTargetRomanId;
   final DominantContext? dominantContext;
+  final DominantIntent? dominantIntent;
   final ModulationKind modulationKind;
   final bool cadentialArrival;
-
   final bool modulationAttempt;
+  final List<String> surfaceTags;
+  final LocalScope? openScope;
+  final bool closeScope;
+  final List<ResolutionDebt> openedDebts;
+  final List<ResolutionDebtType> satisfiedDebtTypes;
+  final double modulationConfidence;
+  final int postModulationConfirmationsRemaining;
 
   QueuedSmartChord copyWith({
     KeyCenter? keyCenter,
     RomanNumeralId? finalRomanNumeralId,
     PlannedChordKind? plannedChordKind,
     String? patternTag,
+    String? variantTag,
+    ChordQuality? renderQualityOverride,
     bool? suppressTensions,
     AppliedType? appliedType,
     RomanNumeralId? resolutionTargetRomanId,
     DominantContext? dominantContext,
+    DominantIntent? dominantIntent,
     ModulationKind? modulationKind,
     bool? cadentialArrival,
     bool? modulationAttempt,
+    List<String>? surfaceTags,
+    LocalScope? openScope,
+    bool? closeScope,
+    List<ResolutionDebt>? openedDebts,
+    List<ResolutionDebtType>? satisfiedDebtTypes,
+    double? modulationConfidence,
+    int? postModulationConfirmationsRemaining,
   }) {
     return QueuedSmartChord(
       keyCenter: keyCenter ?? this.keyCenter,
       finalRomanNumeralId: finalRomanNumeralId ?? this.finalRomanNumeralId,
       plannedChordKind: plannedChordKind ?? this.plannedChordKind,
       patternTag: patternTag ?? this.patternTag,
+      variantTag: variantTag ?? this.variantTag,
+      renderQualityOverride:
+          renderQualityOverride ?? this.renderQualityOverride,
       suppressTensions: suppressTensions ?? this.suppressTensions,
       appliedType: appliedType ?? this.appliedType,
       resolutionTargetRomanId:
           resolutionTargetRomanId ?? this.resolutionTargetRomanId,
       dominantContext: dominantContext ?? this.dominantContext,
+      dominantIntent: dominantIntent ?? this.dominantIntent,
       modulationKind: modulationKind ?? this.modulationKind,
       cadentialArrival: cadentialArrival ?? this.cadentialArrival,
       modulationAttempt: modulationAttempt ?? this.modulationAttempt,
+      surfaceTags: surfaceTags ?? this.surfaceTags,
+      openScope: openScope ?? this.openScope,
+      closeScope: closeScope ?? this.closeScope,
+      openedDebts: openedDebts ?? this.openedDebts,
+      satisfiedDebtTypes: satisfiedDebtTypes ?? this.satisfiedDebtTypes,
+      modulationConfidence: modulationConfidence ?? this.modulationConfidence,
+      postModulationConfirmationsRemaining:
+          postModulationConfirmationsRemaining ??
+          this.postModulationConfirmationsRemaining,
     );
   }
 }
@@ -207,218 +347,114 @@ class _ModulationOpportunity {
   final bool allowPhraseBoundary;
 }
 
-class SmartDecisionTrace implements SmartDebugInfo {
-  const SmartDecisionTrace({
-    required this.stepIndex,
-    required this.currentKeyCenter,
-    required this.currentRomanNumeralId,
-    required this.currentHarmonicFunction,
-    this.selectedDiatonicDestination,
-    this.modalInterchangeCandidates = const [],
-    this.selectedModalInterchange,
-    this.appliedCandidates = const [],
-    this.selectedAppliedApproach,
-    this.appliedType,
-    this.appliedTargetRomanNumeralId,
-    this.modulationCandidateKeys = const [],
-    this.blockedReason,
-    this.fallbackOccurred = false,
-    this.modulationAttempted = false,
-    this.modulationSucceeded = false,
-    this.finalKeyCenter,
-    this.finalRomanNumeralId,
-    this.finalChord,
-    this.decision,
-    this.transitionDebugSummary,
-    this.activePatternTag,
-    this.queuedPatternLength = 0,
-    this.returnedToNormalFlow = false,
+class SmartRenderCandidate {
+  const SmartRenderCandidate({
+    required this.keyCenter,
+    required this.romanNumeralId,
     this.plannedChordKind = PlannedChordKind.resolvedRoman,
-    this.finalSourceKind = ChordSourceKind.diatonic,
+    this.renderQualityOverride,
+    this.patternTag,
+    this.appliedType,
+    this.resolutionTargetRomanId,
     this.dominantContext,
-    this.modulationKind = ModulationKind.none,
-    this.cadentialArrival = false,
+    this.dominantIntent,
+    this.suppressTensions = false,
+    this.smartDebug,
+    this.wasExcludedFallback = false,
   });
 
-  final int stepIndex;
-  final String currentKeyCenter;
-  final RomanNumeralId currentRomanNumeralId;
-  final HarmonicFunction currentHarmonicFunction;
-  final RomanNumeralId? selectedDiatonicDestination;
-  final List<RomanNumeralId> modalInterchangeCandidates;
-  final RomanNumeralId? selectedModalInterchange;
-  final List<RomanNumeralId> appliedCandidates;
-  final RomanNumeralId? selectedAppliedApproach;
-  final AppliedType? appliedType;
-  final RomanNumeralId? appliedTargetRomanNumeralId;
-  final List<String> modulationCandidateKeys;
-  final SmartBlockedReason? blockedReason;
-  final bool fallbackOccurred;
-  final bool modulationAttempted;
-  final bool modulationSucceeded;
-  final String? finalKeyCenter;
-  final RomanNumeralId? finalRomanNumeralId;
-  final String? finalChord;
-  final String? decision;
-  final String? transitionDebugSummary;
-  final String? activePatternTag;
-  final int queuedPatternLength;
-  final bool returnedToNormalFlow;
+  final KeyCenter keyCenter;
+  final RomanNumeralId romanNumeralId;
   final PlannedChordKind plannedChordKind;
-  final ChordSourceKind finalSourceKind;
+  final ChordQuality? renderQualityOverride;
+  final String? patternTag;
+  final AppliedType? appliedType;
+  final RomanNumeralId? resolutionTargetRomanId;
   final DominantContext? dominantContext;
-  final ModulationKind modulationKind;
-  final bool cadentialArrival;
+  final DominantIntent? dominantIntent;
+  final bool suppressTensions;
+  final SmartDecisionTrace? smartDebug;
+  final bool wasExcludedFallback;
+}
 
-  RomanNumeralId? get insertedAppliedApproach => selectedAppliedApproach;
+class SmartVoiceLeadingBreakdown {
+  const SmartVoiceLeadingBreakdown({
+    required this.total,
+    this.guideToneSemitoneBonus = 0,
+    this.commonToneRetentionBonus = 0,
+    this.rootLeapPenalty = 0,
+    this.sameRootSusPayoffBonus = 0,
+  });
 
-  SmartDecisionTrace withDecision(
-    String nextDecision, {
-    SmartBlockedReason? nextBlockedReason,
-    bool? nextFallbackOccurred,
-  }) {
-    return SmartDecisionTrace(
-      stepIndex: stepIndex,
-      currentKeyCenter: currentKeyCenter,
-      currentRomanNumeralId: currentRomanNumeralId,
-      currentHarmonicFunction: currentHarmonicFunction,
-      selectedDiatonicDestination: selectedDiatonicDestination,
-      modalInterchangeCandidates: modalInterchangeCandidates,
-      selectedModalInterchange: selectedModalInterchange,
-      appliedCandidates: appliedCandidates,
-      selectedAppliedApproach: selectedAppliedApproach,
-      appliedType: appliedType,
-      appliedTargetRomanNumeralId: appliedTargetRomanNumeralId,
-      modulationCandidateKeys: modulationCandidateKeys,
-      blockedReason: nextBlockedReason ?? blockedReason,
-      fallbackOccurred: nextFallbackOccurred ?? fallbackOccurred,
-      modulationAttempted: modulationAttempted,
-      modulationSucceeded: modulationSucceeded,
-      finalKeyCenter: finalKeyCenter,
-      finalRomanNumeralId: finalRomanNumeralId,
-      finalChord: finalChord,
-      decision: nextDecision,
-      transitionDebugSummary: transitionDebugSummary,
-      activePatternTag: activePatternTag,
-      queuedPatternLength: queuedPatternLength,
-      returnedToNormalFlow: returnedToNormalFlow,
-      plannedChordKind: plannedChordKind,
-      finalSourceKind: finalSourceKind,
-      dominantContext: dominantContext,
-      modulationKind: modulationKind,
-      cadentialArrival: cadentialArrival,
-    );
-  }
+  final double total;
+  final double guideToneSemitoneBonus;
+  final double commonToneRetentionBonus;
+  final double rootLeapPenalty;
+  final double sameRootSusPayoffBonus;
 
-  SmartDecisionTrace withFinalSelection({
-    required KeyCenter finalKeyCenter,
-    required RomanNumeralId finalRomanNumeralId,
-    required String finalChord,
-    required bool fallbackOccurred,
-  }) {
-    return SmartDecisionTrace(
-      stepIndex: stepIndex,
-      currentKeyCenter: currentKeyCenter,
-      currentRomanNumeralId: currentRomanNumeralId,
-      currentHarmonicFunction: currentHarmonicFunction,
-      selectedDiatonicDestination: selectedDiatonicDestination,
-      modalInterchangeCandidates: modalInterchangeCandidates,
-      selectedModalInterchange: selectedModalInterchange,
-      appliedCandidates: appliedCandidates,
-      selectedAppliedApproach: selectedAppliedApproach,
-      appliedType: appliedType,
-      appliedTargetRomanNumeralId: appliedTargetRomanNumeralId,
-      modulationCandidateKeys: modulationCandidateKeys,
-      blockedReason: blockedReason,
-      fallbackOccurred: fallbackOccurred,
-      modulationAttempted: modulationAttempted,
-      modulationSucceeded: modulationSucceeded,
-      finalKeyCenter: finalKeyCenter.displayName,
-      finalRomanNumeralId: finalRomanNumeralId,
-      finalChord: finalChord,
-      decision: decision,
-      transitionDebugSummary: transitionDebugSummary,
-      activePatternTag: activePatternTag,
-      queuedPatternLength: queuedPatternLength,
-      returnedToNormalFlow: returnedToNormalFlow,
-      plannedChordKind: plannedChordKind,
-      finalSourceKind: finalSourceKind,
-      dominantContext: dominantContext,
-      modulationKind: modulationKind,
-      cadentialArrival: cadentialArrival,
-    );
-  }
-
-  @override
   String describe() {
-    final modulationKeys = modulationCandidateKeys.isEmpty
-        ? '-'
-        : modulationCandidateKeys.join(', ');
-    return 'step=$stepIndex '
-        'currentKeyCenter=$currentKeyCenter '
-        'currentRoman=${MusicTheory.romanTokenOf(currentRomanNumeralId)} '
-        'currentFunction=${currentHarmonicFunction.name} '
-        'destination=${_token(selectedDiatonicDestination)} '
-        'modalSelected=${_token(selectedModalInterchange)} '
-        'appliedSelected=${_token(selectedAppliedApproach)} '
-        'appliedType=${appliedType?.name ?? '-'} '
-        'appliedTarget=${_token(appliedTargetRomanNumeralId)} '
-        'modulationCandidates=[$modulationKeys] '
-        'blockedReason=${blockedReason?.name ?? '-'} '
-        'fallback=$fallbackOccurred '
-        'modulationAttempted=$modulationAttempted '
-        'modulationSucceeded=$modulationSucceeded '
-        'modulationKind=${modulationKind.name} '
-        'dominantContext=${dominantContext?.name ?? '-'} '
-        'cadentialArrival=$cadentialArrival '
-        'pattern=${activePatternTag ?? '-'} '
-        'queueLength=$queuedPatternLength '
-        'returnedToNormalFlow=$returnedToNormalFlow '
-        'finalKeyCenter=${finalKeyCenter ?? '-'} '
-        'finalRoman=${_token(finalRomanNumeralId)} '
-        'finalChord=${finalChord ?? '-'} '
-        'decision=${decision ?? '-'} '
-        'transition=${transitionDebugSummary ?? '-'}';
-  }
-
-  String _token(RomanNumeralId? value) {
-    return value == null ? '-' : MusicTheory.romanTokenOf(value);
+    return 'score=${total.toStringAsFixed(2)} '
+        'guide=${guideToneSemitoneBonus.toStringAsFixed(2)} '
+        'common=${commonToneRetentionBonus.toStringAsFixed(2)} '
+        'leap=${rootLeapPenalty.toStringAsFixed(2)} '
+        'sus=${sameRootSusPayoffBonus.toStringAsFixed(2)}';
   }
 }
 
-typedef SmartGenerationDebug = SmartDecisionTrace;
+class SmartRenderedCandidate {
+  const SmartRenderedCandidate({
+    required this.chord,
+    required this.voiceLeading,
+  });
 
-class SmartDiagnosticsStore {
-  static const int _maxTraceCount = 512;
-  static final List<SmartDecisionTrace> _recentTraces = <SmartDecisionTrace>[];
+  final GeneratedChord chord;
+  final SmartVoiceLeadingBreakdown voiceLeading;
+}
 
-  static void record(SmartDecisionTrace trace) {
-    _recentTraces.add(trace);
-    if (_recentTraces.length > _maxTraceCount) {
-      _recentTraces.removeAt(0);
-    }
-  }
+class SmartCandidateComparison {
+  const SmartCandidateComparison({required this.rankedCandidates});
 
-  static List<SmartDecisionTrace> recent() =>
-      List<SmartDecisionTrace>.unmodifiable(_recentTraces);
+  final List<SmartRenderedCandidate> rankedCandidates;
 
-  static void clear() {
-    _recentTraces.clear();
-  }
+  SmartRenderedCandidate get selected => rankedCandidates.first;
+}
+
+class _RankedSmartCandidate {
+  const _RankedSmartCandidate({
+    required this.chord,
+    required this.candidate,
+    required this.voiceLeading,
+    required this.sourceIndex,
+    required this.optionIndex,
+    required this.defaultOption,
+    required this.debugStyle,
+  });
+
+  final GeneratedChord chord;
+  final SmartRenderCandidate candidate;
+  final SmartVoiceLeadingBreakdown voiceLeading;
+  final int sourceIndex;
+  final int optionIndex;
+  final bool defaultOption;
+  final ChordSymbolStyle debugStyle;
 }
 
 class SmartRenderingPlan {
   const SmartRenderingPlan({
     this.plannedChordKind = PlannedChordKind.resolvedRoman,
     this.patternTag,
+    this.renderQualityOverride,
     this.suppressTensions = false,
     this.dominantContext,
+    this.dominantIntent,
   });
 
   final PlannedChordKind plannedChordKind;
   final String? patternTag;
+  final ChordQuality? renderQualityOverride;
   final bool suppressTensions;
   final DominantContext? dominantContext;
+  final DominantIntent? dominantIntent;
 }
 
 class SmartStartRequest {
@@ -464,6 +500,8 @@ class SmartStepRequest {
     required this.currentPatternTag,
     required this.plannedQueue,
     required this.currentRenderedNonDiatonic,
+    this.currentTrace,
+    this.phraseContext,
   });
 
   final int stepIndex;
@@ -485,6 +523,8 @@ class SmartStepRequest {
   final String? currentPatternTag;
   final List<QueuedSmartChord> plannedQueue;
   final bool currentRenderedNonDiatonic;
+  final SmartDecisionTrace? currentTrace;
+  final SmartPhraseContext? phraseContext;
 }
 
 class SmartStepPlan {
@@ -502,6 +542,7 @@ class SmartStepPlan {
     required this.modulationKind,
     required this.cadentialArrival,
     required this.modulationAttempt,
+    required this.phraseContext,
   });
 
   final KeyCenter finalKeyCenter;
@@ -517,32 +558,9 @@ class SmartStepPlan {
   final ModulationKind modulationKind;
   final bool cadentialArrival;
   final bool modulationAttempt;
+  final SmartPhraseContext phraseContext;
 
   String get finalKey => finalKeyCenter.tonicName;
-}
-
-class SmartSimulationSummary {
-  const SmartSimulationSummary({
-    required this.steps,
-    required this.modulationAttemptCount,
-    required this.modulationSuccessCount,
-    required this.blockedReasonHistogram,
-    required this.modalBranchCount,
-    required this.appliedDominantInsertionCount,
-    required this.fallbackCount,
-    required this.familyHistogram,
-    required this.traces,
-  });
-
-  final int steps;
-  final int modulationAttemptCount;
-  final int modulationSuccessCount;
-  final Map<SmartBlockedReason, int> blockedReasonHistogram;
-  final int modalBranchCount;
-  final int appliedDominantInsertionCount;
-  final int fallbackCount;
-  final Map<String, int> familyHistogram;
-  final List<SmartDecisionTrace> traces;
 }
 
 class SmartGeneratorHelper {
@@ -716,13 +734,14 @@ class SmartGeneratorHelper {
     KeyMode currentKeyMode = KeyMode.major,
   }) {
     final allowedSet = allowedRomanNumerals.toSet();
-    final configuredCandidates =
-        (currentKeyMode == KeyMode.major
-        ? majorDiatonicTransitions
-        : minorDiatonicTransitions)[_normalizedTransitionRoman(
-          currentRomanNumeralId,
-          currentKeyMode,
-        )];
+    final normalizedCurrentRoman = _normalizedTransitionRoman(
+      currentRomanNumeralId,
+      currentKeyMode,
+    );
+    final configuredCandidates = SmartPriorLookup.transitionCandidates(
+      keyMode: currentKeyMode,
+      currentRomanNumeralId: normalizedCurrentRoman,
+    );
 
     if (currentRomanNumeralId == null || configuredCandidates == null) {
       return SmartTransitionSelection(
@@ -781,6 +800,1046 @@ class SmartGeneratorHelper {
     return SmartDiagnosticsStore.recent();
   }
 
+  static SmartCandidateComparison compareVoiceLeadingCandidates({
+    required Random random,
+    required List<SmartRenderCandidate> candidates,
+    GeneratedChord? previousChord,
+    bool allowV7sus4 = true,
+    bool allowTensions = true,
+    Set<String>? selectedTensionOptions,
+    InversionSettings inversionSettings = const InversionSettings(),
+    ChordSymbolStyle debugChordStyle = ChordSymbolStyle.majText,
+  }) {
+    final resolvedCandidates = <_RankedSmartCandidate>[];
+    final tensionOptions =
+        selectedTensionOptions ??
+        ChordRenderingHelper.supportedTensionOptions.toSet();
+    for (
+      var sourceIndex = 0;
+      sourceIndex < candidates.length;
+      sourceIndex += 1
+    ) {
+      final candidate = candidates[sourceIndex];
+      final spec = MusicTheory.specFor(candidate.romanNumeralId);
+      final normalizedAppliedType =
+          candidate.appliedType ??
+          _appliedTypeForRoman(candidate.romanNumeralId);
+      final normalizedResolutionTargetRomanId =
+          candidate.resolutionTargetRomanId ?? spec.resolutionTargetId;
+      final harmonicFunction = _harmonicFunctionForRoman(
+        romanNumeralId: candidate.romanNumeralId,
+        plannedChordKind: candidate.plannedChordKind,
+        appliedType: normalizedAppliedType,
+      );
+      final root = MusicTheory.resolveChordRootForCenter(
+        candidate.keyCenter,
+        candidate.romanNumeralId,
+      );
+      final optionQualities = _renderQualityOptionsForCandidate(
+        random: random,
+        candidate: candidate,
+        allowV7sus4: allowV7sus4,
+      );
+      final defaultQuality = optionQualities.first;
+      for (
+        var optionIndex = 0;
+        optionIndex < optionQualities.length;
+        optionIndex += 1
+      ) {
+        final optionQuality = optionQualities[optionIndex];
+        final optionRandom = sourceIndex == 0 && optionIndex == 0
+            ? random
+            : Random(
+                _rankedCandidateSeed(
+                  sourceIndex: sourceIndex,
+                  optionIndex: optionIndex,
+                  candidate: candidate,
+                ),
+              );
+        final renderingSelection = ChordRenderingHelper.buildRenderingSelection(
+          random: optionRandom,
+          root: root,
+          harmonicQuality: spec.quality,
+          renderQuality: optionQuality,
+          romanNumeralId: candidate.romanNumeralId,
+          plannedChordKind: candidate.plannedChordKind,
+          sourceKind: spec.sourceKind,
+          allowTensions: allowTensions,
+          selectedTensionOptions: tensionOptions,
+          suppressTensions: candidate.suppressTensions,
+          inversionSettings: inversionSettings,
+          dominantContext: candidate.dominantContext,
+          dominantIntent: candidate.dominantIntent,
+        );
+        final repeatGuardKey = ChordRenderingHelper.buildRepeatGuardKey(
+          keyName: candidate.keyCenter.tonicName,
+          romanNumeralId: candidate.romanNumeralId,
+          harmonicFunction: harmonicFunction,
+          plannedChordKind: candidate.plannedChordKind,
+          symbolData: renderingSelection.symbolData,
+          sourceKind: spec.sourceKind,
+          appliedType: normalizedAppliedType,
+          resolutionTargetRomanId: normalizedResolutionTargetRomanId,
+          patternTag: candidate.patternTag,
+          dominantContext: candidate.dominantContext,
+          dominantIntent: candidate.dominantIntent,
+        );
+        final harmonicComparisonKey =
+            ChordRenderingHelper.buildHarmonicComparisonKey(
+              keyName: candidate.keyCenter.tonicName,
+              romanNumeralId: candidate.romanNumeralId,
+              harmonicFunction: harmonicFunction,
+              plannedChordKind: candidate.plannedChordKind,
+              symbolData: renderingSelection.symbolData,
+              sourceKind: spec.sourceKind,
+              appliedType: normalizedAppliedType,
+              resolutionTargetRomanId: normalizedResolutionTargetRomanId,
+              patternTag: candidate.patternTag,
+              dominantContext: candidate.dominantContext,
+              dominantIntent: candidate.dominantIntent,
+            );
+        final chord = GeneratedChord(
+          symbolData: renderingSelection.symbolData,
+          repeatGuardKey: repeatGuardKey,
+          harmonicComparisonKey: harmonicComparisonKey,
+          keyName: candidate.keyCenter.tonicName,
+          keyCenter: candidate.keyCenter,
+          romanNumeralId: candidate.romanNumeralId,
+          resolutionRomanNumeralId: spec.resolutionTargetId,
+          harmonicFunction: harmonicFunction,
+          patternTag: candidate.patternTag,
+          plannedChordKind: candidate.plannedChordKind,
+          sourceKind: spec.sourceKind,
+          appliedType: normalizedAppliedType,
+          resolutionTargetRomanId: normalizedResolutionTargetRomanId,
+          dominantContext: candidate.dominantContext,
+          dominantIntent: candidate.dominantIntent,
+          wasExcludedFallback: candidate.wasExcludedFallback,
+          isRenderedNonDiatonic: renderingSelection.isRenderedNonDiatonic,
+        );
+        resolvedCandidates.add(
+          _RankedSmartCandidate(
+            chord: chord,
+            candidate: candidate,
+            voiceLeading: _scoreVoiceLeading(
+              previousChord: previousChord,
+              candidateChord: chord,
+            ),
+            sourceIndex: sourceIndex,
+            optionIndex: optionIndex,
+            defaultOption: optionQuality == defaultQuality,
+            debugStyle: debugChordStyle,
+          ),
+        );
+      }
+    }
+
+    resolvedCandidates.sort((left, right) {
+      final scoreDelta = right.voiceLeading.total.compareTo(
+        left.voiceLeading.total,
+      );
+      if (scoreDelta != 0) {
+        return scoreDelta;
+      }
+      final defaultDelta = (right.defaultOption ? 1 : 0).compareTo(
+        left.defaultOption ? 1 : 0,
+      );
+      if (defaultDelta != 0) {
+        return defaultDelta;
+      }
+      final sourceDelta = left.sourceIndex.compareTo(right.sourceIndex);
+      if (sourceDelta != 0) {
+        return sourceDelta;
+      }
+      return left.optionIndex.compareTo(right.optionIndex);
+    });
+
+    final alternativeSummaries = [
+      for (final ranked in resolvedCandidates.take(4))
+        _debugSummaryForCandidate(
+          chord: ranked.chord,
+          style: debugChordStyle,
+          breakdown: ranked.voiceLeading,
+        ),
+    ];
+
+    return SmartCandidateComparison(
+      rankedCandidates: [
+        for (final ranked in resolvedCandidates)
+          SmartRenderedCandidate(
+            chord: _decorateVoiceLeadingDebug(
+              candidate: ranked,
+              alternatives: alternativeSummaries,
+            ),
+            voiceLeading: ranked.voiceLeading,
+          ),
+      ],
+    );
+  }
+
+  static GeneratedChord _decorateVoiceLeadingDebug({
+    required _RankedSmartCandidate candidate,
+    required List<String> alternatives,
+  }) {
+    final chord = candidate.chord;
+    final smartDebug = candidate.candidate.smartDebug;
+    if (smartDebug == null) {
+      return chord;
+    }
+    final decoratedDebug = smartDebug
+        .withVoiceLeading(
+          breakdown: candidate.voiceLeading,
+          alternatives: alternatives,
+        )
+        .withFinalSelection(
+          finalKeyCenter: chord.keyCenter!,
+          finalRomanNumeralId: chord.romanNumeralId!,
+          finalChord: ChordRenderingHelper.renderedSymbol(
+            chord,
+            candidate.debugStyle,
+          ),
+          fallbackOccurred:
+              smartDebug.fallbackOccurred || chord.wasExcludedFallback,
+          finalRoot: chord.symbolData.root,
+          finalRenderQuality: chord.symbolData.renderQuality,
+          finalTensions: chord.symbolData.tensions,
+        );
+    return chord.copyWith(smartDebug: decoratedDebug);
+  }
+
+  static String _debugSummaryForCandidate({
+    required GeneratedChord chord,
+    required ChordSymbolStyle style,
+    required SmartVoiceLeadingBreakdown breakdown,
+  }) {
+    return '${ChordRenderingHelper.renderedSymbol(chord, style)} '
+        '${breakdown.describe()}';
+  }
+
+  static int _rankedCandidateSeed({
+    required int sourceIndex,
+    required int optionIndex,
+    required SmartRenderCandidate candidate,
+  }) {
+    return Object.hash(
+          sourceIndex,
+          optionIndex,
+          candidate.keyCenter.serialize(),
+          candidate.romanNumeralId.name,
+          candidate.plannedChordKind.name,
+          candidate.renderQualityOverride?.name,
+          candidate.patternTag,
+          candidate.appliedType?.name,
+          candidate.resolutionTargetRomanId?.name,
+          candidate.dominantContext?.name,
+          candidate.dominantIntent?.name,
+        ) &
+        0x3fffffff;
+  }
+
+  static List<ChordQuality> _renderQualityOptionsForCandidate({
+    required Random random,
+    required SmartRenderCandidate candidate,
+    required bool allowV7sus4,
+  }) {
+    if (candidate.renderQualityOverride != null) {
+      return [candidate.renderQualityOverride!];
+    }
+    final defaultQuality = MusicTheory.resolveRenderQuality(
+      romanNumeralId: candidate.romanNumeralId,
+      plannedChordKind: candidate.plannedChordKind,
+      allowV7sus4: allowV7sus4,
+      randomRoll: random.nextInt(100),
+      dominantContext: candidate.dominantContext,
+      dominantIntent: candidate.dominantIntent,
+    );
+    final options = <ChordQuality>[defaultQuality];
+    if (candidate.plannedChordKind != PlannedChordKind.resolvedRoman) {
+      return options;
+    }
+    final baseQuality = MusicTheory.specFor(candidate.romanNumeralId).quality;
+    if (baseQuality != ChordQuality.dominant7) {
+      return options;
+    }
+    final effectiveIntent =
+        candidate.dominantIntent ??
+        MusicTheory.dominantIntentForContext(candidate.dominantContext);
+    if (effectiveIntent == DominantIntent.primaryAuthenticMinor ||
+        effectiveIntent == DominantIntent.secondaryToMinor) {
+      options.addAll(const [ChordQuality.dominant7Alt, ChordQuality.dominant7]);
+    } else if (effectiveIntent == DominantIntent.tritoneSub ||
+        effectiveIntent == DominantIntent.lydianDominant ||
+        effectiveIntent == DominantIntent.backdoor) {
+      options.addAll(const [
+        ChordQuality.dominant7Sharp11,
+        ChordQuality.dominant7,
+      ]);
+    } else if (effectiveIntent == DominantIntent.susDelay) {
+      options.addAll(const [
+        ChordQuality.dominant13sus4,
+        ChordQuality.dominant7sus4,
+      ]);
+    } else {
+      options.add(ChordQuality.dominant7);
+      if (allowV7sus4) {
+        options.addAll(const [
+          ChordQuality.dominant13sus4,
+          ChordQuality.dominant7sus4,
+        ]);
+      }
+    }
+    final unique = <ChordQuality>[];
+    for (final option in options) {
+      if (!unique.contains(option)) {
+        unique.add(option);
+      }
+    }
+    return unique;
+  }
+
+  static SmartVoiceLeadingBreakdown _scoreVoiceLeading({
+    required GeneratedChord? previousChord,
+    required GeneratedChord candidateChord,
+  }) {
+    if (previousChord == null) {
+      return const SmartVoiceLeadingBreakdown(total: 0);
+    }
+    final previousTones = _pitchClassesForSymbolData(previousChord.symbolData);
+    final candidateTones = _pitchClassesForSymbolData(
+      candidateChord.symbolData,
+    );
+    final commonToneCount = previousTones.intersection(candidateTones).length;
+    final commonToneBonus = min(0.72, commonToneCount * 0.24);
+
+    var guideToneBonus = 0.0;
+    for (final guideTone in _guideTonePitchClasses(previousChord.symbolData)) {
+      final resolvesBySemitone =
+          candidateTones.contains((guideTone + 1) % 12) ||
+          candidateTones.contains((guideTone + 11) % 12);
+      if (resolvesBySemitone) {
+        guideToneBonus += 0.75;
+      }
+    }
+
+    var rootLeapPenalty = 0.0;
+    final previousAnchor = _rootAnchorSemitone(previousChord.symbolData);
+    final candidateAnchor = _rootAnchorSemitone(candidateChord.symbolData);
+    if (previousAnchor != null && candidateAnchor != null) {
+      final leap = _pitchDistance(previousAnchor, candidateAnchor);
+      if (leap >= 6) {
+        rootLeapPenalty = -1.1;
+      }
+    }
+
+    final sameRootSusPayoffBonus =
+        _isSusDominantQuality(previousChord.symbolData.renderQuality) &&
+            _isPlainDominantQuality(candidateChord.symbolData.renderQuality) &&
+            previousChord.symbolData.root == candidateChord.symbolData.root
+        ? 1.1
+        : 0.0;
+
+    final total =
+        guideToneBonus +
+        commonToneBonus +
+        rootLeapPenalty +
+        sameRootSusPayoffBonus;
+    return SmartVoiceLeadingBreakdown(
+      total: total,
+      guideToneSemitoneBonus: guideToneBonus,
+      commonToneRetentionBonus: commonToneBonus,
+      rootLeapPenalty: rootLeapPenalty,
+      sameRootSusPayoffBonus: sameRootSusPayoffBonus,
+    );
+  }
+
+  static Set<int> _pitchClassesForSymbolData(ChordSymbolData symbolData) {
+    final rootSemitone = MusicTheory.noteToSemitone[symbolData.root];
+    if (rootSemitone == null) {
+      return const <int>{};
+    }
+    return {
+      for (final offset in ChordToneFormulaLibrary.formulaFor(
+        symbolData.renderQuality,
+      ))
+        (rootSemitone + offset) % 12,
+    };
+  }
+
+  static List<int> _guideTonePitchClasses(ChordSymbolData symbolData) {
+    final rootSemitone = MusicTheory.noteToSemitone[symbolData.root];
+    if (rootSemitone == null) {
+      return const <int>[];
+    }
+    final formula = ChordToneFormulaLibrary.formulaFor(
+      symbolData.renderQuality,
+    );
+    final guideOffsets = <int>[];
+    if (formula.length >= 2) {
+      guideOffsets.add(formula[1]);
+    }
+    if (formula.length >= 4 &&
+        symbolData.renderQuality != ChordQuality.major69 &&
+        symbolData.renderQuality != ChordQuality.six &&
+        symbolData.renderQuality != ChordQuality.minor6) {
+      guideOffsets.add(formula[3]);
+    }
+    return [for (final offset in guideOffsets) (rootSemitone + offset) % 12];
+  }
+
+  static int? _rootAnchorSemitone(ChordSymbolData symbolData) {
+    return MusicTheory.noteToSemitone[symbolData.bass ?? symbolData.root];
+  }
+
+  static int _pitchDistance(int left, int right) {
+    final delta = (right - left).abs() % 12;
+    return delta > 6 ? 12 - delta : delta;
+  }
+
+  static bool _isSusDominantQuality(ChordQuality quality) {
+    return quality == ChordQuality.dominant13sus4 ||
+        quality == ChordQuality.dominant7sus4;
+  }
+
+  static bool _isPlainDominantQuality(ChordQuality quality) {
+    return quality == ChordQuality.dominant7 ||
+        quality == ChordQuality.dominant7Alt ||
+        quality == ChordQuality.dominant7Sharp11;
+  }
+
+  static SmartPhraseContext _phraseContextForRequest(SmartStepRequest request) {
+    return request.phraseContext ??
+        SmartPhraseContext.rollingForm(request.stepIndex);
+  }
+
+  static String? _homeCenterLabelForStep({
+    required int stepIndex,
+    required KeyCenter currentKeyCenter,
+    required SmartDecisionTrace? previousTrace,
+  }) {
+    return previousTrace?.homeCenterLabel ??
+        (stepIndex == 0 ? currentKeyCenter.displayName : null);
+  }
+
+  static bool _isBridgeReturnZone(SmartPhraseContext phraseContext) {
+    return phraseContext.sectionRole == SectionRole.bridgeLike ||
+        phraseContext.sectionRole == SectionRole.turnaroundTail ||
+        phraseContext.sectionRole == SectionRole.tag;
+  }
+
+  static bool _isNearCadentialBoundary(SmartPhraseContext phraseContext) {
+    return phraseContext.phraseRole == PhraseRole.preCadence ||
+        phraseContext.phraseRole == PhraseRole.cadence ||
+        phraseContext.phraseRole == PhraseRole.release;
+  }
+
+  static bool _isBridgeReturnWindow(SmartPhraseContext phraseContext) {
+    return _isBridgeReturnZone(phraseContext) &&
+        _isNearCadentialBoundary(phraseContext);
+  }
+
+  static KeyCenter? _returnHomeTargetCenterForRequest(
+    SmartStepRequest request,
+  ) {
+    final targetedDebt = request.currentTrace?.outstandingDebts.firstWhere(
+      (debt) => debt.debtType == ResolutionDebtType.returnHomeCadence,
+      orElse: () => const ResolutionDebt(
+        debtType: ResolutionDebtType.returnHomeCadence,
+        targetLabel: '',
+        deadline: 0,
+        severity: 0,
+      ),
+    );
+    if (targetedDebt != null && targetedDebt.targetLabel.isNotEmpty) {
+      final parsedDebtCenter = _parseDisplayCenterLabel(
+        label: targetedDebt.targetLabel,
+        activeKeys: request.activeKeys,
+      );
+      if (parsedDebtCenter != null) {
+        return parsedDebtCenter;
+      }
+    }
+    if (request.currentTrace?.homeCenterLabel != null) {
+      final parsedHomeCenter = _parseDisplayCenterLabel(
+        label: request.currentTrace!.homeCenterLabel!,
+        activeKeys: request.activeKeys,
+      );
+      if (parsedHomeCenter != null) {
+        return parsedHomeCenter;
+      }
+    }
+    return _inferredHomeCenterForRequest(request);
+  }
+
+  static List<ResolutionDebt> _returnHomeDebtsForAwayArrival({
+    required SmartStepRequest request,
+    required KeyCenter finalTargetCenter,
+  }) {
+    final phraseContext = _phraseContextForRequest(request);
+    final inferredHomeCenter = _returnHomeTargetCenterForRequest(request);
+    final opensReturnHomeDebt =
+        inferredHomeCenter != null &&
+        inferredHomeCenter != finalTargetCenter &&
+        _isBridgeReturnZone(phraseContext);
+    if (!opensReturnHomeDebt) {
+      return const [];
+    }
+    return [
+      ResolutionDebt(
+        debtType: ResolutionDebtType.returnHomeCadence,
+        targetLabel: inferredHomeCenter.displayName,
+        deadline: 4,
+        severity: 3,
+      ),
+    ];
+  }
+
+  static LocalScope? _nextLocalScope({
+    required LocalScope? previousScope,
+    required QueuedSmartChord queuedChord,
+  }) {
+    var scope = previousScope?.tick();
+    if (scope?.isExpired ?? false) {
+      scope = null;
+    }
+    if (queuedChord.closeScope) {
+      scope = null;
+    }
+    if (queuedChord.openScope != null) {
+      scope = queuedChord.openScope;
+    }
+    if (queuedChord.modulationKind == ModulationKind.real &&
+        queuedChord.postModulationConfirmationsRemaining > 0) {
+      scope = LocalScope(
+        center: queuedChord.keyCenter.copyWith(
+          confirmationsRemaining:
+              queuedChord.postModulationConfirmationsRemaining,
+        ),
+        headType: ScopeHeadType.tonicHead,
+        confidence: queuedChord.modulationConfidence <= 0
+            ? 0.72
+            : queuedChord.modulationConfidence,
+        expiresIn: queuedChord.postModulationConfirmationsRemaining,
+      );
+    }
+    return scope;
+  }
+
+  static List<ResolutionDebt> _nextOutstandingDebts({
+    required List<ResolutionDebt> previousDebts,
+    required QueuedSmartChord queuedChord,
+  }) {
+    final next = <ResolutionDebt>[];
+    for (final debt in previousDebts) {
+      if (queuedChord.satisfiedDebtTypes.contains(debt.debtType)) {
+        continue;
+      }
+      final decremented = debt.tick();
+      if (!decremented.isExpired) {
+        next.add(decremented);
+      }
+    }
+    next.addAll(queuedChord.openedDebts);
+    return next;
+  }
+
+  static LocalScope? _decayScope(LocalScope? scope) {
+    final next = scope?.tick();
+    if (next == null || next.isExpired) {
+      return null;
+    }
+    return next;
+  }
+
+  static List<ResolutionDebt> _decayDebts(List<ResolutionDebt> debts) {
+    return [
+      for (final debt in debts)
+        if (!debt.tick().isExpired) debt.tick(),
+    ];
+  }
+
+  static List<SmartDecisionTrace> _recentPlanningTraces({int take = 16}) {
+    final traces = SmartDiagnosticsStore.recent();
+    if (traces.length <= take) {
+      return traces;
+    }
+    return traces.sublist(traces.length - take);
+  }
+
+  static int _surpriseBudgetForPreset(JazzPreset preset) {
+    return switch (preset) {
+      JazzPreset.standardsCore => 3,
+      JazzPreset.modulationStudy => 4,
+      JazzPreset.advanced => 5,
+    };
+  }
+
+  static int _usedSurpriseBudget(List<SmartDecisionTrace> recentTraces) {
+    var used = 0;
+    for (final trace in recentTraces) {
+      if (trace.modulationKind == ModulationKind.real) {
+        used +=
+            trace.finalKeyRelation == KeyRelation.mediant ||
+                trace.finalKeyRelation == KeyRelation.distant
+            ? 2
+            : 1;
+      }
+      if (trace.activePatternTag == 'dominant_chain_bridge_style') {
+        used += 1;
+      }
+      if (trace.finalRenderQuality == ChordQuality.dominant7Alt ||
+          trace.finalRenderQuality == ChordQuality.dominant7Sharp11) {
+        used += 1;
+      }
+      if (trace.surfaceTags.any(
+        (tag) =>
+            tag == 'rareColor' ||
+            tag == 'commonToneDim' ||
+            tag == 'tritoneSub' ||
+            tag == 'backdoorFlavor',
+      )) {
+        used += 1;
+      }
+    }
+    return used;
+  }
+
+  static double _surpriseBudgetMultiplier({
+    required SmartStepRequest request,
+    bool rare = false,
+    bool modulation = false,
+  }) {
+    final recentTraces = _recentPlanningTraces(take: 8);
+    final remaining =
+        _surpriseBudgetForPreset(request.jazzPreset) -
+        _usedSurpriseBudget(recentTraces);
+    if (remaining <= 0) {
+      return 0;
+    }
+    if (rare && remaining == 1) {
+      return 0.25;
+    }
+    if (modulation && remaining == 1) {
+      return request.modulationIntensity == ModulationIntensity.high
+          ? 0.55
+          : 0.35;
+    }
+    return 1;
+  }
+
+  static double _antiRepeatPenalty({
+    required SmartProgressionFamily family,
+    required SmartPhraseContext phraseContext,
+  }) {
+    final familyTag = _familyTag(family);
+    final recent = _recentPlanningTraces(
+      take: 12,
+    ).where((trace) => trace.activePatternTag == familyTag).length;
+    if (recent == 0) {
+      return 1;
+    }
+    if (phraseContext.sectionRole == SectionRole.aLike && recent == 1) {
+      return 0.82;
+    }
+    return max(0.28, 1 - recent * 0.24);
+  }
+
+  static double _keyRelationPenalty(KeyRelation relation) {
+    final recent = _recentPlanningTraces(
+      take: 16,
+    ).where((trace) => trace.finalKeyRelation == relation).length;
+    if (recent == 0) {
+      return 1;
+    }
+    return max(0.45, 1 - recent * 0.18);
+  }
+
+  static int _nonDiatonicStreakLength(SmartStepRequest request) {
+    final recent = _recentPlanningTraces(take: 3).reversed.toList();
+    var streak = request.currentRenderedNonDiatonic ? 1 : 0;
+    for (final trace in recent) {
+      final isNonDiatonic =
+          trace.finalSourceKind != ChordSourceKind.diatonic ||
+          trace.modulationKind != ModulationKind.none ||
+          trace.finalRenderQuality == ChordQuality.dominant7Alt ||
+          trace.finalRenderQuality == ChordQuality.dominant7Sharp11;
+      if (!isNonDiatonic) {
+        break;
+      }
+      streak += 1;
+    }
+    return streak;
+  }
+
+  static double _phraseRoleMultiplier(
+    SmartProgressionFamily family,
+    SmartPhraseContext phraseContext,
+  ) {
+    return switch (phraseContext.phraseRole) {
+      PhraseRole.opener => switch (family) {
+        SmartProgressionFamily.turnaroundIViIiV => 1.3,
+        SmartProgressionFamily.turnaroundIIIviIiV => 1.18,
+        SmartProgressionFamily.coreIiVIMajor => 0.82,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid => 0.58,
+        SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI => 0.3,
+        SmartProgressionFamily.backdoorRecursivePrep => 0.28,
+        SmartProgressionFamily.classicalPredominantColor => 0.14,
+        SmartProgressionFamily.mixturePivotModulation => 0.12,
+        SmartProgressionFamily.chromaticMediantCommonToneModulation => 0.08,
+        SmartProgressionFamily.coltraneBurst => 0.04,
+        SmartProgressionFamily.bridgeReturnHomeCadence => 0.12,
+        SmartProgressionFamily.dominantHeadedScopeChain => 0.72,
+        SmartProgressionFamily.minorIiVAltI => 0.82,
+        SmartProgressionFamily.cadenceBasedRealModulation => 0.45,
+        SmartProgressionFamily.commonChordModulation => 0.52,
+        _ => 1,
+      },
+      PhraseRole.continuation => switch (family) {
+        SmartProgressionFamily.appliedDominantWithRelatedIi => 1.18,
+        SmartProgressionFamily.dominantHeadedScopeChain => 1.28,
+        SmartProgressionFamily.dominantChainBridgeStyle => 1.08,
+        SmartProgressionFamily.turnaroundISharpIdimIiV => 1.12,
+        SmartProgressionFamily.relativeMinorReframe => 1.16,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid => 0.84,
+        SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI => 1.18,
+        SmartProgressionFamily.backdoorRecursivePrep => 0.72,
+        SmartProgressionFamily.classicalPredominantColor => 0.44,
+        SmartProgressionFamily.mixturePivotModulation => 0.58,
+        SmartProgressionFamily.chromaticMediantCommonToneModulation => 0.72,
+        SmartProgressionFamily.coltraneBurst => 0.52,
+        SmartProgressionFamily.bridgeReturnHomeCadence => 0.18,
+        SmartProgressionFamily.cadenceBasedRealModulation => 0.78,
+        _ => 1,
+      },
+      PhraseRole.preCadence => switch (family) {
+        SmartProgressionFamily.coreIiVIMajor => 1.28,
+        SmartProgressionFamily.minorIiVAltI => 1.24,
+        SmartProgressionFamily.relativeMinorReframe => 1.12,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid => 1.24,
+        SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI => 1.12,
+        SmartProgressionFamily.backdoorRecursivePrep => 1.18,
+        SmartProgressionFamily.classicalPredominantColor => 1.24,
+        SmartProgressionFamily.mixturePivotModulation => 1.2,
+        SmartProgressionFamily.chromaticMediantCommonToneModulation => 1.18,
+        SmartProgressionFamily.coltraneBurst => 1.2,
+        SmartProgressionFamily.bridgeReturnHomeCadence => 1.22,
+        SmartProgressionFamily.dominantHeadedScopeChain => 1.08,
+        SmartProgressionFamily.backdoorIvmBviiI => 1.22,
+        SmartProgressionFamily.cadenceBasedRealModulation => 1.16,
+        SmartProgressionFamily.commonChordModulation => 1.1,
+        _ => 0.94,
+      },
+      PhraseRole.cadence => switch (family) {
+        SmartProgressionFamily.coreIiVIMajor => 1.42,
+        SmartProgressionFamily.minorIiVAltI => 1.38,
+        SmartProgressionFamily.relativeMinorReframe => 1.08,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid => 1.34,
+        SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI => 0.84,
+        SmartProgressionFamily.backdoorRecursivePrep => 1.34,
+        SmartProgressionFamily.classicalPredominantColor => 1.4,
+        SmartProgressionFamily.mixturePivotModulation => 1.28,
+        SmartProgressionFamily.chromaticMediantCommonToneModulation => 1.26,
+        SmartProgressionFamily.coltraneBurst => 1.24,
+        SmartProgressionFamily.bridgeReturnHomeCadence => 1.36,
+        SmartProgressionFamily.dominantHeadedScopeChain => 0.88,
+        SmartProgressionFamily.backdoorIvmBviiI => 1.3,
+        SmartProgressionFamily.cadenceBasedRealModulation => 1.34,
+        SmartProgressionFamily.commonChordModulation => 1.22,
+        SmartProgressionFamily.turnaroundIViIiV => 0.82,
+        _ => 0.92,
+      },
+      PhraseRole.release => switch (family) {
+        SmartProgressionFamily.turnaroundIViIiV => 1.1,
+        SmartProgressionFamily.minorLineCliche => 1.28,
+        SmartProgressionFamily.relativeMinorReframe => 1.1,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid => 1.26,
+        SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI => 0.56,
+        SmartProgressionFamily.backdoorRecursivePrep => 1.3,
+        SmartProgressionFamily.classicalPredominantColor => 0.94,
+        SmartProgressionFamily.mixturePivotModulation => 0.84,
+        SmartProgressionFamily.chromaticMediantCommonToneModulation => 0.74,
+        SmartProgressionFamily.coltraneBurst => 0.68,
+        SmartProgressionFamily.bridgeReturnHomeCadence => 1.12,
+        SmartProgressionFamily.dominantHeadedScopeChain => 0.7,
+        SmartProgressionFamily.backdoorIvmBviiI => 1.18,
+        SmartProgressionFamily.cadenceBasedRealModulation => 0.92,
+        _ => 0.95,
+      },
+    };
+  }
+
+  static double _sectionRoleMultiplier(
+    SmartProgressionFamily family,
+    SmartPhraseContext phraseContext,
+  ) {
+    return switch (phraseContext.sectionRole) {
+      SectionRole.aLike => switch (family) {
+        SmartProgressionFamily.coreIiVIMajor => 1.12,
+        SmartProgressionFamily.turnaroundIViIiV => 1.18,
+        SmartProgressionFamily.turnaroundIIIviIiV => 1.08,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid => 1.04,
+        SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI => 0.34,
+        SmartProgressionFamily.backdoorRecursivePrep => 0.82,
+        SmartProgressionFamily.classicalPredominantColor => 0.68,
+        SmartProgressionFamily.mixturePivotModulation => 0.72,
+        SmartProgressionFamily.chromaticMediantCommonToneModulation => 0.42,
+        SmartProgressionFamily.coltraneBurst => 0.18,
+        SmartProgressionFamily.bridgeReturnHomeCadence => 0.34,
+        SmartProgressionFamily.dominantHeadedScopeChain => 0.94,
+        SmartProgressionFamily.dominantChainBridgeStyle => 0.75,
+        SmartProgressionFamily.cadenceBasedRealModulation => 0.88,
+        _ => 1,
+      },
+      SectionRole.bridgeLike => switch (family) {
+        SmartProgressionFamily.dominantHeadedScopeChain => 1.34,
+        SmartProgressionFamily.dominantChainBridgeStyle => 1.42,
+        SmartProgressionFamily.cadenceBasedRealModulation => 1.34,
+        SmartProgressionFamily.commonChordModulation => 1.28,
+        SmartProgressionFamily.appliedDominantWithRelatedIi => 1.14,
+        SmartProgressionFamily.relativeMinorReframe => 1.16,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid => 0.86,
+        SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI => 1.56,
+        SmartProgressionFamily.backdoorRecursivePrep => 1.08,
+        SmartProgressionFamily.classicalPredominantColor => 1.06,
+        SmartProgressionFamily.mixturePivotModulation => 1.24,
+        SmartProgressionFamily.chromaticMediantCommonToneModulation => 1.28,
+        SmartProgressionFamily.coltraneBurst => 1.36,
+        SmartProgressionFamily.bridgeReturnHomeCadence => 1.48,
+        SmartProgressionFamily.turnaroundIViIiV => 0.75,
+        _ => 1,
+      },
+      SectionRole.turnaroundTail => switch (family) {
+        SmartProgressionFamily.turnaroundIViIiV => 1.38,
+        SmartProgressionFamily.turnaroundISharpIdimIiV => 1.25,
+        SmartProgressionFamily.backdoorIvmBviiI => 1.14,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid => 1.18,
+        SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI => 0.46,
+        SmartProgressionFamily.backdoorRecursivePrep => 1.16,
+        SmartProgressionFamily.classicalPredominantColor => 1.12,
+        SmartProgressionFamily.mixturePivotModulation => 1.04,
+        SmartProgressionFamily.chromaticMediantCommonToneModulation => 1.12,
+        SmartProgressionFamily.coltraneBurst => 1.08,
+        SmartProgressionFamily.bridgeReturnHomeCadence => 1.34,
+        SmartProgressionFamily.cadenceBasedRealModulation => 0.82,
+        _ => 1,
+      },
+      SectionRole.tag => switch (family) {
+        SmartProgressionFamily.backdoorIvmBviiI => 1.24,
+        SmartProgressionFamily.minorLineCliche => 1.18,
+        SmartProgressionFamily.coreIiVIMajor => 1.1,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid => 1.28,
+        SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI => 0.36,
+        SmartProgressionFamily.backdoorRecursivePrep => 1.24,
+        SmartProgressionFamily.classicalPredominantColor => 1.08,
+        SmartProgressionFamily.mixturePivotModulation => 0.78,
+        SmartProgressionFamily.chromaticMediantCommonToneModulation => 0.64,
+        SmartProgressionFamily.coltraneBurst => 0.48,
+        SmartProgressionFamily.bridgeReturnHomeCadence => 1.22,
+        SmartProgressionFamily.cadenceBasedRealModulation => 0.74,
+        _ => 0.96,
+      },
+    };
+  }
+
+  static double _sourceProfileMultiplier(
+    SmartProgressionFamily family,
+    SourceProfile sourceProfile,
+  ) {
+    if (sourceProfile == SourceProfile.fakebookStandard) {
+      return 1;
+    }
+    return switch (family) {
+      SmartProgressionFamily.closingPlagalAuthenticHybrid => 1.18,
+      SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI => 1.12,
+      SmartProgressionFamily.backdoorRecursivePrep => 1.18,
+      SmartProgressionFamily.classicalPredominantColor => 1.12,
+      SmartProgressionFamily.mixturePivotModulation => 1.08,
+      SmartProgressionFamily.chromaticMediantCommonToneModulation => 1.1,
+      SmartProgressionFamily.coltraneBurst => 1.14,
+      SmartProgressionFamily.bridgeReturnHomeCadence => 1.08,
+      SmartProgressionFamily.dominantHeadedScopeChain => 1.16,
+      SmartProgressionFamily.dominantChainBridgeStyle => 1.18,
+      SmartProgressionFamily.backdoorIvmBviiI => 1.2,
+      SmartProgressionFamily.minorLineCliche => 1.16,
+      SmartProgressionFamily.relativeMinorReframe => 1.12,
+      SmartProgressionFamily.turnaroundISharpIdimIiV => 1.14,
+      SmartProgressionFamily.passingDimToIi => 1.12,
+      SmartProgressionFamily.coreIiVIMajor => 0.92,
+      _ => 1,
+    };
+  }
+
+  static double _scopeAffinityMultiplier({
+    required SmartProgressionFamily family,
+    required SmartStepRequest request,
+  }) {
+    final scope = request.currentTrace?.activeLocalScope;
+    if (scope == null) {
+      return 1;
+    }
+    var multiplier = 1.0;
+    if (scope.center.relationToParent == KeyRelation.relative) {
+      if (family == SmartProgressionFamily.relativeMinorReframe) {
+        multiplier *= 1.4;
+      } else if (family == SmartProgressionFamily.dominantHeadedScopeChain) {
+        multiplier *= 1.16;
+      } else if (family == SmartProgressionFamily.cadenceBasedRealModulation ||
+          family == SmartProgressionFamily.commonChordModulation) {
+        multiplier *= 0.84;
+      }
+    }
+    if (scope.center.relationToParent == KeyRelation.parallel) {
+      if (family == SmartProgressionFamily.mixturePivotModulation) {
+        multiplier *= 1.42;
+      } else if (family == SmartProgressionFamily.bridgeReturnHomeCadence) {
+        multiplier *= 1.16;
+      } else if (family == SmartProgressionFamily.cadenceBasedRealModulation ||
+          family == SmartProgressionFamily.commonChordModulation) {
+        multiplier *= 0.88;
+      }
+    }
+    if (scope.center.relationToParent == KeyRelation.subdominant) {
+      if (family == SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI) {
+        multiplier *= 1.42;
+      } else if (family == SmartProgressionFamily.bridgeReturnHomeCadence) {
+        multiplier *= 1.12;
+      } else if (family == SmartProgressionFamily.cadenceBasedRealModulation ||
+          family == SmartProgressionFamily.commonChordModulation) {
+        multiplier *= 0.82;
+      }
+    }
+    if (scope.headType == ScopeHeadType.tonicHead &&
+        family == SmartProgressionFamily.relativeMinorReframe &&
+        scope.center.relationToParent == KeyRelation.relative) {
+      multiplier *= 1.12;
+    }
+    if (scope.headType == ScopeHeadType.tonicHead &&
+        family == SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI &&
+        scope.center.relationToParent == KeyRelation.subdominant) {
+      multiplier *= 1.18;
+    }
+    if (scope.headType == ScopeHeadType.dominantHead) {
+      if (family == SmartProgressionFamily.dominantHeadedScopeChain) {
+        multiplier *= 1.34;
+      } else if (family ==
+          SmartProgressionFamily.appliedDominantWithRelatedIi) {
+        multiplier *= 1.18;
+      } else if (family ==
+          SmartProgressionFamily.closingPlagalAuthenticHybrid) {
+        multiplier *= 1.08;
+      } else if (family == SmartProgressionFamily.coreIiVIMajor ||
+          family == SmartProgressionFamily.minorIiVAltI ||
+          family == SmartProgressionFamily.relativeMinorReframe) {
+        multiplier *= 1.08;
+      }
+    }
+    if (scope.headType == ScopeHeadType.pivotArea) {
+      if (family == SmartProgressionFamily.mixturePivotModulation &&
+          scope.center.relationToParent == KeyRelation.parallel) {
+        multiplier *= 1.28;
+      } else if (family == SmartProgressionFamily.bridgeReturnHomeCadence &&
+          (scope.center.relationToParent == KeyRelation.parallel ||
+              scope.center.relationToParent == KeyRelation.subdominant ||
+              scope.center.relationToParent == KeyRelation.dominant)) {
+        multiplier *= 1.18;
+      } else if (family ==
+              SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI &&
+          scope.center.relationToParent == KeyRelation.subdominant) {
+        multiplier *= 1.28;
+      } else if (family == SmartProgressionFamily.commonChordModulation) {
+        multiplier *= 1.26;
+      } else if (family == SmartProgressionFamily.cadenceBasedRealModulation) {
+        multiplier *= 1.12;
+      }
+    }
+    return multiplier;
+  }
+
+  static double _debtPressureMultiplier({
+    required SmartProgressionFamily family,
+    required SmartStepRequest request,
+  }) {
+    final debts = request.currentTrace?.outstandingDebts ?? const [];
+    if (debts.isEmpty) {
+      return 1;
+    }
+    final needsDominantPayoff = debts.any(
+      (debt) =>
+          debt.debtType == ResolutionDebtType.dominantResolve ||
+          debt.debtType == ResolutionDebtType.susResolve ||
+          debt.debtType == ResolutionDebtType.predominantToDominant,
+    );
+    final needsRarePayoff = debts.any(
+      (debt) => debt.debtType == ResolutionDebtType.rareColorPayoff,
+    );
+    final needsModulationConfirm = debts.any(
+      (debt) => debt.debtType == ResolutionDebtType.modulationConfirm,
+    );
+    final needsReturnHome = debts.any(
+      (debt) => debt.debtType == ResolutionDebtType.returnHomeCadence,
+    );
+
+    var multiplier = 1.0;
+    if (needsDominantPayoff) {
+      if (family == SmartProgressionFamily.coreIiVIMajor ||
+          family == SmartProgressionFamily.minorIiVAltI ||
+          family == SmartProgressionFamily.relativeMinorReframe ||
+          family == SmartProgressionFamily.dominantHeadedScopeChain ||
+          family == SmartProgressionFamily.closingPlagalAuthenticHybrid ||
+          family == SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI ||
+          family == SmartProgressionFamily.backdoorRecursivePrep ||
+          family == SmartProgressionFamily.backdoorIvmBviiI) {
+        multiplier *= 1.18;
+      } else if (family == SmartProgressionFamily.turnaroundISharpIdimIiV ||
+          family == SmartProgressionFamily.passingDimToIi) {
+        multiplier *= 0.78;
+      }
+    }
+    if (needsRarePayoff) {
+      if (family == SmartProgressionFamily.coreIiVIMajor ||
+          family == SmartProgressionFamily.minorIiVAltI ||
+          family == SmartProgressionFamily.relativeMinorReframe ||
+          family == SmartProgressionFamily.dominantHeadedScopeChain ||
+          family == SmartProgressionFamily.backdoorIvmBviiI) {
+        multiplier *= 1.22;
+      } else if (family == SmartProgressionFamily.turnaroundISharpIdimIiV ||
+          family == SmartProgressionFamily.passingDimToIi) {
+        multiplier *= 0.52;
+      }
+    }
+    if (needsModulationConfirm) {
+      if (family == SmartProgressionFamily.cadenceBasedRealModulation ||
+          family == SmartProgressionFamily.commonChordModulation ||
+          family == SmartProgressionFamily.mixturePivotModulation ||
+          family ==
+              SmartProgressionFamily.chromaticMediantCommonToneModulation ||
+          family == SmartProgressionFamily.coltraneBurst ||
+          family == SmartProgressionFamily.bridgeReturnHomeCadence ||
+          family == SmartProgressionFamily.dominantChainBridgeStyle) {
+        multiplier *= 0.72;
+      } else if (family == SmartProgressionFamily.coreIiVIMajor ||
+          family == SmartProgressionFamily.minorIiVAltI ||
+          family == SmartProgressionFamily.relativeMinorReframe ||
+          family == SmartProgressionFamily.dominantHeadedScopeChain) {
+        multiplier *= 1.12;
+      }
+    }
+    if (needsReturnHome) {
+      if (family == SmartProgressionFamily.bridgeReturnHomeCadence) {
+        multiplier *= 1.52;
+      } else if (family == SmartProgressionFamily.cadenceBasedRealModulation ||
+          family == SmartProgressionFamily.commonChordModulation ||
+          family == SmartProgressionFamily.mixturePivotModulation ||
+          family ==
+              SmartProgressionFamily.chromaticMediantCommonToneModulation ||
+          family == SmartProgressionFamily.coltraneBurst) {
+        multiplier *= 0.62;
+      } else if (family == SmartProgressionFamily.dominantChainBridgeStyle) {
+        multiplier *= 0.72;
+      }
+    }
+    return multiplier;
+  }
+
   static SmartStepPlan planInitialStep({
     required Random random,
     required SmartStartRequest request,
@@ -814,6 +1873,8 @@ class SmartGeneratorHelper {
       currentPatternTag: null,
       plannedQueue: const [],
       currentRenderedNonDiatonic: false,
+      currentTrace: null,
+      phraseContext: SmartPhraseContext.rollingForm(0),
     );
     final familyPlans = _buildFamilyPlans(
       random: random,
@@ -828,6 +1889,8 @@ class SmartGeneratorHelper {
         currentKeyCenter: startingCenter,
         currentRomanNumeralId: tonicRoman,
         currentHarmonicFunction: HarmonicFunction.tonic,
+        phraseContext: SmartPhraseContext.rollingForm(0),
+        previousTrace: null,
         queuedDecision: QueuedSmartChordDecision(
           queuedChord: _queuedChord(
             keyCenter: startingCenter,
@@ -853,6 +1916,8 @@ class SmartGeneratorHelper {
       currentKeyCenter: startingCenter,
       currentRomanNumeralId: tonicRoman,
       currentHarmonicFunction: HarmonicFunction.tonic,
+      phraseContext: SmartPhraseContext.rollingForm(0),
+      previousTrace: null,
       familyPlan: selectedFamily,
       blockedReason: null,
       decision: 'seeded-initial-family:${_familyTag(selectedFamily.family)}',
@@ -872,6 +1937,8 @@ class SmartGeneratorHelper {
         currentKeyCenter: request.currentKeyCenter,
         currentRomanNumeralId: request.currentRomanNumeralId,
         currentHarmonicFunction: request.currentHarmonicFunction,
+        phraseContext: _phraseContextForRequest(request),
+        previousTrace: request.currentTrace,
         queuedDecision: queuedDecision,
         destinationRomanNumeralId:
             queuedDecision.queuedChord.finalRomanNumeralId,
@@ -921,6 +1988,8 @@ class SmartGeneratorHelper {
         currentKeyCenter: request.currentKeyCenter,
         currentRomanNumeralId: request.currentRomanNumeralId,
         currentHarmonicFunction: request.currentHarmonicFunction,
+        phraseContext: _phraseContextForRequest(request),
+        previousTrace: request.currentTrace,
         familyPlan: selectedFamily,
         blockedReason: blockedReason,
         decision: 'seeded-family:${_familyTag(selectedFamily.family)}',
@@ -941,7 +2010,6 @@ class SmartGeneratorHelper {
   }) {
     final traces = <SmartDecisionTrace>[];
     final blockedReasonHistogram = <SmartBlockedReason, int>{};
-    final familyHistogram = <String, int>{};
 
     SmartDiagnosticsStore.clear();
     var modulationAttemptCount = 0;
@@ -990,23 +2058,17 @@ class SmartGeneratorHelper {
             currentPatternTag: currentChord.patternTag,
             plannedQueue: plannedQueue,
             currentRenderedNonDiatonic: currentChord.isRenderedNonDiatonic,
+            currentTrace: currentChord.smartDebug as SmartDecisionTrace?,
+            phraseContext: SmartPhraseContext.rollingForm(
+              ((currentChord.smartDebug as SmartDecisionTrace?)?.stepIndex ??
+                      0) +
+                  1,
+            ),
           ),
         );
       }
 
       plannedQueue = plan.remainingQueuedChords;
-      var simulatedChord = _buildSimulatedChord(
-        random: random,
-        keyCenter: plan.finalKeyCenter,
-        romanNumeralId: plan.finalRomanNumeralId,
-        plannedChordKind: plan.plannedChordKind,
-        patternTag: plan.patternTag,
-        appliedType: plan.appliedType,
-        resolutionTargetRomanId: plan.resolutionTargetRomanId,
-        dominantContext: plan.renderingPlan.dominantContext,
-        smartDebug: plan.debug,
-      );
-
       final exclusionContext = currentChord == null
           ? const ChordExclusionContext()
           : ChordExclusionContext(
@@ -1019,26 +2081,108 @@ class SmartGeneratorHelper {
               repeatGuardKeys: {currentChord.repeatGuardKey},
               harmonicComparisonKeys: {currentChord.harmonicComparisonKey},
             );
-      if (_isExcludedCandidate(simulatedChord, exclusionContext)) {
-        fallbackCount += 1;
-        simulatedChord = _buildSimulatedChord(
-          random: random,
-          keyCenter:
-              currentChord?.keyCenter ??
-              MusicTheory.keyCenterFor(request.activeKeys.first),
-          romanNumeralId: (currentChord?.keyCenter?.mode == KeyMode.minor
-              ? RomanNumeralId.iMin6
-              : RomanNumeralId.iMaj69),
-          plannedChordKind: PlannedChordKind.resolvedRoman,
-          smartDebug: plan.debug.withDecision(
-            'excluded-fallback',
-            nextBlockedReason: SmartBlockedReason.excludedFallback,
-            nextFallbackOccurred: true,
+      final primaryComparison = compareVoiceLeadingCandidates(
+        random: random,
+        previousChord: currentChord,
+        candidates: [
+          SmartRenderCandidate(
+            keyCenter: plan.finalKeyCenter,
+            romanNumeralId: plan.finalRomanNumeralId,
+            plannedChordKind: plan.plannedChordKind,
+            renderQualityOverride: plan.renderingPlan.renderQualityOverride,
+            patternTag: plan.patternTag,
+            appliedType: plan.appliedType,
+            resolutionTargetRomanId: plan.resolutionTargetRomanId,
+            dominantContext: plan.renderingPlan.dominantContext,
+            dominantIntent: plan.renderingPlan.dominantIntent,
+            smartDebug: plan.debug,
           ),
-        );
+        ],
+      );
+      GeneratedChord? simulatedChord;
+      for (final candidate in primaryComparison.rankedCandidates) {
+        if (!_isExcludedCandidate(candidate.chord, exclusionContext)) {
+          simulatedChord = candidate.chord;
+          break;
+        }
       }
 
-      final trace = simulatedChord.smartDebug as SmartDecisionTrace?;
+      if (simulatedChord == null) {
+        fallbackCount += 1;
+        final fallbackComparison = compareVoiceLeadingCandidates(
+          random: random,
+          previousChord: currentChord,
+          candidates: [
+            for (final roman in prioritizedFallbackRomans(
+              keyMode: plan.finalKeyCenter.mode,
+              finalRomanNumeralId: plan.finalRomanNumeralId,
+              harmonicFunction: _harmonicFunctionForRoman(
+                romanNumeralId: plan.finalRomanNumeralId,
+                plannedChordKind: plan.plannedChordKind,
+                appliedType: plan.appliedType,
+              ),
+              patternTag: plan.patternTag,
+            ))
+              SmartRenderCandidate(
+                keyCenter: plan.finalKeyCenter,
+                romanNumeralId: roman,
+                plannedChordKind: roman == plan.finalRomanNumeralId
+                    ? plan.plannedChordKind
+                    : PlannedChordKind.resolvedRoman,
+                renderQualityOverride: roman == plan.finalRomanNumeralId
+                    ? plan.renderingPlan.renderQualityOverride
+                    : null,
+                patternTag: plan.patternTag,
+                dominantContext: roman == plan.finalRomanNumeralId
+                    ? plan.renderingPlan.dominantContext
+                    : null,
+                dominantIntent: roman == plan.finalRomanNumeralId
+                    ? plan.renderingPlan.dominantIntent
+                    : null,
+                smartDebug: plan.debug.withDecision(
+                  'excluded-fallback-hierarchy',
+                  nextBlockedReason: SmartBlockedReason.excludedFallback,
+                  nextFallbackOccurred: true,
+                ),
+                wasExcludedFallback: true,
+              ),
+          ],
+        );
+        for (final candidate in fallbackComparison.rankedCandidates) {
+          if (!_isExcludedCandidate(candidate.chord, exclusionContext)) {
+            simulatedChord = candidate.chord;
+            break;
+          }
+        }
+        simulatedChord ??= compareVoiceLeadingCandidates(
+          random: random,
+          previousChord: currentChord,
+          candidates: [
+            SmartRenderCandidate(
+              keyCenter:
+                  currentChord?.keyCenter ??
+                  MusicTheory.keyCenterFor(
+                    request.activeKeys.isNotEmpty
+                        ? request.activeKeys.first
+                        : 'C',
+                  ),
+              romanNumeralId: currentChord?.keyCenter?.mode == KeyMode.minor
+                  ? RomanNumeralId.iMin6
+                  : RomanNumeralId.iMaj69,
+              plannedChordKind: PlannedChordKind.resolvedRoman,
+              smartDebug: plan.debug.withDecision(
+                'excluded-fallback',
+                nextBlockedReason: SmartBlockedReason.excludedFallback,
+                nextFallbackOccurred: true,
+              ),
+              wasExcludedFallback: true,
+            ),
+          ],
+        ).selected.chord;
+      }
+
+      final resolvedChord = simulatedChord;
+      final trace = resolvedChord.smartDebug as SmartDecisionTrace?;
       if (trace != null) {
         traces.add(trace);
         SmartDiagnosticsStore.record(trace);
@@ -1061,19 +2205,89 @@ class SmartGeneratorHelper {
         if (trace.selectedAppliedApproach != null) {
           appliedDominantInsertionCount += 1;
         }
-        if (trace.activePatternTag != null) {
-          familyHistogram.update(
-            trace.activePatternTag!,
-            (value) => value + 1,
-            ifAbsent: () => 1,
-          );
-        }
       }
 
-      currentChord = simulatedChord;
+      currentChord = resolvedChord;
     }
 
+    final familyHistogram = _familyStartHistogram(traces);
+    final familyLengthHistogram = _familyLengthHistogram(traces);
+    final cadenceHistogram = _cadenceHistogram(traces);
+    final tonicizationCount = _countModulationKind(
+      traces,
+      ModulationKind.tonicization,
+    );
+    final realModulationCount = _countModulationKind(
+      traces,
+      ModulationKind.real,
+    );
+    final modulationRelationHistogram = _modulationRelationHistogram(traces);
+    final phraseRoleModulationHistogram = _phraseRoleModulationHistogram(
+      traces,
+    );
+    final relatedIiAppliedCount = _relatedIiAppliedCount(traces);
+    final nakedAppliedCount = _nakedAppliedCount(traces);
+    final dominantIntentHistogram = _dominantIntentHistogram(traces);
+    final susReleaseCount = _susReleaseCount(traces);
+    final susResolutionOpportunities = _susResolutionOpportunities(traces);
+    final bridgeIvSectionHistogram = _familyStartSectionHistogram(
+      traces,
+      'bridge_iv_stabilized_by_local_ii_v_i',
+    );
+    final bridgeIvStabilizationSuccessCount =
+        _bridgeIvStabilizationSuccessCount(traces);
+    final bridgeIvFallbackCount = _familyFallbackCount(
+      traces,
+      'bridge_iv_stabilized_by_local_ii_v_i',
+    );
+    final bridgeReturnSectionHistogram = _familyStartSectionHistogram(
+      traces,
+      'bridge_return_home_cadence',
+    );
+    final chromaticMediantStartCount =
+        familyHistogram['chromatic_mediant_common_tone_modulation'] ?? 0;
+    final chromaticMediantDensity = chromaticMediantStartCount / max(1, steps);
+    final chromaticMediantPayoffCount = _chromaticMediantPayoffCount(traces);
+    final chromaticMediantFailedPayoffCount =
+        _chromaticMediantFailedPayoffCount(traces);
+    final returnHomeDebtOpenCount = _returnHomeDebtOpenCount(traces);
+    final returnHomeDebtPayoffCount = _returnHomeDebtPayoffCount(traces);
+    final returnHomeOpportunityCount = _returnHomeOpportunityCount(traces);
+    final returnHomeSelectionCount = _returnHomeSelectionCount(traces);
+    final minorCenterOccupancy = _minorCenterOccupancy(traces, steps);
+    final directAppliedToNewTonicViolations =
+        _directAppliedToNewTonicViolations(traces);
+    final rareColorUsage = _rareColorUsage(traces);
+    final rareColorPayoffCount = _rareColorPayoffCount(traces);
+    final qaChecks = _qaChecksForSummary(
+      jazzPreset: request.jazzPreset,
+      steps: steps,
+      familyHistogram: familyHistogram,
+      realModulationCount: realModulationCount,
+      minorCenterOccupancy: minorCenterOccupancy,
+      fallbackCount: fallbackCount,
+      rareColorUsage: rareColorUsage,
+      rareColorPayoffCount: rareColorPayoffCount,
+      susReleaseCount: susReleaseCount,
+      susResolutionOpportunities: susResolutionOpportunities,
+      chromaticMediantPotentialAvailable:
+          request.modalInterchangeEnabled &&
+          _hasChromaticMediantPotential(request.activeKeys),
+      chromaticMediantStartCount: chromaticMediantStartCount,
+      chromaticMediantDensity: chromaticMediantDensity,
+      chromaticMediantPayoffCount: chromaticMediantPayoffCount,
+      chromaticMediantFailedPayoffCount: chromaticMediantFailedPayoffCount,
+      directAppliedToNewTonicViolations: directAppliedToNewTonicViolations,
+      returnHomeDebtOpenCount: returnHomeDebtOpenCount,
+      returnHomeDebtPayoffCount: returnHomeDebtPayoffCount,
+      returnHomeOpportunityCount: returnHomeOpportunityCount,
+      returnHomeSelectionCount: returnHomeSelectionCount,
+    );
+
     return SmartSimulationSummary(
+      jazzPreset: request.jazzPreset,
+      sourceProfile: request.sourceProfile,
+      modulationIntensity: request.modulationIntensity,
       steps: steps,
       modulationAttemptCount: modulationAttemptCount,
       modulationSuccessCount: modulationSuccessCount,
@@ -1082,117 +2296,805 @@ class SmartGeneratorHelper {
       appliedDominantInsertionCount: appliedDominantInsertionCount,
       fallbackCount: fallbackCount,
       familyHistogram: familyHistogram,
+      familyLengthHistogram: familyLengthHistogram,
+      cadenceHistogram: cadenceHistogram,
+      tonicizationCount: tonicizationCount,
+      realModulationCount: realModulationCount,
+      modulationRelationHistogram: modulationRelationHistogram,
+      phraseRoleModulationHistogram: phraseRoleModulationHistogram,
+      relatedIiAppliedCount: relatedIiAppliedCount,
+      nakedAppliedCount: nakedAppliedCount,
+      dominantIntentHistogram: dominantIntentHistogram,
+      susReleaseCount: susReleaseCount,
+      susResolutionOpportunities: susResolutionOpportunities,
+      bridgeIvSectionHistogram: bridgeIvSectionHistogram,
+      bridgeIvStabilizationSuccessCount: bridgeIvStabilizationSuccessCount,
+      bridgeIvFallbackCount: bridgeIvFallbackCount,
+      bridgeReturnSectionHistogram: bridgeReturnSectionHistogram,
+      chromaticMediantStartCount: chromaticMediantStartCount,
+      chromaticMediantDensity: chromaticMediantDensity,
+      chromaticMediantPayoffCount: chromaticMediantPayoffCount,
+      chromaticMediantFailedPayoffCount: chromaticMediantFailedPayoffCount,
+      returnHomeDebtOpenCount: returnHomeDebtOpenCount,
+      returnHomeDebtPayoffCount: returnHomeDebtPayoffCount,
+      returnHomeOpportunityCount: returnHomeOpportunityCount,
+      returnHomeSelectionCount: returnHomeSelectionCount,
+      minorCenterOccupancy: minorCenterOccupancy,
+      directAppliedToNewTonicViolations: directAppliedToNewTonicViolations,
+      rareColorUsage: rareColorUsage,
+      rareColorPayoffCount: rareColorPayoffCount,
+      qaChecks: qaChecks,
       traces: traces,
     );
   }
 
-  static GeneratedChord _buildSimulatedChord({
-    required Random random,
-    required KeyCenter keyCenter,
-    required RomanNumeralId romanNumeralId,
-    required PlannedChordKind plannedChordKind,
-    String? patternTag,
-    AppliedType? appliedType,
-    RomanNumeralId? resolutionTargetRomanId,
-    DominantContext? dominantContext,
-    SmartDecisionTrace? smartDebug,
+  static SmartSimulationComparison compareSimulationSummaries({
+    required SmartSimulationSummary baseline,
+    required SmartSimulationSummary candidate,
   }) {
-    final spec = MusicTheory.specFor(romanNumeralId);
-    final root = MusicTheory.resolveChordRootForCenter(
-      keyCenter,
-      romanNumeralId,
-    );
-    final renderQuality = MusicTheory.resolveRenderQuality(
-      romanNumeralId: romanNumeralId,
-      plannedChordKind: plannedChordKind,
-      allowV7sus4: true,
-      randomRoll: random.nextInt(100),
-      dominantContext: dominantContext,
-    );
-    final renderingSelection = ChordRenderingHelper.buildRenderingSelection(
-      random: random,
-      root: root,
-      harmonicQuality: spec.quality,
-      renderQuality: renderQuality,
-      romanNumeralId: romanNumeralId,
-      plannedChordKind: plannedChordKind,
-      sourceKind: spec.sourceKind,
-      allowTensions: true,
-      selectedTensionOptions: ChordRenderingHelper.supportedTensionOptions
-          .toSet(),
-      suppressTensions: false,
-      inversionSettings: const InversionSettings(),
-      dominantContext: dominantContext,
-    );
-    final repeatGuardKey = ChordRenderingHelper.buildRepeatGuardKey(
-      keyName: keyCenter.tonicName,
-      romanNumeralId: romanNumeralId,
-      harmonicFunction: _harmonicFunctionForRoman(
-        romanNumeralId: romanNumeralId,
-        plannedChordKind: plannedChordKind,
-        appliedType: appliedType,
-      ),
-      plannedChordKind: plannedChordKind,
-      symbolData: renderingSelection.symbolData,
-      sourceKind: spec.sourceKind,
-      appliedType: appliedType,
-      resolutionTargetRomanId: resolutionTargetRomanId,
-      patternTag: patternTag,
-      dominantContext: dominantContext,
-    );
-    final harmonicComparisonKey =
-        ChordRenderingHelper.buildHarmonicComparisonKey(
-          keyName: keyCenter.tonicName,
-          romanNumeralId: romanNumeralId,
-          harmonicFunction: _harmonicFunctionForRoman(
-            romanNumeralId: romanNumeralId,
-            plannedChordKind: plannedChordKind,
-            appliedType: appliedType,
-          ),
-          plannedChordKind: plannedChordKind,
-          symbolData: renderingSelection.symbolData,
-          sourceKind: spec.sourceKind,
-          appliedType: appliedType,
-          resolutionTargetRomanId: resolutionTargetRomanId,
-          patternTag: patternTag,
-          dominantContext: dominantContext,
-        );
-    final chord = GeneratedChord(
-      symbolData: renderingSelection.symbolData,
-      repeatGuardKey: repeatGuardKey,
-      harmonicComparisonKey: harmonicComparisonKey,
-      keyName: keyCenter.tonicName,
-      keyCenter: keyCenter,
-      romanNumeralId: romanNumeralId,
-      resolutionRomanNumeralId: spec.resolutionTargetId,
-      harmonicFunction: _harmonicFunctionForRoman(
-        romanNumeralId: romanNumeralId,
-        plannedChordKind: plannedChordKind,
-        appliedType: appliedType,
-      ),
-      patternTag: patternTag,
-      plannedChordKind: plannedChordKind,
-      sourceKind: spec.sourceKind,
-      appliedType: appliedType,
-      resolutionTargetRomanId: resolutionTargetRomanId,
-      dominantContext: dominantContext,
-      smartDebug: smartDebug,
-      isRenderedNonDiatonic: renderingSelection.isRenderedNonDiatonic,
-    );
-    if (smartDebug == null) {
-      return chord;
-    }
-    return chord.copyWith(
-      smartDebug: smartDebug.withFinalSelection(
-        finalKeyCenter: keyCenter,
-        finalRomanNumeralId: romanNumeralId,
-        finalChord: ChordRenderingHelper.renderedSymbol(
-          chord,
-          ChordSymbolStyle.majText,
+    final baselineModulationDensity =
+        baseline.modulationSuccessCount / max(1, baseline.steps);
+    final candidateModulationDensity =
+        candidate.modulationSuccessCount / max(1, candidate.steps);
+    final baselineCoreRatio = _coreFamilyRatio(baseline.familyHistogram);
+    final candidateCoreRatio = _coreFamilyRatio(candidate.familyHistogram);
+    final modulationStatus =
+        candidateModulationDensity > baselineModulationDensity + 0.004
+        ? SmartQaStatus.pass
+        : candidateModulationDensity > baselineModulationDensity
+        ? SmartQaStatus.warn
+        : SmartQaStatus.fail;
+    final coreRetentionStatus = candidateCoreRatio >= 0.3
+        ? SmartQaStatus.pass
+        : candidateCoreRatio >= 0.2
+        ? SmartQaStatus.warn
+        : SmartQaStatus.fail;
+    final minorLiftStatus =
+        candidate.minorCenterOccupancy >= baseline.minorCenterOccupancy + 0.03
+        ? SmartQaStatus.pass
+        : candidate.minorCenterOccupancy >= baseline.minorCenterOccupancy
+        ? SmartQaStatus.warn
+        : SmartQaStatus.fail;
+    return SmartSimulationComparison(
+      baselinePreset: baseline.jazzPreset,
+      candidatePreset: candidate.jazzPreset,
+      qaChecks: [
+        SmartQaCheck(
+          id: 'modulation_density_lift',
+          status: modulationStatus,
+          detail:
+              '${baseline.jazzPreset.name}=${baselineModulationDensity.toStringAsFixed(3)}, '
+              '${candidate.jazzPreset.name}=${candidateModulationDensity.toStringAsFixed(3)}',
         ),
-        fallbackOccurred: smartDebug.fallbackOccurred,
+        SmartQaCheck(
+          id: 'core_family_retention',
+          status: coreRetentionStatus,
+          detail:
+              '${baseline.jazzPreset.name}=${baselineCoreRatio.toStringAsFixed(3)}, '
+              '${candidate.jazzPreset.name}=${candidateCoreRatio.toStringAsFixed(3)}',
+        ),
+        SmartQaCheck(
+          id: 'minor_center_lift',
+          status: minorLiftStatus,
+          detail:
+              '${baseline.jazzPreset.name}=${baseline.minorCenterOccupancy.toStringAsFixed(3)}, '
+              '${candidate.jazzPreset.name}=${candidate.minorCenterOccupancy.toStringAsFixed(3)}',
+        ),
+      ],
+    );
+  }
+
+  static List<SmartQaCheck> _qaChecksForSummary({
+    required JazzPreset jazzPreset,
+    required int steps,
+    required Map<String, int> familyHistogram,
+    required int realModulationCount,
+    required double minorCenterOccupancy,
+    required int fallbackCount,
+    required Map<String, int> rareColorUsage,
+    required int rareColorPayoffCount,
+    required int susReleaseCount,
+    required int susResolutionOpportunities,
+    required bool chromaticMediantPotentialAvailable,
+    required int chromaticMediantStartCount,
+    required double chromaticMediantDensity,
+    required int chromaticMediantPayoffCount,
+    required int chromaticMediantFailedPayoffCount,
+    required int directAppliedToNewTonicViolations,
+    required int returnHomeDebtOpenCount,
+    required int returnHomeDebtPayoffCount,
+    required int returnHomeOpportunityCount,
+    required int returnHomeSelectionCount,
+  }) {
+    final coreFamilyRatio = _coreFamilyRatio(familyHistogram);
+    final coreStatus = switch (jazzPreset) {
+      JazzPreset.standardsCore =>
+        coreFamilyRatio >= 0.45
+            ? SmartQaStatus.pass
+            : coreFamilyRatio >= 0.32
+            ? SmartQaStatus.warn
+            : SmartQaStatus.fail,
+      JazzPreset.modulationStudy =>
+        coreFamilyRatio >= 0.28
+            ? SmartQaStatus.pass
+            : coreFamilyRatio >= 0.18
+            ? SmartQaStatus.warn
+            : SmartQaStatus.fail,
+      JazzPreset.advanced =>
+        coreFamilyRatio >= 0.3
+            ? SmartQaStatus.pass
+            : coreFamilyRatio >= 0.2
+            ? SmartQaStatus.warn
+            : SmartQaStatus.fail,
+    };
+    final modulationDensity = realModulationCount / max(1, steps);
+    final modulationStatus = switch (jazzPreset) {
+      JazzPreset.standardsCore =>
+        modulationDensity <= 0.03
+            ? SmartQaStatus.pass
+            : modulationDensity <= 0.05
+            ? SmartQaStatus.warn
+            : SmartQaStatus.fail,
+      JazzPreset.modulationStudy =>
+        modulationDensity >= 0.015
+            ? SmartQaStatus.pass
+            : modulationDensity >= 0.008
+            ? SmartQaStatus.warn
+            : SmartQaStatus.fail,
+      JazzPreset.advanced =>
+        modulationDensity >= 0.01
+            ? SmartQaStatus.pass
+            : modulationDensity >= 0.005
+            ? SmartQaStatus.warn
+            : SmartQaStatus.fail,
+    };
+    final minorStatus = switch (jazzPreset) {
+      JazzPreset.standardsCore =>
+        minorCenterOccupancy >= 0.08
+            ? SmartQaStatus.pass
+            : minorCenterOccupancy >= 0.04
+            ? SmartQaStatus.warn
+            : SmartQaStatus.fail,
+      JazzPreset.modulationStudy =>
+        minorCenterOccupancy >= 0.18
+            ? SmartQaStatus.pass
+            : minorCenterOccupancy >= 0.1
+            ? SmartQaStatus.warn
+            : SmartQaStatus.fail,
+      JazzPreset.advanced =>
+        minorCenterOccupancy >= 0.1
+            ? SmartQaStatus.pass
+            : minorCenterOccupancy >= 0.05
+            ? SmartQaStatus.warn
+            : SmartQaStatus.fail,
+    };
+    final fallbackRatio = fallbackCount / max(1, steps);
+    final fallbackStatus = fallbackRatio <= 0.12
+        ? SmartQaStatus.pass
+        : fallbackRatio <= 0.2
+        ? SmartQaStatus.warn
+        : SmartQaStatus.fail;
+    final rareColorEvents = rareColorUsage.values.fold<int>(
+      0,
+      (sum, count) => sum + count,
+    );
+    final rarePayoffRatio = rareColorEvents == 0
+        ? 1.0
+        : rareColorPayoffCount / rareColorEvents;
+    final rareStatus = rarePayoffRatio >= 0.65
+        ? SmartQaStatus.pass
+        : rarePayoffRatio >= 0.45
+        ? SmartQaStatus.warn
+        : SmartQaStatus.fail;
+    final susRatio = susResolutionOpportunities == 0
+        ? 1.0
+        : susReleaseCount / susResolutionOpportunities;
+    final susStatus = susRatio >= 0.4
+        ? SmartQaStatus.pass
+        : susRatio >= 0.2
+        ? SmartQaStatus.warn
+        : SmartQaStatus.fail;
+    final chromaticMediantPayoffRatio = chromaticMediantStartCount == 0
+        ? 1.0
+        : chromaticMediantPayoffCount / chromaticMediantStartCount;
+    final chromaticMediantStatus =
+        !chromaticMediantPotentialAvailable || jazzPreset != JazzPreset.advanced
+        ? SmartQaStatus.pass
+        : chromaticMediantFailedPayoffCount > 0
+        ? SmartQaStatus.fail
+        : chromaticMediantStartCount >= 2 &&
+              chromaticMediantPayoffRatio >= 0.75 &&
+              chromaticMediantDensity >= 0.001
+        ? SmartQaStatus.pass
+        : chromaticMediantStartCount > 0 && chromaticMediantPayoffRatio >= 0.5
+        ? SmartQaStatus.warn
+        : SmartQaStatus.fail;
+    final returnHomePayoffRatio = returnHomeDebtOpenCount == 0
+        ? 1.0
+        : returnHomeDebtPayoffCount / returnHomeDebtOpenCount;
+    final returnHomeStartRatio = returnHomeOpportunityCount == 0
+        ? 1.0
+        : returnHomeSelectionCount / returnHomeOpportunityCount;
+    final returnHomeStatus = returnHomeOpportunityCount == 0
+        ? SmartQaStatus.pass
+        : returnHomeStartRatio >= 0.55 || returnHomePayoffRatio >= 0.5
+        ? SmartQaStatus.pass
+        : returnHomeStartRatio >= 0.3 || returnHomePayoffRatio >= 0.25
+        ? SmartQaStatus.warn
+        : SmartQaStatus.fail;
+    return [
+      SmartQaCheck(
+        id: 'core_family_balance',
+        status: coreStatus,
+        detail: 'coreRatio=${coreFamilyRatio.toStringAsFixed(3)}',
+      ),
+      SmartQaCheck(
+        id: 'modulation_density',
+        status: modulationStatus,
+        detail: 'realModPerStep=${modulationDensity.toStringAsFixed(3)}',
+      ),
+      SmartQaCheck(
+        id: 'minor_center_support',
+        status: minorStatus,
+        detail: 'minorOccupancy=${minorCenterOccupancy.toStringAsFixed(3)}',
+      ),
+      SmartQaCheck(
+        id: 'fallback_pressure',
+        status: fallbackStatus,
+        detail: 'fallbackPerStep=${fallbackRatio.toStringAsFixed(3)}',
+      ),
+      SmartQaCheck(
+        id: 'rare_color_payoff',
+        status: rareStatus,
+        detail: rareColorEvents == 0
+            ? 'no rare colors observed'
+            : 'payoffRatio=${rarePayoffRatio.toStringAsFixed(3)}',
+      ),
+      SmartQaCheck(
+        id: 'sus_release_followthrough',
+        status: susStatus,
+        detail: susResolutionOpportunities == 0
+            ? 'no sus opportunities observed'
+            : 'releaseRatio=${susRatio.toStringAsFixed(3)}',
+      ),
+      SmartQaCheck(
+        id: 'chromatic_mediant_followthrough',
+        status: chromaticMediantStatus,
+        detail:
+            !chromaticMediantPotentialAvailable ||
+                jazzPreset != JazzPreset.advanced
+            ? 'family unavailable for current preset/key set'
+            : 'density=${chromaticMediantDensity.toStringAsFixed(3)}, '
+                  'payoff=$chromaticMediantPayoffCount/$chromaticMediantStartCount, '
+                  'failed=$chromaticMediantFailedPayoffCount',
+      ),
+      SmartQaCheck(
+        id: 'bridge_return_followthrough',
+        status: returnHomeStatus,
+        detail: returnHomeOpportunityCount == 0
+            ? 'no return-home debts observed'
+            : 'startRatio=${returnHomeStartRatio.toStringAsFixed(3)}, '
+                  'payoffRatio=${returnHomePayoffRatio.toStringAsFixed(3)}',
+      ),
+      SmartQaCheck(
+        id: 'direct_applied_jump_guard',
+        status: directAppliedToNewTonicViolations == 0
+            ? SmartQaStatus.pass
+            : SmartQaStatus.fail,
+        detail: 'violations=$directAppliedToNewTonicViolations',
+      ),
+    ];
+  }
+
+  static double _coreFamilyRatio(Map<String, int> familyHistogram) {
+    final totalStarts = familyHistogram.values.fold<int>(
+      0,
+      (sum, count) => sum + count,
+    );
+    if (totalStarts == 0) {
+      return 0;
+    }
+    final coreStarts =
+        (familyHistogram['core_ii_v_i_major'] ?? 0) +
+        (familyHistogram['turnaround_i_vi_ii_v'] ?? 0) +
+        (familyHistogram['minor_ii_halfdim_v_alt_i'] ?? 0);
+    return coreStarts / totalStarts;
+  }
+
+  static Map<String, int> _familyStartHistogram(
+    List<SmartDecisionTrace> traces,
+  ) {
+    final histogram = <String, int>{};
+    for (final trace in traces) {
+      final isFamilyStart =
+          trace.decision?.startsWith('seeded-family:') == true ||
+          trace.decision?.startsWith('seeded-initial-family:') == true ||
+          trace.decision == 'resolved-applied-via-real-modulation';
+      if (!isFamilyStart || trace.activePatternTag == null) {
+        continue;
+      }
+      histogram.update(
+        trace.activePatternTag!,
+        (value) => value + 1,
+        ifAbsent: () => 1,
+      );
+    }
+    return histogram;
+  }
+
+  static Map<int, int> _familyLengthHistogram(List<SmartDecisionTrace> traces) {
+    final histogram = <int, int>{};
+    for (final trace in traces) {
+      final isFamilyStart =
+          trace.decision?.startsWith('seeded-family:') == true ||
+          trace.decision?.startsWith('seeded-initial-family:') == true ||
+          trace.decision == 'resolved-applied-via-real-modulation';
+      if (!isFamilyStart) {
+        continue;
+      }
+      final length = trace.queuedPatternLength + 1;
+      histogram.update(length, (value) => value + 1, ifAbsent: () => 1);
+    }
+    return histogram;
+  }
+
+  static Map<String, int> _familyStartSectionHistogram(
+    List<SmartDecisionTrace> traces,
+    String familyTag,
+  ) {
+    final histogram = <String, int>{};
+    for (final trace in traces) {
+      final isFamilyStart =
+          trace.decision?.startsWith('seeded-family:') == true ||
+          trace.decision?.startsWith('seeded-initial-family:') == true ||
+          trace.decision == 'resolved-applied-via-real-modulation';
+      if (!isFamilyStart || trace.activePatternTag != familyTag) {
+        continue;
+      }
+      histogram.update(
+        trace.phraseContext.sectionRole.name,
+        (value) => value + 1,
+        ifAbsent: () => 1,
+      );
+    }
+    return histogram;
+  }
+
+  static Map<String, int> _cadenceHistogram(List<SmartDecisionTrace> traces) {
+    final histogram = <String, int>{};
+    for (final trace in traces) {
+      if (!trace.cadentialArrival) {
+        continue;
+      }
+      final cadenceType = switch (trace.activePatternTag) {
+        'backdoor_ivm_bVII_I' =>
+          trace.selectedVariant == 'hybrid_authentic'
+              ? 'hybrid_backdoor_authentic'
+              : 'backdoor',
+        'backdoor_recursive_prep' => 'recursive_backdoor',
+        'classical_predominant_color' =>
+          trace.selectedVariant == 'aug6_inspired_predominant'
+              ? 'aug6_predominant_authentic'
+              : 'neapolitan_predominant_authentic',
+        'mixture_pivot_modulation' => 'mixture_pivot_authentic',
+        'chromatic_mediant_common_tone_modulation' =>
+          'chromatic_mediant_authentic',
+        'coltrane_burst' => 'coltrane_burst_authentic',
+        'bridge_return_home_cadence' => 'bridge_return_home',
+        'closing_plagal_authentic_hybrid' =>
+          trace.finalKeyMode == KeyMode.minor
+              ? 'minor_plagal_authentic_hybrid'
+              : trace.selectedVariant?.startsWith('borrowed_') ?? false
+              ? 'borrowed_plagal_authentic_hybrid'
+              : 'plagal_authentic_hybrid',
+        'bridge_iv_stabilized_by_local_ii_v_i' => 'bridge_local_iv_cadence',
+        'dominant_headed_scope_chain' => 'dominant_headed_scope_release',
+        'relative_minor_reframe' =>
+          trace.selectedVariant == 'major_to_relative_minor'
+              ? 'relative_minor_reframe'
+              : 'relative_major_reframe',
+        'cadence_based_real_modulation' => 'modulation_authentic',
+        'common_chord_modulation' => 'pivot_modulation_authentic',
+        _ =>
+          trace.finalKeyMode == KeyMode.minor
+              ? 'minor_authentic'
+              : 'major_authentic',
+      };
+      histogram.update(cadenceType, (value) => value + 1, ifAbsent: () => 1);
+    }
+    return histogram;
+  }
+
+  static int _familyFallbackCount(
+    List<SmartDecisionTrace> traces,
+    String familyTag,
+  ) {
+    return traces
+        .where(
+          (trace) =>
+              trace.activePatternTag == familyTag && trace.fallbackOccurred,
+        )
+        .length;
+  }
+
+  static int _countModulationKind(
+    List<SmartDecisionTrace> traces,
+    ModulationKind modulationKind,
+  ) {
+    return traces
+        .where((trace) => trace.modulationKind == modulationKind)
+        .length;
+  }
+
+  static Map<String, int> _modulationRelationHistogram(
+    List<SmartDecisionTrace> traces,
+  ) {
+    final histogram = <String, int>{};
+    for (final trace in traces) {
+      if (trace.modulationKind != ModulationKind.real ||
+          trace.finalKeyRelation == null) {
+        continue;
+      }
+      histogram.update(
+        trace.finalKeyRelation!.name,
+        (value) => value + 1,
+        ifAbsent: () => 1,
+      );
+    }
+    return histogram;
+  }
+
+  static Map<String, int> _phraseRoleModulationHistogram(
+    List<SmartDecisionTrace> traces,
+  ) {
+    final histogram = <String, int>{};
+    for (final trace in traces) {
+      if (trace.modulationKind != ModulationKind.real) {
+        continue;
+      }
+      histogram.update(
+        trace.phraseContext.phraseRole.name,
+        (value) => value + 1,
+        ifAbsent: () => 1,
+      );
+    }
+    return histogram;
+  }
+
+  static int _relatedIiAppliedCount(List<SmartDecisionTrace> traces) {
+    return traces
+        .where(
+          (trace) =>
+              trace.activePatternTag == 'applied_dominant_with_related_ii' &&
+              trace.selectedAppliedApproach != null,
+        )
+        .length;
+  }
+
+  static int _nakedAppliedCount(List<SmartDecisionTrace> traces) {
+    return traces
+        .where(
+          (trace) =>
+              trace.selectedAppliedApproach != null &&
+              trace.activePatternTag != 'applied_dominant_with_related_ii',
+        )
+        .length;
+  }
+
+  static Map<String, int> _dominantIntentHistogram(
+    List<SmartDecisionTrace> traces,
+  ) {
+    final histogram = <String, int>{};
+    for (final trace in traces) {
+      if (trace.dominantIntent == null) {
+        continue;
+      }
+      histogram.update(
+        trace.dominantIntent!.name,
+        (value) => value + 1,
+        ifAbsent: () => 1,
+      );
+    }
+    return histogram;
+  }
+
+  static int _susResolutionOpportunities(List<SmartDecisionTrace> traces) {
+    return traces
+        .where((trace) => trace.dominantIntent == DominantIntent.susDelay)
+        .length;
+  }
+
+  static int _susReleaseCount(List<SmartDecisionTrace> traces) {
+    var count = 0;
+    for (var index = 0; index < traces.length - 1; index += 1) {
+      final current = traces[index];
+      final next = traces[index + 1];
+      if (current.dominantIntent != DominantIntent.susDelay) {
+        continue;
+      }
+      if (current.finalRoot == null ||
+          current.finalRoot != next.finalRoot ||
+          next.finalRenderQuality == null) {
+        continue;
+      }
+      if (next.finalRenderQuality != ChordQuality.dominant13sus4 &&
+          next.finalRenderQuality != ChordQuality.dominant7sus4) {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  static int _bridgeIvStabilizationSuccessCount(
+    List<SmartDecisionTrace> traces,
+  ) {
+    return traces
+        .where(
+          (trace) =>
+              trace.activePatternTag ==
+                  'bridge_iv_stabilized_by_local_ii_v_i' &&
+              trace.cadentialArrival &&
+              trace.modulationKind == ModulationKind.tonicization &&
+              trace.activeLocalScope?.center.relationToParent ==
+                  KeyRelation.subdominant &&
+              trace.activeLocalScope?.headType == ScopeHeadType.tonicHead &&
+              trace.surfaceTags.contains('localIVStabilized'),
+        )
+        .length;
+  }
+
+  static double _minorCenterOccupancy(
+    List<SmartDecisionTrace> traces,
+    int steps,
+  ) {
+    if (steps == 0) {
+      return 0;
+    }
+    final minorSteps = traces
+        .where((trace) => trace.finalKeyMode == KeyMode.minor)
+        .length;
+    return minorSteps / steps;
+  }
+
+  static bool _isTonicRoman(RomanNumeralId? romanNumeralId) {
+    return romanNumeralId == RomanNumeralId.iMaj69 ||
+        romanNumeralId == RomanNumeralId.iMaj7 ||
+        romanNumeralId == RomanNumeralId.iMin6 ||
+        romanNumeralId == RomanNumeralId.iMin7 ||
+        romanNumeralId == RomanNumeralId.iMinMaj7;
+  }
+
+  static int _directAppliedToNewTonicViolations(
+    List<SmartDecisionTrace> traces,
+  ) {
+    var count = 0;
+    for (var index = 1; index < traces.length; index += 1) {
+      final previous = traces[index - 1];
+      final current = traces[index];
+      if (previous.selectedAppliedApproach == null ||
+          current.modulationKind != ModulationKind.real ||
+          !_isTonicRoman(current.finalRomanNumeralId) ||
+          current.activePatternTag == 'cadence_based_real_modulation' ||
+          current.activePatternTag == 'common_chord_modulation') {
+        continue;
+      }
+      count += 1;
+    }
+    return count;
+  }
+
+  static Map<String, int> _rareColorUsage(List<SmartDecisionTrace> traces) {
+    const rareTags = {
+      'rareColor',
+      'commonToneDim',
+      'neapolitanPredominant',
+      'aug6Predominant',
+      'chromaticMediant',
+    };
+    final histogram = <String, int>{};
+    for (final trace in traces) {
+      for (final tag in trace.surfaceTags) {
+        if (!rareTags.contains(tag)) {
+          continue;
+        }
+        histogram.update(tag, (value) => value + 1, ifAbsent: () => 1);
+      }
+    }
+    return histogram;
+  }
+
+  static bool _hasChromaticMediantPotential(List<String> activeKeys) {
+    final semitones = <int>{};
+    for (final key in activeKeys) {
+      final semitone = MusicTheory.keyTonicSemitone(key);
+      if (semitone != null) {
+        semitones.add(semitone);
+      }
+    }
+    final values = semitones.toList();
+    for (var index = 0; index < values.length; index += 1) {
+      for (var other = index + 1; other < values.length; other += 1) {
+        final distance = (values[other] - values[index]).abs() % 12;
+        final interval = distance > 6 ? 12 - distance : distance;
+        if (interval == 3 || interval == 4) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  static int _rareColorPayoffCount(List<SmartDecisionTrace> traces) {
+    var count = 0;
+    for (var index = 1; index < traces.length; index += 1) {
+      final previous = traces[index - 1];
+      final current = traces[index];
+      final hadRareDebt = previous.outstandingDebts.any(
+        (debt) => debt.debtType == ResolutionDebtType.rareColorPayoff,
+      );
+      final hasRareDebt = current.outstandingDebts.any(
+        (debt) => debt.debtType == ResolutionDebtType.rareColorPayoff,
+      );
+      if (hadRareDebt && !hasRareDebt) {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  static int _chromaticMediantPayoffCount(List<SmartDecisionTrace> traces) {
+    const familyTag = 'chromatic_mediant_common_tone_modulation';
+    var count = 0;
+    for (var index = 1; index < traces.length; index += 1) {
+      final previous = traces[index - 1];
+      final current = traces[index];
+      final hadRareDebt = previous.outstandingDebts.any(
+        (debt) => debt.debtType == ResolutionDebtType.rareColorPayoff,
+      );
+      final hasRareDebt = current.outstandingDebts.any(
+        (debt) => debt.debtType == ResolutionDebtType.rareColorPayoff,
+      );
+      if (previous.activePatternTag == familyTag &&
+          current.activePatternTag == familyTag &&
+          hadRareDebt &&
+          !hasRareDebt) {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  static int _chromaticMediantFailedPayoffCount(
+    List<SmartDecisionTrace> traces,
+  ) {
+    const familyTag = 'chromatic_mediant_common_tone_modulation';
+    var count = 0;
+    for (var index = 0; index < traces.length; index += 1) {
+      final trace = traces[index];
+      final isFamilyStart =
+          trace.decision?.startsWith('seeded-family:') == true ||
+          trace.decision?.startsWith('seeded-initial-family:') == true;
+      final opensRareDebt = trace.outstandingDebts.any(
+        (debt) => debt.debtType == ResolutionDebtType.rareColorPayoff,
+      );
+      if (!isFamilyStart ||
+          trace.activePatternTag != familyTag ||
+          !opensRareDebt) {
+        continue;
+      }
+      var resolvedInsideFamily = false;
+      var exitedFamily = false;
+      for (
+        var lookahead = index + 1;
+        lookahead < traces.length;
+        lookahead += 1
+      ) {
+        final candidate = traces[lookahead];
+        final hasRareDebt = candidate.outstandingDebts.any(
+          (debt) => debt.debtType == ResolutionDebtType.rareColorPayoff,
+        );
+        if (candidate.activePatternTag != familyTag) {
+          exitedFamily = true;
+          break;
+        }
+        if (!hasRareDebt) {
+          resolvedInsideFamily = true;
+          break;
+        }
+      }
+      if (!resolvedInsideFamily && exitedFamily) {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  static int _returnHomeDebtOpenCount(List<SmartDecisionTrace> traces) {
+    var count = 0;
+    for (var index = 0; index < traces.length; index += 1) {
+      final current = traces[index];
+      final previous = index == 0 ? null : traces[index - 1];
+      final hadReturnHomeDebt =
+          previous?.outstandingDebts.any(
+            (debt) => debt.debtType == ResolutionDebtType.returnHomeCadence,
+          ) ??
+          false;
+      final hasReturnHomeDebt = current.outstandingDebts.any(
+        (debt) => debt.debtType == ResolutionDebtType.returnHomeCadence,
+      );
+      if (!hadReturnHomeDebt && hasReturnHomeDebt) {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  static int _returnHomeOpportunityCount(List<SmartDecisionTrace> traces) {
+    var count = 0;
+    for (var index = 1; index < traces.length; index += 1) {
+      final previous = traces[index - 1];
+      final current = traces[index];
+      if (_isReturnHomeOpportunity(previous: previous, current: current)) {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  static int _returnHomeSelectionCount(List<SmartDecisionTrace> traces) {
+    var count = 0;
+    for (var index = 1; index < traces.length; index += 1) {
+      final previous = traces[index - 1];
+      final current = traces[index];
+      if (_isReturnHomeOpportunity(previous: previous, current: current) &&
+          current.activePatternTag == 'bridge_return_home_cadence') {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  static int _returnHomeDebtPayoffCount(List<SmartDecisionTrace> traces) {
+    var count = 0;
+    for (var index = 1; index < traces.length; index += 1) {
+      final previous = traces[index - 1];
+      final current = traces[index];
+      final hadReturnHomeDebt = previous.outstandingDebts.any(
+        (debt) => debt.debtType == ResolutionDebtType.returnHomeCadence,
+      );
+      final hasReturnHomeDebt = current.outstandingDebts.any(
+        (debt) => debt.debtType == ResolutionDebtType.returnHomeCadence,
+      );
+      if (hadReturnHomeDebt &&
+          !hasReturnHomeDebt &&
+          current.activePatternTag == 'bridge_return_home_cadence') {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  static bool _isReturnHomeOpportunity({
+    required SmartDecisionTrace previous,
+    required SmartDecisionTrace current,
+  }) {
+    final debt = previous.outstandingDebts.firstWhere(
+      (candidate) => candidate.debtType == ResolutionDebtType.returnHomeCadence,
+      orElse: () => const ResolutionDebt(
+        debtType: ResolutionDebtType.returnHomeCadence,
+        targetLabel: '',
+        deadline: 0,
+        severity: 0,
       ),
     );
+    final familyStart =
+        current.decision?.startsWith('seeded-family:') == true ||
+        current.decision?.startsWith('seeded-initial-family:') == true ||
+        current.decision == 'resolved-applied-via-real-modulation';
+    return familyStart &&
+        debt.targetLabel.isNotEmpty &&
+        debt.targetLabel != current.currentKeyCenter &&
+        _isBridgeReturnWindow(current.phraseContext);
   }
 
   static bool _isExcludedCandidate(
@@ -1216,6 +3118,7 @@ class SmartGeneratorHelper {
     required SmartStepRequest request,
     required _ModulationOpportunity opportunity,
   }) {
+    final phraseContext = _phraseContextForRequest(request);
     final targetRoman =
         request.currentResolutionRomanNumeralId ?? RomanNumeralId.iiMin7;
     final targetMode = _appliedTargetMode(
@@ -1239,6 +3142,8 @@ class SmartGeneratorHelper {
           currentKeyCenter: request.currentKeyCenter,
           currentRomanNumeralId: request.currentRomanNumeralId,
           currentHarmonicFunction: request.currentHarmonicFunction,
+          phraseContext: phraseContext,
+          previousTrace: request.currentTrace,
           familyPlan: modulationFamily,
           blockedReason: null,
           decision: 'resolved-applied-via-real-modulation',
@@ -1251,6 +3156,12 @@ class SmartGeneratorHelper {
       currentKeyCenter: request.currentKeyCenter.displayName,
       currentRomanNumeralId: request.currentRomanNumeralId,
       currentHarmonicFunction: request.currentHarmonicFunction,
+      phraseContext: phraseContext,
+      homeCenterLabel: _homeCenterLabelForStep(
+        stepIndex: request.stepIndex,
+        currentKeyCenter: request.currentKeyCenter,
+        previousTrace: request.currentTrace,
+      ),
       selectedDiatonicDestination: targetRoman,
       appliedCandidates: [request.currentRomanNumeralId],
       selectedAppliedApproach: request.currentRomanNumeralId,
@@ -1261,7 +3172,10 @@ class SmartGeneratorHelper {
       ],
       blockedReason: opportunity.blockedReason,
       modulationAttempted: opportunity.candidates.isNotEmpty,
+      modulationConfidence: 0.42,
       finalKeyCenter: request.currentKeyCenter.displayName,
+      finalKeyMode: request.currentKeyCenter.mode,
+      finalKeyRelation: KeyRelation.same,
       finalRomanNumeralId: targetRoman,
       decision: 'resolved-dangling-applied',
       plannedChordKind: PlannedChordKind.resolvedRoman,
@@ -1269,7 +3183,15 @@ class SmartGeneratorHelper {
       dominantContext: targetMode == KeyMode.minor
           ? DominantContext.secondaryToMinor
           : DominantContext.secondaryToMajor,
+      dominantIntent: targetMode == KeyMode.minor
+          ? DominantIntent.secondaryToMinor
+          : DominantIntent.secondaryToMajor,
       modulationKind: ModulationKind.tonicization,
+      activeLocalScope: _decayScope(request.currentTrace?.activeLocalScope),
+      outstandingDebts: _decayDebts(
+        request.currentTrace?.outstandingDebts ?? const <ResolutionDebt>[],
+      ),
+      surfaceTags: const ['appliedResolution'],
     );
     return SmartStepPlan(
       finalKeyCenter: request.currentKeyCenter,
@@ -1284,17 +3206,22 @@ class SmartGeneratorHelper {
         dominantContext: targetMode == KeyMode.minor
             ? DominantContext.secondaryToMinor
             : DominantContext.secondaryToMajor,
+        dominantIntent: targetMode == KeyMode.minor
+            ? DominantIntent.secondaryToMinor
+            : DominantIntent.secondaryToMajor,
       ),
       debug: trace,
       modulationKind: ModulationKind.tonicization,
       cadentialArrival: false,
       modulationAttempt: opportunity.candidates.isNotEmpty,
+      phraseContext: phraseContext,
     );
   }
 
   static SmartStepPlan _resolveDanglingModalChord({
     required SmartStepRequest request,
   }) {
+    final phraseContext = _phraseContextForRequest(request);
     final exitSelection =
         request.currentRomanNumeralId == RomanNumeralId.borrowedFlatVII7
         ? RomanNumeralId.iMaj69
@@ -1306,15 +3233,28 @@ class SmartGeneratorHelper {
       currentKeyCenter: request.currentKeyCenter.displayName,
       currentRomanNumeralId: request.currentRomanNumeralId,
       currentHarmonicFunction: request.currentHarmonicFunction,
+      phraseContext: phraseContext,
+      homeCenterLabel: _homeCenterLabelForStep(
+        stepIndex: request.stepIndex,
+        currentKeyCenter: request.currentKeyCenter,
+        previousTrace: request.currentTrace,
+      ),
       selectedDiatonicDestination: exitSelection,
       modalInterchangeCandidates: [request.currentRomanNumeralId],
       selectedModalInterchange: request.currentRomanNumeralId,
       finalKeyCenter: request.currentKeyCenter.displayName,
+      finalKeyMode: request.currentKeyCenter.mode,
+      finalKeyRelation: KeyRelation.same,
       finalRomanNumeralId: exitSelection,
       decision: 'resolved-dangling-modal',
       plannedChordKind: PlannedChordKind.resolvedRoman,
       finalSourceKind: MusicTheory.specFor(exitSelection).sourceKind,
       cadentialArrival: exitSelection == RomanNumeralId.iMaj69,
+      activeLocalScope: _decayScope(request.currentTrace?.activeLocalScope),
+      outstandingDebts: _decayDebts(
+        request.currentTrace?.outstandingDebts ?? const <ResolutionDebt>[],
+      ),
+      surfaceTags: const ['backdoorFlavor'],
     );
     return SmartStepPlan(
       finalKeyCenter: request.currentKeyCenter,
@@ -1330,6 +3270,7 @@ class SmartGeneratorHelper {
       modulationKind: ModulationKind.none,
       cadentialArrival: exitSelection == RomanNumeralId.iMaj69,
       modulationAttempt: false,
+      phraseContext: phraseContext,
     );
   }
 
@@ -1338,6 +3279,8 @@ class SmartGeneratorHelper {
     required KeyCenter currentKeyCenter,
     required RomanNumeralId currentRomanNumeralId,
     required HarmonicFunction currentHarmonicFunction,
+    required SmartPhraseContext phraseContext,
+    required SmartDecisionTrace? previousTrace,
     required _FamilyPlan familyPlan,
     required SmartBlockedReason? blockedReason,
     required String decision,
@@ -1350,6 +3293,8 @@ class SmartGeneratorHelper {
       currentKeyCenter: currentKeyCenter,
       currentRomanNumeralId: currentRomanNumeralId,
       currentHarmonicFunction: currentHarmonicFunction,
+      phraseContext: phraseContext,
+      previousTrace: previousTrace,
       queuedDecision: queuedDecision,
       destinationRomanNumeralId: familyPlan.destinationRomanNumeralId,
       decision: decision,
@@ -1365,6 +3310,8 @@ class SmartGeneratorHelper {
     required KeyCenter currentKeyCenter,
     required RomanNumeralId currentRomanNumeralId,
     required HarmonicFunction currentHarmonicFunction,
+    required SmartPhraseContext phraseContext,
+    required SmartDecisionTrace? previousTrace,
     required QueuedSmartChordDecision queuedDecision,
     required RomanNumeralId destinationRomanNumeralId,
     required String decision,
@@ -1375,11 +3322,26 @@ class SmartGeneratorHelper {
   }) {
     final queuedRoman = queuedDecision.queuedChord.finalRomanNumeralId;
     final queuedSourceKind = MusicTheory.specFor(queuedRoman).sourceKind;
+    final activeScope = _nextLocalScope(
+      previousScope: previousTrace?.activeLocalScope,
+      queuedChord: queuedDecision.queuedChord,
+    );
+    final debts = _nextOutstandingDebts(
+      previousDebts:
+          previousTrace?.outstandingDebts ?? const <ResolutionDebt>[],
+      queuedChord: queuedDecision.queuedChord,
+    );
     final trace = SmartDecisionTrace(
       stepIndex: stepIndex,
       currentKeyCenter: currentKeyCenter.displayName,
       currentRomanNumeralId: currentRomanNumeralId,
       currentHarmonicFunction: currentHarmonicFunction,
+      phraseContext: phraseContext,
+      homeCenterLabel: _homeCenterLabelForStep(
+        stepIndex: stepIndex,
+        currentKeyCenter: currentKeyCenter,
+        previousTrace: previousTrace,
+      ),
       selectedDiatonicDestination: destinationRomanNumeralId,
       modalInterchangeCandidates: modalCandidates,
       selectedModalInterchange: modalCandidates.contains(queuedRoman)
@@ -1400,17 +3362,27 @@ class SmartGeneratorHelper {
       modulationSucceeded:
           queuedDecision.queuedChord.modulationKind == ModulationKind.real &&
           queuedDecision.queuedChord.cadentialArrival,
+      modulationConfidence: queuedDecision.queuedChord.modulationConfidence,
       finalKeyCenter: queuedDecision.queuedChord.keyCenter.displayName,
+      finalKeyMode: queuedDecision.queuedChord.keyCenter.mode,
+      finalKeyRelation: queuedDecision.queuedChord.keyCenter.relationToParent,
       finalRomanNumeralId: queuedRoman,
       decision: decision,
       activePatternTag: queuedDecision.queuedChord.patternTag,
+      selectedVariant: queuedDecision.queuedChord.variantTag,
       queuedPatternLength: queuedDecision.remainingQueuedChords.length,
       returnedToNormalFlow: queuedDecision.returnedToNormalFlow,
       plannedChordKind: queuedDecision.queuedChord.plannedChordKind,
       finalSourceKind: queuedSourceKind,
       dominantContext: queuedDecision.queuedChord.dominantContext,
+      dominantIntent: queuedDecision.queuedChord.dominantIntent,
       modulationKind: queuedDecision.queuedChord.modulationKind,
       cadentialArrival: queuedDecision.queuedChord.cadentialArrival,
+      activeLocalScope: activeScope,
+      outstandingDebts: debts,
+      surfaceTags: queuedDecision.queuedChord.surfaceTags,
+      postModulationConfirmationsRemaining:
+          queuedDecision.queuedChord.postModulationConfirmationsRemaining,
     );
     return SmartStepPlan(
       finalKeyCenter: queuedDecision.queuedChord.keyCenter,
@@ -1425,13 +3397,16 @@ class SmartGeneratorHelper {
       renderingPlan: SmartRenderingPlan(
         plannedChordKind: queuedDecision.queuedChord.plannedChordKind,
         patternTag: queuedDecision.queuedChord.patternTag,
+        renderQualityOverride: queuedDecision.queuedChord.renderQualityOverride,
         suppressTensions: queuedDecision.queuedChord.suppressTensions,
         dominantContext: queuedDecision.queuedChord.dominantContext,
+        dominantIntent: queuedDecision.queuedChord.dominantIntent,
       ),
       debug: trace,
       modulationKind: queuedDecision.queuedChord.modulationKind,
       cadentialArrival: queuedDecision.queuedChord.cadentialArrival,
       modulationAttempt: queuedDecision.queuedChord.modulationAttempt,
+      phraseContext: phraseContext,
     );
   }
 
@@ -1440,6 +3415,7 @@ class SmartGeneratorHelper {
     required SmartStepRequest request,
     required _ModulationOpportunity opportunity,
   }) {
+    final phraseContext = _phraseContextForRequest(request);
     final allowedRomans = MusicTheory.diatonicRomansForMode(
       request.currentKeyCenter.mode,
     );
@@ -1463,6 +3439,12 @@ class SmartGeneratorHelper {
       currentKeyCenter: request.currentKeyCenter.displayName,
       currentRomanNumeralId: request.currentRomanNumeralId,
       currentHarmonicFunction: request.currentHarmonicFunction,
+      phraseContext: phraseContext,
+      homeCenterLabel: _homeCenterLabelForStep(
+        stepIndex: request.stepIndex,
+        currentKeyCenter: request.currentKeyCenter,
+        previousTrace: request.currentTrace,
+      ),
       selectedDiatonicDestination: selectedDestination,
       appliedCandidates: [
         if (secondaryDominantByResolution[selectedDestination] != null)
@@ -1488,9 +3470,22 @@ class SmartGeneratorHelper {
         approachDecision.selectedRomanNumeralId,
       ).sourceKind,
       dominantContext: approachDecision.dominantContext,
+      dominantIntent: approachDecision.appliedType == AppliedType.substitute
+          ? DominantIntent.tritoneSub
+          : approachDecision.dominantContext == DominantContext.secondaryToMinor
+          ? DominantIntent.secondaryToMinor
+          : approachDecision.dominantContext == DominantContext.dominantIILydian
+          ? DominantIntent.lydianDominant
+          : approachDecision.dominantContext == DominantContext.secondaryToMajor
+          ? DominantIntent.secondaryToMajor
+          : null,
       modulationKind: approachDecision.insertedApproach
           ? ModulationKind.tonicization
           : ModulationKind.none,
+      activeLocalScope: _decayScope(request.currentTrace?.activeLocalScope),
+      outstandingDebts: _decayDebts(
+        request.currentTrace?.outstandingDebts ?? const <ResolutionDebt>[],
+      ),
     );
     return SmartStepPlan(
       finalKeyCenter: request.currentKeyCenter,
@@ -1503,6 +3498,18 @@ class SmartGeneratorHelper {
       returnedToNormalFlow: true,
       renderingPlan: SmartRenderingPlan(
         dominantContext: approachDecision.dominantContext,
+        dominantIntent: approachDecision.appliedType == AppliedType.substitute
+            ? DominantIntent.tritoneSub
+            : approachDecision.dominantContext ==
+                  DominantContext.secondaryToMinor
+            ? DominantIntent.secondaryToMinor
+            : approachDecision.dominantContext ==
+                  DominantContext.dominantIILydian
+            ? DominantIntent.lydianDominant
+            : approachDecision.dominantContext ==
+                  DominantContext.secondaryToMajor
+            ? DominantIntent.secondaryToMajor
+            : null,
       ),
       debug: trace,
       modulationKind: approachDecision.insertedApproach
@@ -1510,6 +3517,7 @@ class SmartGeneratorHelper {
           : ModulationKind.none,
       cadentialArrival: false,
       modulationAttempt: false,
+      phraseContext: phraseContext,
     );
   }
 
@@ -1633,118 +3641,419 @@ class SmartGeneratorHelper {
     return familyPlans.last;
   }
 
+  static List<RomanNumeralId> prioritizedFallbackRomans({
+    required KeyMode keyMode,
+    required RomanNumeralId finalRomanNumeralId,
+    required HarmonicFunction harmonicFunction,
+    String? patternTag,
+  }) {
+    final familyCandidates = switch (patternTag) {
+      'core_ii_v_i_major' => const [
+        RomanNumeralId.iiMin7,
+        RomanNumeralId.vDom7,
+        RomanNumeralId.iMaj69,
+        RomanNumeralId.iMaj7,
+      ],
+      'turnaround_i_vi_ii_v' => const [
+        RomanNumeralId.viMin7,
+        RomanNumeralId.iiMin7,
+        RomanNumeralId.vDom7,
+      ],
+      'turnaround_i_sharpIdim_ii_v' => const [
+        RomanNumeralId.sharpIDim7,
+        RomanNumeralId.iiMin7,
+        RomanNumeralId.vDom7,
+      ],
+      'closing_plagal_authentic_hybrid' =>
+        keyMode == KeyMode.major
+            ? const [
+                RomanNumeralId.borrowedIvMin7,
+                RomanNumeralId.ivMaj7,
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iMaj69,
+                RomanNumeralId.iMaj7,
+              ]
+            : const [
+                RomanNumeralId.ivMin7Minor,
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iMin6,
+                RomanNumeralId.iMinMaj7,
+                RomanNumeralId.iMin7,
+              ],
+      'bridge_iv_stabilized_by_local_ii_v_i' => const [
+        RomanNumeralId.relatedIiOfIV,
+        RomanNumeralId.secondaryOfIV,
+        RomanNumeralId.substituteOfIV,
+        RomanNumeralId.ivMaj7,
+        RomanNumeralId.iiMin7,
+      ],
+      'backdoor_recursive_prep' => const [
+        RomanNumeralId.borrowedFlatVIMaj7,
+        RomanNumeralId.borrowedFlatIIIMaj7,
+        RomanNumeralId.borrowedIvMin7,
+        RomanNumeralId.borrowedFlatVII7,
+        RomanNumeralId.iMaj69,
+        RomanNumeralId.iMaj7,
+      ],
+      'classical_predominant_color' => const [
+        RomanNumeralId.borrowedFlatIIMaj7,
+        RomanNumeralId.ivMaj7,
+        RomanNumeralId.vDom7,
+        RomanNumeralId.iMaj69,
+        RomanNumeralId.iMaj7,
+      ],
+      'mixture_pivot_modulation' =>
+        keyMode == KeyMode.major
+            ? const [
+                RomanNumeralId.borrowedIiHalfDiminished7,
+                RomanNumeralId.borrowedIvMin7,
+                RomanNumeralId.borrowedFlatIIIMaj7,
+                RomanNumeralId.borrowedFlatVIMaj7,
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iMaj69,
+              ]
+            : const [
+                RomanNumeralId.iiHalfDiminishedMinor,
+                RomanNumeralId.ivMin7Minor,
+                RomanNumeralId.flatIIIMaj7Minor,
+                RomanNumeralId.flatVIMaj7Minor,
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iMin6,
+              ],
+      'chromatic_mediant_common_tone_modulation' =>
+        finalRomanNumeralId == RomanNumeralId.borrowedFlatIIIMaj7 ||
+                finalRomanNumeralId == RomanNumeralId.borrowedFlatVIMaj7
+            ? const [
+                RomanNumeralId.borrowedFlatIIIMaj7,
+                RomanNumeralId.borrowedFlatVIMaj7,
+                RomanNumeralId.iiMin7,
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iMaj69,
+                RomanNumeralId.iMaj7,
+              ]
+            : finalRomanNumeralId == RomanNumeralId.iiMin7
+            ? const [
+                RomanNumeralId.iiMin7,
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iMaj69,
+                RomanNumeralId.iMaj7,
+                RomanNumeralId.borrowedFlatIIIMaj7,
+                RomanNumeralId.borrowedFlatVIMaj7,
+              ]
+            : finalRomanNumeralId == RomanNumeralId.vDom7
+            ? const [
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iMaj69,
+                RomanNumeralId.iMaj7,
+                RomanNumeralId.iiMin7,
+                RomanNumeralId.borrowedFlatIIIMaj7,
+                RomanNumeralId.borrowedFlatVIMaj7,
+              ]
+            : const [
+                RomanNumeralId.iMaj69,
+                RomanNumeralId.iMaj7,
+                RomanNumeralId.viMin7,
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iiMin7,
+                RomanNumeralId.borrowedFlatIIIMaj7,
+                RomanNumeralId.borrowedFlatVIMaj7,
+              ],
+      'coltrane_burst' =>
+        finalRomanNumeralId == RomanNumeralId.iiMin7
+            ? const [
+                RomanNumeralId.iiMin7,
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iMaj69,
+                RomanNumeralId.iMaj7,
+                RomanNumeralId.viMin7,
+              ]
+            : finalRomanNumeralId == RomanNumeralId.vDom7
+            ? const [
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iMaj69,
+                RomanNumeralId.iMaj7,
+                RomanNumeralId.iiMin7,
+                RomanNumeralId.viMin7,
+              ]
+            : const [
+                RomanNumeralId.iMaj69,
+                RomanNumeralId.iMaj7,
+                RomanNumeralId.viMin7,
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iiMin7,
+              ],
+      'bridge_return_home_cadence' =>
+        keyMode == KeyMode.major
+            ? const [
+                RomanNumeralId.iiMin7,
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iMaj69,
+                RomanNumeralId.iMaj7,
+                RomanNumeralId.viMin7,
+              ]
+            : const [
+                RomanNumeralId.iiHalfDiminishedMinor,
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iMin6,
+                RomanNumeralId.iMinMaj7,
+                RomanNumeralId.ivMin7Minor,
+              ],
+      'dominant_headed_scope_chain' => const [
+        RomanNumeralId.secondaryOfVI,
+        RomanNumeralId.viiHalfDiminished7,
+        RomanNumeralId.secondaryOfIII,
+        RomanNumeralId.relatedIiOfIII,
+        RomanNumeralId.viMin7,
+        RomanNumeralId.iiiMin7,
+      ],
+      'relative_minor_reframe' =>
+        keyMode == KeyMode.major
+            ? const [
+                RomanNumeralId.viMin7,
+                RomanNumeralId.viiHalfDiminished7,
+                RomanNumeralId.secondaryOfVI,
+              ]
+            : const [
+                RomanNumeralId.flatIIIMaj7Minor,
+                RomanNumeralId.ivMin7Minor,
+                RomanNumeralId.flatVIIDom7Minor,
+              ],
+      'minor_ii_halfdim_v_alt_i' => const [
+        RomanNumeralId.iiHalfDiminishedMinor,
+        RomanNumeralId.vDom7,
+        RomanNumeralId.iMin6,
+        RomanNumeralId.iMinMaj7,
+      ],
+      'backdoor_ivm_bVII_I' => const [
+        RomanNumeralId.borrowedIvMin7,
+        RomanNumeralId.borrowedFlatVII7,
+        RomanNumeralId.vDom7,
+        RomanNumeralId.iMaj69,
+      ],
+      'cadence_based_real_modulation' =>
+        keyMode == KeyMode.major
+            ? const [
+                RomanNumeralId.iiMin7,
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iMaj69,
+                RomanNumeralId.viMin7,
+              ]
+            : const [
+                RomanNumeralId.iiHalfDiminishedMinor,
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iMin6,
+                RomanNumeralId.ivMin7Minor,
+              ],
+      'common_chord_modulation' =>
+        keyMode == KeyMode.major
+            ? const [
+                RomanNumeralId.iiMin7,
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iMaj69,
+                RomanNumeralId.viMin7,
+              ]
+            : const [
+                RomanNumeralId.iiHalfDiminishedMinor,
+                RomanNumeralId.vDom7,
+                RomanNumeralId.iMin6,
+                RomanNumeralId.ivMin7Minor,
+              ],
+      _ => const <RomanNumeralId>[],
+    };
+    final candidates = <RomanNumeralId>[
+      finalRomanNumeralId,
+      ...familyCandidates,
+      ...switch (harmonicFunction) {
+        HarmonicFunction.tonic =>
+          keyMode == KeyMode.major
+              ? const [RomanNumeralId.iMaj69, RomanNumeralId.iMaj7]
+              : const [
+                  RomanNumeralId.iMin6,
+                  RomanNumeralId.iMinMaj7,
+                  RomanNumeralId.iMin7,
+                ],
+        HarmonicFunction.predominant =>
+          keyMode == KeyMode.major
+              ? const [RomanNumeralId.iiMin7, RomanNumeralId.ivMaj7]
+              : const [
+                  RomanNumeralId.iiHalfDiminishedMinor,
+                  RomanNumeralId.ivMin7Minor,
+                ],
+        HarmonicFunction.dominant => const [RomanNumeralId.vDom7],
+        HarmonicFunction.free => const [],
+      },
+    ];
+    final unique = <RomanNumeralId>[];
+    for (final candidate in candidates) {
+      if (!unique.contains(candidate)) {
+        unique.add(candidate);
+      }
+    }
+    return unique;
+  }
+
+  static Map<SmartProgressionFamily, int> _legacyBaseWeightsForPreset(
+    JazzPreset jazzPreset,
+  ) {
+    return switch (jazzPreset) {
+      JazzPreset.standardsCore => <SmartProgressionFamily, int>{
+        SmartProgressionFamily.coreIiVIMajor: 24,
+        SmartProgressionFamily.turnaroundIViIiV: 11,
+        SmartProgressionFamily.turnaroundISharpIdimIiV: 4,
+        SmartProgressionFamily.turnaroundIIIviIiV: 3,
+        SmartProgressionFamily.relativeMinorReframe: 6,
+        SmartProgressionFamily.dominantHeadedScopeChain: 4,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid: 5,
+        SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI: 3,
+        SmartProgressionFamily.minorIiVAltI: 14,
+        SmartProgressionFamily.minorLineCliche: 4,
+        SmartProgressionFamily.appliedDominantWithRelatedIi: 10,
+        SmartProgressionFamily.dominantChainBridgeStyle: 8,
+        SmartProgressionFamily.cadenceBasedRealModulation: 8,
+        SmartProgressionFamily.commonChordModulation: 4,
+        SmartProgressionFamily.backdoorIvmBviiI: 6,
+        SmartProgressionFamily.backdoorRecursivePrep: 0,
+        SmartProgressionFamily.classicalPredominantColor: 0,
+        SmartProgressionFamily.mixturePivotModulation: 0,
+        SmartProgressionFamily.chromaticMediantCommonToneModulation: 0,
+        SmartProgressionFamily.coltraneBurst: 0,
+        SmartProgressionFamily.bridgeReturnHomeCadence: 2,
+        SmartProgressionFamily.passingDimToIi: 4,
+      },
+      JazzPreset.modulationStudy => <SmartProgressionFamily, int>{
+        SmartProgressionFamily.coreIiVIMajor: 18,
+        SmartProgressionFamily.turnaroundIViIiV: 8,
+        SmartProgressionFamily.turnaroundISharpIdimIiV: 2,
+        SmartProgressionFamily.turnaroundIIIviIiV: 2,
+        SmartProgressionFamily.relativeMinorReframe: 10,
+        SmartProgressionFamily.dominantHeadedScopeChain: 8,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid: 4,
+        SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI: 7,
+        SmartProgressionFamily.minorIiVAltI: 12,
+        SmartProgressionFamily.minorLineCliche: 4,
+        SmartProgressionFamily.appliedDominantWithRelatedIi: 12,
+        SmartProgressionFamily.dominantChainBridgeStyle: 6,
+        SmartProgressionFamily.cadenceBasedRealModulation: 18,
+        SmartProgressionFamily.commonChordModulation: 10,
+        SmartProgressionFamily.backdoorIvmBviiI: 4,
+        SmartProgressionFamily.backdoorRecursivePrep: 0,
+        SmartProgressionFamily.classicalPredominantColor: 1,
+        SmartProgressionFamily.mixturePivotModulation: 6,
+        SmartProgressionFamily.chromaticMediantCommonToneModulation: 0,
+        SmartProgressionFamily.coltraneBurst: 0,
+        SmartProgressionFamily.bridgeReturnHomeCadence: 6,
+        SmartProgressionFamily.passingDimToIi: 2,
+      },
+      JazzPreset.advanced => <SmartProgressionFamily, int>{
+        SmartProgressionFamily.coreIiVIMajor: 18,
+        SmartProgressionFamily.turnaroundIViIiV: 8,
+        SmartProgressionFamily.turnaroundISharpIdimIiV: 4,
+        SmartProgressionFamily.turnaroundIIIviIiV: 4,
+        SmartProgressionFamily.relativeMinorReframe: 8,
+        SmartProgressionFamily.dominantHeadedScopeChain: 8,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid: 6,
+        SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI: 7,
+        SmartProgressionFamily.minorIiVAltI: 12,
+        SmartProgressionFamily.minorLineCliche: 6,
+        SmartProgressionFamily.appliedDominantWithRelatedIi: 10,
+        SmartProgressionFamily.dominantChainBridgeStyle: 10,
+        SmartProgressionFamily.cadenceBasedRealModulation: 8,
+        SmartProgressionFamily.commonChordModulation: 8,
+        SmartProgressionFamily.backdoorIvmBviiI: 6,
+        SmartProgressionFamily.backdoorRecursivePrep: 4,
+        SmartProgressionFamily.classicalPredominantColor: 4,
+        SmartProgressionFamily.mixturePivotModulation: 4,
+        SmartProgressionFamily.chromaticMediantCommonToneModulation: 3,
+        SmartProgressionFamily.coltraneBurst: 1,
+        SmartProgressionFamily.bridgeReturnHomeCadence: 5,
+        SmartProgressionFamily.passingDimToIi: 4,
+      },
+    };
+  }
+
+  static int _legacyFamilyBaseWeight({
+    required JazzPreset jazzPreset,
+    required SmartProgressionFamily family,
+  }) {
+    return _legacyBaseWeightsForPreset(jazzPreset)[family] ?? 0;
+  }
+
   static List<_WeightedFamily> _weightedFamiliesForRequest({
     required SmartStepRequest request,
     required _ModulationOpportunity opportunity,
     required bool allowRealModulation,
   }) {
+    final phraseContext = _phraseContextForRequest(request);
+    final baseWeights = <SmartProgressionFamily, int>{
+      for (final family in _legacyBaseWeightsForPreset(request.jazzPreset).keys)
+        family: SmartPriorLookup.familyBaseWeight(
+          jazzPreset: request.jazzPreset,
+          family: family,
+        ),
+    };
+
+    final modulationIntensityMultiplier = switch (request.modulationIntensity) {
+      ModulationIntensity.off => 0.0,
+      ModulationIntensity.low => 0.72,
+      ModulationIntensity.medium => 1.0,
+      ModulationIntensity.high => 1.3,
+    };
+    final nonDiatonicStreak = _nonDiatonicStreakLength(request);
+    final nonDiatonicCapMultiplier = nonDiatonicStreak >= 3 ? 0.18 : 1.0;
+    final relationPenalty = opportunity.candidates.isEmpty
+        ? 1.0
+        : _keyRelationPenalty(opportunity.candidates.first.relationToParent);
+
     final weights = <SmartProgressionFamily, int>{};
-    switch (request.jazzPreset) {
-      case JazzPreset.standardsCore:
-        weights.addAll({
-          SmartProgressionFamily.coreIiVIMajor: 26,
-          SmartProgressionFamily.turnaroundIViIiV: 9,
-          SmartProgressionFamily.turnaroundISharpIdimIiV: 5,
-          SmartProgressionFamily.turnaroundIIIviIiV: 4,
-          SmartProgressionFamily.minorIiVAltI: 14,
-          SmartProgressionFamily.minorLineCliche: 6,
-          SmartProgressionFamily.appliedDominantWithRelatedIi: 10,
-          SmartProgressionFamily.dominantChainBridgeStyle: 8,
-          SmartProgressionFamily.cadenceBasedRealModulation: 5,
-          SmartProgressionFamily.commonChordModulation: 3,
-          SmartProgressionFamily.backdoorIvmBviiI: 6,
-          SmartProgressionFamily.passingDimToIi: 3,
-        });
-      case JazzPreset.modulationStudy:
-        weights.addAll({
-          SmartProgressionFamily.coreIiVIMajor: 18,
-          SmartProgressionFamily.turnaroundIViIiV: 6,
-          SmartProgressionFamily.turnaroundISharpIdimIiV: 4,
-          SmartProgressionFamily.turnaroundIIIviIiV: 4,
-          SmartProgressionFamily.minorIiVAltI: 12,
-          SmartProgressionFamily.minorLineCliche: 6,
-          SmartProgressionFamily.appliedDominantWithRelatedIi: 8,
-          SmartProgressionFamily.dominantChainBridgeStyle: 10,
-          SmartProgressionFamily.cadenceBasedRealModulation: 12,
-          SmartProgressionFamily.commonChordModulation: 10,
-          SmartProgressionFamily.backdoorIvmBviiI: 5,
-          SmartProgressionFamily.passingDimToIi: 3,
-        });
-      case JazzPreset.advanced:
-        weights.addAll({
-          SmartProgressionFamily.coreIiVIMajor: 20,
-          SmartProgressionFamily.turnaroundIViIiV: 8,
-          SmartProgressionFamily.turnaroundISharpIdimIiV: 6,
-          SmartProgressionFamily.turnaroundIIIviIiV: 6,
-          SmartProgressionFamily.minorIiVAltI: 14,
-          SmartProgressionFamily.minorLineCliche: 7,
-          SmartProgressionFamily.appliedDominantWithRelatedIi: 11,
-          SmartProgressionFamily.dominantChainBridgeStyle: 12,
-          SmartProgressionFamily.cadenceBasedRealModulation: 8,
-          SmartProgressionFamily.commonChordModulation: 7,
-          SmartProgressionFamily.backdoorIvmBviiI: 6,
-          SmartProgressionFamily.passingDimToIi: 3,
-        });
-    }
+    for (final entry in baseWeights.entries) {
+      final family = entry.key;
+      var weight = entry.value.toDouble();
+      weight *= SmartPriorLookup.phraseRoleMultiplier(family, phraseContext);
+      weight *= SmartPriorLookup.sectionRoleMultiplier(family, phraseContext);
+      weight *= SmartPriorLookup.sourceProfileMultiplier(
+        family,
+        request.sourceProfile,
+      );
+      weight *= _scopeAffinityMultiplier(family: family, request: request);
+      weight *= _debtPressureMultiplier(family: family, request: request);
+      weight *= _antiRepeatPenalty(
+        family: family,
+        phraseContext: phraseContext,
+      );
 
-    if (request.sourceProfile == SourceProfile.recordingInspired) {
-      weights.update(
-        SmartProgressionFamily.dominantChainBridgeStyle,
-        (value) => value + 2,
-      );
-      weights.update(
-        SmartProgressionFamily.backdoorIvmBviiI,
-        (value) => value + 2,
-      );
-      weights.update(
-        SmartProgressionFamily.minorLineCliche,
-        (value) => value + 1,
-      );
-      weights.update(
-        SmartProgressionFamily.coreIiVIMajor,
-        (value) => max(0, value - 2),
-      );
-    }
+      final isModulationFamily =
+          family == SmartProgressionFamily.mixturePivotModulation ||
+          family ==
+              SmartProgressionFamily.chromaticMediantCommonToneModulation ||
+          family == SmartProgressionFamily.coltraneBurst ||
+          family == SmartProgressionFamily.bridgeReturnHomeCadence ||
+          family == SmartProgressionFamily.cadenceBasedRealModulation ||
+          family == SmartProgressionFamily.commonChordModulation;
+      final isRareColorFamily =
+          family == SmartProgressionFamily.classicalPredominantColor ||
+          family == SmartProgressionFamily.turnaroundISharpIdimIiV ||
+          family == SmartProgressionFamily.passingDimToIi;
+      if (isModulationFamily) {
+        weight *= modulationIntensityMultiplier;
+        weight *= relationPenalty;
+        weight *= _surpriseBudgetMultiplier(request: request, modulation: true);
+      }
+      if (isRareColorFamily ||
+          family ==
+              SmartProgressionFamily.chromaticMediantCommonToneModulation ||
+          family == SmartProgressionFamily.coltraneBurst) {
+        weight *= _surpriseBudgetMultiplier(request: request, rare: true);
+      }
 
-    final phrasePriority = _phrasePriorityForStep(request.stepIndex);
-    if (phrasePriority == _PhrasePriority.low) {
-      weights.update(
-        SmartProgressionFamily.cadenceBasedRealModulation,
-        (value) =>
-            request.modulationIntensity == ModulationIntensity.high ? 2 : 0,
-      );
-      weights.update(
-        SmartProgressionFamily.commonChordModulation,
-        (value) =>
-            request.modulationIntensity == ModulationIntensity.high ? 1 : 0,
-      );
-    } else if (phrasePriority == _PhrasePriority.cadence) {
-      weights.update(
-        SmartProgressionFamily.coreIiVIMajor,
-        (value) => value + 8,
-      );
-      weights.update(SmartProgressionFamily.minorIiVAltI, (value) => value + 8);
-      weights.update(
-        SmartProgressionFamily.backdoorIvmBviiI,
-        (value) => value + 3,
-      );
-      weights.update(
-        SmartProgressionFamily.cadenceBasedRealModulation,
-        (value) => value + 5,
-      );
-      weights.update(
-        SmartProgressionFamily.commonChordModulation,
-        (value) => value + 4,
-      );
-    } else {
-      weights.update(
-        SmartProgressionFamily.turnaroundIViIiV,
-        (value) => value + 3,
-      );
-      weights.update(
-        SmartProgressionFamily.turnaroundISharpIdimIiV,
-        (value) => value + 2,
-      );
+      if (nonDiatonicStreak >= 3 &&
+          family != SmartProgressionFamily.coreIiVIMajor &&
+          family != SmartProgressionFamily.turnaroundIViIiV &&
+          family != SmartProgressionFamily.minorIiVAltI &&
+          family != SmartProgressionFamily.minorLineCliche) {
+        weight *= nonDiatonicCapMultiplier;
+      }
+
+      weights[family] = max(0, weight.round());
     }
 
     if (request.currentKeyCenter.mode == KeyMode.major) {
@@ -1755,44 +4064,193 @@ class SmartGeneratorHelper {
       weights[SmartProgressionFamily.turnaroundIViIiV] = 0;
       weights[SmartProgressionFamily.turnaroundISharpIdimIiV] = 0;
       weights[SmartProgressionFamily.turnaroundIIIviIiV] = 0;
+      weights[SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI] = 0;
       weights[SmartProgressionFamily.backdoorIvmBviiI] = 0;
+      weights[SmartProgressionFamily.classicalPredominantColor] = 0;
       weights[SmartProgressionFamily.passingDimToIi] = 0;
     }
 
     if (!request.modalInterchangeEnabled) {
       weights[SmartProgressionFamily.backdoorIvmBviiI] = 0;
+      weights[SmartProgressionFamily.backdoorRecursivePrep] = 0;
+      weights[SmartProgressionFamily.classicalPredominantColor] = 0;
+      weights[SmartProgressionFamily.mixturePivotModulation] = 0;
+      weights[SmartProgressionFamily.chromaticMediantCommonToneModulation] = 0;
     }
     if (!request.secondaryDominantEnabled &&
         !request.substituteDominantEnabled) {
       weights[SmartProgressionFamily.appliedDominantWithRelatedIi] = 0;
+      weights[SmartProgressionFamily.dominantHeadedScopeChain] = 0;
       weights[SmartProgressionFamily.dominantChainBridgeStyle] = 0;
+      weights[SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI] = 0;
     }
     if (!allowRealModulation ||
-        request.modulationIntensity == ModulationIntensity.off) {
+        request.modulationIntensity == ModulationIntensity.off ||
+        opportunity.candidates.isEmpty) {
       weights[SmartProgressionFamily.cadenceBasedRealModulation] = 0;
       weights[SmartProgressionFamily.commonChordModulation] = 0;
+      weights[SmartProgressionFamily.mixturePivotModulation] = 0;
+      weights[SmartProgressionFamily.chromaticMediantCommonToneModulation] = 0;
+      weights[SmartProgressionFamily.coltraneBurst] = 0;
+      weights[SmartProgressionFamily.bridgeReturnHomeCadence] = 0;
     }
-    if (opportunity.candidates.isEmpty) {
+
+    if (request.currentTrace?.postModulationConfirmationsRemaining != null &&
+        request.currentTrace!.postModulationConfirmationsRemaining > 0) {
       weights[SmartProgressionFamily.cadenceBasedRealModulation] = 0;
       weights[SmartProgressionFamily.commonChordModulation] = 0;
+      weights[SmartProgressionFamily.mixturePivotModulation] = 0;
+      weights[SmartProgressionFamily.chromaticMediantCommonToneModulation] = 0;
+      weights[SmartProgressionFamily.coltraneBurst] = 0;
+      weights[SmartProgressionFamily.bridgeReturnHomeCadence] = 0;
+      weights[SmartProgressionFamily.dominantHeadedScopeChain] = 0;
+      weights[SmartProgressionFamily.dominantChainBridgeStyle] = 0;
+      weights[SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI] = 0;
+    }
+
+    final inferredHomeCenter = _returnHomeTargetCenterForRequest(request);
+    KeyCenter? homeCandidate;
+    if (inferredHomeCenter != null) {
+      for (final candidate in opportunity.candidates) {
+        if (candidate == inferredHomeCenter) {
+          homeCandidate = candidate;
+          break;
+        }
+      }
+    }
+    final hasReturnHomeDebt =
+        request.currentTrace?.outstandingDebts.any(
+          (debt) => debt.debtType == ResolutionDebtType.returnHomeCadence,
+        ) ??
+        false;
+    if (inferredHomeCenter == null ||
+        inferredHomeCenter == request.currentKeyCenter ||
+        homeCandidate == null) {
+      weights[SmartProgressionFamily.bridgeReturnHomeCadence] = 0;
+    } else {
+      final phraseContext = _phraseContextForRequest(request);
+      final returnBoost = _isBridgeReturnZone(phraseContext) ? 1.22 : 0.82;
+      final returnDebtBoost = hasReturnHomeDebt ? 1.34 : 1.0;
+      weights.update(
+        SmartProgressionFamily.bridgeReturnHomeCadence,
+        (value) => max(0, (value * returnBoost * returnDebtBoost).round()),
+      );
+      if (hasReturnHomeDebt) {
+        for (final family in const [
+          SmartProgressionFamily.cadenceBasedRealModulation,
+          SmartProgressionFamily.commonChordModulation,
+          SmartProgressionFamily.mixturePivotModulation,
+          SmartProgressionFamily.dominantChainBridgeStyle,
+        ]) {
+          weights.update(
+            family,
+            (value) => max(0, (value * 0.72).round()),
+            ifAbsent: () => 0,
+          );
+        }
+        if (_isBridgeReturnWindow(phraseContext)) {
+          weights.update(
+            SmartProgressionFamily.bridgeReturnHomeCadence,
+            (value) => max(value + 8, (value * 1.42).round()),
+          );
+          for (final family in const [
+            SmartProgressionFamily.coreIiVIMajor,
+            SmartProgressionFamily.minorIiVAltI,
+            SmartProgressionFamily.closingPlagalAuthenticHybrid,
+            SmartProgressionFamily.turnaroundIViIiV,
+            SmartProgressionFamily.turnaroundIIIviIiV,
+            SmartProgressionFamily.backdoorIvmBviiI,
+            SmartProgressionFamily.backdoorRecursivePrep,
+            SmartProgressionFamily.classicalPredominantColor,
+          ]) {
+            weights.update(
+              family,
+              (value) => max(0, (value * 0.68).round()),
+              ifAbsent: () => 0,
+            );
+          }
+        }
+      }
     }
 
     if (request.currentHarmonicFunction == HarmonicFunction.tonic) {
+      final tonicFamily = request.currentKeyCenter.mode == KeyMode.major
+          ? SmartProgressionFamily.turnaroundIViIiV
+          : SmartProgressionFamily.minorLineCliche;
+      weights.update(tonicFamily, (value) => value + 5, ifAbsent: () => 5);
+    }
+    if (request.currentHarmonicFunction == HarmonicFunction.predominant) {
+      final cadenceFamily = request.currentKeyCenter.mode == KeyMode.major
+          ? SmartProgressionFamily.coreIiVIMajor
+          : SmartProgressionFamily.minorIiVAltI;
+      weights.update(cadenceFamily, (value) => value + 6, ifAbsent: () => 6);
       weights.update(
-        request.currentKeyCenter.mode == KeyMode.major
-            ? SmartProgressionFamily.turnaroundIViIiV
-            : SmartProgressionFamily.minorLineCliche,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid,
         (value) => value + 4,
         ifAbsent: () => 4,
       );
     }
-    if (request.currentHarmonicFunction == HarmonicFunction.predominant) {
+    if (request.currentHarmonicFunction == HarmonicFunction.tonic &&
+        (phraseContext.phraseRole == PhraseRole.preCadence ||
+            phraseContext.phraseRole == PhraseRole.cadence ||
+            phraseContext.phraseRole == PhraseRole.release)) {
       weights.update(
-        request.currentKeyCenter.mode == KeyMode.major
-            ? SmartProgressionFamily.coreIiVIMajor
-            : SmartProgressionFamily.minorIiVAltI,
-        (value) => value + 5,
-        ifAbsent: () => 5,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid,
+        (value) => value + 3,
+        ifAbsent: () => 3,
+      );
+    }
+    if (request.jazzPreset == JazzPreset.advanced &&
+        request.currentKeyCenter.mode == KeyMode.major &&
+        (phraseContext.phraseRole == PhraseRole.preCadence ||
+            phraseContext.phraseRole == PhraseRole.cadence ||
+            phraseContext.phraseRole == PhraseRole.release)) {
+      weights.update(
+        SmartProgressionFamily.backdoorRecursivePrep,
+        (value) => value + 3,
+        ifAbsent: () => 3,
+      );
+    }
+    if (request.jazzPreset == JazzPreset.advanced &&
+        _supportedChromaticMediantTargetForRequest(
+              request: request,
+              candidates: opportunity.candidates,
+            ) !=
+            null) {
+      final chromaticBoost =
+          phraseContext.sectionRole == SectionRole.bridgeLike ||
+              phraseContext.phraseRole == PhraseRole.preCadence ||
+              phraseContext.phraseRole == PhraseRole.cadence
+          ? 5
+          : 2;
+      weights.update(
+        SmartProgressionFamily.chromaticMediantCommonToneModulation,
+        (value) => value + chromaticBoost,
+        ifAbsent: () => chromaticBoost,
+      );
+    }
+    if (request.jazzPreset != JazzPreset.advanced ||
+        request.modulationIntensity != ModulationIntensity.high ||
+        !_hasColtraneCyclePotential(request.activeKeys) ||
+        request.currentKeyCenter.mode != KeyMode.major) {
+      weights[SmartProgressionFamily.coltraneBurst] = 0;
+    } else {
+      weights.update(
+        SmartProgressionFamily.coltraneBurst,
+        (value) => value + 4,
+        ifAbsent: () => 4,
+      );
+    }
+    if (request.currentKeyCenter.mode == KeyMode.major &&
+        phraseContext.sectionRole == SectionRole.bridgeLike &&
+        (request.currentHarmonicFunction == HarmonicFunction.tonic ||
+            request.currentHarmonicFunction == HarmonicFunction.predominant ||
+            request.currentTrace?.activeLocalScope?.center.relationToParent ==
+                KeyRelation.subdominant)) {
+      weights.update(
+        SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI,
+        (value) => value + 6,
+        ifAbsent: () => 6,
       );
     }
 
@@ -1827,6 +4285,23 @@ class SmartGeneratorHelper {
         );
       case SmartProgressionFamily.turnaroundIIIviIiV:
         return _buildTurnaroundIIIviIiVFamily(request: request);
+      case SmartProgressionFamily.relativeMinorReframe:
+        return _buildRelativeMinorReframeFamily(request: request);
+      case SmartProgressionFamily.dominantHeadedScopeChain:
+        return _buildDominantHeadedScopeFamily(
+          random: random,
+          request: request,
+        );
+      case SmartProgressionFamily.closingPlagalAuthenticHybrid:
+        return _buildClosingPlagalAuthenticHybridFamily(
+          random: random,
+          request: request,
+        );
+      case SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI:
+        return _buildBridgeIVStabilizedByLocalIiVIFamily(
+          random: random,
+          request: request,
+        );
       case SmartProgressionFamily.minorIiVAltI:
         return _buildMinorIiVAltIFamily(request: request);
       case SmartProgressionFamily.minorLineCliche:
@@ -1836,6 +4311,55 @@ class SmartGeneratorHelper {
         );
       case SmartProgressionFamily.backdoorIvmBviiI:
         return _buildBackdoorFamily(request: request);
+      case SmartProgressionFamily.backdoorRecursivePrep:
+        return _buildBackdoorRecursivePrepFamily(
+          random: random,
+          request: request,
+        );
+      case SmartProgressionFamily.classicalPredominantColor:
+        return _buildClassicalPredominantColorFamily(
+          random: random,
+          request: request,
+        );
+      case SmartProgressionFamily.mixturePivotModulation:
+        final targetCenter = opportunity.candidates.firstWhere(
+          (candidate) => candidate.relationToParent == KeyRelation.parallel,
+          orElse: () => const KeyCenter(tonicName: '', mode: KeyMode.major),
+        );
+        return targetCenter.tonicName.isEmpty
+            ? null
+            : _buildMixturePivotModulationFamily(
+                request: request,
+                targetCenter: targetCenter,
+              );
+      case SmartProgressionFamily.chromaticMediantCommonToneModulation:
+        return _buildChromaticMediantCommonToneModulationFamily(
+          request: request,
+          opportunity: opportunity,
+        );
+      case SmartProgressionFamily.coltraneBurst:
+        return _buildColtraneBurstFamily(
+          request: request,
+          opportunity: opportunity,
+        );
+      case SmartProgressionFamily.bridgeReturnHomeCadence:
+        final inferredHomeCenter = _returnHomeTargetCenterForRequest(request);
+        if (inferredHomeCenter == null) {
+          return null;
+        }
+        KeyCenter? homeCandidate;
+        for (final candidate in opportunity.candidates) {
+          if (candidate == inferredHomeCenter) {
+            homeCandidate = candidate;
+            break;
+          }
+        }
+        return homeCandidate == null
+            ? null
+            : _buildBridgeReturnHomeCadenceFamily(
+                request: request,
+                targetCenter: homeCandidate,
+              );
       case SmartProgressionFamily.dominantChainBridgeStyle:
         return _buildDominantChainFamily(random: random, request: request);
       case SmartProgressionFamily.appliedDominantWithRelatedIi:
@@ -1868,32 +4392,84 @@ class SmartGeneratorHelper {
     if (request.currentKeyCenter.mode != KeyMode.major) {
       return null;
     }
+    final phraseContext = _phraseContextForRequest(request);
+    final patternTag = _familyTag(SmartProgressionFamily.coreIiVIMajor);
+    final arrivalRoman = _selectMajorArrivalRoman(
+      phraseContext,
+      request.sourceProfile,
+    );
+    final arrivalKind = _selectMajorArrivalChordKind(
+      phraseContext,
+      request.sourceProfile,
+    );
+    final useSusRelease =
+        request.sourceProfile == SourceProfile.recordingInspired ||
+        phraseContext.phraseRole == PhraseRole.preCadence ||
+        phraseContext.phraseRole == PhraseRole.cadence;
+    final variantTag = useSusRelease ? 'ii_v_sus_release_i' : 'plain_ii_v_i';
     return _family(
       family: SmartProgressionFamily.coreIiVIMajor,
-      destination: RomanNumeralId.iMaj69,
+      destination: arrivalRoman,
       queue: [
         if (includeLeadingTonic)
           _queuedChord(
             keyCenter: request.currentKeyCenter,
-            roman: RomanNumeralId.iMaj69,
-            patternTag: _familyTag(SmartProgressionFamily.coreIiVIMajor),
+            roman: arrivalRoman,
+            plannedChordKind: arrivalKind,
+            patternTag: patternTag,
+            variantTag: variantTag,
           ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.iiMin7,
-          patternTag: _familyTag(SmartProgressionFamily.coreIiVIMajor),
+          patternTag: patternTag,
+          variantTag: variantTag,
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.vDom7,
-          dominantContext: DominantContext.primaryMajor,
-          patternTag: _familyTag(SmartProgressionFamily.coreIiVIMajor),
+          dominantContext: useSusRelease
+              ? DominantContext.susDominant
+              : DominantContext.primaryMajor,
+          dominantIntent: useSusRelease
+              ? DominantIntent.susDelay
+              : DominantIntent.primaryAuthenticMajor,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          surfaceTags: useSusRelease ? const ['susDelay'] : const [],
+          openedDebts: useSusRelease
+              ? const [
+                  ResolutionDebt(
+                    debtType: ResolutionDebtType.susResolve,
+                    targetLabel: 'same-root dominant',
+                    deadline: 1,
+                    severity: 2,
+                  ),
+                ]
+              : const [],
         ),
+        if (useSusRelease)
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: RomanNumeralId.vDom7,
+            dominantContext: DominantContext.primaryMajor,
+            dominantIntent: DominantIntent.primaryAuthenticMajor,
+            patternTag: patternTag,
+            variantTag: variantTag,
+            satisfiedDebtTypes: const [ResolutionDebtType.susResolve],
+          ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
-          roman: RomanNumeralId.iMaj69,
-          patternTag: _familyTag(SmartProgressionFamily.coreIiVIMajor),
+          roman: arrivalRoman,
+          plannedChordKind: arrivalKind,
+          patternTag: patternTag,
+          variantTag: variantTag,
           cadentialArrival: true,
+          surfaceTags: arrivalKind == PlannedChordKind.tonicSix
+              ? const ['tonicAdd6']
+              : arrivalRoman == RomanNumeralId.iMaj69
+              ? const ['tonicMaj69']
+              : const [],
         ),
       ],
     );
@@ -1906,6 +4482,12 @@ class SmartGeneratorHelper {
     if (request.currentKeyCenter.mode != KeyMode.major) {
       return null;
     }
+    final phraseContext = _phraseContextForRequest(request);
+    final patternTag = _familyTag(SmartProgressionFamily.turnaroundIViIiV);
+    final leadRoman = _selectMajorArrivalRoman(
+      phraseContext,
+      request.sourceProfile,
+    );
     return _family(
       family: SmartProgressionFamily.turnaroundIViIiV,
       destination: RomanNumeralId.vDom7,
@@ -1913,24 +4495,33 @@ class SmartGeneratorHelper {
         if (includeLeadingTonic)
           _queuedChord(
             keyCenter: request.currentKeyCenter,
-            roman: RomanNumeralId.iMaj69,
-            patternTag: _familyTag(SmartProgressionFamily.turnaroundIViIiV),
+            roman: leadRoman,
+            plannedChordKind: _selectMajorArrivalChordKind(
+              phraseContext,
+              request.sourceProfile,
+            ),
+            patternTag: patternTag,
+            variantTag: 'classic',
           ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.viMin7,
-          patternTag: _familyTag(SmartProgressionFamily.turnaroundIViIiV),
+          patternTag: patternTag,
+          variantTag: 'classic',
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.iiMin7,
-          patternTag: _familyTag(SmartProgressionFamily.turnaroundIViIiV),
+          patternTag: patternTag,
+          variantTag: 'classic',
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.vDom7,
           dominantContext: DominantContext.primaryMajor,
-          patternTag: _familyTag(SmartProgressionFamily.turnaroundIViIiV),
+          dominantIntent: DominantIntent.primaryAuthenticMajor,
+          patternTag: patternTag,
+          variantTag: 'classic',
         ),
       ],
     );
@@ -1943,6 +4534,11 @@ class SmartGeneratorHelper {
     if (request.currentKeyCenter.mode != KeyMode.major) {
       return null;
     }
+    final phraseContext = _phraseContextForRequest(request);
+    final patternTag = _familyTag(
+      SmartProgressionFamily.turnaroundISharpIdimIiV,
+    );
+    const variantTag = 'passing_dim';
     return _family(
       family: SmartProgressionFamily.turnaroundISharpIdimIiV,
       destination: RomanNumeralId.vDom7,
@@ -1950,32 +4546,46 @@ class SmartGeneratorHelper {
         if (includeLeadingTonic)
           _queuedChord(
             keyCenter: request.currentKeyCenter,
-            roman: RomanNumeralId.iMaj69,
-            patternTag: _familyTag(
-              SmartProgressionFamily.turnaroundISharpIdimIiV,
+            roman: _selectMajorArrivalRoman(
+              phraseContext,
+              request.sourceProfile,
             ),
+            plannedChordKind: _selectMajorArrivalChordKind(
+              phraseContext,
+              request.sourceProfile,
+            ),
+            patternTag: patternTag,
+            variantTag: variantTag,
           ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.sharpIDim7,
-          patternTag: _familyTag(
-            SmartProgressionFamily.turnaroundISharpIdimIiV,
-          ),
+          patternTag: patternTag,
+          variantTag: variantTag,
+          surfaceTags: const ['commonToneDim', 'rareColor'],
+          openedDebts: const [
+            ResolutionDebt(
+              debtType: ResolutionDebtType.rareColorPayoff,
+              targetLabel: 'ii approach payoff',
+              deadline: 1,
+              severity: 2,
+            ),
+          ],
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.iiMin7,
-          patternTag: _familyTag(
-            SmartProgressionFamily.turnaroundISharpIdimIiV,
-          ),
+          patternTag: patternTag,
+          variantTag: variantTag,
+          satisfiedDebtTypes: const [ResolutionDebtType.rareColorPayoff],
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.vDom7,
           dominantContext: DominantContext.primaryMajor,
-          patternTag: _familyTag(
-            SmartProgressionFamily.turnaroundISharpIdimIiV,
-          ),
+          dominantIntent: DominantIntent.primaryAuthenticMajor,
+          patternTag: patternTag,
+          variantTag: variantTag,
         ),
       ],
     );
@@ -1987,6 +4597,7 @@ class SmartGeneratorHelper {
     if (request.currentKeyCenter.mode != KeyMode.major) {
       return null;
     }
+    final patternTag = _familyTag(SmartProgressionFamily.turnaroundIIIviIiV);
     return _family(
       family: SmartProgressionFamily.turnaroundIIIviIiV,
       destination: RomanNumeralId.vDom7,
@@ -1994,23 +4605,597 @@ class SmartGeneratorHelper {
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.iiiMin7,
-          patternTag: _familyTag(SmartProgressionFamily.turnaroundIIIviIiV),
+          patternTag: patternTag,
+          variantTag: 'flowing',
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.viMin7,
-          patternTag: _familyTag(SmartProgressionFamily.turnaroundIIIviIiV),
+          patternTag: patternTag,
+          variantTag: 'flowing',
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.iiMin7,
-          patternTag: _familyTag(SmartProgressionFamily.turnaroundIIIviIiV),
+          patternTag: patternTag,
+          variantTag: 'flowing',
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.vDom7,
           dominantContext: DominantContext.primaryMajor,
-          patternTag: _familyTag(SmartProgressionFamily.turnaroundIIIviIiV),
+          dominantIntent: DominantIntent.primaryAuthenticMajor,
+          patternTag: patternTag,
+          variantTag: 'flowing',
+        ),
+      ],
+    );
+  }
+
+  static _FamilyPlan? _buildRelativeMinorReframeFamily({
+    required SmartStepRequest request,
+  }) {
+    final phraseContext = _phraseContextForRequest(request);
+    final patternTag = _familyTag(SmartProgressionFamily.relativeMinorReframe);
+    if (request.currentKeyCenter.mode == KeyMode.major) {
+      if (!request.secondaryDominantEnabled) {
+        return null;
+      }
+      final targetRoot = MusicTheory.resolveChordRootForCenter(
+        request.currentKeyCenter,
+        RomanNumeralId.viMin7,
+      );
+      final targetCenter = KeyCenter(
+        tonicName: targetRoot,
+        mode: KeyMode.minor,
+        relationToParent: KeyRelation.relative,
+        enteredBy: CenterEntryMethod.tonicization,
+        confidence: 0.7,
+        confirmationsRemaining: 1,
+      );
+      final arrivalQuality = _selectRelativeMinorArrivalQuality(
+        phraseContext,
+        request.sourceProfile,
+      );
+      final arrivalTags = <String>[
+        'relativeReframe',
+        if (arrivalQuality == ChordQuality.minor6) 'tonicMinor6',
+        if (arrivalQuality == ChordQuality.minorMajor7) 'tonicMinorMaj7',
+      ];
+      return _family(
+        family: SmartProgressionFamily.relativeMinorReframe,
+        destination: RomanNumeralId.viMin7,
+        queue: [
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: RomanNumeralId.viMin7,
+            patternTag: patternTag,
+            variantTag: 'major_to_relative_minor',
+            modulationKind: ModulationKind.tonicization,
+            openScope: LocalScope(
+              center: targetCenter,
+              headType: ScopeHeadType.tonicHead,
+              confidence: 0.68,
+              expiresIn: 3,
+            ),
+            surfaceTags: const ['relativeReframe'],
+          ),
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: RomanNumeralId.viiHalfDiminished7,
+            patternTag: patternTag,
+            variantTag: 'major_to_relative_minor',
+            modulationKind: ModulationKind.tonicization,
+            openedDebts: const [
+              ResolutionDebt(
+                debtType: ResolutionDebtType.predominantToDominant,
+                targetLabel: 'V7/VI',
+                deadline: 1,
+                severity: 1,
+              ),
+            ],
+            surfaceTags: const ['relativeReframe'],
+          ),
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: RomanNumeralId.secondaryOfVI,
+            appliedType: AppliedType.secondary,
+            resolutionTargetRomanId: RomanNumeralId.viMin7,
+            dominantContext: DominantContext.secondaryToMinor,
+            dominantIntent: DominantIntent.secondaryToMinor,
+            patternTag: patternTag,
+            variantTag: 'major_to_relative_minor',
+            modulationKind: ModulationKind.tonicization,
+            satisfiedDebtTypes: const [
+              ResolutionDebtType.predominantToDominant,
+            ],
+            openedDebts: const [
+              ResolutionDebt(
+                debtType: ResolutionDebtType.dominantResolve,
+                targetLabel: 'VIm as local i',
+                deadline: 1,
+                severity: 2,
+              ),
+            ],
+            surfaceTags: const ['relativeReframe'],
+          ),
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: RomanNumeralId.viMin7,
+            patternTag: patternTag,
+            variantTag: 'major_to_relative_minor',
+            renderQualityOverride: arrivalQuality,
+            modulationKind: ModulationKind.tonicization,
+            cadentialArrival: true,
+            satisfiedDebtTypes: const [ResolutionDebtType.dominantResolve],
+            openScope: LocalScope(
+              center: targetCenter,
+              headType: ScopeHeadType.tonicHead,
+              confidence: 0.74,
+              expiresIn: 1,
+            ),
+            surfaceTags: arrivalTags,
+          ),
+        ],
+      );
+    }
+
+    final targetRoot = MusicTheory.resolveChordRootForCenter(
+      request.currentKeyCenter,
+      RomanNumeralId.flatIIIMaj7Minor,
+    );
+    final targetCenter = KeyCenter(
+      tonicName: targetRoot,
+      mode: KeyMode.major,
+      relationToParent: KeyRelation.relative,
+      enteredBy: CenterEntryMethod.pivot,
+      confidence: 0.7,
+      confirmationsRemaining: 1,
+    );
+    final arrivalQuality = _selectRelativeMajorArrivalQuality(
+      phraseContext,
+      request.sourceProfile,
+    );
+    final arrivalTags = <String>[
+      'relativeReframe',
+      if (arrivalQuality == ChordQuality.major69) 'tonicMaj69',
+      if (arrivalQuality == ChordQuality.six) 'tonicAdd6',
+    ];
+    return _family(
+      family: SmartProgressionFamily.relativeMinorReframe,
+      destination: RomanNumeralId.flatIIIMaj7Minor,
+      queue: [
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: RomanNumeralId.flatIIIMaj7Minor,
+          patternTag: patternTag,
+          variantTag: 'minor_to_relative_major',
+          modulationKind: ModulationKind.tonicization,
+          openScope: LocalScope(
+            center: targetCenter,
+            headType: ScopeHeadType.pivotArea,
+            confidence: 0.68,
+            expiresIn: 3,
+          ),
+          surfaceTags: const ['relativeReframe'],
+        ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: RomanNumeralId.ivMin7Minor,
+          patternTag: patternTag,
+          variantTag: 'minor_to_relative_major',
+          modulationKind: ModulationKind.tonicization,
+          openedDebts: const [
+            ResolutionDebt(
+              debtType: ResolutionDebtType.predominantToDominant,
+              targetLabel: 'bVII7 as V/bIII',
+              deadline: 1,
+              severity: 1,
+            ),
+          ],
+          surfaceTags: const ['relativeReframe'],
+        ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: RomanNumeralId.flatVIIDom7Minor,
+          dominantContext: DominantContext.primaryMajor,
+          dominantIntent: DominantIntent.primaryAuthenticMajor,
+          patternTag: patternTag,
+          variantTag: 'minor_to_relative_major',
+          modulationKind: ModulationKind.tonicization,
+          satisfiedDebtTypes: const [ResolutionDebtType.predominantToDominant],
+          openedDebts: const [
+            ResolutionDebt(
+              debtType: ResolutionDebtType.dominantResolve,
+              targetLabel: 'bIII as relative I',
+              deadline: 1,
+              severity: 2,
+            ),
+          ],
+          surfaceTags: const ['relativeReframe'],
+        ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: RomanNumeralId.flatIIIMaj7Minor,
+          patternTag: patternTag,
+          variantTag: 'minor_to_relative_major',
+          renderQualityOverride: arrivalQuality,
+          modulationKind: ModulationKind.tonicization,
+          cadentialArrival: true,
+          satisfiedDebtTypes: const [ResolutionDebtType.dominantResolve],
+          openScope: LocalScope(
+            center: targetCenter,
+            headType: ScopeHeadType.tonicHead,
+            confidence: 0.74,
+            expiresIn: 1,
+          ),
+          surfaceTags: arrivalTags,
+        ),
+      ],
+    );
+  }
+
+  static _FamilyPlan? _buildDominantHeadedScopeFamily({
+    required Random random,
+    required SmartStepRequest request,
+  }) {
+    if (request.currentKeyCenter.mode != KeyMode.major ||
+        !request.secondaryDominantEnabled) {
+      return null;
+    }
+    final phraseContext = _phraseContextForRequest(request);
+    final patternTag = _familyTag(
+      SmartProgressionFamily.dominantHeadedScopeChain,
+    );
+    final activeScope = request.currentTrace?.activeLocalScope;
+    final viRoot = MusicTheory.resolveChordRootForCenter(
+      request.currentKeyCenter,
+      RomanNumeralId.viMin7,
+    );
+    final iiiRoot = MusicTheory.resolveChordRootForCenter(
+      request.currentKeyCenter,
+      RomanNumeralId.iiiMin7,
+    );
+    late final RomanNumeralId targetRoman;
+    late final RomanNumeralId relatedPrep;
+    late final RomanNumeralId dominantRoman;
+    if (activeScope?.headType == ScopeHeadType.dominantHead &&
+        activeScope?.center.mode == KeyMode.minor &&
+        activeScope?.center.tonicName == viRoot) {
+      targetRoman = RomanNumeralId.viMin7;
+      relatedPrep = RomanNumeralId.viiHalfDiminished7;
+      dominantRoman = RomanNumeralId.secondaryOfVI;
+    } else if (activeScope?.headType == ScopeHeadType.dominantHead &&
+        activeScope?.center.mode == KeyMode.minor &&
+        activeScope?.center.tonicName == iiiRoot) {
+      targetRoman = RomanNumeralId.iiiMin7;
+      relatedPrep = RomanNumeralId.relatedIiOfIII;
+      dominantRoman = RomanNumeralId.secondaryOfIII;
+    } else if (phraseContext.sectionRole == SectionRole.bridgeLike
+        ? random.nextInt(100) < 56
+        : random.nextInt(100) < 70) {
+      targetRoman = RomanNumeralId.viMin7;
+      relatedPrep = RomanNumeralId.viiHalfDiminished7;
+      dominantRoman = RomanNumeralId.secondaryOfVI;
+    } else {
+      targetRoman = RomanNumeralId.iiiMin7;
+      relatedPrep = RomanNumeralId.relatedIiOfIII;
+      dominantRoman = RomanNumeralId.secondaryOfIII;
+    }
+
+    final targetRoot = MusicTheory.resolveChordRootForCenter(
+      request.currentKeyCenter,
+      targetRoman,
+    );
+    final targetCenter = KeyCenter(
+      tonicName: targetRoot,
+      mode: KeyMode.minor,
+      relationToParent: targetRoman == RomanNumeralId.viMin7
+          ? KeyRelation.relative
+          : KeyRelation.mediant,
+      enteredBy: CenterEntryMethod.tonicization,
+      confidence: 0.66,
+      confirmationsRemaining: 1,
+    );
+    final useSusHead =
+        request.sourceProfile == SourceProfile.recordingInspired &&
+        phraseContext.phraseRole != PhraseRole.opener;
+    final arrivalQuality = _selectRelativeMinorArrivalQuality(
+      phraseContext,
+      request.sourceProfile,
+    );
+    final variantTag =
+        '${useSusHead ? 'sus_headed' : 'plain_headed'}_'
+        '${targetRoman == RomanNumeralId.viMin7 ? 'scope_of_vi' : 'scope_of_iii'}';
+    return _family(
+      family: SmartProgressionFamily.dominantHeadedScopeChain,
+      destination: targetRoman,
+      appliedCandidates: [dominantRoman],
+      queue: [
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: dominantRoman,
+          appliedType: AppliedType.secondary,
+          resolutionTargetRomanId: targetRoman,
+          dominantContext: useSusHead
+              ? DominantContext.susDominant
+              : DominantContext.secondaryToMinor,
+          dominantIntent: DominantIntent.dominantHeadedScope,
+          renderQualityOverride: useSusHead
+              ? ChordQuality.dominant13sus4
+              : null,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          modulationKind: ModulationKind.tonicization,
+          openScope: LocalScope(
+            center: targetCenter,
+            headType: ScopeHeadType.dominantHead,
+            confidence: 0.68,
+            expiresIn: 4,
+          ),
+          openedDebts: [
+            const ResolutionDebt(
+              debtType: ResolutionDebtType.dominantResolve,
+              targetLabel: 'dominant-headed local tonic',
+              deadline: 3,
+              severity: 2,
+            ),
+            if (useSusHead)
+              const ResolutionDebt(
+                debtType: ResolutionDebtType.susResolve,
+                targetLabel: 'same-root release',
+                deadline: 2,
+                severity: 2,
+              ),
+          ],
+          surfaceTags: useSusHead
+              ? const ['dominantHeadedScope', 'susDelay']
+              : const ['dominantHeadedScope'],
+        ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: relatedPrep,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          modulationKind: ModulationKind.tonicization,
+          surfaceTags: const ['dominantHeadedScope'],
+        ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: dominantRoman,
+          appliedType: AppliedType.secondary,
+          resolutionTargetRomanId: targetRoman,
+          dominantContext: DominantContext.secondaryToMinor,
+          dominantIntent: DominantIntent.secondaryToMinor,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          modulationKind: ModulationKind.tonicization,
+          satisfiedDebtTypes: useSusHead
+              ? const [ResolutionDebtType.susResolve]
+              : const [],
+          surfaceTags: const ['dominantHeadedScope'],
+        ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: targetRoman,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          renderQualityOverride: arrivalQuality,
+          modulationKind: ModulationKind.tonicization,
+          cadentialArrival: true,
+          satisfiedDebtTypes: const [ResolutionDebtType.dominantResolve],
+          openScope: LocalScope(
+            center: targetCenter,
+            headType: ScopeHeadType.tonicHead,
+            confidence: 0.74,
+            expiresIn: 1,
+          ),
+          surfaceTags: [
+            'dominantHeadedScope',
+            if (arrivalQuality == ChordQuality.minor6) 'tonicMinor6',
+            if (arrivalQuality == ChordQuality.minorMajor7) 'tonicMinorMaj7',
+          ],
+        ),
+      ],
+    );
+  }
+
+  static _FamilyPlan? _buildClosingPlagalAuthenticHybridFamily({
+    required Random random,
+    required SmartStepRequest request,
+  }) {
+    final phraseContext = _phraseContextForRequest(request);
+    final patternTag = _familyTag(
+      SmartProgressionFamily.closingPlagalAuthenticHybrid,
+    );
+    if (request.currentKeyCenter.mode == KeyMode.major) {
+      final useBorrowedIv =
+          request.modalInterchangeEnabled &&
+          (phraseContext.phraseRole == PhraseRole.preCadence ||
+              phraseContext.phraseRole == PhraseRole.cadence ||
+              phraseContext.phraseRole == PhraseRole.release ||
+              request.sourceProfile == SourceProfile.recordingInspired) &&
+          random.nextInt(100) < 68;
+      final arrivalRoman = _selectMajorArrivalRoman(
+        phraseContext,
+        request.sourceProfile,
+      );
+      final arrivalKind = _selectMajorArrivalChordKind(
+        phraseContext,
+        request.sourceProfile,
+      );
+      final susQuality =
+          request.sourceProfile == SourceProfile.recordingInspired
+          ? ChordQuality.dominant13sus4
+          : ChordQuality.dominant7sus4;
+      final variantTag = useBorrowedIv
+          ? 'borrowed_ivm_sus_authentic'
+          : 'iv_sus_authentic';
+      final ivRoman = useBorrowedIv
+          ? RomanNumeralId.borrowedIvMin7
+          : RomanNumeralId.ivMaj7;
+      return _family(
+        family: SmartProgressionFamily.closingPlagalAuthenticHybrid,
+        destination: arrivalRoman,
+        modalCandidates: useBorrowedIv
+            ? const [RomanNumeralId.borrowedIvMin7]
+            : const [],
+        queue: [
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: ivRoman,
+            patternTag: patternTag,
+            variantTag: variantTag,
+            surfaceTags: useBorrowedIv
+                ? const ['plagalColor', 'borrowedColor']
+                : const ['plagalColor'],
+            openedDebts: const [
+              ResolutionDebt(
+                debtType: ResolutionDebtType.predominantToDominant,
+                targetLabel: 'authentic dominant',
+                deadline: 1,
+                severity: 2,
+              ),
+            ],
+          ),
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: RomanNumeralId.vDom7,
+            renderQualityOverride: susQuality,
+            dominantContext: DominantContext.susDominant,
+            dominantIntent: DominantIntent.susDelay,
+            patternTag: patternTag,
+            variantTag: variantTag,
+            satisfiedDebtTypes: const [
+              ResolutionDebtType.predominantToDominant,
+            ],
+            openedDebts: const [
+              ResolutionDebt(
+                debtType: ResolutionDebtType.susResolve,
+                targetLabel: 'same-root dominant release',
+                deadline: 1,
+                severity: 2,
+              ),
+            ],
+            surfaceTags: const ['plagalColor', 'susDelay'],
+          ),
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: RomanNumeralId.vDom7,
+            dominantContext: DominantContext.primaryMajor,
+            dominantIntent: DominantIntent.primaryAuthenticMajor,
+            patternTag: patternTag,
+            variantTag: variantTag,
+            satisfiedDebtTypes: const [ResolutionDebtType.susResolve],
+            openedDebts: const [
+              ResolutionDebt(
+                debtType: ResolutionDebtType.dominantResolve,
+                targetLabel: 'I cadence',
+                deadline: 1,
+                severity: 2,
+              ),
+            ],
+            surfaceTags: const ['plagalColor'],
+          ),
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: arrivalRoman,
+            plannedChordKind: arrivalKind,
+            patternTag: patternTag,
+            variantTag: variantTag,
+            cadentialArrival: true,
+            satisfiedDebtTypes: const [ResolutionDebtType.dominantResolve],
+            surfaceTags: arrivalKind == PlannedChordKind.tonicSix
+                ? const ['plagalColor', 'tonicAdd6']
+                : arrivalRoman == RomanNumeralId.iMaj69
+                ? const ['plagalColor', 'tonicMaj69']
+                : const ['plagalColor'],
+          ),
+        ],
+      );
+    }
+
+    final tonic = _selectMinorArrivalFromContext(
+      request.sourceProfile,
+      phraseContext,
+    );
+    final susQuality = request.sourceProfile == SourceProfile.recordingInspired
+        ? ChordQuality.dominant13sus4
+        : ChordQuality.dominant7sus4;
+    final finalDominantQuality =
+        request.sourceProfile == SourceProfile.recordingInspired
+        ? ChordQuality.dominant7Alt
+        : null;
+    final variantTag = 'minor_iv_sus_authentic';
+    return _family(
+      family: SmartProgressionFamily.closingPlagalAuthenticHybrid,
+      destination: tonic,
+      queue: [
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: RomanNumeralId.ivMin7Minor,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          surfaceTags: const ['plagalColor'],
+          openedDebts: const [
+            ResolutionDebt(
+              debtType: ResolutionDebtType.predominantToDominant,
+              targetLabel: 'minor authentic dominant',
+              deadline: 1,
+              severity: 2,
+            ),
+          ],
+        ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: RomanNumeralId.vDom7,
+          renderQualityOverride: susQuality,
+          dominantContext: DominantContext.susDominant,
+          dominantIntent: DominantIntent.susDelay,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          satisfiedDebtTypes: const [ResolutionDebtType.predominantToDominant],
+          openedDebts: const [
+            ResolutionDebt(
+              debtType: ResolutionDebtType.susResolve,
+              targetLabel: 'same-root dominant release',
+              deadline: 1,
+              severity: 2,
+            ),
+          ],
+          surfaceTags: const ['plagalColor', 'susDelay'],
+        ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: RomanNumeralId.vDom7,
+          renderQualityOverride: finalDominantQuality,
+          dominantContext: DominantContext.primaryMinor,
+          dominantIntent: DominantIntent.primaryAuthenticMinor,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          satisfiedDebtTypes: const [ResolutionDebtType.susResolve],
+          openedDebts: const [
+            ResolutionDebt(
+              debtType: ResolutionDebtType.dominantResolve,
+              targetLabel: 'minor i cadence',
+              deadline: 1,
+              severity: 2,
+            ),
+          ],
+          surfaceTags: const ['plagalColor'],
+        ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: tonic,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          cadentialArrival: true,
+          satisfiedDebtTypes: const [ResolutionDebtType.dominantResolve],
+          surfaceTags: tonic == RomanNumeralId.iMinMaj7
+              ? const ['plagalColor', 'tonicMinorMaj7']
+              : tonic == RomanNumeralId.iMin6
+              ? const ['plagalColor', 'tonicMinor6']
+              : const ['plagalColor'],
         ),
       ],
     );
@@ -2022,7 +5207,18 @@ class SmartGeneratorHelper {
     if (request.currentKeyCenter.mode != KeyMode.minor) {
       return null;
     }
-    final tonic = _selectMinorArrivalFromContext(request.sourceProfile);
+    final phraseContext = _phraseContextForRequest(request);
+    final tonic = _selectMinorArrivalFromContext(
+      request.sourceProfile,
+      phraseContext,
+    );
+    final useSusRelease =
+        request.sourceProfile == SourceProfile.recordingInspired &&
+        phraseContext.phraseRole != PhraseRole.opener;
+    final patternTag = _familyTag(SmartProgressionFamily.minorIiVAltI);
+    final variantTag = useSusRelease
+        ? 'ii_halfdim_v_sus_v_alt_i'
+        : 'ii_halfdim_v_alt_i';
     return _family(
       family: SmartProgressionFamily.minorIiVAltI,
       destination: tonic,
@@ -2030,19 +5226,53 @@ class SmartGeneratorHelper {
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.iiHalfDiminishedMinor,
-          patternTag: _familyTag(SmartProgressionFamily.minorIiVAltI),
+          patternTag: patternTag,
+          variantTag: variantTag,
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.vDom7,
-          dominantContext: DominantContext.primaryMinor,
-          patternTag: _familyTag(SmartProgressionFamily.minorIiVAltI),
+          dominantContext: useSusRelease
+              ? DominantContext.susDominant
+              : DominantContext.primaryMinor,
+          dominantIntent: useSusRelease
+              ? DominantIntent.susDelay
+              : DominantIntent.primaryAuthenticMinor,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          surfaceTags: useSusRelease ? const ['susDelay'] : const [],
+          openedDebts: useSusRelease
+              ? const [
+                  ResolutionDebt(
+                    debtType: ResolutionDebtType.susResolve,
+                    targetLabel: 'minor dominant release',
+                    deadline: 1,
+                    severity: 2,
+                  ),
+                ]
+              : const [],
         ),
+        if (useSusRelease)
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: RomanNumeralId.vDom7,
+            dominantContext: DominantContext.primaryMinor,
+            dominantIntent: DominantIntent.primaryAuthenticMinor,
+            patternTag: patternTag,
+            variantTag: variantTag,
+            satisfiedDebtTypes: const [ResolutionDebtType.susResolve],
+          ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: tonic,
-          patternTag: _familyTag(SmartProgressionFamily.minorIiVAltI),
+          patternTag: patternTag,
+          variantTag: variantTag,
           cadentialArrival: true,
+          surfaceTags: tonic == RomanNumeralId.iMinMaj7
+              ? const ['tonicMinorMaj7']
+              : tonic == RomanNumeralId.iMin6
+              ? const ['tonicMinor6']
+              : const [],
         ),
       ],
     );
@@ -2055,6 +5285,7 @@ class SmartGeneratorHelper {
     if (request.currentKeyCenter.mode != KeyMode.minor) {
       return null;
     }
+    final patternTag = _familyTag(SmartProgressionFamily.minorLineCliche);
     return _family(
       family: SmartProgressionFamily.minorLineCliche,
       destination: RomanNumeralId.iMin6,
@@ -2063,18 +5294,23 @@ class SmartGeneratorHelper {
           _queuedChord(
             keyCenter: request.currentKeyCenter,
             roman: RomanNumeralId.iMinMaj7,
-            patternTag: _familyTag(SmartProgressionFamily.minorLineCliche),
+            patternTag: patternTag,
+            variantTag: 'full_line_cliche',
+            surfaceTags: const ['tonicMinorMaj7'],
           ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.iMin7,
-          patternTag: _familyTag(SmartProgressionFamily.minorLineCliche),
+          patternTag: patternTag,
+          variantTag: 'full_line_cliche',
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.iMin6,
-          patternTag: _familyTag(SmartProgressionFamily.minorLineCliche),
+          patternTag: patternTag,
+          variantTag: 'full_line_cliche',
           cadentialArrival: true,
+          surfaceTags: const ['tonicMinor6'],
         ),
       ],
     );
@@ -2087,6 +5323,15 @@ class SmartGeneratorHelper {
         !request.modalInterchangeEnabled) {
       return null;
     }
+    final phraseContext = _phraseContextForRequest(request);
+    final useAuthenticHybrid =
+        request.sourceProfile == SourceProfile.recordingInspired &&
+        (phraseContext.phraseRole == PhraseRole.cadence ||
+            phraseContext.phraseRole == PhraseRole.release);
+    final patternTag = _familyTag(SmartProgressionFamily.backdoorIvmBviiI);
+    final variantTag = useAuthenticHybrid
+        ? 'hybrid_authentic'
+        : 'plain_backdoor';
     return _family(
       family: SmartProgressionFamily.backdoorIvmBviiI,
       destination: RomanNumeralId.iMaj69,
@@ -2098,19 +5343,885 @@ class SmartGeneratorHelper {
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.borrowedIvMin7,
-          patternTag: _familyTag(SmartProgressionFamily.backdoorIvmBviiI),
+          patternTag: patternTag,
+          variantTag: variantTag,
+          surfaceTags: const ['backdoorFlavor'],
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.borrowedFlatVII7,
           dominantContext: DominantContext.backdoor,
-          patternTag: _familyTag(SmartProgressionFamily.backdoorIvmBviiI),
+          dominantIntent: DominantIntent.backdoor,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          surfaceTags: const ['backdoorFlavor'],
         ),
+        if (useAuthenticHybrid)
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: RomanNumeralId.vDom7,
+            dominantContext: DominantContext.primaryMajor,
+            dominantIntent: DominantIntent.primaryAuthenticMajor,
+            patternTag: patternTag,
+            variantTag: variantTag,
+            surfaceTags: const ['susDelay'],
+          ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.iMaj69,
-          patternTag: _familyTag(SmartProgressionFamily.backdoorIvmBviiI),
+          patternTag: patternTag,
+          variantTag: variantTag,
           cadentialArrival: true,
+          surfaceTags: const ['tonicMaj69', 'backdoorFlavor'],
+        ),
+      ],
+    );
+  }
+
+  static _FamilyPlan? _buildBackdoorRecursivePrepFamily({
+    required Random random,
+    required SmartStepRequest request,
+  }) {
+    if (request.currentKeyCenter.mode != KeyMode.major ||
+        !request.modalInterchangeEnabled ||
+        request.jazzPreset != JazzPreset.advanced) {
+      return null;
+    }
+    final phraseContext = _phraseContextForRequest(request);
+    final cadentialZone =
+        phraseContext.phraseRole == PhraseRole.preCadence ||
+        phraseContext.phraseRole == PhraseRole.cadence ||
+        phraseContext.phraseRole == PhraseRole.release;
+    if (!cadentialZone && phraseContext.sectionRole != SectionRole.bridgeLike) {
+      return null;
+    }
+
+    final patternTag = _familyTag(SmartProgressionFamily.backdoorRecursivePrep);
+    final arrivalRoman = _selectMajorArrivalRoman(
+      phraseContext,
+      request.sourceProfile,
+    );
+    final arrivalKind = _selectMajorArrivalChordKind(
+      phraseContext,
+      request.sourceProfile,
+    );
+    final useExtendedPrep =
+        request.sourceProfile == SourceProfile.recordingInspired &&
+        (phraseContext.phraseRole == PhraseRole.release ||
+            phraseContext.sectionRole == SectionRole.tag) &&
+        random.nextInt(100) < 52;
+    final variantTag = useExtendedPrep
+        ? 'flatIII_flatVI_recursive_backdoor'
+        : 'flatVI_recursive_backdoor';
+    return _family(
+      family: SmartProgressionFamily.backdoorRecursivePrep,
+      destination: arrivalRoman,
+      modalCandidates: useExtendedPrep
+          ? const [
+              RomanNumeralId.borrowedFlatIIIMaj7,
+              RomanNumeralId.borrowedFlatVIMaj7,
+              RomanNumeralId.borrowedIvMin7,
+              RomanNumeralId.borrowedFlatVII7,
+            ]
+          : const [
+              RomanNumeralId.borrowedFlatVIMaj7,
+              RomanNumeralId.borrowedIvMin7,
+              RomanNumeralId.borrowedFlatVII7,
+            ],
+      queue: [
+        if (useExtendedPrep)
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: RomanNumeralId.borrowedFlatIIIMaj7,
+            patternTag: patternTag,
+            variantTag: variantTag,
+            surfaceTags: const ['backdoorFlavor'],
+            openedDebts: const [
+              ResolutionDebt(
+                debtType: ResolutionDebtType.predominantToDominant,
+                targetLabel: 'ivm backdoor chain',
+                deadline: 3,
+                severity: 1,
+              ),
+            ],
+          ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: RomanNumeralId.borrowedFlatVIMaj7,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          surfaceTags: const ['backdoorFlavor'],
+          openedDebts: const [
+            ResolutionDebt(
+              debtType: ResolutionDebtType.predominantToDominant,
+              targetLabel: 'bVII backdoor dominant',
+              deadline: 2,
+              severity: 2,
+            ),
+          ],
+        ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: RomanNumeralId.borrowedIvMin7,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          surfaceTags: const ['backdoorFlavor'],
+        ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: RomanNumeralId.borrowedFlatVII7,
+          dominantContext: DominantContext.backdoor,
+          dominantIntent: DominantIntent.backdoor,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          satisfiedDebtTypes: const [ResolutionDebtType.predominantToDominant],
+          openedDebts: const [
+            ResolutionDebt(
+              debtType: ResolutionDebtType.dominantResolve,
+              targetLabel: 'I backdoor arrival',
+              deadline: 1,
+              severity: 2,
+            ),
+          ],
+          surfaceTags: const ['backdoorFlavor'],
+        ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: arrivalRoman,
+          plannedChordKind: arrivalKind,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          cadentialArrival: true,
+          satisfiedDebtTypes: const [ResolutionDebtType.dominantResolve],
+          surfaceTags: arrivalKind == PlannedChordKind.tonicSix
+              ? const ['backdoorFlavor', 'tonicAdd6']
+              : arrivalRoman == RomanNumeralId.iMaj69
+              ? const ['backdoorFlavor', 'tonicMaj69']
+              : const ['backdoorFlavor'],
+        ),
+      ],
+    );
+  }
+
+  static _FamilyPlan? _buildClassicalPredominantColorFamily({
+    required Random random,
+    required SmartStepRequest request,
+  }) {
+    if (request.currentKeyCenter.mode != KeyMode.major ||
+        !request.modalInterchangeEnabled) {
+      return null;
+    }
+    final phraseContext = _phraseContextForRequest(request);
+    final cadentialZone =
+        phraseContext.phraseRole == PhraseRole.preCadence ||
+        phraseContext.phraseRole == PhraseRole.cadence ||
+        phraseContext.phraseRole == PhraseRole.release;
+    final bridgeContinuation =
+        phraseContext.sectionRole == SectionRole.bridgeLike &&
+        phraseContext.phraseRole == PhraseRole.continuation;
+    if (!cadentialZone && !bridgeContinuation) {
+      return null;
+    }
+
+    final patternTag = _familyTag(
+      SmartProgressionFamily.classicalPredominantColor,
+    );
+    final arrivalRoman = _selectMajorArrivalRoman(
+      phraseContext,
+      request.sourceProfile,
+    );
+    final arrivalKind = _selectMajorArrivalChordKind(
+      phraseContext,
+      request.sourceProfile,
+    );
+    final useAug6Inspired =
+        request.sourceProfile == SourceProfile.recordingInspired &&
+        (phraseContext.phraseRole == PhraseRole.cadence ||
+            phraseContext.sectionRole == SectionRole.bridgeLike) &&
+        random.nextInt(100) < 42;
+    final useSusRelease =
+        !useAug6Inspired &&
+        request.sourceProfile == SourceProfile.recordingInspired &&
+        phraseContext.phraseRole != PhraseRole.release &&
+        random.nextInt(100) < 48;
+    final variantTag = useAug6Inspired
+        ? 'aug6_inspired_predominant'
+        : useSusRelease
+        ? 'neapolitan_sus_release'
+        : 'neapolitan_predominant';
+    final predominantTags = useAug6Inspired
+        ? const ['aug6Predominant', 'rareColor']
+        : const ['neapolitanPredominant', 'rareColor'];
+
+    return _family(
+      family: SmartProgressionFamily.classicalPredominantColor,
+      destination: arrivalRoman,
+      modalCandidates: const [RomanNumeralId.borrowedFlatIIMaj7],
+      queue: [
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: RomanNumeralId.borrowedFlatIIMaj7,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          surfaceTags: predominantTags,
+          openedDebts: [
+            ResolutionDebt(
+              debtType: ResolutionDebtType.rareColorPayoff,
+              targetLabel: 'authentic dominant payoff',
+              deadline: useSusRelease ? 3 : 2,
+              severity: 3,
+            ),
+            const ResolutionDebt(
+              debtType: ResolutionDebtType.predominantToDominant,
+              targetLabel: 'dominant arrival after predominant color',
+              deadline: 2,
+              severity: 2,
+            ),
+          ],
+        ),
+        if (useSusRelease)
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: RomanNumeralId.vDom7,
+            dominantContext: DominantContext.susDominant,
+            dominantIntent: DominantIntent.susDelay,
+            patternTag: patternTag,
+            variantTag: variantTag,
+            surfaceTags: [...predominantTags, 'susDelay'],
+            openedDebts: const [
+              ResolutionDebt(
+                debtType: ResolutionDebtType.susResolve,
+                targetLabel: 'same-root dominant release',
+                deadline: 1,
+                severity: 2,
+              ),
+            ],
+          ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: RomanNumeralId.vDom7,
+          dominantContext: DominantContext.primaryMajor,
+          dominantIntent: DominantIntent.primaryAuthenticMajor,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          satisfiedDebtTypes: [
+            ResolutionDebtType.rareColorPayoff,
+            ResolutionDebtType.predominantToDominant,
+            if (useSusRelease) ResolutionDebtType.susResolve,
+          ],
+          openedDebts: const [
+            ResolutionDebt(
+              debtType: ResolutionDebtType.dominantResolve,
+              targetLabel: 'classical predominant cadence',
+              deadline: 1,
+              severity: 2,
+            ),
+          ],
+          surfaceTags: predominantTags,
+        ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: arrivalRoman,
+          plannedChordKind: arrivalKind,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          cadentialArrival: true,
+          satisfiedDebtTypes: const [ResolutionDebtType.dominantResolve],
+          surfaceTags: arrivalKind == PlannedChordKind.tonicSix
+              ? [...predominantTags, 'tonicAdd6']
+              : arrivalRoman == RomanNumeralId.iMaj69
+              ? [...predominantTags, 'tonicMaj69']
+              : predominantTags,
+        ),
+      ],
+    );
+  }
+
+  static _FamilyPlan? _buildMixturePivotModulationFamily({
+    required SmartStepRequest request,
+    required KeyCenter targetCenter,
+  }) {
+    if (!request.modalInterchangeEnabled ||
+        targetCenter.relationToParent != KeyRelation.parallel) {
+      return null;
+    }
+    final phraseContext = _phraseContextForRequest(request);
+    final cadentialZone =
+        phraseContext.phraseRole == PhraseRole.preCadence ||
+        phraseContext.phraseRole == PhraseRole.cadence ||
+        phraseContext.phraseRole == PhraseRole.release;
+    final bridgeContinuation =
+        phraseContext.sectionRole == SectionRole.bridgeLike &&
+        phraseContext.phraseRole == PhraseRole.continuation;
+    if (!cadentialZone && !bridgeContinuation) {
+      return null;
+    }
+
+    final pivot = _findMixturePivotChord(
+      currentCenter: request.currentKeyCenter,
+      targetCenter: targetCenter,
+      currentRomanNumeralId: request.currentRomanNumeralId,
+    );
+    if (pivot == null) {
+      return null;
+    }
+
+    final patternTag = _familyTag(
+      SmartProgressionFamily.mixturePivotModulation,
+    );
+    final variantTag =
+        'mixture_${request.currentKeyCenter.mode.name}_to_${targetCenter.mode.name}_${targetCenter.relationToParent.name}';
+    final rawCadence = _cadenceQueueForTarget(
+      targetCenter: targetCenter.copyWith(enteredBy: CenterEntryMethod.pivot),
+      patternTag: patternTag,
+      variantTag: variantTag,
+      modulationAttempt: true,
+    );
+    if (rawCadence.isEmpty) {
+      return null;
+    }
+
+    final skipsCadenceHead = _sharesChordIdentity(
+      firstCenter: request.currentKeyCenter,
+      firstRoman: pivot.finalRomanNumeralId,
+      secondCenter: targetCenter,
+      secondRoman: rawCadence.first.finalRomanNumeralId,
+    );
+    final cadence = skipsCadenceHead ? rawCadence.skip(1).toList() : rawCadence;
+    if (cadence.isEmpty) {
+      return null;
+    }
+    final arrival = cadence.firstWhere(
+      (item) => item.cadentialArrival,
+      orElse: () => cadence.last,
+    );
+    final pivotTags = <String>['mixturePivot', 'parallelPivot'];
+    final modalCandidates = request.currentKeyCenter.mode == KeyMode.major
+        ? const [
+            RomanNumeralId.borrowedIiHalfDiminished7,
+            RomanNumeralId.borrowedIvMin7,
+            RomanNumeralId.borrowedFlatIIIMaj7,
+            RomanNumeralId.borrowedFlatVIMaj7,
+          ]
+        : const <RomanNumeralId>[];
+    return _family(
+      family: SmartProgressionFamily.mixturePivotModulation,
+      destination: arrival.finalRomanNumeralId,
+      modalCandidates: modalCandidates,
+      modulationCandidates: [targetCenter],
+      queue: [
+        pivot.copyWith(
+          patternTag: patternTag,
+          variantTag: variantTag,
+          modulationAttempt: true,
+          modulationConfidence: targetCenter.confidence,
+          openScope: LocalScope(
+            center: targetCenter,
+            headType: ScopeHeadType.pivotArea,
+            confidence: targetCenter.confidence,
+            expiresIn: 2,
+          ),
+          openedDebts: skipsCadenceHead
+              ? rawCadence.first.openedDebts
+              : const [],
+          surfaceTags: [...pivot.surfaceTags, ...pivotTags],
+        ),
+        ...cadence,
+      ],
+    );
+  }
+
+  static _FamilyPlan? _buildChromaticMediantCommonToneModulationFamily({
+    required SmartStepRequest request,
+    required _ModulationOpportunity opportunity,
+  }) {
+    if (request.jazzPreset != JazzPreset.advanced ||
+        !request.modalInterchangeEnabled ||
+        request.currentKeyCenter.mode != KeyMode.major) {
+      return null;
+    }
+    final phraseContext = _phraseContextForRequest(request);
+    final cadentialZone =
+        phraseContext.phraseRole == PhraseRole.preCadence ||
+        phraseContext.phraseRole == PhraseRole.cadence ||
+        phraseContext.phraseRole == PhraseRole.release;
+    final bridgeContinuation =
+        phraseContext.sectionRole == SectionRole.bridgeLike &&
+        phraseContext.phraseRole == PhraseRole.continuation;
+    if (!cadentialZone && !bridgeContinuation) {
+      return null;
+    }
+
+    final targetCenter = _supportedChromaticMediantTargetForRequest(
+      request: request,
+      candidates: opportunity.candidates,
+    );
+    if (targetCenter == null) {
+      return null;
+    }
+    final pivotRoman = _chromaticMediantPivotRomanForTarget(
+      currentCenter: request.currentKeyCenter,
+      targetCenter: targetCenter,
+    );
+    if (pivotRoman == null || request.currentRomanNumeralId == pivotRoman) {
+      return null;
+    }
+
+    final patternTag = _familyTag(
+      SmartProgressionFamily.chromaticMediantCommonToneModulation,
+    );
+    final pivotVariant = pivotRoman == RomanNumeralId.borrowedFlatIIIMaj7
+        ? 'flatIII'
+        : 'flatVI';
+    final variantTag =
+        'chromatic_mediant_${pivotVariant}_${targetCenter.tonicName}_${targetCenter.mode.name}';
+    final enteredTargetCenter = targetCenter.copyWith(
+      enteredBy: CenterEntryMethod.commonTone,
+    );
+    final rawCadence = _cadenceQueueForTarget(
+      targetCenter: enteredTargetCenter,
+      patternTag: patternTag,
+      variantTag: variantTag,
+      modulationAttempt: true,
+    );
+    if (rawCadence.isEmpty) {
+      return null;
+    }
+    final arrival = rawCadence.firstWhere(
+      (item) => item.cadentialArrival,
+      orElse: () => rawCadence.last,
+    );
+    final pivotTags = <String>[
+      'chromaticMediant',
+      'rareColor',
+      'commonTonePivot',
+    ];
+    final returnHomeDebts = _returnHomeDebtsForAwayArrival(
+      request: request,
+      finalTargetCenter: enteredTargetCenter,
+    );
+    final cadenceHead = rawCadence.first.copyWith(
+      surfaceTags: [...rawCadence.first.surfaceTags, 'chromaticMediantResolve'],
+      satisfiedDebtTypes: [
+        ...rawCadence.first.satisfiedDebtTypes,
+        ResolutionDebtType.rareColorPayoff,
+      ],
+    );
+    final cadenceTail = [
+      for (final item in rawCadence.skip(1))
+        item.cadentialArrival
+            ? item.copyWith(
+                surfaceTags: [
+                  ...item.surfaceTags,
+                  if (returnHomeDebts.isNotEmpty) 'returnHomePending',
+                ],
+                openedDebts: [...item.openedDebts, ...returnHomeDebts],
+              )
+            : item,
+    ];
+    return _family(
+      family: SmartProgressionFamily.chromaticMediantCommonToneModulation,
+      destination: arrival.finalRomanNumeralId,
+      modalCandidates: [pivotRoman],
+      modulationCandidates: [enteredTargetCenter],
+      queue: [
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: pivotRoman,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          modulationAttempt: true,
+          modulationConfidence: targetCenter.confidence,
+          openScope: LocalScope(
+            center: enteredTargetCenter,
+            headType: ScopeHeadType.pivotArea,
+            confidence: targetCenter.confidence,
+            expiresIn: 2,
+          ),
+          openedDebts: const [
+            ResolutionDebt(
+              debtType: ResolutionDebtType.rareColorPayoff,
+              targetLabel: 'chromatic mediant cadence payoff',
+              deadline: 1,
+              severity: 2,
+            ),
+          ],
+          surfaceTags: pivotTags,
+        ),
+        cadenceHead,
+        ...cadenceTail,
+      ],
+    );
+  }
+
+  static _FamilyPlan? _buildColtraneBurstFamily({
+    required SmartStepRequest request,
+    required _ModulationOpportunity opportunity,
+  }) {
+    if (request.jazzPreset != JazzPreset.advanced ||
+        request.modulationIntensity != ModulationIntensity.high ||
+        request.currentKeyCenter.mode != KeyMode.major) {
+      return null;
+    }
+    final phraseContext = _phraseContextForRequest(request);
+    final cadentialZone =
+        phraseContext.phraseRole == PhraseRole.preCadence ||
+        phraseContext.phraseRole == PhraseRole.cadence ||
+        phraseContext.phraseRole == PhraseRole.release;
+    final bridgeContinuation =
+        phraseContext.sectionRole == SectionRole.bridgeLike &&
+        phraseContext.phraseRole == PhraseRole.continuation;
+    if (!cadentialZone && !bridgeContinuation) {
+      return null;
+    }
+
+    final targets = _coltraneBurstTargetsForRequest(request);
+    if (targets.length < 2) {
+      return null;
+    }
+    final firstTarget = targets.first;
+    final secondTarget = targets[1];
+    final opportunityCoversTargets =
+        opportunity.candidates.any((candidate) => candidate == firstTarget) &&
+        opportunity.candidates.any((candidate) => candidate == secondTarget);
+    if (!opportunityCoversTargets) {
+      return null;
+    }
+
+    final patternTag = _familyTag(SmartProgressionFamily.coltraneBurst);
+    final variantTag =
+        'cycle_${request.currentKeyCenter.tonicName}_${firstTarget.tonicName}_${secondTarget.tonicName}';
+    final firstCadence = _cadenceQueueForTarget(
+      targetCenter: firstTarget.copyWith(
+        enteredBy: CenterEntryMethod.symmetric,
+      ),
+      patternTag: patternTag,
+      variantTag: variantTag,
+      modulationAttempt: true,
+    );
+    final secondCadence = _cadenceQueueForTarget(
+      targetCenter: secondTarget.copyWith(
+        enteredBy: CenterEntryMethod.symmetric,
+      ),
+      patternTag: patternTag,
+      variantTag: variantTag,
+      modulationAttempt: true,
+    );
+    if (firstCadence.length < 3 || secondCadence.length < 4) {
+      return null;
+    }
+
+    const cycleTags = <String>['coltraneBurst', 'symmetricCycle'];
+    final returnHomeDebts = _returnHomeDebtsForAwayArrival(
+      request: request,
+      finalTargetCenter: secondTarget,
+    );
+    final firstScope = LocalScope(
+      center: firstTarget,
+      headType: ScopeHeadType.pivotArea,
+      confidence: firstTarget.confidence,
+      expiresIn: 3,
+    );
+    final secondScope = LocalScope(
+      center: secondTarget,
+      headType: ScopeHeadType.pivotArea,
+      confidence: secondTarget.confidence,
+      expiresIn: 4,
+    );
+
+    return _family(
+      family: SmartProgressionFamily.coltraneBurst,
+      destination: secondCadence[2].finalRomanNumeralId,
+      modulationCandidates: [firstTarget, secondTarget],
+      queue: [
+        firstCadence[0].copyWith(
+          openScope: firstScope,
+          openedDebts: const [],
+          surfaceTags: [
+            ...firstCadence[0].surfaceTags,
+            ...cycleTags,
+            'cycleOne',
+          ],
+        ),
+        firstCadence[1].copyWith(
+          surfaceTags: [
+            ...firstCadence[1].surfaceTags,
+            ...cycleTags,
+            'cycleOne',
+          ],
+        ),
+        firstCadence[2].copyWith(
+          postModulationConfirmationsRemaining: 0,
+          surfaceTags: [
+            ...firstCadence[2].surfaceTags,
+            ...cycleTags,
+            'cycleOneArrival',
+          ],
+        ),
+        secondCadence[0].copyWith(
+          openScope: secondScope,
+          surfaceTags: [
+            ...secondCadence[0].surfaceTags,
+            ...cycleTags,
+            'cycleTwo',
+          ],
+        ),
+        secondCadence[1].copyWith(
+          surfaceTags: [
+            ...secondCadence[1].surfaceTags,
+            ...cycleTags,
+            'cycleTwo',
+          ],
+        ),
+        secondCadence[2].copyWith(
+          surfaceTags: [
+            ...secondCadence[2].surfaceTags,
+            ...cycleTags,
+            'cycleTwoArrival',
+            if (returnHomeDebts.isNotEmpty) 'returnHomePending',
+          ],
+          openedDebts: [...secondCadence[2].openedDebts, ...returnHomeDebts],
+        ),
+        secondCadence[3].copyWith(
+          surfaceTags: [
+            ...secondCadence[3].surfaceTags,
+            ...cycleTags,
+            'cycleConfirmation',
+          ],
+        ),
+      ],
+    );
+  }
+
+  static _FamilyPlan? _buildBridgeReturnHomeCadenceFamily({
+    required SmartStepRequest request,
+    required KeyCenter targetCenter,
+  }) {
+    final phraseContext = _phraseContextForRequest(request);
+    final pendingReturnFollowthrough =
+        request.currentTrace?.outstandingDebts.any(
+          (debt) => debt.debtType == ResolutionDebtType.returnHomeCadence,
+        ) ??
+        false;
+    if (!_isBridgeReturnWindow(phraseContext) ||
+        targetCenter == request.currentKeyCenter) {
+      return null;
+    }
+    final patternTag = _familyTag(
+      SmartProgressionFamily.bridgeReturnHomeCadence,
+    );
+    final variantTag =
+        'return_${request.currentKeyCenter.mode.name}_${request.currentKeyCenter.tonicName}_to_${targetCenter.mode.name}_${targetCenter.tonicName}';
+    final cadence = _cadenceQueueForTarget(
+      targetCenter: targetCenter.copyWith(
+        enteredBy: CenterEntryMethod.cadenceModulation,
+      ),
+      patternTag: patternTag,
+      variantTag: variantTag,
+      modulationAttempt: true,
+    );
+    if (cadence.isEmpty) {
+      return null;
+    }
+    final resolvedCadence = [
+      for (final chord in cadence)
+        chord.copyWith(
+          surfaceTags: [
+            ...chord.surfaceTags,
+            'bridgeReturn',
+            if (pendingReturnFollowthrough) 'returnHomeFollowthrough',
+            if (chord.cadentialArrival) 'returnHomePayoff',
+          ],
+          satisfiedDebtTypes: chord.cadentialArrival
+              ? [
+                  ...chord.satisfiedDebtTypes,
+                  ResolutionDebtType.returnHomeCadence,
+                ]
+              : chord.satisfiedDebtTypes,
+        ),
+    ];
+    return _family(
+      family: SmartProgressionFamily.bridgeReturnHomeCadence,
+      destination: resolvedCadence.length >= 3
+          ? resolvedCadence[2].finalRomanNumeralId
+          : resolvedCadence.last.finalRomanNumeralId,
+      modulationCandidates: [targetCenter],
+      queue: resolvedCadence,
+    );
+  }
+
+  static _FamilyPlan? _buildBridgeIVStabilizedByLocalIiVIFamily({
+    required Random random,
+    required SmartStepRequest request,
+  }) {
+    if (request.currentKeyCenter.mode != KeyMode.major) {
+      return null;
+    }
+    if (!request.secondaryDominantEnabled &&
+        !request.substituteDominantEnabled) {
+      return null;
+    }
+    final phraseContext = _phraseContextForRequest(request);
+    final activeScope = request.currentTrace?.activeLocalScope;
+    final hasSubdominantScope =
+        activeScope?.center.relationToParent == KeyRelation.subdominant;
+    if (phraseContext.sectionRole != SectionRole.bridgeLike &&
+        !hasSubdominantScope &&
+        random.nextInt(100) >= 18) {
+      return null;
+    }
+
+    final patternTag = _familyTag(
+      SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI,
+    );
+    final localIvCenter = KeyCenter(
+      tonicName: MusicTheory.resolveChordRootForCenter(
+        request.currentKeyCenter,
+        RomanNumeralId.ivMaj7,
+      ),
+      mode: KeyMode.major,
+      relationToParent: KeyRelation.subdominant,
+      enteredBy: CenterEntryMethod.tonicization,
+      confidence: 0.68,
+      confirmationsRemaining: 1,
+    );
+    final useSubstitute =
+        !request.secondaryDominantEnabled && request.substituteDominantEnabled;
+    final useSusRelease =
+        !useSubstitute &&
+        request.sourceProfile == SourceProfile.recordingInspired &&
+        phraseContext.phraseRole != PhraseRole.release;
+    final dominantRoman = useSubstitute
+        ? RomanNumeralId.substituteOfIV
+        : RomanNumeralId.secondaryOfIV;
+    final dominantContext = useSubstitute
+        ? DominantContext.tritoneSubstitute
+        : useSusRelease
+        ? DominantContext.susDominant
+        : DominantContext.secondaryToMajor;
+    final dominantIntent = useSubstitute
+        ? DominantIntent.tritoneSub
+        : useSusRelease
+        ? DominantIntent.susDelay
+        : DominantIntent.secondaryToMajor;
+    final variantTag = useSubstitute
+        ? 'bridge_local_ii_subv_i'
+        : useSusRelease
+        ? 'bridge_local_ii_v_sus_release_i'
+        : 'bridge_local_ii_v_i';
+    final arrivalQuality =
+        request.sourceProfile == SourceProfile.recordingInspired
+        ? ChordQuality.major69
+        : ChordQuality.major7;
+
+    return _family(
+      family: SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI,
+      destination: RomanNumeralId.ivMaj7,
+      appliedCandidates: [dominantRoman],
+      queue: [
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: RomanNumeralId.relatedIiOfIV,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          modulationKind: ModulationKind.tonicization,
+          openScope: LocalScope(
+            center: localIvCenter,
+            headType: ScopeHeadType.pivotArea,
+            confidence: 0.62,
+            expiresIn: 4,
+          ),
+          openedDebts: const [
+            ResolutionDebt(
+              debtType: ResolutionDebtType.predominantToDominant,
+              targetLabel: 'V7/IV',
+              deadline: 2,
+              severity: 2,
+            ),
+          ],
+          surfaceTags: const ['bridgeIVArea'],
+        ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: dominantRoman,
+          appliedType: _appliedTypeForRoman(dominantRoman),
+          resolutionTargetRomanId: RomanNumeralId.ivMaj7,
+          renderQualityOverride: useSubstitute
+              ? ChordQuality.dominant7Sharp11
+              : useSusRelease
+              ? ChordQuality.dominant13sus4
+              : null,
+          dominantContext: dominantContext,
+          dominantIntent: dominantIntent,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          modulationKind: ModulationKind.tonicization,
+          satisfiedDebtTypes: const [ResolutionDebtType.predominantToDominant],
+          openedDebts: useSubstitute
+              ? const [
+                  ResolutionDebt(
+                    debtType: ResolutionDebtType.dominantResolve,
+                    targetLabel: 'IV local arrival',
+                    deadline: 1,
+                    severity: 2,
+                  ),
+                ]
+              : const [
+                  ResolutionDebt(
+                    debtType: ResolutionDebtType.susResolve,
+                    targetLabel: 'same-root V7/IV release',
+                    deadline: 1,
+                    severity: 2,
+                  ),
+                ],
+          surfaceTags: useSubstitute
+              ? const ['bridgeIVArea', 'tritoneSub']
+              : useSusRelease
+              ? const ['bridgeIVArea', 'susDelay']
+              : const ['bridgeIVArea'],
+        ),
+        if (useSusRelease)
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: RomanNumeralId.secondaryOfIV,
+            appliedType: AppliedType.secondary,
+            resolutionTargetRomanId: RomanNumeralId.ivMaj7,
+            dominantContext: DominantContext.secondaryToMajor,
+            dominantIntent: DominantIntent.secondaryToMajor,
+            patternTag: patternTag,
+            variantTag: variantTag,
+            modulationKind: ModulationKind.tonicization,
+            satisfiedDebtTypes: const [ResolutionDebtType.susResolve],
+            openedDebts: const [
+              ResolutionDebt(
+                debtType: ResolutionDebtType.dominantResolve,
+                targetLabel: 'IV local arrival',
+                deadline: 1,
+                severity: 2,
+              ),
+            ],
+            surfaceTags: const ['bridgeIVArea'],
+          ),
+        _queuedChord(
+          keyCenter: request.currentKeyCenter,
+          roman: RomanNumeralId.ivMaj7,
+          renderQualityOverride: arrivalQuality,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          modulationKind: ModulationKind.tonicization,
+          cadentialArrival: true,
+          openScope: LocalScope(
+            center: localIvCenter.copyWith(confirmationsRemaining: 1),
+            headType: ScopeHeadType.tonicHead,
+            confidence: 0.76,
+            expiresIn: 2,
+          ),
+          satisfiedDebtTypes: const [ResolutionDebtType.dominantResolve],
+          surfaceTags: [
+            'bridgeIVArea',
+            'localIVStabilized',
+            if (arrivalQuality == ChordQuality.major69) 'tonicMaj69',
+          ],
         ),
       ],
     );
@@ -2127,6 +6238,34 @@ class SmartGeneratorHelper {
     if (request.currentKeyCenter.mode != KeyMode.major) {
       return null;
     }
+    final patternTag = _familyTag(
+      SmartProgressionFamily.dominantChainBridgeStyle,
+    );
+    final phraseContext = _phraseContextForRequest(request);
+    final variantTag = phraseContext.sectionRole == SectionRole.bridgeLike
+        ? 'bridge_long_chain'
+        : 'dominant_chain';
+    final useSubstituteLead =
+        request.substituteDominantEnabled && random.nextInt(100) < 12;
+    final inferredHomeCenter = _returnHomeTargetCenterForRequest(request);
+    final opensReturnHomeDebt =
+        inferredHomeCenter != null &&
+        inferredHomeCenter != request.currentKeyCenter &&
+        (phraseContext.sectionRole == SectionRole.bridgeLike ||
+            phraseContext.sectionRole == SectionRole.turnaroundTail ||
+            phraseContext.sectionRole == SectionRole.tag);
+    final initialScope = LocalScope(
+      center: KeyCenter(
+        tonicName: MusicTheory.resolveChordRootForCenter(
+          request.currentKeyCenter,
+          RomanNumeralId.iiiMin7,
+        ),
+        mode: KeyMode.minor,
+      ),
+      headType: ScopeHeadType.dominantHead,
+      confidence: 0.64,
+      expiresIn: 2,
+    );
     return _family(
       family: SmartProgressionFamily.dominantChainBridgeStyle,
       destination: RomanNumeralId.iMaj69,
@@ -2139,21 +6278,30 @@ class SmartGeneratorHelper {
       queue: [
         _queuedChord(
           keyCenter: request.currentKeyCenter,
-          roman: request.substituteDominantEnabled && random.nextInt(100) < 12
+          roman: useSubstituteLead
               ? RomanNumeralId.substituteOfIII
               : RomanNumeralId.secondaryOfIII,
-          appliedType:
-              request.substituteDominantEnabled && random.nextInt(100) < 12
+          appliedType: useSubstituteLead
               ? AppliedType.substitute
               : AppliedType.secondary,
           resolutionTargetRomanId: RomanNumeralId.iiiMin7,
-          dominantContext:
-              request.substituteDominantEnabled && random.nextInt(100) < 12
+          dominantContext: useSubstituteLead
               ? DominantContext.tritoneSubstitute
               : DominantContext.secondaryToMinor,
-          patternTag: _familyTag(
-            SmartProgressionFamily.dominantChainBridgeStyle,
-          ),
+          dominantIntent: useSubstituteLead
+              ? DominantIntent.tritoneSub
+              : DominantIntent.dominantHeadedScope,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          openScope: initialScope,
+          openedDebts: const [
+            ResolutionDebt(
+              debtType: ResolutionDebtType.dominantResolve,
+              targetLabel: 'bridge dominant chain',
+              deadline: 4,
+              severity: 2,
+            ),
+          ],
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
@@ -2161,19 +6309,19 @@ class SmartGeneratorHelper {
           appliedType: AppliedType.secondary,
           resolutionTargetRomanId: RomanNumeralId.viMin7,
           dominantContext: DominantContext.secondaryToMinor,
-          patternTag: _familyTag(
-            SmartProgressionFamily.dominantChainBridgeStyle,
-          ),
+          dominantIntent: DominantIntent.secondaryToMinor,
+          patternTag: patternTag,
+          variantTag: variantTag,
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.secondaryOfII,
           appliedType: AppliedType.secondary,
           resolutionTargetRomanId: RomanNumeralId.iiMin7,
-          dominantContext: DominantContext.secondaryToMajor,
-          patternTag: _familyTag(
-            SmartProgressionFamily.dominantChainBridgeStyle,
-          ),
+          dominantContext: DominantContext.secondaryToMinor,
+          dominantIntent: DominantIntent.secondaryToMinor,
+          patternTag: patternTag,
+          variantTag: variantTag,
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
@@ -2181,25 +6329,40 @@ class SmartGeneratorHelper {
           appliedType: AppliedType.secondary,
           resolutionTargetRomanId: RomanNumeralId.vDom7,
           dominantContext: DominantContext.dominantIILydian,
-          patternTag: _familyTag(
-            SmartProgressionFamily.dominantChainBridgeStyle,
-          ),
+          dominantIntent: DominantIntent.lydianDominant,
+          patternTag: patternTag,
+          variantTag: variantTag,
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.vDom7,
           dominantContext: DominantContext.primaryMajor,
-          patternTag: _familyTag(
-            SmartProgressionFamily.dominantChainBridgeStyle,
-          ),
+          dominantIntent: DominantIntent.primaryAuthenticMajor,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          satisfiedDebtTypes: const [ResolutionDebtType.dominantResolve],
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.iMaj69,
-          patternTag: _familyTag(
-            SmartProgressionFamily.dominantChainBridgeStyle,
-          ),
+          patternTag: patternTag,
+          variantTag: variantTag,
           cadentialArrival: true,
+          surfaceTags: [
+            'tonicMaj69',
+            if (opensReturnHomeDebt) 'returnHomePending',
+          ],
+          openedDebts: opensReturnHomeDebt
+              ? [
+                  ResolutionDebt(
+                    debtType: ResolutionDebtType.returnHomeCadence,
+                    targetLabel: inferredHomeCenter.displayName,
+                    deadline: 4,
+                    severity: 3,
+                  ),
+                ]
+              : const [],
+          closeScope: true,
         ),
       ],
     );
@@ -2218,10 +6381,14 @@ class SmartGeneratorHelper {
     }
 
     final targetRoll = random.nextInt(100);
+    final patternTag = _familyTag(
+      SmartProgressionFamily.appliedDominantWithRelatedIi,
+    );
     RomanNumeralId relatedIi;
     RomanNumeralId targetRoman;
     RomanNumeralId dominantRoman;
     DominantContext dominantContext;
+    DominantIntent dominantIntent;
     if (targetRoll < 35) {
       relatedIi = RomanNumeralId.iiiMin7;
       targetRoman = RomanNumeralId.iiMin7;
@@ -2231,7 +6398,10 @@ class SmartGeneratorHelper {
           : RomanNumeralId.secondaryOfII;
       dominantContext = dominantRoman == RomanNumeralId.substituteOfII
           ? DominantContext.tritoneSubstitute
-          : DominantContext.secondaryToMajor;
+          : DominantContext.secondaryToMinor;
+      dominantIntent = dominantRoman == RomanNumeralId.substituteOfII
+          ? DominantIntent.tritoneSub
+          : DominantIntent.secondaryToMinor;
     } else if (targetRoll < 70) {
       relatedIi = RomanNumeralId.viiHalfDiminished7;
       targetRoman = RomanNumeralId.viMin7;
@@ -2242,6 +6412,9 @@ class SmartGeneratorHelper {
       dominantContext = dominantRoman == RomanNumeralId.substituteOfVI
           ? DominantContext.tritoneSubstitute
           : DominantContext.secondaryToMinor;
+      dominantIntent = dominantRoman == RomanNumeralId.substituteOfVI
+          ? DominantIntent.tritoneSub
+          : DominantIntent.secondaryToMinor;
     } else {
       relatedIi = RomanNumeralId.relatedIiOfIII;
       targetRoman = RomanNumeralId.iiiMin7;
@@ -2252,9 +6425,28 @@ class SmartGeneratorHelper {
       dominantContext = dominantRoman == RomanNumeralId.substituteOfIII
           ? DominantContext.tritoneSubstitute
           : DominantContext.secondaryToMinor;
+      dominantIntent = dominantRoman == RomanNumeralId.substituteOfIII
+          ? DominantIntent.tritoneSub
+          : DominantIntent.secondaryToMinor;
     }
 
     final appliedType = _appliedTypeForRoman(dominantRoman);
+    final targetMode = _appliedTargetMode(
+      request.currentKeyCenter,
+      targetRoman,
+    );
+    final targetRoot = MusicTheory.resolveChordRootForCenter(
+      request.currentKeyCenter,
+      targetRoman,
+    );
+    final scope = LocalScope(
+      center: KeyCenter(tonicName: targetRoot, mode: targetMode),
+      headType: ScopeHeadType.dominantHead,
+      confidence: 0.66,
+      expiresIn: 3,
+    );
+    final variantTag =
+        'ii_v_of_${MusicTheory.romanTokenOf(targetRoman).replaceAll('maj7', '').replaceAll('7', '').replaceAll('/', '_')}';
     return _family(
       family: SmartProgressionFamily.appliedDominantWithRelatedIi,
       destination: targetRoman,
@@ -2263,10 +6455,10 @@ class SmartGeneratorHelper {
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: relatedIi,
-          patternTag: _familyTag(
-            SmartProgressionFamily.appliedDominantWithRelatedIi,
-          ),
+          patternTag: patternTag,
+          variantTag: variantTag,
           modulationKind: ModulationKind.tonicization,
+          openScope: scope,
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
@@ -2274,18 +6466,30 @@ class SmartGeneratorHelper {
           appliedType: appliedType,
           resolutionTargetRomanId: targetRoman,
           dominantContext: dominantContext,
-          patternTag: _familyTag(
-            SmartProgressionFamily.appliedDominantWithRelatedIi,
-          ),
+          dominantIntent: dominantIntent,
+          patternTag: patternTag,
+          variantTag: variantTag,
           modulationKind: ModulationKind.tonicization,
+          openedDebts: [
+            ResolutionDebt(
+              debtType: ResolutionDebtType.dominantResolve,
+              targetLabel: MusicTheory.romanTokenOf(targetRoman),
+              deadline: 1,
+              severity: 2,
+            ),
+          ],
+          surfaceTags: dominantIntent == DominantIntent.tritoneSub
+              ? const ['tritoneSub']
+              : const [],
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: targetRoman,
-          patternTag: _familyTag(
-            SmartProgressionFamily.appliedDominantWithRelatedIi,
-          ),
+          patternTag: patternTag,
+          variantTag: variantTag,
           modulationKind: ModulationKind.tonicization,
+          satisfiedDebtTypes: const [ResolutionDebtType.dominantResolve],
+          closeScope: true,
         ),
       ],
     );
@@ -2297,6 +6501,7 @@ class SmartGeneratorHelper {
     if (request.currentKeyCenter.mode != KeyMode.major) {
       return null;
     }
+    final patternTag = _familyTag(SmartProgressionFamily.passingDimToIi);
     return _family(
       family: SmartProgressionFamily.passingDimToIi,
       destination: RomanNumeralId.iiMin7,
@@ -2304,18 +6509,32 @@ class SmartGeneratorHelper {
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.sharpIDim7,
-          patternTag: _familyTag(SmartProgressionFamily.passingDimToIi),
+          patternTag: patternTag,
+          variantTag: 'i_sharpIdim_ii_v',
+          surfaceTags: const ['commonToneDim', 'rareColor'],
+          openedDebts: const [
+            ResolutionDebt(
+              debtType: ResolutionDebtType.rareColorPayoff,
+              targetLabel: 'ii arrival',
+              deadline: 1,
+              severity: 2,
+            ),
+          ],
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.iiMin7,
-          patternTag: _familyTag(SmartProgressionFamily.passingDimToIi),
+          patternTag: patternTag,
+          variantTag: 'i_sharpIdim_ii_v',
+          satisfiedDebtTypes: const [ResolutionDebtType.rareColorPayoff],
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.vDom7,
           dominantContext: DominantContext.primaryMajor,
-          patternTag: _familyTag(SmartProgressionFamily.passingDimToIi),
+          dominantIntent: DominantIntent.primaryAuthenticMajor,
+          patternTag: patternTag,
+          variantTag: 'i_sharpIdim_ii_v',
         ),
       ],
     );
@@ -2325,8 +6544,12 @@ class SmartGeneratorHelper {
     required KeyCenter targetCenter,
   }) {
     final cadence = _cadenceQueueForTarget(
-      targetCenter: targetCenter,
+      targetCenter: targetCenter.copyWith(
+        enteredBy: CenterEntryMethod.cadenceModulation,
+      ),
       patternTag: _familyTag(SmartProgressionFamily.cadenceBasedRealModulation),
+      variantTag:
+          'cadence_${targetCenter.relationToParent.name}_${targetCenter.mode.name}',
       modulationAttempt: true,
     );
     if (cadence.isEmpty) {
@@ -2334,7 +6557,9 @@ class SmartGeneratorHelper {
     }
     return _family(
       family: SmartProgressionFamily.cadenceBasedRealModulation,
-      destination: cadence.last.finalRomanNumeralId,
+      destination: cadence.length >= 3
+          ? cadence[2].finalRomanNumeralId
+          : cadence.last.finalRomanNumeralId,
       modulationCandidates: [targetCenter],
       queue: cadence,
     );
@@ -2353,20 +6578,33 @@ class SmartGeneratorHelper {
       return null;
     }
     final cadence = _cadenceQueueForTarget(
-      targetCenter: targetCenter,
+      targetCenter: targetCenter.copyWith(enteredBy: CenterEntryMethod.pivot),
       patternTag: _familyTag(SmartProgressionFamily.commonChordModulation),
+      variantTag:
+          'pivot_${targetCenter.relationToParent.name}_${targetCenter.mode.name}',
     );
     if (cadence.isEmpty) {
       return null;
     }
     return _family(
       family: SmartProgressionFamily.commonChordModulation,
-      destination: cadence.last.finalRomanNumeralId,
+      destination: cadence.length >= 3
+          ? cadence[2].finalRomanNumeralId
+          : cadence.last.finalRomanNumeralId,
       modulationCandidates: [targetCenter],
       queue: [
         pivot.copyWith(
           patternTag: _familyTag(SmartProgressionFamily.commonChordModulation),
+          variantTag:
+              'pivot_${targetCenter.relationToParent.name}_${targetCenter.mode.name}',
           modulationAttempt: true,
+          modulationConfidence: targetCenter.confidence,
+          openScope: LocalScope(
+            center: targetCenter,
+            headType: ScopeHeadType.pivotArea,
+            confidence: targetCenter.confidence,
+            expiresIn: 2,
+          ),
         ),
         ...cadence,
       ],
@@ -2377,27 +6615,48 @@ class SmartGeneratorHelper {
     required KeyCenter keyCenter,
     required RomanNumeralId roman,
     required String patternTag,
+    String? variantTag,
     PlannedChordKind plannedChordKind = PlannedChordKind.resolvedRoman,
+    ChordQuality? renderQualityOverride,
     bool suppressTensions = false,
     AppliedType? appliedType,
     RomanNumeralId? resolutionTargetRomanId,
     DominantContext? dominantContext,
+    DominantIntent? dominantIntent,
     ModulationKind modulationKind = ModulationKind.none,
     bool cadentialArrival = false,
     bool modulationAttempt = false,
+    List<String> surfaceTags = const [],
+    LocalScope? openScope,
+    bool closeScope = false,
+    List<ResolutionDebt> openedDebts = const [],
+    List<ResolutionDebtType> satisfiedDebtTypes = const [],
+    double modulationConfidence = 0,
+    int postModulationConfirmationsRemaining = 0,
   }) {
     return QueuedSmartChord(
       keyCenter: keyCenter,
       finalRomanNumeralId: roman,
       plannedChordKind: plannedChordKind,
       patternTag: patternTag,
+      variantTag: variantTag,
+      renderQualityOverride: renderQualityOverride,
       suppressTensions: suppressTensions,
       appliedType: appliedType,
       resolutionTargetRomanId: resolutionTargetRomanId,
       dominantContext: dominantContext,
+      dominantIntent: dominantIntent,
       modulationKind: modulationKind,
       cadentialArrival: cadentialArrival,
       modulationAttempt: modulationAttempt,
+      surfaceTags: surfaceTags,
+      openScope: openScope,
+      closeScope: closeScope,
+      openedDebts: openedDebts,
+      satisfiedDebtTypes: satisfiedDebtTypes,
+      modulationConfidence: modulationConfidence,
+      postModulationConfirmationsRemaining:
+          postModulationConfirmationsRemaining,
     );
   }
 
@@ -2422,6 +6681,7 @@ class SmartGeneratorHelper {
   static List<QueuedSmartChord> _cadenceQueueForTarget({
     required KeyCenter targetCenter,
     required String patternTag,
+    required String variantTag,
     bool modulationAttempt = false,
   }) {
     if (targetCenter.mode == KeyMode.major) {
@@ -2430,49 +6690,104 @@ class SmartGeneratorHelper {
           keyCenter: targetCenter,
           roman: RomanNumeralId.iiMin7,
           patternTag: patternTag,
+          variantTag: variantTag,
           modulationKind: ModulationKind.real,
           modulationAttempt: modulationAttempt,
+          modulationConfidence: targetCenter.confidence,
+          openedDebts: const [
+            ResolutionDebt(
+              debtType: ResolutionDebtType.modulationConfirm,
+              targetLabel: 'new-key confirmation',
+              deadline: 3,
+              severity: 3,
+            ),
+          ],
         ),
         _queuedChord(
           keyCenter: targetCenter,
           roman: RomanNumeralId.vDom7,
           patternTag: patternTag,
           dominantContext: DominantContext.primaryMajor,
+          dominantIntent: DominantIntent.primaryAuthenticMajor,
+          variantTag: variantTag,
           modulationKind: ModulationKind.real,
+          modulationConfidence: targetCenter.confidence,
         ),
         _queuedChord(
           keyCenter: targetCenter,
           roman: RomanNumeralId.iMaj69,
           patternTag: patternTag,
+          variantTag: variantTag,
           modulationKind: ModulationKind.real,
           cadentialArrival: true,
+          modulationConfidence: targetCenter.confidence,
+          postModulationConfirmationsRemaining: 1,
+          surfaceTags: const ['tonicMaj69'],
+        ),
+        _queuedChord(
+          keyCenter: targetCenter,
+          roman: RomanNumeralId.viMin7,
+          patternTag: patternTag,
+          variantTag: variantTag,
+          modulationKind: ModulationKind.real,
+          modulationConfidence: targetCenter.confidence,
+          satisfiedDebtTypes: const [ResolutionDebtType.modulationConfirm],
         ),
       ];
     }
     final tonic = _selectMinorArrivalFromContext(
       SourceProfile.fakebookStandard,
+      SmartPhraseContext.rollingForm(0),
     );
     return [
       _queuedChord(
         keyCenter: targetCenter,
         roman: RomanNumeralId.iiHalfDiminishedMinor,
         patternTag: patternTag,
+        variantTag: variantTag,
         modulationKind: ModulationKind.real,
         modulationAttempt: modulationAttempt,
+        modulationConfidence: targetCenter.confidence,
+        openedDebts: const [
+          ResolutionDebt(
+            debtType: ResolutionDebtType.modulationConfirm,
+            targetLabel: 'new-key confirmation',
+            deadline: 3,
+            severity: 3,
+          ),
+        ],
       ),
       _queuedChord(
         keyCenter: targetCenter,
         roman: RomanNumeralId.vDom7,
         patternTag: patternTag,
         dominantContext: DominantContext.primaryMinor,
+        dominantIntent: DominantIntent.primaryAuthenticMinor,
+        variantTag: variantTag,
         modulationKind: ModulationKind.real,
+        modulationConfidence: targetCenter.confidence,
       ),
       _queuedChord(
         keyCenter: targetCenter,
         roman: tonic,
         patternTag: patternTag,
+        variantTag: variantTag,
         modulationKind: ModulationKind.real,
         cadentialArrival: true,
+        modulationConfidence: targetCenter.confidence,
+        postModulationConfirmationsRemaining: 1,
+        surfaceTags: tonic == RomanNumeralId.iMinMaj7
+            ? const ['tonicMinorMaj7']
+            : const ['tonicMinor6'],
+      ),
+      _queuedChord(
+        keyCenter: targetCenter,
+        roman: RomanNumeralId.ivMin7Minor,
+        patternTag: patternTag,
+        variantTag: variantTag,
+        modulationKind: ModulationKind.real,
+        modulationConfidence: targetCenter.confidence,
+        satisfiedDebtTypes: const [ResolutionDebtType.modulationConfirm],
       ),
     ];
   }
@@ -2481,24 +6796,50 @@ class SmartGeneratorHelper {
     required SmartStepRequest request,
     required _PhrasePriority phrasePriority,
   }) {
+    final phraseContext = _phraseContextForRequest(request);
     if (request.activeKeys.length <= 1) {
       return const _ModulationOpportunity(
         candidates: [],
         blockedReason: SmartBlockedReason.singleActiveKey,
       );
     }
+    if ((request.currentTrace?.postModulationConfirmationsRemaining ?? 0) > 0) {
+      return const _ModulationOpportunity(
+        candidates: [],
+        blockedReason: SmartBlockedReason.insufficientConfirmationWindow,
+      );
+    }
+    if (_surpriseBudgetMultiplier(request: request, modulation: true) <= 0) {
+      return const _ModulationOpportunity(
+        candidates: [],
+        blockedReason: SmartBlockedReason.surpriseBudgetExhausted,
+      );
+    }
     final candidates = _compatibleTargetCenters(
       currentCenter: request.currentKeyCenter,
       activeKeys: request.activeKeys,
       jazzPreset: request.jazzPreset,
+      phraseContext: phraseContext,
     );
     if (candidates.isEmpty) {
-      return const _ModulationOpportunity(
-        candidates: [],
-        blockedReason: SmartBlockedReason.noCompatibleKey,
+      final blockedReason =
+          _recentPlanningTraces(take: 16).any(
+                (trace) =>
+                    trace.modulationKind == ModulationKind.real &&
+                    (trace.finalKeyRelation == KeyRelation.mediant ||
+                        trace.finalKeyRelation == KeyRelation.distant),
+              ) &&
+              request.jazzPreset != JazzPreset.standardsCore
+          ? SmartBlockedReason.recentDistantModulationLockout
+          : SmartBlockedReason.noCompatibleKey;
+      return _ModulationOpportunity(
+        candidates: const [],
+        blockedReason: blockedReason,
       );
     }
-    if (phrasePriority == _PhrasePriority.low &&
+    if ((phrasePriority == _PhrasePriority.low ||
+            phraseContext.phraseRole == PhraseRole.opener ||
+            phraseContext.phraseRole == PhraseRole.continuation) &&
         request.modulationIntensity != ModulationIntensity.high) {
       return _ModulationOpportunity(
         candidates: candidates,
@@ -2515,58 +6856,109 @@ class SmartGeneratorHelper {
     required KeyCenter currentCenter,
     required List<String> activeKeys,
     required JazzPreset jazzPreset,
+    required SmartPhraseContext phraseContext,
   }) {
     final candidates = <KeyCenter>[];
+    final recentRealModulations = _recentPlanningTraces(
+      take: 16,
+    ).where((trace) => trace.modulationKind == ModulationKind.real).toList();
     for (final key in activeKeys) {
       for (final mode in KeyMode.values) {
         final target = KeyCenter(tonicName: key, mode: mode);
         if (target == currentCenter) {
           continue;
         }
-        final closeness = _closenessWeight(
-          currentCenter: currentCenter,
-          targetCenter: target,
-          jazzPreset: jazzPreset,
+        final relation = MusicTheory.relationBetweenCenters(
+          currentCenter,
+          target,
         );
-        if (closeness <= 0) {
+        if (!_relationAllowedForPreset(relation, jazzPreset)) {
           continue;
         }
-        candidates.add(target.copyWith(closenessClass: closeness));
+        final confidence = _modulationConfidenceForTarget(
+          currentCenter: currentCenter,
+          targetCenter: target,
+          phraseContext: phraseContext,
+          jazzPreset: jazzPreset,
+          recentRealModulations: recentRealModulations,
+        );
+        if (confidence <= 0) {
+          continue;
+        }
+        candidates.add(
+          target.copyWith(
+            closenessClass: (confidence * 100).round(),
+            relationToParent: relation,
+            enteredBy: CenterEntryMethod.cadenceModulation,
+            confidence: confidence,
+            confirmationsRemaining: 2,
+          ),
+        );
       }
     }
     candidates.sort((a, b) => b.closenessClass.compareTo(a.closenessClass));
     return candidates;
   }
 
-  static int _closenessWeight({
+  static bool _relationAllowedForPreset(
+    KeyRelation relation,
+    JazzPreset jazzPreset,
+  ) {
+    return switch (jazzPreset) {
+      JazzPreset.standardsCore =>
+        relation == KeyRelation.relative ||
+            relation == KeyRelation.dominant ||
+            relation == KeyRelation.subdominant ||
+            relation == KeyRelation.parallel,
+      JazzPreset.modulationStudy => relation != KeyRelation.distant,
+      JazzPreset.advanced => true,
+    };
+  }
+
+  static double _modulationConfidenceForTarget({
     required KeyCenter currentCenter,
     required KeyCenter targetCenter,
+    required SmartPhraseContext phraseContext,
     required JazzPreset jazzPreset,
+    required List<SmartDecisionTrace> recentRealModulations,
   }) {
-    final currentSemitone = currentCenter.tonicSemitone;
-    final targetSemitone = targetCenter.tonicSemitone;
-    if (currentSemitone == null || targetSemitone == null) {
+    final relation = MusicTheory.relationBetweenCenters(
+      currentCenter,
+      targetCenter,
+    );
+    var confidence = switch (relation) {
+      KeyRelation.relative => 0.76,
+      KeyRelation.dominant => 0.72,
+      KeyRelation.subdominant => 0.7,
+      KeyRelation.parallel => 0.64,
+      KeyRelation.mediant => jazzPreset == JazzPreset.advanced ? 0.46 : 0.28,
+      KeyRelation.distant => jazzPreset == JazzPreset.advanced ? 0.28 : 0.0,
+      KeyRelation.same => 0.0,
+    };
+    if (confidence <= 0) {
       return 0;
     }
-    final semitoneDistance = (targetSemitone - currentSemitone).abs() % 12;
-    final interval = min(semitoneDistance, 12 - semitoneDistance);
-    final relativePair =
-        currentCenter.mode != targetCenter.mode &&
-        ((currentSemitone + 3) % 12 == targetSemitone ||
-            (currentSemitone + 9) % 12 == targetSemitone);
-    if (relativePair) {
-      return 6;
+    confidence += switch (phraseContext.phraseRole) {
+      PhraseRole.preCadence => 0.12,
+      PhraseRole.cadence => 0.18,
+      PhraseRole.release => 0.08,
+      _ => -0.08,
+    };
+    if (phraseContext.sectionRole == SectionRole.bridgeLike) {
+      confidence += 0.12;
     }
-    if (interval == 5 || interval == 7) {
-      return 5;
+    if (phraseContext.sectionRole == SectionRole.tag &&
+        relation != KeyRelation.relative) {
+      confidence -= 0.08;
     }
-    if (interval == 2 || interval == 10) {
-      return 3;
+    if (recentRealModulations.any(
+      (trace) =>
+          trace.finalKeyRelation == relation &&
+          (relation == KeyRelation.mediant || relation == KeyRelation.distant),
+    )) {
+      confidence -= 0.2;
     }
-    if (jazzPreset == JazzPreset.advanced && (interval == 3 || interval == 4)) {
-      return 2;
-    }
-    return 0;
+    return (confidence.clamp(0.0, 0.98) as num).toDouble();
   }
 
   static QueuedSmartChord? _findCommonPivotChord({
@@ -2606,6 +6998,292 @@ class SmartGeneratorHelper {
     return null;
   }
 
+  static QueuedSmartChord? _findMixturePivotChord({
+    required KeyCenter currentCenter,
+    required KeyCenter targetCenter,
+    required RomanNumeralId currentRomanNumeralId,
+  }) {
+    if (MusicTheory.relationBetweenCenters(currentCenter, targetCenter) !=
+        KeyRelation.parallel) {
+      return null;
+    }
+    final pivotPairs =
+        currentCenter.mode == KeyMode.major &&
+            targetCenter.mode == KeyMode.minor
+        ? const <(RomanNumeralId, RomanNumeralId)>[
+            (
+              RomanNumeralId.borrowedIiHalfDiminished7,
+              RomanNumeralId.iiHalfDiminishedMinor,
+            ),
+            (RomanNumeralId.borrowedIvMin7, RomanNumeralId.ivMin7Minor),
+            (
+              RomanNumeralId.borrowedFlatIIIMaj7,
+              RomanNumeralId.flatIIIMaj7Minor,
+            ),
+            (RomanNumeralId.borrowedFlatVIMaj7, RomanNumeralId.flatVIMaj7Minor),
+          ]
+        : currentCenter.mode == KeyMode.minor &&
+              targetCenter.mode == KeyMode.major
+        ? const <(RomanNumeralId, RomanNumeralId)>[
+            (RomanNumeralId.ivMin7Minor, RomanNumeralId.borrowedIvMin7),
+            (
+              RomanNumeralId.flatIIIMaj7Minor,
+              RomanNumeralId.borrowedFlatIIIMaj7,
+            ),
+            (RomanNumeralId.flatVIMaj7Minor, RomanNumeralId.borrowedFlatVIMaj7),
+            (
+              RomanNumeralId.iiHalfDiminishedMinor,
+              RomanNumeralId.borrowedIiHalfDiminished7,
+            ),
+          ]
+        : const <(RomanNumeralId, RomanNumeralId)>[];
+    for (final pair in pivotPairs) {
+      if (pair.$1 == currentRomanNumeralId) {
+        continue;
+      }
+      if (_sharesChordIdentity(
+        firstCenter: currentCenter,
+        firstRoman: pair.$1,
+        secondCenter: targetCenter,
+        secondRoman: pair.$2,
+      )) {
+        return _queuedChord(
+          keyCenter: currentCenter,
+          roman: pair.$1,
+          patternTag: 'mixture_pivot_modulation',
+        );
+      }
+    }
+    return null;
+  }
+
+  static RomanNumeralId? _chromaticMediantPivotRomanForTarget({
+    required KeyCenter currentCenter,
+    required KeyCenter targetCenter,
+  }) {
+    if (currentCenter.mode != KeyMode.major ||
+        targetCenter.mode != KeyMode.major ||
+        targetCenter.relationToParent != KeyRelation.mediant) {
+      return null;
+    }
+    final currentSemitone = currentCenter.tonicSemitone;
+    final targetSemitone = targetCenter.tonicSemitone;
+    if (currentSemitone == null || targetSemitone == null) {
+      return null;
+    }
+    final semitoneDelta = (targetSemitone - currentSemitone + 12) % 12;
+    if (semitoneDelta == 3) {
+      return RomanNumeralId.borrowedFlatIIIMaj7;
+    }
+    if (semitoneDelta == 8) {
+      return RomanNumeralId.borrowedFlatVIMaj7;
+    }
+    return null;
+  }
+
+  static KeyCenter? _supportedChromaticMediantTargetForRequest({
+    required SmartStepRequest request,
+    required List<KeyCenter> candidates,
+  }) {
+    final currentCenter = request.currentKeyCenter;
+    for (final candidate in candidates) {
+      if (_chromaticMediantPivotRomanForTarget(
+            currentCenter: currentCenter,
+            targetCenter: candidate,
+          ) !=
+          null) {
+        return candidate;
+      }
+    }
+    if (currentCenter.mode != KeyMode.major) {
+      return null;
+    }
+    final phraseContext = _phraseContextForRequest(request);
+    final recentRealModulations = _recentPlanningTraces(
+      take: 16,
+    ).where((trace) => trace.modulationKind == ModulationKind.real).toList();
+    for (final activeKey in request.activeKeys) {
+      if (activeKey == currentCenter.tonicName) {
+        continue;
+      }
+      final fallbackTarget = KeyCenter(
+        tonicName: activeKey,
+        mode: KeyMode.major,
+      );
+      if (_chromaticMediantPivotRomanForTarget(
+            currentCenter: currentCenter,
+            targetCenter: fallbackTarget.copyWith(
+              relationToParent: MusicTheory.relationBetweenCenters(
+                currentCenter,
+                fallbackTarget,
+              ),
+            ),
+          ) ==
+          null) {
+        continue;
+      }
+      return fallbackTarget.copyWith(
+        relationToParent: MusicTheory.relationBetweenCenters(
+          currentCenter,
+          fallbackTarget,
+        ),
+        enteredBy: CenterEntryMethod.commonTone,
+        confidence: _modulationConfidenceForTarget(
+          currentCenter: currentCenter,
+          targetCenter: fallbackTarget,
+          phraseContext: phraseContext,
+          jazzPreset: request.jazzPreset,
+          recentRealModulations: recentRealModulations,
+        ),
+        confirmationsRemaining: 2,
+      );
+    }
+    return null;
+  }
+
+  static bool _hasColtraneCyclePotential(List<String> activeKeys) {
+    final semitones = <int>{};
+    for (final key in activeKeys) {
+      final semitone = MusicTheory.keyTonicSemitone(key);
+      if (semitone != null) {
+        semitones.add(semitone);
+      }
+    }
+    for (final semitone in semitones) {
+      if (semitones.contains((semitone + 4) % 12) &&
+          semitones.contains((semitone + 8) % 12)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static String? _activeKeyForSemitone({
+    required int semitone,
+    required List<String> activeKeys,
+  }) {
+    for (final key in activeKeys) {
+      if (MusicTheory.keyTonicSemitone(key) == semitone) {
+        return key;
+      }
+    }
+    return null;
+  }
+
+  static List<KeyCenter> _coltraneBurstTargetsForRequest(
+    SmartStepRequest request,
+  ) {
+    if (request.currentKeyCenter.mode != KeyMode.major) {
+      return const [];
+    }
+    final currentSemitone = request.currentKeyCenter.tonicSemitone;
+    if (currentSemitone == null) {
+      return const [];
+    }
+    final phraseContext = _phraseContextForRequest(request);
+    final recentRealModulations = _recentPlanningTraces(
+      take: 16,
+    ).where((trace) => trace.modulationKind == ModulationKind.real).toList();
+    final targets = <KeyCenter>[];
+    for (final semitone in [
+      (currentSemitone + 4) % 12,
+      (currentSemitone + 8) % 12,
+    ]) {
+      final key = _activeKeyForSemitone(
+        semitone: semitone,
+        activeKeys: request.activeKeys,
+      );
+      if (key == null) {
+        return const [];
+      }
+      final target = KeyCenter(tonicName: key, mode: KeyMode.major);
+      targets.add(
+        target.copyWith(
+          relationToParent: MusicTheory.relationBetweenCenters(
+            targets.isEmpty ? request.currentKeyCenter : targets.last,
+            target,
+          ),
+          enteredBy: CenterEntryMethod.symmetric,
+          confidence: _modulationConfidenceForTarget(
+            currentCenter: targets.isEmpty
+                ? request.currentKeyCenter
+                : targets.last,
+            targetCenter: target,
+            phraseContext: phraseContext,
+            jazzPreset: request.jazzPreset,
+            recentRealModulations: recentRealModulations,
+          ),
+          confirmationsRemaining: 2,
+        ),
+      );
+    }
+    return targets;
+  }
+
+  static KeyCenter? _inferredHomeCenterForRequest(SmartStepRequest request) {
+    final traces = _recentPlanningTraces(take: 64);
+    for (final trace in traces) {
+      final isInitialSeed =
+          trace.stepIndex == 0 &&
+          (trace.decision == 'seeded-initial-tonic' ||
+              trace.decision?.startsWith('seeded-initial-family:') == true);
+      if (!isInitialSeed) {
+        continue;
+      }
+      return _parseDisplayCenterLabel(
+        label: trace.currentKeyCenter,
+        activeKeys: request.activeKeys,
+      );
+    }
+    return null;
+  }
+
+  static KeyCenter? _parseDisplayCenterLabel({
+    required String label,
+    required List<String> activeKeys,
+  }) {
+    final parts = label.split(' ');
+    if (parts.length < 2) {
+      return null;
+    }
+    final displayRoot = parts.first;
+    final mode = KeyMode.values.firstWhere(
+      (candidate) => candidate.name == parts.last,
+      orElse: () => KeyMode.major,
+    );
+    final semitone = MusicTheory.noteToSemitone[displayRoot];
+    if (semitone == null) {
+      return null;
+    }
+    String? tonicName;
+    for (final candidate in activeKeys) {
+      if (MusicTheory.displayRootForKey(candidate) == displayRoot) {
+        tonicName = candidate;
+        break;
+      }
+      if (MusicTheory.keyTonicSemitone(candidate) == semitone) {
+        tonicName ??= candidate;
+      }
+    }
+    if (tonicName == null) {
+      return null;
+    }
+    return KeyCenter(tonicName: tonicName, mode: mode);
+  }
+
+  static bool _sharesChordIdentity({
+    required KeyCenter firstCenter,
+    required RomanNumeralId firstRoman,
+    required KeyCenter secondCenter,
+    required RomanNumeralId secondRoman,
+  }) {
+    final firstSpec = MusicTheory.specFor(firstRoman);
+    final secondSpec = MusicTheory.specFor(secondRoman);
+    return firstSpec.quality == secondSpec.quality &&
+        MusicTheory.resolveChordRootForCenter(firstCenter, firstRoman) ==
+            MusicTheory.resolveChordRootForCenter(secondCenter, secondRoman);
+  }
+
   static List<RomanNumeralId> _pivotEligibleRomansForMode(KeyMode mode) {
     return mode == KeyMode.major
         ? const [
@@ -2626,11 +7304,11 @@ class SmartGeneratorHelper {
   }
 
   static _PhrasePriority _phrasePriorityForStep(int stepIndex) {
-    final phrasePosition = stepIndex % 8;
-    if (phrasePosition == 7 || phrasePosition == 3) {
+    final phraseContext = SmartPhraseContext.rollingForm(stepIndex);
+    if (phraseContext.barsToBoundary <= 1) {
       return _PhrasePriority.boundary;
     }
-    if (phrasePosition == 2 || phrasePosition == 6) {
+    if (phraseContext.barsToBoundary == 2) {
       return _PhrasePriority.cadence;
     }
     return _PhrasePriority.low;
@@ -2642,19 +7320,11 @@ class SmartGeneratorHelper {
     required JazzPreset jazzPreset,
     required SourceProfile sourceProfile,
   }) {
+    if (activeKeys.isEmpty) {
+      return const KeyCenter(tonicName: 'C', mode: KeyMode.major);
+    }
     final tonic = activeKeys[random.nextInt(activeKeys.length)];
-    final minorWeight = switch (jazzPreset) {
-      JazzPreset.standardsCore => 38,
-      JazzPreset.modulationStudy => 44,
-      JazzPreset.advanced => 48,
-    };
-    final adjustedMinorWeight = sourceProfile == SourceProfile.recordingInspired
-        ? min(60, minorWeight + 4)
-        : minorWeight;
-    final mode = random.nextInt(100) < adjustedMinorWeight
-        ? KeyMode.minor
-        : KeyMode.major;
-    return KeyCenter(tonicName: tonic, mode: mode);
+    return KeyCenter(tonicName: tonic, mode: KeyMode.major);
   }
 
   static RomanNumeralId _selectMinorTonic(
@@ -2680,10 +7350,82 @@ class SmartGeneratorHelper {
     return RomanNumeralId.iMin7;
   }
 
-  static RomanNumeralId _selectMinorArrivalFromContext(SourceProfile profile) {
-    return profile == SourceProfile.recordingInspired
-        ? RomanNumeralId.iMinMaj7
-        : RomanNumeralId.iMin6;
+  static RomanNumeralId _selectMajorArrivalRoman(
+    SmartPhraseContext phraseContext,
+    SourceProfile sourceProfile,
+  ) {
+    if (phraseContext.phraseRole == PhraseRole.release &&
+        sourceProfile == SourceProfile.recordingInspired) {
+      return RomanNumeralId.iMaj7;
+    }
+    if (phraseContext.phraseRole == PhraseRole.cadence ||
+        phraseContext.phraseRole == PhraseRole.release) {
+      return RomanNumeralId.iMaj69;
+    }
+    return sourceProfile == SourceProfile.recordingInspired
+        ? RomanNumeralId.iMaj69
+        : RomanNumeralId.iMaj7;
+  }
+
+  static ChordQuality _selectRelativeMajorArrivalQuality(
+    SmartPhraseContext phraseContext,
+    SourceProfile sourceProfile,
+  ) {
+    if (phraseContext.phraseRole == PhraseRole.release &&
+        sourceProfile == SourceProfile.recordingInspired) {
+      return ChordQuality.six;
+    }
+    return (phraseContext.phraseRole == PhraseRole.cadence ||
+            phraseContext.phraseRole == PhraseRole.release)
+        ? ChordQuality.major69
+        : ChordQuality.major7;
+  }
+
+  static PlannedChordKind _selectMajorArrivalChordKind(
+    SmartPhraseContext phraseContext,
+    SourceProfile sourceProfile,
+  ) {
+    if (phraseContext.phraseRole == PhraseRole.release &&
+        sourceProfile == SourceProfile.recordingInspired) {
+      return PlannedChordKind.tonicSix;
+    }
+    return PlannedChordKind.resolvedRoman;
+  }
+
+  static ChordQuality _selectRelativeMinorArrivalQuality(
+    SmartPhraseContext phraseContext,
+    SourceProfile sourceProfile,
+  ) {
+    return switch (phraseContext.phraseRole) {
+      PhraseRole.release =>
+        sourceProfile == SourceProfile.recordingInspired
+            ? ChordQuality.minorMajor7
+            : ChordQuality.minor6,
+      PhraseRole.cadence => ChordQuality.minor6,
+      PhraseRole.preCadence || PhraseRole.continuation => ChordQuality.minor7,
+      PhraseRole.opener =>
+        sourceProfile == SourceProfile.recordingInspired
+            ? ChordQuality.minorMajor7
+            : ChordQuality.minor7,
+    };
+  }
+
+  static RomanNumeralId _selectMinorArrivalFromContext(
+    SourceProfile profile,
+    SmartPhraseContext phraseContext,
+  ) {
+    return switch (phraseContext.phraseRole) {
+      PhraseRole.release =>
+        profile == SourceProfile.recordingInspired
+            ? RomanNumeralId.iMinMaj7
+            : RomanNumeralId.iMin6,
+      PhraseRole.cadence => RomanNumeralId.iMin6,
+      PhraseRole.preCadence || PhraseRole.continuation => RomanNumeralId.iMin7,
+      PhraseRole.opener =>
+        profile == SourceProfile.recordingInspired
+            ? RomanNumeralId.iMinMaj7
+            : RomanNumeralId.iMin6,
+    };
   }
 
   static RomanNumeralId _normalizedTransitionRoman(
@@ -2731,7 +7473,10 @@ class SmartGeneratorHelper {
       return KeyMode.minor;
     }
     return switch (targetRoman) {
-      RomanNumeralId.iiiMin7 || RomanNumeralId.viMin7 => KeyMode.minor,
+      RomanNumeralId.iiMin7 ||
+      RomanNumeralId.iiiMin7 ||
+      RomanNumeralId.viMin7 ||
+      RomanNumeralId.relatedIiOfIII => KeyMode.minor,
       _ => KeyMode.major,
     };
   }
@@ -2828,6 +7573,23 @@ class SmartGeneratorHelper {
       SmartProgressionFamily.turnaroundISharpIdimIiV =>
         'turnaround_i_sharpIdim_ii_v',
       SmartProgressionFamily.turnaroundIIIviIiV => 'turnaround_iii_vi_ii_v',
+      SmartProgressionFamily.relativeMinorReframe => 'relative_minor_reframe',
+      SmartProgressionFamily.dominantHeadedScopeChain =>
+        'dominant_headed_scope_chain',
+      SmartProgressionFamily.closingPlagalAuthenticHybrid =>
+        'closing_plagal_authentic_hybrid',
+      SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI =>
+        'bridge_iv_stabilized_by_local_ii_v_i',
+      SmartProgressionFamily.backdoorRecursivePrep => 'backdoor_recursive_prep',
+      SmartProgressionFamily.classicalPredominantColor =>
+        'classical_predominant_color',
+      SmartProgressionFamily.mixturePivotModulation =>
+        'mixture_pivot_modulation',
+      SmartProgressionFamily.chromaticMediantCommonToneModulation =>
+        'chromatic_mediant_common_tone_modulation',
+      SmartProgressionFamily.coltraneBurst => 'coltrane_burst',
+      SmartProgressionFamily.bridgeReturnHomeCadence =>
+        'bridge_return_home_cadence',
       SmartProgressionFamily.minorIiVAltI => 'minor_ii_halfdim_v_alt_i',
       SmartProgressionFamily.minorLineCliche => 'minor_line_cliche',
       SmartProgressionFamily.backdoorIvmBviiI => 'backdoor_ivm_bVII_I',

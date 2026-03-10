@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import '../settings/practice_settings.dart';
+import '../settings/inversion_settings.dart';
 import 'chord_theory.dart';
 
 class ChordRenderingSelection {
@@ -149,60 +149,74 @@ class ChordRenderingHelper {
       _WeightedTension('11', 58),
       _WeightedTension('b13', 42),
     ],
-    'primaryVMajor': [
-      _WeightedTension('9', 44),
-      _WeightedTension('13', 34),
-      _WeightedTension('#11', 12),
+    'primaryAuthenticMajor': [
+      _WeightedTension('9', 34),
+      _WeightedTension('13', 28),
+      _WeightedTension('#11', 8),
+      _WeightedTension('b9', 4),
+      _WeightedTension('#9', 4),
+      _WeightedTension('b13', 4),
+    ],
+    'primaryAuthenticMinor': [
+      _WeightedTension('b9', 26),
+      _WeightedTension('b13', 22),
+      _WeightedTension('#9', 18),
+      _WeightedTension('9', 10),
+      _WeightedTension('#11', 8),
+      _WeightedTension('13', 6),
+    ],
+    'secondaryToMajor': [
+      _WeightedTension('9', 28),
+      _WeightedTension('13', 22),
+      _WeightedTension('#11', 16),
+      _WeightedTension('b9', 10),
+      _WeightedTension('#9', 8),
+      _WeightedTension('b13', 6),
+    ],
+    'secondaryToMinor': [
+      _WeightedTension('b9', 22),
+      _WeightedTension('b13', 20),
+      _WeightedTension('#9', 18),
+      _WeightedTension('#11', 14),
+      _WeightedTension('9', 10),
+      _WeightedTension('13', 8),
+    ],
+    'tritoneSub': [
+      _WeightedTension('#11', 34),
+      _WeightedTension('b13', 24),
+      _WeightedTension('9', 18),
+      _WeightedTension('#9', 10),
+      _WeightedTension('b9', 7),
+      _WeightedTension('13', 4),
+    ],
+    'backdoor': [
+      _WeightedTension('9', 28),
+      _WeightedTension('13', 24),
+      _WeightedTension('#11', 18),
+      _WeightedTension('b9', 6),
+      _WeightedTension('#9', 6),
+      _WeightedTension('b13', 6),
+    ],
+    'lydianDominant': [
+      _WeightedTension('#11', 38),
+      _WeightedTension('9', 24),
+      _WeightedTension('13', 20),
       _WeightedTension('b9', 4),
       _WeightedTension('#9', 3),
       _WeightedTension('b13', 3),
     ],
-    'primaryVMinor': [
-      _WeightedTension('b9', 34),
-      _WeightedTension('#9', 20),
-      _WeightedTension('b13', 24),
-      _WeightedTension('9', 12),
-      _WeightedTension('13', 5),
-      _WeightedTension('#11', 5),
-    ],
-    'secondaryVToMajor': [
-      _WeightedTension('9', 34),
-      _WeightedTension('13', 24),
-      _WeightedTension('#11', 20),
-      _WeightedTension('b9', 12),
-      _WeightedTension('b13', 10),
-    ],
-    'secondaryVToMinor': [
-      _WeightedTension('b9', 30),
-      _WeightedTension('#9', 18),
-      _WeightedTension('b13', 24),
-      _WeightedTension('#11', 14),
-      _WeightedTension('9', 10),
-      _WeightedTension('13', 4),
-    ],
-    'tritoneSub': [
-      _WeightedTension('#11', 40),
-      _WeightedTension('b13', 25),
-      _WeightedTension('9', 20),
-      _WeightedTension('b9', 10),
-      _WeightedTension('#9', 5),
-    ],
-    'backdoor': [
-      _WeightedTension('9', 34),
-      _WeightedTension('13', 30),
-      _WeightedTension('#11', 26),
-      _WeightedTension('b13', 10),
-    ],
-    'dominantII': [
-      _WeightedTension('#11', 50),
-      _WeightedTension('9', 25),
-      _WeightedTension('13', 20),
-      _WeightedTension('b13', 5),
-    ],
-    'susDominant': [
+    'susDelay': [
       _WeightedTension('9', 55),
       _WeightedTension('13', 35),
       _WeightedTension('#11', 10),
+    ],
+    'dominantHeadedScope': [
+      _WeightedTension('9', 30),
+      _WeightedTension('13', 22),
+      _WeightedTension('#11', 18),
+      _WeightedTension('b9', 10),
+      _WeightedTension('#9', 10),
+      _WeightedTension('b13', 10),
     ],
   };
 
@@ -226,19 +240,19 @@ class ChordRenderingHelper {
     'halfDiminished7': [
       ['11', 'b13'],
     ],
-    'primaryVMajor': [
+    'primaryAuthenticMajor': [
       ['9', '13'],
       ['9', '#11'],
     ],
-    'primaryVMinor': [
+    'primaryAuthenticMinor': [
       ['b9', 'b13'],
       ['#9', 'b13'],
     ],
-    'secondaryVToMajor': [
+    'secondaryToMajor': [
       ['9', '#11'],
       ['9', '13'],
     ],
-    'secondaryVToMinor': [
+    'secondaryToMinor': [
       ['b9', 'b13'],
       ['#9', 'b13'],
     ],
@@ -250,12 +264,16 @@ class ChordRenderingHelper {
       ['9', '13'],
       ['9', '#11'],
     ],
-    'dominantII': [
+    'lydianDominant': [
       ['9', '#11'],
       ['#11', '13'],
     ],
-    'susDominant': [
+    'susDelay': [
       ['9', '13'],
+    ],
+    'dominantHeadedScope': [
+      ['9', '13'],
+      ['9', '#11'],
     ],
   };
 
@@ -270,6 +288,7 @@ class ChordRenderingHelper {
     required ChordSourceKind sourceKind,
     AppliedType? appliedType,
     DominantContext? dominantContext,
+    DominantIntent? dominantIntent,
   }) {
     if (plannedChordKind == PlannedChordKind.tonicDominant7) {
       return 'tonic-dominant7';
@@ -292,9 +311,10 @@ class ChordRenderingHelper {
       return 'tonicization';
     }
     if (harmonicFunction != HarmonicFunction.free) {
-      return dominantContext == null
+      final dominantLabel = dominantIntent?.name ?? dominantContext?.name;
+      return dominantLabel == null
           ? harmonicFunction.name
-          : '${harmonicFunction.name}-${dominantContext.name}';
+          : '${harmonicFunction.name}-$dominantLabel';
     }
     return 'free-${symbolData.harmonicQuality.name}';
   }
@@ -310,6 +330,7 @@ class ChordRenderingHelper {
     RomanNumeralId? resolutionTargetRomanId,
     String? patternTag,
     DominantContext? dominantContext,
+    DominantIntent? dominantIntent,
   }) {
     final parts = [
       keyName ?? '-',
@@ -321,10 +342,12 @@ class ChordRenderingHelper {
         sourceKind: sourceKind,
         appliedType: appliedType,
         dominantContext: dominantContext,
+        dominantIntent: dominantIntent,
       ),
       plannedChordKind.name,
       appliedType?.name ?? '-',
       dominantContext?.name ?? '-',
+      dominantIntent?.name ?? '-',
       resolutionTargetRomanId == null
           ? '-'
           : MusicTheory.romanTokenOf(resolutionTargetRomanId),
@@ -348,6 +371,7 @@ class ChordRenderingHelper {
     RomanNumeralId? resolutionTargetRomanId,
     String? patternTag,
     DominantContext? dominantContext,
+    DominantIntent? dominantIntent,
   }) {
     return [
       keyName ?? '-',
@@ -359,10 +383,12 @@ class ChordRenderingHelper {
         sourceKind: sourceKind,
         appliedType: appliedType,
         dominantContext: dominantContext,
+        dominantIntent: dominantIntent,
       ),
       plannedChordKind.name,
       appliedType?.name ?? '-',
       dominantContext?.name ?? '-',
+      dominantIntent?.name ?? '-',
       resolutionTargetRomanId == null
           ? '-'
           : MusicTheory.romanTokenOf(resolutionTargetRomanId),
@@ -381,6 +407,7 @@ class ChordRenderingHelper {
     required bool suppressTensions,
     ChordQuality? renderQuality,
     DominantContext? dominantContext,
+    DominantIntent? dominantIntent,
   }) {
     if (!allowTensions ||
         suppressTensions ||
@@ -398,6 +425,7 @@ class ChordRenderingHelper {
       romanNumeralId: romanNumeralId,
       renderQuality: renderQuality,
       dominantContext: dominantContext,
+      dominantIntent: dominantIntent,
     );
     if (profileKey == null) {
       return const [];
@@ -435,35 +463,80 @@ class ChordRenderingHelper {
     return [available.last.value];
   }
 
+  static List<String> prioritizedTensionOptionsFor({
+    required RomanNumeralId? romanNumeralId,
+    required PlannedChordKind plannedChordKind,
+    required bool allowTensions,
+    required Set<String> selectedTensionOptions,
+    required bool suppressTensions,
+    required ChordQuality renderQuality,
+    DominantContext? dominantContext,
+    DominantIntent? dominantIntent,
+  }) {
+    if (!allowTensions ||
+        suppressTensions ||
+        plannedChordKind != PlannedChordKind.resolvedRoman ||
+        romanNumeralId == null) {
+      return const [];
+    }
+
+    if (renderQuality == ChordQuality.major69 ||
+        renderQuality == ChordQuality.dominant7Alt) {
+      return const [];
+    }
+
+    final profileKey = _tensionProfileKey(
+      romanNumeralId: romanNumeralId,
+      renderQuality: renderQuality,
+      dominantContext: dominantContext,
+      dominantIntent: dominantIntent,
+    );
+    if (profileKey == null) {
+      return const [];
+    }
+
+    final available = [
+      for (final tension
+          in _tensionProfiles[profileKey] ?? const <_WeightedTension>[])
+        if (selectedTensionOptions.contains(tension.value)) tension,
+    ];
+    available.sort((left, right) => right.weight.compareTo(left.weight));
+    return [for (final tension in available) tension.value];
+  }
+
   static String? _tensionProfileKey({
     required RomanNumeralId romanNumeralId,
     required ChordQuality? renderQuality,
     required DominantContext? dominantContext,
+    required DominantIntent? dominantIntent,
   }) {
+    final effectiveIntent =
+        dominantIntent ?? MusicTheory.dominantIntentForContext(dominantContext);
     if (renderQuality == ChordQuality.dominant7Sharp11 ||
-        dominantContext == DominantContext.tritoneSubstitute ||
-        dominantContext == DominantContext.dominantIILydian) {
-      return dominantContext == DominantContext.tritoneSubstitute
+        effectiveIntent == DominantIntent.tritoneSub ||
+        effectiveIntent == DominantIntent.lydianDominant) {
+      return effectiveIntent == DominantIntent.tritoneSub
           ? 'tritoneSub'
-          : dominantContext == DominantContext.dominantIILydian
-          ? 'dominantII'
+          : effectiveIntent == DominantIntent.lydianDominant
+          ? 'lydianDominant'
           : 'major7Sharp11';
     }
     if (renderQuality == ChordQuality.dominant13sus4 ||
         renderQuality == ChordQuality.dominant7sus4 ||
-        dominantContext == DominantContext.susDominant) {
-      return 'susDominant';
+        effectiveIntent == DominantIntent.susDelay) {
+      return 'susDelay';
     }
-    if (dominantContext != null) {
-      return switch (dominantContext) {
-        DominantContext.primaryMajor => 'primaryVMajor',
-        DominantContext.primaryMinor => 'primaryVMinor',
-        DominantContext.secondaryToMajor => 'secondaryVToMajor',
-        DominantContext.secondaryToMinor => 'secondaryVToMinor',
-        DominantContext.tritoneSubstitute => 'tritoneSub',
-        DominantContext.backdoor => 'backdoor',
-        DominantContext.dominantIILydian => 'dominantII',
-        DominantContext.susDominant => 'susDominant',
+    if (effectiveIntent != null) {
+      return switch (effectiveIntent) {
+        DominantIntent.primaryAuthenticMajor => 'primaryAuthenticMajor',
+        DominantIntent.primaryAuthenticMinor => 'primaryAuthenticMinor',
+        DominantIntent.secondaryToMajor => 'secondaryToMajor',
+        DominantIntent.secondaryToMinor => 'secondaryToMinor',
+        DominantIntent.tritoneSub => 'tritoneSub',
+        DominantIntent.backdoor => 'backdoor',
+        DominantIntent.lydianDominant => 'lydianDominant',
+        DominantIntent.susDelay => 'susDelay',
+        DominantIntent.dominantHeadedScope => 'dominantHeadedScope',
       };
     }
 
@@ -477,6 +550,7 @@ class ChordRenderingHelper {
       RomanNumeralId.flatVIMaj7Minor => 'major7Sharp11',
       RomanNumeralId.iiMin7 ||
       RomanNumeralId.iiiMin7 ||
+      RomanNumeralId.relatedIiOfIV ||
       RomanNumeralId.viMin7 ||
       RomanNumeralId.borrowedIvMin7 ||
       RomanNumeralId.ivMin7Minor => 'minor7',
@@ -495,7 +569,7 @@ class ChordRenderingHelper {
       RomanNumeralId.substituteOfV ||
       RomanNumeralId.substituteOfVI ||
       RomanNumeralId.borrowedFlatVII7 ||
-      RomanNumeralId.flatVIIDom7Minor => 'primaryVMajor',
+      RomanNumeralId.flatVIIDom7Minor => 'primaryAuthenticMajor',
       RomanNumeralId.viiHalfDiminished7 ||
       RomanNumeralId.borrowedIiHalfDiminished7 ||
       RomanNumeralId.iiHalfDiminishedMinor ||
@@ -565,6 +639,7 @@ class ChordRenderingHelper {
     required ChordQuality renderQuality,
     required List<String> tensions,
     DominantContext? dominantContext,
+    DominantIntent? dominantIntent,
   }) {
     if (sourceKind == ChordSourceKind.secondaryDominant ||
         sourceKind == ChordSourceKind.substituteDominant ||
@@ -588,6 +663,7 @@ class ChordRenderingHelper {
           !_isDiatonicRenderedTension(
             romanNumeralId: romanNumeralId,
             tension: tension,
+            dominantIntent: dominantIntent,
           ),
     );
   }
@@ -595,6 +671,7 @@ class ChordRenderingHelper {
   static bool _isDiatonicRenderedTension({
     required RomanNumeralId? romanNumeralId,
     required String tension,
+    required DominantIntent? dominantIntent,
   }) {
     if (romanNumeralId == null) {
       return false;
@@ -603,6 +680,7 @@ class ChordRenderingHelper {
       romanNumeralId: romanNumeralId,
       renderQuality: null,
       dominantContext: null,
+      dominantIntent: dominantIntent,
     )) {
       'major7Sharp11' => tension == '#11',
       _ => false,
@@ -622,6 +700,7 @@ class ChordRenderingHelper {
     required bool suppressTensions,
     required InversionSettings inversionSettings,
     DominantContext? dominantContext,
+    DominantIntent? dominantIntent,
   }) {
     final tensions = selectTensions(
       random: random,
@@ -632,6 +711,7 @@ class ChordRenderingHelper {
       suppressTensions: suppressTensions,
       renderQuality: renderQuality,
       dominantContext: dominantContext,
+      dominantIntent: dominantIntent,
     );
     final baseData = ChordSymbolData(
       root: root,
@@ -653,6 +733,7 @@ class ChordRenderingHelper {
         renderQuality: renderQuality,
         tensions: tensions,
         dominantContext: dominantContext,
+        dominantIntent: dominantIntent,
       ),
     );
   }

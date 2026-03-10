@@ -18,6 +18,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get language => '언어';
 
   @override
+  String get systemDefaultLanguage => '시스템 기본값';
+
+  @override
   String get metronome => '메트로놈';
 
   @override
@@ -28,6 +31,27 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get metronomeHelp => '메트로놈을 켜면 연습 중 매 박마다 클릭 소리가 납니다.';
+
+  @override
+  String get metronomeSound => '메트로놈 사운드';
+
+  @override
+  String get metronomeSoundClassic => '클래식';
+
+  @override
+  String get metronomeSoundClickB => '클릭 B';
+
+  @override
+  String get metronomeSoundClickC => '클릭 C';
+
+  @override
+  String get metronomeSoundClickD => '클릭 D';
+
+  @override
+  String get metronomeSoundClickE => '클릭 E';
+
+  @override
+  String get metronomeSoundClickF => '클릭 F';
 
   @override
   String get metronomeVolume => '메트로놈 볼륨';
@@ -46,17 +70,63 @@ class AppLocalizationsKo extends AppLocalizations {
   String get smartGeneratorMode => 'Smart Generator 모드';
 
   @override
-  String get smartGeneratorHelp => '활성화된 비다이아토닉 옵션을 유지하면서 기능적 화성 진행을 우선합니다.';
+  String get smartGeneratorHelp => '활성화된 비다이어토닉 옵션을 유지하면서 기능 화성 진행을 우선합니다.';
+
+  @override
+  String get advancedSmartGenerator => '고급 Smart Generator';
+
+  @override
+  String get modulationIntensity => '전조 강도';
+
+  @override
+  String get modulationIntensityOff => '끔';
+
+  @override
+  String get modulationIntensityLow => '낮음';
+
+  @override
+  String get modulationIntensityMedium => '보통';
+
+  @override
+  String get modulationIntensityHigh => '높음';
+
+  @override
+  String get jazzPreset => '재즈 프리셋';
+
+  @override
+  String get jazzPresetStandardsCore => '스탠더드 코어';
+
+  @override
+  String get jazzPresetModulationStudy => '전조 스터디';
+
+  @override
+  String get jazzPresetAdvanced => '고급';
+
+  @override
+  String get sourceProfile => '소스 프로필';
+
+  @override
+  String get sourceProfileFakebookStandard => '페이크북 표준';
+
+  @override
+  String get sourceProfileRecordingInspired => '레코딩 지향';
+
+  @override
+  String get smartDiagnostics => 'Smart 진단 로그';
+
+  @override
+  String get smartDiagnosticsHelp =>
+      '디버깅용으로 Smart Generator 의사결정 추적을 로그에 남깁니다.';
 
   @override
   String get keyModeRequiredForSmartGenerator =>
       'Smart Generator 모드를 쓰려면 최소 한 개의 키를 선택하세요.';
 
   @override
-  String get nonDiatonic => '비다이아토닉';
+  String get nonDiatonic => '비다이어토닉';
 
   @override
-  String get nonDiatonicRequiresKeyMode => '비다이아토닉 옵션은 키 모드에서만 사용할 수 있습니다.';
+  String get nonDiatonicRequiresKeyMode => '비다이어토닉 옵션은 키 모드에서만 사용할 수 있습니다.';
 
   @override
   String get secondaryDominant => '세컨더리 도미넌트';
@@ -69,7 +139,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get modalInterchangeDisabledHelp =>
-      '모달 인터체인지는 키 모드에서만 나오므로 자유 모드에서는 비활성화됩니다.';
+      '모달 인터체인지는 키 모드에서만 나타나므로 자유 모드에서는 이 옵션이 비활성화됩니다.';
 
   @override
   String get rendering => '표기';
@@ -78,7 +148,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chordSymbolStyle => '코드 심벌 표기 스타일';
 
   @override
-  String get chordSymbolStyleHelp => '표시 레이어만 바뀌며 내부 화성 로직은 그대로 유지됩니다.';
+  String get chordSymbolStyleHelp => '표시 방식만 바꾸며, 화성 로직은 그대로 유지됩니다.';
 
   @override
   String get styleCompact => 'Compact';
@@ -106,7 +176,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get inversionHelp =>
-      '코드가 결정된 뒤 임의 슬래시 베이스 표기로 적용하며, 이전 베이스 진행은 추적하지 않습니다.';
+      '코드가 선택된 뒤 슬래시 베이스 표기를 랜덤으로 적용하며, 이전 베이스 진행은 추적하지 않습니다.';
 
   @override
   String get firstInversion => '1전위';
@@ -146,7 +216,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get freePracticeDescription =>
-      '12개의 반음 루트와 랜덤 코드 퀄리티를 사용해 폭넓은 리딩 연습을 합니다.';
+      '12개의 반음 루트와 랜덤 코드 품질을 사용해 폭넓은 리딩 연습을 합니다.';
 
   @override
   String get smartPracticeDescription =>
@@ -177,6 +247,234 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String allowedRange(int min, int max) {
-    return '허용 범위: $min–$max';
+    return '허용 범위: $min-$max';
   }
+
+  @override
+  String get voicingSuggestionsTitle => 'Voicing Suggestions';
+
+  @override
+  String get voicingSuggestionsSubtitle =>
+      'See concrete note choices for this chord.';
+
+  @override
+  String get voicingSuggestionsEnabled => 'Enable Voicing Suggestions';
+
+  @override
+  String get voicingSuggestionsHelp =>
+      'Shows three playable note-level voicing ideas for the current chord.';
+
+  @override
+  String get voicingComplexity => 'Voicing Complexity';
+
+  @override
+  String get voicingComplexityHelp =>
+      'Controls how colorful the suggestions may become.';
+
+  @override
+  String get voicingComplexityBasic => 'Basic';
+
+  @override
+  String get voicingComplexityStandard => 'Standard';
+
+  @override
+  String get voicingComplexityModern => 'Modern';
+
+  @override
+  String get voicingTopNotePreference => 'Top Note Preference';
+
+  @override
+  String get voicingTopNotePreferenceHelp =>
+      'Biases suggestions toward a chosen top line. Locked voicings override it, then same-chord carry keeps the line steady.';
+
+  @override
+  String get voicingTopNotePreferenceAuto => 'Auto';
+
+  @override
+  String get allowRootlessVoicings => 'Allow Rootless Voicings';
+
+  @override
+  String get allowRootlessVoicingsHelp =>
+      'Lets suggestions omit the root when the guide tones stay clear.';
+
+  @override
+  String get maxVoicingNotes => 'Max Voicing Notes';
+
+  @override
+  String get lookAheadDepth => 'Look-Ahead Depth';
+
+  @override
+  String get lookAheadDepthHelp =>
+      'How many future chords the ranking may consider.';
+
+  @override
+  String get showVoicingReasons => 'Show Voicing Reasons';
+
+  @override
+  String get showVoicingReasonsHelp =>
+      'Displays short explanation chips on each suggestion card.';
+
+  @override
+  String get voicingSuggestionNatural => 'Most Natural';
+
+  @override
+  String get voicingSuggestionColorful => 'Most Colorful';
+
+  @override
+  String get voicingSuggestionEasy => 'Easiest';
+
+  @override
+  String get voicingSuggestionNaturalSubtitle => 'Voice-leading first';
+
+  @override
+  String get voicingSuggestionColorfulSubtitle => 'Leans into color tones';
+
+  @override
+  String get voicingSuggestionEasySubtitle => 'Compact hand shape';
+
+  @override
+  String get voicingSuggestionNaturalConnectedSubtitle =>
+      'Connection and resolution first';
+
+  @override
+  String get voicingSuggestionNaturalStableSubtitle =>
+      'Same shape, steady comping';
+
+  @override
+  String get voicingSuggestionTopLineSubtitle => 'Top line stays in focus';
+
+  @override
+  String get voicingSuggestionColorfulAlteredSubtitle =>
+      'Altered tension up front';
+
+  @override
+  String get voicingSuggestionColorfulQuartalSubtitle => 'Modern quartal color';
+
+  @override
+  String get voicingSuggestionColorfulTritoneSubtitle =>
+      'Tritone-sub edge with bright guide tones';
+
+  @override
+  String get voicingSuggestionColorfulUpperStructureSubtitle =>
+      'Guide tones with bright extensions';
+
+  @override
+  String get voicingSuggestionEasyAnchoredSubtitle =>
+      'Core tones, smaller reach';
+
+  @override
+  String get voicingSuggestionEasyStableSubtitle =>
+      'Repeat-friendly hand shape';
+
+  @override
+  String get voicingTopNoteLabel => 'Top';
+
+  @override
+  String voicingTopNoteContextExplicit(Object note) {
+    return 'Target top note: $note';
+  }
+
+  @override
+  String voicingTopNoteContextLocked(Object note) {
+    return 'Locked top line: $note';
+  }
+
+  @override
+  String voicingTopNoteContextCarry(Object note) {
+    return 'Carry top line: $note';
+  }
+
+  @override
+  String get voicingFamilyShell => 'Shell';
+
+  @override
+  String get voicingFamilyRootlessA => 'Rootless A';
+
+  @override
+  String get voicingFamilyRootlessB => 'Rootless B';
+
+  @override
+  String get voicingFamilySpread => 'Spread';
+
+  @override
+  String get voicingFamilySus => 'Sus';
+
+  @override
+  String get voicingFamilyQuartal => 'Quartal';
+
+  @override
+  String get voicingFamilyAltered => 'Altered';
+
+  @override
+  String get voicingFamilyUpperStructure => 'Upper Structure';
+
+  @override
+  String get voicingLockSuggestion => 'Lock suggestion';
+
+  @override
+  String get voicingUnlockSuggestion => 'Unlock suggestion';
+
+  @override
+  String get voicingSelected => 'Selected';
+
+  @override
+  String get voicingLocked => 'Locked';
+
+  @override
+  String get voicingReasonEssentialCore => 'Essential tones covered';
+
+  @override
+  String get voicingReasonGuideToneAnchor => '3rd/7th anchor';
+
+  @override
+  String voicingReasonGuideResolution(int count) {
+    return '$count guide-tone resolves';
+  }
+
+  @override
+  String voicingReasonCommonToneRetention(int count) {
+    return '$count common tones kept';
+  }
+
+  @override
+  String get voicingReasonStableRepeat => 'Stable repeat';
+
+  @override
+  String get voicingReasonTopLineTarget => 'Top-line target';
+
+  @override
+  String get voicingReasonLowMudAvoided => 'Low-register clarity';
+
+  @override
+  String get voicingReasonCompactReach => 'Comfortable reach';
+
+  @override
+  String get voicingReasonBassAnchor => 'Bass anchor respected';
+
+  @override
+  String get voicingReasonNextChordReady => 'Next chord ready';
+
+  @override
+  String get voicingReasonAlteredColor => 'Altered tensions';
+
+  @override
+  String get voicingReasonRootlessClarity => 'Light rootless shape';
+
+  @override
+  String get voicingReasonSusRelease => 'Sus release set up';
+
+  @override
+  String get voicingReasonQuartalColor => 'Quartal color';
+
+  @override
+  String get voicingReasonUpperStructureColor => 'Upper-structure color';
+
+  @override
+  String get voicingReasonTritoneSubFlavor => 'Tritone-sub flavor';
+
+  @override
+  String get voicingReasonLockedContinuity => 'Locked continuity';
+
+  @override
+  String get voicingReasonGentleMotion => 'Smooth hand move';
 }

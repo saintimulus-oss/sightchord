@@ -3,26 +3,49 @@
   "settings": "설정",
   "closeSettings": "설정 닫기",
   "language": "언어",
+  "systemDefaultLanguage": "시스템 기본값",
   "metronome": "메트로놈",
   "enabled": "켜짐",
   "disabled": "꺼짐",
   "metronomeHelp": "메트로놈을 켜면 연습 중 매 박마다 클릭 소리가 납니다.",
+  "metronomeSound": "메트로놈 사운드",
+  "metronomeSoundClassic": "클래식",
+  "metronomeSoundClickB": "클릭 B",
+  "metronomeSoundClickC": "클릭 C",
+  "metronomeSoundClickD": "클릭 D",
+  "metronomeSoundClickE": "클릭 E",
+  "metronomeSoundClickF": "클릭 F",
   "metronomeVolume": "메트로놈 볼륨",
   "keys": "키",
   "noKeysSelected": "선택된 키가 없습니다. 모두 끄면 모든 루트에서 자유 모드로 연습합니다.",
   "keysSelectedHelp": "선택한 키는 키 기반 랜덤 모드와 Smart Generator 모드에 사용됩니다.",
   "smartGeneratorMode": "Smart Generator 모드",
-  "smartGeneratorHelp": "활성화된 비다이아토닉 옵션을 유지하면서 기능적 화성 진행을 우선합니다.",
+  "smartGeneratorHelp": "활성화된 비다이어토닉 옵션을 유지하면서 기능 화성 진행을 우선합니다.",
+  "advancedSmartGenerator": "고급 Smart Generator",
+  "modulationIntensity": "전조 강도",
+  "modulationIntensityOff": "끔",
+  "modulationIntensityLow": "낮음",
+  "modulationIntensityMedium": "보통",
+  "modulationIntensityHigh": "높음",
+  "jazzPreset": "재즈 프리셋",
+  "jazzPresetStandardsCore": "스탠더드 코어",
+  "jazzPresetModulationStudy": "전조 스터디",
+  "jazzPresetAdvanced": "고급",
+  "sourceProfile": "소스 프로필",
+  "sourceProfileFakebookStandard": "페이크북 표준",
+  "sourceProfileRecordingInspired": "레코딩 지향",
+  "smartDiagnostics": "Smart 진단 로그",
+  "smartDiagnosticsHelp": "디버깅용으로 Smart Generator 의사결정 추적을 로그에 남깁니다.",
   "keyModeRequiredForSmartGenerator": "Smart Generator 모드를 쓰려면 최소 한 개의 키를 선택하세요.",
-  "nonDiatonic": "비다이아토닉",
-  "nonDiatonicRequiresKeyMode": "비다이아토닉 옵션은 키 모드에서만 사용할 수 있습니다.",
+  "nonDiatonic": "비다이어토닉",
+  "nonDiatonicRequiresKeyMode": "비다이어토닉 옵션은 키 모드에서만 사용할 수 있습니다.",
   "secondaryDominant": "세컨더리 도미넌트",
   "substituteDominant": "서브스티튜트 도미넌트",
   "modalInterchange": "모달 인터체인지",
-  "modalInterchangeDisabledHelp": "모달 인터체인지는 키 모드에서만 나오므로 자유 모드에서는 비활성화됩니다.",
+  "modalInterchangeDisabledHelp": "모달 인터체인지는 키 모드에서만 나타나므로 자유 모드에서는 이 옵션이 비활성화됩니다.",
   "rendering": "표기",
   "chordSymbolStyle": "코드 심벌 표기 스타일",
-  "chordSymbolStyleHelp": "표시 레이어만 바뀌며 내부 화성 로직은 그대로 유지됩니다.",
+  "chordSymbolStyleHelp": "표시 방식만 바꾸며, 화성 로직은 그대로 유지됩니다.",
   "styleCompact": "Compact",
   "styleMajText": "MajText",
   "styleDeltaJazz": "DeltaJazz",
@@ -31,7 +54,7 @@
   "tensionHelp": "로마 숫자 프로필과 선택한 칩만 사용",
   "inversions": "전위",
   "enableInversions": "전위 사용",
-  "inversionHelp": "코드가 결정된 뒤 임의 슬래시 베이스 표기로 적용하며, 이전 베이스 진행은 추적하지 않습니다.",
+  "inversionHelp": "코드가 선택된 뒤 슬래시 베이스 표기를 랜덤으로 적용하며, 이전 베이스 진행은 추적하지 않습니다.",
   "firstInversion": "1전위",
   "secondInversion": "2전위",
   "thirdInversion": "3전위",
@@ -44,7 +67,7 @@
   "metronomeOffTag": "메트로놈 꺼짐",
   "pressNextChordToBegin": "Next Chord를 눌러 시작",
   "freeModeActive": "자유 모드 활성",
-  "freePracticeDescription": "12개의 반음 루트와 랜덤 코드 퀄리티를 사용해 폭넓은 리딩 연습을 합니다.",
+  "freePracticeDescription": "12개의 반음 루트와 랜덤 코드 품질을 사용해 폭넓은 리딩 연습을 합니다.",
   "smartPracticeDescription": "선택한 키 안에서 기능 화성 흐름을 따르면서 자연스러운 Smart Generator 진행을 허용합니다.",
   "keyPracticeDescription": "선택한 키와 활성화된 로마 숫자를 사용해 다이아토닉 연습 재료를 생성합니다.",
   "keyboardShortcutHelp": "Space: 다음 코드  Enter: 자동 재생 시작/정지  Up/Down: BPM 조절",
@@ -53,7 +76,7 @@
   "stopAutoplay": "자동 재생 중지",
   "decreaseBpm": "BPM 낮추기",
   "increaseBpm": "BPM 높이기",
-  "allowedRange": "허용 범위: {min}–{max}",
+  "allowedRange": "허용 범위: {min}-{max}",
   "@allowedRange": {
     "placeholders": {
       "min": {
@@ -63,5 +86,102 @@
         "type": "int"
       }
     }
-  }
+  },
+  "voicingSuggestionsTitle": "Voicing Suggestions",
+  "voicingSuggestionsSubtitle": "See concrete note choices for this chord.",
+  "voicingSuggestionsEnabled": "Enable Voicing Suggestions",
+  "voicingSuggestionsHelp": "Shows three playable note-level voicing ideas for the current chord.",
+  "voicingComplexity": "Voicing Complexity",
+  "voicingComplexityHelp": "Controls how colorful the suggestions may become.",
+  "voicingComplexityBasic": "Basic",
+  "voicingComplexityStandard": "Standard",
+  "voicingComplexityModern": "Modern",
+  "voicingTopNotePreference": "Top Note Preference",
+  "voicingTopNotePreferenceHelp": "Biases suggestions toward a chosen top line. Locked voicings override it, then same-chord carry keeps the line steady.",
+  "voicingTopNotePreferenceAuto": "Auto",
+  "allowRootlessVoicings": "Allow Rootless Voicings",
+  "allowRootlessVoicingsHelp": "Lets suggestions omit the root when the guide tones stay clear.",
+  "maxVoicingNotes": "Max Voicing Notes",
+  "lookAheadDepth": "Look-Ahead Depth",
+  "lookAheadDepthHelp": "How many future chords the ranking may consider.",
+  "showVoicingReasons": "Show Voicing Reasons",
+  "showVoicingReasonsHelp": "Displays short explanation chips on each suggestion card.",
+  "voicingSuggestionNatural": "Most Natural",
+  "voicingSuggestionColorful": "Most Colorful",
+  "voicingSuggestionEasy": "Easiest",
+  "voicingSuggestionNaturalSubtitle": "Voice-leading first",
+  "voicingSuggestionColorfulSubtitle": "Leans into color tones",
+  "voicingSuggestionEasySubtitle": "Compact hand shape",
+  "voicingSuggestionNaturalConnectedSubtitle": "Connection and resolution first",
+  "voicingSuggestionNaturalStableSubtitle": "Same shape, steady comping",
+  "voicingSuggestionTopLineSubtitle": "Top line stays in focus",
+  "voicingSuggestionColorfulAlteredSubtitle": "Altered tension up front",
+  "voicingSuggestionColorfulQuartalSubtitle": "Modern quartal color",
+  "voicingSuggestionColorfulTritoneSubtitle": "Tritone-sub edge with bright guide tones",
+  "voicingSuggestionColorfulUpperStructureSubtitle": "Guide tones with bright extensions",
+  "voicingSuggestionEasyAnchoredSubtitle": "Core tones, smaller reach",
+  "voicingSuggestionEasyStableSubtitle": "Repeat-friendly hand shape",
+  "voicingTopNoteLabel": "Top",
+  "voicingTopNoteContextExplicit": "Target top note: {note}",
+  "@voicingTopNoteContextExplicit": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextLocked": "Locked top line: {note}",
+  "@voicingTopNoteContextLocked": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextCarry": "Carry top line: {note}",
+  "@voicingTopNoteContextCarry": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingFamilyShell": "Shell",
+  "voicingFamilyRootlessA": "Rootless A",
+  "voicingFamilyRootlessB": "Rootless B",
+  "voicingFamilySpread": "Spread",
+  "voicingFamilySus": "Sus",
+  "voicingFamilyQuartal": "Quartal",
+  "voicingFamilyAltered": "Altered",
+  "voicingFamilyUpperStructure": "Upper Structure",
+  "voicingLockSuggestion": "Lock suggestion",
+  "voicingUnlockSuggestion": "Unlock suggestion",
+  "voicingSelected": "Selected",
+  "voicingLocked": "Locked",
+  "voicingReasonEssentialCore": "Essential tones covered",
+  "voicingReasonGuideToneAnchor": "3rd/7th anchor",
+  "voicingReasonGuideResolution": "{count} guide-tone resolves",
+  "@voicingReasonGuideResolution": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "voicingReasonCommonToneRetention": "{count} common tones kept",
+  "@voicingReasonCommonToneRetention": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "voicingReasonStableRepeat": "Stable repeat",
+  "voicingReasonTopLineTarget": "Top-line target",
+  "voicingReasonLowMudAvoided": "Low-register clarity",
+  "voicingReasonCompactReach": "Comfortable reach",
+  "voicingReasonBassAnchor": "Bass anchor respected",
+  "voicingReasonNextChordReady": "Next chord ready",
+  "voicingReasonAlteredColor": "Altered tensions",
+  "voicingReasonRootlessClarity": "Light rootless shape",
+  "voicingReasonSusRelease": "Sus release set up",
+  "voicingReasonQuartalColor": "Quartal color",
+  "voicingReasonUpperStructureColor": "Upper-structure color",
+  "voicingReasonTritoneSubFlavor": "Tritone-sub flavor",
+  "voicingReasonLockedContinuity": "Locked continuity",
+  "voicingReasonGentleMotion": "Smooth hand move"
 }

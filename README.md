@@ -2,6 +2,8 @@
 
 SightChord is a Flutter chord practice app for improvisation, reading, and harmonic vocabulary work.
 
+Live demo: https://saintimulus-oss.github.io/sightchord/
+
 ## Current Features
 
 - Free mode across all 12 roots
@@ -45,7 +47,7 @@ This repository includes `.github/workflows/deploy-pages.yml` using the official
 8. Upload the Pages artifact
 9. Deploy with `actions/deploy-pages`
 
-Expected project Pages URL for this repository:
+Live GitHub Pages URL for this repository:
 
 - `https://saintimulus-oss.github.io/sightchord/`
 
