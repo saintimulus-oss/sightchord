@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -201,6 +201,69 @@ void main() {
     );
     expect(find.byKey(const ValueKey('allow-tensions-toggle')), findsOneWidget);
     expect(find.byKey(const ValueKey('tension-chip-9')), findsOneWidget);
+  });
+
+  testWidgets('minor-only key selection produces a minor analysis label', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(
+      tester,
+      PracticeSettings(
+        activeKeyCenters: {
+          const KeyCenter(tonicName: 'A', mode: KeyMode.minor),
+        },
+      ),
+    );
+
+    await tester.tap(find.text('Next Chord'));
+    await tester.pumpAndSettle();
+
+    final status = tester
+        .widget<Text>(find.byKey(const ValueKey('current-status-label')))
+        .data!;
+    expect(status, contains('A minor:'));
+  });
+
+  testWidgets('classical key label style uses lowercase tonic for minor', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithController(
+      tester,
+      PracticeSettings(
+        activeKeyCenters: {
+          const KeyCenter(tonicName: 'A', mode: KeyMode.minor),
+        },
+        keyCenterLabelStyle: KeyCenterLabelStyle.classicalCase,
+      ),
+    );
+
+    await tester.tap(find.text('Next Chord'));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<Text>(find.byKey(const ValueKey('current-status-label')))
+          .data!,
+      contains('a:'),
+    );
+
+    await tester.tap(find.byIcon(Icons.settings));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('key-center-label-style-dropdown')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('key-center-label-style-dropdown')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('C major: / C minor:').last);
+    await tester.pumpAndSettle();
+
+    expect(
+      controller.settings.keyCenterLabelStyle,
+      KeyCenterLabelStyle.modeText,
+    );
   });
 
   testWidgets(

@@ -460,6 +460,7 @@ class SmartRenderingPlan {
 class SmartStartRequest {
   const SmartStartRequest({
     required this.activeKeys,
+    required this.selectedKeyCenters,
     required this.secondaryDominantEnabled,
     required this.substituteDominantEnabled,
     required this.modalInterchangeEnabled,
@@ -470,6 +471,7 @@ class SmartStartRequest {
   });
 
   final List<String> activeKeys;
+  final List<KeyCenter> selectedKeyCenters;
   final bool secondaryDominantEnabled;
   final bool substituteDominantEnabled;
   final bool modalInterchangeEnabled;
@@ -483,6 +485,7 @@ class SmartStepRequest {
   const SmartStepRequest({
     required this.stepIndex,
     required this.activeKeys,
+    required this.selectedKeyCenters,
     required this.currentKeyCenter,
     required this.currentRomanNumeralId,
     required this.currentResolutionRomanNumeralId,
@@ -506,6 +509,7 @@ class SmartStepRequest {
 
   final int stepIndex;
   final List<String> activeKeys;
+  final List<KeyCenter> selectedKeyCenters;
   final KeyCenter currentKeyCenter;
   final RomanNumeralId currentRomanNumeralId;
   final RomanNumeralId? currentResolutionRomanNumeralId;
@@ -1846,7 +1850,7 @@ class SmartGeneratorHelper {
   }) {
     final startingCenter = _selectInitialKeyCenter(
       random: random,
-      activeKeys: request.activeKeys,
+      selectedKeyCenters: request.selectedKeyCenters,
       jazzPreset: request.jazzPreset,
       sourceProfile: request.sourceProfile,
     );
@@ -1856,6 +1860,7 @@ class SmartGeneratorHelper {
     final syntheticRequest = SmartStepRequest(
       stepIndex: 0,
       activeKeys: request.activeKeys,
+      selectedKeyCenters: request.selectedKeyCenters,
       currentKeyCenter: startingCenter,
       currentRomanNumeralId: tonicRoman,
       currentResolutionRomanNumeralId: null,
@@ -2033,6 +2038,7 @@ class SmartGeneratorHelper {
                     0) +
                 1,
             activeKeys: request.activeKeys,
+            selectedKeyCenters: request.selectedKeyCenters,
             currentKeyCenter:
                 currentChord.keyCenter ??
                 MusicTheory.keyCenterFor(currentChord.keyName ?? 'C'),
@@ -7316,15 +7322,14 @@ class SmartGeneratorHelper {
 
   static KeyCenter _selectInitialKeyCenter({
     required Random random,
-    required List<String> activeKeys,
+    required List<KeyCenter> selectedKeyCenters,
     required JazzPreset jazzPreset,
     required SourceProfile sourceProfile,
   }) {
-    if (activeKeys.isEmpty) {
+    if (selectedKeyCenters.isEmpty) {
       return const KeyCenter(tonicName: 'C', mode: KeyMode.major);
     }
-    final tonic = activeKeys[random.nextInt(activeKeys.length)];
-    return KeyCenter(tonicName: tonic, mode: KeyMode.major);
+    return selectedKeyCenters[random.nextInt(selectedKeyCenters.length)];
   }
 
   static RomanNumeralId _selectMinorTonic(

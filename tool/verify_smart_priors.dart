@@ -388,6 +388,11 @@ SmartSimulationSummary _simulateScenario(
       steps: _stepsPerRun,
       request: SmartStartRequest(
         activeKeys: const ['C', 'G', 'A'],
+        selectedKeyCenters: const [
+          KeyCenter(tonicName: 'C', mode: KeyMode.major),
+          KeyCenter(tonicName: 'G', mode: KeyMode.major),
+          KeyCenter(tonicName: 'A', mode: KeyMode.major),
+        ],
         secondaryDominantEnabled: true,
         substituteDominantEnabled: true,
         modalInterchangeEnabled: true,

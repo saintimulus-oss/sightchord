@@ -369,6 +369,18 @@ abstract class AppLocalizations {
   /// **'Rendering'**
   String get rendering;
 
+  /// No description provided for @keyCenterLabelStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Key Label Style'**
+  String get keyCenterLabelStyle;
+
+  /// No description provided for @keyCenterLabelStyleHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose between explicit mode names and classical uppercase/lowercase tonic labels.'**
+  String get keyCenterLabelStyleHelp;
+
   /// No description provided for @chordSymbolStyle.
   ///
   /// In en, this message translates to:
@@ -398,6 +410,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'DeltaJazz'**
   String get styleDeltaJazz;
+
+  /// No description provided for @keyCenterLabelStyleModeText.
+  ///
+  /// In en, this message translates to:
+  /// **'C major: / C minor:'**
+  String get keyCenterLabelStyleModeText;
+
+  /// No description provided for @keyCenterLabelStyleClassicalCase.
+  ///
+  /// In en, this message translates to:
+  /// **'C: / c:'**
+  String get keyCenterLabelStyleClassicalCase;
 
   /// No description provided for @allowV7sus4.
   ///

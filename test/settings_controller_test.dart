@@ -59,6 +59,7 @@ void main() {
   test('loads new smart generation settings from storage', () async {
     SharedPreferences.setMockInitialValues({
       'language': 'zh',
+      'activeKeyCenters': ['A|minor', 'C|major'],
       'modulationIntensity': 'high',
       'jazzPreset': 'advanced',
       'sourceProfile': 'recordingInspired',
@@ -70,12 +71,21 @@ void main() {
       'maxVoicingNotes': 3,
       'lookAheadDepth': 2,
       'showVoicingReasons': false,
+      'keyCenterLabelStyle': 'classicalCase',
     });
     final controller = AppSettingsController();
 
     await controller.load();
 
     expect(controller.settings.language, AppLanguage.zh);
+    expect(
+      controller.settings.activeKeyCenters,
+      contains(const KeyCenter(tonicName: 'A', mode: KeyMode.minor)),
+    );
+    expect(
+      controller.settings.activeKeyCenters,
+      contains(const KeyCenter(tonicName: 'C', mode: KeyMode.major)),
+    );
     expect(controller.settings.modulationIntensity, ModulationIntensity.high);
     expect(controller.settings.jazzPreset, JazzPreset.advanced);
     expect(controller.settings.sourceProfile, SourceProfile.recordingInspired);
@@ -90,6 +100,10 @@ void main() {
     expect(controller.settings.maxVoicingNotes, 3);
     expect(controller.settings.lookAheadDepth, 2);
     expect(controller.settings.showVoicingReasons, isFalse);
+    expect(
+      controller.settings.keyCenterLabelStyle,
+      KeyCenterLabelStyle.classicalCase,
+    );
   });
 
   test(

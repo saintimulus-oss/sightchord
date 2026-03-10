@@ -144,6 +144,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rendering => '표기';
 
   @override
+  String get keyCenterLabelStyle => '조성 표기 방식';
+
+  @override
+  String get keyCenterLabelStyleHelp =>
+      '장조/단조를 글자로 표시할지, 클래식처럼 대소문자로 표시할지 선택합니다.';
+
+  @override
   String get chordSymbolStyle => '코드 심볼 스타일';
 
   @override
@@ -157,6 +164,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get styleDeltaJazz => 'DeltaJazz';
+
+  @override
+  String get keyCenterLabelStyleModeText => 'C 장조: / C 단조:';
+
+  @override
+  String get keyCenterLabelStyleClassicalCase => 'C: / c:';
 
   @override
   String get allowV7sus4 => 'V7sus4 허용 (V7, V7/x)';

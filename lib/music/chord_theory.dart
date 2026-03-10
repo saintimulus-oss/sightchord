@@ -1,5 +1,7 @@
 enum KeyMode { major, minor }
 
+enum KeyCenterLabelStyle { modeText, classicalCase }
+
 enum AppliedType { secondary, substitute }
 
 enum PlannedChordKind { resolvedRoman, tonicDominant7, tonicSix }
@@ -554,6 +556,10 @@ class MusicTheory {
     'B',
   ];
 
+  static List<KeyCenter> orderedKeyCentersForMode(KeyMode mode) => [
+    for (final key in keyOptions) KeyCenter(tonicName: key, mode: mode),
+  ];
+
   static const List<String> freeModeRoots = [
     'C',
     'C#',
@@ -1066,6 +1072,9 @@ class MusicTheory {
   static int? keyTonicSemitone(String key) => _keyTonicSemitones[key];
 
   static String displayRootForKey(String key) => _displayRootsByKey[key] ?? key;
+
+  static String classicalDisplayRootForKey(String key) =>
+      displayRootForKey(key).toLowerCase();
 
   static bool prefersFlatSpellingForKey(String key) =>
       _flatPreferredKeys.contains(key);

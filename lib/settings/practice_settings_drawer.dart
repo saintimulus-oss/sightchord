@@ -169,32 +169,32 @@ class PracticeSettingsDrawer extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
+                      Text(
+                        _keyModeLabel(l10n, KeyMode.major),
+                        style: theme.textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: MusicTheory.keyOptions
-                            .map((key) {
-                              return FilterChip(
-                                label: Text(key),
-                                selected: settings.activeKeys.contains(key),
-                                showCheckmark: false,
-                                onSelected: (selected) {
-                                  final nextKeys = <String>{
-                                    ...settings.activeKeys,
-                                  };
-                                  if (selected) {
-                                    nextKeys.add(key);
-                                  } else {
-                                    nextKeys.remove(key);
-                                  }
-                                  onApplySettings(
-                                    settings.copyWith(activeKeys: nextKeys),
-                                    reseed: true,
-                                  );
-                                },
-                              );
-                            })
-                            .toList(growable: false),
+                        children:
+                            MusicTheory.orderedKeyCentersForMode(KeyMode.major)
+                                .map((center) => _keyCenterChip(center))
+                                .toList(growable: false),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        _keyModeLabel(l10n, KeyMode.minor),
+                        style: theme.textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children:
+                            MusicTheory.orderedKeyCentersForMode(KeyMode.minor)
+                                .map((center) => _keyCenterChip(center))
+                                .toList(growable: false),
                       ),
                       const SizedBox(height: 24),
                       SwitchListTile.adaptive(
@@ -443,6 +443,34 @@ class PracticeSettingsDrawer extends StatelessWidget {
                           }
                           onApplySettings(
                             settings.copyWith(chordSymbolStyle: value),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<KeyCenterLabelStyle>(
+                        key: const ValueKey('key-center-label-style-dropdown'),
+                        initialValue: settings.keyCenterLabelStyle,
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: 'Key Label Style',
+                          helperText:
+                              'Choose between explicit mode names and classical case.',
+                        ),
+                        items: KeyCenterLabelStyle.values
+                            .map(
+                              (style) => DropdownMenuItem<KeyCenterLabelStyle>(
+                                value: style,
+                                child: Text(_keyCenterLabelStyleLabel(style)),
+                              ),
+                            )
+                            .toList(growable: false),
+                        onChanged: (value) {
+                          if (value == null) {
+                            return;
+                          }
+                          onApplySettings(
+                            settings.copyWith(keyCenterLabelStyle: value),
                           );
                         },
                       ),
@@ -835,6 +863,42 @@ class PracticeSettingsDrawer extends StatelessWidget {
     return value == VoicingTopNotePreference.auto
         ? l10n.voicingTopNotePreferenceAuto
         : value.noteLabel;
+  }
+
+  String _keyModeLabel(AppLocalizations l10n, KeyMode mode) {
+    return mode == KeyMode.major ? l10n.modeMajor : l10n.modeMinor;
+  }
+
+  Widget _keyCenterChip(KeyCenter center) {
+    final isSelected = settings.activeKeyCenters.contains(center);
+    final label = center.mode == KeyMode.major
+        ? MusicTheory.displayRootForKey(center.tonicName)
+        : MusicTheory.classicalDisplayRootForKey(center.tonicName);
+
+    return FilterChip(
+      label: Text(label),
+      selected: isSelected,
+      showCheckmark: false,
+      onSelected: (selected) {
+        final nextCenters = <KeyCenter>{...settings.activeKeyCenters};
+        if (selected) {
+          nextCenters.add(center);
+        } else {
+          nextCenters.remove(center);
+        }
+        onApplySettings(
+          settings.copyWith(activeKeyCenters: nextCenters),
+          reseed: true,
+        );
+      },
+    );
+  }
+
+  String _keyCenterLabelStyleLabel(KeyCenterLabelStyle style) {
+    return switch (style) {
+      KeyCenterLabelStyle.modeText => 'C major: / C minor:',
+      KeyCenterLabelStyle.classicalCase => 'C: / c:',
+    };
   }
 }
 

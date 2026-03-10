@@ -188,9 +188,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   bool get _usesKeyMode => _settings.usesKeyMode;
 
-  List<String> get _orderedKeys => [
-    for (final key in MusicTheory.keyOptions)
-      if (_settings.activeKeys.contains(key)) key,
+  List<KeyCenter> get _orderedKeyCenters => [
+    for (final mode in KeyMode.values)
+      for (final center in MusicTheory.orderedKeyCentersForMode(mode))
+        if (_settings.activeKeyCenters.contains(center)) center,
   ];
 
   bool _setEquals<T>(Set<T> left, Set<T> right) {
@@ -219,7 +220,7 @@ class _MyHomePageState extends State<MyHomePage> {
     PracticeSettings previous,
     PracticeSettings next,
   ) {
-    return !_setEquals(previous.activeKeys, next.activeKeys) ||
+    return !_setEquals(previous.activeKeyCenters, next.activeKeyCenters) ||
         previous.smartGeneratorMode != next.smartGeneratorMode ||
         previous.secondaryDominantEnabled != next.secondaryDominantEnabled ||
         previous.substituteDominantEnabled != next.substituteDominantEnabled ||
@@ -281,7 +282,11 @@ class _MyHomePageState extends State<MyHomePage> {
   List<String> _practiceModeTags(AppLocalizations l10n) {
     final tags = <String>[_usesKeyMode ? l10n.keyModeTag : l10n.freeModeTag];
     if (_usesKeyMode) {
-      tags.addAll(_orderedKeys);
+      tags.addAll(
+        _orderedKeyCenters.map(
+          (center) => _keyCenterLabel(l10n, center, trailingColon: false),
+        ),
+      );
       if (_settings.smartGeneratorMode) {
         tags.add(l10n.smartGeneratorMode);
       }
@@ -312,27 +317,44 @@ class _MyHomePageState extends State<MyHomePage> {
     return analysisLabel.isEmpty ? l10n.freeModeActive : analysisLabel;
   }
 
-  String _localizedAnalysisLabel(
-    AppLocalizations l10n,
-    GeneratedChord chord,
-  ) {
+  String _localizedAnalysisLabel(AppLocalizations l10n, GeneratedChord chord) {
     final romanNumeralId = chord.romanNumeralId;
     if (romanNumeralId == null) {
       return '';
     }
 
     final keyCenter = chord.keyCenter;
-    final centerLabel =
-        keyCenter == null
-            ? chord.keyName
-            : '${MusicTheory.displayRootForKey(keyCenter.tonicName)} '
-                '${keyCenter.mode == KeyMode.major ? l10n.modeMajor : l10n.modeMinor}';
+    final centerLabel = keyCenter == null
+        ? chord.keyName
+        : _keyCenterLabel(l10n, keyCenter, trailingColon: true);
     final roman = MusicTheory.romanTokenOf(romanNumeralId);
 
     if (centerLabel == null || centerLabel.isEmpty) {
       return roman;
     }
-    return l10n.analysisLabelWithCenter(centerLabel, roman);
+    return '$centerLabel $roman';
+  }
+
+  String _keyCenterLabel(
+    AppLocalizations l10n,
+    KeyCenter center, {
+    required bool trailingColon,
+  }) {
+    final root = switch (_settings.keyCenterLabelStyle) {
+      KeyCenterLabelStyle.modeText => MusicTheory.displayRootForKey(
+        center.tonicName,
+      ),
+      KeyCenterLabelStyle.classicalCase =>
+        center.mode == KeyMode.major
+            ? MusicTheory.displayRootForKey(center.tonicName)
+            : MusicTheory.classicalDisplayRootForKey(center.tonicName),
+    };
+    final label = switch (_settings.keyCenterLabelStyle) {
+      KeyCenterLabelStyle.modeText =>
+        '$root ${center.mode == KeyMode.major ? l10n.modeMajor : l10n.modeMinor}',
+      KeyCenterLabelStyle.classicalCase => root,
+    };
+    return trailingColon ? '$label:' : label;
   }
 
   String _practiceModeDescription(AppLocalizations l10n) {
@@ -582,8 +604,8 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
 
-    final keys = _orderedKeys;
-    if (keys.isEmpty) {
+    final keyCenters = _orderedKeyCenters;
+    if (keyCenters.isEmpty) {
       return _buildGeneratedChord(
         MusicTheory.keyOptions.first,
         RomanNumeralId.iMaj7,
@@ -591,14 +613,14 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     if (_settings.smartGeneratorMode) {
       return _generateSmartChord(
-        keys: keys,
+        keyCenters: keyCenters,
         exclusionContext: exclusionContext,
         current: current,
       );
     }
 
     return _generateRandomKeyModeChord(
-      keys: keys,
+      keyCenters: keyCenters,
       exclusionContext: exclusionContext,
     );
   }
@@ -746,7 +768,21 @@ class _MyHomePageState extends State<MyHomePage> {
     return chord;
   }
 
-  Map<RomanNumeralId, int> _randomKeyModeRomanWeights() {
+  Map<RomanNumeralId, int> _randomKeyModeRomanWeightsFor(KeyMode mode) {
+    if (mode == KeyMode.minor) {
+      return const {
+        RomanNumeralId.iMinMaj7: 16,
+        RomanNumeralId.iMin7: 14,
+        RomanNumeralId.iMin6: 12,
+        RomanNumeralId.iiHalfDiminishedMinor: 12,
+        RomanNumeralId.flatIIIMaj7Minor: 10,
+        RomanNumeralId.ivMin7Minor: 12,
+        RomanNumeralId.vDom7: 16,
+        RomanNumeralId.flatVIMaj7Minor: 10,
+        RomanNumeralId.flatVIIDom7Minor: 10,
+      };
+    }
+
     final weights = <RomanNumeralId, int>{
       RomanNumeralId.iMaj7: 18,
       RomanNumeralId.iiMin7: 16,
@@ -787,17 +823,28 @@ class _MyHomePageState extends State<MyHomePage> {
     return weights;
   }
 
+  Map<RomanNumeralId, int> _diatonicRomanWeightsFor(KeyMode mode) => {
+    for (final roman in MusicTheory.diatonicRomansForMode(mode)) roman: 1,
+  };
+
   List<_WeightedGeneratedChordCandidate> _buildWeightedKeyModeCandidates({
-    required List<String> keys,
-    required Map<RomanNumeralId, int> romanWeights,
+    required List<KeyCenter> keyCenters,
     required ChordExclusionContext exclusionContext,
+    Map<RomanNumeralId, int> Function(KeyMode mode)? romanWeightsForMode,
   }) {
     return [
-      for (final key in keys)
-        for (final entry in romanWeights.entries)
+      for (final keyCenter in keyCenters)
+        for (final entry
+            in (romanWeightsForMode ?? _randomKeyModeRomanWeightsFor)(
+              keyCenter.mode,
+            ).entries)
           if (entry.value > 0)
             () {
-              final chord = _buildGeneratedChord(key, entry.key);
+              final chord = _buildGeneratedChord(
+                keyCenter.tonicName,
+                entry.key,
+                keyCenter: keyCenter,
+              );
               if (_isExcludedCandidate(chord, exclusionContext)) {
                 return null;
               }
@@ -827,40 +874,39 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   GeneratedChord _generateRandomKeyModeChord({
-    required List<String> keys,
+    required List<KeyCenter> keyCenters,
     required ChordExclusionContext exclusionContext,
   }) {
     final candidates = _buildWeightedKeyModeCandidates(
-      keys: keys,
-      romanWeights: _randomKeyModeRomanWeights(),
+      keyCenters: keyCenters,
       exclusionContext: exclusionContext,
     );
     if (candidates.isNotEmpty) {
       return _pickWeightedChord(candidates);
     }
-    return _buildGeneratedChord(keys.first, RomanNumeralId.iMaj7);
+    final fallbackCenter = keyCenters.first;
+    return _buildGeneratedChord(
+      fallbackCenter.tonicName,
+      fallbackCenter.mode == KeyMode.major
+          ? RomanNumeralId.iMaj7
+          : RomanNumeralId.iMin7,
+      keyCenter: fallbackCenter,
+    );
   }
 
   GeneratedChord _generateRandomDiatonicChord({
-    required List<String> keys,
+    required List<KeyCenter> keyCenters,
     required ChordExclusionContext exclusionContext,
-    String? preferredKey,
+    KeyCenter? preferredKeyCenter,
   }) {
-    final preferredKeys = preferredKey != null && keys.contains(preferredKey)
-        ? [preferredKey]
-        : keys;
+    final preferredCenters =
+        preferredKeyCenter != null && keyCenters.contains(preferredKeyCenter)
+        ? [preferredKeyCenter]
+        : keyCenters;
     final preferredCandidates = _buildWeightedKeyModeCandidates(
-      keys: preferredKeys,
-      romanWeights: const {
-        RomanNumeralId.iMaj7: 1,
-        RomanNumeralId.iiMin7: 1,
-        RomanNumeralId.iiiMin7: 1,
-        RomanNumeralId.ivMaj7: 1,
-        RomanNumeralId.vDom7: 1,
-        RomanNumeralId.viMin7: 1,
-        RomanNumeralId.viiHalfDiminished7: 1,
-      },
+      keyCenters: preferredCenters,
       exclusionContext: exclusionContext,
+      romanWeightsForMode: _diatonicRomanWeightsFor,
     );
     if (preferredCandidates.isNotEmpty) {
       return preferredCandidates[_random.nextInt(preferredCandidates.length)]
@@ -868,24 +914,23 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     final fallbackCandidates = _buildWeightedKeyModeCandidates(
-      keys: keys,
-      romanWeights: const {
-        RomanNumeralId.iMaj7: 1,
-        RomanNumeralId.iiMin7: 1,
-        RomanNumeralId.iiiMin7: 1,
-        RomanNumeralId.ivMaj7: 1,
-        RomanNumeralId.vDom7: 1,
-        RomanNumeralId.viMin7: 1,
-        RomanNumeralId.viiHalfDiminished7: 1,
-      },
+      keyCenters: keyCenters,
       exclusionContext: exclusionContext,
+      romanWeightsForMode: _diatonicRomanWeightsFor,
     );
     if (fallbackCandidates.isNotEmpty) {
       return fallbackCandidates[_random.nextInt(fallbackCandidates.length)]
           .chord;
     }
 
-    return _buildGeneratedChord(keys.first, RomanNumeralId.iMaj7);
+    final fallbackCenter = keyCenters.first;
+    return _buildGeneratedChord(
+      fallbackCenter.tonicName,
+      fallbackCenter.mode == KeyMode.major
+          ? RomanNumeralId.iMaj7
+          : RomanNumeralId.iMin7,
+      keyCenter: fallbackCenter,
+    );
   }
 
   GeneratedChord? _buildFamilyAwareFallbackChord({
@@ -947,17 +992,21 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   GeneratedChord _generateSmartChord({
-    required List<String> keys,
+    required List<KeyCenter> keyCenters,
     required ChordExclusionContext exclusionContext,
     GeneratedChord? current,
   }) {
     if (current?.keyName == null ||
         current?.romanNumeralId == null ||
-        !keys.contains(current!.keyName)) {
+        !keyCenters.contains(current!.keyCenter)) {
+      final activeKeys = {
+        for (final center in keyCenters) center.tonicName,
+      }.toList(growable: false);
       final initialPlan = SmartGeneratorHelper.planInitialStep(
         random: _random,
         request: SmartStartRequest(
-          activeKeys: keys,
+          activeKeys: activeKeys,
+          selectedKeyCenters: keyCenters,
           secondaryDominantEnabled: _settings.secondaryDominantEnabled,
           substituteDominantEnabled: _settings.substituteDominantEnabled,
           modalInterchangeEnabled: _settings.modalInterchangeEnabled,
@@ -997,7 +1046,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return _emitSmartDebug(
         _attachSmartDebug(
           _generateRandomKeyModeChord(
-            keys: keys,
+            keyCenters: keyCenters,
             exclusionContext: exclusionContext,
           ),
           initialPlan.debug.withDecision(
@@ -1013,13 +1062,17 @@ class _MyHomePageState extends State<MyHomePage> {
     final currentRomanNumeralId = current.romanNumeralId!;
     final currentResolutionRomanId =
         current.resolutionTargetRomanId ?? current.resolutionRomanNumeralId;
+    final activeKeys = {
+      for (final center in keyCenters) center.tonicName,
+    }.toList(growable: false);
 
     final plan = SmartGeneratorHelper.planNextStep(
       random: _random,
       request: SmartStepRequest(
         stepIndex:
             ((current.smartDebug as SmartDecisionTrace?)?.stepIndex ?? 0) + 1,
-        activeKeys: keys,
+        activeKeys: activeKeys,
+        selectedKeyCenters: keyCenters,
         currentKeyCenter:
             current.keyCenter ?? MusicTheory.keyCenterFor(current.keyName!),
         currentRomanNumeralId: currentRomanNumeralId,
@@ -1079,11 +1132,11 @@ class _MyHomePageState extends State<MyHomePage> {
       _plannedSmartChordQueue = const <QueuedSmartChord>[];
     }
     final fallbackChord = _generateRandomDiatonicChord(
-      keys: keys,
+      keyCenters: keyCenters,
       exclusionContext: exclusionContext,
-      preferredKey: keys.contains(plan.finalKey)
-          ? plan.finalKey
-          : current.keyName,
+      preferredKeyCenter: keyCenters.contains(plan.finalKeyCenter)
+          ? plan.finalKeyCenter
+          : current.keyCenter,
     );
     return _emitSmartDebug(
       _attachSmartDebug(
@@ -1513,6 +1566,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                         height: 22,
                                         child: Center(
                                           child: Text(
+                                            key: const ValueKey(
+                                              'current-status-label',
+                                            ),
                                             _currentStatusLabel(l10n),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,

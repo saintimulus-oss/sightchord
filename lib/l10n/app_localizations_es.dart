@@ -149,6 +149,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rendering => 'Representacion';
 
   @override
+  String get keyCenterLabelStyle => 'Estilo de tonalidad';
+
+  @override
+  String get keyCenterLabelStyleHelp =>
+      'Elige entre mostrar mayor/menor en texto o usar mayusculas y minusculas al estilo clasico.';
+
+  @override
   String get chordSymbolStyle => 'Estilo de simbolo de acorde';
 
   @override
@@ -163,6 +170,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get styleDeltaJazz => 'DeltaJazz';
+
+  @override
+  String get keyCenterLabelStyleModeText => 'C mayor: / C menor:';
+
+  @override
+  String get keyCenterLabelStyleClassicalCase => 'C: / c:';
 
   @override
   String get allowV7sus4 => 'Allow V7sus4 (V7, V7/x)';

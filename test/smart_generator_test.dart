@@ -41,6 +41,7 @@ class _SequenceRandom implements Random {
 
 SmartStartRequest buildStartRequest({
   List<String> activeKeys = const ['C', 'G', 'A'],
+  List<KeyCenter>? selectedKeyCenters,
   bool secondaryDominantEnabled = true,
   bool substituteDominantEnabled = true,
   bool modalInterchangeEnabled = true,
@@ -51,6 +52,9 @@ SmartStartRequest buildStartRequest({
 }) {
   return SmartStartRequest(
     activeKeys: activeKeys,
+    selectedKeyCenters:
+        selectedKeyCenters ??
+        activeKeys.map((key) => MusicTheory.keyCenterFor(key)).toList(),
     secondaryDominantEnabled: secondaryDominantEnabled,
     substituteDominantEnabled: substituteDominantEnabled,
     modalInterchangeEnabled: modalInterchangeEnabled,
@@ -64,6 +68,7 @@ SmartStartRequest buildStartRequest({
 SmartStepRequest buildRequest({
   int stepIndex = 3,
   List<String> activeKeys = const ['C', 'G', 'A'],
+  List<KeyCenter>? selectedKeyCenters,
   KeyCenter? currentKeyCenter,
   RomanNumeralId currentRomanNumeralId = RomanNumeralId.iMaj69,
   RomanNumeralId? currentResolutionRomanNumeralId,
@@ -87,6 +92,9 @@ SmartStepRequest buildRequest({
   return SmartStepRequest(
     stepIndex: stepIndex,
     activeKeys: activeKeys,
+    selectedKeyCenters:
+        selectedKeyCenters ??
+        activeKeys.map((key) => MusicTheory.keyCenterFor(key)).toList(),
     currentKeyCenter:
         currentKeyCenter ??
         const KeyCenter(tonicName: 'C', mode: KeyMode.major),

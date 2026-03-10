@@ -14,6 +14,7 @@ class AppSettingsController extends ChangeNotifier {
   static const String _metronomeVolumeKey = 'metronomeVolume';
   static const String _metronomeSoundKey = 'metronomeSound';
   static const String _activeKeysKey = 'activeKeys';
+  static const String _activeKeyCentersKey = 'activeKeyCenters';
   static const String _smartGeneratorModeKey = 'smartGeneratorMode';
   static const String _secondaryDominantEnabledKey = 'secondaryDominantEnabled';
   static const String _substituteDominantEnabledKey =
@@ -36,6 +37,7 @@ class AppSettingsController extends ChangeNotifier {
   static const String _lookAheadDepthKey = 'lookAheadDepth';
   static const String _showVoicingReasonsKey = 'showVoicingReasons';
   static const String _bpmKey = 'bpm';
+  static const String _keyCenterLabelStyleKey = 'keyCenterLabelStyle';
   static const String _inversionsEnabledKey = 'inversionsEnabled';
   static const String _firstInversionEnabledKey = 'firstInversionEnabled';
   static const String _secondInversionEnabledKey = 'secondInversionEnabled';
@@ -48,6 +50,13 @@ class AppSettingsController extends ChangeNotifier {
 
   Future<void> load() async {
     final preferences = await SharedPreferences.getInstance();
+    final storedActiveKeyCenters = preferences.getStringList(
+      _activeKeyCentersKey,
+    );
+    final legacyActiveKeys = preferences
+        .getStringList(_activeKeysKey)
+        ?.where(MusicTheory.keyOptions.contains)
+        .toSet();
     _settings = PracticeSettings(
       language: AppLanguageX.fromStorageKey(
         preferences.getString(_languageKey),
@@ -61,10 +70,16 @@ class AppSettingsController extends ChangeNotifier {
       metronomeSound: MetronomeSoundX.fromStorageKey(
         preferences.getString(_metronomeSoundKey),
       ),
-      activeKeys: preferences
-          .getStringList(_activeKeysKey)
-          ?.where(MusicTheory.keyOptions.contains)
-          .toSet(),
+      activeKeyCenters: storedActiveKeyCenters != null
+          ? storedActiveKeyCenters
+                .map(KeyCenter.fromSerialized)
+                .where(
+                  (center) => MusicTheory.keyOptions.contains(center.tonicName),
+                )
+                .toSet()
+          : legacyActiveKeys
+                ?.map((key) => MusicTheory.keyCenterFor(key))
+                .toSet(),
       smartGeneratorMode:
           preferences.getBool(_smartGeneratorModeKey) ??
           _settings.smartGeneratorMode,
@@ -123,6 +138,10 @@ class AppSettingsController extends ChangeNotifier {
       showVoicingReasons:
           preferences.getBool(_showVoicingReasonsKey) ??
           _settings.showVoicingReasons,
+      keyCenterLabelStyle: KeyCenterLabelStyle.values.firstWhere(
+        (value) => value.name == preferences.getString(_keyCenterLabelStyleKey),
+        orElse: () => _settings.keyCenterLabelStyle,
+      ),
       inversionSettings: InversionSettings(
         enabled:
             preferences.getBool(_inversionsEnabledKey) ??
@@ -168,6 +187,10 @@ class AppSettingsController extends ChangeNotifier {
     await preferences.setStringList(
       _activeKeysKey,
       settings.activeKeys.toList(),
+    );
+    await preferences.setStringList(
+      _activeKeyCentersKey,
+      settings.activeKeyCenters.map((center) => center.serialize()).toList(),
     );
     await preferences.setBool(
       _smartGeneratorModeKey,
@@ -226,6 +249,10 @@ class AppSettingsController extends ChangeNotifier {
     await preferences.setBool(
       _showVoicingReasonsKey,
       settings.showVoicingReasons,
+    );
+    await preferences.setString(
+      _keyCenterLabelStyleKey,
+      settings.keyCenterLabelStyle.name,
     );
     await preferences.setInt(_bpmKey, settings.bpm);
     await preferences.setBool(

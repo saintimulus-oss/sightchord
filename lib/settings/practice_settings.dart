@@ -208,6 +208,7 @@ class PracticeSettings {
     this.metronomeVolume = 1,
     this.metronomeSound = MetronomeSound.tick,
     Set<String>? activeKeys,
+    Set<KeyCenter>? activeKeyCenters,
     this.smartGeneratorMode = false,
     this.secondaryDominantEnabled = false,
     this.substituteDominantEnabled = false,
@@ -229,7 +230,15 @@ class PracticeSettings {
     int lookAheadDepth = 1,
     this.showVoicingReasons = true,
     this.bpm = 60,
-  }) : activeKeys = Set.unmodifiable(activeKeys ?? const <String>{}),
+    this.keyCenterLabelStyle = KeyCenterLabelStyle.modeText,
+  }) : activeKeyCenters = Set.unmodifiable(
+         activeKeyCenters ??
+             (activeKeys == null
+                 ? const <KeyCenter>{}
+                 : activeKeys
+                       .map((key) => MusicTheory.keyCenterFor(key))
+                       .toSet()),
+       ),
        selectedTensionOptions = Set.unmodifiable(
          selectedTensionOptions ??
              const <String>{'9', '11', '13', '#11', 'b9', '#9', 'b13'},
@@ -242,7 +251,7 @@ class PracticeSettings {
   final bool metronomeEnabled;
   final double metronomeVolume;
   final MetronomeSound metronomeSound;
-  final Set<String> activeKeys;
+  final Set<KeyCenter> activeKeyCenters;
   final bool smartGeneratorMode;
   final bool secondaryDominantEnabled;
   final bool substituteDominantEnabled;
@@ -264,9 +273,12 @@ class PracticeSettings {
   final int lookAheadDepth;
   final bool showVoicingReasons;
   final int bpm;
+  final KeyCenterLabelStyle keyCenterLabelStyle;
 
   Locale? get locale => language.locale;
-  bool get usesKeyMode => activeKeys.isNotEmpty;
+  bool get usesKeyMode => activeKeyCenters.isNotEmpty;
+  Set<String> get activeKeys =>
+      Set.unmodifiable(activeKeyCenters.map((center) => center.tonicName));
 
   PracticeSettings copyWith({
     AppLanguage? language,
@@ -274,6 +286,7 @@ class PracticeSettings {
     double? metronomeVolume,
     MetronomeSound? metronomeSound,
     Set<String>? activeKeys,
+    Set<KeyCenter>? activeKeyCenters,
     bool? smartGeneratorMode,
     bool? secondaryDominantEnabled,
     bool? substituteDominantEnabled,
@@ -295,13 +308,18 @@ class PracticeSettings {
     int? lookAheadDepth,
     bool? showVoicingReasons,
     int? bpm,
+    KeyCenterLabelStyle? keyCenterLabelStyle,
   }) {
     return PracticeSettings(
       language: language ?? this.language,
       metronomeEnabled: metronomeEnabled ?? this.metronomeEnabled,
       metronomeVolume: metronomeVolume ?? this.metronomeVolume,
       metronomeSound: metronomeSound ?? this.metronomeSound,
-      activeKeys: activeKeys ?? this.activeKeys,
+      activeKeyCenters:
+          activeKeyCenters ??
+          (activeKeys != null
+              ? activeKeys.map((key) => MusicTheory.keyCenterFor(key)).toSet()
+              : this.activeKeyCenters),
       smartGeneratorMode: smartGeneratorMode ?? this.smartGeneratorMode,
       secondaryDominantEnabled:
           secondaryDominantEnabled ?? this.secondaryDominantEnabled,
@@ -331,6 +349,7 @@ class PracticeSettings {
       lookAheadDepth: lookAheadDepth ?? this.lookAheadDepth,
       showVoicingReasons: showVoicingReasons ?? this.showVoicingReasons,
       bpm: bpm ?? this.bpm,
+      keyCenterLabelStyle: keyCenterLabelStyle ?? this.keyCenterLabelStyle,
     );
   }
 }
