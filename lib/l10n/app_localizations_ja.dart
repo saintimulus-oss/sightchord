@@ -18,7 +18,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get language => '言語';
 
   @override
-  String get systemDefaultLanguage => 'システム設定';
+  String get systemDefaultLanguage => 'システム既定';
 
   @override
   String get metronome => 'メトロノーム';
@@ -30,7 +30,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get disabled => 'オフ';
 
   @override
-  String get metronomeHelp => 'メトロノームを有効にすると、練習中の各拍でクリックが鳴ります。';
+  String get metronomeHelp => '練習中に各拍でクリックを鳴らすにはメトロノームをオンにします。';
 
   @override
   String get metronomeSound => 'メトロノーム音';
@@ -39,19 +39,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get metronomeSoundClassic => 'クラシック';
 
   @override
-  String get metronomeSoundClickB => 'クリック B';
+  String get metronomeSoundClickB => 'Click B';
 
   @override
-  String get metronomeSoundClickC => 'クリック C';
+  String get metronomeSoundClickC => 'Click C';
 
   @override
-  String get metronomeSoundClickD => 'クリック D';
+  String get metronomeSoundClickD => 'Click D';
 
   @override
-  String get metronomeSoundClickE => 'クリック E';
+  String get metronomeSoundClickE => 'Click E';
 
   @override
-  String get metronomeSoundClickF => 'クリック F';
+  String get metronomeSoundClickF => 'Click F';
 
   @override
   String get metronomeVolume => 'メトロノーム音量';
@@ -60,17 +60,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get keys => 'キー';
 
   @override
-  String get noKeysSelected => 'キーが選択されていません。すべてオフにすると、全ルートを使うフリーモードで練習します。';
+  String get noKeysSelected =>
+      'No keys selected. Leave all keys off to practice in free mode across every root.';
 
   @override
   String get keysSelectedHelp =>
-      '選択したキーは、キー対応ランダムモードと Smart Generator モードで使われます。';
+      'Selected keys are used for key-aware random mode and Smart Generator mode.';
 
   @override
   String get smartGeneratorMode => 'Smart Generator モード';
 
   @override
-  String get smartGeneratorHelp => '有効なノンダイアトニック設定を保ちながら、機能和声の流れを優先します。';
+  String get smartGeneratorHelp =>
+      'Prioritizes functional harmonic motion while preserving the enabled non-diatonic options.';
 
   @override
   String get advancedSmartGenerator => '高度な Smart Generator';
@@ -79,75 +81,78 @@ class AppLocalizationsJa extends AppLocalizations {
   String get modulationIntensity => '転調の強さ';
 
   @override
-  String get modulationIntensityOff => 'オフ';
+  String get modulationIntensityOff => 'Off';
 
   @override
-  String get modulationIntensityLow => '低';
+  String get modulationIntensityLow => 'Low';
 
   @override
-  String get modulationIntensityMedium => '中';
+  String get modulationIntensityMedium => 'Medium';
 
   @override
-  String get modulationIntensityHigh => '高';
+  String get modulationIntensityHigh => 'High';
 
   @override
-  String get jazzPreset => 'ジャズ・プリセット';
+  String get jazzPreset => 'ジャズプリセット';
 
   @override
-  String get jazzPresetStandardsCore => 'スタンダード基準';
+  String get jazzPresetStandardsCore => 'Standards Core';
 
   @override
-  String get jazzPresetModulationStudy => '転調研究';
+  String get jazzPresetModulationStudy => 'Modulation Study';
 
   @override
-  String get jazzPresetAdvanced => '上級';
+  String get jazzPresetAdvanced => 'Advanced';
 
   @override
-  String get sourceProfile => 'ソース・プロファイル';
+  String get sourceProfile => 'ソースプロファイル';
 
   @override
-  String get sourceProfileFakebookStandard => 'フェイクブック標準';
+  String get sourceProfileFakebookStandard => 'Fakebook Standard';
 
   @override
-  String get sourceProfileRecordingInspired => '録音寄り';
+  String get sourceProfileRecordingInspired => 'Recording Inspired';
 
   @override
   String get smartDiagnostics => 'Smart 診断';
 
   @override
-  String get smartDiagnosticsHelp => 'デバッグ用に Smart Generator の判断トレースをログ出力します。';
+  String get smartDiagnosticsHelp =>
+      'Logs Smart Generator decision traces for debugging.';
 
   @override
   String get keyModeRequiredForSmartGenerator =>
-      'Smart Generator モードを使うには、少なくとも 1 つキーを選択してください。';
+      'Select at least one key to use Smart Generator mode.';
 
   @override
-  String get nonDiatonic => 'ノンダイアトニック';
+  String get nonDiatonic => 'Non-Diatonic';
 
   @override
-  String get nonDiatonicRequiresKeyMode => 'ノンダイアトニックのオプションはキーモードでのみ利用できます。';
+  String get nonDiatonicRequiresKeyMode =>
+      'Non-diatonic options are available in key mode only.';
 
   @override
-  String get secondaryDominant => 'セカンダリー・ドミナント';
+  String get secondaryDominant => 'セカンダリードミナント';
 
   @override
-  String get substituteDominant => 'サブスティテュート・ドミナント';
+  String get substituteDominant => 'サブスティテュートドミナント';
 
   @override
-  String get modalInterchange => 'モーダル・インターチェンジ';
+  String get modalInterchange => 'モーダルインターチェンジ';
 
   @override
   String get modalInterchangeDisabledHelp =>
-      'モーダル・インターチェンジはキーモードでのみ現れるため、フリーモードではこのオプションは無効になります。';
+      'Modal interchange only appears in key mode, so this option is disabled in free mode.';
 
   @override
-  String get rendering => '表示';
+  String get rendering => '表記';
 
   @override
   String get chordSymbolStyle => 'コード記号スタイル';
 
   @override
-  String get chordSymbolStyleHelp => '表示レイヤーだけを変更します。和声ロジックは正規のままです。';
+  String get chordSymbolStyleHelp =>
+      'Changes the display layer only. Harmonic logic stays canonical.';
 
   @override
   String get styleCompact => 'Compact';
@@ -159,31 +164,32 @@ class AppLocalizationsJa extends AppLocalizations {
   String get styleDeltaJazz => 'DeltaJazz';
 
   @override
-  String get allowV7sus4 => 'V7sus4 を許可 (V7, V7/x)';
+  String get allowV7sus4 => 'Allow V7sus4 (V7, V7/x)';
 
   @override
   String get allowTensions => 'テンションを許可';
 
   @override
-  String get tensionHelp => 'ローマ数字プロファイルと選択したチップのみ';
+  String get tensionHelp => 'Roman numeral profile and selected chips only';
 
   @override
   String get inversions => '転回形';
 
   @override
-  String get enableInversions => '転回形を使う';
+  String get enableInversions => 'Enable Inversions';
 
   @override
-  String get inversionHelp => 'コード選択後にスラッシュベース表記をランダムで適用します。前のベース進行は追跡しません。';
+  String get inversionHelp =>
+      'Random slash-bass rendering after chord selection; it does not track the previous bass.';
 
   @override
-  String get firstInversion => '第1転回形';
+  String get firstInversion => '1st Inversion';
 
   @override
-  String get secondInversion => '第2転回形';
+  String get secondInversion => '2nd Inversion';
 
   @override
-  String get thirdInversion => '第3転回形';
+  String get thirdInversion => '3rd Inversion';
 
   @override
   String get keyPracticeOverview => 'キー練習の概要';
@@ -198,38 +204,38 @@ class AppLocalizationsJa extends AppLocalizations {
   String get freeModeTag => 'フリーモード';
 
   @override
-  String get allKeysTag => '全キー';
+  String get allKeysTag => 'すべてのキー';
 
   @override
-  String get metronomeOnTag => 'メトロノーム ON';
+  String get metronomeOnTag => 'Metronome On';
 
   @override
-  String get metronomeOffTag => 'メトロノーム OFF';
+  String get metronomeOffTag => 'Metronome Off';
 
   @override
-  String get pressNextChordToBegin => 'Next Chord を押して開始';
+  String get pressNextChordToBegin => '開始するには Next Chord を押してください';
 
   @override
   String get freeModeActive => 'フリーモード有効';
 
   @override
   String get freePracticeDescription =>
-      '12 の半音ルートとランダムなコード品質を使って、幅広い読譜練習を行います。';
+      'Uses all 12 chromatic roots with random chord qualities for broad reading practice.';
 
   @override
   String get smartPracticeDescription =>
-      '選択したキー内で機能和声の流れをたどりながら、自然な Smart Generator の動きを加えます。';
+      'Follows harmonic function flow in the selected keys while allowing tasteful smart-generator movement.';
 
   @override
   String get keyPracticeDescription =>
-      '選択したキーと有効なローマ数字を使って、ダイアトニックな練習素材を生成します。';
+      'Uses the selected keys and enabled Roman numerals to generate diatonic practice material.';
 
   @override
   String get keyboardShortcutHelp =>
-      'Space: 次のコード  Enter: 自動再生の開始/停止  Up/Down: BPM 調整';
+      'Space: next chord  Enter: start or stop autoplay  Up/Down: adjust BPM';
 
   @override
-  String get nextChord => 'Next Chord';
+  String get nextChord => '次のコード';
 
   @override
   String get startAutoplay => '自動再生を開始';
@@ -249,14 +255,24 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get voicingSuggestionsTitle => 'Voicing Suggestions';
+  String get modeMajor => '長調';
 
   @override
-  String get voicingSuggestionsSubtitle =>
-      'See concrete note choices for this chord.';
+  String get modeMinor => '短調';
 
   @override
-  String get voicingSuggestionsEnabled => 'Enable Voicing Suggestions';
+  String analysisLabelWithCenter(Object center, Object roman) {
+    return '$center: $roman';
+  }
+
+  @override
+  String get voicingSuggestionsTitle => 'ボイシング提案';
+
+  @override
+  String get voicingSuggestionsSubtitle => 'このコードに合う具体的な音の選択を表示します。';
+
+  @override
+  String get voicingSuggestionsEnabled => 'ボイシング提案を有効化';
 
   @override
   String get voicingSuggestionsHelp =>
@@ -279,11 +295,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get voicingComplexityModern => 'Modern';
 
   @override
-  String get voicingTopNotePreference => 'トップノート指定';
+  String get voicingTopNotePreference => 'トップノートの好み';
 
   @override
   String get voicingTopNotePreferenceHelp =>
-      '提案を選んだトップラインに寄せます。まずロックしたボイシングを優先し、同じコードではトップラインを安定させます。';
+      'Leans suggestions toward a chosen top line. Locked voicings win first, then repeated chords keep it steady.';
 
   @override
   String get voicingTopNotePreferenceAuto => '自動';
@@ -339,7 +355,7 @@ class AppLocalizationsJa extends AppLocalizations {
       'Same shape, steady comping';
 
   @override
-  String get voicingSuggestionTopLineSubtitle => 'トップラインを優先';
+  String get voicingSuggestionTopLineSubtitle => 'Top line leads';
 
   @override
   String get voicingSuggestionColorfulAlteredSubtitle =>
@@ -365,31 +381,31 @@ class AppLocalizationsJa extends AppLocalizations {
       'Repeat-friendly hand shape';
 
   @override
-  String get voicingTopNoteLabel => 'Top';
+  String get voicingTopNoteLabel => 'トップ';
 
   @override
   String voicingTopNoteContextExplicit(Object note) {
-    return '狙いのトップノート: $note';
+    return 'Top line target: $note';
   }
 
   @override
   String voicingTopNoteContextLocked(Object note) {
-    return 'ロック中のトップライン: $note';
+    return 'Locked top line: $note';
   }
 
   @override
   String voicingTopNoteContextCarry(Object note) {
-    return '反復時のトップライン: $note';
+    return 'Repeated top line: $note';
   }
 
   @override
   String voicingTopNoteContextNearby(Object note) {
-    return '$noteに最も近いトップライン';
+    return 'Nearest top line to $note';
   }
 
   @override
   String voicingTopNoteContextFallback(Object note) {
-    return '$noteを正確に置けるトップラインなし';
+    return 'No exact top line for $note';
   }
 
   @override
@@ -423,10 +439,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get voicingUnlockSuggestion => 'Unlock suggestion';
 
   @override
-  String get voicingSelected => 'Selected';
+  String get voicingSelected => '選択中';
 
   @override
-  String get voicingLocked => 'Locked';
+  String get voicingLocked => '固定中';
 
   @override
   String get voicingReasonEssentialCore => 'Essential tones covered';
@@ -448,7 +464,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get voicingReasonStableRepeat => 'Stable repeat';
 
   @override
-  String get voicingReasonTopLineTarget => 'トップライン狙い';
+  String get voicingReasonTopLineTarget => 'Top line target';
 
   @override
   String get voicingReasonLowMudAvoided => 'Low-register clarity';

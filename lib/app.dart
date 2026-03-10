@@ -308,8 +308,31 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_currentChord == null) {
       return l10n.pressNextChordToBegin;
     }
-    final analysisLabel = _currentChord!.analysisLabel;
+    final analysisLabel = _localizedAnalysisLabel(l10n, _currentChord!);
     return analysisLabel.isEmpty ? l10n.freeModeActive : analysisLabel;
+  }
+
+  String _localizedAnalysisLabel(
+    AppLocalizations l10n,
+    GeneratedChord chord,
+  ) {
+    final romanNumeralId = chord.romanNumeralId;
+    if (romanNumeralId == null) {
+      return '';
+    }
+
+    final keyCenter = chord.keyCenter;
+    final centerLabel =
+        keyCenter == null
+            ? chord.keyName
+            : '${MusicTheory.displayRootForKey(keyCenter.tonicName)} '
+                '${keyCenter.mode == KeyMode.major ? l10n.modeMajor : l10n.modeMinor}';
+    final roman = MusicTheory.romanTokenOf(romanNumeralId);
+
+    if (centerLabel == null || centerLabel.isEmpty) {
+      return roman;
+    }
+    return l10n.analysisLabelWithCenter(centerLabel, roman);
   }
 
   String _practiceModeDescription(AppLocalizations l10n) {

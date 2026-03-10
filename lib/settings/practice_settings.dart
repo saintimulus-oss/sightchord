@@ -58,15 +58,15 @@ extension AppLanguageX on AppLanguage {
       case AppLanguage.en:
         return 'English';
       case AppLanguage.es:
-        return 'Español';
+        return 'Espa\u00f1ol';
       case AppLanguage.zh:
-        return '繁體中文';
+        return '\u7e41\u9ad4\u4e2d\u6587';
       case AppLanguage.zhHans:
-        return '简体中文';
+        return '\u7b80\u4f53\u4e2d\u6587';
       case AppLanguage.ja:
-        return '日本語';
+        return '\u65e5\u672c\u8a9e';
       case AppLanguage.ko:
-        return '한국어';
+        return '\ud55c\uad6d\uc5b4';
     }
   }
 

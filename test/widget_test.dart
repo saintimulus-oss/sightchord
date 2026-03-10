@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -866,15 +866,15 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();
 
-    expect(find.text('설정'), findsOneWidget);
-    expect(find.text('메트로놈'), findsWidgets);
-    expect(find.text('메트로놈 사운드'), findsOneWidget);
+    expect(find.text('\uC124\uC815'), findsOneWidget);
+    expect(find.text('\uBA54\uD2B8\uB85C\uB188'), findsWidgets);
+    expect(find.text('\uBA54\uD2B8\uB85C\uB188 \uC18C\uB9AC'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('metronome-sound-selector')));
     await tester.pumpAndSettle();
 
-    expect(find.text('클래식'), findsWidgets);
-    expect(find.text('클릭 B'), findsWidgets);
+    expect(find.text('\uD074\uB798\uC2DD'), findsWidgets);
+    expect(find.text('\uD074\uB9AD B'), findsWidgets);
   });
 
   testWidgets('system language follows the platform locale', (
@@ -897,8 +897,8 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();
 
-    expect(find.text('설정'), findsOneWidget);
-    expect(find.text('메트로놈'), findsWidgets);
+    expect(find.text('\uC124\uC815'), findsOneWidget);
+    expect(find.text('\uBA54\uD2B8\uB85C\uB188'), findsWidgets);
   });
 
   testWidgets('traditional Chinese localization is selectable', (
@@ -912,8 +912,8 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();
 
-    expect(find.text('設定'), findsOneWidget);
-    expect(find.text('節拍器'), findsWidgets);
-    expect(find.text('節拍器音色'), findsOneWidget);
+    expect(find.text('\u8A2D\u5B9A'), findsOneWidget);
+    expect(find.text('\u7BC0\u62CD\u5668'), findsWidgets);
+    expect(find.text('\u7BC0\u62CD\u5668\u97F3\u8272'), findsOneWidget);
   });
 }

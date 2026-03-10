@@ -256,6 +256,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get modeMajor => 'major';
+
+  @override
+  String get modeMinor => 'minor';
+
+  @override
+  String analysisLabelWithCenter(Object center, Object roman) {
+    return '$center: $roman';
+  }
+
+  @override
   String get voicingSuggestionsTitle => 'Voicing Suggestions';
 
   @override

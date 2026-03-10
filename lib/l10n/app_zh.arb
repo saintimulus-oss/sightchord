@@ -7,76 +7,37 @@
   "metronome": "節拍器",
   "enabled": "開啟",
   "disabled": "關閉",
-  "metronomeHelp": "打開節拍器後，練習時每一拍都會聽到點擊聲。",
+  "metronomeHelp": "練習時若想在每一拍都聽到點擊聲，請開啟節拍器。",
   "metronomeSound": "節拍器音色",
   "metronomeSoundClassic": "經典",
-  "metronomeSoundClickB": "點擊 B",
-  "metronomeSoundClickC": "點擊 C",
-  "metronomeSoundClickD": "點擊 D",
-  "metronomeSoundClickE": "點擊 E",
-  "metronomeSoundClickF": "點擊 F",
   "metronomeVolume": "節拍器音量",
-  "keys": "調",
-  "noKeysSelected": "尚未選擇任何調。全部關閉即可在自由模式下跨所有根音練習。",
-  "keysSelectedHelp": "所選調會用於有調性感知的隨機模式和 Smart Generator 模式。",
+  "keys": "調性",
   "smartGeneratorMode": "Smart Generator 模式",
-  "smartGeneratorHelp": "在保留已啟用的非自然音選項時，優先遵循功能和聲的流動。",
   "advancedSmartGenerator": "進階 Smart Generator",
   "modulationIntensity": "轉調強度",
-  "modulationIntensityOff": "關閉",
-  "modulationIntensityLow": "低",
-  "modulationIntensityMedium": "中",
-  "modulationIntensityHigh": "高",
   "jazzPreset": "爵士預設",
-  "jazzPresetStandardsCore": "標準核心",
-  "jazzPresetModulationStudy": "轉調練習",
-  "jazzPresetAdvanced": "進階",
   "sourceProfile": "來源設定",
-  "sourceProfileFakebookStandard": "Fakebook 標準",
-  "sourceProfileRecordingInspired": "錄音靈感",
   "smartDiagnostics": "Smart 診斷",
-  "smartDiagnosticsHelp": "記錄 Smart Generator 的決策追蹤以便除錯。",
-  "keyModeRequiredForSmartGenerator": "請至少選擇一個調，才能使用 Smart Generator 模式。",
-  "nonDiatonic": "非自然音",
-  "nonDiatonicRequiresKeyMode": "非自然音選項僅在調式模式中可用。",
   "secondaryDominant": "副屬和弦",
   "substituteDominant": "替代屬和弦",
-  "modalInterchange": "調式互換",
-  "modalInterchangeDisabledHelp": "調式互換只會出現在調式模式中，因此此選項在自由模式下會停用。",
+  "modalInterchange": "調式借用",
   "rendering": "顯示",
   "chordSymbolStyle": "和弦符號樣式",
-  "chordSymbolStyleHelp": "只改變顯示層。和聲邏輯保持標準形式。",
-  "styleCompact": "Compact",
-  "styleMajText": "MajText",
-  "styleDeltaJazz": "DeltaJazz",
-  "allowV7sus4": "允許 V7sus4（V7, V7/x）",
   "allowTensions": "允許張力音",
-  "tensionHelp": "僅使用羅馬數字設定與所選晶片",
   "inversions": "轉位",
-  "enableInversions": "啟用轉位",
-  "inversionHelp": "選定和弦後會隨機套用斜線低音表示法；不會追蹤前一個低音。",
-  "firstInversion": "第一轉位",
-  "secondInversion": "第二轉位",
-  "thirdInversion": "第三轉位",
-  "keyPracticeOverview": "調式練習概覽",
+  "keyPracticeOverview": "調性練習概覽",
   "freePracticeOverview": "自由練習概覽",
-  "keyModeTag": "調式模式",
+  "keyModeTag": "調性模式",
   "freeModeTag": "自由模式",
-  "allKeysTag": "所有調",
-  "metronomeOnTag": "節拍器開",
-  "metronomeOffTag": "節拍器關",
+  "allKeysTag": "所有調性",
   "pressNextChordToBegin": "按下 Next Chord 開始",
-  "freeModeActive": "自由模式啟用中",
-  "freePracticeDescription": "使用全部 12 個半音根音與隨機和弦品質，進行廣泛的讀譜練習。",
-  "smartPracticeDescription": "在所選調內遵循功能和聲流動，同時加入自然的 Smart Generator 動作。",
-  "keyPracticeDescription": "使用所選調與已啟用的羅馬數字來產生自然音階練習素材。",
-  "keyboardShortcutHelp": "Space: 下一個和弦  Enter: 開始或停止自動播放  Up/Down: 調整 BPM",
-  "nextChord": "Next Chord",
+  "freeModeActive": "自由模式啟用",
+  "nextChord": "下一個和弦",
   "startAutoplay": "開始自動播放",
   "stopAutoplay": "停止自動播放",
   "decreaseBpm": "降低 BPM",
   "increaseBpm": "提高 BPM",
-  "allowedRange": "允許範圍: {min}-{max}",
+  "allowedRange": "允許範圍：{min}-{max}",
   "@allowedRange": {
     "placeholders": {
       "min": {
@@ -87,113 +48,21 @@
       }
     }
   },
-  "voicingSuggestionsTitle": "Voicing Suggestions",
-  "voicingSuggestionsSubtitle": "See concrete note choices for this chord.",
-  "voicingSuggestionsEnabled": "Enable Voicing Suggestions",
-  "voicingSuggestionsHelp": "Shows three playable note-level voicing ideas for the current chord.",
-  "voicingComplexity": "Voicing Complexity",
-  "voicingComplexityHelp": "Controls how colorful the suggestions may become.",
-  "voicingComplexityBasic": "Basic",
-  "voicingComplexityStandard": "Standard",
-  "voicingComplexityModern": "Modern",
+  "modeMajor": "大調",
+  "modeMinor": "小調",
+  "analysisLabelWithCenter": "{center}: {roman}",
+  "@analysisLabelWithCenter": {
+    "placeholders": {
+      "center": {},
+      "roman": {}
+    }
+  },
+  "voicingSuggestionsTitle": "Voicing 建議",
+  "voicingSuggestionsSubtitle": "查看這個和弦可用的具體音符選擇。",
+  "voicingSuggestionsEnabled": "啟用 Voicing 建議",
   "voicingTopNotePreference": "高音偏好",
-  "voicingTopNotePreferenceHelp": "让建议倾向你选择的高音线。锁定的和声音型先优先，同一和弦重复时会尽量保持高音线稳定。",
-  "voicingTopNotePreferenceAuto": "自动",
-  "allowRootlessVoicings": "Allow Rootless Voicings",
-  "allowRootlessVoicingsHelp": "Lets suggestions omit the root when the guide tones stay clear.",
-  "maxVoicingNotes": "Max Voicing Notes",
-  "lookAheadDepth": "Look-Ahead Depth",
-  "lookAheadDepthHelp": "How many future chords the ranking may consider.",
-  "showVoicingReasons": "Show Voicing Reasons",
-  "showVoicingReasonsHelp": "Displays short explanation chips on each suggestion card.",
-  "voicingSuggestionNatural": "Most Natural",
-  "voicingSuggestionColorful": "Most Colorful",
-  "voicingSuggestionEasy": "Easiest",
-  "voicingSuggestionNaturalSubtitle": "Voice-leading first",
-  "voicingSuggestionColorfulSubtitle": "Leans into color tones",
-  "voicingSuggestionEasySubtitle": "Compact hand shape",
-  "voicingSuggestionNaturalConnectedSubtitle": "Connection and resolution first",
-  "voicingSuggestionNaturalStableSubtitle": "Same shape, steady comping",
-  "voicingSuggestionTopLineSubtitle": "先看高音线",
-  "voicingSuggestionColorfulAlteredSubtitle": "Altered tension up front",
-  "voicingSuggestionColorfulQuartalSubtitle": "Modern quartal color",
-  "voicingSuggestionColorfulTritoneSubtitle": "Tritone-sub edge with bright guide tones",
-  "voicingSuggestionColorfulUpperStructureSubtitle": "Guide tones with bright extensions",
-  "voicingSuggestionEasyAnchoredSubtitle": "Core tones, smaller reach",
-  "voicingSuggestionEasyStableSubtitle": "Repeat-friendly hand shape",
+  "voicingTopNotePreferenceAuto": "自動",
   "voicingTopNoteLabel": "高音",
-  "voicingTopNoteContextExplicit": "目标高音：{note}",
-  "@voicingTopNoteContextExplicit": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextLocked": "锁定高音线：{note}",
-  "@voicingTopNoteContextLocked": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextCarry": "重复高音线：{note}",
-  "@voicingTopNoteContextCarry": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextNearby": "最接近 {note} 的高音线",
-  "@voicingTopNoteContextNearby": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextFallback": "没有能准确落在 {note} 的高音线",
-  "@voicingTopNoteContextFallback": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingFamilyShell": "Shell",
-  "voicingFamilyRootlessA": "Rootless A",
-  "voicingFamilyRootlessB": "Rootless B",
-  "voicingFamilySpread": "Spread",
-  "voicingFamilySus": "Sus",
-  "voicingFamilyQuartal": "Quartal",
-  "voicingFamilyAltered": "Altered",
-  "voicingFamilyUpperStructure": "Upper Structure",
-  "voicingLockSuggestion": "Lock suggestion",
-  "voicingUnlockSuggestion": "Unlock suggestion",
-  "voicingSelected": "Selected",
-  "voicingLocked": "Locked",
-  "voicingReasonEssentialCore": "Essential tones covered",
-  "voicingReasonGuideToneAnchor": "3rd/7th anchor",
-  "voicingReasonGuideResolution": "{count} guide-tone resolves",
-  "@voicingReasonGuideResolution": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "voicingReasonCommonToneRetention": "{count} common tones kept",
-  "@voicingReasonCommonToneRetention": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "voicingReasonStableRepeat": "Stable repeat",
-  "voicingReasonTopLineTarget": "高音线目标",
-  "voicingReasonLowMudAvoided": "Low-register clarity",
-  "voicingReasonCompactReach": "Comfortable reach",
-  "voicingReasonBassAnchor": "Bass anchor respected",
-  "voicingReasonNextChordReady": "Next chord ready",
-  "voicingReasonAlteredColor": "Altered tensions",
-  "voicingReasonRootlessClarity": "Light rootless shape",
-  "voicingReasonSusRelease": "Sus release set up",
-  "voicingReasonQuartalColor": "Quartal color",
-  "voicingReasonUpperStructureColor": "Upper-structure color",
-  "voicingReasonTritoneSubFlavor": "Tritone-sub flavor",
-  "voicingReasonLockedContinuity": "Locked continuity",
-  "voicingReasonGentleMotion": "Smooth hand move"
+  "voicingSelected": "已選取",
+  "voicingLocked": "已鎖定"
 }

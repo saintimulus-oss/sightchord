@@ -1,77 +1,38 @@
 {
   "@@locale": "es",
-  "settings": "Configuración",
-  "closeSettings": "Cerrar configuración",
+  "settings": "Configuracion",
+  "closeSettings": "Cerrar configuracion",
   "language": "Idioma",
   "systemDefaultLanguage": "Predeterminado del sistema",
-  "metronome": "Metrónomo",
+  "metronome": "Metronomo",
   "enabled": "Activado",
   "disabled": "Desactivado",
-  "metronomeHelp": "Activa el metrónomo para escuchar un clic en cada pulso mientras practicas.",
-  "metronomeSound": "Sonido del metrónomo",
-  "metronomeSoundClassic": "Clásico",
-  "metronomeSoundClickB": "Click B",
-  "metronomeSoundClickC": "Click C",
-  "metronomeSoundClickD": "Click D",
-  "metronomeSoundClickE": "Click E",
-  "metronomeSoundClickF": "Click F",
-  "metronomeVolume": "Volumen del metrónomo",
+  "metronomeHelp": "Activa el metronomo para escuchar un clic en cada pulso mientras practicas.",
+  "metronomeSound": "Sonido del metronomo",
+  "metronomeSoundClassic": "Clasico",
+  "metronomeVolume": "Volumen del metronomo",
   "keys": "Tonalidades",
-  "noKeysSelected": "No hay tonalidades seleccionadas. Deja todas apagadas para practicar en modo libre con todas las raíces.",
-  "keysSelectedHelp": "Las tonalidades seleccionadas se usan para el modo aleatorio por tonalidad y para Smart Generator.",
   "smartGeneratorMode": "Modo Smart Generator",
-  "smartGeneratorHelp": "Prioriza el movimiento armónico funcional y conserva las opciones no diatónicas activadas.",
   "advancedSmartGenerator": "Smart Generator avanzado",
-  "modulationIntensity": "Intensidad de modulación",
-  "modulationIntensityOff": "Desactivada",
-  "modulationIntensityLow": "Baja",
-  "modulationIntensityMedium": "Media",
-  "modulationIntensityHigh": "Alta",
+  "modulationIntensity": "Intensidad de modulacion",
   "jazzPreset": "Preajuste jazz",
-  "jazzPresetStandardsCore": "Estándar esencial",
-  "jazzPresetModulationStudy": "Estudio de modulaciones",
-  "jazzPresetAdvanced": "Avanzado",
   "sourceProfile": "Perfil de origen",
-  "sourceProfileFakebookStandard": "Fakebook estándar",
-  "sourceProfileRecordingInspired": "Inspirado en grabaciones",
-  "smartDiagnostics": "Diagnósticos Smart",
-  "smartDiagnosticsHelp": "Registra trazas de decisión de Smart Generator para depuración.",
-  "keyModeRequiredForSmartGenerator": "Selecciona al menos una tonalidad para usar Smart Generator.",
-  "nonDiatonic": "No diatónico",
-  "nonDiatonicRequiresKeyMode": "Las opciones no diatónicas solo están disponibles en el modo por tonalidad.",
+  "smartDiagnostics": "Diagnosticos Smart",
   "secondaryDominant": "Dominante secundaria",
   "substituteDominant": "Dominante sustituta",
   "modalInterchange": "Intercambio modal",
-  "modalInterchangeDisabledHelp": "El intercambio modal solo aparece en modo por tonalidad, por eso esta opción se desactiva en modo libre.",
-  "rendering": "Representación",
-  "chordSymbolStyle": "Estilo de símbolo de acorde",
-  "chordSymbolStyleHelp": "Solo cambia la capa visual. La lógica armónica sigue siendo canónica.",
-  "styleCompact": "Compact",
-  "styleMajText": "MajText",
-  "styleDeltaJazz": "DeltaJazz",
-  "allowV7sus4": "Permitir V7sus4 (V7, V7/x)",
+  "rendering": "Representacion",
+  "chordSymbolStyle": "Estilo de simbolo de acorde",
   "allowTensions": "Permitir tensiones",
-  "tensionHelp": "Solo perfil por número romano y chips seleccionados",
   "inversions": "Inversiones",
-  "enableInversions": "Activar inversiones",
-  "inversionHelp": "Aplica aleatoriamente la notación con bajo en slash después de elegir el acorde; no sigue el bajo anterior.",
-  "firstInversion": "1.ª inversión",
-  "secondInversion": "2.ª inversión",
-  "thirdInversion": "3.ª inversión",
-  "keyPracticeOverview": "Resumen de práctica por tonalidad",
-  "freePracticeOverview": "Resumen de práctica libre",
-  "keyModeTag": "Modo tonalidad",
+  "keyPracticeOverview": "Resumen de practica tonal",
+  "freePracticeOverview": "Resumen de practica libre",
+  "keyModeTag": "Modo tonal",
   "freeModeTag": "Modo libre",
   "allKeysTag": "Todas las tonalidades",
-  "metronomeOnTag": "Metrónomo activado",
-  "metronomeOffTag": "Metrónomo desactivado",
   "pressNextChordToBegin": "Pulsa Next Chord para empezar",
   "freeModeActive": "Modo libre activo",
-  "freePracticeDescription": "Usa las 12 raíces cromáticas con calidades de acorde aleatorias para una práctica amplia de lectura.",
-  "smartPracticeDescription": "Sigue el flujo de funciones armónicas en las tonalidades seleccionadas y permite movimientos inteligentes con buen gusto.",
-  "keyPracticeDescription": "Usa las tonalidades seleccionadas y los números romanos activados para generar material diatónico.",
-  "keyboardShortcutHelp": "Space: siguiente acorde  Enter: iniciar o detener autoplay  Up/Down: ajustar BPM",
-  "nextChord": "Next Chord",
+  "nextChord": "Siguiente acorde",
   "startAutoplay": "Iniciar autoplay",
   "stopAutoplay": "Detener autoplay",
   "decreaseBpm": "Bajar BPM",
@@ -87,113 +48,21 @@
       }
     }
   },
-  "voicingSuggestionsTitle": "Voicing Suggestions",
-  "voicingSuggestionsSubtitle": "See concrete note choices for this chord.",
-  "voicingSuggestionsEnabled": "Enable Voicing Suggestions",
-  "voicingSuggestionsHelp": "Shows three playable note-level voicing ideas for the current chord.",
-  "voicingComplexity": "Voicing Complexity",
-  "voicingComplexityHelp": "Controls how colorful the suggestions may become.",
-  "voicingComplexityBasic": "Basic",
-  "voicingComplexityStandard": "Standard",
-  "voicingComplexityModern": "Modern",
+  "modeMajor": "mayor",
+  "modeMinor": "menor",
+  "analysisLabelWithCenter": "{center}: {roman}",
+  "@analysisLabelWithCenter": {
+    "placeholders": {
+      "center": {},
+      "roman": {}
+    }
+  },
+  "voicingSuggestionsTitle": "Sugerencias de voicing",
+  "voicingSuggestionsSubtitle": "Mira opciones concretas de notas para este acorde.",
+  "voicingSuggestionsEnabled": "Activar sugerencias de voicing",
   "voicingTopNotePreference": "Preferencia de nota superior",
-  "voicingTopNotePreferenceHelp": "Inclina las sugerencias hacia una linea superior elegida. Los voicings bloqueados mandan primero y los acordes repetidos la mantienen estable.",
   "voicingTopNotePreferenceAuto": "Auto",
-  "allowRootlessVoicings": "Allow Rootless Voicings",
-  "allowRootlessVoicingsHelp": "Lets suggestions omit the root when the guide tones stay clear.",
-  "maxVoicingNotes": "Max Voicing Notes",
-  "lookAheadDepth": "Look-Ahead Depth",
-  "lookAheadDepthHelp": "How many future chords the ranking may consider.",
-  "showVoicingReasons": "Show Voicing Reasons",
-  "showVoicingReasonsHelp": "Displays short explanation chips on each suggestion card.",
-  "voicingSuggestionNatural": "Most Natural",
-  "voicingSuggestionColorful": "Most Colorful",
-  "voicingSuggestionEasy": "Easiest",
-  "voicingSuggestionNaturalSubtitle": "Voice-leading first",
-  "voicingSuggestionColorfulSubtitle": "Leans into color tones",
-  "voicingSuggestionEasySubtitle": "Compact hand shape",
-  "voicingSuggestionNaturalConnectedSubtitle": "Connection and resolution first",
-  "voicingSuggestionNaturalStableSubtitle": "Same shape, steady comping",
-  "voicingSuggestionTopLineSubtitle": "La linea superior manda",
-  "voicingSuggestionColorfulAlteredSubtitle": "Altered tension up front",
-  "voicingSuggestionColorfulQuartalSubtitle": "Modern quartal color",
-  "voicingSuggestionColorfulTritoneSubtitle": "Tritone-sub edge with bright guide tones",
-  "voicingSuggestionColorfulUpperStructureSubtitle": "Guide tones with bright extensions",
-  "voicingSuggestionEasyAnchoredSubtitle": "Core tones, smaller reach",
-  "voicingSuggestionEasyStableSubtitle": "Repeat-friendly hand shape",
   "voicingTopNoteLabel": "Superior",
-  "voicingTopNoteContextExplicit": "Nota superior objetivo: {note}",
-  "@voicingTopNoteContextExplicit": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextLocked": "Linea superior bloqueada: {note}",
-  "@voicingTopNoteContextLocked": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextCarry": "Linea superior repetida: {note}",
-  "@voicingTopNoteContextCarry": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextNearby": "Linea superior mas cercana a {note}",
-  "@voicingTopNoteContextNearby": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextFallback": "No hay nota superior exacta para {note}",
-  "@voicingTopNoteContextFallback": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingFamilyShell": "Shell",
-  "voicingFamilyRootlessA": "Rootless A",
-  "voicingFamilyRootlessB": "Rootless B",
-  "voicingFamilySpread": "Spread",
-  "voicingFamilySus": "Sus",
-  "voicingFamilyQuartal": "Quartal",
-  "voicingFamilyAltered": "Altered",
-  "voicingFamilyUpperStructure": "Upper Structure",
-  "voicingLockSuggestion": "Lock suggestion",
-  "voicingUnlockSuggestion": "Unlock suggestion",
-  "voicingSelected": "Selected",
-  "voicingLocked": "Locked",
-  "voicingReasonEssentialCore": "Essential tones covered",
-  "voicingReasonGuideToneAnchor": "3rd/7th anchor",
-  "voicingReasonGuideResolution": "{count} guide-tone resolves",
-  "@voicingReasonGuideResolution": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "voicingReasonCommonToneRetention": "{count} common tones kept",
-  "@voicingReasonCommonToneRetention": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "voicingReasonStableRepeat": "Stable repeat",
-  "voicingReasonTopLineTarget": "Objetivo de linea superior",
-  "voicingReasonLowMudAvoided": "Low-register clarity",
-  "voicingReasonCompactReach": "Comfortable reach",
-  "voicingReasonBassAnchor": "Bass anchor respected",
-  "voicingReasonNextChordReady": "Next chord ready",
-  "voicingReasonAlteredColor": "Altered tensions",
-  "voicingReasonRootlessClarity": "Light rootless shape",
-  "voicingReasonSusRelease": "Sus release set up",
-  "voicingReasonQuartalColor": "Quartal color",
-  "voicingReasonUpperStructureColor": "Upper-structure color",
-  "voicingReasonTritoneSubFlavor": "Tritone-sub flavor",
-  "voicingReasonLockedContinuity": "Locked continuity",
-  "voicingReasonGentleMotion": "Smooth hand move"
+  "voicingSelected": "Seleccionado",
+  "voicingLocked": "Bloqueado"
 }

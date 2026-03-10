@@ -87,6 +87,15 @@
       }
     }
   },
+  "modeMajor": "major",
+  "modeMinor": "minor",
+  "analysisLabelWithCenter": "{center}: {roman}",
+  "@analysisLabelWithCenter": {
+    "placeholders": {
+      "center": {},
+      "roman": {}
+    }
+  },
   "voicingSuggestionsTitle": "Voicing Suggestions",
   "voicingSuggestionsSubtitle": "See concrete note choices for this chord.",
   "voicingSuggestionsEnabled": "Enable Voicing Suggestions",

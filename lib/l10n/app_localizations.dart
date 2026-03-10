@@ -567,6 +567,24 @@ abstract class AppLocalizations {
   /// **'Allowed range: {min}-{max}'**
   String allowedRange(int min, int max);
 
+  /// No description provided for @modeMajor.
+  ///
+  /// In en, this message translates to:
+  /// **'major'**
+  String get modeMajor;
+
+  /// No description provided for @modeMinor.
+  ///
+  /// In en, this message translates to:
+  /// **'minor'**
+  String get modeMinor;
+
+  /// No description provided for @analysisLabelWithCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'{center}: {roman}'**
+  String analysisLabelWithCenter(Object center, Object roman);
+
   /// No description provided for @voicingSuggestionsTitle.
   ///
   /// In en, this message translates to:
