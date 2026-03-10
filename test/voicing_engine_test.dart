@@ -812,6 +812,61 @@ void main() {
     },
   );
 
+  test(
+    'explicit top-note preference takes over when locked voicing is unavailable',
+    () {
+      final g7Sharp11 = _buildChord(
+        root: 'G',
+        quality: ChordQuality.dominant7Sharp11,
+        repeatKey: 'g7Sharp11LockFallback',
+        romanNumeralId: RomanNumeralId.vDom7,
+        keyCenter: const KeyCenter(tonicName: 'D', mode: KeyMode.major),
+        harmonicFunction: HarmonicFunction.dominant,
+        dominantContext: DominantContext.dominantIILydian,
+        dominantIntent: DominantIntent.lydianDominant,
+      );
+
+      final initial = VoicingEngine.recommend(
+        context: VoicingContext(
+          currentChord: g7Sharp11,
+          settings: settings.copyWith(
+            voicingComplexity: VoicingComplexity.modern,
+            maxVoicingNotes: 4,
+          ),
+        ),
+      );
+      final lockedVoicing = initial
+          .suggestionFor(VoicingSuggestionKind.colorful)!
+          .voicing;
+      final preferredTopNotePitchClass = initial
+          .suggestionFor(VoicingSuggestionKind.natural)!
+          .voicing
+          .topNotePitchClass;
+
+      final result = VoicingEngine.recommend(
+        context: VoicingContext(
+          currentChord: g7Sharp11,
+          settings: settings.copyWith(
+            voicingComplexity: VoicingComplexity.standard,
+            maxVoicingNotes: 4,
+          ),
+          lockedVoicing: lockedVoicing,
+          preferredTopNotePitchClass: preferredTopNotePitchClass,
+        ),
+      );
+
+      expect(
+        result.suggestions.any(
+          (suggestion) =>
+              suggestion.voicing.signature == lockedVoicing.signature,
+        ),
+        isFalse,
+      );
+      expect(result.topNoteSource, VoicingTopNoteSource.explicitPreference);
+      expect(result.effectiveTopNotePitchClass, preferredTopNotePitchClass);
+    },
+  );
+
   test('same-harmony repeat exposes stable repeat reason tags', () {
     final dm7 = _buildChord(
       root: 'D',
@@ -912,6 +967,59 @@ void main() {
       expect(isLowRootDenseCluster(natural.voicing), isFalse);
       expect(isLowRootDenseCluster(easy.voicing), isFalse);
       expect(isWideRootlessTopCluster(easy.voicing), isFalse);
+    },
+  );
+
+  test(
+    'impossible explicit top-note preference falls back gracefully and stays deterministic',
+    () {
+      final cmaj7 = _buildChord(
+        root: 'C',
+        quality: ChordQuality.major7,
+        repeatKey: 'cmaj7ImpossibleTop',
+        romanNumeralId: RomanNumeralId.iMaj7,
+        keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        harmonicFunction: HarmonicFunction.tonic,
+      );
+      final availableTopNotes = VoicingEngine.generateCandidates(
+        chord: cmaj7,
+        settings: settings,
+      ).map((voicing) => voicing.topNotePitchClass).toSet();
+      final impossiblePitchClass = List<int>.generate(12, (index) => index)
+          .firstWhere(
+            (pitchClass) => !availableTopNotes.contains(pitchClass),
+            orElse: () => -1,
+          );
+
+      expect(impossiblePitchClass, isNot(-1));
+
+      final context = VoicingContext(
+        currentChord: cmaj7,
+        settings: settings,
+        preferredTopNotePitchClass: impossiblePitchClass,
+      );
+      final first = VoicingEngine.recommend(context: context);
+      final second = VoicingEngine.recommend(context: context);
+
+      expect(first.topNoteSource, VoicingTopNoteSource.explicitPreference);
+      expect(first.topNoteMatch, isNot(VoicingTopNoteMatch.exact));
+      expect(
+        first.suggestions.any(
+          (suggestion) =>
+              suggestion.voicing.topNotePitchClass == impossiblePitchClass,
+        ),
+        isFalse,
+      );
+      expect(
+        [
+          for (final suggestion in first.suggestions)
+            suggestion.voicing.signature,
+        ],
+        [
+          for (final suggestion in second.suggestions)
+            suggestion.voicing.signature,
+        ],
+      );
     },
   );
 
@@ -1037,5 +1145,50 @@ void main() {
 
     expect(plainAlteredCount, lessThan(alteredContextCount));
     expect(alteredContextCount, greaterThanOrEqualTo(2));
+  });
+
+  test('explicit top-note preference keeps modern dominant cards distinct', () {
+    final g7Sharp11 = _buildChord(
+      root: 'G',
+      quality: ChordQuality.dominant7Sharp11,
+      repeatKey: 'g7Sharp11CardDiversity',
+      romanNumeralId: RomanNumeralId.vDom7,
+      keyCenter: const KeyCenter(tonicName: 'D', mode: KeyMode.major),
+      harmonicFunction: HarmonicFunction.dominant,
+      dominantContext: DominantContext.dominantIILydian,
+      dominantIntent: DominantIntent.lydianDominant,
+    );
+
+    final result = VoicingEngine.recommend(
+      context: VoicingContext(
+        currentChord: g7Sharp11,
+        settings: settings.copyWith(
+          voicingComplexity: VoicingComplexity.modern,
+        ),
+        preferredTopNotePitchClass: 4,
+      ),
+    );
+
+    expect(
+      result.suggestions
+          .map((suggestion) => suggestion.voicing.signature)
+          .toSet(),
+      hasLength(3),
+    );
+    expect(result.topNoteMatch, VoicingTopNoteMatch.exact);
+    expect(
+      result.suggestionFor(VoicingSuggestionKind.colorful)!.voicing.family,
+      VoicingFamily.upperStructure,
+    );
+    expect(
+      result.suggestionFor(VoicingSuggestionKind.natural)!.voicing.signature,
+      isNot(
+        result.suggestionFor(VoicingSuggestionKind.easy)!.voicing.signature,
+      ),
+    );
+    expect(
+      result.suggestionFor(VoicingSuggestionKind.easy)!.voicing.family,
+      isNot(VoicingFamily.upperStructure),
+    );
   });
 }

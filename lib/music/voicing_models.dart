@@ -20,6 +20,8 @@ enum VoicingTopNoteSource {
   sameHarmonyCarry,
 }
 
+enum VoicingTopNoteMatch { exact, nearby, unavailable }
+
 enum VoicingReasonTag {
   essentialCore,
   guideToneAnchor,
@@ -551,6 +553,7 @@ class VoicingRecommendationSet {
     required this.suggestions,
     this.effectiveTopNotePitchClass,
     this.topNoteSource,
+    this.topNoteMatch,
   });
 
   final GeneratedChord currentChord;
@@ -559,6 +562,7 @@ class VoicingRecommendationSet {
   final List<VoicingSuggestion> suggestions;
   final int? effectiveTopNotePitchClass;
   final VoicingTopNoteSource? topNoteSource;
+  final VoicingTopNoteMatch? topNoteMatch;
 
   VoicingSuggestion? suggestionFor(VoicingSuggestionKind kind) {
     for (final suggestion in suggestions) {

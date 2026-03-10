@@ -630,7 +630,7 @@ abstract class AppLocalizations {
   /// No description provided for @voicingTopNotePreferenceHelp.
   ///
   /// In en, this message translates to:
-  /// **'Biases suggestions toward a chosen top line. Locked voicings override it, then same-chord carry keeps the line steady.'**
+  /// **'Leans suggestions toward a chosen top line. Locked voicings win first, then repeated chords keep it steady.'**
   String get voicingTopNotePreferenceHelp;
 
   /// No description provided for @voicingTopNotePreferenceAuto.
@@ -732,7 +732,7 @@ abstract class AppLocalizations {
   /// No description provided for @voicingSuggestionTopLineSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Top line stays in focus'**
+  /// **'Top line leads'**
   String get voicingSuggestionTopLineSubtitle;
 
   /// No description provided for @voicingSuggestionColorfulAlteredSubtitle.
@@ -780,7 +780,7 @@ abstract class AppLocalizations {
   /// No description provided for @voicingTopNoteContextExplicit.
   ///
   /// In en, this message translates to:
-  /// **'Target top note: {note}'**
+  /// **'Top line target: {note}'**
   String voicingTopNoteContextExplicit(Object note);
 
   /// No description provided for @voicingTopNoteContextLocked.
@@ -792,8 +792,20 @@ abstract class AppLocalizations {
   /// No description provided for @voicingTopNoteContextCarry.
   ///
   /// In en, this message translates to:
-  /// **'Carry top line: {note}'**
+  /// **'Repeated top line: {note}'**
   String voicingTopNoteContextCarry(Object note);
+
+  /// No description provided for @voicingTopNoteContextNearby.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearest top line to {note}'**
+  String voicingTopNoteContextNearby(Object note);
+
+  /// No description provided for @voicingTopNoteContextFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'No exact top line for {note}'**
+  String voicingTopNoteContextFallback(Object note);
 
   /// No description provided for @voicingFamilyShell.
   ///
@@ -900,7 +912,7 @@ abstract class AppLocalizations {
   /// No description provided for @voicingReasonTopLineTarget.
   ///
   /// In en, this message translates to:
-  /// **'Top-line target'**
+  /// **'Top line target'**
   String get voicingReasonTopLineTarget;
 
   /// No description provided for @voicingReasonLowMudAvoided.

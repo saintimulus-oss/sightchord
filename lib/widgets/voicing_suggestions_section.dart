@@ -65,6 +65,8 @@ class VoicingSuggestionsSection extends StatelessWidget {
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 12),
             Column(
@@ -114,6 +116,13 @@ class VoicingSuggestionsSection extends StatelessWidget {
     }
     final note =
         _pitchClassLabels[topNotePitchClass % _pitchClassLabels.length];
+    final topNoteMatch = recommendations.topNoteMatch;
+    if (topNoteMatch == VoicingTopNoteMatch.unavailable) {
+      return l10n.voicingTopNoteContextFallback(note);
+    }
+    if (topNoteMatch == VoicingTopNoteMatch.nearby) {
+      return l10n.voicingTopNoteContextNearby(note);
+    }
     return switch (recommendations.topNoteSource) {
       VoicingTopNoteSource.explicitPreference =>
         l10n.voicingTopNoteContextExplicit(note),
@@ -288,6 +297,8 @@ class _SuggestionCard extends StatelessWidget {
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
@@ -322,18 +333,6 @@ class _SuggestionCard extends StatelessWidget {
                   spacing: 6,
                   runSpacing: 6,
                   children: [
-                    Chip(
-                      label: ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: compactChipWidth),
-                        child: Text(
-                          familyLabel,
-                          overflow: TextOverflow.ellipsis,
-                          softWrap: false,
-                        ),
-                      ),
-                      visualDensity: VisualDensity.compact,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
                     _TopNotePill(
                       key: ValueKey('voicing-top-note-${suggestion.kind.name}'),
                       label: topNoteLabel,
@@ -359,6 +358,18 @@ class _SuggestionCard extends StatelessWidget {
                         backgroundColor: theme.colorScheme.secondaryContainer,
                         foregroundColor: theme.colorScheme.onSecondaryContainer,
                       ),
+                    Chip(
+                      label: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: compactChipWidth),
+                        child: Text(
+                          familyLabel,
+                          overflow: TextOverflow.ellipsis,
+                          softWrap: false,
+                        ),
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -369,6 +380,9 @@ class _SuggestionCard extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.3,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  softWrap: false,
                 ),
                 const SizedBox(height: 8),
                 MiniKeyboard(notes: suggestion.voicing.midiNotes),
@@ -420,6 +434,9 @@ class _TopNotePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final maxLabelWidth = MediaQuery.sizeOf(context).width < 360
+        ? 108.0
+        : 138.0;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: highlighted
@@ -445,13 +462,19 @@ class _TopNotePill extends StatelessWidget {
                   : theme.colorScheme.onSurfaceVariant,
             ),
             const SizedBox(width: 4),
-            Text(
-              label,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: highlighted
-                    ? theme.colorScheme.onTertiaryContainer
-                    : theme.colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxLabelWidth),
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: highlighted
+                      ? theme.colorScheme.onTertiaryContainer
+                      : theme.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ],

@@ -96,9 +96,9 @@
   "voicingComplexityBasic": "Basic",
   "voicingComplexityStandard": "Standard",
   "voicingComplexityModern": "Modern",
-  "voicingTopNotePreference": "Top Note Preference",
-  "voicingTopNotePreferenceHelp": "Biases suggestions toward a chosen top line. Locked voicings override it, then same-chord carry keeps the line steady.",
-  "voicingTopNotePreferenceAuto": "Auto",
+  "voicingTopNotePreference": "탑노트 선호",
+  "voicingTopNotePreferenceHelp": "추천을 선택한 탑라인 쪽으로 기울입니다. 잠근 보이싱이 먼저 우선하고, 같은 코드 반복에서는 탑라인을 안정적으로 유지합니다.",
+  "voicingTopNotePreferenceAuto": "자동",
   "allowRootlessVoicings": "Allow Rootless Voicings",
   "allowRootlessVoicingsHelp": "Lets suggestions omit the root when the guide tones stay clear.",
   "maxVoicingNotes": "Max Voicing Notes",
@@ -114,28 +114,40 @@
   "voicingSuggestionEasySubtitle": "Compact hand shape",
   "voicingSuggestionNaturalConnectedSubtitle": "Connection and resolution first",
   "voicingSuggestionNaturalStableSubtitle": "Same shape, steady comping",
-  "voicingSuggestionTopLineSubtitle": "Top line stays in focus",
+  "voicingSuggestionTopLineSubtitle": "탑라인 우선",
   "voicingSuggestionColorfulAlteredSubtitle": "Altered tension up front",
   "voicingSuggestionColorfulQuartalSubtitle": "Modern quartal color",
   "voicingSuggestionColorfulTritoneSubtitle": "Tritone-sub edge with bright guide tones",
   "voicingSuggestionColorfulUpperStructureSubtitle": "Guide tones with bright extensions",
   "voicingSuggestionEasyAnchoredSubtitle": "Core tones, smaller reach",
   "voicingSuggestionEasyStableSubtitle": "Repeat-friendly hand shape",
-  "voicingTopNoteLabel": "Top",
-  "voicingTopNoteContextExplicit": "Target top note: {note}",
+  "voicingTopNoteLabel": "탑",
+  "voicingTopNoteContextExplicit": "목표 탑노트: {note}",
   "@voicingTopNoteContextExplicit": {
     "placeholders": {
       "note": {}
     }
   },
-  "voicingTopNoteContextLocked": "Locked top line: {note}",
+  "voicingTopNoteContextLocked": "잠금 탑라인: {note}",
   "@voicingTopNoteContextLocked": {
     "placeholders": {
       "note": {}
     }
   },
-  "voicingTopNoteContextCarry": "Carry top line: {note}",
+  "voicingTopNoteContextCarry": "반복 탑라인: {note}",
   "@voicingTopNoteContextCarry": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextNearby": "{note}에 가장 가까운 탑라인",
+  "@voicingTopNoteContextNearby": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextFallback": "{note}를 정확히 둘 탑라인이 없음",
+  "@voicingTopNoteContextFallback": {
     "placeholders": {
       "note": {}
     }
@@ -171,7 +183,7 @@
     }
   },
   "voicingReasonStableRepeat": "Stable repeat",
-  "voicingReasonTopLineTarget": "Top-line target",
+  "voicingReasonTopLineTarget": "탑라인 타깃",
   "voicingReasonLowMudAvoided": "Low-register clarity",
   "voicingReasonCompactReach": "Comfortable reach",
   "voicingReasonBassAnchor": "Bass anchor respected",

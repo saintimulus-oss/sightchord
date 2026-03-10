@@ -275,14 +275,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get voicingComplexityModern => 'Modern';
 
   @override
-  String get voicingTopNotePreference => 'Top Note Preference';
+  String get voicingTopNotePreference => '高音偏好';
 
   @override
   String get voicingTopNotePreferenceHelp =>
-      'Biases suggestions toward a chosen top line. Locked voicings override it, then same-chord carry keeps the line steady.';
+      '让建议倾向你选择的高音线。锁定的和声音型先优先，同一和弦重复时会尽量保持高音线稳定。';
 
   @override
-  String get voicingTopNotePreferenceAuto => 'Auto';
+  String get voicingTopNotePreferenceAuto => '自动';
 
   @override
   String get allowRootlessVoicings => 'Allow Rootless Voicings';
@@ -335,7 +335,7 @@ class AppLocalizationsZh extends AppLocalizations {
       'Same shape, steady comping';
 
   @override
-  String get voicingSuggestionTopLineSubtitle => 'Top line stays in focus';
+  String get voicingSuggestionTopLineSubtitle => '先看高音线';
 
   @override
   String get voicingSuggestionColorfulAlteredSubtitle =>
@@ -361,21 +361,31 @@ class AppLocalizationsZh extends AppLocalizations {
       'Repeat-friendly hand shape';
 
   @override
-  String get voicingTopNoteLabel => 'Top';
+  String get voicingTopNoteLabel => '高音';
 
   @override
   String voicingTopNoteContextExplicit(Object note) {
-    return 'Target top note: $note';
+    return '目标高音：$note';
   }
 
   @override
   String voicingTopNoteContextLocked(Object note) {
-    return 'Locked top line: $note';
+    return '锁定高音线：$note';
   }
 
   @override
   String voicingTopNoteContextCarry(Object note) {
-    return 'Carry top line: $note';
+    return '重复高音线：$note';
+  }
+
+  @override
+  String voicingTopNoteContextNearby(Object note) {
+    return '最接近 $note 的高音线';
+  }
+
+  @override
+  String voicingTopNoteContextFallback(Object note) {
+    return '没有能准确落在 $note 的高音线';
   }
 
   @override
@@ -434,7 +444,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get voicingReasonStableRepeat => 'Stable repeat';
 
   @override
-  String get voicingReasonTopLineTarget => 'Top-line target';
+  String get voicingReasonTopLineTarget => '高音线目标';
 
   @override
   String get voicingReasonLowMudAvoided => 'Low-register clarity';
@@ -744,14 +754,14 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get voicingComplexityModern => 'Modern';
 
   @override
-  String get voicingTopNotePreference => 'Top Note Preference';
+  String get voicingTopNotePreference => '高音偏好';
 
   @override
   String get voicingTopNotePreferenceHelp =>
-      'Biases suggestions toward a chosen top line. Locked voicings override it, then same-chord carry keeps the line steady.';
+      '让建议倾向你选择的高音线。锁定的和声音型先优先，同一和弦重复时会尽量保持高音线稳定。';
 
   @override
-  String get voicingTopNotePreferenceAuto => 'Auto';
+  String get voicingTopNotePreferenceAuto => '自动';
 
   @override
   String get allowRootlessVoicings => 'Allow Rootless Voicings';
@@ -804,7 +814,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
       'Same shape, steady comping';
 
   @override
-  String get voicingSuggestionTopLineSubtitle => 'Top line stays in focus';
+  String get voicingSuggestionTopLineSubtitle => '先看高音线';
 
   @override
   String get voicingSuggestionColorfulAlteredSubtitle =>
@@ -830,21 +840,31 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
       'Repeat-friendly hand shape';
 
   @override
-  String get voicingTopNoteLabel => 'Top';
+  String get voicingTopNoteLabel => '高音';
 
   @override
   String voicingTopNoteContextExplicit(Object note) {
-    return 'Target top note: $note';
+    return '目标高音：$note';
   }
 
   @override
   String voicingTopNoteContextLocked(Object note) {
-    return 'Locked top line: $note';
+    return '锁定高音线：$note';
   }
 
   @override
   String voicingTopNoteContextCarry(Object note) {
-    return 'Carry top line: $note';
+    return '重复高音线：$note';
+  }
+
+  @override
+  String voicingTopNoteContextNearby(Object note) {
+    return '最接近 $note 的高音线';
+  }
+
+  @override
+  String voicingTopNoteContextFallback(Object note) {
+    return '没有能准确落在 $note 的高音线';
   }
 
   @override
@@ -903,7 +923,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get voicingReasonStableRepeat => 'Stable repeat';
 
   @override
-  String get voicingReasonTopLineTarget => 'Top-line target';
+  String get voicingReasonTopLineTarget => '高音线目标';
 
   @override
   String get voicingReasonLowMudAvoided => 'Low-register clarity';

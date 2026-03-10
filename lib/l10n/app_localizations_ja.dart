@@ -279,14 +279,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get voicingComplexityModern => 'Modern';
 
   @override
-  String get voicingTopNotePreference => 'Top Note Preference';
+  String get voicingTopNotePreference => 'トップノート指定';
 
   @override
   String get voicingTopNotePreferenceHelp =>
-      'Biases suggestions toward a chosen top line. Locked voicings override it, then same-chord carry keeps the line steady.';
+      '提案を選んだトップラインに寄せます。まずロックしたボイシングを優先し、同じコードではトップラインを安定させます。';
 
   @override
-  String get voicingTopNotePreferenceAuto => 'Auto';
+  String get voicingTopNotePreferenceAuto => '自動';
 
   @override
   String get allowRootlessVoicings => 'Allow Rootless Voicings';
@@ -339,7 +339,7 @@ class AppLocalizationsJa extends AppLocalizations {
       'Same shape, steady comping';
 
   @override
-  String get voicingSuggestionTopLineSubtitle => 'Top line stays in focus';
+  String get voicingSuggestionTopLineSubtitle => 'トップラインを優先';
 
   @override
   String get voicingSuggestionColorfulAlteredSubtitle =>
@@ -369,17 +369,27 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String voicingTopNoteContextExplicit(Object note) {
-    return 'Target top note: $note';
+    return '狙いのトップノート: $note';
   }
 
   @override
   String voicingTopNoteContextLocked(Object note) {
-    return 'Locked top line: $note';
+    return 'ロック中のトップライン: $note';
   }
 
   @override
   String voicingTopNoteContextCarry(Object note) {
-    return 'Carry top line: $note';
+    return '反復時のトップライン: $note';
+  }
+
+  @override
+  String voicingTopNoteContextNearby(Object note) {
+    return '$noteに最も近いトップライン';
+  }
+
+  @override
+  String voicingTopNoteContextFallback(Object note) {
+    return '$noteを正確に置けるトップラインなし';
   }
 
   @override
@@ -438,7 +448,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get voicingReasonStableRepeat => 'Stable repeat';
 
   @override
-  String get voicingReasonTopLineTarget => 'Top-line target';
+  String get voicingReasonTopLineTarget => 'トップライン狙い';
 
   @override
   String get voicingReasonLowMudAvoided => 'Low-register clarity';

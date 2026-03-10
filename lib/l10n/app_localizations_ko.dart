@@ -281,14 +281,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get voicingComplexityModern => 'Modern';
 
   @override
-  String get voicingTopNotePreference => 'Top Note Preference';
+  String get voicingTopNotePreference => '탑노트 선호';
 
   @override
   String get voicingTopNotePreferenceHelp =>
-      'Biases suggestions toward a chosen top line. Locked voicings override it, then same-chord carry keeps the line steady.';
+      '추천을 선택한 탑라인 쪽으로 기울입니다. 잠근 보이싱이 먼저 우선하고, 같은 코드 반복에서는 탑라인을 안정적으로 유지합니다.';
 
   @override
-  String get voicingTopNotePreferenceAuto => 'Auto';
+  String get voicingTopNotePreferenceAuto => '자동';
 
   @override
   String get allowRootlessVoicings => 'Allow Rootless Voicings';
@@ -341,7 +341,7 @@ class AppLocalizationsKo extends AppLocalizations {
       'Same shape, steady comping';
 
   @override
-  String get voicingSuggestionTopLineSubtitle => 'Top line stays in focus';
+  String get voicingSuggestionTopLineSubtitle => '탑라인 우선';
 
   @override
   String get voicingSuggestionColorfulAlteredSubtitle =>
@@ -367,21 +367,31 @@ class AppLocalizationsKo extends AppLocalizations {
       'Repeat-friendly hand shape';
 
   @override
-  String get voicingTopNoteLabel => 'Top';
+  String get voicingTopNoteLabel => '탑';
 
   @override
   String voicingTopNoteContextExplicit(Object note) {
-    return 'Target top note: $note';
+    return '목표 탑노트: $note';
   }
 
   @override
   String voicingTopNoteContextLocked(Object note) {
-    return 'Locked top line: $note';
+    return '잠금 탑라인: $note';
   }
 
   @override
   String voicingTopNoteContextCarry(Object note) {
-    return 'Carry top line: $note';
+    return '반복 탑라인: $note';
+  }
+
+  @override
+  String voicingTopNoteContextNearby(Object note) {
+    return '$note에 가장 가까운 탑라인';
+  }
+
+  @override
+  String voicingTopNoteContextFallback(Object note) {
+    return '$note를 정확히 둘 탑라인이 없음';
   }
 
   @override
@@ -440,7 +450,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get voicingReasonStableRepeat => 'Stable repeat';
 
   @override
-  String get voicingReasonTopLineTarget => 'Top-line target';
+  String get voicingReasonTopLineTarget => '탑라인 타깃';
 
   @override
   String get voicingReasonLowMudAvoided => 'Low-register clarity';

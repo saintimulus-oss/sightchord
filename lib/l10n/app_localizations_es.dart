@@ -287,11 +287,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get voicingComplexityModern => 'Modern';
 
   @override
-  String get voicingTopNotePreference => 'Top Note Preference';
+  String get voicingTopNotePreference => 'Preferencia de nota superior';
 
   @override
   String get voicingTopNotePreferenceHelp =>
-      'Biases suggestions toward a chosen top line. Locked voicings override it, then same-chord carry keeps the line steady.';
+      'Inclina las sugerencias hacia una linea superior elegida. Los voicings bloqueados mandan primero y los acordes repetidos la mantienen estable.';
 
   @override
   String get voicingTopNotePreferenceAuto => 'Auto';
@@ -347,7 +347,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Same shape, steady comping';
 
   @override
-  String get voicingSuggestionTopLineSubtitle => 'Top line stays in focus';
+  String get voicingSuggestionTopLineSubtitle => 'La linea superior manda';
 
   @override
   String get voicingSuggestionColorfulAlteredSubtitle =>
@@ -373,21 +373,31 @@ class AppLocalizationsEs extends AppLocalizations {
       'Repeat-friendly hand shape';
 
   @override
-  String get voicingTopNoteLabel => 'Top';
+  String get voicingTopNoteLabel => 'Superior';
 
   @override
   String voicingTopNoteContextExplicit(Object note) {
-    return 'Target top note: $note';
+    return 'Nota superior objetivo: $note';
   }
 
   @override
   String voicingTopNoteContextLocked(Object note) {
-    return 'Locked top line: $note';
+    return 'Linea superior bloqueada: $note';
   }
 
   @override
   String voicingTopNoteContextCarry(Object note) {
-    return 'Carry top line: $note';
+    return 'Linea superior repetida: $note';
+  }
+
+  @override
+  String voicingTopNoteContextNearby(Object note) {
+    return 'Linea superior mas cercana a $note';
+  }
+
+  @override
+  String voicingTopNoteContextFallback(Object note) {
+    return 'No hay nota superior exacta para $note';
   }
 
   @override
@@ -446,7 +456,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get voicingReasonStableRepeat => 'Stable repeat';
 
   @override
-  String get voicingReasonTopLineTarget => 'Top-line target';
+  String get voicingReasonTopLineTarget => 'Objetivo de linea superior';
 
   @override
   String get voicingReasonLowMudAvoided => 'Low-register clarity';

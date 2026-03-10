@@ -96,9 +96,9 @@
   "voicingComplexityBasic": "Basic",
   "voicingComplexityStandard": "Standard",
   "voicingComplexityModern": "Modern",
-  "voicingTopNotePreference": "Top Note Preference",
-  "voicingTopNotePreferenceHelp": "Biases suggestions toward a chosen top line. Locked voicings override it, then same-chord carry keeps the line steady.",
-  "voicingTopNotePreferenceAuto": "Auto",
+  "voicingTopNotePreference": "高音偏好",
+  "voicingTopNotePreferenceHelp": "让建议倾向你选择的高音线。锁定的和声音型先优先，同一和弦重复时会尽量保持高音线稳定。",
+  "voicingTopNotePreferenceAuto": "自动",
   "allowRootlessVoicings": "Allow Rootless Voicings",
   "allowRootlessVoicingsHelp": "Lets suggestions omit the root when the guide tones stay clear.",
   "maxVoicingNotes": "Max Voicing Notes",
@@ -114,28 +114,40 @@
   "voicingSuggestionEasySubtitle": "Compact hand shape",
   "voicingSuggestionNaturalConnectedSubtitle": "Connection and resolution first",
   "voicingSuggestionNaturalStableSubtitle": "Same shape, steady comping",
-  "voicingSuggestionTopLineSubtitle": "Top line stays in focus",
+  "voicingSuggestionTopLineSubtitle": "先看高音线",
   "voicingSuggestionColorfulAlteredSubtitle": "Altered tension up front",
   "voicingSuggestionColorfulQuartalSubtitle": "Modern quartal color",
   "voicingSuggestionColorfulTritoneSubtitle": "Tritone-sub edge with bright guide tones",
   "voicingSuggestionColorfulUpperStructureSubtitle": "Guide tones with bright extensions",
   "voicingSuggestionEasyAnchoredSubtitle": "Core tones, smaller reach",
   "voicingSuggestionEasyStableSubtitle": "Repeat-friendly hand shape",
-  "voicingTopNoteLabel": "Top",
-  "voicingTopNoteContextExplicit": "Target top note: {note}",
+  "voicingTopNoteLabel": "高音",
+  "voicingTopNoteContextExplicit": "目标高音：{note}",
   "@voicingTopNoteContextExplicit": {
     "placeholders": {
       "note": {}
     }
   },
-  "voicingTopNoteContextLocked": "Locked top line: {note}",
+  "voicingTopNoteContextLocked": "锁定高音线：{note}",
   "@voicingTopNoteContextLocked": {
     "placeholders": {
       "note": {}
     }
   },
-  "voicingTopNoteContextCarry": "Carry top line: {note}",
+  "voicingTopNoteContextCarry": "重复高音线：{note}",
   "@voicingTopNoteContextCarry": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextNearby": "最接近 {note} 的高音线",
+  "@voicingTopNoteContextNearby": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextFallback": "没有能准确落在 {note} 的高音线",
+  "@voicingTopNoteContextFallback": {
     "placeholders": {
       "note": {}
     }
@@ -171,7 +183,7 @@
     }
   },
   "voicingReasonStableRepeat": "Stable repeat",
-  "voicingReasonTopLineTarget": "Top-line target",
+  "voicingReasonTopLineTarget": "高音线目标",
   "voicingReasonLowMudAvoided": "Low-register clarity",
   "voicingReasonCompactReach": "Comfortable reach",
   "voicingReasonBassAnchor": "Bass anchor respected",

@@ -96,9 +96,9 @@
   "voicingComplexityBasic": "Basic",
   "voicingComplexityStandard": "Standard",
   "voicingComplexityModern": "Modern",
-  "voicingTopNotePreference": "Top Note Preference",
-  "voicingTopNotePreferenceHelp": "Biases suggestions toward a chosen top line. Locked voicings override it, then same-chord carry keeps the line steady.",
-  "voicingTopNotePreferenceAuto": "Auto",
+  "voicingTopNotePreference": "トップノート指定",
+  "voicingTopNotePreferenceHelp": "提案を選んだトップラインに寄せます。まずロックしたボイシングを優先し、同じコードではトップラインを安定させます。",
+  "voicingTopNotePreferenceAuto": "自動",
   "allowRootlessVoicings": "Allow Rootless Voicings",
   "allowRootlessVoicingsHelp": "Lets suggestions omit the root when the guide tones stay clear.",
   "maxVoicingNotes": "Max Voicing Notes",
@@ -114,7 +114,7 @@
   "voicingSuggestionEasySubtitle": "Compact hand shape",
   "voicingSuggestionNaturalConnectedSubtitle": "Connection and resolution first",
   "voicingSuggestionNaturalStableSubtitle": "Same shape, steady comping",
-  "voicingSuggestionTopLineSubtitle": "Top line stays in focus",
+  "voicingSuggestionTopLineSubtitle": "トップラインを優先",
   "voicingSuggestionColorfulAlteredSubtitle": "Altered tension up front",
   "voicingSuggestionColorfulQuartalSubtitle": "Modern quartal color",
   "voicingSuggestionColorfulTritoneSubtitle": "Tritone-sub edge with bright guide tones",
@@ -122,20 +122,32 @@
   "voicingSuggestionEasyAnchoredSubtitle": "Core tones, smaller reach",
   "voicingSuggestionEasyStableSubtitle": "Repeat-friendly hand shape",
   "voicingTopNoteLabel": "Top",
-  "voicingTopNoteContextExplicit": "Target top note: {note}",
+  "voicingTopNoteContextExplicit": "狙いのトップノート: {note}",
   "@voicingTopNoteContextExplicit": {
     "placeholders": {
       "note": {}
     }
   },
-  "voicingTopNoteContextLocked": "Locked top line: {note}",
+  "voicingTopNoteContextLocked": "ロック中のトップライン: {note}",
   "@voicingTopNoteContextLocked": {
     "placeholders": {
       "note": {}
     }
   },
-  "voicingTopNoteContextCarry": "Carry top line: {note}",
+  "voicingTopNoteContextCarry": "反復時のトップライン: {note}",
   "@voicingTopNoteContextCarry": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextNearby": "{note}に最も近いトップライン",
+  "@voicingTopNoteContextNearby": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextFallback": "{note}を正確に置けるトップラインなし",
+  "@voicingTopNoteContextFallback": {
     "placeholders": {
       "note": {}
     }
@@ -171,7 +183,7 @@
     }
   },
   "voicingReasonStableRepeat": "Stable repeat",
-  "voicingReasonTopLineTarget": "Top-line target",
+  "voicingReasonTopLineTarget": "トップライン狙い",
   "voicingReasonLowMudAvoided": "Low-register clarity",
   "voicingReasonCompactReach": "Comfortable reach",
   "voicingReasonBassAnchor": "Bass anchor respected",

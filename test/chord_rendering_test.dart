@@ -77,7 +77,7 @@ void main() {
           _symbol('C', ChordQuality.major7),
           ChordSymbolStyle.deltaJazz,
         ),
-        'C?7',
+        'C\u03947',
       );
       expect(
         ChordSymbolFormatter.format(
@@ -127,7 +127,7 @@ void main() {
       );
       expect(
         ChordSymbolFormatter.format(symbol, ChordSymbolStyle.deltaJazz),
-        'C?7(#11)/E',
+        'C\u03947(#11)/E',
       );
     });
 
@@ -453,7 +453,6 @@ void main() {
       expect(renderedNonDiatonic, isTrue);
     });
 
-
     test('prioritizes dominant headed scope tensions by profile weight', () {
       final prioritized = ChordRenderingHelper.prioritizedTensionOptionsFor(
         romanNumeralId: RomanNumeralId.vDom7,
@@ -546,8 +545,3 @@ void main() {
     });
   });
 }
-
-
-
-
-

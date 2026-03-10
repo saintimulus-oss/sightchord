@@ -96,8 +96,8 @@
   "voicingComplexityBasic": "Basic",
   "voicingComplexityStandard": "Standard",
   "voicingComplexityModern": "Modern",
-  "voicingTopNotePreference": "Top Note Preference",
-  "voicingTopNotePreferenceHelp": "Biases suggestions toward a chosen top line. Locked voicings override it, then same-chord carry keeps the line steady.",
+  "voicingTopNotePreference": "Preferencia de nota superior",
+  "voicingTopNotePreferenceHelp": "Inclina las sugerencias hacia una linea superior elegida. Los voicings bloqueados mandan primero y los acordes repetidos la mantienen estable.",
   "voicingTopNotePreferenceAuto": "Auto",
   "allowRootlessVoicings": "Allow Rootless Voicings",
   "allowRootlessVoicingsHelp": "Lets suggestions omit the root when the guide tones stay clear.",
@@ -114,28 +114,40 @@
   "voicingSuggestionEasySubtitle": "Compact hand shape",
   "voicingSuggestionNaturalConnectedSubtitle": "Connection and resolution first",
   "voicingSuggestionNaturalStableSubtitle": "Same shape, steady comping",
-  "voicingSuggestionTopLineSubtitle": "Top line stays in focus",
+  "voicingSuggestionTopLineSubtitle": "La linea superior manda",
   "voicingSuggestionColorfulAlteredSubtitle": "Altered tension up front",
   "voicingSuggestionColorfulQuartalSubtitle": "Modern quartal color",
   "voicingSuggestionColorfulTritoneSubtitle": "Tritone-sub edge with bright guide tones",
   "voicingSuggestionColorfulUpperStructureSubtitle": "Guide tones with bright extensions",
   "voicingSuggestionEasyAnchoredSubtitle": "Core tones, smaller reach",
   "voicingSuggestionEasyStableSubtitle": "Repeat-friendly hand shape",
-  "voicingTopNoteLabel": "Top",
-  "voicingTopNoteContextExplicit": "Target top note: {note}",
+  "voicingTopNoteLabel": "Superior",
+  "voicingTopNoteContextExplicit": "Nota superior objetivo: {note}",
   "@voicingTopNoteContextExplicit": {
     "placeholders": {
       "note": {}
     }
   },
-  "voicingTopNoteContextLocked": "Locked top line: {note}",
+  "voicingTopNoteContextLocked": "Linea superior bloqueada: {note}",
   "@voicingTopNoteContextLocked": {
     "placeholders": {
       "note": {}
     }
   },
-  "voicingTopNoteContextCarry": "Carry top line: {note}",
+  "voicingTopNoteContextCarry": "Linea superior repetida: {note}",
   "@voicingTopNoteContextCarry": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextNearby": "Linea superior mas cercana a {note}",
+  "@voicingTopNoteContextNearby": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextFallback": "No hay nota superior exacta para {note}",
+  "@voicingTopNoteContextFallback": {
     "placeholders": {
       "note": {}
     }
@@ -171,7 +183,7 @@
     }
   },
   "voicingReasonStableRepeat": "Stable repeat",
-  "voicingReasonTopLineTarget": "Top-line target",
+  "voicingReasonTopLineTarget": "Objetivo de linea superior",
   "voicingReasonLowMudAvoided": "Low-register clarity",
   "voicingReasonCompactReach": "Comfortable reach",
   "voicingReasonBassAnchor": "Bass anchor respected",

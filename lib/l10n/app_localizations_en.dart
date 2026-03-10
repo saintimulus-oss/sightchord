@@ -290,7 +290,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voicingTopNotePreferenceHelp =>
-      'Biases suggestions toward a chosen top line. Locked voicings override it, then same-chord carry keeps the line steady.';
+      'Leans suggestions toward a chosen top line. Locked voicings win first, then repeated chords keep it steady.';
 
   @override
   String get voicingTopNotePreferenceAuto => 'Auto';
@@ -346,7 +346,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Same shape, steady comping';
 
   @override
-  String get voicingSuggestionTopLineSubtitle => 'Top line stays in focus';
+  String get voicingSuggestionTopLineSubtitle => 'Top line leads';
 
   @override
   String get voicingSuggestionColorfulAlteredSubtitle =>
@@ -376,7 +376,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String voicingTopNoteContextExplicit(Object note) {
-    return 'Target top note: $note';
+    return 'Top line target: $note';
   }
 
   @override
@@ -386,7 +386,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String voicingTopNoteContextCarry(Object note) {
-    return 'Carry top line: $note';
+    return 'Repeated top line: $note';
+  }
+
+  @override
+  String voicingTopNoteContextNearby(Object note) {
+    return 'Nearest top line to $note';
+  }
+
+  @override
+  String voicingTopNoteContextFallback(Object note) {
+    return 'No exact top line for $note';
   }
 
   @override
@@ -445,7 +455,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get voicingReasonStableRepeat => 'Stable repeat';
 
   @override
-  String get voicingReasonTopLineTarget => 'Top-line target';
+  String get voicingReasonTopLineTarget => 'Top line target';
 
   @override
   String get voicingReasonLowMudAvoided => 'Low-register clarity';

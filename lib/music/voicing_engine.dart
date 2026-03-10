@@ -105,6 +105,12 @@ class VoicingEngine {
             settings: context.settings,
           ),
       lookAheadChords: context.lookAheadChords,
+      availableSignatures: {
+        for (final candidate in candidates) candidate.signature,
+      },
+      availableTopNotePitchClasses: {
+        for (final candidate in candidates) candidate.topNotePitchClass,
+      },
     );
 
     final ranked = <RankedVoicingCandidate>[
@@ -143,6 +149,7 @@ class VoicingEngine {
       effectiveTopNotePitchClass:
           progressionContext.topNotePitchClassPreference,
       topNoteSource: progressionContext.topNotePreferenceSource,
+      topNoteMatch: progressionContext.topNoteMatch,
     );
   }
 
@@ -562,7 +569,7 @@ class VoicingEngine {
       handSpanSemitones: span,
       alteredTensionCount: alteredTensionCount,
     );
-    final topNotePreferenceBonus = _topNotePreferenceBonus(
+    var topNotePreferenceBonus = _topNotePreferenceBonus(
       progressionContext: progressionContext,
       interpretation: interpretation,
       voicing: voicing,
@@ -604,6 +611,11 @@ class VoicingEngine {
           voicing: voicing,
           motionSemitones: totalMotionSemitones,
         );
+        sameHarmonyStabilityBonus += _sameHarmonyTopLineStabilityBonus(
+          progressionContext: progressionContext,
+          previousReference: previousReference,
+          voicing: voicing,
+        );
       }
     }
 
@@ -613,6 +625,11 @@ class VoicingEngine {
       futureChords: progressionContext.lookAheadChords,
       settings: progressionContext.settings,
       depth: progressionContext.effectiveLookAheadDepth.clamp(0, 2),
+    );
+    topNotePreferenceBonus += _topLineLookAheadBalanceBonus(
+      progressionContext: progressionContext,
+      voicing: voicing,
+      nextChordLookAheadBonus: nextChordLookAheadBonus,
     );
 
     final lockContinuityBonus =
@@ -687,11 +704,42 @@ class VoicingEngine {
     if (previousReference.family == voicing.family) {
       bonus += 0.18;
     }
+    if (previousReference.topNotePitchClass == voicing.topNotePitchClass) {
+      bonus += 0.18;
+    } else if ((previousReference.topNote - voicing.topNote).abs() <= 2) {
+      bonus += 0.08;
+    }
     if (previousReference.topNote == voicing.topNote &&
         previousReference.bassNote == voicing.bassNote) {
       bonus += 0.22;
     }
     return min(0.82, max(0.0, bonus));
+  }
+
+  static double _sameHarmonyTopLineStabilityBonus({
+    required _ResolvedProgressionContext progressionContext,
+    required ConcreteVoicing previousReference,
+    required ConcreteVoicing voicing,
+  }) {
+    final source = progressionContext.topNotePreferenceSource;
+    if (source == null) {
+      return 0.0;
+    }
+    if (previousReference.topNotePitchClass == voicing.topNotePitchClass) {
+      return switch (source) {
+        VoicingTopNoteSource.explicitPreference => 0.32,
+        VoicingTopNoteSource.lockedContinuity => 0.18,
+        VoicingTopNoteSource.sameHarmonyCarry => 0.44,
+      };
+    }
+    if ((previousReference.topNote - voicing.topNote).abs() <= 2) {
+      return switch (source) {
+        VoicingTopNoteSource.explicitPreference => 0.14,
+        VoicingTopNoteSource.lockedContinuity => 0.0,
+        VoicingTopNoteSource.sameHarmonyCarry => 0.22,
+      };
+    }
+    return 0.0;
   }
 
   static _TransitionScore _scoreTransition({
@@ -1030,7 +1078,7 @@ class VoicingEngine {
       return exactMatchBonus + colorTopBonus;
     }
     if (distance == 1) {
-      return neighboringBonus + (colorTopBonus * 0.5);
+      return neighboringBonus + (colorTopBonus * 0.4);
     }
     if (distance == 2 &&
         !interpretation.isAlteredFamily &&
@@ -1047,6 +1095,49 @@ class VoicingEngine {
     final preferredPitchClass = progressionContext.topNotePitchClassPreference;
     return preferredPitchClass != null &&
         voicing.topNotePitchClass == preferredPitchClass;
+  }
+
+  static bool _isNearTopLineTarget({
+    required _ResolvedProgressionContext progressionContext,
+    required ConcreteVoicing voicing,
+  }) {
+    final preferredPitchClass = progressionContext.topNotePitchClassPreference;
+    return preferredPitchClass != null &&
+        _pitchClassDistance(voicing.topNotePitchClass, preferredPitchClass) ==
+            1;
+  }
+
+  static double _topLineLookAheadBalanceBonus({
+    required _ResolvedProgressionContext progressionContext,
+    required ConcreteVoicing voicing,
+    required double nextChordLookAheadBonus,
+  }) {
+    final source = progressionContext.topNotePreferenceSource;
+    if (source == null) {
+      return 0.0;
+    }
+    if (_matchesTopLineTarget(
+      progressionContext: progressionContext,
+      voicing: voicing,
+    )) {
+      if (nextChordLookAheadBonus < 0) {
+        return min(0.36, -nextChordLookAheadBonus * 0.42);
+      }
+      if (source == VoicingTopNoteSource.sameHarmonyCarry &&
+          nextChordLookAheadBonus < 0.35) {
+        return 0.08;
+      }
+      return 0.0;
+    }
+    if (_isNearTopLineTarget(
+          progressionContext: progressionContext,
+          voicing: voicing,
+        ) &&
+        source == VoicingTopNoteSource.explicitPreference &&
+        nextChordLookAheadBonus < 0.2) {
+      return 0.06;
+    }
+    return 0.0;
   }
 
   static double _colorBonus({
@@ -1130,6 +1221,7 @@ class VoicingEngine {
   }) {
     final usedSignatures = <String>{};
     final usedFamilies = <VoicingFamily>{};
+    final selectedVoicings = <ConcreteVoicing>[];
     return [
       _pickSuggestion(
         rankedCandidates: rankedCandidates,
@@ -1137,9 +1229,11 @@ class VoicingEngine {
         scoreFor: (candidate) => candidate.naturalScore,
         usedSignatures: usedSignatures,
         usedFamilies: usedFamilies,
+        selectedVoicings: selectedVoicings,
         lockedVoicing: progressionContext.lockedContinuityReference,
         continuityReference: progressionContext.previousReference,
         allowContinuityReuse: false,
+        progressionContext: progressionContext,
       ),
       _pickSuggestion(
         rankedCandidates: rankedCandidates,
@@ -1147,11 +1241,13 @@ class VoicingEngine {
         scoreFor: (candidate) => candidate.colorfulScore,
         usedSignatures: usedSignatures,
         usedFamilies: usedFamilies,
+        selectedVoicings: selectedVoicings,
         lockedVoicing: progressionContext.lockedContinuityReference,
         continuityReference: progressionContext.previousReference,
         allowContinuityReuse:
             progressionContext.previousChord?.harmonicComparisonKey ==
             progressionContext.currentChord.harmonicComparisonKey,
+        progressionContext: progressionContext,
       ),
       _pickSuggestion(
         rankedCandidates: rankedCandidates,
@@ -1159,9 +1255,11 @@ class VoicingEngine {
         scoreFor: (candidate) => candidate.easyScore,
         usedSignatures: usedSignatures,
         usedFamilies: usedFamilies,
+        selectedVoicings: selectedVoicings,
         lockedVoicing: progressionContext.lockedContinuityReference,
         continuityReference: progressionContext.previousReference,
         allowContinuityReuse: false,
+        progressionContext: progressionContext,
       ),
     ];
   }
@@ -1172,9 +1270,11 @@ class VoicingEngine {
     required double Function(RankedVoicingCandidate candidate) scoreFor,
     required Set<String> usedSignatures,
     required Set<VoicingFamily> usedFamilies,
+    required List<ConcreteVoicing> selectedVoicings,
     required ConcreteVoicing? lockedVoicing,
     required ConcreteVoicing? continuityReference,
     required bool allowContinuityReuse,
+    required _ResolvedProgressionContext progressionContext,
   }) {
     final rankedByKind = [...rankedCandidates]
       ..sort((left, right) {
@@ -1201,6 +1301,23 @@ class VoicingEngine {
         ).compareTo(_suggestionNoteCountBias(kind, left.voicing.noteCount));
         if (noteCountDelta != 0) {
           return noteCountDelta;
+        }
+        final diversityDelta =
+            _selectionDiversityBias(
+              kind: kind,
+              candidate: right,
+              selectedVoicings: selectedVoicings,
+              progressionContext: progressionContext,
+            ).compareTo(
+              _selectionDiversityBias(
+                kind: kind,
+                candidate: left,
+                selectedVoicings: selectedVoicings,
+                progressionContext: progressionContext,
+              ),
+            );
+        if (diversityDelta != 0) {
+          return diversityDelta;
         }
         final familyOrderDelta = _familyOrder(
           left.voicing.family,
@@ -1236,6 +1353,7 @@ class VoicingEngine {
 
     usedSignatures.add(selected.voicing.signature);
     usedFamilies.add(selected.voicing.family);
+    selectedVoicings.add(selected.voicing);
     final orderedReasonTags = _orderedReasonTagsForKind(
       kind,
       selected.reasonTags,
@@ -1253,6 +1371,120 @@ class VoicingEngine {
       reasonTags: orderedReasonTags,
       locked: lockedVoicing?.signature == selected.voicing.signature,
     );
+  }
+
+  static double _selectionDiversityBias({
+    required VoicingSuggestionKind kind,
+    required RankedVoicingCandidate candidate,
+    required List<ConcreteVoicing> selectedVoicings,
+    required _ResolvedProgressionContext progressionContext,
+  }) {
+    if (selectedVoicings.isEmpty) {
+      return _cardPayoffBias(
+        kind: kind,
+        candidate: candidate,
+        progressionContext: progressionContext,
+      );
+    }
+    var bias = _cardPayoffBias(
+      kind: kind,
+      candidate: candidate,
+      progressionContext: progressionContext,
+    );
+    for (final selected in selectedVoicings) {
+      final sameFamily = selected.family == candidate.voicing.family;
+      final sameTopPitchClass =
+          selected.topNotePitchClass == candidate.voicing.topNotePitchClass;
+      final sameNoteCount = selected.noteCount == candidate.voicing.noteCount;
+      if (!sameFamily) {
+        bias += switch (kind) {
+          VoicingSuggestionKind.colorful => 0.22,
+          VoicingSuggestionKind.easy => 0.16,
+          VoicingSuggestionKind.natural => 0.0,
+        };
+      } else {
+        bias -= switch (kind) {
+          VoicingSuggestionKind.colorful => 0.2,
+          VoicingSuggestionKind.easy => 0.16,
+          VoicingSuggestionKind.natural => 0.0,
+        };
+      }
+      if (!sameTopPitchClass) {
+        bias += switch (kind) {
+          VoicingSuggestionKind.colorful => 0.12,
+          VoicingSuggestionKind.easy => 0.08,
+          VoicingSuggestionKind.natural => 0.0,
+        };
+      } else {
+        bias -= switch (kind) {
+          VoicingSuggestionKind.colorful => 0.16,
+          VoicingSuggestionKind.easy => 0.12,
+          VoicingSuggestionKind.natural => 0.0,
+        };
+      }
+      if (!sameNoteCount) {
+        bias += kind == VoicingSuggestionKind.natural ? 0.0 : 0.05;
+      }
+      if (sameFamily &&
+          sameTopPitchClass &&
+          sameNoteCount &&
+          (selected.bassNote - candidate.voicing.bassNote).abs() <= 2) {
+        bias -= switch (kind) {
+          VoicingSuggestionKind.colorful => 0.18,
+          VoicingSuggestionKind.easy => 0.14,
+          VoicingSuggestionKind.natural => 0.0,
+        };
+      }
+    }
+    return bias;
+  }
+
+  static double _cardPayoffBias({
+    required VoicingSuggestionKind kind,
+    required RankedVoicingCandidate candidate,
+    required _ResolvedProgressionContext progressionContext,
+  }) {
+    final voicing = candidate.voicing;
+    return switch (kind) {
+      VoicingSuggestionKind.colorful => () {
+        var bias = 0.0;
+        if (_hasMeaningfulColorPayoff(voicing)) {
+          bias += 0.22;
+        } else {
+          bias -= 0.16;
+        }
+        if (_matchesTopLineTarget(
+          progressionContext: progressionContext,
+          voicing: voicing,
+        )) {
+          bias += 0.08;
+        }
+        return bias;
+      }(),
+      VoicingSuggestionKind.easy => () {
+        var bias = 0.0;
+        if (voicing.containsRoot) {
+          bias += 0.08;
+        }
+        if (voicing.tensions.length <= 1) {
+          bias += 0.06;
+        } else {
+          bias -= 0.12;
+        }
+        if (_hasMeaningfulColorPayoff(voicing)) {
+          bias -= 0.08;
+        }
+        return bias;
+      }(),
+      VoicingSuggestionKind.natural => 0.0,
+    };
+  }
+
+  static bool _hasMeaningfulColorPayoff(ConcreteVoicing voicing) {
+    return voicing.tensions.length >= 2 ||
+        voicing.family == VoicingFamily.quartal ||
+        voicing.family == VoicingFamily.upperStructure ||
+        voicing.family == VoicingFamily.altered;
   }
 
   static List<VoicingReasonTag> _reasonTagsForCandidate({
@@ -1478,6 +1710,13 @@ class VoicingEngine {
         matchesTopLineTarget &&
         progressionContext.topNotePreferenceSource ==
             VoicingTopNoteSource.explicitPreference;
+    final meaningfulDominantColorPayoff =
+        interpretation.isDominantFamily &&
+        _hasMeaningfulDominantColorPayoff(
+          chord: chord,
+          interpretation: interpretation,
+          voicing: voicing,
+        );
 
     return switch (kind) {
       VoicingSuggestionKind.natural => () {
@@ -1518,6 +1757,11 @@ class VoicingEngine {
             !interpretation.isAlteredFamily) {
           bonus -= 0.24;
         }
+        if (meaningfulDominantColorPayoff &&
+            (voicing.family == VoicingFamily.upperStructure ||
+                voicing.family == VoicingFamily.altered)) {
+          bonus -= 0.14;
+        }
         return bonus;
       }(),
       VoicingSuggestionKind.colorful => () {
@@ -1554,6 +1798,14 @@ class VoicingEngine {
             !interpretation.isAlteredFamily) {
           bonus -= 0.32;
         }
+        if (interpretation.isDominantFamily) {
+          if (meaningfulDominantColorPayoff) {
+            bonus += 0.18;
+          } else if (voicing.family == VoicingFamily.upperStructure ||
+              voicing.family == VoicingFamily.altered) {
+            bonus -= 0.28;
+          }
+        }
         bonus += _colorTopNoteSemanticBonus(
           chord: chord,
           interpretation: interpretation,
@@ -1570,7 +1822,7 @@ class VoicingEngine {
           bonus += 0.14;
         }
         if (explicitTopLineMatch) {
-          bonus += 0.18;
+          bonus += 0.1;
         }
         if (voicing.hasGuideToneCore && voicing.noteCount <= 4) {
           bonus += 0.16;
@@ -1602,9 +1854,34 @@ class VoicingEngine {
         if ((voicing.topNote - voicing.bassNote) > 15) {
           bonus -= 0.18;
         }
+        if (meaningfulDominantColorPayoff &&
+            (voicing.family == VoicingFamily.upperStructure ||
+                voicing.family == VoicingFamily.altered)) {
+          bonus -= 0.26;
+        }
         return bonus;
       }(),
     };
+  }
+
+  static bool _hasMeaningfulDominantColorPayoff({
+    required GeneratedChord chord,
+    required ChordVoicingInterpretation interpretation,
+    required ConcreteVoicing voicing,
+  }) {
+    if (!interpretation.isDominantFamily) {
+      return false;
+    }
+    if (_isTritoneSubContext(chord, interpretation) ||
+        _isLydianDominantContext(chord, interpretation)) {
+      return voicing.tensions.contains('#11') ||
+          voicing.tensions.contains('13') ||
+          voicing.tensions.contains('9');
+    }
+    if (_supportsModernAlteredContext(chord, interpretation)) {
+      return voicing.tensions.any(_isAlteredLabel);
+    }
+    return false;
   }
 
   static bool _supportsModernQuartalContext(
@@ -1615,6 +1892,21 @@ class VoicingEngine {
             interpretation.essentialLabels.contains('b7') &&
             !interpretation.isHalfDiminishedFamily &&
             !interpretation.isTriadFamily);
+  }
+
+  static bool _supportsModernAlteredContext(
+    GeneratedChord chord,
+    ChordVoicingInterpretation interpretation,
+  ) {
+    return interpretation.isAlteredFamily ||
+        chord.dominantIntent == DominantIntent.primaryAuthenticMinor ||
+        chord.dominantIntent == DominantIntent.secondaryToMinor ||
+        chord.dominantIntent == DominantIntent.tritoneSub ||
+        chord.dominantIntent == DominantIntent.backdoor ||
+        chord.dominantContext == DominantContext.primaryMinor ||
+        chord.dominantContext == DominantContext.secondaryToMinor ||
+        chord.dominantContext == DominantContext.tritoneSubstitute ||
+        chord.dominantContext == DominantContext.backdoor;
   }
 
   static bool _isLydianDominantContext(
@@ -1937,7 +2229,8 @@ class VoicingEngine {
       final shouldAddAltered =
           interpretation.isAlteredFamily ||
           (settings.voicingComplexity == VoicingComplexity.modern &&
-              colorLabels.any(_isAlteredLabel));
+              colorLabels.any(_isAlteredLabel) &&
+              _supportsModernAlteredContext(chord, interpretation));
       if (shouldAddAltered) {
         addTemplate(
           _VoicingTemplate(
@@ -2816,11 +3109,15 @@ class _ResolvedProgressionContext {
     required this.source,
     required this.previousReference,
     required this.lookAheadChords,
+    required this.availableSignatures,
+    required this.availableTopNotePitchClasses,
   });
 
   final VoicingContext source;
   final ConcreteVoicing? previousReference;
   final List<GeneratedChord> lookAheadChords;
+  final Set<String> availableSignatures;
+  final Set<int> availableTopNotePitchClasses;
 
   PracticeSettings get settings => source.settings;
 
@@ -2842,7 +3139,8 @@ class _ResolvedProgressionContext {
       currentChord.harmonicComparisonKey;
 
   VoicingTopNoteSource? get topNotePreferenceSource {
-    if (lockedContinuityReference != null) {
+    if (lockedContinuityReference != null &&
+        availableSignatures.contains(lockedContinuityReference!.signature)) {
       return VoicingTopNoteSource.lockedContinuity;
     }
     if (source.preferredTopNotePitchClass != null) {
@@ -2864,6 +3162,28 @@ class _ResolvedProgressionContext {
         previousReference?.topNotePitchClass,
       null => null,
     };
+  }
+
+  VoicingTopNoteMatch? get topNoteMatch {
+    final preferredPitchClass = topNotePitchClassPreference;
+    if (preferredPitchClass == null || availableTopNotePitchClasses.isEmpty) {
+      return null;
+    }
+    final minimumDistance = availableTopNotePitchClasses
+        .map(
+          (pitchClass) => VoicingEngine._pitchClassDistance(
+            pitchClass,
+            preferredPitchClass,
+          ),
+        )
+        .reduce(min);
+    if (minimumDistance == 0) {
+      return VoicingTopNoteMatch.exact;
+    }
+    if (minimumDistance == 1) {
+      return VoicingTopNoteMatch.nearby;
+    }
+    return VoicingTopNoteMatch.unavailable;
   }
 
   bool get hasLockedContinuity => source.hasLockedContinuity;

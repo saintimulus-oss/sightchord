@@ -407,7 +407,7 @@ void main() {
         selectedSignature: colorfulVoicing.signature,
       );
 
-      expect(find.text('Target top note: E'), findsOneWidget);
+      expect(find.text('Top line target: E'), findsOneWidget);
       expect(
         find.text('Tritone-sub edge with bright guide tones'),
         findsOneWidget,
@@ -423,6 +423,93 @@ void main() {
         find.byKey(const ValueKey('voicing-locked-badge-colorful')),
         findsOneWidget,
       );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'top-line fallback subtitle appears when exact target is unavailable',
+    (WidgetTester tester) async {
+      final chord = buildTestChord(
+        root: 'C',
+        quality: ChordQuality.major7,
+        repeatKey: 'cmaj7FallbackTop',
+        romanNumeralId: RomanNumeralId.iMaj7,
+        keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        harmonicFunction: HarmonicFunction.tonic,
+      );
+      final interpretation = ChordVoicingInterpretation(
+        root: 'C',
+        rootSemitone: 0,
+        preferFlatSpelling: false,
+        essentialTones: const [
+          VoicingTone(label: '3', semitone: 4),
+          VoicingTone(label: '7', semitone: 11),
+        ],
+        optionalTones: const [VoicingTone(label: '9', semitone: 2)],
+        avoidTones: const [],
+        styleTags: const {'major'},
+        isMajorFamily: true,
+      );
+      final naturalVoicing = buildTestVoicing(
+        family: VoicingFamily.shell,
+        midiNotes: const [36, 47, 52],
+        noteNames: const ['C', 'B', 'E'],
+        toneLabels: const ['1', '7', '3'],
+        containsRoot: true,
+        containsThird: true,
+        containsSeventh: true,
+      );
+      final colorfulVoicing = buildTestVoicing(
+        family: VoicingFamily.rootlessA,
+        midiNotes: const [40, 47, 50],
+        noteNames: const ['E', 'B', 'D'],
+        toneLabels: const ['3', '7', '9'],
+        tensions: const {'9'},
+        containsThird: true,
+        containsSeventh: true,
+      );
+      final easyVoicing = buildTestVoicing(
+        family: VoicingFamily.spread,
+        midiNotes: const [43, 47, 52],
+        noteNames: const ['G', 'B', 'E'],
+        toneLabels: const ['5', '7', '3'],
+        containsThird: true,
+        containsSeventh: true,
+      );
+      final recommendations = VoicingRecommendationSet(
+        currentChord: chord,
+        interpretation: interpretation,
+        rankedCandidates: const [],
+        effectiveTopNotePitchClass: 1,
+        topNoteSource: VoicingTopNoteSource.explicitPreference,
+        topNoteMatch: VoicingTopNoteMatch.unavailable,
+        suggestions: [
+          buildTestSuggestion(
+            kind: VoicingSuggestionKind.natural,
+            voicing: naturalVoicing,
+            reasonTags: const [VoicingReasonTag.essentialCore],
+          ),
+          buildTestSuggestion(
+            kind: VoicingSuggestionKind.colorful,
+            voicing: colorfulVoicing,
+            reasonTags: const [
+              VoicingReasonTag.upperStructureColor,
+              VoicingReasonTag.topLineTarget,
+            ],
+          ),
+          buildTestSuggestion(
+            kind: VoicingSuggestionKind.easy,
+            voicing: easyVoicing,
+            reasonTags: const [VoicingReasonTag.compactReach],
+          ),
+        ],
+      );
+
+      await pumpVoicingSection(tester, recommendations: recommendations);
+
+      expect(find.text('No exact top line for Db'), findsOneWidget);
+      expect(find.text('Top E'), findsWidgets);
       expect(tester.takeException(), isNull);
     },
   );
