@@ -114,7 +114,7 @@ class _Scenario {
   final ModulationIntensity modulationIntensity;
 
   String get label =>
-      '${jazzPreset.name}/${sourceProfile.name}/${keysLabel}/${modulationIntensity.name}';
+      '${jazzPreset.name}/${sourceProfile.name}/$keysLabel/${modulationIntensity.name}';
 }
 
 class _RunResult {

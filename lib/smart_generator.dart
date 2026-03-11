@@ -549,10 +549,6 @@ class SmartGeneratorHelper {
     return selectedDebt;
   }
 
-  static bool _hasReturnHomeDebt(SmartStepRequest request) {
-    return _returnHomeDebtForRequest(request) != null;
-  }
-
   static bool _isBridgeReturnWindowForDebt(
     SmartPhraseContext phraseContext, {
     ResolutionDebt? returnHomeDebt,
@@ -568,10 +564,6 @@ class SmartGeneratorHelper {
       return false;
     }
     return returnHomeDebt.deadline <= 2 || returnHomeDebt.severity >= 4;
-  }
-
-  static bool _isBridgeReturnWindow(SmartPhraseContext phraseContext) {
-    return _isBridgeReturnWindowForDebt(phraseContext);
   }
 
   static KeyCenter? _returnHomeTargetCenterForRequest(
