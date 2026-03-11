@@ -697,7 +697,7 @@ class SmartGeneratorHelper {
   static int _surpriseBudgetForPreset(JazzPreset preset) {
     return switch (preset) {
       JazzPreset.standardsCore => 3,
-      JazzPreset.modulationStudy => 5,
+      JazzPreset.modulationStudy => 4,
       JazzPreset.advanced => 6,
     };
   }
@@ -1189,7 +1189,8 @@ class SmartGeneratorHelper {
         }
         break;
       case SmartProgressionFamily.relativeMinorReframe:
-        if ((phraseContext.phraseRole == PhraseRole.continuation ||
+        if (request.currentKeyCenter.mode == KeyMode.major &&
+            (phraseContext.phraseRole == PhraseRole.continuation ||
                 _isRareShowcaseContext(phraseContext)) &&
             random.nextDouble() <
                 (_isRareShowcaseContext(phraseContext) ? 0.72 : 0.58)) {
@@ -1217,7 +1218,9 @@ class SmartGeneratorHelper {
         }
         break;
       case SmartProgressionFamily.dominantHeadedScopeChain:
-        if (tailLikeContext || tightDominantBudget || returnHomeDebt != null) {
+        if ((tailLikeContext || tightDominantBudget || returnHomeDebt != null) &&
+            request.currentTrace?.activeLocalScope?.headType !=
+                ScopeHeadType.dominantHead) {
           skipCount = severeDominantOverflow || bridgeReturnWindow ? 2 : 1;
           carryInitialScope = true;
         }
@@ -2149,6 +2152,8 @@ class SmartGeneratorHelper {
       final v7SurfaceHistogram = _v7SurfaceHistogram(traces);
       final returnHomeMissedOpportunityReasons =
           _returnHomeMissedOpportunityReasons(traces);
+      final returnHomeMissedOpportunityFamilies =
+          _returnHomeMissedOpportunityFamilies(traces);
       final minorCenterOccupancy = _minorCenterOccupancy(traces, steps);
       final directAppliedToNewTonicViolations =
           _directAppliedToNewTonicViolations(traces);
@@ -2218,6 +2223,8 @@ class SmartGeneratorHelper {
         returnHomeSelectionCount: returnHomeSelectionCount,
         v7SurfaceHistogram: v7SurfaceHistogram,
         returnHomeMissedOpportunityReasons: returnHomeMissedOpportunityReasons,
+        returnHomeMissedOpportunityFamilies:
+            returnHomeMissedOpportunityFamilies,
         minorCenterOccupancy: minorCenterOccupancy,
         directAppliedToNewTonicViolations: directAppliedToNewTonicViolations,
         rareColorUsage: rareColorUsage,
@@ -3043,6 +3050,23 @@ class SmartGeneratorHelper {
         continue;
       }
       histogram.update(reason, (value) => value + 1, ifAbsent: () => 1);
+    }
+    return histogram;
+  }
+
+  static Map<String, int> _returnHomeMissedOpportunityFamilies(
+    List<SmartDecisionTrace> traces,
+  ) {
+    final histogram = <String, int>{};
+    for (var index = 1; index < traces.length; index += 1) {
+      final previous = traces[index - 1];
+      final current = traces[index];
+      if (!_isReturnHomeOpportunity(previous: previous, current: current) ||
+          current.activePatternTag == 'bridge_return_home_cadence') {
+        continue;
+      }
+      final familyTag = current.activePatternTag ?? '(none)';
+      histogram.update(familyTag, (value) => value + 1, ifAbsent: () => 1);
     }
     return histogram;
   }
@@ -5940,7 +5964,7 @@ class SmartGeneratorHelper {
     required SmartStepRequest request,
     required _ModulationOpportunity opportunity,
   }) {
-    if (request.jazzPreset == JazzPreset.standardsCore ||
+    if (request.jazzPreset != JazzPreset.advanced ||
         !request.modalInterchangeEnabled ||
         request.currentKeyCenter.mode != KeyMode.major) {
       return null;

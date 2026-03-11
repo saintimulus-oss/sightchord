@@ -251,6 +251,7 @@ class _ScenarioReport {
     required this.returnHomeSelectionCount,
     required this.v7SurfaceHistogram,
     required this.returnHomeMissedOpportunityReasons,
+    required this.returnHomeMissedOpportunityFamilies,
     required this.directAppliedToNewTonicViolations,
     required this.targetFamilies,
   });
@@ -287,6 +288,7 @@ class _ScenarioReport {
   final int returnHomeSelectionCount;
   final Map<String, int> v7SurfaceHistogram;
   final Map<String, int> returnHomeMissedOpportunityReasons;
+  final Map<String, int> returnHomeMissedOpportunityFamilies;
   final int directAppliedToNewTonicViolations;
   final Map<String, _TargetFamilyAggregate> targetFamilies;
 
@@ -359,6 +361,8 @@ class _ScenarioReport {
       'returnHomeSelectionCount': returnHomeSelectionCount,
       'v7SurfaceHistogram': v7SurfaceHistogram,
       'returnHomeMissedOpportunityReasons': returnHomeMissedOpportunityReasons,
+      'returnHomeMissedOpportunityFamilies':
+          returnHomeMissedOpportunityFamilies,
       'directAppliedToNewTonicViolations': directAppliedToNewTonicViolations,
       'targetFamilies': {
         for (final entry in targetFamilies.entries)
@@ -472,6 +476,7 @@ _ScenarioReport _runScenario(
   final targetFamilies = <String, _TargetFamilyAggregate>{};
   final v7SurfaceHistogram = <String, int>{};
   final returnHomeMissedOpportunityReasons = <String, int>{};
+  final returnHomeMissedOpportunityFamilies = <String, int>{};
 
   var totalSteps = 0;
   var diatonicCount = 0;
@@ -521,6 +526,10 @@ _ScenarioReport _runScenario(
     _mergeHistogram(
       returnHomeMissedOpportunityReasons,
       summary.returnHomeMissedOpportunityReasons,
+    );
+    _mergeHistogram(
+      returnHomeMissedOpportunityFamilies,
+      summary.returnHomeMissedOpportunityFamilies,
     );
 
     _mergeHistogram(familyStartHistogram, summary.familyHistogram);
@@ -586,6 +595,9 @@ _ScenarioReport _runScenario(
     v7SurfaceHistogram: _sortedStringHistogram(v7SurfaceHistogram),
     returnHomeMissedOpportunityReasons: _sortedStringHistogram(
       returnHomeMissedOpportunityReasons,
+    ),
+    returnHomeMissedOpportunityFamilies: _sortedStringHistogram(
+      returnHomeMissedOpportunityFamilies,
     ),
     directAppliedToNewTonicViolations: directAppliedToNewTonicViolations,
     targetFamilies: targetFamilies,
@@ -891,6 +903,10 @@ void _printDetailedReport(_ScenarioReport report) {
   print(
     'Return-home missed opportunities: '
     '${jsonEncode(report.returnHomeMissedOpportunityReasons)}',
+  );
+  print(
+    'Return-home missed families: '
+    '${jsonEncode(report.returnHomeMissedOpportunityFamilies)}',
   );
   print(
     'Chromatic mediant payoff: payoff=${report.chromaticMediantPayoffCount} '

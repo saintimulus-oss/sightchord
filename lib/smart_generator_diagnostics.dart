@@ -518,6 +518,7 @@ class SmartSimulationSummary {
     required this.returnHomeSelectionCount,
     required this.v7SurfaceHistogram,
     required this.returnHomeMissedOpportunityReasons,
+    required this.returnHomeMissedOpportunityFamilies,
     required this.minorCenterOccupancy,
     required this.directAppliedToNewTonicViolations,
     required this.rareColorUsage,
@@ -563,6 +564,7 @@ class SmartSimulationSummary {
   final int returnHomeSelectionCount;
   final Map<String, int> v7SurfaceHistogram;
   final Map<String, int> returnHomeMissedOpportunityReasons;
+  final Map<String, int> returnHomeMissedOpportunityFamilies;
   final double minorCenterOccupancy;
   final int directAppliedToNewTonicViolations;
   final Map<String, int> rareColorUsage;
@@ -615,6 +617,8 @@ class SmartSimulationSummary {
       'returnHomeSelectionCount': returnHomeSelectionCount,
       'v7SurfaceHistogram': v7SurfaceHistogram,
       'returnHomeMissedOpportunityReasons': returnHomeMissedOpportunityReasons,
+      'returnHomeMissedOpportunityFamilies':
+          returnHomeMissedOpportunityFamilies,
       'minorCenterOccupancy': minorCenterOccupancy,
       'directAppliedToNewTonicViolations': directAppliedToNewTonicViolations,
       'rareColorUsage': rareColorUsage,
@@ -665,6 +669,10 @@ class SmartSimulationSummary {
     writeMetric(
       'returnHomeMissedOpportunityReasons',
       jsonEncode(returnHomeMissedOpportunityReasons),
+    );
+    writeMetric(
+      'returnHomeMissedOpportunityFamilies',
+      jsonEncode(returnHomeMissedOpportunityFamilies),
     );
     writeMetric(
       'minorCenterOccupancy',
