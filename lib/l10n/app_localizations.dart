@@ -1028,6 +1028,300 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Smooth hand move'**
   String get voicingReasonGentleMotion;
+
+  /// No description provided for @mainMenuIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a practice generator or open the analyzer for a separate progression reading workflow.'**
+  String get mainMenuIntro;
+
+  /// No description provided for @mainMenuGeneratorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chord Generator'**
+  String get mainMenuGeneratorTitle;
+
+  /// No description provided for @mainMenuGeneratorDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.'**
+  String get mainMenuGeneratorDescription;
+
+  /// No description provided for @mainMenuAnalyzerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chord Analyzer'**
+  String get mainMenuAnalyzerTitle;
+
+  /// No description provided for @mainMenuAnalyzerDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.'**
+  String get mainMenuAnalyzerDescription;
+
+  /// No description provided for @openGenerator.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Generator'**
+  String get openGenerator;
+
+  /// No description provided for @openAnalyzer.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Analyzer'**
+  String get openAnalyzer;
+
+  /// No description provided for @chordAnalyzerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chord Analyzer'**
+  String get chordAnalyzerTitle;
+
+  /// No description provided for @chordAnalyzerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a progression and get a conservative harmonic reading.'**
+  String get chordAnalyzerSubtitle;
+
+  /// No description provided for @chordAnalyzerInputLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Chord progression'**
+  String get chordAnalyzerInputLabel;
+
+  /// No description provided for @chordAnalyzerInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Dm7 G7 Cmaj7'**
+  String get chordAnalyzerInputHint;
+
+  /// No description provided for @chordAnalyzerInputHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Spaces, |, and commas are accepted. Slash chords and simple alterations are supported.'**
+  String get chordAnalyzerInputHelper;
+
+  /// No description provided for @chordAnalyzerAnalyze.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze'**
+  String get chordAnalyzerAnalyze;
+
+  /// No description provided for @chordAnalyzerAnalyzing.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing progression...'**
+  String get chordAnalyzerAnalyzing;
+
+  /// No description provided for @chordAnalyzerInitialTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with a progression'**
+  String get chordAnalyzerInitialTitle;
+
+  /// No description provided for @chordAnalyzerInitialBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a progression such as Dm7 G7 Cmaj7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, and a short summary.'**
+  String get chordAnalyzerInitialBody;
+
+  /// No description provided for @chordAnalyzerDetectedKeys.
+  ///
+  /// In en, this message translates to:
+  /// **'Detected Keys'**
+  String get chordAnalyzerDetectedKeys;
+
+  /// No description provided for @chordAnalyzerPrimaryReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Primary reading'**
+  String get chordAnalyzerPrimaryReading;
+
+  /// No description provided for @chordAnalyzerAlternativeReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Alternative reading'**
+  String get chordAnalyzerAlternativeReading;
+
+  /// No description provided for @chordAnalyzerChordAnalysis.
+  ///
+  /// In en, this message translates to:
+  /// **'Chord-by-chord analysis'**
+  String get chordAnalyzerChordAnalysis;
+
+  /// No description provided for @chordAnalyzerProgressionSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Progression summary'**
+  String get chordAnalyzerProgressionSummary;
+
+  /// No description provided for @chordAnalyzerWarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Warnings and ambiguities'**
+  String get chordAnalyzerWarnings;
+
+  /// No description provided for @chordAnalyzerNoInputError.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a chord progression to analyze.'**
+  String get chordAnalyzerNoInputError;
+
+  /// No description provided for @chordAnalyzerNoRecognizedChordsError.
+  ///
+  /// In en, this message translates to:
+  /// **'No recognizable chords were found in the progression.'**
+  String get chordAnalyzerNoRecognizedChordsError;
+
+  /// No description provided for @chordAnalyzerPartialParseWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Some symbols were skipped: {tokens}'**
+  String chordAnalyzerPartialParseWarning(Object tokens);
+
+  /// No description provided for @chordAnalyzerKeyAmbiguityWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'The key center is still somewhat ambiguous between {primary} and {alternative}.'**
+  String chordAnalyzerKeyAmbiguityWarning(Object primary, Object alternative);
+
+  /// No description provided for @chordAnalyzerUnresolvedWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Some chords remain ambiguous under this MVP reading.'**
+  String get chordAnalyzerUnresolvedWarning;
+
+  /// No description provided for @chordAnalyzerFunctionTonic.
+  ///
+  /// In en, this message translates to:
+  /// **'Tonic'**
+  String get chordAnalyzerFunctionTonic;
+
+  /// No description provided for @chordAnalyzerFunctionPredominant.
+  ///
+  /// In en, this message translates to:
+  /// **'Predominant'**
+  String get chordAnalyzerFunctionPredominant;
+
+  /// No description provided for @chordAnalyzerFunctionDominant.
+  ///
+  /// In en, this message translates to:
+  /// **'Dominant'**
+  String get chordAnalyzerFunctionDominant;
+
+  /// No description provided for @chordAnalyzerFunctionOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get chordAnalyzerFunctionOther;
+
+  /// No description provided for @chordAnalyzerRemarkSecondaryDominant.
+  ///
+  /// In en, this message translates to:
+  /// **'Possible secondary dominant targeting {target}.'**
+  String chordAnalyzerRemarkSecondaryDominant(Object target);
+
+  /// No description provided for @chordAnalyzerRemarkTritoneSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Possible tritone substitute targeting {target}.'**
+  String chordAnalyzerRemarkTritoneSub(Object target);
+
+  /// No description provided for @chordAnalyzerRemarkModalInterchange.
+  ///
+  /// In en, this message translates to:
+  /// **'Possible modal interchange from the parallel minor.'**
+  String get chordAnalyzerRemarkModalInterchange;
+
+  /// No description provided for @chordAnalyzerRemarkAmbiguous.
+  ///
+  /// In en, this message translates to:
+  /// **'This chord stays ambiguous in the current reading.'**
+  String get chordAnalyzerRemarkAmbiguous;
+
+  /// No description provided for @chordAnalyzerRemarkUnresolved.
+  ///
+  /// In en, this message translates to:
+  /// **'This chord falls outside the current MVP heuristics.'**
+  String get chordAnalyzerRemarkUnresolved;
+
+  /// No description provided for @chordAnalyzerTagIiVI.
+  ///
+  /// In en, this message translates to:
+  /// **'ii-V-I cadence'**
+  String get chordAnalyzerTagIiVI;
+
+  /// No description provided for @chordAnalyzerTagTurnaround.
+  ///
+  /// In en, this message translates to:
+  /// **'Turnaround'**
+  String get chordAnalyzerTagTurnaround;
+
+  /// No description provided for @chordAnalyzerTagDominantResolution.
+  ///
+  /// In en, this message translates to:
+  /// **'Dominant resolution'**
+  String get chordAnalyzerTagDominantResolution;
+
+  /// No description provided for @chordAnalyzerTagPlagalColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Plagal/modal color'**
+  String get chordAnalyzerTagPlagalColor;
+
+  /// No description provided for @chordAnalyzerSummaryCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'This progression most likely centers on {key}.'**
+  String chordAnalyzerSummaryCenter(Object key);
+
+  /// No description provided for @chordAnalyzerSummaryAlternative.
+  ///
+  /// In en, this message translates to:
+  /// **'An alternative reading is {key}.'**
+  String chordAnalyzerSummaryAlternative(Object key);
+
+  /// No description provided for @chordAnalyzerSummaryTag.
+  ///
+  /// In en, this message translates to:
+  /// **'It suggests a {tag}.'**
+  String chordAnalyzerSummaryTag(Object tag);
+
+  /// No description provided for @chordAnalyzerSummaryFlow.
+  ///
+  /// In en, this message translates to:
+  /// **'{from} and {through} behave like {fromFunction} and {throughFunction} chords leading into {target}.'**
+  String chordAnalyzerSummaryFlow(
+    Object from,
+    Object through,
+    Object fromFunction,
+    Object throughFunction,
+    Object target,
+  );
+
+  /// No description provided for @chordAnalyzerSummarySecondaryDominant.
+  ///
+  /// In en, this message translates to:
+  /// **'{chord} can be heard as a possible secondary dominant pointing toward {target}.'**
+  String chordAnalyzerSummarySecondaryDominant(Object chord, Object target);
+
+  /// No description provided for @chordAnalyzerSummaryTritoneSub.
+  ///
+  /// In en, this message translates to:
+  /// **'{chord} can be heard as a possible tritone substitute pointing toward {target}.'**
+  String chordAnalyzerSummaryTritoneSub(Object chord, Object target);
+
+  /// No description provided for @chordAnalyzerSummaryModalInterchange.
+  ///
+  /// In en, this message translates to:
+  /// **'{chord} adds a possible modal interchange color.'**
+  String chordAnalyzerSummaryModalInterchange(Object chord);
+
+  /// No description provided for @chordAnalyzerSummaryAmbiguous.
+  ///
+  /// In en, this message translates to:
+  /// **'Some details remain ambiguous, so this reading stays intentionally conservative.'**
+  String get chordAnalyzerSummaryAmbiguous;
 }
 
 class _AppLocalizationsDelegate

@@ -153,6 +153,7 @@ void main() {
   }
 
   Future<void> openMainMenuSettings(WidgetTester tester) async {
+    await tester.ensureVisible(find.byKey(const ValueKey('main-open-settings-button')));
     await tester.tap(find.byKey(const ValueKey('main-open-settings-button')));
     await tester.pumpAndSettle();
   }

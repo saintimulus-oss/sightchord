@@ -9,6 +9,7 @@ Live demo: https://saintimulus-oss.github.io/sightchord/
 - Free mode across all 12 roots
 - Key mode with diatonic Roman numerals
 - Smart Generator mode with weighted harmonic motion
+- Chord Analyzer with key-center, Roman numeral, harmonic-function, and summary output
 - Secondary dominants, substitute dominants, and modal interchange
 - Chord symbol styles: `Compact`, `MajText`, `DeltaJazz`
 - Tensions, `V7sus4`, and slash-bass inversions
@@ -59,5 +60,6 @@ To publish:
 ## Notes
 
 - Chord symbols, note names, Roman numeral tokens, tensions, and key names are not localized.
+- Chord Generator and Chord Analyzer are exposed as separate entry points from the main menu.
 - Settings are persisted with `shared_preferences`.
 - The metronome uses `assets/tick.mp3` through `audioplayers`.

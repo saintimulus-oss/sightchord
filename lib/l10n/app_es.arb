@@ -208,5 +208,115 @@
   "voicingReasonUpperStructureColor": "Upper-structure color",
   "voicingReasonTritoneSubFlavor": "Tritone-sub flavor",
   "voicingReasonLockedContinuity": "Locked continuity",
-  "voicingReasonGentleMotion": "Smooth hand move"
+  "voicingReasonGentleMotion": "Smooth hand move",
+  "mainMenuIntro": "Choose a practice generator or open the analyzer for a separate progression reading workflow.",
+  "mainMenuGeneratorTitle": "Chord Generator",
+  "mainMenuGeneratorDescription": "Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.",
+  "mainMenuAnalyzerTitle": "Chord Analyzer",
+  "mainMenuAnalyzerDescription": "Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.",
+  "openGenerator": "Open Generator",
+  "openAnalyzer": "Open Analyzer",
+  "chordAnalyzerTitle": "Chord Analyzer",
+  "chordAnalyzerSubtitle": "Paste a progression and get a conservative harmonic reading.",
+  "chordAnalyzerInputLabel": "Chord progression",
+  "chordAnalyzerInputHint": "Dm7 G7 Cmaj7",
+  "chordAnalyzerInputHelper": "Spaces, |, and commas are accepted. Slash chords and simple alterations are supported.",
+  "chordAnalyzerAnalyze": "Analyze",
+  "chordAnalyzerAnalyzing": "Analyzing progression...",
+  "chordAnalyzerInitialTitle": "Start with a progression",
+  "chordAnalyzerInitialBody": "Enter a progression such as Dm7 G7 Cmaj7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, and a short summary.",
+  "chordAnalyzerDetectedKeys": "Detected Keys",
+  "chordAnalyzerPrimaryReading": "Primary reading",
+  "chordAnalyzerAlternativeReading": "Alternative reading",
+  "chordAnalyzerChordAnalysis": "Chord-by-chord analysis",
+  "chordAnalyzerProgressionSummary": "Progression summary",
+  "chordAnalyzerWarnings": "Warnings and ambiguities",
+  "chordAnalyzerNoInputError": "Enter a chord progression to analyze.",
+  "chordAnalyzerNoRecognizedChordsError": "No recognizable chords were found in the progression.",
+  "chordAnalyzerPartialParseWarning": "Some symbols were skipped: {tokens}",
+  "@chordAnalyzerPartialParseWarning": {
+    "placeholders": {
+      "tokens": {}
+    }
+  },
+  "chordAnalyzerKeyAmbiguityWarning": "The key center is still somewhat ambiguous between {primary} and {alternative}.",
+  "@chordAnalyzerKeyAmbiguityWarning": {
+    "placeholders": {
+      "primary": {},
+      "alternative": {}
+    }
+  },
+  "chordAnalyzerUnresolvedWarning": "Some chords remain ambiguous under this MVP reading.",
+  "chordAnalyzerFunctionTonic": "Tonic",
+  "chordAnalyzerFunctionPredominant": "Predominant",
+  "chordAnalyzerFunctionDominant": "Dominant",
+  "chordAnalyzerFunctionOther": "Other",
+  "chordAnalyzerRemarkSecondaryDominant": "Possible secondary dominant targeting {target}.",
+  "@chordAnalyzerRemarkSecondaryDominant": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "chordAnalyzerRemarkTritoneSub": "Possible tritone substitute targeting {target}.",
+  "@chordAnalyzerRemarkTritoneSub": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "chordAnalyzerRemarkModalInterchange": "Possible modal interchange from the parallel minor.",
+  "chordAnalyzerRemarkAmbiguous": "This chord stays ambiguous in the current reading.",
+  "chordAnalyzerRemarkUnresolved": "This chord falls outside the current MVP heuristics.",
+  "chordAnalyzerTagIiVI": "ii-V-I cadence",
+  "chordAnalyzerTagTurnaround": "Turnaround",
+  "chordAnalyzerTagDominantResolution": "Dominant resolution",
+  "chordAnalyzerTagPlagalColor": "Plagal/modal color",
+  "chordAnalyzerSummaryCenter": "This progression most likely centers on {key}.",
+  "@chordAnalyzerSummaryCenter": {
+    "placeholders": {
+      "key": {}
+    }
+  },
+  "chordAnalyzerSummaryAlternative": "An alternative reading is {key}.",
+  "@chordAnalyzerSummaryAlternative": {
+    "placeholders": {
+      "key": {}
+    }
+  },
+  "chordAnalyzerSummaryTag": "It suggests a {tag}.",
+  "@chordAnalyzerSummaryTag": {
+    "placeholders": {
+      "tag": {}
+    }
+  },
+  "chordAnalyzerSummaryFlow": "{from} and {through} behave like {fromFunction} and {throughFunction} chords leading into {target}.",
+  "@chordAnalyzerSummaryFlow": {
+    "placeholders": {
+      "from": {},
+      "through": {},
+      "fromFunction": {},
+      "throughFunction": {},
+      "target": {}
+    }
+  },
+  "chordAnalyzerSummarySecondaryDominant": "{chord} can be heard as a possible secondary dominant pointing toward {target}.",
+  "@chordAnalyzerSummarySecondaryDominant": {
+    "placeholders": {
+      "chord": {},
+      "target": {}
+    }
+  },
+  "chordAnalyzerSummaryTritoneSub": "{chord} can be heard as a possible tritone substitute pointing toward {target}.",
+  "@chordAnalyzerSummaryTritoneSub": {
+    "placeholders": {
+      "chord": {},
+      "target": {}
+    }
+  },
+  "chordAnalyzerSummaryModalInterchange": "{chord} adds a possible modal interchange color.",
+  "@chordAnalyzerSummaryModalInterchange": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "chordAnalyzerSummaryAmbiguous": "Some details remain ambiguous, so this reading stays intentionally conservative."
 }

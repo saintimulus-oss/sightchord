@@ -9,6 +9,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'audio/beat_clock.dart';
 import 'audio/scheduled_metronome.dart';
+import 'chord_analyzer_page.dart';
 import 'l10n/app_localizations.dart';
 import 'music/chord_formatting.dart';
 import 'music/chord_theory.dart';
@@ -101,6 +102,14 @@ class MainMenuPage extends StatelessWidget {
     );
   }
 
+  void _openChordAnalyzer(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => const ChordAnalyzerPage(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -155,12 +164,34 @@ class MainMenuPage extends StatelessWidget {
                             color: colorScheme.onSurface,
                           ),
                         ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.mainMenuIntro,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                         const SizedBox(height: 28),
-                        FilledButton.icon(
-                          key: const ValueKey('main-open-generator-button'),
+                        _MainEntryCard(
+                          icon: Icons.auto_awesome,
+                          title: l10n.mainMenuGeneratorTitle,
+                          description: l10n.mainMenuGeneratorDescription,
+                          buttonLabel: l10n.openGenerator,
+                          buttonKey: const ValueKey(
+                            'main-open-generator-button',
+                          ),
                           onPressed: () => _openCodeGenerator(context),
-                          icon: const Icon(Icons.auto_awesome),
-                          label: const Text('Chord Generator'),
+                        ),
+                        const SizedBox(height: 12),
+                        _MainEntryCard(
+                          icon: Icons.insights_rounded,
+                          title: l10n.mainMenuAnalyzerTitle,
+                          description: l10n.mainMenuAnalyzerDescription,
+                          buttonLabel: l10n.openAnalyzer,
+                          buttonKey: const ValueKey(
+                            'main-open-analyzer-button',
+                          ),
+                          onPressed: () => _openChordAnalyzer(context),
                         ),
                         const SizedBox(height: 12),
                         OutlinedButton.icon(
@@ -176,6 +207,68 @@ class MainMenuPage extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MainEntryCard extends StatelessWidget {
+  const _MainEntryCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.buttonLabel,
+    required this.buttonKey,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String title;
+  final String description;
+  final String buttonLabel;
+  final ValueKey<String> buttonKey;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.44),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: colorScheme.primary),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              description,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 14),
+            FilledButton.icon(
+              key: buttonKey,
+              onPressed: onPressed,
+              icon: Icon(icon),
+              label: Text(buttonLabel),
+            ),
+          ],
         ),
       ),
     );
@@ -931,6 +1024,7 @@ class _MyHomePageState extends State<MyHomePage> {
             finalRoot: chord.symbolData.root,
             finalRenderQuality: chord.symbolData.renderQuality,
             finalTensions: chord.symbolData.tensions,
+            finalRenderedNonDiatonic: chord.isRenderedNonDiatonic,
           )
         : smartDebug;
     return chord.copyWith(
