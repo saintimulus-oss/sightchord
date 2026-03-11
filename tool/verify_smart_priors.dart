@@ -159,6 +159,7 @@ class _AggregateAudit {
     required this.minorCenterOccupancy,
     required this.qaRollups,
     required this.rareColorEvents,
+    required this.rareColorDebtOpenCount,
     required this.rareColorPayoffCount,
     required this.returnHomeDebtOpenCount,
     required this.returnHomeDebtPayoffCount,
@@ -176,6 +177,7 @@ class _AggregateAudit {
   final double minorCenterOccupancy;
   final Map<String, _QaRollup> qaRollups;
   final int rareColorEvents;
+  final int rareColorDebtOpenCount;
   final int rareColorPayoffCount;
   final int returnHomeDebtOpenCount;
   final int returnHomeDebtPayoffCount;
@@ -320,6 +322,7 @@ _AggregateAudit _runAggregateAudit(
       var realModulationCount = 0;
       var minorCenterOccupancySum = 0.0;
       var rareColorEvents = 0;
+      var rareColorDebtOpenCount = 0;
       var rareColorPayoffCount = 0;
       var returnHomeDebtOpenCount = 0;
       var returnHomeDebtPayoffCount = 0;
@@ -342,6 +345,7 @@ _AggregateAudit _runAggregateAudit(
           0,
           (sum, value) => sum + value,
         );
+        rareColorDebtOpenCount += run.summary.rareColorDebtOpenCount;
         rareColorPayoffCount += run.summary.rareColorPayoffCount;
         returnHomeDebtOpenCount += run.summary.returnHomeDebtOpenCount;
         returnHomeDebtPayoffCount += run.summary.returnHomeDebtPayoffCount;
@@ -366,6 +370,7 @@ _AggregateAudit _runAggregateAudit(
         minorCenterOccupancy: minorCenterOccupancySum / max(1, runs.length),
         qaRollups: qaRollups,
         rareColorEvents: rareColorEvents,
+        rareColorDebtOpenCount: rareColorDebtOpenCount,
         rareColorPayoffCount: rareColorPayoffCount,
         returnHomeDebtOpenCount: returnHomeDebtOpenCount,
         returnHomeDebtPayoffCount: returnHomeDebtPayoffCount,
@@ -750,9 +755,9 @@ String _analysisForFailingCheck({
   final bridgeReturnDelta =
       prior.familyShare('bridge_return_home_cadence') -
       legacy.familyShare('bridge_return_home_cadence');
-  final rarePayoffRatio = prior.rareColorEvents == 0
+  final rarePayoffRatio = prior.rareColorDebtOpenCount == 0
       ? 1.0
-      : prior.rareColorPayoffCount / prior.rareColorEvents;
+      : prior.rareColorPayoffCount / prior.rareColorDebtOpenCount;
 
   switch (checkId) {
     case 'modulation_density':
@@ -770,14 +775,12 @@ String _analysisForFailingCheck({
           'little extra lift from source-profile behavior already present in the '
           'generator.';
     case 'rare_color_payoff':
-      return 'This fail is mostly an accounting mismatch inside the existing QA '
-          'path: _rareColorUsage() counts every rare tag occurrence, while '
-          '_rareColorPayoffCount() only counts debt-clear transitions. '
-          'Common-tone diminished events can emit both `rareColor` and '
-          '`commonToneDim`, so the denominator grows faster than payoff count. '
-          'The measured payoff ratio here is '
+      return 'This QA now keys rare-color followthrough to actual rare-color '
+          'debt openings instead of raw surface-tag totals. The measured payoff '
+          'ratio here is '
           '${rarePayoffRatio.toStringAsFixed(3)}, which is better explained by '
-          'existing debt/payoff accounting than by the externalized priors.';
+          'resolution followthrough after rare-color setup than by surface-tag '
+          'inflation.';
     case 'bridge_return_followthrough':
       final bridgeReturnNote = bridgeReturnDelta.abs() < 0.002
           ? 'same-seed legacy vs prior-enabled bridge-return share barely moves.'

@@ -400,6 +400,20 @@ void main() {
     );
   });
 
+  test('decision trace json includes finalRenderedNonDiatonic', () {
+    final trace = SmartDecisionTrace(
+      stepIndex: 4,
+      currentKeyCenter: 'C major',
+      currentRomanNumeralId: RomanNumeralId.vDom7,
+      currentHarmonicFunction: HarmonicFunction.dominant,
+      phraseContext: _testPhraseContext,
+      finalRenderedNonDiatonic: true,
+    );
+
+    final json = trace.toJson();
+    expect(json['finalRenderedNonDiatonic'], isTrue);
+    expect(trace.describe(), contains('finalRenderedNonDiatonic=true'));
+  });
   test('one-key mode does not produce real modulation', () {
     final summary = SmartGeneratorHelper.simulateSteps(
       random: Random(1),
@@ -546,6 +560,52 @@ void main() {
       expect(plan.debug.modulationKind, isNot(ModulationKind.real));
     },
   );
+  test('exhausted surprise budget blocks fresh modulation attempts', () {
+    for (var step = 1; step <= 2; step += 1) {
+      SmartDiagnosticsStore.record(
+        SmartDecisionTrace(
+          stepIndex: step,
+          currentKeyCenter: 'C major',
+          currentRomanNumeralId: RomanNumeralId.iMaj69,
+          currentHarmonicFunction: HarmonicFunction.tonic,
+          phraseContext: const SmartPhraseContext(
+            phraseRole: PhraseRole.preCadence,
+            sectionRole: SectionRole.bridgeLike,
+            harmonicDensity: HarmonicDensity.twoChordsPerBar,
+            barInPhrase: 6,
+            barsToBoundary: 2,
+            phraseLength: 8,
+          ),
+          modulationKind: ModulationKind.real,
+          finalKeyRelation: KeyRelation.distant,
+        ),
+      );
+    }
+
+    final plan = SmartGeneratorHelper.planNextStep(
+      random: _FixedRandom(0),
+      request: buildRequest(
+        stepIndex: 12,
+        activeKeys: const ['C', 'G', 'A'],
+        currentKeyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        currentRomanNumeralId: RomanNumeralId.iMaj69,
+        currentHarmonicFunction: HarmonicFunction.tonic,
+        jazzPreset: JazzPreset.modulationStudy,
+        modulationIntensity: ModulationIntensity.high,
+        phraseContext: const SmartPhraseContext(
+          phraseRole: PhraseRole.preCadence,
+          sectionRole: SectionRole.bridgeLike,
+          harmonicDensity: HarmonicDensity.twoChordsPerBar,
+          barInPhrase: 6,
+          barsToBoundary: 2,
+          phraseLength: 8,
+        ),
+      ),
+    );
+
+    expect(plan.debug.blockedReason, SmartBlockedReason.surpriseBudgetExhausted);
+    expect(plan.debug.modulationKind, isNot(ModulationKind.real));
+  });
   test('modal interchange does not fully choke modulation paths', () {
     final summary = SmartGeneratorHelper.simulateSteps(
       random: Random(3),
@@ -3386,3 +3446,4 @@ void main() {
     },
   );
 }
+

@@ -29,6 +29,7 @@ class SmartDecisionTrace implements SmartDebugInfo {
     this.finalRoot,
     this.finalRenderQuality,
     this.finalTensions = const [],
+    this.finalRenderedNonDiatonic = false,
     this.decision,
     this.transitionDebugSummary,
     this.activePatternTag,
@@ -77,6 +78,7 @@ class SmartDecisionTrace implements SmartDebugInfo {
   final String? finalRoot;
   final ChordQuality? finalRenderQuality;
   final List<String> finalTensions;
+  final bool finalRenderedNonDiatonic;
   final String? decision;
   final String? transitionDebugSummary;
   final String? activePatternTag;
@@ -132,6 +134,7 @@ class SmartDecisionTrace implements SmartDebugInfo {
       finalRoot: finalRoot,
       finalRenderQuality: finalRenderQuality,
       finalTensions: finalTensions,
+      finalRenderedNonDiatonic: finalRenderedNonDiatonic,
       decision: nextDecision,
       transitionDebugSummary: transitionDebugSummary,
       activePatternTag: activePatternTag,
@@ -187,6 +190,7 @@ class SmartDecisionTrace implements SmartDebugInfo {
       finalRoot: finalRoot,
       finalRenderQuality: finalRenderQuality,
       finalTensions: finalTensions,
+      finalRenderedNonDiatonic: finalRenderedNonDiatonic,
       decision: decision,
       transitionDebugSummary: transitionDebugSummary,
       activePatternTag: activePatternTag,
@@ -218,6 +222,7 @@ class SmartDecisionTrace implements SmartDebugInfo {
     required String finalRoot,
     required ChordQuality finalRenderQuality,
     required List<String> finalTensions,
+    required bool finalRenderedNonDiatonic,
   }) {
     return SmartDecisionTrace(
       stepIndex: stepIndex,
@@ -247,6 +252,7 @@ class SmartDecisionTrace implements SmartDebugInfo {
       finalRoot: finalRoot,
       finalRenderQuality: finalRenderQuality,
       finalTensions: finalTensions,
+      finalRenderedNonDiatonic: finalRenderedNonDiatonic,
       decision: decision,
       transitionDebugSummary: transitionDebugSummary,
       activePatternTag: activePatternTag,
@@ -315,6 +321,7 @@ class SmartDecisionTrace implements SmartDebugInfo {
       'finalRoot': finalRoot,
       'finalRenderQuality': finalRenderQuality?.name,
       'finalTensions': finalTensions,
+      'finalRenderedNonDiatonic': finalRenderedNonDiatonic,
       'decision': decision,
       'transition': transitionDebugSummary,
       'postModulationConfirmationsRemaining':
@@ -365,6 +372,7 @@ class SmartDecisionTrace implements SmartDebugInfo {
         'finalKeyRelation=${finalKeyRelation?.name ?? '-'} '
         'finalRoman=${_token(finalRomanNumeralId)} '
         'finalChord=${finalChord ?? '-'} '
+        'finalRenderedNonDiatonic=$finalRenderedNonDiatonic '
         'decision=${decision ?? '-'} '
         'transition=${transitionDebugSummary ?? '-'}';
   }
@@ -508,9 +516,12 @@ class SmartSimulationSummary {
     required this.returnHomeDebtPayoffCount,
     required this.returnHomeOpportunityCount,
     required this.returnHomeSelectionCount,
+    required this.v7SurfaceHistogram,
+    required this.returnHomeMissedOpportunityReasons,
     required this.minorCenterOccupancy,
     required this.directAppliedToNewTonicViolations,
     required this.rareColorUsage,
+    required this.rareColorDebtOpenCount,
     required this.rareColorPayoffCount,
     required this.qaChecks,
     required this.traces,
@@ -550,9 +561,12 @@ class SmartSimulationSummary {
   final int returnHomeDebtPayoffCount;
   final int returnHomeOpportunityCount;
   final int returnHomeSelectionCount;
+  final Map<String, int> v7SurfaceHistogram;
+  final Map<String, int> returnHomeMissedOpportunityReasons;
   final double minorCenterOccupancy;
   final int directAppliedToNewTonicViolations;
   final Map<String, int> rareColorUsage;
+  final int rareColorDebtOpenCount;
   final int rareColorPayoffCount;
   final List<SmartQaCheck> qaChecks;
   final List<SmartDecisionTrace> traces;
@@ -599,9 +613,12 @@ class SmartSimulationSummary {
       'returnHomeDebtPayoffCount': returnHomeDebtPayoffCount,
       'returnHomeOpportunityCount': returnHomeOpportunityCount,
       'returnHomeSelectionCount': returnHomeSelectionCount,
+      'v7SurfaceHistogram': v7SurfaceHistogram,
+      'returnHomeMissedOpportunityReasons': returnHomeMissedOpportunityReasons,
       'minorCenterOccupancy': minorCenterOccupancy,
       'directAppliedToNewTonicViolations': directAppliedToNewTonicViolations,
       'rareColorUsage': rareColorUsage,
+      'rareColorDebtOpenCount': rareColorDebtOpenCount,
       'rareColorPayoffCount': rareColorPayoffCount,
       'qaChecks': [for (final check in qaChecks) check.toJson()],
     };
@@ -644,6 +661,11 @@ class SmartSimulationSummary {
     writeMetric('returnHomeDebtPayoffCount', returnHomeDebtPayoffCount);
     writeMetric('returnHomeOpportunityCount', returnHomeOpportunityCount);
     writeMetric('returnHomeSelectionCount', returnHomeSelectionCount);
+    writeMetric('v7SurfaceHistogram', jsonEncode(v7SurfaceHistogram));
+    writeMetric(
+      'returnHomeMissedOpportunityReasons',
+      jsonEncode(returnHomeMissedOpportunityReasons),
+    );
     writeMetric(
       'minorCenterOccupancy',
       minorCenterOccupancy.toStringAsFixed(3),

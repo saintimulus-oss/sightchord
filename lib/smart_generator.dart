@@ -314,6 +314,7 @@ class SmartGeneratorHelper {
           finalRoot: chord.symbolData.root,
           finalRenderQuality: chord.symbolData.renderQuality,
           finalTensions: chord.symbolData.tensions,
+          finalRenderedNonDiatonic: chord.isRenderedNonDiatonic,
         );
     return chord.copyWith(smartDebug: decoratedDebug);
   }
@@ -531,9 +532,46 @@ class SmartGeneratorHelper {
         phraseContext.phraseRole == PhraseRole.release;
   }
 
+  static ResolutionDebt? _returnHomeDebtForRequest(SmartStepRequest request) {
+    final debts = request.currentTrace?.outstandingDebts ?? const [];
+    ResolutionDebt? selectedDebt;
+    for (final debt in debts) {
+      if (debt.debtType != ResolutionDebtType.returnHomeCadence) {
+        continue;
+      }
+      if (selectedDebt == null ||
+          debt.deadline < selectedDebt.deadline ||
+          (debt.deadline == selectedDebt.deadline &&
+              debt.severity > selectedDebt.severity)) {
+        selectedDebt = debt;
+      }
+    }
+    return selectedDebt;
+  }
+
+  static bool _hasReturnHomeDebt(SmartStepRequest request) {
+    return _returnHomeDebtForRequest(request) != null;
+  }
+
+  static bool _isBridgeReturnWindowForDebt(
+    SmartPhraseContext phraseContext, {
+    ResolutionDebt? returnHomeDebt,
+  }) {
+    if (!_isBridgeReturnZone(phraseContext)) {
+      return false;
+    }
+    if (_isNearCadentialBoundary(phraseContext)) {
+      return true;
+    }
+    if (phraseContext.phraseRole != PhraseRole.continuation ||
+        returnHomeDebt == null) {
+      return false;
+    }
+    return returnHomeDebt.deadline <= 2 || returnHomeDebt.severity >= 4;
+  }
+
   static bool _isBridgeReturnWindow(SmartPhraseContext phraseContext) {
-    return _isBridgeReturnZone(phraseContext) &&
-        _isNearCadentialBoundary(phraseContext);
+    return _isBridgeReturnWindowForDebt(phraseContext);
   }
 
   static KeyCenter? _returnHomeTargetCenterForRequest(
@@ -667,8 +705,8 @@ class SmartGeneratorHelper {
   static int _surpriseBudgetForPreset(JazzPreset preset) {
     return switch (preset) {
       JazzPreset.standardsCore => 3,
-      JazzPreset.modulationStudy => 4,
-      JazzPreset.advanced => 5,
+      JazzPreset.modulationStudy => 5,
+      JazzPreset.advanced => 6,
     };
   }
 
@@ -708,6 +746,8 @@ class SmartGeneratorHelper {
     bool modulation = false,
   }) {
     final recentTraces = _recentPlanningTraces(take: 8);
+    final phraseContext = _phraseContextForRequest(request);
+    final showcaseContext = _isRareShowcaseContext(phraseContext);
     final remaining =
         _surpriseBudgetForPreset(request.jazzPreset) -
         _usedSurpriseBudget(recentTraces);
@@ -715,14 +755,496 @@ class SmartGeneratorHelper {
       return 0;
     }
     if (rare && remaining == 1) {
-      return 0.25;
+      return showcaseContext ? 0.5 : 0.3;
     }
     if (modulation && remaining == 1) {
       return request.modulationIntensity == ModulationIntensity.high
-          ? 0.55
-          : 0.35;
+          ? (showcaseContext ? 0.8 : 0.6)
+          : (showcaseContext ? 0.55 : 0.4);
     }
     return 1;
+  }
+
+  static bool _isRareShowcaseContext(SmartPhraseContext phraseContext) {
+    return phraseContext.sectionRole == SectionRole.bridgeLike ||
+        phraseContext.sectionRole == SectionRole.turnaroundTail ||
+        phraseContext.sectionRole == SectionRole.tag ||
+        phraseContext.phraseRole == PhraseRole.preCadence ||
+        phraseContext.phraseRole == PhraseRole.cadence;
+  }
+
+  static bool _isTonicizationHeavyFamily(SmartProgressionFamily family) {
+    return switch (family) {
+      SmartProgressionFamily.relativeMinorReframe ||
+      SmartProgressionFamily.dominantHeadedScopeChain ||
+      SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI ||
+      SmartProgressionFamily.dominantChainBridgeStyle ||
+      SmartProgressionFamily.appliedDominantWithRelatedIi => true,
+      _ => false,
+    };
+  }
+
+  static bool _isDominantHeavyFamily(SmartProgressionFamily family) {
+    return switch (family) {
+      SmartProgressionFamily.coreIiVIMajor ||
+      SmartProgressionFamily.turnaroundIViIiV ||
+      SmartProgressionFamily.relativeMinorReframe ||
+      SmartProgressionFamily.dominantHeadedScopeChain ||
+      SmartProgressionFamily.minorIiVAltI ||
+      SmartProgressionFamily.dominantChainBridgeStyle ||
+      SmartProgressionFamily.appliedDominantWithRelatedIi ||
+      SmartProgressionFamily.cadenceBasedRealModulation => true,
+      _ => false,
+    };
+  }
+
+  static bool _isDominantHeavyPatternTag(String patternTag) {
+    return patternTag == 'core_ii_v_i_major' ||
+        patternTag == 'turnaround_i_vi_ii_v' ||
+        patternTag == 'relative_minor_reframe' ||
+        patternTag == 'dominant_headed_scope_chain' ||
+        patternTag == 'minor_ii_halfdim_v_alt_i' ||
+        patternTag == 'dominant_chain_bridge_style' ||
+        patternTag == 'applied_dominant_with_related_ii' ||
+        patternTag == 'cadence_based_real_modulation';
+  }
+
+  static bool _isCadentialFinalDominantPatternTag(String patternTag) {
+    return patternTag == 'core_ii_v_i_major' ||
+        patternTag == 'minor_ii_halfdim_v_alt_i' ||
+        patternTag == 'closing_plagal_authentic_hybrid' ||
+        patternTag == 'backdoor_recursive_prep' ||
+        patternTag == 'backdoor_ivm_bVII_I' ||
+        patternTag == 'classical_predominant_color' ||
+        patternTag == 'bridge_return_home_cadence' ||
+        patternTag == 'cadence_based_real_modulation' ||
+        patternTag == 'common_chord_modulation' ||
+        patternTag == 'mixture_pivot_modulation' ||
+        patternTag == 'chromatic_mediant_common_tone_modulation' ||
+        patternTag == 'coltrane_burst';
+  }
+
+  static bool _isCadentialFinalDominantTrace(SmartDecisionTrace trace) {
+    final patternTag = trace.activePatternTag;
+    return trace.finalRomanNumeralId == RomanNumeralId.vDom7 &&
+        patternTag != null &&
+        _isCadentialFinalDominantPatternTag(patternTag) &&
+        trace.queuedPatternLength <= 1;
+  }
+
+  static int _dominantIntentBudgetForPreset(JazzPreset preset) {
+    return switch (preset) {
+      JazzPreset.standardsCore => 4,
+      JazzPreset.modulationStudy => 5,
+      JazzPreset.advanced => 5,
+    };
+  }
+
+  static int _dominantIntentCostForTrace(SmartDecisionTrace trace) {
+    var cost = 0;
+    if (trace.finalRomanNumeralId == RomanNumeralId.vDom7) {
+      cost += _isCadentialFinalDominantTrace(trace) ? 1 : 2;
+    }
+    if (trace.appliedType != null) {
+      cost += 2;
+    }
+    if (trace.activePatternTag == 'dominant_chain_bridge_style' ||
+        trace.activePatternTag == 'dominant_headed_scope_chain' ||
+        trace.activePatternTag == 'applied_dominant_with_related_ii') {
+      cost += 1;
+    }
+    return cost;
+  }
+
+  static int _usedDominantIntentBudget(List<SmartDecisionTrace> recentTraces) {
+    return recentTraces.fold<int>(
+      0,
+      (sum, trace) => sum + _dominantIntentCostForTrace(trace),
+    );
+  }
+
+  static int _dominantIntentOverflow(SmartStepRequest request, {int take = 8}) {
+    final recentTraces = _recentPlanningTraces(take: take);
+    return _usedDominantIntentBudget(recentTraces) -
+        _dominantIntentBudgetForPreset(request.jazzPreset);
+  }
+
+  static bool _isRareReachabilityFamily(SmartProgressionFamily family) {
+    return switch (family) {
+      SmartProgressionFamily.backdoorRecursivePrep ||
+      SmartProgressionFamily.commonChordModulation ||
+      SmartProgressionFamily.chromaticMediantCommonToneModulation ||
+      SmartProgressionFamily.coltraneBurst => true,
+      _ => false,
+    };
+  }
+
+  static int _patternStepStreak(String? patternTag) {
+    if (patternTag == null) {
+      return 0;
+    }
+    var streak = 0;
+    for (final trace in _recentPlanningTraces(take: 8).reversed) {
+      if (trace.activePatternTag != patternTag) {
+        break;
+      }
+      streak += 1;
+    }
+    return streak;
+  }
+
+  static double _tonicizationPressureMultiplier({
+    required SmartProgressionFamily family,
+    required SmartStepRequest request,
+  }) {
+    if (!_isTonicizationHeavyFamily(family)) {
+      return 1;
+    }
+    final phraseContext = _phraseContextForRequest(request);
+    final recentTonicizations = _recentPlanningTraces(take: 8)
+        .where((trace) => trace.modulationKind == ModulationKind.tonicization)
+        .length;
+    var multiplier = 1.0;
+    if (recentTonicizations >= 2) {
+      multiplier *= 0.84;
+    }
+    if (request.currentRenderedNonDiatonic) {
+      multiplier *= 0.92;
+    }
+    if (request.activeKeys.length <= 1) {
+      multiplier *= _isRareShowcaseContext(phraseContext) ? 0.82 : 0.68;
+      if (family == SmartProgressionFamily.appliedDominantWithRelatedIi ||
+          family == SmartProgressionFamily.dominantChainBridgeStyle ||
+          family == SmartProgressionFamily.dominantHeadedScopeChain) {
+        multiplier *= 0.9;
+      }
+    }
+    return multiplier;
+  }
+
+  static KeyCenter? _returnHomeCandidateForRequest({
+    required SmartStepRequest request,
+    required _ModulationOpportunity opportunity,
+    ResolutionDebt? returnHomeDebt,
+  }) {
+    final inferredHomeCenter = _returnHomeTargetCenterForRequest(request);
+    if (inferredHomeCenter == null ||
+        inferredHomeCenter == request.currentKeyCenter) {
+      return null;
+    }
+    for (final candidate in opportunity.candidates) {
+      if (candidate == inferredHomeCenter) {
+        return candidate;
+      }
+    }
+    if (returnHomeDebt == null) {
+      return null;
+    }
+    final phraseContext = _phraseContextForRequest(request);
+    final relation = MusicTheory.relationBetweenCenters(
+      request.currentKeyCenter,
+      inferredHomeCenter,
+    );
+    if (!_relationAllowedForPreset(relation, request.jazzPreset)) {
+      return null;
+    }
+    final confidence = _modulationConfidenceForTarget(
+      currentCenter: request.currentKeyCenter,
+      targetCenter: inferredHomeCenter,
+      phraseContext: phraseContext,
+      jazzPreset: request.jazzPreset,
+      recentRealModulations: _recentPlanningTraces(
+        take: 16,
+      ).where((trace) => trace.modulationKind == ModulationKind.real).toList(),
+    );
+    if (confidence <= 0) {
+      return null;
+    }
+    final boostedConfidence = min(
+      0.98,
+      confidence + (returnHomeDebt.deadline <= 2 ? 0.08 : 0.04),
+    );
+    return inferredHomeCenter.copyWith(
+      relationToParent: relation,
+      enteredBy: CenterEntryMethod.cadenceModulation,
+      confidence: boostedConfidence,
+      closenessClass: (boostedConfidence * 100).round(),
+      confirmationsRemaining: 1,
+    );
+  }
+
+  static double _dominantIntentPressureMultiplier({
+    required SmartProgressionFamily family,
+    required SmartStepRequest request,
+  }) {
+    final overflow = _dominantIntentOverflow(request);
+    final returnHomeDebt = _returnHomeDebtForRequest(request);
+    final phraseContext = _phraseContextForRequest(request);
+    final preserveCadentialContext = _isNearCadentialBoundary(phraseContext);
+    final bridgeReturnWindow = _isBridgeReturnWindowForDebt(
+      phraseContext,
+      returnHomeDebt: returnHomeDebt,
+    );
+    if (overflow <= 0) {
+      if (family == SmartProgressionFamily.bridgeReturnHomeCadence &&
+          returnHomeDebt != null &&
+          bridgeReturnWindow) {
+        return 1.08;
+      }
+      return 1;
+    }
+
+    final severeOverflow = overflow >= 3;
+    var multiplier = 1.0;
+    if (family == SmartProgressionFamily.bridgeReturnHomeCadence &&
+        returnHomeDebt != null) {
+      return bridgeReturnWindow ? 1.18 : 1.08;
+    }
+    if (family == SmartProgressionFamily.dominantChainBridgeStyle) {
+      multiplier *= severeOverflow ? 0.22 : 0.42;
+    } else if (family == SmartProgressionFamily.dominantHeadedScopeChain) {
+      multiplier *= severeOverflow ? 0.34 : 0.56;
+    } else if (family == SmartProgressionFamily.appliedDominantWithRelatedIi) {
+      multiplier *= severeOverflow ? 0.42 : 0.64;
+    } else if (family == SmartProgressionFamily.turnaroundIViIiV ||
+        family == SmartProgressionFamily.turnaroundIIIviIiV) {
+      multiplier *= preserveCadentialContext
+          ? (severeOverflow ? 0.36 : 0.54)
+          : (severeOverflow ? 0.48 : 0.68);
+    } else if (_isDominantHeavyFamily(family)) {
+      multiplier *= preserveCadentialContext
+          ? (severeOverflow ? 0.86 : 0.94)
+          : (severeOverflow ? 0.58 : 0.78);
+    }
+    if (returnHomeDebt != null &&
+        bridgeReturnWindow &&
+        (family == SmartProgressionFamily.dominantChainBridgeStyle ||
+            family == SmartProgressionFamily.dominantHeadedScopeChain ||
+            family == SmartProgressionFamily.appliedDominantWithRelatedIi ||
+            family == SmartProgressionFamily.relativeMinorReframe)) {
+      multiplier *= 0.72;
+    }
+    return multiplier;
+  }
+
+  static double _familySelectionQueueMultiplier({
+    required _FamilyPlan familyPlan,
+    required SmartStepRequest request,
+  }) {
+    final phraseContext = _phraseContextForRequest(request);
+    final queueLength = familyPlan.queue.length;
+    final showcaseRareFamily =
+        _isRareReachabilityFamily(familyPlan.family) &&
+        _isRareShowcaseContext(phraseContext);
+    final preserveResolutionFamily =
+        familyPlan.family == SmartProgressionFamily.bridgeReturnHomeCadence;
+    var multiplier = 1.0;
+    if (!showcaseRareFamily && !preserveResolutionFamily) {
+      if (queueLength >= 4) {
+        multiplier *= phraseContext.sectionRole == SectionRole.bridgeLike
+            ? 0.82
+            : 0.68;
+      }
+      if (queueLength >= 5) {
+        multiplier *= phraseContext.sectionRole == SectionRole.bridgeLike
+            ? 0.72
+            : 0.58;
+      }
+    }
+    if (_isDominantHeavyFamily(familyPlan.family)) {
+      multiplier *= phraseContext.sectionRole == SectionRole.bridgeLike
+          ? 0.86
+          : 0.82;
+    }
+    if (familyPlan.family == SmartProgressionFamily.dominantChainBridgeStyle) {
+      multiplier *= phraseContext.sectionRole == SectionRole.bridgeLike
+          ? 0.52
+          : 0.38;
+    } else if (familyPlan.family ==
+            SmartProgressionFamily.dominantHeadedScopeChain ||
+        familyPlan.family ==
+            SmartProgressionFamily.appliedDominantWithRelatedIi) {
+      multiplier *= 0.62;
+    }
+    final dominantOverflow = _dominantIntentOverflow(request);
+    final endsOnStandaloneDominant =
+        familyPlan.queue.isNotEmpty &&
+        familyPlan.queue.last.finalRomanNumeralId == RomanNumeralId.vDom7 &&
+        !familyPlan.queue.any((chord) => chord.cadentialArrival);
+    if (dominantOverflow > 0 && endsOnStandaloneDominant) {
+      multiplier *= request.activeKeys.length <= 1
+          ? (dominantOverflow >= 2 ? 0.34 : 0.5)
+          : (dominantOverflow >= 2 ? 0.48 : 0.66);
+    }
+    if (dominantOverflow > 0 &&
+        (familyPlan.family == SmartProgressionFamily.dominantChainBridgeStyle ||
+            familyPlan.family ==
+                SmartProgressionFamily.dominantHeadedScopeChain ||
+            familyPlan.family ==
+                SmartProgressionFamily.appliedDominantWithRelatedIi)) {
+      multiplier *= dominantOverflow >= 3 ? 0.48 : 0.72;
+    }
+    final patternStreak = _patternStepStreak(request.currentPatternTag);
+    if (patternStreak >= 2 && queueLength >= 3) {
+      multiplier *= 0.86;
+    }
+    if (request.currentPatternTag == _familyTag(familyPlan.family)) {
+      multiplier *= 0.72;
+    } else if (request.currentPatternTag != null &&
+        _isDominantHeavyPatternTag(request.currentPatternTag!) &&
+        _isDominantHeavyFamily(familyPlan.family)) {
+      multiplier *= 0.84;
+    }
+    return multiplier;
+  }
+
+  static _FamilyPlan _trimFamilyPlanHead({
+    required _FamilyPlan familyPlan,
+    required int skipCount,
+    bool carryInitialScope = false,
+  }) {
+    if (skipCount <= 0 || familyPlan.queue.length - skipCount < 2) {
+      return familyPlan;
+    }
+    final skipped = familyPlan.queue.take(skipCount).toList();
+    final trimmedQueue = familyPlan.queue.skip(skipCount).toList();
+    if (carryInitialScope && skipped.isNotEmpty && trimmedQueue.isNotEmpty) {
+      var carriedScope = trimmedQueue.first.openScope;
+      var carriedModulationAttempt = trimmedQueue.first.modulationAttempt;
+      var carriedConfidence = trimmedQueue.first.modulationConfidence;
+      final carriedSurfaceTags = <String>{...trimmedQueue.first.surfaceTags};
+      for (final chord in skipped) {
+        carriedScope ??= chord.openScope;
+        carriedModulationAttempt =
+            carriedModulationAttempt || chord.modulationAttempt;
+        carriedConfidence = max(carriedConfidence, chord.modulationConfidence);
+        carriedSurfaceTags.addAll(chord.surfaceTags);
+      }
+      trimmedQueue[0] = trimmedQueue.first.copyWith(
+        openScope: carriedScope,
+        modulationAttempt: carriedModulationAttempt,
+        modulationConfidence: carriedConfidence,
+        surfaceTags: carriedSurfaceTags.toList(),
+      );
+    }
+    return _FamilyPlan(
+      family: familyPlan.family,
+      queue: trimmedQueue,
+      destinationRomanNumeralId: familyPlan.destinationRomanNumeralId,
+      modalCandidates: familyPlan.modalCandidates,
+      appliedCandidates: familyPlan.appliedCandidates,
+      modulationCandidates: familyPlan.modulationCandidates,
+    );
+  }
+
+  static _FamilyPlan _compactFamilyPlanForContext({
+    required Random random,
+    required SmartStepRequest request,
+    required _FamilyPlan familyPlan,
+  }) {
+    final phraseContext = _phraseContextForRequest(request);
+    if (familyPlan.queue.length < 3 ||
+        phraseContext.phraseRole == PhraseRole.opener) {
+      return familyPlan;
+    }
+
+    var skipCount = 0;
+    var carryInitialScope = false;
+    final dominantOverflow = _dominantIntentOverflow(request);
+    final tightDominantBudget = dominantOverflow > 0;
+    final severeDominantOverflow = dominantOverflow >= 3;
+    final returnHomeDebt = _returnHomeDebtForRequest(request);
+    final tailLikeContext =
+        phraseContext.sectionRole == SectionRole.bridgeLike ||
+        phraseContext.sectionRole == SectionRole.turnaroundTail ||
+        phraseContext.sectionRole == SectionRole.tag;
+    final cadentialWindow =
+        phraseContext.phraseRole == PhraseRole.preCadence ||
+        phraseContext.phraseRole == PhraseRole.cadence ||
+        phraseContext.phraseRole == PhraseRole.release;
+    final bridgeReturnWindow = _isBridgeReturnWindowForDebt(
+      phraseContext,
+      returnHomeDebt: returnHomeDebt,
+    );
+
+    switch (familyPlan.family) {
+      case SmartProgressionFamily.coreIiVIMajor:
+        if ((request.currentHarmonicFunction == HarmonicFunction.predominant ||
+                request.currentRomanNumeralId == RomanNumeralId.iiMin7 ||
+                cadentialWindow) &&
+            random.nextDouble() < (tailLikeContext ? 0.72 : 0.56)) {
+          skipCount = 1;
+        }
+        break;
+      case SmartProgressionFamily.turnaroundIViIiV:
+        if ((request.currentHarmonicFunction == HarmonicFunction.tonic ||
+                tailLikeContext) &&
+            random.nextDouble() < (tailLikeContext ? 0.8 : 0.62)) {
+          skipCount = 1;
+        }
+        break;
+      case SmartProgressionFamily.turnaroundIIIviIiV:
+        if ((request.currentHarmonicFunction == HarmonicFunction.tonic ||
+                tailLikeContext) &&
+            random.nextDouble() < 0.68) {
+          skipCount = 1;
+          if ((phraseContext.sectionRole == SectionRole.turnaroundTail ||
+                  phraseContext.sectionRole == SectionRole.tag) &&
+              familyPlan.queue.length - skipCount > 2 &&
+              random.nextDouble() < 0.42) {
+            skipCount += 1;
+          }
+        }
+        break;
+      case SmartProgressionFamily.relativeMinorReframe:
+        if ((phraseContext.phraseRole == PhraseRole.continuation ||
+                _isRareShowcaseContext(phraseContext)) &&
+            random.nextDouble() <
+                (_isRareShowcaseContext(phraseContext) ? 0.72 : 0.58)) {
+          skipCount = 1;
+          carryInitialScope = true;
+          if (familyPlan.queue.length - skipCount > 2 &&
+              request.currentHarmonicFunction == HarmonicFunction.predominant &&
+              random.nextDouble() < 0.3) {
+            skipCount += 1;
+          }
+        }
+        break;
+      case SmartProgressionFamily.appliedDominantWithRelatedIi:
+        if ((tailLikeContext ||
+                tightDominantBudget ||
+                returnHomeDebt != null) &&
+            random.nextDouble() <
+                (bridgeReturnWindow
+                    ? 0.78
+                    : tightDominantBudget
+                    ? 0.62
+                    : 0.42)) {
+          skipCount = 1;
+          carryInitialScope = true;
+        }
+        break;
+      case SmartProgressionFamily.dominantHeadedScopeChain:
+        if (tailLikeContext || tightDominantBudget || returnHomeDebt != null) {
+          skipCount = severeDominantOverflow || bridgeReturnWindow ? 2 : 1;
+          carryInitialScope = true;
+        }
+        break;
+      case SmartProgressionFamily.dominantChainBridgeStyle:
+        if (tailLikeContext || tightDominantBudget || returnHomeDebt != null) {
+          skipCount = severeDominantOverflow || bridgeReturnWindow ? 3 : 2;
+          carryInitialScope = true;
+        }
+        break;
+      default:
+        break;
+    }
+
+    return _trimFamilyPlanHead(
+      familyPlan: familyPlan,
+      skipCount: skipCount,
+      carryInitialScope: carryInitialScope,
+    );
   }
 
   static double _antiRepeatPenalty({
@@ -733,13 +1255,25 @@ class SmartGeneratorHelper {
     final recent = _recentPlanningTraces(
       take: 12,
     ).where((trace) => trace.activePatternTag == familyTag).length;
+    var penalty = 1.0;
     if (recent == 0) {
-      return 1;
+      penalty = 1.0;
+    } else if (phraseContext.sectionRole == SectionRole.aLike && recent == 1) {
+      penalty = 0.82;
+    } else {
+      penalty = max(0.28, 1 - recent * 0.24);
     }
-    if (phraseContext.sectionRole == SectionRole.aLike && recent == 1) {
-      return 0.82;
+    final recentDominantHeavyPatterns = _recentPlanningTraces(take: 10)
+        .where(
+          (trace) =>
+              trace.activePatternTag != null &&
+              _isDominantHeavyPatternTag(trace.activePatternTag!),
+        )
+        .length;
+    if (_isDominantHeavyFamily(family) && recentDominantHeavyPatterns >= 4) {
+      penalty *= recentDominantHeavyPatterns >= 6 ? 0.62 : 0.78;
     }
-    return max(0.28, 1 - recent * 0.24);
+    return max(0.22, penalty);
   }
 
   static double _keyRelationPenalty(KeyRelation relation) {
@@ -976,6 +1510,7 @@ class SmartGeneratorHelper {
       return 1;
     }
     var multiplier = 1.0;
+    final tightDominantBudget = _dominantIntentOverflow(request) > 0;
     if (scope.center.relationToParent == KeyRelation.relative) {
       if (family == SmartProgressionFamily.relativeMinorReframe) {
         multiplier *= 1.4;
@@ -1018,17 +1553,17 @@ class SmartGeneratorHelper {
     }
     if (scope.headType == ScopeHeadType.dominantHead) {
       if (family == SmartProgressionFamily.dominantHeadedScopeChain) {
-        multiplier *= 1.34;
+        multiplier *= tightDominantBudget ? 0.92 : 1.34;
       } else if (family ==
           SmartProgressionFamily.appliedDominantWithRelatedIi) {
-        multiplier *= 1.18;
+        multiplier *= tightDominantBudget ? 0.86 : 1.18;
       } else if (family ==
           SmartProgressionFamily.closingPlagalAuthenticHybrid) {
         multiplier *= 1.08;
       } else if (family == SmartProgressionFamily.coreIiVIMajor ||
           family == SmartProgressionFamily.minorIiVAltI ||
           family == SmartProgressionFamily.relativeMinorReframe) {
-        multiplier *= 1.08;
+        multiplier *= tightDominantBudget ? 0.96 : 1.08;
       }
     }
     if (scope.headType == ScopeHeadType.pivotArea) {
@@ -1073,9 +1608,8 @@ class SmartGeneratorHelper {
     final needsModulationConfirm = debts.any(
       (debt) => debt.debtType == ResolutionDebtType.modulationConfirm,
     );
-    final needsReturnHome = debts.any(
-      (debt) => debt.debtType == ResolutionDebtType.returnHomeCadence,
-    );
+    final returnHomeDebt = _returnHomeDebtForRequest(request);
+    final needsReturnHome = returnHomeDebt != null;
 
     var multiplier = 1.0;
     if (needsDominantPayoff) {
@@ -1123,17 +1657,35 @@ class SmartGeneratorHelper {
       }
     }
     if (needsReturnHome) {
+      final phraseContext = _phraseContextForRequest(request);
+      final bridgeReturnWindow = _isBridgeReturnWindowForDebt(
+        phraseContext,
+        returnHomeDebt: returnHomeDebt,
+      );
+      final urgentReturn =
+          returnHomeDebt.deadline <= 2 || returnHomeDebt.severity >= 4;
       if (family == SmartProgressionFamily.bridgeReturnHomeCadence) {
-        multiplier *= 1.52;
+        multiplier *= bridgeReturnWindow ? (urgentReturn ? 2.4 : 2.0) : 1.72;
       } else if (family == SmartProgressionFamily.cadenceBasedRealModulation ||
           family == SmartProgressionFamily.commonChordModulation ||
           family == SmartProgressionFamily.mixturePivotModulation ||
           family ==
               SmartProgressionFamily.chromaticMediantCommonToneModulation ||
           family == SmartProgressionFamily.coltraneBurst) {
-        multiplier *= 0.62;
-      } else if (family == SmartProgressionFamily.dominantChainBridgeStyle) {
-        multiplier *= 0.72;
+        multiplier *= bridgeReturnWindow ? 0.28 : 0.54;
+      } else if (family == SmartProgressionFamily.dominantChainBridgeStyle ||
+          family == SmartProgressionFamily.dominantHeadedScopeChain ||
+          family == SmartProgressionFamily.appliedDominantWithRelatedIi ||
+          family == SmartProgressionFamily.relativeMinorReframe) {
+        multiplier *= bridgeReturnWindow ? 0.38 : 0.66;
+      } else if (bridgeReturnWindow &&
+          (family == SmartProgressionFamily.coreIiVIMajor ||
+              family == SmartProgressionFamily.minorIiVAltI ||
+              family == SmartProgressionFamily.closingPlagalAuthenticHybrid ||
+              family == SmartProgressionFamily.backdoorRecursivePrep ||
+              family == SmartProgressionFamily.backdoorIvmBviiI ||
+              family == SmartProgressionFamily.classicalPredominantColor)) {
+        multiplier *= 0.74;
       }
     }
     return multiplier;
@@ -1228,7 +1780,8 @@ class SmartGeneratorHelper {
     required Random random,
     required SmartStepRequest request,
   }) {
-    if (request.plannedQueue.isNotEmpty) {
+    if (request.plannedQueue.isNotEmpty &&
+        !_shouldReleaseQueuedFamily(random: random, request: request)) {
       final queuedDecision = dequeuePlannedSmartChord(
         plannedQueue: request.plannedQueue,
       );
@@ -1301,6 +1854,50 @@ class SmartGeneratorHelper {
       request: request,
       opportunity: opportunity,
     );
+  }
+
+  static bool _shouldReleaseQueuedFamily({
+    required Random random,
+    required SmartStepRequest request,
+  }) {
+    if (request.plannedQueue.isEmpty || request.currentTrace == null) {
+      return false;
+    }
+    final previousTrace = request.currentTrace!;
+    final patternTag = previousTrace.activePatternTag;
+    if (patternTag == null) {
+      return false;
+    }
+    final nextQueued = request.plannedQueue.first;
+    if (nextQueued.cadentialArrival ||
+        nextQueued.modulationKind == ModulationKind.real ||
+        nextQueued.openScope != null ||
+        nextQueued.closeScope ||
+        nextQueued.openedDebts.isNotEmpty) {
+      return false;
+    }
+    if (previousTrace.outstandingDebts.any(
+      (debt) => nextQueued.satisfiedDebtTypes.contains(debt.debtType),
+    )) {
+      return false;
+    }
+    if (previousTrace.cadentialArrival) {
+      return true;
+    }
+    if (previousTrace.phraseContext.phraseRole != PhraseRole.continuation ||
+        _patternStepStreak(patternTag) < 2) {
+      return false;
+    }
+    final queueSensitivePattern =
+        patternTag == 'turnaround_i_vi_ii_v' ||
+        patternTag == 'dominant_chain_bridge_style' ||
+        patternTag == 'dominant_headed_scope_chain' ||
+        patternTag == 'applied_dominant_with_related_ii' ||
+        patternTag == 'relative_minor_reframe';
+    if (!queueSensitivePattern) {
+      return false;
+    }
+    return random.nextDouble() < 0.6;
   }
 
   static SmartSimulationSummary simulateSteps({
@@ -1557,10 +2154,14 @@ class SmartGeneratorHelper {
       final returnHomeDebtPayoffCount = _returnHomeDebtPayoffCount(traces);
       final returnHomeOpportunityCount = _returnHomeOpportunityCount(traces);
       final returnHomeSelectionCount = _returnHomeSelectionCount(traces);
+      final v7SurfaceHistogram = _v7SurfaceHistogram(traces);
+      final returnHomeMissedOpportunityReasons =
+          _returnHomeMissedOpportunityReasons(traces);
       final minorCenterOccupancy = _minorCenterOccupancy(traces, steps);
       final directAppliedToNewTonicViolations =
           _directAppliedToNewTonicViolations(traces);
       final rareColorUsage = _rareColorUsage(traces);
+      final rareColorDebtOpenCount = _rareColorDebtOpenCount(traces);
       final rareColorPayoffCount = _rareColorPayoffCount(traces);
       final qaChecks = _qaChecksForSummary(
         jazzPreset: request.jazzPreset,
@@ -1570,6 +2171,7 @@ class SmartGeneratorHelper {
         minorCenterOccupancy: minorCenterOccupancy,
         fallbackCount: fallbackCount,
         rareColorUsage: rareColorUsage,
+        rareColorDebtOpenCount: rareColorDebtOpenCount,
         rareColorPayoffCount: rareColorPayoffCount,
         susReleaseCount: susReleaseCount,
         susResolutionOpportunities: susResolutionOpportunities,
@@ -1622,9 +2224,12 @@ class SmartGeneratorHelper {
         returnHomeDebtPayoffCount: returnHomeDebtPayoffCount,
         returnHomeOpportunityCount: returnHomeOpportunityCount,
         returnHomeSelectionCount: returnHomeSelectionCount,
+        v7SurfaceHistogram: v7SurfaceHistogram,
+        returnHomeMissedOpportunityReasons: returnHomeMissedOpportunityReasons,
         minorCenterOccupancy: minorCenterOccupancy,
         directAppliedToNewTonicViolations: directAppliedToNewTonicViolations,
         rareColorUsage: rareColorUsage,
+        rareColorDebtOpenCount: rareColorDebtOpenCount,
         rareColorPayoffCount: rareColorPayoffCount,
         qaChecks: qaChecks,
         traces: traces,
@@ -1696,6 +2301,7 @@ class SmartGeneratorHelper {
     required double minorCenterOccupancy,
     required int fallbackCount,
     required Map<String, int> rareColorUsage,
+    required int rareColorDebtOpenCount,
     required int rareColorPayoffCount,
     required int susReleaseCount,
     required int susResolutionOpportunities,
@@ -1782,9 +2388,9 @@ class SmartGeneratorHelper {
       0,
       (sum, count) => sum + count,
     );
-    final rarePayoffRatio = rareColorEvents == 0
+    final rarePayoffRatio = rareColorDebtOpenCount == 0
         ? 1.0
-        : rareColorPayoffCount / rareColorEvents;
+        : rareColorPayoffCount / rareColorDebtOpenCount;
     final rareStatus = rarePayoffRatio >= 0.65
         ? SmartQaStatus.pass
         : rarePayoffRatio >= 0.45
@@ -1850,9 +2456,11 @@ class SmartGeneratorHelper {
       SmartQaCheck(
         id: 'rare_color_payoff',
         status: rareStatus,
-        detail: rareColorEvents == 0
+        detail: rareColorDebtOpenCount == 0
             ? 'no rare colors observed'
-            : 'payoffRatio=${rarePayoffRatio.toStringAsFixed(3)}',
+            : 'payoffRatio=${rarePayoffRatio.toStringAsFixed(3)} '
+                  'payoff=$rareColorPayoffCount/$rareColorDebtOpenCount '
+                  'usage=$rareColorEvents',
       ),
       SmartQaCheck(
         id: 'sus_release_followthrough',
@@ -2207,6 +2815,21 @@ class SmartGeneratorHelper {
     return histogram;
   }
 
+  static int _rareColorDebtOpenCount(List<SmartDecisionTrace> traces) {
+    var count = 0;
+    var previousHadRareDebt = false;
+    for (final trace in traces) {
+      final hasRareDebt = trace.outstandingDebts.any(
+        (debt) => debt.debtType == ResolutionDebtType.rareColorPayoff,
+      );
+      if (hasRareDebt && !previousHadRareDebt) {
+        count += 1;
+      }
+      previousHadRareDebt = hasRareDebt;
+    }
+    return count;
+  }
+
   static bool _hasChromaticMediantPotential(List<String> activeKeys) {
     final semitones = <int>{};
     for (final key in activeKeys) {
@@ -2378,6 +3001,84 @@ class SmartGeneratorHelper {
     return count;
   }
 
+  static Map<String, int> _v7SurfaceHistogram(List<SmartDecisionTrace> traces) {
+    final histogram = <String, int>{};
+    for (var index = 0; index < traces.length; index += 1) {
+      final bucket = _classifyV7SurfacePath(traces, index);
+      if (bucket == null) {
+        continue;
+      }
+      histogram.update(bucket, (value) => value + 1, ifAbsent: () => 1);
+    }
+    return histogram;
+  }
+
+  static String? _classifyV7SurfacePath(
+    List<SmartDecisionTrace> traces,
+    int index,
+  ) {
+    final trace = traces[index];
+    if (trace.finalRomanNumeralId != RomanNumeralId.vDom7) {
+      return null;
+    }
+    final patternTag = trace.activePatternTag;
+    if (patternTag == 'bridge_return_home_cadence') {
+      return 'bridge_return_cadence';
+    }
+    if (patternTag == 'dominant_chain_bridge_style' ||
+        patternTag == 'dominant_headed_scope_chain') {
+      return 'dominant_chain_or_scope';
+    }
+    final next = index + 1 < traces.length ? traces[index + 1] : null;
+    if (next != null &&
+        next.activePatternTag == patternTag &&
+        next.cadentialArrival) {
+      return 'cadential_final_v';
+    }
+    return 'preparatory_or_extra_v';
+  }
+
+  static Map<String, int> _returnHomeMissedOpportunityReasons(
+    List<SmartDecisionTrace> traces,
+  ) {
+    final histogram = <String, int>{};
+    for (var index = 1; index < traces.length; index += 1) {
+      final reason = _classifyReturnHomeMissedOpportunity(
+        previous: traces[index - 1],
+        current: traces[index],
+      );
+      if (reason == null) {
+        continue;
+      }
+      histogram.update(reason, (value) => value + 1, ifAbsent: () => 1);
+    }
+    return histogram;
+  }
+
+  static String? _classifyReturnHomeMissedOpportunity({
+    required SmartDecisionTrace previous,
+    required SmartDecisionTrace current,
+  }) {
+    if (!_isReturnHomeOpportunity(previous: previous, current: current) ||
+        current.activePatternTag == 'bridge_return_home_cadence') {
+      return null;
+    }
+    if (previous.postModulationConfirmationsRemaining > 0) {
+      return 'post_modulation_confirmation';
+    }
+    final patternTag = current.activePatternTag;
+    if (patternTag == 'dominant_chain_bridge_style' ||
+        patternTag == 'dominant_headed_scope_chain' ||
+        patternTag == 'applied_dominant_with_related_ii' ||
+        patternTag == 'relative_minor_reframe') {
+      return 'dominant_family_selected';
+    }
+    if (current.modulationKind == ModulationKind.real) {
+      return 'competing_modulation_family';
+    }
+    return 'other_family_selected';
+  }
+
   static bool _isReturnHomeOpportunity({
     required SmartDecisionTrace previous,
     required SmartDecisionTrace current,
@@ -2398,7 +3099,10 @@ class SmartGeneratorHelper {
     return familyStart &&
         debt.targetLabel.isNotEmpty &&
         debt.targetLabel != current.currentKeyCenter &&
-        _isBridgeReturnWindow(current.phraseContext);
+        _isBridgeReturnWindowForDebt(
+          current.phraseContext,
+          returnHomeDebt: debt,
+        );
   }
 
   static bool _isExcludedCandidate(
@@ -2838,6 +3542,13 @@ class SmartGeneratorHelper {
       request.currentKeyCenter,
       destinationRomanNumeralId,
     );
+    final phraseContext = _phraseContextForRequest(request);
+    final dominantOverflow = _dominantIntentOverflow(request, take: 6);
+    final returnHomeDebt = _returnHomeDebtForRequest(request);
+    final bridgeReturnWindow = _isBridgeReturnWindowForDebt(
+      phraseContext,
+      returnHomeDebt: returnHomeDebt,
+    );
     if (!request.secondaryDominantEnabled &&
         !request.substituteDominantEnabled) {
       return SmartApproachDecision(
@@ -2848,10 +3559,21 @@ class SmartGeneratorHelper {
       );
     }
 
+    var substituteThreshold = request.activeKeys.length <= 1 ? 8 : 12;
+    if (dominantOverflow > 0) {
+      substituteThreshold -= 3;
+    }
+    if (dominantOverflow >= 3) {
+      substituteThreshold -= 2;
+    }
+    if (returnHomeDebt != null || bridgeReturnWindow) {
+      substituteThreshold -= 3;
+    }
+    substituteThreshold = substituteThreshold.clamp(2, 12);
     final useSubstitute =
         request.substituteDominantEnabled &&
         substituteDominant != null &&
-        random.nextInt(100) < 18;
+        random.nextInt(100) < substituteThreshold;
     if (useSubstitute) {
       return SmartApproachDecision(
         destinationRomanNumeralId: destinationRomanNumeralId,
@@ -2862,7 +3584,30 @@ class SmartGeneratorHelper {
       );
     }
     if (request.secondaryDominantEnabled && secondaryDominant != null) {
-      final threshold = targetMode == KeyMode.minor ? 38 : 24;
+      final recentTonicizations = _recentPlanningTraces(take: 8)
+          .where((trace) => trace.modulationKind == ModulationKind.tonicization)
+          .length;
+      var threshold = targetMode == KeyMode.minor ? 30 : 18;
+      if (request.activeKeys.length <= 1) {
+        threshold -= 6;
+      }
+      if (recentTonicizations >= 2) {
+        threshold -= 4;
+      }
+      if (dominantOverflow > 0) {
+        threshold -= 6;
+      }
+      if (dominantOverflow >= 3) {
+        threshold -= 4;
+      }
+      if (returnHomeDebt != null || bridgeReturnWindow) {
+        threshold -= 4;
+      }
+      if (_isNearCadentialBoundary(phraseContext) &&
+          destinationRomanNumeralId == RomanNumeralId.vDom7) {
+        threshold -= 3;
+      }
+      threshold = threshold.clamp(4, 30);
       if (random.nextInt(100) < threshold) {
         return SmartApproachDecision(
           destinationRomanNumeralId: destinationRomanNumeralId,
@@ -2910,7 +3655,13 @@ class SmartGeneratorHelper {
         includeLeadingTonic: includeLeadingTonic,
       );
       if (built != null) {
-        plans.add(built);
+        plans.add(
+          _compactFamilyPlanForContext(
+            random: random,
+            request: request,
+            familyPlan: built,
+          ),
+        );
       }
     }
     return plans;
@@ -2930,13 +3681,31 @@ class SmartGeneratorHelper {
     final weightByFamily = {
       for (final item in weights) item.family: item.weight,
     };
-    final totalWeight = familyPlans.fold<int>(
-      0,
-      (sum, plan) => sum + (weightByFamily[plan.family] ?? 1),
-    );
+    final totalWeight = familyPlans.fold<int>(0, (sum, plan) {
+      final baseWeight = (weightByFamily[plan.family] ?? 1).toDouble();
+      final adjustedWeight = max(
+        1,
+        (baseWeight *
+                _familySelectionQueueMultiplier(
+                  familyPlan: plan,
+                  request: request,
+                ))
+            .round(),
+      );
+      return sum + adjustedWeight;
+    });
     var remaining = random.nextInt(totalWeight);
     for (final plan in familyPlans) {
-      final weight = weightByFamily[plan.family] ?? 1;
+      final baseWeight = (weightByFamily[plan.family] ?? 1).toDouble();
+      final weight = max(
+        1,
+        (baseWeight *
+                _familySelectionQueueMultiplier(
+                  familyPlan: plan,
+                  request: request,
+                ))
+            .round(),
+      );
       if (remaining < weight) {
         return plan;
       }
@@ -3324,6 +4093,14 @@ class SmartGeneratorHelper {
         family: family,
         phraseContext: phraseContext,
       );
+      weight *= _tonicizationPressureMultiplier(
+        family: family,
+        request: request,
+      );
+      weight *= _dominantIntentPressureMultiplier(
+        family: family,
+        request: request,
+      );
 
       final isModulationFamily =
           family == SmartProgressionFamily.mixturePivotModulation ||
@@ -3388,6 +4165,29 @@ class SmartGeneratorHelper {
       weights[SmartProgressionFamily.dominantChainBridgeStyle] = 0;
       weights[SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI] = 0;
     }
+    if (request.activeKeys.length <= 1) {
+      weights.update(
+        SmartProgressionFamily.appliedDominantWithRelatedIi,
+        (value) => max(0, (value * 0.54).round()),
+        ifAbsent: () => 0,
+      );
+      weights.update(
+        SmartProgressionFamily.dominantHeadedScopeChain,
+        (value) => max(0, (value * 0.42).round()),
+        ifAbsent: () => 0,
+      );
+      weights.update(
+        SmartProgressionFamily.dominantChainBridgeStyle,
+        (value) => max(0, (value * 0.18).round()),
+        ifAbsent: () => 0,
+      );
+    }
+    final returnHomeDebt = _returnHomeDebtForRequest(request);
+    final homeCandidate = _returnHomeCandidateForRequest(
+      request: request,
+      opportunity: opportunity,
+      returnHomeDebt: returnHomeDebt,
+    );
     if (!allowRealModulation ||
         request.modulationIntensity == ModulationIntensity.off ||
         opportunity.candidates.isEmpty) {
@@ -3396,7 +4196,9 @@ class SmartGeneratorHelper {
       weights[SmartProgressionFamily.mixturePivotModulation] = 0;
       weights[SmartProgressionFamily.chromaticMediantCommonToneModulation] = 0;
       weights[SmartProgressionFamily.coltraneBurst] = 0;
-      weights[SmartProgressionFamily.bridgeReturnHomeCadence] = 0;
+      if (homeCandidate == null) {
+        weights[SmartProgressionFamily.bridgeReturnHomeCadence] = 0;
+      }
     }
 
     if (request.currentTrace?.postModulationConfirmationsRemaining != null &&
@@ -3406,38 +4208,36 @@ class SmartGeneratorHelper {
       weights[SmartProgressionFamily.mixturePivotModulation] = 0;
       weights[SmartProgressionFamily.chromaticMediantCommonToneModulation] = 0;
       weights[SmartProgressionFamily.coltraneBurst] = 0;
-      weights[SmartProgressionFamily.bridgeReturnHomeCadence] = 0;
+      if (returnHomeDebt == null || homeCandidate == null) {
+        weights[SmartProgressionFamily.bridgeReturnHomeCadence] = 0;
+      }
       weights[SmartProgressionFamily.dominantHeadedScopeChain] = 0;
       weights[SmartProgressionFamily.dominantChainBridgeStyle] = 0;
       weights[SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI] = 0;
     }
 
     final inferredHomeCenter = _returnHomeTargetCenterForRequest(request);
-    KeyCenter? homeCandidate;
-    if (inferredHomeCenter != null) {
-      for (final candidate in opportunity.candidates) {
-        if (candidate == inferredHomeCenter) {
-          homeCandidate = candidate;
-          break;
-        }
-      }
-    }
-    final hasReturnHomeDebt =
-        request.currentTrace?.outstandingDebts.any(
-          (debt) => debt.debtType == ResolutionDebtType.returnHomeCadence,
-        ) ??
-        false;
+    final hasReturnHomeDebt = returnHomeDebt != null;
     if (inferredHomeCenter == null ||
         inferredHomeCenter == request.currentKeyCenter ||
         homeCandidate == null) {
       weights[SmartProgressionFamily.bridgeReturnHomeCadence] = 0;
     } else {
-      final phraseContext = _phraseContextForRequest(request);
-      final returnBoost = _isBridgeReturnZone(phraseContext) ? 1.22 : 0.82;
-      final returnDebtBoost = hasReturnHomeDebt ? 1.34 : 1.0;
+      final bridgeReturnWindow = _isBridgeReturnWindowForDebt(
+        phraseContext,
+        returnHomeDebt: returnHomeDebt,
+      );
+      final returnBoost = bridgeReturnWindow
+          ? 1.42
+          : _isBridgeReturnZone(phraseContext)
+          ? 1.18
+          : 0.78;
+      final returnDebtBoost = hasReturnHomeDebt
+          ? (bridgeReturnWindow ? 2.0 : 1.44)
+          : 1.0;
       weights.update(
         SmartProgressionFamily.bridgeReturnHomeCadence,
-        (value) => max(0, (value * returnBoost * returnDebtBoost).round()),
+        (value) => max(4, (value * returnBoost * returnDebtBoost).round()),
       );
       if (hasReturnHomeDebt) {
         for (final family in const [
@@ -3445,17 +4245,20 @@ class SmartGeneratorHelper {
           SmartProgressionFamily.commonChordModulation,
           SmartProgressionFamily.mixturePivotModulation,
           SmartProgressionFamily.dominantChainBridgeStyle,
+          SmartProgressionFamily.dominantHeadedScopeChain,
+          SmartProgressionFamily.appliedDominantWithRelatedIi,
+          SmartProgressionFamily.relativeMinorReframe,
         ]) {
           weights.update(
             family,
-            (value) => max(0, (value * 0.72).round()),
+            (value) => max(0, (value * 0.58).round()),
             ifAbsent: () => 0,
           );
         }
-        if (_isBridgeReturnWindow(phraseContext)) {
+        if (bridgeReturnWindow) {
           weights.update(
             SmartProgressionFamily.bridgeReturnHomeCadence,
-            (value) => max(value + 8, (value * 1.42).round()),
+            (value) => max(value + 14, (value * 1.82).round()),
           );
           for (final family in const [
             SmartProgressionFamily.coreIiVIMajor,
@@ -3469,7 +4272,7 @@ class SmartGeneratorHelper {
           ]) {
             weights.update(
               family,
-              (value) => max(0, (value * 0.68).round()),
+              (value) => max(0, (value * 0.56).round()),
               ifAbsent: () => 0,
             );
           }
@@ -3477,21 +4280,83 @@ class SmartGeneratorHelper {
       }
     }
 
+    final dominantOverflow = _dominantIntentOverflow(request);
+    if (dominantOverflow > 0) {
+      weights.update(
+        SmartProgressionFamily.turnaroundIViIiV,
+        (value) => max(
+          0,
+          (value * (request.activeKeys.length <= 1 ? 0.42 : 0.58)).round(),
+        ),
+        ifAbsent: () => 0,
+      );
+      weights.update(
+        SmartProgressionFamily.turnaroundIIIviIiV,
+        (value) => max(0, (value * 0.54).round()),
+        ifAbsent: () => 0,
+      );
+      if (request.currentKeyCenter.mode == KeyMode.major &&
+          request.modalInterchangeEnabled &&
+          (phraseContext.phraseRole == PhraseRole.preCadence ||
+              phraseContext.phraseRole == PhraseRole.cadence ||
+              phraseContext.phraseRole == PhraseRole.release ||
+              request.activeKeys.length <= 1)) {
+        for (final family in const [
+          SmartProgressionFamily.coreIiVIMajor,
+          SmartProgressionFamily.closingPlagalAuthenticHybrid,
+          SmartProgressionFamily.classicalPredominantColor,
+          SmartProgressionFamily.turnaroundISharpIdimIiV,
+          SmartProgressionFamily.passingDimToIi,
+        ]) {
+          weights.update(
+            family,
+            (value) => max(
+              0,
+              (value * (request.activeKeys.length <= 1 ? 0.72 : 0.82)).round(),
+            ),
+            ifAbsent: () => 0,
+          );
+        }
+        final altCadenceBoost = request.activeKeys.length <= 1 ? 6 : 4;
+        weights.update(
+          SmartProgressionFamily.backdoorRecursivePrep,
+          (value) => max(value + altCadenceBoost, (value * 1.28).round()),
+          ifAbsent: () => altCadenceBoost,
+        );
+        weights.update(
+          SmartProgressionFamily.backdoorIvmBviiI,
+          (value) => max(value + altCadenceBoost, (value * 1.22).round()),
+          ifAbsent: () => altCadenceBoost,
+        );
+      }
+    }
+
     if (request.currentHarmonicFunction == HarmonicFunction.tonic) {
-      final tonicFamily = request.currentKeyCenter.mode == KeyMode.major
+      final dominantOverflowForTonic = _dominantIntentOverflow(request);
+      final preferAltCadence =
+          request.currentKeyCenter.mode == KeyMode.major &&
+          request.modalInterchangeEnabled &&
+          dominantOverflowForTonic > 0 &&
+          (phraseContext.phraseRole == PhraseRole.preCadence ||
+              phraseContext.phraseRole == PhraseRole.cadence ||
+              phraseContext.phraseRole == PhraseRole.release ||
+              request.activeKeys.length <= 1);
+      final tonicFamily = preferAltCadence
+          ? SmartProgressionFamily.backdoorRecursivePrep
+          : request.currentKeyCenter.mode == KeyMode.major
           ? SmartProgressionFamily.turnaroundIViIiV
           : SmartProgressionFamily.minorLineCliche;
-      weights.update(tonicFamily, (value) => value + 5, ifAbsent: () => 5);
+      weights.update(tonicFamily, (value) => value + 3, ifAbsent: () => 3);
     }
     if (request.currentHarmonicFunction == HarmonicFunction.predominant) {
       final cadenceFamily = request.currentKeyCenter.mode == KeyMode.major
           ? SmartProgressionFamily.coreIiVIMajor
           : SmartProgressionFamily.minorIiVAltI;
-      weights.update(cadenceFamily, (value) => value + 6, ifAbsent: () => 6);
+      weights.update(cadenceFamily, (value) => value + 4, ifAbsent: () => 4);
       weights.update(
         SmartProgressionFamily.closingPlagalAuthenticHybrid,
-        (value) => value + 4,
-        ifAbsent: () => 4,
+        (value) => value + 3,
+        ifAbsent: () => 3,
       );
     }
     if (request.currentHarmonicFunction == HarmonicFunction.tonic &&
@@ -3500,8 +4365,8 @@ class SmartGeneratorHelper {
             phraseContext.phraseRole == PhraseRole.release)) {
       weights.update(
         SmartProgressionFamily.closingPlagalAuthenticHybrid,
-        (value) => value + 3,
-        ifAbsent: () => 3,
+        (value) => value + 2,
+        ifAbsent: () => 2,
       );
     }
     if (request.jazzPreset == JazzPreset.advanced &&
@@ -3647,17 +4512,11 @@ class SmartGeneratorHelper {
           opportunity: opportunity,
         );
       case SmartProgressionFamily.bridgeReturnHomeCadence:
-        final inferredHomeCenter = _returnHomeTargetCenterForRequest(request);
-        if (inferredHomeCenter == null) {
-          return null;
-        }
-        KeyCenter? homeCandidate;
-        for (final candidate in opportunity.candidates) {
-          if (candidate == inferredHomeCenter) {
-            homeCandidate = candidate;
-            break;
-          }
-        }
+        final homeCandidate = _returnHomeCandidateForRequest(
+          request: request,
+          opportunity: opportunity,
+          returnHomeDebt: _returnHomeDebtForRequest(request),
+        );
         return homeCandidate == null
             ? null
             : _buildBridgeReturnHomeCadenceFamily(
@@ -3707,9 +4566,9 @@ class SmartGeneratorHelper {
       request.sourceProfile,
     );
     final useSusRelease =
-        request.sourceProfile == SourceProfile.recordingInspired ||
-        phraseContext.phraseRole == PhraseRole.preCadence ||
-        phraseContext.phraseRole == PhraseRole.cadence;
+        request.sourceProfile == SourceProfile.recordingInspired &&
+        (phraseContext.phraseRole == PhraseRole.preCadence ||
+            phraseContext.phraseRole == PhraseRole.cadence);
     final variantTag = useSusRelease ? 'ii_v_sus_release_i' : 'plain_ii_v_i';
     return _family(
       family: SmartProgressionFamily.coreIiVIMajor,
@@ -3792,9 +4651,19 @@ class SmartGeneratorHelper {
       phraseContext,
       request.sourceProfile,
     );
+    final dominantOverflow = _dominantIntentOverflow(request);
+    final handoffToPredominant =
+        dominantOverflow > 0 &&
+        (request.currentHarmonicFunction == HarmonicFunction.tonic ||
+            phraseContext.phraseRole == PhraseRole.continuation ||
+            phraseContext.sectionRole == SectionRole.turnaroundTail ||
+            phraseContext.sectionRole == SectionRole.tag);
+    final variantTag = handoffToPredominant ? 'handoff_to_ii' : 'classic';
     return _family(
       family: SmartProgressionFamily.turnaroundIViIiV,
-      destination: RomanNumeralId.vDom7,
+      destination: handoffToPredominant
+          ? RomanNumeralId.iiMin7
+          : RomanNumeralId.vDom7,
       queue: [
         if (includeLeadingTonic)
           _queuedChord(
@@ -3805,28 +4674,32 @@ class SmartGeneratorHelper {
               request.sourceProfile,
             ),
             patternTag: patternTag,
-            variantTag: 'classic',
+            variantTag: variantTag,
           ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.viMin7,
           patternTag: patternTag,
-          variantTag: 'classic',
+          variantTag: variantTag,
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.iiMin7,
           patternTag: patternTag,
-          variantTag: 'classic',
+          variantTag: variantTag,
+          surfaceTags: handoffToPredominant
+              ? const ['predominantHandoff']
+              : const [],
         ),
-        _queuedChord(
-          keyCenter: request.currentKeyCenter,
-          roman: RomanNumeralId.vDom7,
-          dominantContext: DominantContext.primaryMajor,
-          dominantIntent: DominantIntent.primaryAuthenticMajor,
-          patternTag: patternTag,
-          variantTag: 'classic',
-        ),
+        if (!handoffToPredominant)
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: RomanNumeralId.vDom7,
+            dominantContext: DominantContext.primaryMajor,
+            dominantIntent: DominantIntent.primaryAuthenticMajor,
+            patternTag: patternTag,
+            variantTag: variantTag,
+          ),
       ],
     );
   }
@@ -3842,10 +4715,16 @@ class SmartGeneratorHelper {
     final patternTag = _familyTag(
       SmartProgressionFamily.turnaroundISharpIdimIiV,
     );
-    const variantTag = 'passing_dim';
+    final handoffToPredominant = _dominantIntentOverflow(request) > 0;
+    const baseVariantTag = 'passing_dim';
+    final variantTag = handoffToPredominant
+        ? '${baseVariantTag}_handoff'
+        : baseVariantTag;
     return _family(
       family: SmartProgressionFamily.turnaroundISharpIdimIiV,
-      destination: RomanNumeralId.vDom7,
+      destination: handoffToPredominant
+          ? RomanNumeralId.iiMin7
+          : RomanNumeralId.vDom7,
       queue: [
         if (includeLeadingTonic)
           _queuedChord(
@@ -3882,15 +4761,19 @@ class SmartGeneratorHelper {
           patternTag: patternTag,
           variantTag: variantTag,
           satisfiedDebtTypes: const [ResolutionDebtType.rareColorPayoff],
+          surfaceTags: handoffToPredominant
+              ? const ['predominantHandoff']
+              : const [],
         ),
-        _queuedChord(
-          keyCenter: request.currentKeyCenter,
-          roman: RomanNumeralId.vDom7,
-          dominantContext: DominantContext.primaryMajor,
-          dominantIntent: DominantIntent.primaryAuthenticMajor,
-          patternTag: patternTag,
-          variantTag: variantTag,
-        ),
+        if (!handoffToPredominant)
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: RomanNumeralId.vDom7,
+            dominantContext: DominantContext.primaryMajor,
+            dominantIntent: DominantIntent.primaryAuthenticMajor,
+            patternTag: patternTag,
+            variantTag: variantTag,
+          ),
       ],
     );
   }
@@ -3902,36 +4785,48 @@ class SmartGeneratorHelper {
       return null;
     }
     final patternTag = _familyTag(SmartProgressionFamily.turnaroundIIIviIiV);
+    final phraseContext = _phraseContextForRequest(request);
+    final handoffToPredominant =
+        _dominantIntentOverflow(request) > 0 &&
+        (phraseContext.phraseRole != PhraseRole.opener ||
+            request.activeKeys.length <= 1);
+    final variantTag = handoffToPredominant ? 'flowing_handoff' : 'flowing';
     return _family(
       family: SmartProgressionFamily.turnaroundIIIviIiV,
-      destination: RomanNumeralId.vDom7,
+      destination: handoffToPredominant
+          ? RomanNumeralId.iiMin7
+          : RomanNumeralId.vDom7,
       queue: [
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.iiiMin7,
           patternTag: patternTag,
-          variantTag: 'flowing',
+          variantTag: variantTag,
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.viMin7,
           patternTag: patternTag,
-          variantTag: 'flowing',
+          variantTag: variantTag,
         ),
         _queuedChord(
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.iiMin7,
           patternTag: patternTag,
-          variantTag: 'flowing',
+          variantTag: variantTag,
+          surfaceTags: handoffToPredominant
+              ? const ['predominantHandoff']
+              : const [],
         ),
-        _queuedChord(
-          keyCenter: request.currentKeyCenter,
-          roman: RomanNumeralId.vDom7,
-          dominantContext: DominantContext.primaryMajor,
-          dominantIntent: DominantIntent.primaryAuthenticMajor,
-          patternTag: patternTag,
-          variantTag: 'flowing',
-        ),
+        if (!handoffToPredominant)
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: RomanNumeralId.vDom7,
+            dominantContext: DominantContext.primaryMajor,
+            dominantIntent: DominantIntent.primaryAuthenticMajor,
+            patternTag: patternTag,
+            variantTag: variantTag,
+          ),
       ],
     );
   }
@@ -4309,6 +5204,7 @@ class SmartGeneratorHelper {
     required SmartStepRequest request,
   }) {
     final phraseContext = _phraseContextForRequest(request);
+    final dominantOverflow = _dominantIntentOverflow(request);
     final patternTag = _familyTag(
       SmartProgressionFamily.closingPlagalAuthenticHybrid,
     );
@@ -4332,7 +5228,15 @@ class SmartGeneratorHelper {
           request.sourceProfile == SourceProfile.recordingInspired
           ? ChordQuality.dominant13sus4
           : ChordQuality.dominant7sus4;
-      final variantTag = useBorrowedIv
+      final useSingleDominantRelease =
+          dominantOverflow > 0 &&
+          (request.activeKeys.length <= 1 ||
+              phraseContext.phraseRole != PhraseRole.opener);
+      final variantTag = useSingleDominantRelease
+          ? useBorrowedIv
+                ? 'borrowed_ivm_single_authentic'
+                : 'iv_single_authentic'
+          : useBorrowedIv
           ? 'borrowed_ivm_sus_authentic'
           : 'iv_sus_authentic';
       final ivRoman = useBorrowedIv
@@ -4362,27 +5266,28 @@ class SmartGeneratorHelper {
               ),
             ],
           ),
-          _queuedChord(
-            keyCenter: request.currentKeyCenter,
-            roman: RomanNumeralId.vDom7,
-            renderQualityOverride: susQuality,
-            dominantContext: DominantContext.susDominant,
-            dominantIntent: DominantIntent.susDelay,
-            patternTag: patternTag,
-            variantTag: variantTag,
-            satisfiedDebtTypes: const [
-              ResolutionDebtType.predominantToDominant,
-            ],
-            openedDebts: const [
-              ResolutionDebt(
-                debtType: ResolutionDebtType.susResolve,
-                targetLabel: 'same-root dominant release',
-                deadline: 1,
-                severity: 2,
-              ),
-            ],
-            surfaceTags: const ['plagalColor', 'susDelay'],
-          ),
+          if (!useSingleDominantRelease)
+            _queuedChord(
+              keyCenter: request.currentKeyCenter,
+              roman: RomanNumeralId.vDom7,
+              renderQualityOverride: susQuality,
+              dominantContext: DominantContext.susDominant,
+              dominantIntent: DominantIntent.susDelay,
+              patternTag: patternTag,
+              variantTag: variantTag,
+              satisfiedDebtTypes: const [
+                ResolutionDebtType.predominantToDominant,
+              ],
+              openedDebts: const [
+                ResolutionDebt(
+                  debtType: ResolutionDebtType.susResolve,
+                  targetLabel: 'same-root dominant release',
+                  deadline: 1,
+                  severity: 2,
+                ),
+              ],
+              surfaceTags: const ['plagalColor', 'susDelay'],
+            ),
           _queuedChord(
             keyCenter: request.currentKeyCenter,
             roman: RomanNumeralId.vDom7,
@@ -4390,7 +5295,9 @@ class SmartGeneratorHelper {
             dominantIntent: DominantIntent.primaryAuthenticMajor,
             patternTag: patternTag,
             variantTag: variantTag,
-            satisfiedDebtTypes: const [ResolutionDebtType.susResolve],
+            satisfiedDebtTypes: useSingleDominantRelease
+                ? const [ResolutionDebtType.predominantToDominant]
+                : const [ResolutionDebtType.susResolve],
             openedDebts: const [
               ResolutionDebt(
                 debtType: ResolutionDebtType.dominantResolve,
@@ -4399,7 +5306,9 @@ class SmartGeneratorHelper {
                 severity: 2,
               ),
             ],
-            surfaceTags: const ['plagalColor'],
+            surfaceTags: useSingleDominantRelease
+                ? const ['plagalColor', 'compactDominant']
+                : const ['plagalColor'],
           ),
           _queuedChord(
             keyCenter: request.currentKeyCenter,
@@ -4688,7 +5597,7 @@ class SmartGeneratorHelper {
   }) {
     if (request.currentKeyCenter.mode != KeyMode.major ||
         !request.modalInterchangeEnabled ||
-        request.jazzPreset != JazzPreset.advanced) {
+        request.jazzPreset == JazzPreset.standardsCore) {
       return null;
     }
     final phraseContext = _phraseContextForRequest(request);
@@ -5039,7 +5948,7 @@ class SmartGeneratorHelper {
     required SmartStepRequest request,
     required _ModulationOpportunity opportunity,
   }) {
-    if (request.jazzPreset != JazzPreset.advanced ||
+    if (request.jazzPreset == JazzPreset.standardsCore ||
         !request.modalInterchangeEnabled ||
         request.currentKeyCenter.mode != KeyMode.major) {
       return null;
@@ -5302,12 +6211,12 @@ class SmartGeneratorHelper {
     required KeyCenter targetCenter,
   }) {
     final phraseContext = _phraseContextForRequest(request);
-    final pendingReturnFollowthrough =
-        request.currentTrace?.outstandingDebts.any(
-          (debt) => debt.debtType == ResolutionDebtType.returnHomeCadence,
-        ) ??
-        false;
-    if (!_isBridgeReturnWindow(phraseContext) ||
+    final returnHomeDebt = _returnHomeDebtForRequest(request);
+    final pendingReturnFollowthrough = returnHomeDebt != null;
+    if (!_isBridgeReturnWindowForDebt(
+          phraseContext,
+          returnHomeDebt: returnHomeDebt,
+        ) ||
         targetCenter == request.currentKeyCenter) {
       return null;
     }
@@ -5316,10 +6225,86 @@ class SmartGeneratorHelper {
     );
     final variantTag =
         'return_${request.currentKeyCenter.mode.name}_${request.currentKeyCenter.tonicName}_to_${targetCenter.mode.name}_${targetCenter.tonicName}';
+    final enteredTargetCenter = targetCenter.copyWith(
+      enteredBy: CenterEntryMethod.cadenceModulation,
+    );
+    final preferBackdoorReturn =
+        pendingReturnFollowthrough &&
+        enteredTargetCenter.mode == KeyMode.major &&
+        request.modalInterchangeEnabled &&
+        _dominantIntentOverflow(request) > 0;
+    if (preferBackdoorReturn) {
+      return _family(
+        family: SmartProgressionFamily.bridgeReturnHomeCadence,
+        destination: RomanNumeralId.iMaj69,
+        modulationCandidates: [enteredTargetCenter],
+        queue: [
+          _queuedChord(
+            keyCenter: enteredTargetCenter,
+            roman: RomanNumeralId.borrowedIvMin7,
+            patternTag: patternTag,
+            variantTag: '${variantTag}_backdoor',
+            modulationKind: ModulationKind.real,
+            modulationAttempt: true,
+            modulationConfidence: enteredTargetCenter.confidence,
+            openedDebts: const [
+              ResolutionDebt(
+                debtType: ResolutionDebtType.modulationConfirm,
+                targetLabel: 'new-key confirmation',
+                deadline: 3,
+                severity: 3,
+              ),
+            ],
+            surfaceTags: [
+              'bridgeReturn',
+              'backdoorFlavor',
+              if (pendingReturnFollowthrough) 'returnHomeFollowthrough',
+            ],
+          ),
+          _queuedChord(
+            keyCenter: enteredTargetCenter,
+            roman: RomanNumeralId.borrowedFlatVII7,
+            patternTag: patternTag,
+            variantTag: '${variantTag}_backdoor',
+            modulationKind: ModulationKind.real,
+            modulationConfidence: enteredTargetCenter.confidence,
+            surfaceTags: [
+              'bridgeReturn',
+              'backdoorFlavor',
+              if (pendingReturnFollowthrough) 'returnHomeFollowthrough',
+            ],
+          ),
+          _queuedChord(
+            keyCenter: enteredTargetCenter,
+            roman: RomanNumeralId.iMaj69,
+            patternTag: patternTag,
+            variantTag: '${variantTag}_backdoor',
+            modulationKind: ModulationKind.real,
+            modulationConfidence: enteredTargetCenter.confidence,
+            cadentialArrival: true,
+            postModulationConfirmationsRemaining: 1,
+            satisfiedDebtTypes: const [ResolutionDebtType.returnHomeCadence],
+            surfaceTags: const [
+              'bridgeReturn',
+              'returnHomePayoff',
+              'tonicMaj69',
+            ],
+          ),
+          _queuedChord(
+            keyCenter: enteredTargetCenter,
+            roman: RomanNumeralId.viMin7,
+            patternTag: patternTag,
+            variantTag: '${variantTag}_backdoor',
+            modulationKind: ModulationKind.real,
+            modulationConfidence: enteredTargetCenter.confidence,
+            satisfiedDebtTypes: const [ResolutionDebtType.modulationConfirm],
+            surfaceTags: const ['bridgeReturn'],
+          ),
+        ],
+      );
+    }
     final cadence = _cadenceQueueForTarget(
-      targetCenter: targetCenter.copyWith(
-        enteredBy: CenterEntryMethod.cadenceModulation,
-      ),
+      targetCenter: enteredTargetCenter,
       patternTag: patternTag,
       variantTag: variantTag,
       modulationAttempt: true,
@@ -5327,7 +6312,7 @@ class SmartGeneratorHelper {
     if (cadence.isEmpty) {
       return null;
     }
-    final resolvedCadence = [
+    var resolvedCadence = [
       for (final chord in cadence)
         chord.copyWith(
           surfaceTags: [
@@ -5344,6 +6329,28 @@ class SmartGeneratorHelper {
               : chord.satisfiedDebtTypes,
         ),
     ];
+    if (pendingReturnFollowthrough &&
+        request.currentHarmonicFunction == HarmonicFunction.predominant &&
+        resolvedCadence.length >= 4) {
+      final carriedHead = resolvedCadence[1].copyWith(
+        modulationAttempt:
+            resolvedCadence[0].modulationAttempt ||
+            resolvedCadence[1].modulationAttempt,
+        modulationConfidence: max(
+          resolvedCadence[0].modulationConfidence,
+          resolvedCadence[1].modulationConfidence,
+        ),
+        openedDebts: [
+          ...resolvedCadence[0].openedDebts,
+          ...resolvedCadence[1].openedDebts,
+        ],
+        surfaceTags: {
+          ...resolvedCadence[0].surfaceTags,
+          ...resolvedCadence[1].surfaceTags,
+        }.toList(),
+      );
+      resolvedCadence = [carriedHead, ...resolvedCadence.skip(2)];
+    }
     return _family(
       family: SmartProgressionFamily.bridgeReturnHomeCadence,
       destination: resolvedCadence.length >= 3
@@ -5806,6 +6813,10 @@ class SmartGeneratorHelper {
       return null;
     }
     final patternTag = _familyTag(SmartProgressionFamily.passingDimToIi);
+    final handoffToPredominant = _dominantIntentOverflow(request) > 0;
+    final variantTag = handoffToPredominant
+        ? 'i_sharpIdim_ii_handoff'
+        : 'i_sharpIdim_ii_v';
     return _family(
       family: SmartProgressionFamily.passingDimToIi,
       destination: RomanNumeralId.iiMin7,
@@ -5814,7 +6825,7 @@ class SmartGeneratorHelper {
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.sharpIDim7,
           patternTag: patternTag,
-          variantTag: 'i_sharpIdim_ii_v',
+          variantTag: variantTag,
           surfaceTags: const ['commonToneDim', 'rareColor'],
           openedDebts: const [
             ResolutionDebt(
@@ -5829,17 +6840,21 @@ class SmartGeneratorHelper {
           keyCenter: request.currentKeyCenter,
           roman: RomanNumeralId.iiMin7,
           patternTag: patternTag,
-          variantTag: 'i_sharpIdim_ii_v',
+          variantTag: variantTag,
           satisfiedDebtTypes: const [ResolutionDebtType.rareColorPayoff],
+          surfaceTags: handoffToPredominant
+              ? const ['predominantHandoff']
+              : const [],
         ),
-        _queuedChord(
-          keyCenter: request.currentKeyCenter,
-          roman: RomanNumeralId.vDom7,
-          dominantContext: DominantContext.primaryMajor,
-          dominantIntent: DominantIntent.primaryAuthenticMajor,
-          patternTag: patternTag,
-          variantTag: 'i_sharpIdim_ii_v',
-        ),
+        if (!handoffToPredominant)
+          _queuedChord(
+            keyCenter: request.currentKeyCenter,
+            roman: RomanNumeralId.vDom7,
+            dominantContext: DominantContext.primaryMajor,
+            dominantIntent: DominantIntent.primaryAuthenticMajor,
+            patternTag: patternTag,
+            variantTag: variantTag,
+          ),
       ],
     );
   }

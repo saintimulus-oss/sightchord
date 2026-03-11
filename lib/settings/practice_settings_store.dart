@@ -51,6 +51,8 @@ class PracticeSettingsStore {
     required PracticeSettings fallbackSettings,
   }) async {
     final preferences = await _preferencesLoader();
+    final storedLanguage = preferences.getString(languageKey);
+    final storedMetronomeSound = preferences.getString(metronomeSoundKey);
     final storedActiveKeyCenters = preferences.getStringList(
       activeKeyCentersKey,
     );
@@ -58,17 +60,25 @@ class PracticeSettingsStore {
         .getStringList(activeKeysKey)
         ?.where(MusicTheory.keyOptions.contains)
         .toSet();
+    final storedSelectedTensions = preferences.getStringList(
+      selectedTensionsKey,
+    );
+    final storedTopNotePreference = preferences.getString(
+      voicingTopNotePreferenceKey,
+    );
     return PracticeSettings(
-      language: AppLanguageX.fromStorageKey(preferences.getString(languageKey)),
+      language: storedLanguage == null
+          ? fallbackSettings.language
+          : AppLanguageX.fromStorageKey(storedLanguage),
       metronomeEnabled:
           preferences.getBool(metronomeEnabledKey) ??
           fallbackSettings.metronomeEnabled,
       metronomeVolume:
           preferences.getDouble(metronomeVolumeKey) ??
           fallbackSettings.metronomeVolume,
-      metronomeSound: MetronomeSoundX.fromStorageKey(
-        preferences.getString(metronomeSoundKey),
-      ),
+      metronomeSound: storedMetronomeSound == null
+          ? fallbackSettings.metronomeSound
+          : MetronomeSoundX.fromStorageKey(storedMetronomeSound),
       activeKeyCenters: storedActiveKeyCenters != null
           ? storedActiveKeyCenters
                 .map(KeyCenter.fromSerialized)
@@ -76,9 +86,9 @@ class PracticeSettingsStore {
                   (center) => MusicTheory.keyOptions.contains(center.tonicName),
                 )
                 .toSet()
-          : legacyActiveKeys
-                ?.map((key) => MusicTheory.keyCenterFor(key))
-                .toSet(),
+          : legacyActiveKeys != null
+          ? legacyActiveKeys.map((key) => MusicTheory.keyCenterFor(key)).toSet()
+          : fallbackSettings.activeKeyCenters,
       smartGeneratorMode:
           preferences.getBool(smartGeneratorModeKey) ??
           fallbackSettings.smartGeneratorMode,
@@ -115,10 +125,12 @@ class PracticeSettingsStore {
       allowTensions:
           preferences.getBool(allowTensionsKey) ??
           fallbackSettings.allowTensions,
-      selectedTensionOptions: _sanitizeStoredTensionOptions(
-        preferences.getStringList(selectedTensionsKey),
-        fallbackSettings: fallbackSettings,
-      ),
+      selectedTensionOptions:
+          _sanitizeStoredTensionOptions(
+            storedSelectedTensions,
+            fallbackSettings: fallbackSettings,
+          ) ??
+          fallbackSettings.selectedTensionOptions,
       voicingSuggestionsEnabled:
           preferences.getBool(voicingSuggestionsEnabledKey) ??
           fallbackSettings.voicingSuggestionsEnabled,
@@ -126,9 +138,9 @@ class PracticeSettingsStore {
         (value) => value.name == preferences.getString(voicingComplexityKey),
         orElse: () => fallbackSettings.voicingComplexity,
       ),
-      voicingTopNotePreference: VoicingTopNotePreferenceX.fromStorageKey(
-        preferences.getString(voicingTopNotePreferenceKey),
-      ),
+      voicingTopNotePreference: storedTopNotePreference == null
+          ? fallbackSettings.voicingTopNotePreference
+          : VoicingTopNotePreferenceX.fromStorageKey(storedTopNotePreference),
       allowRootlessVoicings:
           preferences.getBool(allowRootlessVoicingsKey) ??
           fallbackSettings.allowRootlessVoicings,

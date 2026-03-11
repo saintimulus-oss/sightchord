@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'audio/beat_clock.dart';
+import 'audio/scheduled_metronome.dart';
 import 'l10n/app_localizations.dart';
 import 'music/chord_formatting.dart';
 import 'music/chord_theory.dart';
@@ -280,20 +282,32 @@ class _MyHomePageState extends State<MyHomePage> {
   static const int _minBpm = PracticeSettings.minBpm;
   static const int _maxBpm = PracticeSettings.maxBpm;
   static const int _beatsPerBar = 4;
+  static const Duration _scheduledMetronomeLookAhead = Duration(
+    milliseconds: 120,
+  );
+  static const Duration _scheduledMetronomePollInterval = Duration(
+    milliseconds: 25,
+  );
 
   final Random _random = Random();
   static const int _metronomePoolMinPlayers = 2;
   static const int _metronomePoolMaxPlayers = 4;
 
   AudioPool? _metronomePool;
+  final ScheduledMetronome _scheduledMetronome = createScheduledMetronome();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late final TextEditingController _bpmController;
 
   Timer? _autoTimer;
+  Timer? _scheduledMetronomeTimer;
   Future<void>? _audioInitFuture;
+  Stopwatch? _autoStopwatch;
+  BeatClock? _autoBeatClock;
   int? _currentBeat;
+  int _nextScheduledMetronomeSequence = 0;
   bool _audioReady = false;
   bool _autoRunning = false;
+  double? _scheduledMetronomeBaseTimeSeconds;
   PracticeChordQueueState _queueState = const PracticeChordQueueState();
   VoicingSessionState _voicingState = const VoicingSessionState();
 
@@ -342,6 +356,28 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _loadMetronomeSound(MetronomeSound sound) async {
     final previousPool = _metronomePool;
+    if (_usesPreciseMetronomeScheduling) {
+      try {
+        await _scheduledMetronome.loadAsset('assets/${sound.assetFileName}');
+        if (!mounted) {
+          return;
+        }
+        _metronomePool = null;
+        _audioReady = _scheduledMetronome.isLoaded;
+        await previousPool?.dispose();
+        if (_autoRunning) {
+          _restartMetronomeScheduling(immediateFirstBeat: false);
+        }
+      } catch (_) {
+        if (!mounted) {
+          return;
+        }
+        _metronomePool = previousPool;
+        _audioReady = _scheduledMetronome.isLoaded || _metronomePool != null;
+      }
+      return;
+    }
+
     AudioPool? nextPool;
     try {
       // Use a small player pool for metronome clicks so rapid beats do not
@@ -388,6 +424,21 @@ class _MyHomePageState extends State<MyHomePage> {
     return parsed.clamp(_minBpm, _maxBpm);
   }
 
+  bool get _usesPreciseMetronomeScheduling =>
+      _scheduledMetronome.supportsPreciseScheduling;
+
+  bool get _shouldScheduleMetronomeAhead =>
+      _usesPreciseMetronomeScheduling &&
+      _audioReady &&
+      _autoRunning &&
+      _settings.metronomeEnabled;
+
+  double get _beatIntervalSeconds =>
+      _beatInterval().inMicroseconds / Duration.microsecondsPerSecond;
+
+  double _elapsedSeconds(Duration duration) =>
+      duration.inMicroseconds / Duration.microsecondsPerSecond;
+
   bool get _usesKeyMode => _settings.usesKeyMode;
 
   List<KeyCenter> get _orderedKeyCenters => [
@@ -424,6 +475,14 @@ class _MyHomePageState extends State<MyHomePage> {
         );
       }
     });
+    if (_autoRunning && nextSettings.bpm != previousSettings.bpm) {
+      _startAutoLoop(immediateFirstBeat: false);
+    } else if (_autoRunning &&
+        (_usesPreciseMetronomeScheduling ||
+            nextSettings.metronomeEnabled !=
+                previousSettings.metronomeEnabled)) {
+      _restartMetronomeScheduling(immediateFirstBeat: false);
+    }
   }
 
   Future<void> _persistSettingsUpdate(PracticeSettings nextSettings) async {
@@ -1296,8 +1355,18 @@ class _MyHomePageState extends State<MyHomePage> {
     return MusicTheory.specFor(romanNumeralId).harmonicFunction;
   }
 
-  void _playMetronomeIfNeeded() {
+  void _playMetronomeIfNeeded({bool fromAutoTick = false}) {
     if (!_settings.metronomeEnabled) {
+      return;
+    }
+    if (fromAutoTick && _shouldScheduleMetronomeAhead) {
+      return;
+    }
+    if (_usesPreciseMetronomeScheduling) {
+      if (!_audioReady) {
+        return;
+      }
+      unawaited(_startScheduledMetronomePlayback());
       return;
     }
     final pool = _metronomePool;
@@ -1313,12 +1382,14 @@ class _MyHomePageState extends State<MyHomePage> {
     } catch (_) {}
   }
 
-  void _advanceChordUnawaited() {
-    _advanceChord();
+  Future<void> _startScheduledMetronomePlayback() async {
+    try {
+      await _scheduledMetronome.playNow(volume: _settings.metronomeVolume);
+    } catch (_) {}
   }
 
-  void _handleAutoTickUnawaited() {
-    _handleAutoTick();
+  void _advanceChordUnawaited() {
+    _advanceChord();
   }
 
   void _advanceChord() {
@@ -1343,7 +1414,7 @@ class _MyHomePageState extends State<MyHomePage> {
       shouldAdvanceChord = nextBeat == 0;
     });
 
-    _playMetronomeIfNeeded();
+    _playMetronomeIfNeeded(fromAutoTick: true);
 
     if (!mounted || !shouldAdvanceChord) {
       return;
@@ -1354,16 +1425,143 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _runDueAutoTicks() {
+    if (!mounted || !_autoRunning) {
+      return;
+    }
+    final beatClock = _autoBeatClock;
+    final autoStopwatch = _autoStopwatch;
+    if (beatClock == null || autoStopwatch == null) {
+      return;
+    }
+    for (final _ in beatClock.consumeDueSequences(autoStopwatch.elapsed)) {
+      if (!mounted || !_autoRunning) {
+        return;
+      }
+      _handleAutoTick();
+    }
+    _scheduleAutoTimer();
+  }
+
+  void _restartMetronomeScheduling({required bool immediateFirstBeat}) {
+    _scheduledMetronomeTimer?.cancel();
+    _scheduledMetronomeBaseTimeSeconds = null;
+    _nextScheduledMetronomeSequence = 0;
+    _scheduledMetronome.cancelScheduled();
+    if (!mounted || !_shouldScheduleMetronomeAhead) {
+      return;
+    }
+    unawaited(
+      _startMetronomeScheduling(immediateFirstBeat: immediateFirstBeat),
+    );
+  }
+
+  Future<void> _startMetronomeScheduling({
+    required bool immediateFirstBeat,
+  }) async {
+    try {
+      await _scheduledMetronome.ensureReady();
+    } catch (_) {
+      return;
+    }
+    if (!mounted || !_shouldScheduleMetronomeAhead) {
+      return;
+    }
+    final autoStopwatch = _autoStopwatch;
+    final beatClock = _autoBeatClock;
+    if (autoStopwatch == null || beatClock == null) {
+      return;
+    }
+
+    if (immediateFirstBeat) {
+      await _startScheduledMetronomePlayback();
+      if (!mounted || !_shouldScheduleMetronomeAhead) {
+        return;
+      }
+    }
+
+    final currentTimeSeconds = _scheduledMetronome.currentTimeSeconds;
+    if (currentTimeSeconds == null) {
+      return;
+    }
+    _scheduledMetronomeBaseTimeSeconds =
+        currentTimeSeconds - _elapsedSeconds(autoStopwatch.elapsed);
+    _nextScheduledMetronomeSequence = max(
+      beatClock.lastSequence + 1,
+      immediateFirstBeat ? 1 : 0,
+    );
+    _fillScheduledMetronomeWindow();
+    _scheduledMetronomeTimer = Timer.periodic(
+      _scheduledMetronomePollInterval,
+      (_) => _fillScheduledMetronomeWindow(),
+    );
+  }
+
+  void _fillScheduledMetronomeWindow() {
+    if (!mounted || !_shouldScheduleMetronomeAhead) {
+      return;
+    }
+    final baseTimeSeconds = _scheduledMetronomeBaseTimeSeconds;
+    final currentTimeSeconds = _scheduledMetronome.currentTimeSeconds;
+    if (baseTimeSeconds == null || currentTimeSeconds == null) {
+      return;
+    }
+    final horizonSeconds =
+        currentTimeSeconds + _elapsedSeconds(_scheduledMetronomeLookAhead);
+    while (true) {
+      final beatTimeSeconds =
+          baseTimeSeconds +
+          (_nextScheduledMetronomeSequence * _beatIntervalSeconds);
+      if (beatTimeSeconds > horizonSeconds) {
+        break;
+      }
+      _scheduledMetronome.scheduleAt(
+        whenSeconds: beatTimeSeconds,
+        volume: _settings.metronomeVolume,
+      );
+      _nextScheduledMetronomeSequence += 1;
+    }
+  }
+
+  void _startAutoLoop({required bool immediateFirstBeat}) {
+    _autoTimer?.cancel();
+    _autoStopwatch = Stopwatch()..start();
+    _autoBeatClock = BeatClock(
+      interval: _beatInterval(),
+      immediateFirstBeat: immediateFirstBeat,
+    );
+    _restartMetronomeScheduling(immediateFirstBeat: immediateFirstBeat);
+    if (immediateFirstBeat) {
+      _runDueAutoTicks();
+      return;
+    }
+    _scheduleAutoTimer();
+  }
+
   void _scheduleAutoTimer() {
     _autoTimer?.cancel();
-    _autoTimer = Timer.periodic(
-      _beatInterval(),
-      (_) => _handleAutoTickUnawaited(),
+    if (!mounted || !_autoRunning) {
+      return;
+    }
+    final beatClock = _autoBeatClock;
+    final autoStopwatch = _autoStopwatch;
+    if (beatClock == null || autoStopwatch == null) {
+      return;
+    }
+    _autoTimer = Timer(
+      beatClock.delayUntilNext(autoStopwatch.elapsed),
+      _runDueAutoTicks,
     );
   }
 
   void _stopAutoPlay({bool resetBeat = true}) {
     _autoTimer?.cancel();
+    _scheduledMetronomeTimer?.cancel();
+    _scheduledMetronome.cancelScheduled();
+    _autoStopwatch = null;
+    _autoBeatClock = null;
+    _scheduledMetronomeBaseTimeSeconds = null;
+    _nextScheduledMetronomeSequence = 0;
     setState(() {
       _autoRunning = false;
       if (resetBeat) {
@@ -1377,15 +1575,14 @@ class _MyHomePageState extends State<MyHomePage> {
       _autoRunning = true;
       _currentBeat = null;
     });
-    _handleAutoTickUnawaited();
-    _scheduleAutoTimer();
+    _startAutoLoop(immediateFirstBeat: true);
   }
 
   void _rescheduleAutoTimer() {
-    if (!_autoRunning) {
+    if (!mounted || !_autoRunning) {
       return;
     }
-    _scheduleAutoTimer();
+    _startAutoLoop(immediateFirstBeat: false);
   }
 
   void _toggleAutoPlay() {
@@ -1399,7 +1596,6 @@ class _MyHomePageState extends State<MyHomePage> {
   void _adjustBpm(int delta) {
     final next = (_effectiveBpm() + delta).clamp(_minBpm, _maxBpm);
     _applySettings(_settings.copyWith(bpm: next), syncBpmText: true);
-    _rescheduleAutoTimer();
   }
 
   void _handleBpmChanged(String value) {
@@ -1412,7 +1608,6 @@ class _MyHomePageState extends State<MyHomePage> {
   void _normalizeBpm() {
     final normalized = _effectiveBpm();
     _applySettings(_settings.copyWith(bpm: normalized), syncBpmText: true);
-    _rescheduleAutoTimer();
   }
 
   Widget _buildBeatCircle(int index) {
@@ -1530,12 +1725,14 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     _autoTimer?.cancel();
+    _scheduledMetronomeTimer?.cancel();
     _bpmController.dispose();
     final metronomePool = _metronomePool;
     _metronomePool = null;
     if (metronomePool != null) {
       unawaited(metronomePool.dispose());
     }
+    unawaited(_scheduledMetronome.dispose());
     super.dispose();
   }
 
@@ -1837,3 +2034,5 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+
