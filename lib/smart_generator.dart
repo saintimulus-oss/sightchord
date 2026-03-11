@@ -3994,7 +3994,7 @@ class SmartGeneratorHelper {
         SmartProgressionFamily.dominantHeadedScopeChain: 4,
         SmartProgressionFamily.closingPlagalAuthenticHybrid: 5,
         SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI: 3,
-        SmartProgressionFamily.minorIiVAltI: 14,
+        SmartProgressionFamily.minorIiVAltI: 16,
         SmartProgressionFamily.minorLineCliche: 4,
         SmartProgressionFamily.appliedDominantWithRelatedIi: 10,
         SmartProgressionFamily.dominantChainBridgeStyle: 8,
