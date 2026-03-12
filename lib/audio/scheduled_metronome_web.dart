@@ -1,5 +1,7 @@
 import 'dart:js_interop';
 
+import 'dart:developer' as developer;
+
 import 'package:flutter/services.dart';
 import 'package:web/web.dart' as web;
 
@@ -150,15 +152,36 @@ class _ScheduledWebClick {
   void stop() {
     try {
       source.stop();
-    } catch (_) {}
+    } catch (error, stackTrace) {
+      developer.log(
+        'Stopping a scheduled web metronome click failed.',
+        name: 'sightchord.audio.web',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   void dispose() {
     try {
       source.disconnect();
-    } catch (_) {}
+    } catch (error, stackTrace) {
+      developer.log(
+        'Disconnecting a scheduled web metronome source failed.',
+        name: 'sightchord.audio.web',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
     try {
       gain.disconnect();
-    } catch (_) {}
+    } catch (error, stackTrace) {
+      developer.log(
+        'Disconnecting a scheduled web metronome gain node failed.',
+        name: 'sightchord.audio.web',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'chord_theory.dart';
 import 'progression_analysis_models.dart';
 import 'progression_parser.dart';
@@ -22,9 +24,30 @@ class ProgressionAnalyzer {
 
     final primary = evaluations.first;
     final alternative =
-        evaluations.length > 1 && _showAlternative(primary, evaluations[1], chords.length)
+        evaluations.length > 1 &&
+            _showAlternative(primary, evaluations[1], chords.length)
         ? evaluations[1]
         : null;
+    final primaryConfidence = _analysisConfidence(
+      primary: primary,
+      alternative: alternative,
+      parseResult: parseResult,
+    );
+    final keyCandidates = [
+      for (
+        var index = 0;
+        index < math.min(evaluations.length, 3);
+        index += 1
+      )
+        ProgressionKeyCandidate(
+          keyCenter: evaluations[index].keyCenter,
+          score: evaluations[index].score,
+          confidence: _keyCandidateConfidence(
+            evaluation: evaluations[index],
+            primaryScore: primary.score,
+          ),
+        ),
+    ];
 
     return ProgressionAnalysis(
       input: input,
@@ -32,26 +55,24 @@ class ProgressionAnalyzer {
       primaryKey: ProgressionKeyCandidate(
         keyCenter: primary.keyCenter,
         score: primary.score,
+        confidence: primaryConfidence,
       ),
       alternativeKey: alternative == null
           ? null
           : ProgressionKeyCandidate(
               keyCenter: alternative.keyCenter,
               score: alternative.score,
+              confidence: _keyCandidateConfidence(
+                evaluation: alternative,
+                primaryScore: primary.score,
+              ),
             ),
-      keyCandidates: [
-        ProgressionKeyCandidate(
-          keyCenter: primary.keyCenter,
-          score: primary.score,
-        ),
-        if (alternative != null)
-          ProgressionKeyCandidate(
-            keyCenter: alternative.keyCenter,
-            score: alternative.score,
-          ),
-      ],
+      keyCandidates: keyCandidates,
       chordAnalyses: primary.chordAnalyses,
+      groupedMeasures: _groupAnalyzedMeasures(primary.chordAnalyses),
       tags: primary.tags,
+      confidence: primaryConfidence,
+      ambiguity: 1 - primaryConfidence,
     );
   }
 
@@ -60,7 +81,10 @@ class ProgressionAnalyzer {
     ...MusicTheory.orderedKeyCentersForMode(KeyMode.minor),
   ];
 
-  _KeyEvaluation _evaluateKeyCenter(KeyCenter keyCenter, List<ParsedChord> chords) {
+  _KeyEvaluation _evaluateKeyCenter(
+    KeyCenter keyCenter,
+    List<ParsedChord> chords,
+  ) {
     final chordAnalyses = <AnalyzedChord>[];
     var score = 0.0;
 
@@ -94,11 +118,7 @@ class ProgressionAnalyzer {
   }) {
     final chord = chords[index];
     final candidates = <_InterpretationCandidate>[
-      ..._specCandidates(
-        keyCenter: keyCenter,
-        chords: chords,
-        index: index,
-      ),
+      ..._specCandidates(keyCenter: keyCenter, chords: chords, index: index),
       ..._genericTritoneCandidates(
         keyCenter: keyCenter,
         chords: chords,
@@ -112,7 +132,8 @@ class ProgressionAnalyzer {
 
     final best = candidates.first;
     final second = candidates.length > 1 ? candidates[1] : null;
-    final ambiguous = second != null && (best.score - second.score) < 1.6;
+    final gap = second == null ? 3.8 : best.score - second.score;
+    final ambiguous = second != null && gap < 1.6;
 
     return AnalyzedChord(
       chord: chord,
@@ -121,12 +142,26 @@ class ProgressionAnalyzer {
       romanNumeralId: best.romanNumeralId,
       sourceKind: best.sourceKind,
       score: best.score,
+      confidence: _candidateConfidence(chord: chord, gap: gap),
       isAmbiguous: ambiguous || best.ambiguous,
       remarks: [
         ...best.remarks,
         if (ambiguous)
           const ProgressionRemark(
             kind: ProgressionRemarkKind.ambiguousInterpretation,
+          ),
+      ],
+      evidence: best.evidence,
+      competingInterpretations: [
+        for (final candidate in candidates.skip(1).take(2))
+          ChordInterpretationCandidate(
+            romanNumeral: candidate.romanNumeral,
+            harmonicFunction: candidate.harmonicFunction,
+            romanNumeralId: candidate.romanNumeralId,
+            sourceKind: candidate.sourceKind,
+            score: candidate.score,
+            remarks: candidate.remarks,
+            evidence: candidate.evidence,
           ),
       ],
     );
@@ -158,8 +193,8 @@ class ProgressionAnalyzer {
       }
 
       final compatibility = _qualityCompatibility(
-        chord.analysisQuality,
-        spec.quality,
+        chord: chord,
+        expected: spec.quality,
       );
       if (compatibility == null) {
         continue;
@@ -167,6 +202,12 @@ class ProgressionAnalyzer {
 
       var score = _baseScoreForSource(spec.sourceKind) * compatibility;
       final remarks = <ProgressionRemark>[];
+      final evidence = <ProgressionEvidence>[
+        const ProgressionEvidence(kind: ProgressionEvidenceKind.qualityMatch),
+      ];
+
+      score += _nuanceBonus(chord: chord, spec: spec);
+      evidence.addAll(_evidenceForChord(chord: chord, spec: spec));
 
       if (_isTonicRoman(entry.key)) {
         if (index == chords.length - 1) {
@@ -183,12 +224,21 @@ class ProgressionAnalyzer {
         if (resolutionTarget != null) {
           final targetRoman = MusicTheory.romanTokenOf(resolutionTarget);
           final resolutionScore = _resolutionScore(
+            sourceChord: chord,
             keyCenter: keyCenter,
             resolutionTarget: resolutionTarget,
             nextChord: nextChord,
             nextNextChord: nextNextChord,
           );
           score += resolutionScore;
+          if (resolutionScore > 0) {
+            evidence.add(
+              ProgressionEvidence(
+                kind: ProgressionEvidenceKind.resolution,
+                detail: targetRoman,
+              ),
+            );
+          }
           remarks.add(
             ProgressionRemark(
               kind: spec.sourceKind == ChordSourceKind.secondaryDominant
@@ -213,6 +263,9 @@ class ProgressionAnalyzer {
             kind: ProgressionRemarkKind.possibleModalInterchange,
           ),
         );
+        evidence.add(
+          const ProgressionEvidence(kind: ProgressionEvidenceKind.borrowedColor),
+        );
       }
 
       candidates.add(
@@ -223,6 +276,7 @@ class ProgressionAnalyzer {
           sourceKind: spec.sourceKind,
           score: score,
           remarks: remarks,
+          evidence: evidence,
         ),
       );
     }
@@ -247,7 +301,8 @@ class ProgressionAnalyzer {
 
     final targetCandidate = _bestDiatonicTarget(nextChord, keyCenter);
     final targetRoman =
-        targetCandidate?.romanNumeral ?? _fallbackRomanForChord(nextChord, keyCenter);
+        targetCandidate?.romanNumeral ??
+        _fallbackRomanForChord(nextChord, keyCenter);
 
     return [
       _InterpretationCandidate(
@@ -259,6 +314,20 @@ class ProgressionAnalyzer {
             kind: ProgressionRemarkKind.possibleTritoneSubstitute,
             targetRomanNumeral: targetRoman,
           ),
+        ],
+        evidence: [
+          const ProgressionEvidence(
+            kind: ProgressionEvidenceKind.alteredDominantColor,
+          ),
+          ProgressionEvidence(
+            kind: ProgressionEvidenceKind.resolution,
+            detail: targetRoman,
+          ),
+          if (chord.hasSlashBass)
+            ProgressionEvidence(
+              kind: ProgressionEvidenceKind.slashBass,
+              detail: chord.bass,
+            ),
         ],
         ambiguous: true,
       ),
@@ -275,8 +344,8 @@ class ProgressionAnalyzer {
       final root = MusicTheory.resolveChordRootForCenter(keyCenter, romanId);
       final semitone = MusicTheory.noteToSemitone[root];
       final compatibility = _qualityCompatibility(
-        chord.analysisQuality,
-        spec.quality,
+        chord: chord,
+        expected: spec.quality,
       );
       if (semitone == chord.rootSemitone && compatibility != null) {
         candidates.add(
@@ -286,6 +355,7 @@ class ProgressionAnalyzer {
             romanNumeralId: romanId,
             sourceKind: spec.sourceKind,
             score: 6 * compatibility,
+            evidence: _evidenceForChord(chord: chord, spec: spec),
           ),
         );
       }
@@ -297,12 +367,16 @@ class ProgressionAnalyzer {
     return candidates.first;
   }
 
-  AnalyzedChord _fallbackInterpretation(ParsedChord chord, KeyCenter keyCenter) {
+  AnalyzedChord _fallbackInterpretation(
+    ParsedChord chord,
+    KeyCenter keyCenter,
+  ) {
     return AnalyzedChord(
       chord: chord,
       romanNumeral: _fallbackRomanForChord(chord, keyCenter),
       harmonicFunction: ProgressionHarmonicFunction.other,
       score: -2,
+      confidence: 0.2,
       isAmbiguous: true,
       remarks: const [
         ProgressionRemark(kind: ProgressionRemarkKind.unresolved),
@@ -331,10 +405,29 @@ class ProgressionAnalyzer {
       11 => 'VII',
       _ => '?',
     };
-    return '$degree${_fallbackQualitySuffix(chord.analysisQuality)}';
+    return '$degree${_fallbackQualitySuffix(chord)}';
   }
 
-  String _fallbackQualitySuffix(ChordQuality quality) {
+  String _fallbackQualitySuffix(ParsedChord chord) {
+    if (chord.hasSuspension) {
+      return chord.suspensions.first == '2' ? 'sus2' : 'sus4';
+    }
+    if (chord.addedTones.isNotEmpty) {
+      return 'add${chord.addedTones.first}';
+    }
+    if (chord.extension == 9 &&
+        chord.analysisQuality == ChordQuality.dominant7) {
+      return '9';
+    }
+    if (chord.extension == 11 &&
+        chord.analysisQuality == ChordQuality.dominant7) {
+      return '11';
+    }
+    if (chord.extension == 13 &&
+        chord.analysisQuality == ChordQuality.dominant7) {
+      return '13';
+    }
+    final quality = chord.analysisQuality;
     return switch (quality) {
       ChordQuality.major7 => 'maj7',
       ChordQuality.major69 => '6/9',
@@ -352,7 +445,11 @@ class ProgressionAnalyzer {
     };
   }
 
-  double? _qualityCompatibility(ChordQuality actual, ChordQuality expected) {
+  double? _qualityCompatibility({
+    required ParsedChord chord,
+    required ChordQuality expected,
+  }) {
+    final actual = chord.analysisQuality;
     if (actual == expected) {
       return 1.0;
     }
@@ -384,6 +481,12 @@ class ProgressionAnalyzer {
       return 0.55;
     }
 
+    if (chord.hasSuspension &&
+        actual == ChordQuality.majorTriad &&
+        expected == ChordQuality.dominant7) {
+      return 0.62;
+    }
+
     return null;
   }
 
@@ -398,14 +501,148 @@ class ProgressionAnalyzer {
     };
   }
 
+  double _nuanceBonus({required ParsedChord chord, required RomanSpec spec}) {
+    var bonus = 0.0;
+    if (chord.hasExtension && chord.extension! >= 9) {
+      bonus += switch (spec.harmonicFunction) {
+        HarmonicFunction.tonic => 0.4,
+        HarmonicFunction.predominant => 0.3,
+        HarmonicFunction.dominant => 0.55,
+        HarmonicFunction.free => 0.0,
+      };
+    }
+    if (chord.hasAlteredColor && spec.harmonicFunction == HarmonicFunction.dominant) {
+      bonus += 0.9;
+    }
+    if (chord.hasSuspension && spec.harmonicFunction == HarmonicFunction.dominant) {
+      bonus += 0.45;
+    }
+    if (chord.hasSlashBass) {
+      final bassBonus = _slashBassBonus(chord: chord, spec: spec);
+      bonus += bassBonus;
+    }
+    return bonus;
+  }
+
+  List<ProgressionEvidence> _evidenceForChord({
+    required ParsedChord chord,
+    required RomanSpec spec,
+  }) {
+    final evidence = <ProgressionEvidence>[];
+    if (chord.hasExtension && chord.extension! >= 9) {
+      evidence.add(
+        ProgressionEvidence(
+          kind: ProgressionEvidenceKind.extensionColor,
+          detail: chord.extension!.toString(),
+        ),
+      );
+    }
+    if (chord.hasAlteredColor && spec.harmonicFunction == HarmonicFunction.dominant) {
+      evidence.add(
+        const ProgressionEvidence(
+          kind: ProgressionEvidenceKind.alteredDominantColor,
+        ),
+      );
+    }
+    if (chord.hasSuspension) {
+      evidence.add(
+        const ProgressionEvidence(
+          kind: ProgressionEvidenceKind.suspensionColor,
+        ),
+      );
+    }
+    if (chord.hasSlashBass) {
+      evidence.add(
+        ProgressionEvidence(
+          kind: ProgressionEvidenceKind.slashBass,
+          detail: chord.bass,
+        ),
+      );
+    }
+    return evidence;
+  }
+
+  double _slashBassBonus({required ParsedChord chord, required RomanSpec spec}) {
+    final bassSemitone = chord.bassSemitone;
+    if (bassSemitone == null) {
+      return 0;
+    }
+    final thirdOffset = switch (spec.quality) {
+      ChordQuality.minorTriad ||
+      ChordQuality.minor7 ||
+      ChordQuality.minorMajor7 ||
+      ChordQuality.minor6 ||
+      ChordQuality.halfDiminished7 ||
+      ChordQuality.diminishedTriad ||
+      ChordQuality.diminished7 => 3,
+      _ => 4,
+    };
+    if (bassSemitone == ((chord.rootSemitone + thirdOffset) % 12)) {
+      return 0.48;
+    }
+    if (bassSemitone == ((chord.rootSemitone + 7) % 12)) {
+      return 0.18;
+    }
+    if (spec.harmonicFunction == HarmonicFunction.dominant &&
+        bassSemitone == ((chord.rootSemitone + 10) % 12)) {
+      return 0.22;
+    }
+    return 0.08;
+  }
+
+  double _candidateConfidence({required ParsedChord chord, required double gap}) {
+    var confidence = 0.56 + (gap / 6.5);
+    if (chord.hasParserWarnings) {
+      confidence -= 0.08;
+    }
+    if (chord.hasAlteredColor) {
+      confidence += 0.03;
+    }
+    if (chord.hasSlashBass) {
+      confidence += 0.02;
+    }
+    return (confidence.clamp(0.18, 0.98) as num).toDouble();
+  }
+
+  double _analysisConfidence({
+    required _KeyEvaluation primary,
+    required _KeyEvaluation? alternative,
+    required ProgressionParseResult parseResult,
+  }) {
+    final gap = alternative == null ? 8.5 : primary.score - alternative.score;
+    var confidence = 0.54 + (gap / 18);
+    if (parseResult.hasPartialFailure) {
+      confidence -= 0.08;
+    }
+    final ambiguousRatio = primary.chordAnalyses.isEmpty
+        ? 0.0
+        : primary.chordAnalyses
+                .where((analysis) => analysis.isAmbiguous)
+                .length /
+            primary.chordAnalyses.length;
+    confidence -= ambiguousRatio * 0.22;
+    return (confidence.clamp(0.2, 0.98) as num).toDouble();
+  }
+
+  double _keyCandidateConfidence({
+    required _KeyEvaluation evaluation,
+    required double primaryScore,
+  }) {
+    final gap = primaryScore - evaluation.score;
+    return (1 - (gap / 18)).clamp(0.12, 0.98).toDouble();
+  }
+
   double _resolutionScore({
+    required ParsedChord sourceChord,
     required KeyCenter keyCenter,
     required RomanNumeralId resolutionTarget,
     required ParsedChord? nextChord,
     required ParsedChord? nextNextChord,
   }) {
+    final isMeasureEnd =
+        nextChord == null || nextChord.measureIndex != sourceChord.measureIndex;
     if (nextChord == null) {
-      return -1.2;
+      return isMeasureEnd ? -1.6 : -1.2;
     }
 
     final targetRoot = MusicTheory.resolveChordRootForCenter(
@@ -420,13 +657,18 @@ class ProgressionAnalyzer {
     }
 
     if (_matchesTarget(nextChord, targetSemitone, targetSpec.quality)) {
-      return 5;
+      final crossesIntoNextMeasure =
+          nextChord.measureIndex == sourceChord.measureIndex + 1 &&
+          nextChord.positionInMeasure == 0;
+      return crossesIntoNextMeasure ? 6 : 5;
     }
     if (nextNextChord != null &&
         _matchesTarget(nextNextChord, targetSemitone, targetSpec.quality)) {
-      return 2.6;
+      final staysInCadentialWindow =
+          nextNextChord.measureIndex - sourceChord.measureIndex <= 1;
+      return staysInCadentialWindow ? 3.1 : 2.6;
     }
-    return -1.2;
+    return isMeasureEnd ? -1.6 : -1.2;
   }
 
   bool _matchesTarget(
@@ -435,8 +677,8 @@ class ProgressionAnalyzer {
     ChordQuality targetQuality,
   ) {
     final compatibility = _qualityCompatibility(
-      chord.analysisQuality,
-      targetQuality,
+      chord: chord,
+      expected: targetQuality,
     );
     return chord.rootSemitone == targetSemitone && compatibility != null;
   }
@@ -444,8 +686,7 @@ class ProgressionAnalyzer {
   ProgressionHarmonicFunction _mapFunction(HarmonicFunction function) {
     return switch (function) {
       HarmonicFunction.tonic => ProgressionHarmonicFunction.tonic,
-      HarmonicFunction.predominant =>
-        ProgressionHarmonicFunction.predominant,
+      HarmonicFunction.predominant => ProgressionHarmonicFunction.predominant,
       HarmonicFunction.dominant => ProgressionHarmonicFunction.dominant,
       HarmonicFunction.free => ProgressionHarmonicFunction.other,
     };
@@ -466,8 +707,12 @@ class ProgressionAnalyzer {
       final first = analyses[index];
       final second = analyses[index + 1];
       final third = analyses[index + 2];
+      if (!_spansCadentialWindow(first, third)) {
+        continue;
+      }
 
-      final isIiVI = _isPredominantTwo(first) &&
+      final isIiVI =
+          _isPredominantTwo(first) &&
           second.harmonicFunction == ProgressionHarmonicFunction.dominant &&
           _isTonic(third);
       if (isIiVI) {
@@ -485,6 +730,7 @@ class ProgressionAnalyzer {
       final left = analyses[index];
       final right = analyses[index + 1];
       if (left.harmonicFunction == ProgressionHarmonicFunction.dominant &&
+          _spansCadentialWindow(left, right) &&
           _isTonic(right)) {
         tags.add(ProgressionTagId.dominantResolution);
       }
@@ -540,19 +786,54 @@ class ProgressionAnalyzer {
     if (_isTonic(analyses.first)) {
       score += 1.5;
     }
+    for (final analysis in analyses) {
+      if (analysis.chord.positionInMeasure == 0 && _isTonic(analysis)) {
+        score += 1.15;
+      }
+    }
     return score;
   }
 
   double _dominantResolutionBonus(List<AnalyzedChord> analyses) {
     var score = 0.0;
     for (var index = 0; index < analyses.length - 1; index += 1) {
-      if (analyses[index].harmonicFunction ==
+      final current = analyses[index];
+      final next = analyses[index + 1];
+      final endsMeasure = current.chord.measureIndex != next.chord.measureIndex;
+      if (current.harmonicFunction == ProgressionHarmonicFunction.dominant &&
+          _spansCadentialWindow(current, next) &&
+          _isTonic(next)) {
+        score += endsMeasure && next.chord.positionInMeasure == 0 ? 2.9 : 2.2;
+      } else if (current.harmonicFunction ==
               ProgressionHarmonicFunction.dominant &&
-          _isTonic(analyses[index + 1])) {
-        score += 2.2;
+          endsMeasure &&
+          !_isTonic(next)) {
+        score -= 0.5;
       }
     }
     return score;
+  }
+
+  List<AnalyzedMeasure> _groupAnalyzedMeasures(List<AnalyzedChord> analyses) {
+    final grouped = <AnalyzedMeasure>[];
+    for (final analysis in analyses) {
+      if (grouped.isEmpty ||
+          grouped.last.measureIndex != analysis.chord.measureIndex) {
+        grouped.add(
+          AnalyzedMeasure(
+            measureIndex: analysis.chord.measureIndex,
+            chordAnalyses: [analysis],
+          ),
+        );
+        continue;
+      }
+      grouped.last.chordAnalyses.add(analysis);
+    }
+    return grouped;
+  }
+
+  bool _spansCadentialWindow(AnalyzedChord start, AnalyzedChord end) {
+    return end.chord.measureIndex - start.chord.measureIndex <= 2;
   }
 
   bool _showAlternative(
@@ -575,6 +856,7 @@ class _InterpretationCandidate {
     this.romanNumeralId,
     this.sourceKind,
     this.remarks = const [],
+    this.evidence = const [],
     this.ambiguous = false,
   });
 
@@ -584,6 +866,7 @@ class _InterpretationCandidate {
   final ChordSourceKind? sourceKind;
   final double score;
   final List<ProgressionRemark> remarks;
+  final List<ProgressionEvidence> evidence;
   final bool ambiguous;
 }
 
