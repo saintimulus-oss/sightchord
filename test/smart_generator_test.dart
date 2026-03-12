@@ -606,6 +606,56 @@ void main() {
     expect(plan.debug.blockedReason, SmartBlockedReason.surpriseBudgetExhausted);
     expect(plan.debug.modulationKind, isNot(ModulationKind.real));
   });
+  test(
+    'recent distant modulation lockout surfaces specific blocked reason',
+    () {
+      SmartDiagnosticsStore.record(
+        SmartDecisionTrace(
+          stepIndex: 3,
+          currentKeyCenter: 'C major',
+          currentRomanNumeralId: RomanNumeralId.iMaj69,
+          currentHarmonicFunction: HarmonicFunction.tonic,
+          phraseContext: const SmartPhraseContext(
+            phraseRole: PhraseRole.preCadence,
+            sectionRole: SectionRole.bridgeLike,
+            harmonicDensity: HarmonicDensity.twoChordsPerBar,
+            barInPhrase: 6,
+            barsToBoundary: 2,
+            phraseLength: 8,
+          ),
+          modulationKind: ModulationKind.real,
+          finalKeyRelation: KeyRelation.distant,
+        ),
+      );
+
+      final plan = SmartGeneratorHelper.planNextStep(
+        random: _FixedRandom(0),
+        request: buildRequest(
+          stepIndex: 12,
+          activeKeys: const ['C', 'F#/Gb'],
+          currentKeyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+          currentRomanNumeralId: RomanNumeralId.iMaj69,
+          currentHarmonicFunction: HarmonicFunction.tonic,
+          jazzPreset: JazzPreset.modulationStudy,
+          modulationIntensity: ModulationIntensity.high,
+          phraseContext: const SmartPhraseContext(
+            phraseRole: PhraseRole.preCadence,
+            sectionRole: SectionRole.bridgeLike,
+            harmonicDensity: HarmonicDensity.twoChordsPerBar,
+            barInPhrase: 6,
+            barsToBoundary: 2,
+            phraseLength: 8,
+          ),
+        ),
+      );
+
+      expect(
+        plan.debug.blockedReason,
+        SmartBlockedReason.recentDistantModulationLockout,
+      );
+      expect(plan.debug.modulationKind, isNot(ModulationKind.real));
+    },
+  );
   test('modal interchange does not fully choke modulation paths', () {
     final summary = SmartGeneratorHelper.simulateSteps(
       random: Random(3),

@@ -1098,7 +1098,7 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerInputHelper.
   ///
   /// In en, this message translates to:
-  /// **'Spaces, |, and commas are accepted. Slash chords and simple alterations are supported.'**
+  /// **'Spaces, |, and commas are accepted. Slash chords and simple alterations are supported. Touch devices can use the chord pad or switch to ABC input.'**
   String get chordAnalyzerInputHelper;
 
   /// No description provided for @chordAnalyzerAnalyze.
@@ -1106,6 +1106,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Analyze'**
   String get chordAnalyzerAnalyze;
+
+  /// No description provided for @chordAnalyzerKeyboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chord Pad'**
+  String get chordAnalyzerKeyboardTitle;
+
+  /// No description provided for @chordAnalyzerKeyboardTouchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap tokens to build a progression. ABC input keeps the system keyboard available when you need free typing.'**
+  String get chordAnalyzerKeyboardTouchHint;
+
+  /// No description provided for @chordAnalyzerKeyboardDesktopHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type, paste, or tap tokens to insert them at the cursor.'**
+  String get chordAnalyzerKeyboardDesktopHint;
+
+  /// No description provided for @chordAnalyzerChordPad.
+  ///
+  /// In en, this message translates to:
+  /// **'Pad'**
+  String get chordAnalyzerChordPad;
+
+  /// No description provided for @chordAnalyzerRawInput.
+  ///
+  /// In en, this message translates to:
+  /// **'ABC'**
+  String get chordAnalyzerRawInput;
+
+  /// No description provided for @chordAnalyzerPaste.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get chordAnalyzerPaste;
+
+  /// No description provided for @chordAnalyzerClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get chordAnalyzerClear;
+
+  /// No description provided for @chordAnalyzerBackspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Backspace'**
+  String get chordAnalyzerBackspace;
+
+  /// No description provided for @chordAnalyzerSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Space'**
+  String get chordAnalyzerSpace;
 
   /// No description provided for @chordAnalyzerAnalyzing.
   ///
@@ -1148,6 +1202,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Chord-by-chord analysis'**
   String get chordAnalyzerChordAnalysis;
+
+  /// No description provided for @chordAnalyzerMeasureLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure {index}'**
+  String chordAnalyzerMeasureLabel(Object index);
 
   /// No description provided for @chordAnalyzerProgressionSummary.
   ///
@@ -1322,6 +1382,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Some details remain ambiguous, so this reading stays intentionally conservative.'**
   String get chordAnalyzerSummaryAmbiguous;
+
+  /// No description provided for @chordAnalyzerExamplesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Examples'**
+  String get chordAnalyzerExamplesTitle;
+
+  /// No description provided for @chordAnalyzerConfidenceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confidence'**
+  String get chordAnalyzerConfidenceLabel;
+
+  /// No description provided for @chordAnalyzerAmbiguityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ambiguity'**
+  String get chordAnalyzerAmbiguityLabel;
+
+  /// No description provided for @chordAnalyzerWhyThisReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Why this reading'**
+  String get chordAnalyzerWhyThisReading;
+
+  /// No description provided for @chordAnalyzerCompetingReadings.
+  ///
+  /// In en, this message translates to:
+  /// **'Also plausible'**
+  String get chordAnalyzerCompetingReadings;
+
+  /// No description provided for @chordAnalyzerIgnoredModifiersWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignored modifiers: {details}'**
+  String chordAnalyzerIgnoredModifiersWarning(Object details);
+
+  /// No description provided for @chordAnalyzerParserDiagnosticWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Input warning: {details}'**
+  String chordAnalyzerParserDiagnosticWarning(Object details);
+
+  /// No description provided for @chordAnalyzerDiagnosticUnbalancedParentheses.
+  ///
+  /// In en, this message translates to:
+  /// **'Unbalanced parentheses left part of the symbol uncertain.'**
+  String get chordAnalyzerDiagnosticUnbalancedParentheses;
+
+  /// No description provided for @chordAnalyzerDiagnosticUnexpectedCloseParenthesis.
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected closing parenthesis was ignored.'**
+  String get chordAnalyzerDiagnosticUnexpectedCloseParenthesis;
+
+  /// No description provided for @chordAnalyzerEvidenceExtensionColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Explicit {extension} color strengthens this reading.'**
+  String chordAnalyzerEvidenceExtensionColor(Object extension);
+
+  /// No description provided for @chordAnalyzerEvidenceAlteredDominantColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Altered dominant color supports a dominant function.'**
+  String get chordAnalyzerEvidenceAlteredDominantColor;
+
+  /// No description provided for @chordAnalyzerEvidenceSlashBass.
+  ///
+  /// In en, this message translates to:
+  /// **'Slash bass {bass} keeps the bass line or inversion meaningful.'**
+  String chordAnalyzerEvidenceSlashBass(Object bass);
+
+  /// No description provided for @chordAnalyzerEvidenceResolution.
+  ///
+  /// In en, this message translates to:
+  /// **'The next chord supports a resolution toward {target}.'**
+  String chordAnalyzerEvidenceResolution(Object target);
+
+  /// No description provided for @chordAnalyzerEvidenceBorrowedColor.
+  ///
+  /// In en, this message translates to:
+  /// **'This color can be heard as borrowed from the parallel mode.'**
+  String get chordAnalyzerEvidenceBorrowedColor;
+
+  /// No description provided for @chordAnalyzerEvidenceSuspensionColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Suspension color softens the dominant pull without erasing it.'**
+  String get chordAnalyzerEvidenceSuspensionColor;
 }
 
 class _AppLocalizationsDelegate

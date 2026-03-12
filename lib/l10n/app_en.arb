@@ -220,8 +220,17 @@
   "chordAnalyzerSubtitle": "Paste a progression and get a conservative harmonic reading.",
   "chordAnalyzerInputLabel": "Chord progression",
   "chordAnalyzerInputHint": "Dm7 G7 Cmaj7",
-  "chordAnalyzerInputHelper": "Spaces, |, and commas are accepted. Slash chords and simple alterations are supported.",
+  "chordAnalyzerInputHelper": "Spaces, |, and commas are accepted. Slash chords and simple alterations are supported. Touch devices can use the chord pad or switch to ABC input.",
   "chordAnalyzerAnalyze": "Analyze",
+  "chordAnalyzerKeyboardTitle": "Chord Pad",
+  "chordAnalyzerKeyboardTouchHint": "Tap tokens to build a progression. ABC input keeps the system keyboard available when you need free typing.",
+  "chordAnalyzerKeyboardDesktopHint": "Type, paste, or tap tokens to insert them at the cursor.",
+  "chordAnalyzerChordPad": "Pad",
+  "chordAnalyzerRawInput": "ABC",
+  "chordAnalyzerPaste": "Paste",
+  "chordAnalyzerClear": "Clear",
+  "chordAnalyzerBackspace": "Backspace",
+  "chordAnalyzerSpace": "Space",
   "chordAnalyzerAnalyzing": "Analyzing progression...",
   "chordAnalyzerInitialTitle": "Start with a progression",
   "chordAnalyzerInitialBody": "Enter a progression such as Dm7 G7 Cmaj7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, and a short summary.",
@@ -229,6 +238,12 @@
   "chordAnalyzerPrimaryReading": "Primary reading",
   "chordAnalyzerAlternativeReading": "Alternative reading",
   "chordAnalyzerChordAnalysis": "Chord-by-chord analysis",
+  "chordAnalyzerMeasureLabel": "Measure {index}",
+  "@chordAnalyzerMeasureLabel": {
+    "placeholders": {
+      "index": {}
+    }
+  },
   "chordAnalyzerProgressionSummary": "Progression summary",
   "chordAnalyzerWarnings": "Warnings and ambiguities",
   "chordAnalyzerNoInputError": "Enter a chord progression to analyze.",
@@ -318,5 +333,45 @@
       "chord": {}
     }
   },
-  "chordAnalyzerSummaryAmbiguous": "Some details remain ambiguous, so this reading stays intentionally conservative."
+  "chordAnalyzerSummaryAmbiguous": "Some details remain ambiguous, so this reading stays intentionally conservative.",
+  "chordAnalyzerExamplesTitle": "Examples",
+  "chordAnalyzerConfidenceLabel": "Confidence",
+  "chordAnalyzerAmbiguityLabel": "Ambiguity",
+  "chordAnalyzerWhyThisReading": "Why this reading",
+  "chordAnalyzerCompetingReadings": "Also plausible",
+  "chordAnalyzerIgnoredModifiersWarning": "Ignored modifiers: {details}",
+  "@chordAnalyzerIgnoredModifiersWarning": {
+    "placeholders": {
+      "details": {}
+    }
+  },
+  "chordAnalyzerParserDiagnosticWarning": "Input warning: {details}",
+  "@chordAnalyzerParserDiagnosticWarning": {
+    "placeholders": {
+      "details": {}
+    }
+  },
+  "chordAnalyzerDiagnosticUnbalancedParentheses": "Unbalanced parentheses left part of the symbol uncertain.",
+  "chordAnalyzerDiagnosticUnexpectedCloseParenthesis": "An unexpected closing parenthesis was ignored.",
+  "chordAnalyzerEvidenceExtensionColor": "Explicit {extension} color strengthens this reading.",
+  "@chordAnalyzerEvidenceExtensionColor": {
+    "placeholders": {
+      "extension": {}
+    }
+  },
+  "chordAnalyzerEvidenceAlteredDominantColor": "Altered dominant color supports a dominant function.",
+  "chordAnalyzerEvidenceSlashBass": "Slash bass {bass} keeps the bass line or inversion meaningful.",
+  "@chordAnalyzerEvidenceSlashBass": {
+    "placeholders": {
+      "bass": {}
+    }
+  },
+  "chordAnalyzerEvidenceResolution": "The next chord supports a resolution toward {target}.",
+  "@chordAnalyzerEvidenceResolution": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "chordAnalyzerEvidenceBorrowedColor": "This color can be heard as borrowed from the parallel mode.",
+  "chordAnalyzerEvidenceSuspensionColor": "Suspension color softens the dominant pull without erasing it."
 }

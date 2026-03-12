@@ -556,10 +556,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chordAnalyzerInputHelper =>
-      'Spaces, |, and commas are accepted. Slash chords and simple alterations are supported.';
+      'Spaces, |, and commas are accepted. Slash chords and simple alterations are supported. Touch devices can use the chord pad or switch to ABC input.';
 
   @override
   String get chordAnalyzerAnalyze => 'Analyze';
+
+  @override
+  String get chordAnalyzerKeyboardTitle => 'Chord Pad';
+
+  @override
+  String get chordAnalyzerKeyboardTouchHint =>
+      'Tap tokens to build a progression. ABC input keeps the system keyboard available when you need free typing.';
+
+  @override
+  String get chordAnalyzerKeyboardDesktopHint =>
+      'Type, paste, or tap tokens to insert them at the cursor.';
+
+  @override
+  String get chordAnalyzerChordPad => 'Pad';
+
+  @override
+  String get chordAnalyzerRawInput => 'ABC';
+
+  @override
+  String get chordAnalyzerPaste => 'Paste';
+
+  @override
+  String get chordAnalyzerClear => 'Clear';
+
+  @override
+  String get chordAnalyzerBackspace => 'Backspace';
+
+  @override
+  String get chordAnalyzerSpace => 'Space';
 
   @override
   String get chordAnalyzerAnalyzing => 'Analyzing progression...';
@@ -582,6 +611,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chordAnalyzerChordAnalysis => 'Chord-by-chord analysis';
+
+  @override
+  String chordAnalyzerMeasureLabel(Object index) {
+    return 'Measure $index';
+  }
 
   @override
   String get chordAnalyzerProgressionSummary => 'Progression summary';
@@ -701,4 +735,64 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chordAnalyzerSummaryAmbiguous =>
       'Some details remain ambiguous, so this reading stays intentionally conservative.';
+
+  @override
+  String get chordAnalyzerExamplesTitle => 'Examples';
+
+  @override
+  String get chordAnalyzerConfidenceLabel => 'Confidence';
+
+  @override
+  String get chordAnalyzerAmbiguityLabel => 'Ambiguity';
+
+  @override
+  String get chordAnalyzerWhyThisReading => 'Why this reading';
+
+  @override
+  String get chordAnalyzerCompetingReadings => 'Also plausible';
+
+  @override
+  String chordAnalyzerIgnoredModifiersWarning(Object details) {
+    return 'Ignored modifiers: $details';
+  }
+
+  @override
+  String chordAnalyzerParserDiagnosticWarning(Object details) {
+    return 'Input warning: $details';
+  }
+
+  @override
+  String get chordAnalyzerDiagnosticUnbalancedParentheses =>
+      'Unbalanced parentheses left part of the symbol uncertain.';
+
+  @override
+  String get chordAnalyzerDiagnosticUnexpectedCloseParenthesis =>
+      'An unexpected closing parenthesis was ignored.';
+
+  @override
+  String chordAnalyzerEvidenceExtensionColor(Object extension) {
+    return 'Explicit $extension color strengthens this reading.';
+  }
+
+  @override
+  String get chordAnalyzerEvidenceAlteredDominantColor =>
+      'Altered dominant color supports a dominant function.';
+
+  @override
+  String chordAnalyzerEvidenceSlashBass(Object bass) {
+    return 'Slash bass $bass keeps the bass line or inversion meaningful.';
+  }
+
+  @override
+  String chordAnalyzerEvidenceResolution(Object target) {
+    return 'The next chord supports a resolution toward $target.';
+  }
+
+  @override
+  String get chordAnalyzerEvidenceBorrowedColor =>
+      'This color can be heard as borrowed from the parallel mode.';
+
+  @override
+  String get chordAnalyzerEvidenceSuspensionColor =>
+      'Suspension color softens the dominant pull without erasing it.';
 }

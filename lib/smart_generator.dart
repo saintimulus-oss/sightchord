@@ -7132,6 +7132,12 @@ class SmartGeneratorHelper {
     required _PhrasePriority phrasePriority,
   }) {
     final phraseContext = _phraseContextForRequest(request);
+    final hasRecentWideModulation = _recentPlanningTraces(take: 16).any(
+      (trace) =>
+          trace.modulationKind == ModulationKind.real &&
+          (trace.finalKeyRelation == KeyRelation.mediant ||
+              trace.finalKeyRelation == KeyRelation.distant),
+    );
     if (request.activeKeys.length <= 1) {
       return const _ModulationOpportunity(
         candidates: [],
@@ -7156,20 +7162,23 @@ class SmartGeneratorHelper {
       jazzPreset: request.jazzPreset,
       phraseContext: phraseContext,
     );
+    final onlyParallelCandidates =
+        candidates.isNotEmpty &&
+        candidates.every(
+          (candidate) => candidate.relationToParent == KeyRelation.parallel,
+        );
+    if (hasRecentWideModulation &&
+        request.jazzPreset != JazzPreset.standardsCore &&
+        (candidates.isEmpty || onlyParallelCandidates)) {
+      return const _ModulationOpportunity(
+        candidates: [],
+        blockedReason: SmartBlockedReason.recentDistantModulationLockout,
+      );
+    }
     if (candidates.isEmpty) {
-      final blockedReason =
-          _recentPlanningTraces(take: 16).any(
-                (trace) =>
-                    trace.modulationKind == ModulationKind.real &&
-                    (trace.finalKeyRelation == KeyRelation.mediant ||
-                        trace.finalKeyRelation == KeyRelation.distant),
-              ) &&
-              request.jazzPreset != JazzPreset.standardsCore
-          ? SmartBlockedReason.recentDistantModulationLockout
-          : SmartBlockedReason.noCompatibleKey;
-      return _ModulationOpportunity(
-        candidates: const [],
-        blockedReason: blockedReason,
+      return const _ModulationOpportunity(
+        candidates: [],
+        blockedReason: SmartBlockedReason.noCompatibleKey,
       );
     }
     if ((phrasePriority == _PhrasePriority.low ||

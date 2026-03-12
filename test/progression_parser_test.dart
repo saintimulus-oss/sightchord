@@ -10,10 +10,16 @@ void main() {
 
     expect(result.validChords, hasLength(3));
     expect(result.issues, isEmpty);
+    expect(result.measures, hasLength(1));
     expect(result.validChords.map((chord) => chord.root).toList(), [
       'D',
       'G',
       'C',
+    ]);
+    expect(result.validChords.map((chord) => chord.measureIndex).toList(), [
+      0,
+      0,
+      0,
     ]);
   });
 
@@ -22,6 +28,11 @@ void main() {
 
     expect(result.validChords, hasLength(4));
     expect(result.issues, isEmpty);
+    expect(result.measures, hasLength(3));
+    expect(
+      result.measures.map((measure) => measure.validChords.length).toList(),
+      [1, 2, 1],
+    );
     expect(result.validChords.last.sourceSymbol, 'Gmaj7');
   });
 
@@ -39,9 +50,27 @@ void main() {
 
     expect(result.validChords, hasLength(2));
     expect(result.issues, isEmpty);
-    expect(result.validChords.first.displayQuality, ChordQuality.dominant7Sharp11);
+    expect(
+      result.validChords.first.displayQuality,
+      ChordQuality.dominant7Sharp11,
+    );
     expect(result.validChords.first.analysisQuality, ChordQuality.dominant7);
     expect(result.validChords.first.tensions, ['#11']);
     expect(result.validChords.last.displayQuality, ChordQuality.dominant7Alt);
+  });
+
+  test('collapses empty measures while preserving measure metadata', () {
+    final result = parser.parse('| Dm7 G7 || Cmaj7 |');
+
+    expect(result.measures, hasLength(2));
+    expect(result.validChords.map((chord) => chord.measureIndex).toList(), [
+      0,
+      0,
+      1,
+    ]);
+    expect(
+      result.validChords.map((chord) => chord.positionInMeasure).toList(),
+      [0, 1, 0],
+    );
   });
 }

@@ -15,9 +15,7 @@ class ProgressionExplainer {
 
     final leadTag = analysis.tags.isEmpty ? null : analysis.tags.first;
     if (leadTag != null) {
-      sentences.add(
-        l10n.chordAnalyzerSummaryTag(_tagLabel(l10n, leadTag)),
-      );
+      sentences.add(l10n.chordAnalyzerSummaryTag(_tagLabel(l10n, leadTag)));
     }
 
     final cadenceSpan = _iiVISpan(analysis.chordAnalyses);
@@ -26,8 +24,14 @@ class ProgressionExplainer {
         l10n.chordAnalyzerSummaryFlow(
           cadenceSpan.first.chord.sourceSymbol,
           cadenceSpan.second.chord.sourceSymbol,
-          _functionLabel(l10n, cadenceSpan.first.harmonicFunction).toLowerCase(),
-          _functionLabel(l10n, cadenceSpan.second.harmonicFunction).toLowerCase(),
+          _functionLabel(
+            l10n,
+            cadenceSpan.first.harmonicFunction,
+          ).toLowerCase(),
+          _functionLabel(
+            l10n,
+            cadenceSpan.second.harmonicFunction,
+          ).toLowerCase(),
           cadenceSpan.third.chord.sourceSymbol,
         ),
       );
@@ -107,14 +111,31 @@ class ProgressionExplainer {
           remark.targetRomanNumeral ?? '?',
         ),
       ProgressionRemarkKind.possibleTritoneSubstitute =>
-        l10n.chordAnalyzerRemarkTritoneSub(
-          remark.targetRomanNumeral ?? '?',
-        ),
+        l10n.chordAnalyzerRemarkTritoneSub(remark.targetRomanNumeral ?? '?'),
       ProgressionRemarkKind.possibleModalInterchange =>
         l10n.chordAnalyzerRemarkModalInterchange,
       ProgressionRemarkKind.ambiguousInterpretation =>
         l10n.chordAnalyzerRemarkAmbiguous,
       ProgressionRemarkKind.unresolved => l10n.chordAnalyzerRemarkUnresolved,
+    };
+  }
+
+  String evidenceLabel(AppLocalizations l10n, ProgressionEvidence evidence) {
+    return switch (evidence.kind) {
+      ProgressionEvidenceKind.qualityMatch =>
+        l10n.chordAnalyzerFunctionOther,
+      ProgressionEvidenceKind.extensionColor =>
+        l10n.chordAnalyzerEvidenceExtensionColor(evidence.detail ?? '?'),
+      ProgressionEvidenceKind.alteredDominantColor =>
+        l10n.chordAnalyzerEvidenceAlteredDominantColor,
+      ProgressionEvidenceKind.slashBass =>
+        l10n.chordAnalyzerEvidenceSlashBass(evidence.detail ?? '?'),
+      ProgressionEvidenceKind.resolution =>
+        l10n.chordAnalyzerEvidenceResolution(evidence.detail ?? '?'),
+      ProgressionEvidenceKind.borrowedColor =>
+        l10n.chordAnalyzerEvidenceBorrowedColor,
+      ProgressionEvidenceKind.suspensionColor =>
+        l10n.chordAnalyzerEvidenceSuspensionColor,
     };
   }
 
@@ -137,6 +158,9 @@ class ProgressionExplainer {
       final first = analyses[index];
       final second = analyses[index + 1];
       final third = analyses[index + 2];
+      if (third.chord.measureIndex - first.chord.measureIndex > 2) {
+        continue;
+      }
       final isIiVI =
           (first.romanNumeralId == RomanNumeralId.iiMin7 ||
               first.romanNumeralId == RomanNumeralId.iiHalfDiminishedMinor) &&
@@ -166,14 +190,12 @@ class ProgressionExplainer {
     ProgressionHarmonicFunction function,
   ) {
     return switch (function) {
-      ProgressionHarmonicFunction.tonic =>
-        l10n.chordAnalyzerFunctionTonic,
+      ProgressionHarmonicFunction.tonic => l10n.chordAnalyzerFunctionTonic,
       ProgressionHarmonicFunction.predominant =>
         l10n.chordAnalyzerFunctionPredominant,
       ProgressionHarmonicFunction.dominant =>
         l10n.chordAnalyzerFunctionDominant,
-      ProgressionHarmonicFunction.other =>
-        l10n.chordAnalyzerFunctionOther,
+      ProgressionHarmonicFunction.other => l10n.chordAnalyzerFunctionOther,
     };
   }
 

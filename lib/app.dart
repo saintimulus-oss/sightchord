@@ -2,13 +2,12 @@ import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:math';
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'audio/beat_clock.dart';
-import 'audio/scheduled_metronome.dart';
+import 'audio/metronome_audio_service.dart';
 import 'chord_analyzer_page.dart';
 import 'l10n/app_localizations.dart';
 import 'music/chord_formatting.dart';
@@ -22,6 +21,8 @@ import 'settings/practice_settings_effects.dart';
 import 'settings/practice_settings_drawer.dart';
 import 'settings/settings_controller.dart';
 import 'smart_generator.dart';
+import 'widgets/beat_indicator_row.dart';
+import 'widgets/practice_overview_card.dart';
 import 'widgets/voicing_suggestions_section.dart';
 
 Future<void> bootstrapApp() async {
@@ -50,6 +51,25 @@ class MyApp extends StatelessWidget {
   static const List<Locale> supportedLocales =
       AppLocalizations.supportedLocales;
 
+  ThemeData _buildTheme(Brightness brightness) {
+    final baseColorScheme = ColorScheme.fromSeed(
+      seedColor: const Color(0xFF1E6258),
+      brightness: brightness,
+    );
+    return ThemeData(
+      colorScheme: baseColorScheme,
+      scaffoldBackgroundColor: brightness == Brightness.dark
+          ? const Color(0xFF111716)
+          : const Color(0xFFF6F2E8),
+      cardTheme: CardThemeData(
+        color: brightness == Brightness.dark
+            ? baseColorScheme.surfaceContainerLow
+            : baseColorScheme.surface,
+      ),
+      useMaterial3: true,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -66,13 +86,9 @@ class MyApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF1E6258),
-            ),
-            scaffoldBackgroundColor: const Color(0xFFF6F2E8),
-            useMaterial3: true,
-          ),
+          themeMode: ThemeMode.system,
+          theme: _buildTheme(Brightness.light),
+          darkTheme: _buildTheme(Brightness.dark),
           home: MainMenuPage(controller: controller),
         );
       },
@@ -383,22 +399,16 @@ class _MyHomePageState extends State<MyHomePage> {
   );
 
   final Random _random = Random();
-  static const int _metronomePoolMinPlayers = 2;
-  static const int _metronomePoolMaxPlayers = 4;
-
-  AudioPool? _metronomePool;
-  final ScheduledMetronome _scheduledMetronome = createScheduledMetronome();
+  late final MetronomeAudioService _metronomeAudio;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late final TextEditingController _bpmController;
 
   Timer? _autoTimer;
   Timer? _scheduledMetronomeTimer;
-  Future<void>? _audioInitFuture;
   Stopwatch? _autoStopwatch;
   BeatClock? _autoBeatClock;
   int? _currentBeat;
   int _nextScheduledMetronomeSequence = 0;
-  bool _audioReady = false;
   bool _autoRunning = false;
   double? _scheduledMetronomeBaseTimeSeconds;
   PracticeChordQueueState _queueState = const PracticeChordQueueState();
@@ -423,8 +433,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    _metronomeAudio = MetronomeAudioService(logWarning: _logAudioWarning);
     _bpmController = TextEditingController(text: '${_settings.bpm}');
-    _audioInitFuture = _initAudio();
+    unawaited(_initAudio());
     _ensureChordQueueInitialized();
     _recomputeVoicingSuggestions();
   }
@@ -433,71 +444,13 @@ class _MyHomePageState extends State<MyHomePage> {
     await _queueMetronomeSoundLoad(_settings.metronomeSound);
   }
 
-  Future<void> _queueMetronomeSoundLoad(MetronomeSound sound) {
-    final previousInit = _audioInitFuture;
-    final loadFuture = () async {
-      if (previousInit != null) {
-        try {
-          await previousInit;
-        } catch (_) {}
-      }
-      await _loadMetronomeSound(sound);
-    }();
-    _audioInitFuture = loadFuture;
-    return loadFuture;
-  }
-
-  Future<void> _loadMetronomeSound(MetronomeSound sound) async {
-    final previousPool = _metronomePool;
-    if (_usesPreciseMetronomeScheduling) {
-      try {
-        await _scheduledMetronome.loadAsset('assets/${sound.assetFileName}');
-        if (!mounted) {
-          return;
-        }
-        _metronomePool = null;
-        _audioReady = _scheduledMetronome.isLoaded;
-        await previousPool?.dispose();
-        if (_autoRunning) {
-          _restartMetronomeScheduling(immediateFirstBeat: false);
-        }
-      } catch (_) {
-        if (!mounted) {
-          return;
-        }
-        _metronomePool = previousPool;
-        _audioReady = _scheduledMetronome.isLoaded || _metronomePool != null;
-      }
+  Future<void> _queueMetronomeSoundLoad(MetronomeSound sound) async {
+    final result = await _metronomeAudio.queueSoundLoad(sound);
+    if (!mounted) {
       return;
     }
-
-    AudioPool? nextPool;
-    try {
-      // Use a small player pool for metronome clicks so rapid beats do not
-      // contend with a single stop/resume cycle.
-      nextPool = await AudioPool.createFromAsset(
-        path: sound.assetFileName,
-        minPlayers: _metronomePoolMinPlayers,
-        maxPlayers: _metronomePoolMaxPlayers,
-      );
-      if (!mounted) {
-        await nextPool.dispose();
-        return;
-      }
-      _metronomePool = nextPool;
-      _audioReady = true;
-      await previousPool?.dispose();
-    } catch (_) {
-      if (nextPool != null && !identical(nextPool, previousPool)) {
-        try {
-          await nextPool.dispose();
-        } catch (_) {}
-      }
-      if (!mounted) {
-        return;
-      }
-      _metronomePool = previousPool;
-      _audioReady = _metronomePool != null;
+    if (result.preciseAssetReloaded && _autoRunning) {
+      _restartMetronomeScheduling(immediateFirstBeat: false);
     }
   }
 
@@ -518,11 +471,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   bool get _usesPreciseMetronomeScheduling =>
-      _scheduledMetronome.supportsPreciseScheduling;
+      _metronomeAudio.supportsPreciseScheduling;
 
   bool get _shouldScheduleMetronomeAhead =>
       _usesPreciseMetronomeScheduling &&
-      _audioReady &&
+      _metronomeAudio.isReady &&
       _autoRunning &&
       _settings.metronomeEnabled;
 
@@ -547,7 +500,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }) {
     final previousSettings = _settings;
     if (nextSettings.metronomeSound != previousSettings.metronomeSound) {
-      _audioInitFuture = _queueMetronomeSoundLoad(nextSettings.metronomeSound);
+      unawaited(_queueMetronomeSoundLoad(nextSettings.metronomeSound));
     }
     final forceLookAheadRefresh =
         !reseed &&
@@ -1456,30 +1409,10 @@ class _MyHomePageState extends State<MyHomePage> {
     if (fromAutoTick && _shouldScheduleMetronomeAhead) {
       return;
     }
-    if (_usesPreciseMetronomeScheduling) {
-      if (!_audioReady) {
-        return;
-      }
-      unawaited(_startScheduledMetronomePlayback());
+    if (!_metronomeAudio.isReady) {
       return;
     }
-    final pool = _metronomePool;
-    if (!_audioReady || pool == null) {
-      return;
-    }
-    unawaited(_startMetronomePlayback(pool));
-  }
-
-  Future<void> _startMetronomePlayback(AudioPool pool) async {
-    try {
-      await pool.start(volume: _settings.metronomeVolume);
-    } catch (_) {}
-  }
-
-  Future<void> _startScheduledMetronomePlayback() async {
-    try {
-      await _scheduledMetronome.playNow(volume: _settings.metronomeVolume);
-    } catch (_) {}
+    unawaited(_metronomeAudio.playNow(volume: _settings.metronomeVolume));
   }
 
   void _advanceChordUnawaited() {
@@ -1541,7 +1474,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _scheduledMetronomeTimer?.cancel();
     _scheduledMetronomeBaseTimeSeconds = null;
     _nextScheduledMetronomeSequence = 0;
-    _scheduledMetronome.cancelScheduled();
+    _metronomeAudio.cancelScheduled();
     if (!mounted || !_shouldScheduleMetronomeAhead) {
       return;
     }
@@ -1553,9 +1486,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _startMetronomeScheduling({
     required bool immediateFirstBeat,
   }) async {
-    try {
-      await _scheduledMetronome.ensureReady();
-    } catch (_) {
+    final prepared = await _metronomeAudio.ensurePreciseReady();
+    if (!prepared) {
       return;
     }
     if (!mounted || !_shouldScheduleMetronomeAhead) {
@@ -1568,13 +1500,13 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     if (immediateFirstBeat) {
-      await _startScheduledMetronomePlayback();
+      await _metronomeAudio.playNow(volume: _settings.metronomeVolume);
       if (!mounted || !_shouldScheduleMetronomeAhead) {
         return;
       }
     }
 
-    final currentTimeSeconds = _scheduledMetronome.currentTimeSeconds;
+    final currentTimeSeconds = _metronomeAudio.currentTimeSeconds;
     if (currentTimeSeconds == null) {
       return;
     }
@@ -1585,6 +1517,7 @@ class _MyHomePageState extends State<MyHomePage> {
       immediateFirstBeat ? 1 : 0,
     );
     _fillScheduledMetronomeWindow();
+    _scheduledMetronomeTimer?.cancel();
     _scheduledMetronomeTimer = Timer.periodic(
       _scheduledMetronomePollInterval,
       (_) => _fillScheduledMetronomeWindow(),
@@ -1596,7 +1529,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
     final baseTimeSeconds = _scheduledMetronomeBaseTimeSeconds;
-    final currentTimeSeconds = _scheduledMetronome.currentTimeSeconds;
+    final currentTimeSeconds = _metronomeAudio.currentTimeSeconds;
     if (baseTimeSeconds == null || currentTimeSeconds == null) {
       return;
     }
@@ -1609,7 +1542,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (beatTimeSeconds > horizonSeconds) {
         break;
       }
-      _scheduledMetronome.scheduleAt(
+      _metronomeAudio.scheduleAt(
         whenSeconds: beatTimeSeconds,
         volume: _settings.metronomeVolume,
       );
@@ -1651,7 +1584,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _stopAutoPlay({bool resetBeat = true}) {
     _autoTimer?.cancel();
     _scheduledMetronomeTimer?.cancel();
-    _scheduledMetronome.cancelScheduled();
+    _metronomeAudio.cancelScheduled();
     _autoStopwatch = null;
     _autoBeatClock = null;
     _scheduledMetronomeBaseTimeSeconds = null;
@@ -1687,6 +1620,39 @@ class _MyHomePageState extends State<MyHomePage> {
     _startAutoPlay();
   }
 
+  bool _isEditableTextFocused() {
+    final focusedContext = FocusManager.instance.primaryFocus?.context;
+    if (focusedContext == null) {
+      return false;
+    }
+    if (focusedContext.widget is EditableText) {
+      return true;
+    }
+    return focusedContext.findAncestorWidgetOfExactType<EditableText>() != null;
+  }
+
+  VoidCallback _guardGlobalShortcut(VoidCallback action) {
+    return () {
+      if (_isEditableTextFocused()) {
+        return;
+      }
+      action();
+    };
+  }
+
+  void _logAudioWarning(
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
+    developer.log(
+      message,
+      name: 'sightchord.audio',
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
+
   void _adjustBpm(int delta) {
     final next = (_effectiveBpm() + delta).clamp(_minBpm, _maxBpm);
     _applySettings(_settings.copyWith(bpm: next), syncBpmText: true);
@@ -1704,105 +1670,14 @@ class _MyHomePageState extends State<MyHomePage> {
     _applySettings(_settings.copyWith(bpm: normalized), syncBpmText: true);
   }
 
-  Widget _buildBeatCircle(int index) {
-    final isActive = _currentBeat == index;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final animationDuration = _beatIndicatorAnimationDuration();
-    final activeColor = colorScheme.primary;
-    final inactiveColor = colorScheme.outlineVariant;
-
-    return AnimatedScale(
-      scale: isActive ? 1.18 : 1,
-      duration: animationDuration,
-      curve: Curves.easeOutCubic,
-      child: AnimatedContainer(
-        key: ValueKey('beat-circle-$index'),
-        duration: animationDuration,
-        curve: Curves.easeOutCubic,
-        width: 12,
-        height: 12,
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isActive
-                ? activeColor.withValues(alpha: 0.95)
-                : inactiveColor.withValues(alpha: 0.85),
-          ),
-          gradient: RadialGradient(
-            radius: isActive ? 0.95 : 0.8,
-            colors: isActive
-                ? [
-                    activeColor.withValues(alpha: 0.98),
-                    activeColor.withValues(alpha: 0.74),
-                  ]
-                : [
-                    inactiveColor.withValues(alpha: 0.82),
-                    inactiveColor.withValues(alpha: 0.42),
-                  ],
-          ),
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: activeColor.withValues(alpha: 0.34),
-                    blurRadius: 12,
-                    spreadRadius: 1,
-                  ),
-                ]
-              : const [],
-        ),
-      ),
-    );
-  }
-
   Widget _buildSummaryCard(AppLocalizations l10n) {
-    final theme = Theme.of(context);
-    return Card(
-      elevation: 0,
-      color: theme.colorScheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              _usesKeyMode
-                  ? l10n.keyPracticeOverview
-                  : l10n.freePracticeOverview,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _practiceModeDescription(l10n),
-              style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _practiceModeTags(l10n)
-                  .map(
-                    (tag) => Chip(
-                      label: Text(tag),
-                      visualDensity: VisualDensity.compact,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  )
-                  .toList(),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              l10n.keyboardShortcutHelp,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return PracticeOverviewCard(
+      title: _usesKeyMode
+          ? l10n.keyPracticeOverview
+          : l10n.freePracticeOverview,
+      description: _practiceModeDescription(l10n),
+      tags: _practiceModeTags(l10n),
+      keyboardShortcutHelp: l10n.keyboardShortcutHelp,
     );
   }
 
@@ -1818,15 +1693,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
+    _autoRunning = false;
     _autoTimer?.cancel();
     _scheduledMetronomeTimer?.cancel();
     _bpmController.dispose();
-    final metronomePool = _metronomePool;
-    _metronomePool = null;
-    if (metronomePool != null) {
-      unawaited(metronomePool.dispose());
-    }
-    unawaited(_scheduledMetronome.dispose());
+    unawaited(_metronomeAudio.dispose());
     super.dispose();
   }
 
@@ -1855,11 +1726,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return CallbackShortcuts(
       bindings: {
-        const SingleActivator(LogicalKeyboardKey.space): _advanceChordUnawaited,
-        const SingleActivator(LogicalKeyboardKey.enter): _toggleAutoPlay,
-        const SingleActivator(LogicalKeyboardKey.arrowUp): () => _adjustBpm(5),
-        const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
-            _adjustBpm(-5),
+        const SingleActivator(LogicalKeyboardKey.space): _guardGlobalShortcut(
+          _advanceChordUnawaited,
+        ),
+        const SingleActivator(LogicalKeyboardKey.enter): _guardGlobalShortcut(
+          _toggleAutoPlay,
+        ),
+        const SingleActivator(LogicalKeyboardKey.arrowUp): _guardGlobalShortcut(
+          () => _adjustBpm(5),
+        ),
+        const SingleActivator(LogicalKeyboardKey.arrowDown):
+            _guardGlobalShortcut(() => _adjustBpm(-5)),
       },
       child: Focus(
         autofocus: true,
@@ -1898,10 +1775,14 @@ class _MyHomePageState extends State<MyHomePage> {
                               children: [
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
-                                  children: List.generate(
-                                    _beatsPerBar,
-                                    _buildBeatCircle,
-                                  ),
+                                  children: [
+                                    BeatIndicatorRow(
+                                      beatCount: _beatsPerBar,
+                                      activeBeat: _currentBeat,
+                                      animationDuration:
+                                          _beatIndicatorAnimationDuration(),
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(height: 24),
                                 SizedBox(
