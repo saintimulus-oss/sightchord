@@ -122,14 +122,14 @@ class ProgressionExplainer {
 
   String evidenceLabel(AppLocalizations l10n, ProgressionEvidence evidence) {
     return switch (evidence.kind) {
-      ProgressionEvidenceKind.qualityMatch =>
-        l10n.chordAnalyzerFunctionOther,
+      ProgressionEvidenceKind.qualityMatch => l10n.chordAnalyzerFunctionOther,
       ProgressionEvidenceKind.extensionColor =>
         l10n.chordAnalyzerEvidenceExtensionColor(evidence.detail ?? '?'),
       ProgressionEvidenceKind.alteredDominantColor =>
         l10n.chordAnalyzerEvidenceAlteredDominantColor,
-      ProgressionEvidenceKind.slashBass =>
-        l10n.chordAnalyzerEvidenceSlashBass(evidence.detail ?? '?'),
+      ProgressionEvidenceKind.slashBass => l10n.chordAnalyzerEvidenceSlashBass(
+        evidence.detail ?? '?',
+      ),
       ProgressionEvidenceKind.resolution =>
         l10n.chordAnalyzerEvidenceResolution(evidence.detail ?? '?'),
       ProgressionEvidenceKind.borrowedColor =>

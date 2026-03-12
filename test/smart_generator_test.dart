@@ -603,7 +603,10 @@ void main() {
       ),
     );
 
-    expect(plan.debug.blockedReason, SmartBlockedReason.surpriseBudgetExhausted);
+    expect(
+      plan.debug.blockedReason,
+      SmartBlockedReason.surpriseBudgetExhausted,
+    );
     expect(plan.debug.modulationKind, isNot(ModulationKind.real));
   });
   test(
@@ -633,7 +636,10 @@ void main() {
         request: buildRequest(
           stepIndex: 12,
           activeKeys: const ['C', 'F#/Gb'],
-          currentKeyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+          currentKeyCenter: const KeyCenter(
+            tonicName: 'C',
+            mode: KeyMode.major,
+          ),
           currentRomanNumeralId: RomanNumeralId.iMaj69,
           currentHarmonicFunction: HarmonicFunction.tonic,
           jazzPreset: JazzPreset.modulationStudy,
@@ -3496,4 +3502,3 @@ void main() {
     },
   );
 }
-

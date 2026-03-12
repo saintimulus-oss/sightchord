@@ -5,11 +5,8 @@ import 'package:audioplayers/audioplayers.dart';
 import '../settings/practice_settings.dart';
 import 'scheduled_metronome.dart';
 
-typedef MetronomeWarningLogger = void Function(
-  String message, {
-  Object? error,
-  StackTrace? stackTrace,
-});
+typedef MetronomeWarningLogger =
+    void Function(String message, {Object? error, StackTrace? stackTrace});
 
 class MetronomeSoundLoadResult {
   const MetronomeSoundLoadResult({this.preciseAssetReloaded = false});
@@ -174,10 +171,7 @@ class MetronomeAudioService {
   }
 
   void scheduleAt({required double whenSeconds, required double volume}) {
-    _scheduledMetronome.scheduleAt(
-      whenSeconds: whenSeconds,
-      volume: volume,
-    );
+    _scheduledMetronome.scheduleAt(whenSeconds: whenSeconds, volume: volume);
   }
 
   void cancelScheduled() {
@@ -226,11 +220,7 @@ class MetronomeAudioService {
     try {
       await pool.dispose();
     } catch (error, stackTrace) {
-      _logWarning(
-        failureMessage,
-        error: error,
-        stackTrace: stackTrace,
-      );
+      _logWarning(failureMessage, error: error, stackTrace: stackTrace);
     }
   }
 

@@ -27,12 +27,60 @@ migrate_working_dir/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.appdata/
 .flutter-plugins-dependencies
+.flutter-plugins
 .pub-cache/
 .pub/
 /build/
 /coverage/
 .codex_tmp/
+/.gradle/
+**/.gradle/
+**/.kotlin/
+**/Generated.xcconfig
+android/local.properties
+android/*.iml
+
+# Generated web build output accidentally copied to the repo root
+/assets/AssetManifest.bin
+/assets/AssetManifest.bin.json
+/assets/FontManifest.json
+/assets/NOTICES
+/assets/assets/
+/assets/fonts/MaterialIcons-Regular.otf
+/assets/packages/
+/assets/shaders/ink_sparkle.frag
+/assets/shaders/stretch_effect.frag
+/canvaskit/
+/favicon.png
+/flutter.js
+/flutter_bootstrap.js
+/flutter_service_worker.js
+/icons/
+/index.html
+/main.dart.js*
+/manifest.json
+/version.json
+
+# Logs and scratch files
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+*.trace
+*.dmp
+chord_test.log
+flutter_*.log
+scratch*
+/lib.zip
+/browser-profile/
+/chrome-profile/
+/test-browser-profile/
+
+# Local editor/workspace files
+.vscode/
 
 # Symbolication related
 app.*.symbols

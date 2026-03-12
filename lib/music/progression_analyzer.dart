@@ -398,7 +398,7 @@ class ProgressionAnalyzer {
     return AnalyzedChord(
       chord: chord,
       romanNumeral: _fallbackRomanForChord(chord, keyCenter),
-      harmonicFunction: ProgressionHarmonicFunction.other,
+      harmonicFunction: _fallbackHarmonicFunction(chord, keyCenter),
       score: -2,
       confidence: 0.2,
       isAmbiguous: true,
@@ -432,6 +432,24 @@ class ProgressionAnalyzer {
       10 => 'bVII',
       11 => 'VII',
       _ => '?',
+    };
+  }
+
+  ProgressionHarmonicFunction _fallbackHarmonicFunction(
+    ParsedChord chord,
+    KeyCenter keyCenter,
+  ) {
+    final tonic = keyCenter.tonicSemitone;
+    if (tonic == null) {
+      return ProgressionHarmonicFunction.other;
+    }
+
+    final offset = (chord.rootSemitone - tonic) % 12;
+    return switch (offset) {
+      0 => ProgressionHarmonicFunction.tonic,
+      2 || 5 => ProgressionHarmonicFunction.predominant,
+      7 || 11 => ProgressionHarmonicFunction.dominant,
+      _ => ProgressionHarmonicFunction.other,
     };
   }
 

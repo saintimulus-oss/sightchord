@@ -236,10 +236,9 @@ class PracticeSettings {
     this.showVoicingReasons = true,
     int bpm = 60,
     this.keyCenterLabelStyle = KeyCenterLabelStyle.modeText,
-  }) : metronomeVolume =
-           metronomeVolume
-               .clamp(minMetronomeVolume, maxMetronomeVolume)
-               .toDouble(),
+  }) : metronomeVolume = metronomeVolume
+           .clamp(minMetronomeVolume, maxMetronomeVolume)
+           .toDouble(),
        activeKeyCenters = Set.unmodifiable(
          activeKeyCenters ??
              (activeKeys == null

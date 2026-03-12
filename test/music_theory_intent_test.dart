@@ -12,13 +12,16 @@ void main() {
       );
     });
 
-    test('round-trips known dominant context values through intent mapping', () {
-      expect(
-        MusicTheory.dominantContextForIntent(
-          MusicTheory.dominantIntentForContext(DominantContext.backdoor),
-        ),
-        DominantContext.backdoor,
-      );
-    });
+    test(
+      'round-trips known dominant context values through intent mapping',
+      () {
+        expect(
+          MusicTheory.dominantContextForIntent(
+            MusicTheory.dominantIntentForContext(DominantContext.backdoor),
+          ),
+          DominantContext.backdoor,
+        );
+      },
+    );
   });
 }

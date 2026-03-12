@@ -73,10 +73,12 @@ void main() {
 
     final preferences = await SharedPreferences.getInstance();
     expect(preferences.getStringList('activeKeys'), ['C', 'D', 'G', 'A']);
-    expect(
-      preferences.getStringList('activeKeyCenters'),
-      ['C|major', 'A|major', 'D|minor', 'G|minor'],
-    );
+    expect(preferences.getStringList('activeKeyCenters'), [
+      'C|major',
+      'A|major',
+      'D|minor',
+      'G|minor',
+    ]);
     expect(preferences.getStringList('selectedTensions'), ['9', '#11', 'b13']);
   });
 

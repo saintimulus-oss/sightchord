@@ -1,4 +1,4 @@
-part of 'smart_generator.dart';
+part of 'smart_generator_core.dart';
 
 class SmartDecisionTrace implements SmartDebugInfo {
   const SmartDecisionTrace({

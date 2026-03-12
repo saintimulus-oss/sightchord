@@ -89,49 +89,55 @@ void main() {
     expect(warnings, isEmpty);
   });
 
-  test('serializes queued loads so a later sound waits for the current one', () async {
-    final scheduled = _FakeScheduledMetronome();
-    final service = MetronomeAudioService(scheduledMetronome: scheduled);
-    addTearDown(service.dispose);
+  test(
+    'serializes queued loads so a later sound waits for the current one',
+    () async {
+      final scheduled = _FakeScheduledMetronome();
+      final service = MetronomeAudioService(scheduledMetronome: scheduled);
+      addTearDown(service.dispose);
 
-    final firstLoadCompleter = Completer<void>();
-    scheduled.nextLoadCompleter = firstLoadCompleter;
+      final firstLoadCompleter = Completer<void>();
+      scheduled.nextLoadCompleter = firstLoadCompleter;
 
-    final firstLoad = service.queueSoundLoad(MetronomeSound.tick);
-    final secondLoad = service.queueSoundLoad(MetronomeSound.tickE);
+      final firstLoad = service.queueSoundLoad(MetronomeSound.tick);
+      final secondLoad = service.queueSoundLoad(MetronomeSound.tickE);
 
-    await Future<void>.delayed(Duration.zero);
-    expect(scheduled.loadedAssets, ['assets/tick.mp3']);
+      await Future<void>.delayed(Duration.zero);
+      expect(scheduled.loadedAssets, ['assets/tick.mp3']);
 
-    firstLoadCompleter.complete();
-    final firstResult = await firstLoad;
-    final secondResult = await secondLoad;
+      firstLoadCompleter.complete();
+      final firstResult = await firstLoad;
+      final secondResult = await secondLoad;
 
-    expect(firstResult.preciseAssetReloaded, isTrue);
-    expect(secondResult.preciseAssetReloaded, isTrue);
-    expect(scheduled.loadedAssets, ['assets/tick.mp3', 'assets/tickE.mp3']);
-  });
+      expect(firstResult.preciseAssetReloaded, isTrue);
+      expect(secondResult.preciseAssetReloaded, isTrue);
+      expect(scheduled.loadedAssets, ['assets/tick.mp3', 'assets/tickE.mp3']);
+    },
+  );
 
-  test('reports precise readiness failures without throwing back to the caller', () async {
-    final warnings = <String>[];
-    final service = MetronomeAudioService(
-      scheduledMetronome: _FakeScheduledMetronome(
-        ensureReadyError: StateError('backend unavailable'),
-      ),
-      logWarning: (message, {error, stackTrace}) => warnings.add(message),
-    );
-    addTearDown(service.dispose);
+  test(
+    'reports precise readiness failures without throwing back to the caller',
+    () async {
+      final warnings = <String>[];
+      final service = MetronomeAudioService(
+        scheduledMetronome: _FakeScheduledMetronome(
+          ensureReadyError: StateError('backend unavailable'),
+        ),
+        logWarning: (message, {error, stackTrace}) => warnings.add(message),
+      );
+      addTearDown(service.dispose);
 
-    final prepared = await service.ensurePreciseReady();
+      final prepared = await service.ensurePreciseReady();
 
-    expect(prepared, isFalse);
-    expect(
-      warnings,
-      contains(
-        'Scheduled metronome could not prepare in time for look-ahead playback.',
-      ),
-    );
-  });
+      expect(prepared, isFalse);
+      expect(
+        warnings,
+        contains(
+          'Scheduled metronome could not prepare in time for look-ahead playback.',
+        ),
+      );
+    },
+  );
 
   test('non-precise backends skip precise preparation requests', () async {
     final service = MetronomeAudioService(

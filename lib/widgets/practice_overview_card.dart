@@ -32,10 +32,7 @@ class PracticeOverviewCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              description,
-              style: theme.textTheme.bodyMedium,
-            ),
+            Text(description, style: theme.textTheme.bodyMedium),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,

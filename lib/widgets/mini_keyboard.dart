@@ -75,12 +75,16 @@ class MiniKeyboard extends StatelessWidget {
     final noteSet = {for (final note in notes) note};
     final resolvedRange = _resolvedRange();
     final displayKeys = [
-      for (var midi = resolvedRange.minMidi; midi <= resolvedRange.maxMidi; midi += 1)
+      for (
+        var midi = resolvedRange.minMidi;
+        midi <= resolvedRange.maxMidi;
+        midi += 1
+      )
         midi,
     ];
-    final whiteKeys = displayKeys.where((midi) => !_isBlackKey(midi)).toList(
-      growable: false,
-    );
+    final whiteKeys = displayKeys
+        .where((midi) => !_isBlackKey(midi))
+        .toList(growable: false);
 
     return SizedBox(
       height: _keyboardHeight,
@@ -218,7 +222,8 @@ class MiniKeyboard extends StatelessWidget {
     var whiteIndex = 0;
     for (final midi in displayKeys) {
       if (_isBlackKey(midi)) {
-        final unclampedLeft = (whiteIndex * whiteKeyWidth) - (blackKeyWidth / 2);
+        final unclampedLeft =
+            (whiteIndex * whiteKeyWidth) - (blackKeyWidth / 2);
         renderedKeys.add(
           _RenderedKey(
             midi: midi,
@@ -313,9 +318,7 @@ class _BlackKey extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 1.5),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: const BorderRadius.vertical(
-            bottom: Radius.circular(6),
-          ),
+          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(6)),
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,

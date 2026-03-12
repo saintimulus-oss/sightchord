@@ -75,22 +75,25 @@ void main() {
     expect(loaded.voicingTopNotePreference, VoicingTopNotePreference.bb);
   });
 
-  test('store maps legacy activeKeys when activeKeyCenters are absent', () async {
-    SharedPreferences.setMockInitialValues({
-      'activeKeys': ['G', 'A', 'invalid-key'],
-    });
-    const store = PracticeSettingsStore();
-    final fallbackSettings = PracticeSettings(
-      activeKeyCenters: {
-        const KeyCenter(tonicName: 'C', mode: KeyMode.major),
-      },
-    );
+  test(
+    'store maps legacy activeKeys when activeKeyCenters are absent',
+    () async {
+      SharedPreferences.setMockInitialValues({
+        'activeKeys': ['G', 'A', 'invalid-key'],
+      });
+      const store = PracticeSettingsStore();
+      final fallbackSettings = PracticeSettings(
+        activeKeyCenters: {
+          const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        },
+      );
 
-    final loaded = await store.load(fallbackSettings: fallbackSettings);
+      final loaded = await store.load(fallbackSettings: fallbackSettings);
 
-    expect(loaded.activeKeyCenters, {
-      const KeyCenter(tonicName: 'G', mode: KeyMode.major),
-      const KeyCenter(tonicName: 'A', mode: KeyMode.major),
-    });
-  });
+      expect(loaded.activeKeyCenters, {
+        const KeyCenter(tonicName: 'G', mode: KeyMode.major),
+        const KeyCenter(tonicName: 'A', mode: KeyMode.major),
+      });
+    },
+  );
 }

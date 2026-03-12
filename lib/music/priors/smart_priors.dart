@@ -1,4 +1,4 @@
-part of '../../smart_generator.dart';
+part of '../../smart_generator_core.dart';
 
 class SmartPriors {
   const SmartPriors._();

@@ -2,150 +2,134 @@
 
 ## Current Status
 
-SightChord is a cross-platform Flutter chord practice app for improvisation,
-reading, and harmonic vocabulary work.
+SightChord is a cross-platform Flutter app focused on chord drilling, harmonic vocabulary, and progression analysis.
 
-The current codebase has moved well beyond a simple random chord generator:
+The repository now separates generated output from source code more clearly and exposes the main oversized features through narrower entry points:
 
-- free mode works across all 12 roots
-- key mode supports diatonic Roman numerals
-- smart generator mode now includes weighted harmony planning
-- applied dominants, tritone substitutions, modal interchange, and modulation
-  families are implemented
-- chord rendering supports multiple symbol styles, tensions, `V7sus4`, and
-  inversions
-- settings are persisted through `shared_preferences`
-- localization is wired for English, Spanish, Simplified Chinese, Japanese,
-  and Korean
-
-Recent work is concentrated in the smart generator. The largest active area is
-voice-leading aware rendering and fallback behavior, backed by expanded tests
-and simulation QA utilities.
+- app bootstrap and shell are split from the practice screen
+- the practice screen separates stateful logic from label/UI composition helpers
+- the chord analyzer page separates state and result rendering
+- the settings drawer is exposed through a stable barrel entry point
+- the smart generator and voicing engine now expose public barrels backed by internal core/support files
 
 ## Source Layout
 
 ```text
 lib/
-  main.dart                         # bootstrap entry point
-  app.dart                          # app shell, practice screen, queue, audio/UI
-  music/chord_theory.dart           # theory tables, enums, key/chord resolution
-  music/chord_formatting.dart       # rendering, tensions, inversions, guard keys
-  settings/practice_settings.dart   # immutable settings model
-  settings/settings_controller.dart # persistence and change notifications
-  smart_generator.dart              # progression planning, diagnostics, QA
+  main.dart
+
+  app.dart
+  app_bootstrap.dart
+  app_shell.dart
+  main_menu_page.dart
+  practice_home_page.dart
+  practice_home_page_labels.dart
+  practice_home_page_ui.dart
+
+  chord_analyzer_page.dart
+  chord_analyzer_page_view.dart
+  chord_analyzer_page_sections.dart
+
+  smart_generator.dart
+  smart_generator_core.dart
+  smart_generator_diagnostics.dart
+  music/smart_generator_models.dart
+  music/smart_generator_legacy_priors.dart
+  music/priors/*
+
+  music/voicing_engine.dart
+  music/voicing_engine_core.dart
+  music/voicing_engine_support.dart
+  music/voicing_models.dart
+
+  music/chord_theory.dart
+  music/chord_formatting.dart
+  music/progression_parser.dart
+  music/progression_analyzer.dart
+  music/progression_explainer.dart
+
+  settings/practice_settings.dart
+  settings/practice_settings_drawer.dart
+  settings/practice_settings_drawer_view.dart
+  settings/settings_controller.dart
 
 test/
-  chord_rendering_test.dart
-  settings_controller_test.dart
+  progression_analyzer_test.dart
   smart_generator_test.dart
-  widget_test.dart
+  settings_controller_test.dart
+  settings_voicing_load_test.dart
+  ...
 
 docs/
   architecture-overview.md
-
-.github/workflows/
-  deploy-pages.yml
+  codex-maintenance-plan.md
+  developer-notes.md
 ```
 
 ## Runtime Flow
 
 1. `lib/main.dart` calls `bootstrapApp()`.
-2. `bootstrapApp()` loads persisted settings through
-   `AppSettingsController.load()`.
-3. `MyApp` rebuilds from the controller and configures localization and theme.
-4. `MyHomePage` owns the live practice state:
-   previous chord, current chord, next chord, autoplay timer, BPM, and drawer
-   settings.
-5. Chord generation chooses one of three paths:
-   free mode, random key-aware mode, or smart generator mode.
-
-### Smart Generator Path
-
-The smart path is now the center of the project.
-
-- `SmartGeneratorHelper.planInitialStep()` seeds the first harmonic event
-- `SmartGeneratorHelper.planNextStep()` advances the progression
-- `compareVoiceLeadingCandidates()` ranks rendered chord candidates before the
-  UI shows one
-- exclusion guards prevent immediate symbol or harmonic repeats
-- family-aware fallbacks keep rejected smart plans musically related instead of
-  dropping straight to an unrelated random chord
-- diagnostics traces are recorded for debug and simulation summaries
+2. `bootstrapApp()` loads persisted settings through `AppSettingsController.load()`.
+3. `MyApp` configures localization, theme, and the top-level routes/screens.
+4. `MainMenuPage` lets the user launch either the practice flow or the analyzer flow.
+5. `MyHomePage` owns live practice state: chord queue, smart planning handoff, metronome/autoplay timing, and voicing recommendations.
+6. `ChordAnalyzerPage` parses a progression, analyzes key/function candidates, and renders summary plus measure-by-measure diagnostics.
 
 ## Main Modules
 
-### `lib/app.dart`
+### App shell and practice flow
 
-Owns the application shell and practice experience:
+- `lib/app.dart` is the public entry barrel used by `main.dart`.
+- `lib/app_bootstrap.dart` handles startup and persisted settings load.
+- `lib/app_shell.dart` owns `MaterialApp`, theme, and localization.
+- `lib/practice_home_page.dart` keeps practice-session state, queue promotion, smart-generation dispatch, metronome scheduling, and voicing recomputation.
+- `lib/practice_home_page_labels.dart` contains user-facing practice labels and key-center formatting helpers.
+- `lib/practice_home_page_ui.dart` contains the practice screen composition and BPM controls.
 
-- app bootstrap wiring after settings load
-- previous/current/next queue management
-- free mode, key mode, and smart mode dispatch
-- metronome playback, autoplay timing, BPM editing, and keyboard shortcuts
-- settings drawer and top-level UI
+### Settings and persistence
 
-### `lib/music/chord_theory.dart`
+- `lib/settings/practice_settings.dart` is the immutable configuration snapshot.
+- `lib/settings/settings_controller.dart` loads and saves settings through `shared_preferences`.
+- `lib/settings/practice_settings_drawer.dart` is the stable import surface for the settings UI.
+- `lib/settings/practice_settings_drawer_view.dart` renders the drawer controls for language, metronome, harmony generation, voicing, and inversions.
 
-Defines the musical domain model:
+### Progression analysis
 
-- Roman numeral identifiers and chord qualities
-- key centers, modulation metadata, and dominant intent enums
-- chord resolution helpers and spelling rules
-- rendering-quality selection inputs used by the smart generator
+- `lib/music/progression_parser.dart` tokenizes and validates progression input.
+- `lib/music/progression_analyzer.dart` scores key-center and harmonic-function interpretations.
+- `lib/music/progression_explainer.dart` turns analysis output into concise user-facing summaries.
+- `lib/chord_analyzer_page_view.dart` owns analyzer-page state and orchestration.
+- `lib/chord_analyzer_page_sections.dart` renders reusable analyzer cards, rows, and confidence displays.
 
-### `lib/music/chord_formatting.dart`
+### Smart generation
 
-Handles the surface form of the chord:
+- `lib/smart_generator.dart` is the public import surface.
+- `lib/smart_generator_core.dart` contains the main planning engine, fallback logic, family selection, and simulation entry points.
+- `lib/smart_generator_diagnostics.dart` contains trace collection and diagnostics helpers.
+- `lib/music/priors/*` and generated prior tables keep weighted transition/profile data out of the public entry file.
 
-- symbol style formatting
-- tension profile selection
-- inversion rendering
-- non-diatonic rendering flags
-- repeat-guard and harmonic-comparison keys
+### Voicing engine
 
-### `lib/settings/*`
+- `lib/music/voicing_engine.dart` is the public import surface.
+- `lib/music/voicing_engine_core.dart` interprets chord symbols, generates candidate voicings, scores transitions, and ranks suggestions.
+- `lib/music/voicing_engine_support.dart` contains progression context, templates, and transition-score support types.
 
-Settings are now properly modeled and persisted:
+## Validation
 
-- `PracticeSettings` is an immutable snapshot of the full app configuration
-- `AppSettingsController` loads and saves state with `shared_preferences`
-- rapid consecutive writes are serialized through an internal save queue
-
-### `lib/smart_generator.dart`
-
-This file contains the advanced planning engine:
-
-- weighted diatonic transitions
-- applied dominant and substitute dominant routing
-- modulation planning with center tracking
-- local scope and resolution debt bookkeeping
-- phrase-aware cadence logic
-- voice-leading scoring
-- simulation summaries and preset-vs-preset QA comparisons
-
-## Testing and Verification
-
-The repository currently has automated coverage across four layers:
-
-- chord rendering rules
-- settings persistence and enum fallback behavior
-- widget flows for the practice screen
-- smart generator planning, modulation families, diagnostics, and QA summaries
-
-Verification commands:
+Preferred local validation commands:
 
 ```bash
+flutter pub get
+dart format .
 flutter analyze
 flutter test
 flutter build web --release --base-href /sightchord/
 ```
 
-## Observed Tradeoffs
+The GitHub Pages workflow follows the same source-of-truth model: CI builds `build/web`, uploads that artifact, and deploys it through Pages. Generated web output at the repository root is intentionally not treated as maintained source.
 
-- `lib/app.dart` is still a large stateful screen and remains the best next
-  candidate for UI/controller extraction.
-- `lib/smart_generator.dart` has strong test coverage, but its size means
-  maintenance risk is concentrated in one file.
-- Generated web artifacts exist at the repository root as well as in `build/`;
-  that is workable, but it is worth deciding whether they are source-of-truth
-  assets or just checked-in deploy output.
+## Current Tradeoffs
+
+- `lib/smart_generator_core.dart` still contains the densest musical-planning logic. Public entry points and diagnostics/priors are separated now, but deeper extraction inside the planner is still a future maintainability opportunity.
+- `lib/music/voicing_engine_core.dart` remains the largest single theory/heuristics file because candidate realization, scoring, and spelling logic are still tightly coupled.
+- `lib/settings/practice_settings_drawer_view.dart` still carries a broad set of controls, but it now sits behind a stable barrel and no longer shares a file with unrelated app bootstrap concerns.

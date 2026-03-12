@@ -7,7 +7,7 @@ class ProgressionParser {
   const ProgressionParser();
 
   static final RegExp _rootPattern = RegExp(r'^([A-Ga-g](?:[#b])?)(.*)$');
-  static final RegExp _bassPattern = RegExp(r'^[A-Ga-g](?:[#b])?$');
+  static final RegExp _potentialBassPattern = RegExp(r'^[A-Za-z](?:[#b])?$');
   static final RegExp _whitespacePattern = RegExp(r'\s');
   static final RegExp _compactWhitespacePattern = RegExp(r'\s+');
   static final RegExp _uppercaseMajorPrefixPattern = RegExp(r'^[0-9(]');
@@ -241,7 +241,7 @@ class ProgressionParser {
     }
 
     final possibleBass = token.substring(lastSlash + 1).trim();
-    if (!_bassPattern.hasMatch(possibleBass)) {
+    if (!_potentialBassPattern.hasMatch(possibleBass)) {
       return _ChordWithBass(prefix: token);
     }
 

@@ -11,11 +11,7 @@ void main() {
         home: Scaffold(
           body: SizedBox(
             width: 320,
-            child: MiniKeyboard(
-              notes: [60, 64, 67],
-              minMidi: 48,
-              maxMidi: 72,
-            ),
+            child: MiniKeyboard(notes: [60, 64, 67], minMidi: 48, maxMidi: 72),
           ),
         ),
       ),
@@ -33,9 +29,7 @@ void main() {
         home: Scaffold(
           body: SizedBox(
             width: 260,
-            child: MiniKeyboard(
-              notes: [54, 58, 61, 65],
-            ),
+            child: MiniKeyboard(notes: [54, 58, 61, 65]),
           ),
         ),
       ),

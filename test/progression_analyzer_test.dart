@@ -257,4 +257,3 @@ void main() {
     expect(firstMeasure.parseIssues.single.errorDetail, 'H');
   });
 }
-
