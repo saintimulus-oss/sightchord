@@ -102,7 +102,9 @@ void main() {
       await tester.pump();
       await tester.tap(find.byKey(const ValueKey('analyzer-key-d')));
       await tester.pump();
-      await tester.tap(find.byKey(const ValueKey('analyzer-key-minor7')));
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-minor')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-dom7')));
       await tester.pump();
       await tester.tap(find.byKey(const ValueKey('analyzer-key-space')));
       await tester.pump();
@@ -114,7 +116,9 @@ void main() {
       await tester.pump();
       await tester.tap(find.byKey(const ValueKey('analyzer-key-c')));
       await tester.pump();
-      await tester.tap(find.byKey(const ValueKey('analyzer-key-major7')));
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-major')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-dom7')));
       await tester.pump();
       await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
       await tester.pump();
@@ -151,7 +155,9 @@ void main() {
       );
       await tester.tap(find.byKey(const ValueKey('analyzer-key-c')));
       await tester.pump();
-      await tester.tap(find.byKey(const ValueKey('analyzer-key-major7')));
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-major')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-dom7')));
       await tester.pump();
       await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
       await tester.pump();
@@ -201,6 +207,89 @@ void main() {
   });
 
   testWidgets(
+    'chord pad uses composable quality tokens instead of redundant presets',
+    (WidgetTester tester) async {
+      addTearDown(() => restoreDisplay(tester));
+      await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+      await tester.tap(find.byKey(const ValueKey('analyzer-input-field')));
+      await tester.pump();
+
+      expect(find.byKey(const ValueKey('analyzer-key-major')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('analyzer-key-suspension')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('analyzer-key-add')), findsOneWidget);
+      expect(find.byKey(const ValueKey('analyzer-key-omit')), findsOneWidget);
+      expect(find.byKey(const ValueKey('analyzer-key-five')), findsOneWidget);
+      expect(find.byKey(const ValueKey('analyzer-key-major7')), findsNothing);
+      expect(find.byKey(const ValueKey('analyzer-key-minor7')), findsNothing);
+      expect(find.byKey(const ValueKey('analyzer-key-halfDim')), findsNothing);
+      expect(find.byKey(const ValueKey('analyzer-key-add9')), findsNothing);
+      expect(find.byKey(const ValueKey('analyzer-key-sus2')), findsNothing);
+      expect(find.byKey(const ValueKey('analyzer-key-sus4')), findsNothing);
+      expect(find.byKey(const ValueKey('analyzer-key-flat5')), findsNothing);
+
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-c')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-major')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-dom7')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-space')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-f')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-add')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-dom11')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-space')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-b')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-suspension')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-four')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-space')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-d')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-minor')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-dom7')));
+      await tester.pump();
+      await tester.tap(
+        find.byKey(const ValueKey('analyzer-key-modifier-flat')),
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-five')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-space')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-e')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-five')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-space')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-g')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-omit')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-five')));
+      await tester.pump();
+
+      final field = tester.widget<TextField>(
+        find.byKey(const ValueKey('analyzer-input-field')),
+      );
+      expect(field.controller!.text, 'Cmaj7 Fadd11 Bsus4 Dm7b5 E5 Gomit5');
+    },
+  );
+
+  testWidgets(
     'keyboard button activation updates immediately after chord-pad input',
     (WidgetTester tester) async {
       addTearDown(() => restoreDisplay(tester));
@@ -241,11 +330,19 @@ void main() {
       await tester.pump();
       await tester.tap(find.byKey(const ValueKey('analyzer-key-openParen')));
       await tester.pump();
-      await tester.tap(find.byKey(const ValueKey('analyzer-key-flat9')));
+      await tester.tap(
+        find.byKey(const ValueKey('analyzer-key-modifier-flat')),
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-dom9')));
       await tester.pump();
       await tester.tap(find.byKey(const ValueKey('analyzer-key-comma')));
       await tester.pump();
-      await tester.tap(find.byKey(const ValueKey('analyzer-key-sharp11')));
+      await tester.tap(
+        find.byKey(const ValueKey('analyzer-key-modifier-sharp')),
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-dom11')));
       await tester.pump();
 
       final field = tester.widget<TextField>(

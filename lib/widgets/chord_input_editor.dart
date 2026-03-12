@@ -272,69 +272,29 @@ class _ChordKeyboardPanel extends StatelessWidget {
   final Future<void> Function() onToggleRawInput;
 
   static const List<String> _roots = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-  static const List<_KeyboardInsertSpec> _qualities = [
+  static const List<_KeyboardInsertSpec> _modifiers = [
     _KeyboardInsertSpec(id: 'minor', label: 'm', text: 'm'),
-    _KeyboardInsertSpec(id: 'minor7', label: 'm7', text: 'm7'),
-    _KeyboardInsertSpec(id: 'minor9', label: 'm9', text: 'm9'),
-    _KeyboardInsertSpec(id: 'minor11', label: 'm11', text: 'm11'),
-    _KeyboardInsertSpec(id: 'major7', label: 'maj7', text: 'maj7'),
-    _KeyboardInsertSpec(id: 'major9', label: 'maj9', text: 'maj9'),
-    _KeyboardInsertSpec(id: 'major13', label: 'maj13', text: 'maj13'),
+    _KeyboardInsertSpec(id: 'major', label: 'maj', text: 'maj'),
+    _KeyboardInsertSpec(id: 'suspension', label: 'sus', text: 'sus'),
+    _KeyboardInsertSpec(id: 'add', label: 'add', text: 'add'),
+    _KeyboardInsertSpec(id: 'omit', label: 'omit', text: 'omit'),
+    _KeyboardInsertSpec(id: 'dim', label: 'dim', text: 'dim'),
+    _KeyboardInsertSpec(id: 'aug', label: 'aug', text: 'aug'),
+    _KeyboardInsertSpec(id: 'alt', label: 'alt', text: 'alt'),
+  ];
+  static const List<_KeyboardInsertSpec> _degrees = [
+    _KeyboardInsertSpec(id: 'two', label: '2', text: '2'),
+    _KeyboardInsertSpec(id: 'four', label: '4', text: '4'),
+    _KeyboardInsertSpec(id: 'five', label: '5', text: '5'),
+    _KeyboardInsertSpec(id: 'six', label: '6', text: '6'),
     _KeyboardInsertSpec(id: 'dom7', label: '7', text: '7'),
     _KeyboardInsertSpec(id: 'dom9', label: '9', text: '9'),
     _KeyboardInsertSpec(id: 'dom11', label: '11', text: '11'),
     _KeyboardInsertSpec(id: 'dom13', label: '13', text: '13'),
-    _KeyboardInsertSpec(id: 'dim', label: 'dim', text: 'dim'),
-    _KeyboardInsertSpec(id: 'dim7', label: 'dim7', text: 'dim7'),
-    _KeyboardInsertSpec(id: 'aug', label: 'aug', text: 'aug'),
-    _KeyboardInsertSpec(id: 'sus4', label: 'sus4', text: 'sus4'),
-    _KeyboardInsertSpec(id: 'sus2', label: 'sus2', text: 'sus2'),
-    _KeyboardInsertSpec(id: 'alt', label: 'alt', text: 'alt'),
-    _KeyboardInsertSpec(id: 'add9', label: 'add9', text: 'add9'),
-    _KeyboardInsertSpec(id: 'six', label: '6', text: '6'),
-    _KeyboardInsertSpec(id: 'minor6', label: 'm6', text: 'm6'),
-    _KeyboardInsertSpec(id: 'sixNine', label: '6/9', text: '6/9'),
-    _KeyboardInsertSpec(id: 'halfDim', label: 'm7b5', text: 'm7b5'),
-    _KeyboardInsertSpec(id: 'minorMaj7', label: 'mMaj7', text: 'mMaj7'),
-    _KeyboardInsertSpec(id: 'thirteenSus4', label: '13sus4', text: '13sus4'),
   ];
-  static const List<_KeyboardInsertSpec> _tensions = [
-    _KeyboardInsertSpec(
-      id: 'flat9',
-      label: 'b9',
-      text: 'b9',
-      kind: _InsertKind.tensionToken,
-    ),
-    _KeyboardInsertSpec(
-      id: 'nine',
-      label: '9',
-      text: '9',
-      kind: _InsertKind.tensionToken,
-    ),
-    _KeyboardInsertSpec(
-      id: 'sharp9',
-      label: '#9',
-      text: '#9',
-      kind: _InsertKind.tensionToken,
-    ),
-    _KeyboardInsertSpec(
-      id: 'eleven',
-      label: '11',
-      text: '11',
-      kind: _InsertKind.tensionToken,
-    ),
-    _KeyboardInsertSpec(
-      id: 'sharp11',
-      label: '#11',
-      text: '#11',
-      kind: _InsertKind.tensionToken,
-    ),
-    _KeyboardInsertSpec(
-      id: 'thirteen',
-      label: '13',
-      text: '13',
-      kind: _InsertKind.tensionToken,
-    ),
+  static const List<_KeyboardInsertSpec> _accidentalModifiers = [
+    _KeyboardInsertSpec(id: 'modifier-flat', label: 'b', text: 'b'),
+    _KeyboardInsertSpec(id: 'modifier-sharp', label: '#', text: '#'),
   ];
 
   @override
@@ -445,10 +405,27 @@ class _ChordKeyboardPanel extends StatelessWidget {
             const SizedBox(height: 8),
             _KeyboardSection(
               children: [
-                for (final quality in _qualities)
+                for (final modifier in _modifiers)
                   _InsertButton(
-                    spec: quality,
+                    spec: modifier,
                     enabled: editorContext.allowsQuality,
+                    onInsert: onInsert,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            _KeyboardSection(
+              children: [
+                for (final accidental in _accidentalModifiers)
+                  _InsertButton(
+                    spec: accidental,
+                    enabled: editorContext.allowsModifierAccidental,
+                    onInsert: onInsert,
+                  ),
+                for (final degree in _degrees)
+                  _InsertButton(
+                    spec: degree,
+                    enabled: editorContext.allowsTensionToken,
                     onInsert: onInsert,
                   ),
               ],
@@ -466,12 +443,6 @@ class _ChordKeyboardPanel extends StatelessWidget {
                   enabled: editorContext.allowsOpenParenthesis,
                   onInsert: onInsert,
                 ),
-                for (final tension in _tensions)
-                  _InsertButton(
-                    spec: tension,
-                    enabled: editorContext.allowsTensionToken,
-                    onInsert: onInsert,
-                  ),
                 _InsertButton(
                   spec: const _KeyboardInsertSpec(
                     id: 'closeParen',
@@ -621,6 +592,7 @@ class _EditorTokenContext {
     required this.allowsRoot,
     required this.allowsAccidental,
     required this.allowsQuality,
+    required this.allowsModifierAccidental,
     required this.allowsSlash,
     required this.allowsOpenParenthesis,
     required this.allowsCloseParenthesis,
@@ -631,6 +603,7 @@ class _EditorTokenContext {
   final bool allowsRoot;
   final bool allowsAccidental;
   final bool allowsQuality;
+  final bool allowsModifierAccidental;
   final bool allowsSlash;
   final bool allowsOpenParenthesis;
   final bool allowsCloseParenthesis;
@@ -639,6 +612,8 @@ class _EditorTokenContext {
 
   static final RegExp _separatorPattern = RegExp(r'[\s,|]');
   static final RegExp _rootPattern = RegExp(r'^[A-Ga-g](?:#|b)?');
+  static final RegExp _bassFragmentPattern = RegExp(r'^[A-Ga-g](?:#|b)?$');
+  static final RegExp _numericFragmentPattern = RegExp(r'^\d+$');
 
   static _EditorTokenContext fromValue(TextEditingValue value) {
     final selection = value.selection.isValid
@@ -654,7 +629,7 @@ class _EditorTokenContext {
     final rootLength = rootMatch?.group(0)?.length ?? 0;
     final hasRoot = rootMatch != null;
     final slashIndex = token.lastIndexOf('/');
-    final inBass = slashIndex != -1 && localCaret > slashIndex;
+    final afterSlash = slashIndex != -1 && localCaret > slashIndex;
     final prefix = token.substring(
       0,
       localCaret.clamp(0, token.length).toInt(),
@@ -664,8 +639,21 @@ class _EditorTokenContext {
     final inTension = lastOpenParen > lastCloseParen;
     final hasOpenParen = token.contains('(');
     final hasCloseParen = token.contains(')');
+    final slashFragment = afterSlash
+        ? token.substring(
+            slashIndex + 1,
+            localCaret.clamp(slashIndex + 1, token.length).toInt(),
+          )
+        : '';
+    final allowsBassRoot =
+        afterSlash &&
+        (slashFragment.isEmpty || _bassFragmentPattern.hasMatch(slashFragment));
+    final allowsNumericAfterSlash =
+        afterSlash &&
+        (slashFragment.isEmpty ||
+            _numericFragmentPattern.hasMatch(slashFragment));
 
-    final accidentalFragment = inBass
+    final accidentalFragment = allowsBassRoot
         ? token.substring(
             slashIndex + 1,
             localCaret.clamp(slashIndex + 1, token.length).toInt(),
@@ -678,19 +666,50 @@ class _EditorTokenContext {
         !accidentalFragment.contains('b');
 
     final allowsRoot =
-        !inTension && (!hasRoot || inBass || localCaret <= rootLength);
+        !inTension && (!hasRoot || allowsBassRoot || localCaret <= rootLength);
 
     return _EditorTokenContext(
       allowsRoot: allowsRoot,
       allowsAccidental: !inTension && allowsAccidental,
       allowsQuality:
-          hasRoot && !inBass && !inTension && localCaret >= rootLength,
-      allowsSlash: hasRoot && !inBass && !inTension && !token.contains('/'),
-      allowsOpenParenthesis: hasRoot && !inBass && !inTension && !hasOpenParen,
+          hasRoot && !afterSlash && !inTension && localCaret >= rootLength,
+      allowsModifierAccidental: hasRoot && !afterSlash,
+      allowsSlash:
+          hasRoot && !afterSlash && !inTension && !_hasBassSlash(token),
+      allowsOpenParenthesis:
+          hasRoot && !afterSlash && !inTension && !hasOpenParen,
       allowsCloseParenthesis: inTension || (hasOpenParen && !hasCloseParen),
-      allowsTensionToken: inTension || (hasRoot && !inBass),
+      allowsTensionToken:
+          inTension || (hasRoot && (!afterSlash || allowsNumericAfterSlash)),
       inTension: inTension,
     );
+  }
+
+  static bool _hasBassSlash(String token) {
+    var lastSlash = -1;
+    var parenthesisDepth = 0;
+
+    for (var index = 0; index < token.length; index += 1) {
+      final character = token[index];
+      if (character == '(') {
+        parenthesisDepth += 1;
+        continue;
+      }
+      if (character == ')') {
+        parenthesisDepth = math.max(0, parenthesisDepth - 1);
+        continue;
+      }
+      if (character == '/' && parenthesisDepth == 0) {
+        lastSlash = index;
+      }
+    }
+
+    if (lastSlash <= 0 || lastSlash >= token.length - 1) {
+      return false;
+    }
+
+    final possibleBass = token.substring(lastSlash + 1).trim();
+    return _bassFragmentPattern.hasMatch(possibleBass);
   }
 
   static int _tokenStart(String text, int caret) {

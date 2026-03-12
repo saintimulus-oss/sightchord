@@ -36,6 +36,7 @@ class ParsedChord {
     this.extension,
     this.tensions = const [],
     this.addedTones = const [],
+    this.omittedTones = const [],
     this.alterations = const [],
     this.suspensions = const [],
     this.ignoredTokens = const [],
@@ -56,6 +57,7 @@ class ParsedChord {
   final int? extension;
   final List<String> tensions;
   final List<String> addedTones;
+  final List<String> omittedTones;
   final List<String> alterations;
   final List<String> suspensions;
   final List<String> ignoredTokens;
