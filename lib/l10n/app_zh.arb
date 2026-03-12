@@ -1,386 +1,490 @@
 {
-  "@@locale": "zh",
-  "settings": "設定",
-  "closeSettings": "關閉設定",
-  "language": "語言",
-  "systemDefaultLanguage": "系統預設",
-  "metronome": "節拍器",
-  "enabled": "開啟",
-  "disabled": "關閉",
-  "metronomeHelp": "練習時若想在每一拍都聽到點擊聲，請開啟節拍器。",
-  "metronomeSound": "節拍器音色",
-  "metronomeSoundClassic": "經典",
-  "metronomeSoundClickB": "Click B",
-  "metronomeSoundClickC": "Click C",
-  "metronomeSoundClickD": "Click D",
-  "metronomeSoundClickE": "Click E",
-  "metronomeSoundClickF": "Click F",
-  "metronomeVolume": "節拍器音量",
-  "keys": "調性",
-  "noKeysSelected": "No keys selected. Leave all keys off to practice in free mode across every root.",
-  "keysSelectedHelp": "Selected keys are used for key-aware random mode and Smart Generator mode.",
-  "smartGeneratorMode": "Smart Generator 模式",
-  "smartGeneratorHelp": "Prioritizes functional harmonic motion while preserving the enabled non-diatonic options.",
-  "advancedSmartGenerator": "進階 Smart Generator",
-  "modulationIntensity": "轉調強度",
-  "modulationIntensityOff": "Off",
-  "modulationIntensityLow": "Low",
-  "modulationIntensityMedium": "Medium",
-  "modulationIntensityHigh": "High",
-  "jazzPreset": "爵士預設",
-  "jazzPresetStandardsCore": "Standards Core",
-  "jazzPresetModulationStudy": "Modulation Study",
-  "jazzPresetAdvanced": "Advanced",
-  "sourceProfile": "來源設定",
-  "sourceProfileFakebookStandard": "Fakebook Standard",
-  "sourceProfileRecordingInspired": "Recording Inspired",
-  "smartDiagnostics": "Smart 診斷",
-  "smartDiagnosticsHelp": "Logs Smart Generator decision traces for debugging.",
-  "keyModeRequiredForSmartGenerator": "Select at least one key to use Smart Generator mode.",
-  "nonDiatonic": "Non-Diatonic",
-  "nonDiatonicRequiresKeyMode": "Non-diatonic options are available in key mode only.",
-  "secondaryDominant": "副屬和弦",
-  "substituteDominant": "替代屬和弦",
-  "modalInterchange": "調式借用",
-  "modalInterchangeDisabledHelp": "Modal interchange only appears in key mode, so this option is disabled in free mode.",
-  "rendering": "顯示",
-  "keyCenterLabelStyle": "調性標籤樣式",
-  "keyCenterLabelStyleHelp": "可選擇顯示 major/minor 文字，或使用古典的大寫/小寫主音標記。",
-  "chordSymbolStyle": "和弦符號樣式",
-  "chordSymbolStyleHelp": "Changes the display layer only. Harmonic logic stays canonical.",
-  "styleCompact": "Compact",
-  "styleMajText": "MajText",
-  "styleDeltaJazz": "DeltaJazz",
-  "keyCenterLabelStyleModeText": "C 大調: / C 小調:",
-  "keyCenterLabelStyleClassicalCase": "C: / c:",
-  "allowV7sus4": "Allow V7sus4 (V7, V7/x)",
-  "allowTensions": "允許張力音",
-  "tensionHelp": "Roman numeral profile and selected chips only",
-  "inversions": "轉位",
-  "enableInversions": "Enable Inversions",
-  "inversionHelp": "Random slash-bass rendering after chord selection; it does not track the previous bass.",
-  "firstInversion": "1st Inversion",
-  "secondInversion": "2nd Inversion",
-  "thirdInversion": "3rd Inversion",
-  "keyPracticeOverview": "調性練習概覽",
-  "freePracticeOverview": "自由練習概覽",
-  "keyModeTag": "調性模式",
-  "freeModeTag": "自由模式",
-  "allKeysTag": "所有調性",
-  "metronomeOnTag": "Metronome On",
-  "metronomeOffTag": "Metronome Off",
-  "pressNextChordToBegin": "按下 Next Chord 開始",
-  "freeModeActive": "自由模式啟用",
-  "freePracticeDescription": "Uses all 12 chromatic roots with random chord qualities for broad reading practice.",
-  "smartPracticeDescription": "Follows harmonic function flow in the selected keys while allowing tasteful smart-generator movement.",
-  "keyPracticeDescription": "Uses the selected keys and enabled Roman numerals to generate diatonic practice material.",
-  "keyboardShortcutHelp": "Space: next chord  Enter: start or stop autoplay  Up/Down: adjust BPM",
-  "nextChord": "下一個和弦",
-  "startAutoplay": "開始自動播放",
-  "stopAutoplay": "停止自動播放",
-  "decreaseBpm": "降低 BPM",
-  "increaseBpm": "提高 BPM",
-  "bpmLabel": "BPM",
-  "bpmTag": "{value} BPM",
-  "@bpmTag": {
-    "placeholders": {
-      "value": {
-        "type": "int"
-      }
-    }
-  },
-  "allowedRange": "允許範圍：{min}-{max}",
-  "@allowedRange": {
-    "placeholders": {
-      "min": {
-        "type": "int"
-      },
-      "max": {
-        "type": "int"
-      }
-    }
-  },
-  "modeMajor": "大調",
-  "modeMinor": "小調",
-  "analysisLabelWithCenter": "{center}: {roman}",
-  "@analysisLabelWithCenter": {
-    "placeholders": {
-      "center": {},
-      "roman": {}
-    }
-  },
-  "voicingSuggestionsTitle": "Voicing 建議",
-  "voicingSuggestionsSubtitle": "查看這個和弦可用的具體音符選擇。",
-  "voicingSuggestionsEnabled": "啟用 Voicing 建議",
-  "voicingSuggestionsHelp": "Shows three playable note-level voicing ideas for the current chord.",
-  "voicingComplexity": "Voicing Complexity",
-  "voicingComplexityHelp": "Controls how colorful the suggestions may become.",
-  "voicingComplexityBasic": "Basic",
-  "voicingComplexityStandard": "Standard",
-  "voicingComplexityModern": "Modern",
-  "voicingTopNotePreference": "高音偏好",
-  "voicingTopNotePreferenceHelp": "Leans suggestions toward a chosen top line. Locked voicings win first, then repeated chords keep it steady.",
-  "voicingTopNotePreferenceAuto": "自動",
-  "allowRootlessVoicings": "Allow Rootless Voicings",
-  "allowRootlessVoicingsHelp": "Lets suggestions omit the root when the guide tones stay clear.",
-  "maxVoicingNotes": "Max Voicing Notes",
-  "lookAheadDepth": "Look-Ahead Depth",
-  "lookAheadDepthHelp": "How many future chords the ranking may consider.",
-  "showVoicingReasons": "Show Voicing Reasons",
-  "showVoicingReasonsHelp": "Displays short explanation chips on each suggestion card.",
-  "voicingSuggestionNatural": "Most Natural",
-  "voicingSuggestionColorful": "Most Colorful",
-  "voicingSuggestionEasy": "Easiest",
-  "voicingSuggestionNaturalSubtitle": "Voice-leading first",
-  "voicingSuggestionColorfulSubtitle": "Leans into color tones",
-  "voicingSuggestionEasySubtitle": "Compact hand shape",
-  "voicingSuggestionNaturalConnectedSubtitle": "Connection and resolution first",
-  "voicingSuggestionNaturalStableSubtitle": "Same shape, steady comping",
-  "voicingSuggestionTopLineSubtitle": "Top line leads",
-  "voicingSuggestionColorfulAlteredSubtitle": "Altered tension up front",
-  "voicingSuggestionColorfulQuartalSubtitle": "Modern quartal color",
-  "voicingSuggestionColorfulTritoneSubtitle": "Tritone-sub edge with bright guide tones",
-  "voicingSuggestionColorfulUpperStructureSubtitle": "Guide tones with bright extensions",
-  "voicingSuggestionEasyAnchoredSubtitle": "Core tones, smaller reach",
-  "voicingSuggestionEasyStableSubtitle": "Repeat-friendly hand shape",
-  "voicingTopNoteLabel": "高音",
-  "voicingTopNoteContextExplicit": "Top line target: {note}",
-  "@voicingTopNoteContextExplicit": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextLocked": "Locked top line: {note}",
-  "@voicingTopNoteContextLocked": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextCarry": "Repeated top line: {note}",
-  "@voicingTopNoteContextCarry": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextNearby": "Nearest top line to {note}",
-  "@voicingTopNoteContextNearby": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextFallback": "No exact top line for {note}",
-  "@voicingTopNoteContextFallback": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingFamilyShell": "Shell",
-  "voicingFamilyRootlessA": "Rootless A",
-  "voicingFamilyRootlessB": "Rootless B",
-  "voicingFamilySpread": "Spread",
-  "voicingFamilySus": "Sus",
-  "voicingFamilyQuartal": "Quartal",
-  "voicingFamilyAltered": "Altered",
-  "voicingFamilyUpperStructure": "Upper Structure",
-  "voicingLockSuggestion": "Lock suggestion",
-  "voicingUnlockSuggestion": "Unlock suggestion",
-  "voicingSelected": "已選取",
-  "voicingLocked": "已鎖定",
-  "voicingReasonEssentialCore": "Essential tones covered",
-  "voicingReasonGuideToneAnchor": "3rd/7th anchor",
-  "voicingReasonGuideResolution": "{count} guide-tone resolves",
-  "@voicingReasonGuideResolution": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "voicingReasonCommonToneRetention": "{count} common tones kept",
-  "@voicingReasonCommonToneRetention": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "voicingReasonStableRepeat": "Stable repeat",
-  "voicingReasonTopLineTarget": "Top line target",
-  "voicingReasonLowMudAvoided": "Low-register clarity",
-  "voicingReasonCompactReach": "Comfortable reach",
-  "voicingReasonBassAnchor": "Bass anchor respected",
-  "voicingReasonNextChordReady": "Next chord ready",
-  "voicingReasonAlteredColor": "Altered tensions",
-  "voicingReasonRootlessClarity": "Light rootless shape",
-  "voicingReasonSusRelease": "Sus release set up",
-  "voicingReasonQuartalColor": "Quartal color",
-  "voicingReasonUpperStructureColor": "Upper-structure color",
-  "voicingReasonTritoneSubFlavor": "Tritone-sub flavor",
-  "voicingReasonLockedContinuity": "Locked continuity",
-  "voicingReasonGentleMotion": "Smooth hand move",
-  "mainMenuIntro": "Choose a practice generator or open the analyzer for a separate progression reading workflow.",
-  "mainMenuGeneratorTitle": "Chord Generator",
-  "mainMenuGeneratorDescription": "Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.",
-  "mainMenuAnalyzerTitle": "Chord Analyzer",
-  "mainMenuAnalyzerDescription": "Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.",
-  "openGenerator": "Open Generator",
-  "openAnalyzer": "Open Analyzer",
-  "chordAnalyzerTitle": "Chord Analyzer",
-  "chordAnalyzerSubtitle": "Paste a progression and get a conservative harmonic reading.",
-  "chordAnalyzerInputLabel": "Chord progression",
-  "chordAnalyzerInputHint": "Dm7 G7 Cmaj7",
-  "chordAnalyzerInputHelper": "Spaces, |, and commas are accepted. Slash chords and simple alterations are supported. Touch devices can use the chord pad or switch to ABC input.",
-  "chordAnalyzerAnalyze": "Analyze",
-  "chordAnalyzerKeyboardTitle": "Chord Pad",
-  "chordAnalyzerKeyboardTouchHint": "Tap tokens to build a progression. ABC input keeps the system keyboard available when you need free typing.",
-  "chordAnalyzerKeyboardDesktopHint": "Type, paste, or tap tokens to insert them at the cursor.",
-  "chordAnalyzerChordPad": "Pad",
-  "chordAnalyzerRawInput": "ABC",
-  "chordAnalyzerPaste": "Paste",
-  "chordAnalyzerClear": "Clear",
-  "chordAnalyzerBackspace": "Backspace",
-  "chordAnalyzerSpace": "Space",
-  "chordAnalyzerAnalyzing": "Analyzing progression...",
-  "chordAnalyzerInitialTitle": "Start with a progression",
-  "chordAnalyzerInitialBody": "Enter a progression such as Dm7 G7 Cmaj7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, and a short summary.",
-  "chordAnalyzerDetectedKeys": "Detected Keys",
-  "chordAnalyzerPrimaryReading": "Primary reading",
-  "chordAnalyzerAlternativeReading": "Alternative reading",
-  "chordAnalyzerChordAnalysis": "Chord-by-chord analysis",
-  "chordAnalyzerMeasureLabel": "Measure {index}",
-  "@chordAnalyzerMeasureLabel": {
-    "placeholders": {
-      "index": {}
-    }
-  },
-  "chordAnalyzerProgressionSummary": "Progression summary",
-  "chordAnalyzerWarnings": "Warnings and ambiguities",
-  "chordAnalyzerNoInputError": "Enter a chord progression to analyze.",
-  "chordAnalyzerNoRecognizedChordsError": "No recognizable chords were found in the progression.",
-  "chordAnalyzerPartialParseWarning": "Some symbols were skipped: {tokens}",
-  "@chordAnalyzerPartialParseWarning": {
-    "placeholders": {
-      "tokens": {}
-    }
-  },
-  "chordAnalyzerKeyAmbiguityWarning": "The key center is still somewhat ambiguous between {primary} and {alternative}.",
-  "@chordAnalyzerKeyAmbiguityWarning": {
-    "placeholders": {
-      "primary": {},
-      "alternative": {}
-    }
-  },
-  "chordAnalyzerUnresolvedWarning": "Some chords remain ambiguous under this MVP reading.",
-  "chordAnalyzerFunctionTonic": "Tonic",
-  "chordAnalyzerFunctionPredominant": "Predominant",
-  "chordAnalyzerFunctionDominant": "Dominant",
-  "chordAnalyzerFunctionOther": "Other",
-  "chordAnalyzerRemarkSecondaryDominant": "Possible secondary dominant targeting {target}.",
-  "@chordAnalyzerRemarkSecondaryDominant": {
-    "placeholders": {
-      "target": {}
-    }
-  },
-  "chordAnalyzerRemarkTritoneSub": "Possible tritone substitute targeting {target}.",
-  "@chordAnalyzerRemarkTritoneSub": {
-    "placeholders": {
-      "target": {}
-    }
-  },
-  "chordAnalyzerRemarkModalInterchange": "Possible modal interchange from the parallel minor.",
-  "chordAnalyzerRemarkAmbiguous": "This chord stays ambiguous in the current reading.",
-  "chordAnalyzerRemarkUnresolved": "This chord falls outside the current MVP heuristics.",
-  "chordAnalyzerTagIiVI": "ii-V-I cadence",
-  "chordAnalyzerTagTurnaround": "Turnaround",
-  "chordAnalyzerTagDominantResolution": "Dominant resolution",
-  "chordAnalyzerTagPlagalColor": "Plagal/modal color",
-  "chordAnalyzerSummaryCenter": "This progression most likely centers on {key}.",
-  "@chordAnalyzerSummaryCenter": {
-    "placeholders": {
-      "key": {}
-    }
-  },
-  "chordAnalyzerSummaryAlternative": "An alternative reading is {key}.",
-  "@chordAnalyzerSummaryAlternative": {
-    "placeholders": {
-      "key": {}
-    }
-  },
-  "chordAnalyzerSummaryTag": "It suggests a {tag}.",
-  "@chordAnalyzerSummaryTag": {
-    "placeholders": {
-      "tag": {}
-    }
-  },
-  "chordAnalyzerSummaryFlow": "{from} and {through} behave like {fromFunction} and {throughFunction} chords leading into {target}.",
-  "@chordAnalyzerSummaryFlow": {
-    "placeholders": {
-      "from": {},
-      "through": {},
-      "fromFunction": {},
-      "throughFunction": {},
-      "target": {}
-    }
-  },
-  "chordAnalyzerSummarySecondaryDominant": "{chord} can be heard as a possible secondary dominant pointing toward {target}.",
-  "@chordAnalyzerSummarySecondaryDominant": {
-    "placeholders": {
-      "chord": {},
-      "target": {}
-    }
-  },
-  "chordAnalyzerSummaryTritoneSub": "{chord} can be heard as a possible tritone substitute pointing toward {target}.",
-  "@chordAnalyzerSummaryTritoneSub": {
-    "placeholders": {
-      "chord": {},
-      "target": {}
-    }
-  },
-  "chordAnalyzerSummaryModalInterchange": "{chord} adds a possible modal interchange color.",
-  "@chordAnalyzerSummaryModalInterchange": {
-    "placeholders": {
-      "chord": {}
-    }
-  },
-  "chordAnalyzerSummaryAmbiguous": "Some details remain ambiguous, so this reading stays intentionally conservative.",
-  "chordAnalyzerExamplesTitle": "Examples",
-  "chordAnalyzerConfidenceLabel": "Confidence",
-  "chordAnalyzerAmbiguityLabel": "Ambiguity",
-  "chordAnalyzerWhyThisReading": "Why this reading",
-  "chordAnalyzerCompetingReadings": "Also plausible",
-  "chordAnalyzerIgnoredModifiersWarning": "Ignored modifiers: {details}",
-  "@chordAnalyzerIgnoredModifiersWarning": {
-    "placeholders": {
-      "details": {}
-    }
-  },
-  "chordAnalyzerParserDiagnosticWarning": "Input warning: {details}",
-  "@chordAnalyzerParserDiagnosticWarning": {
-    "placeholders": {
-      "details": {}
-    }
-  },
-  "chordAnalyzerDiagnosticUnbalancedParentheses": "Unbalanced parentheses left part of the symbol uncertain.",
-  "chordAnalyzerDiagnosticUnexpectedCloseParenthesis": "An unexpected closing parenthesis was ignored.",
-  "chordAnalyzerEvidenceExtensionColor": "Explicit {extension} color strengthens this reading.",
-  "@chordAnalyzerEvidenceExtensionColor": {
-    "placeholders": {
-      "extension": {}
-    }
-  },
-  "chordAnalyzerEvidenceAlteredDominantColor": "Altered dominant color supports a dominant function.",
-  "chordAnalyzerEvidenceSlashBass": "Slash bass {bass} keeps the bass line or inversion meaningful.",
-  "@chordAnalyzerEvidenceSlashBass": {
-    "placeholders": {
-      "bass": {}
-    }
-  },
-  "chordAnalyzerEvidenceResolution": "The next chord supports a resolution toward {target}.",
-  "@chordAnalyzerEvidenceResolution": {
-    "placeholders": {
-      "target": {}
-    }
-  },
-  "chordAnalyzerEvidenceBorrowedColor": "This color can be heard as borrowed from the parallel mode.",
-  "chordAnalyzerEvidenceSuspensionColor": "Suspension color softens the dominant pull without erasing it."
+    "@@locale":  "zh",
+    "settings":  "設定",
+    "closeSettings":  "關閉設定",
+    "language":  "語言",
+    "systemDefaultLanguage":  "系統預設",
+    "metronome":  "節拍器",
+    "enabled":  "開啟",
+    "disabled":  "關閉",
+    "metronomeHelp":  "練習時若想在每一拍都聽到點擊聲，請開啟節拍器。",
+    "metronomeSound":  "節拍器音色",
+    "metronomeSoundClassic":  "經典",
+    "metronomeSoundClickB":  "Click B",
+    "metronomeSoundClickC":  "Click C",
+    "metronomeSoundClickD":  "Click D",
+    "metronomeSoundClickE":  "Click E",
+    "metronomeSoundClickF":  "Click F",
+    "metronomeVolume":  "節拍器音量",
+    "keys":  "調性",
+    "noKeysSelected":  "No keys selected. Leave all keys off to practice in free mode across every root.",
+    "keysSelectedHelp":  "Selected keys are used for key-aware random mode and Smart Generator mode.",
+    "smartGeneratorMode":  "Smart Generator 模式",
+    "smartGeneratorHelp":  "Prioritizes functional harmonic motion while preserving the enabled non-diatonic options.",
+    "advancedSmartGenerator":  "進階 Smart Generator",
+    "modulationIntensity":  "轉調強度",
+    "modulationIntensityOff":  "Off",
+    "modulationIntensityLow":  "Low",
+    "modulationIntensityMedium":  "Medium",
+    "modulationIntensityHigh":  "High",
+    "jazzPreset":  "爵士預設",
+    "jazzPresetStandardsCore":  "Standards Core",
+    "jazzPresetModulationStudy":  "Modulation Study",
+    "jazzPresetAdvanced":  "Advanced",
+    "sourceProfile":  "來源設定",
+    "sourceProfileFakebookStandard":  "Fakebook Standard",
+    "sourceProfileRecordingInspired":  "Recording Inspired",
+    "smartDiagnostics":  "Smart 診斷",
+    "smartDiagnosticsHelp":  "Logs Smart Generator decision traces for debugging.",
+    "keyModeRequiredForSmartGenerator":  "Select at least one key to use Smart Generator mode.",
+    "nonDiatonic":  "Non-Diatonic",
+    "nonDiatonicRequiresKeyMode":  "Non-diatonic options are available in key mode only.",
+    "secondaryDominant":  "副屬和弦",
+    "substituteDominant":  "替代屬和弦",
+    "modalInterchange":  "調式借用",
+    "modalInterchangeDisabledHelp":  "Modal interchange only appears in key mode, so this option is disabled in free mode.",
+    "rendering":  "顯示",
+    "keyCenterLabelStyle":  "調性標籤樣式",
+    "keyCenterLabelStyleHelp":  "可選擇顯示 major/minor 文字，或使用古典的大寫/小寫主音標記。",
+    "chordSymbolStyle":  "和弦符號樣式",
+    "chordSymbolStyleHelp":  "Changes the display layer only. Harmonic logic stays canonical.",
+    "styleCompact":  "Compact",
+    "styleMajText":  "MajText",
+    "styleDeltaJazz":  "DeltaJazz",
+    "keyCenterLabelStyleModeText":  "C 大調: / C 小調:",
+    "keyCenterLabelStyleClassicalCase":  "C: / c:",
+    "allowV7sus4":  "Allow V7sus4 (V7, V7/x)",
+    "allowTensions":  "允許張力音",
+    "tensionHelp":  "Roman numeral profile and selected chips only",
+    "inversions":  "轉位",
+    "enableInversions":  "Enable Inversions",
+    "inversionHelp":  "Random slash-bass rendering after chord selection; it does not track the previous bass.",
+    "firstInversion":  "1st Inversion",
+    "secondInversion":  "2nd Inversion",
+    "thirdInversion":  "3rd Inversion",
+    "keyPracticeOverview":  "調性練習概覽",
+    "freePracticeOverview":  "自由練習概覽",
+    "keyModeTag":  "調性模式",
+    "freeModeTag":  "自由模式",
+    "allKeysTag":  "所有調性",
+    "metronomeOnTag":  "Metronome On",
+    "metronomeOffTag":  "Metronome Off",
+    "pressNextChordToBegin":  "按下 Next Chord 開始",
+    "freeModeActive":  "自由模式啟用",
+    "freePracticeDescription":  "Uses all 12 chromatic roots with random chord qualities for broad reading practice.",
+    "smartPracticeDescription":  "Follows harmonic function flow in the selected keys while allowing tasteful smart-generator movement.",
+    "keyPracticeDescription":  "Uses the selected keys and enabled Roman numerals to generate diatonic practice material.",
+    "keyboardShortcutHelp":  "Space: next chord  Enter: start or stop autoplay  Up/Down: adjust BPM",
+    "nextChord":  "下一個和弦",
+    "startAutoplay":  "開始自動播放",
+    "stopAutoplay":  "停止自動播放",
+    "decreaseBpm":  "降低 BPM",
+    "increaseBpm":  "提高 BPM",
+    "bpmLabel":  "BPM",
+    "bpmTag":  "{value} BPM",
+    "@bpmTag":  {
+                    "placeholders":  {
+                                         "value":  {
+                                                       "type":  "int"
+                                                   }
+                                     }
+                },
+    "allowedRange":  "允許範圍：{min}-{max}",
+    "@allowedRange":  {
+                          "placeholders":  {
+                                               "min":  {
+                                                           "type":  "int"
+                                                       },
+                                               "max":  {
+                                                           "type":  "int"
+                                                       }
+                                           }
+                      },
+    "modeMajor":  "大調",
+    "modeMinor":  "小調",
+    "analysisLabelWithCenter":  "{center}: {roman}",
+    "@analysisLabelWithCenter":  {
+                                     "placeholders":  {
+                                                          "center":  {
+
+                                                                     },
+                                                          "roman":  {
+
+                                                                    }
+                                                      }
+                                 },
+    "voicingSuggestionsTitle":  "Voicing 建議",
+    "voicingSuggestionsSubtitle":  "查看這個和弦可用的具體音符選擇。",
+    "voicingSuggestionsEnabled":  "啟用 Voicing 建議",
+    "voicingSuggestionsHelp":  "Shows three playable note-level voicing ideas for the current chord.",
+    "voicingComplexity":  "Voicing Complexity",
+    "voicingComplexityHelp":  "Controls how colorful the suggestions may become.",
+    "voicingComplexityBasic":  "Basic",
+    "voicingComplexityStandard":  "Standard",
+    "voicingComplexityModern":  "Modern",
+    "voicingTopNotePreference":  "高音偏好",
+    "voicingTopNotePreferenceHelp":  "Leans suggestions toward a chosen top line. Locked voicings win first, then repeated chords keep it steady.",
+    "voicingTopNotePreferenceAuto":  "自動",
+    "allowRootlessVoicings":  "Allow Rootless Voicings",
+    "allowRootlessVoicingsHelp":  "Lets suggestions omit the root when the guide tones stay clear.",
+    "maxVoicingNotes":  "Max Voicing Notes",
+    "lookAheadDepth":  "Look-Ahead Depth",
+    "lookAheadDepthHelp":  "How many future chords the ranking may consider.",
+    "showVoicingReasons":  "Show Voicing Reasons",
+    "showVoicingReasonsHelp":  "Displays short explanation chips on each suggestion card.",
+    "voicingSuggestionNatural":  "Most Natural",
+    "voicingSuggestionColorful":  "Most Colorful",
+    "voicingSuggestionEasy":  "Easiest",
+    "voicingSuggestionNaturalSubtitle":  "Voice-leading first",
+    "voicingSuggestionColorfulSubtitle":  "Leans into color tones",
+    "voicingSuggestionEasySubtitle":  "Compact hand shape",
+    "voicingSuggestionNaturalConnectedSubtitle":  "Connection and resolution first",
+    "voicingSuggestionNaturalStableSubtitle":  "Same shape, steady comping",
+    "voicingSuggestionTopLineSubtitle":  "Top line leads",
+    "voicingSuggestionColorfulAlteredSubtitle":  "Altered tension up front",
+    "voicingSuggestionColorfulQuartalSubtitle":  "Modern quartal color",
+    "voicingSuggestionColorfulTritoneSubtitle":  "Tritone-sub edge with bright guide tones",
+    "voicingSuggestionColorfulUpperStructureSubtitle":  "Guide tones with bright extensions",
+    "voicingSuggestionEasyAnchoredSubtitle":  "Core tones, smaller reach",
+    "voicingSuggestionEasyStableSubtitle":  "Repeat-friendly hand shape",
+    "voicingTopNoteLabel":  "高音",
+    "voicingTopNoteContextExplicit":  "Top line target: {note}",
+    "@voicingTopNoteContextExplicit":  {
+                                           "placeholders":  {
+                                                                "note":  {
+
+                                                                         }
+                                                            }
+                                       },
+    "voicingTopNoteContextLocked":  "Locked top line: {note}",
+    "@voicingTopNoteContextLocked":  {
+                                         "placeholders":  {
+                                                              "note":  {
+
+                                                                       }
+                                                          }
+                                     },
+    "voicingTopNoteContextCarry":  "Repeated top line: {note}",
+    "@voicingTopNoteContextCarry":  {
+                                        "placeholders":  {
+                                                             "note":  {
+
+                                                                      }
+                                                         }
+                                    },
+    "voicingTopNoteContextNearby":  "Nearest top line to {note}",
+    "@voicingTopNoteContextNearby":  {
+                                         "placeholders":  {
+                                                              "note":  {
+
+                                                                       }
+                                                          }
+                                     },
+    "voicingTopNoteContextFallback":  "No exact top line for {note}",
+    "@voicingTopNoteContextFallback":  {
+                                           "placeholders":  {
+                                                                "note":  {
+
+                                                                         }
+                                                            }
+                                       },
+    "voicingFamilyShell":  "Shell",
+    "voicingFamilyRootlessA":  "Rootless A",
+    "voicingFamilyRootlessB":  "Rootless B",
+    "voicingFamilySpread":  "Spread",
+    "voicingFamilySus":  "Sus",
+    "voicingFamilyQuartal":  "Quartal",
+    "voicingFamilyAltered":  "Altered",
+    "voicingFamilyUpperStructure":  "Upper Structure",
+    "voicingLockSuggestion":  "Lock suggestion",
+    "voicingUnlockSuggestion":  "Unlock suggestion",
+    "voicingSelected":  "已選取",
+    "voicingLocked":  "已鎖定",
+    "voicingReasonEssentialCore":  "Essential tones covered",
+    "voicingReasonGuideToneAnchor":  "3rd/7th anchor",
+    "voicingReasonGuideResolution":  "{count} guide-tone resolves",
+    "@voicingReasonGuideResolution":  {
+                                          "placeholders":  {
+                                                               "count":  {
+                                                                             "type":  "int"
+                                                                         }
+                                                           }
+                                      },
+    "voicingReasonCommonToneRetention":  "{count} common tones kept",
+    "@voicingReasonCommonToneRetention":  {
+                                              "placeholders":  {
+                                                                   "count":  {
+                                                                                 "type":  "int"
+                                                                             }
+                                                               }
+                                          },
+    "voicingReasonStableRepeat":  "Stable repeat",
+    "voicingReasonTopLineTarget":  "Top line target",
+    "voicingReasonLowMudAvoided":  "Low-register clarity",
+    "voicingReasonCompactReach":  "Comfortable reach",
+    "voicingReasonBassAnchor":  "Bass anchor respected",
+    "voicingReasonNextChordReady":  "Next chord ready",
+    "voicingReasonAlteredColor":  "Altered tensions",
+    "voicingReasonRootlessClarity":  "Light rootless shape",
+    "voicingReasonSusRelease":  "Sus release set up",
+    "voicingReasonQuartalColor":  "Quartal color",
+    "voicingReasonUpperStructureColor":  "Upper-structure color",
+    "voicingReasonTritoneSubFlavor":  "Tritone-sub flavor",
+    "voicingReasonLockedContinuity":  "Locked continuity",
+    "voicingReasonGentleMotion":  "Smooth hand move",
+    "mainMenuIntro":  "Choose a practice generator or open the analyzer for a separate progression reading workflow.",
+    "mainMenuGeneratorTitle":  "Chord Generator",
+    "mainMenuGeneratorDescription":  "Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.",
+    "openGenerator":  "Open Generator",
+    "openAnalyzer":  "打开分析器",
+    "mainMenuAnalyzerTitle":  "和弦分析器",
+    "mainMenuAnalyzerDescription":  "分析输入的和弦进行，给出可能的调性、罗马数字和和声功能。",
+    "chordAnalyzerTitle":  "和弦分析器",
+    "chordAnalyzerSubtitle":  "粘贴一段和弦进行，获得保守的和声解读。",
+    "chordAnalyzerInputLabel":  "和弦进行",
+    "chordAnalyzerInputHint":  "Dm7 G7 Cmaj7",
+    "chordAnalyzerInputHelper":  "在括号外可以用空格、| 或逗号分隔和弦。括号内的逗号会保留在同一个和弦里作为张力音分隔符。支持小写根音、斜线低音、sus/alt/add 形式，以及 C7(b9, #11) 这类括号张力音。触摸设备可以使用和弦面板或切换到 ABC 输入。",
+    "chordAnalyzerAnalyze":  "分析",
+    "chordAnalyzerKeyboardTitle":  "和弦面板",
+    "chordAnalyzerKeyboardTouchHint":  "点按符号来拼出进行。需要自由输入时，可以切换到 ABC 输入并继续使用系统键盘。",
+    "chordAnalyzerKeyboardDesktopHint":  "可以直接输入、粘贴，或点按符号插入到光标位置。",
+    "chordAnalyzerChordPad":  "面板",
+    "chordAnalyzerRawInput":  "ABC",
+    "chordAnalyzerPaste":  "粘贴",
+    "chordAnalyzerClear":  "清除",
+    "chordAnalyzerBackspace":  "退格",
+    "chordAnalyzerSpace":  "空格",
+    "chordAnalyzerAnalyzing":  "正在分析进行...",
+    "chordAnalyzerInitialTitle":  "先输入一段进行",
+    "chordAnalyzerInitialBody":  "输入 Dm7 G7 Cmaj7 或 Cmaj7 | Am7 D7 | Gmaj7 这样的进行，即可查看可能的调性、罗马数字和简短摘要。",
+    "chordAnalyzerDetectedKeys":  "候选调性",
+    "chordAnalyzerPrimaryReading":  "主要解读",
+    "chordAnalyzerAlternativeReading":  "备选解读",
+    "chordAnalyzerChordAnalysis":  "逐和弦分析",
+    "chordAnalyzerMeasureLabel":  "第 {index} 小节",
+    "@chordAnalyzerMeasureLabel":  {
+                                       "placeholders":  {
+                                                            "index":  {
+
+                                                                      }
+                                                        }
+                                   },
+    "chordAnalyzerProgressionSummary":  "进行摘要",
+    "chordAnalyzerWarnings":  "警告与歧义",
+    "chordAnalyzerNoInputError":  "请输入要分析的和弦进行。",
+    "chordAnalyzerNoRecognizedChordsError":  "没有找到可识别的和弦标记。",
+    "chordAnalyzerLowConfidenceTitle":  "低置信度解读",
+    "chordAnalyzerLowConfidenceBody":  "候选调性彼此非常接近，或部分标记只被部分恢复，因此请把它看作谨慎的第一版解读。",
+    "chordAnalyzerEmptyMeasure":  "这一小节为空，但为了保留小节编号仍然显示。",
+    "chordAnalyzerNoAnalyzableChordsInMeasure":  "这一小节没有恢复出可分析的和弦标记。",
+    "chordAnalyzerParseIssuesTitle":  "解析问题",
+    "chordAnalyzerParseIssueLine":  "{token}: {reason}",
+    "@chordAnalyzerParseIssueLine":  {
+                                         "placeholders":  {
+                                                              "token":  {
+
+                                                                        },
+                                                              "reason":  {
+
+                                                                         }
+                                                          }
+                                     },
+    "chordAnalyzerParseIssueEmpty":  "空标记。",
+    "chordAnalyzerParseIssueInvalidRoot":  "无法识别根音。",
+    "chordAnalyzerParseIssueUnknownRoot":  "{root} 不是受支持的根音写法。",
+    "@chordAnalyzerParseIssueUnknownRoot":  {
+                                                "placeholders":  {
+                                                                     "root":  {
+
+                                                                              }
+                                                                 }
+                                            },
+    "chordAnalyzerParseIssueInvalidBass":  "斜线低音 {bass} 不是受支持的写法。",
+    "@chordAnalyzerParseIssueInvalidBass":  {
+                                                "placeholders":  {
+                                                                     "bass":  {
+
+                                                                              }
+                                                                 }
+                                            },
+    "chordAnalyzerParseIssueUnsupportedSuffix":  "不支持的后缀或修饰符: {suffix}",
+    "@chordAnalyzerParseIssueUnsupportedSuffix":  {
+                                                      "placeholders":  {
+                                                                           "suffix":  {
+
+                                                                                      }
+                                                                       }
+                                                  },
+    "chordAnalyzerPartialParseWarning":  "有些符号被跳过了: {tokens}",
+    "@chordAnalyzerPartialParseWarning":  {
+                                              "placeholders":  {
+                                                                   "tokens":  {
+
+                                                                              }
+                                                               }
+                                          },
+    "chordAnalyzerKeyAmbiguityWarning":  "调性中心在 {primary} 和 {alternative} 之间仍有一些歧义。",
+    "@chordAnalyzerKeyAmbiguityWarning":  {
+                                              "placeholders":  {
+                                                                   "primary":  {
+
+                                                                               },
+                                                                   "alternative":  {
+
+                                                                                   }
+                                                               }
+                                          },
+    "chordAnalyzerUnresolvedWarning":  "仍有一些和弦比较模糊，因此这份解读会刻意保持保守。",
+    "chordAnalyzerFunctionTonic":  "主功能",
+    "chordAnalyzerFunctionPredominant":  "前属功能",
+    "chordAnalyzerFunctionDominant":  "属功能",
+    "chordAnalyzerFunctionOther":  "其他",
+    "chordAnalyzerRemarkSecondaryDominant":  "可能是指向 {target} 的副属和弦。",
+    "@chordAnalyzerRemarkSecondaryDominant":  {
+                                                  "placeholders":  {
+                                                                       "target":  {
+
+                                                                                  }
+                                                                   }
+                                              },
+    "chordAnalyzerRemarkTritoneSub":  "可能是指向 {target} 的三全音替代。",
+    "@chordAnalyzerRemarkTritoneSub":  {
+                                           "placeholders":  {
+                                                                "target":  {
+
+                                                                           }
+                                                            }
+                                       },
+    "chordAnalyzerRemarkModalInterchange":  "可能是从平行小调借来的调式互换。",
+    "chordAnalyzerRemarkAmbiguous":  "这个和弦在当前解读下仍然有歧义。",
+    "chordAnalyzerRemarkUnresolved":  "仅凭当前保守规则还无法明确判断这个和弦。",
+    "chordAnalyzerTagIiVI":  "ii-V-I 终止",
+    "chordAnalyzerTagTurnaround":  "回转",
+    "chordAnalyzerTagDominantResolution":  "属功能解决",
+    "chordAnalyzerTagPlagalColor":  "变格/调式色彩",
+    "chordAnalyzerSummaryCenter":  "这段进行最可能围绕 {key} 展开。",
+    "@chordAnalyzerSummaryCenter":  {
+                                        "placeholders":  {
+                                                             "key":  {
+
+                                                                     }
+                                                         }
+                                    },
+    "chordAnalyzerSummaryAlternative":  "另一种可能的解读是 {key}。",
+    "@chordAnalyzerSummaryAlternative":  {
+                                             "placeholders":  {
+                                                                  "key":  {
+
+                                                                          }
+                                                              }
+                                         },
+    "chordAnalyzerSummaryTag":  "它显示出 {tag} 的特征。",
+    "@chordAnalyzerSummaryTag":  {
+                                     "placeholders":  {
+                                                          "tag":  {
+
+                                                                  }
+                                                      }
+                                 },
+    "chordAnalyzerSummaryFlow":  "{from} 和 {through} 可以理解为通向 {target} 的 {fromFunction} 与 {throughFunction} 和声功能。",
+    "@chordAnalyzerSummaryFlow":  {
+                                      "placeholders":  {
+                                                           "from":  {
+
+                                                                    },
+                                                           "through":  {
+
+                                                                       },
+                                                           "fromFunction":  {
+
+                                                                            },
+                                                           "throughFunction":  {
+
+                                                                               },
+                                                           "target":  {
+
+                                                                      }
+                                                       }
+                                  },
+    "chordAnalyzerSummarySecondaryDominant":  "{chord} 可以听成是指向 {target} 的副属和弦。",
+    "@chordAnalyzerSummarySecondaryDominant":  {
+                                                   "placeholders":  {
+                                                                        "chord":  {
+
+                                                                                  },
+                                                                        "target":  {
+
+                                                                                   }
+                                                                    }
+                                               },
+    "chordAnalyzerSummaryTritoneSub":  "{chord} 可以听成是指向 {target} 的三全音替代。",
+    "@chordAnalyzerSummaryTritoneSub":  {
+                                            "placeholders":  {
+                                                                 "chord":  {
+
+                                                                           },
+                                                                 "target":  {
+
+                                                                            }
+                                                             }
+                                        },
+    "chordAnalyzerSummaryModalInterchange":  "{chord} 增添了可能的调式互换色彩。",
+    "@chordAnalyzerSummaryModalInterchange":  {
+                                                  "placeholders":  {
+                                                                       "chord":  {
+
+                                                                                 }
+                                                                   }
+                                              },
+    "chordAnalyzerSummaryAmbiguous":  "仍有一些细节存在歧义，因此这份解读会刻意保持保守。",
+    "chordAnalyzerExamplesTitle":  "示例",
+    "chordAnalyzerConfidenceLabel":  "置信度",
+    "chordAnalyzerAmbiguityLabel":  "歧义度",
+    "chordAnalyzerWhyThisReading":  "这样解读的原因",
+    "chordAnalyzerCompetingReadings":  "其他也可能",
+    "chordAnalyzerIgnoredModifiersWarning":  "已忽略的修饰符: {details}",
+    "@chordAnalyzerIgnoredModifiersWarning":  {
+                                                  "placeholders":  {
+                                                                       "details":  {
+
+                                                                                   }
+                                                                   }
+                                              },
+    "chordAnalyzerParserDiagnosticWarning":  "输入警告: {details}",
+    "@chordAnalyzerParserDiagnosticWarning":  {
+                                                  "placeholders":  {
+                                                                       "details":  {
+
+                                                                                   }
+                                                                   }
+                                              },
+    "chordAnalyzerDiagnosticUnbalancedParentheses":  "括号不平衡，导致部分符号无法确定。",
+    "chordAnalyzerDiagnosticUnexpectedCloseParenthesis":  "已忽略意外出现的右括号。",
+    "chordAnalyzerEvidenceExtensionColor":  "明确写出的 {extension} 色彩加强了这种解读。",
+    "@chordAnalyzerEvidenceExtensionColor":  {
+                                                 "placeholders":  {
+                                                                      "extension":  {
+
+                                                                                    }
+                                                                  }
+                                             },
+    "chordAnalyzerEvidenceAlteredDominantColor":  "altered dominant 的色彩支持属功能解读。",
+    "chordAnalyzerEvidenceSlashBass":  "斜线低音 {bass} 让低音线或转位信息保持有效。",
+    "@chordAnalyzerEvidenceSlashBass":  {
+                                            "placeholders":  {
+                                                                 "bass":  {
+
+                                                                          }
+                                                             }
+                                        },
+    "chordAnalyzerEvidenceResolution":  "下一个和弦支持向 {target} 解决。",
+    "@chordAnalyzerEvidenceResolution":  {
+                                             "placeholders":  {
+                                                                  "target":  {
+
+                                                                             }
+                                                              }
+                                         },
+    "chordAnalyzerEvidenceBorrowedColor":  "这种色彩可以听成从平行调借来的。",
+    "chordAnalyzerEvidenceSuspensionColor":  "挂留色彩会柔化属功能的拉力，但不会完全抹去它。"
 }

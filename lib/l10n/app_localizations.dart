@@ -1059,18 +1059,6 @@ abstract class AppLocalizations {
   /// **'Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.'**
   String get mainMenuGeneratorDescription;
 
-  /// No description provided for @mainMenuAnalyzerTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Chord Analyzer'**
-  String get mainMenuAnalyzerTitle;
-
-  /// No description provided for @mainMenuAnalyzerDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.'**
-  String get mainMenuAnalyzerDescription;
-
   /// No description provided for @openGenerator.
   ///
   /// In en, this message translates to:
@@ -1082,6 +1070,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open Analyzer'**
   String get openAnalyzer;
+
+  /// No description provided for @mainMenuAnalyzerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chord Analyzer'**
+  String get mainMenuAnalyzerTitle;
+
+  /// No description provided for @mainMenuAnalyzerDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.'**
+  String get mainMenuAnalyzerDescription;
 
   /// No description provided for @chordAnalyzerTitle.
   ///
@@ -1110,7 +1110,7 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerInputHelper.
   ///
   /// In en, this message translates to:
-  /// **'Spaces, |, and commas are accepted. Slash chords and simple alterations are supported. Touch devices can use the chord pad or switch to ABC input.'**
+  /// **'Separators outside parentheses can be spaces, |, or commas. Commas inside parentheses stay inside one chord. Lowercase roots, slash bass, sus/alt/add forms, and tensions such as C7(b9, #11) are supported. Touch devices can use the chord pad or switch to ABC input.'**
   String get chordAnalyzerInputHelper;
 
   /// No description provided for @chordAnalyzerAnalyze.
@@ -1260,7 +1260,7 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerUnresolvedWarning.
   ///
   /// In en, this message translates to:
-  /// **'Some chords remain ambiguous under this MVP reading.'**
+  /// **'Some chords stay ambiguous, so this reading remains intentionally conservative.'**
   String get chordAnalyzerUnresolvedWarning;
 
   /// No description provided for @chordAnalyzerFunctionTonic.
@@ -1314,7 +1314,7 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerRemarkUnresolved.
   ///
   /// In en, this message translates to:
-  /// **'This chord falls outside the current MVP heuristics.'**
+  /// **'This chord stays unresolved under the current conservative heuristics.'**
   String get chordAnalyzerRemarkUnresolved;
 
   /// No description provided for @chordAnalyzerTagIiVI.
@@ -1484,6 +1484,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Suspension color softens the dominant pull without erasing it.'**
   String get chordAnalyzerEvidenceSuspensionColor;
+
+  /// No description provided for @chordAnalyzerLowConfidenceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Low-confidence reading'**
+  String get chordAnalyzerLowConfidenceTitle;
+
+  /// No description provided for @chordAnalyzerLowConfidenceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The key candidates are close together or some symbols were only partially recovered, so treat this as a cautious first pass.'**
+  String get chordAnalyzerLowConfidenceBody;
+
+  /// No description provided for @chordAnalyzerEmptyMeasure.
+  ///
+  /// In en, this message translates to:
+  /// **'This measure is empty and was preserved in the count.'**
+  String get chordAnalyzerEmptyMeasure;
+
+  /// No description provided for @chordAnalyzerNoAnalyzableChordsInMeasure.
+  ///
+  /// In en, this message translates to:
+  /// **'No analyzable chord symbols were recovered in this measure.'**
+  String get chordAnalyzerNoAnalyzableChordsInMeasure;
+
+  /// No description provided for @chordAnalyzerParseIssuesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Parse issues'**
+  String get chordAnalyzerParseIssuesTitle;
+
+  /// No description provided for @chordAnalyzerParseIssueLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{token}: {reason}'**
+  String chordAnalyzerParseIssueLine(Object token, Object reason);
+
+  /// No description provided for @chordAnalyzerParseIssueEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty token.'**
+  String get chordAnalyzerParseIssueEmpty;
+
+  /// No description provided for @chordAnalyzerParseIssueInvalidRoot.
+  ///
+  /// In en, this message translates to:
+  /// **'The root could not be recognized.'**
+  String get chordAnalyzerParseIssueInvalidRoot;
+
+  /// No description provided for @chordAnalyzerParseIssueUnknownRoot.
+  ///
+  /// In en, this message translates to:
+  /// **'{root} is not a supported root spelling.'**
+  String chordAnalyzerParseIssueUnknownRoot(Object root);
+
+  /// No description provided for @chordAnalyzerParseIssueInvalidBass.
+  ///
+  /// In en, this message translates to:
+  /// **'Slash bass {bass} is not a supported bass spelling.'**
+  String chordAnalyzerParseIssueInvalidBass(Object bass);
+
+  /// No description provided for @chordAnalyzerParseIssueUnsupportedSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported suffix or modifier: {suffix}'**
+  String chordAnalyzerParseIssueUnsupportedSuffix(Object suffix);
 }
 
 class _AppLocalizationsDelegate

@@ -1,386 +1,490 @@
 {
-  "@@locale": "ko",
-  "settings": "설정",
-  "closeSettings": "설정 닫기",
-  "language": "언어",
-  "systemDefaultLanguage": "시스템 기본값",
-  "metronome": "메트로놈",
-  "enabled": "켜짐",
-  "disabled": "꺼짐",
-  "metronomeHelp": "연습 중 모든 박자에 클릭 소리를 들으려면 메트로놈을 켜세요.",
-  "metronomeSound": "메트로놈 소리",
-  "metronomeSoundClassic": "클래식",
-  "metronomeSoundClickB": "클릭 B",
-  "metronomeSoundClickC": "클릭 C",
-  "metronomeSoundClickD": "클릭 D",
-  "metronomeSoundClickE": "클릭 E",
-  "metronomeSoundClickF": "클릭 F",
-  "metronomeVolume": "메트로놈 볼륨",
-  "keys": "키",
-  "noKeysSelected": "선택된 키가 없습니다. 모두 끄면 모든 루트에서 자유 모드로 연습합니다.",
-  "keysSelectedHelp": "선택한 키는 키 인식 랜덤 모드와 Smart Generator 모드에서 사용됩니다.",
-  "smartGeneratorMode": "Smart Generator 모드",
-  "smartGeneratorHelp": "활성화된 비다이어토닉 옵션을 유지하면서 기능적 화성 진행을 우선합니다.",
-  "advancedSmartGenerator": "고급 Smart Generator",
-  "modulationIntensity": "전조 강도",
-  "modulationIntensityOff": "끔",
-  "modulationIntensityLow": "낮음",
-  "modulationIntensityMedium": "보통",
-  "modulationIntensityHigh": "높음",
-  "jazzPreset": "재즈 프리셋",
-  "jazzPresetStandardsCore": "스탠더드 코어",
-  "jazzPresetModulationStudy": "전조 스터디",
-  "jazzPresetAdvanced": "고급",
-  "sourceProfile": "소스 프로필",
-  "sourceProfileFakebookStandard": "페이크북 표준",
-  "sourceProfileRecordingInspired": "레코딩 영감",
-  "smartDiagnostics": "Smart 진단",
-  "smartDiagnosticsHelp": "디버깅을 위해 Smart Generator 결정 추적을 기록합니다.",
-  "keyModeRequiredForSmartGenerator": "Smart Generator 모드를 사용하려면 키를 하나 이상 선택하세요.",
-  "nonDiatonic": "비다이어토닉",
-  "nonDiatonicRequiresKeyMode": "비다이어토닉 옵션은 키 모드에서만 사용할 수 있습니다.",
-  "secondaryDominant": "세컨더리 도미넌트",
-  "substituteDominant": "서브스티튜트 도미넌트",
-  "modalInterchange": "모달 인터체인지",
-  "modalInterchangeDisabledHelp": "모달 인터체인지는 키 모드에서만 나타나므로 자유 모드에서는 이 옵션이 비활성화됩니다.",
-  "rendering": "표기",
-  "keyCenterLabelStyle": "조성 표기 방식",
-  "keyCenterLabelStyleHelp": "모드 이름을 직접 표시하는 방식과 전통적인 장·단조 대소문자 으뜸음 표기 중에서 선택하세요.",
-  "chordSymbolStyle": "코드 심볼 스타일",
-  "chordSymbolStyleHelp": "표시 방식만 바뀌며 화성 로직은 그대로 유지됩니다.",
-  "styleCompact": "간결형",
-  "styleMajText": "Maj 표기",
-  "styleDeltaJazz": "델타 재즈",
-  "keyCenterLabelStyleModeText": "C 장조: / C 단조:",
-  "keyCenterLabelStyleClassicalCase": "C: / c:",
-  "allowV7sus4": "V7sus4 허용 (V7, V7/x)",
-  "allowTensions": "텐션 허용",
-  "tensionHelp": "로마 숫자 프로필과 선택한 칩만 사용",
-  "inversions": "전위",
-  "enableInversions": "전위 사용",
-  "inversionHelp": "코드를 고른 뒤 슬래시 베이스 표기를 무작위로 적용합니다. 이전 베이스 라인은 추적하지 않습니다.",
-  "firstInversion": "1전위",
-  "secondInversion": "2전위",
-  "thirdInversion": "3전위",
-  "keyPracticeOverview": "키 연습 개요",
-  "freePracticeOverview": "자유 연습 개요",
-  "keyModeTag": "키 모드",
-  "freeModeTag": "자유 모드",
-  "allKeysTag": "전체 키",
-  "metronomeOnTag": "메트로놈 켜짐",
-  "metronomeOffTag": "메트로놈 꺼짐",
-  "pressNextChordToBegin": "시작하려면 다음 코드를 누르세요",
-  "freeModeActive": "자유 모드 활성",
-  "freePracticeDescription": "12개의 모든 반음계 루트에서 무작위 코드 성질을 사용해 폭넓은 리딩 연습을 합니다.",
-  "smartPracticeDescription": "선택한 키 안에서 화성 기능의 흐름을 따르면서도 자연스러운 Smart Generator 진행을 허용합니다.",
-  "keyPracticeDescription": "선택한 키와 활성화된 로마 숫자로 다이어토닉 연습 재료를 생성합니다.",
-  "keyboardShortcutHelp": "Space: 다음 코드  Enter: 자동 재생 시작/정지  위/아래: BPM 조절",
-  "nextChord": "다음 코드",
-  "startAutoplay": "자동 재생 시작",
-  "stopAutoplay": "자동 재생 중지",
-  "decreaseBpm": "BPM 낮추기",
-  "increaseBpm": "BPM 높이기",
-  "bpmLabel": "BPM",
-  "bpmTag": "{value} BPM",
-  "@bpmTag": {
-    "placeholders": {
-      "value": {
-        "type": "int"
-      }
-    }
-  },
-  "allowedRange": "허용 범위: {min}-{max}",
-  "@allowedRange": {
-    "placeholders": {
-      "min": {
-        "type": "int"
-      },
-      "max": {
-        "type": "int"
-      }
-    }
-  },
-  "modeMajor": "장조",
-  "modeMinor": "단조",
-  "analysisLabelWithCenter": "{center}: {roman}",
-  "@analysisLabelWithCenter": {
-    "placeholders": {
-      "center": {},
-      "roman": {}
-    }
-  },
-  "voicingSuggestionsTitle": "보이싱 제안",
-  "voicingSuggestionsSubtitle": "현재 코드에 맞는 구체적인 음 선택을 확인하세요.",
-  "voicingSuggestionsEnabled": "보이싱 제안 사용",
-  "voicingSuggestionsHelp": "현재 코드에 대해 연주 가능한 보이싱 아이디어 3개를 보여줍니다.",
-  "voicingComplexity": "보이싱 복잡도",
-  "voicingComplexityHelp": "제안이 얼마나 다채로워질 수 있는지 조절합니다.",
-  "voicingComplexityBasic": "기본",
-  "voicingComplexityStandard": "표준",
-  "voicingComplexityModern": "모던",
-  "voicingTopNotePreference": "탑노트 선호",
-  "voicingTopNotePreferenceHelp": "제안이 선택한 탑라인 쪽으로 기울어집니다. 잠근 보이싱이 가장 우선하고, 그다음에는 반복되는 코드에서 안정적으로 유지됩니다.",
-  "voicingTopNotePreferenceAuto": "자동",
-  "allowRootlessVoicings": "루트리스 보이싱 허용",
-  "allowRootlessVoicingsHelp": "가이드톤이 분명할 때 루트를 생략한 제안을 허용합니다.",
-  "maxVoicingNotes": "최대 보이싱 음수",
-  "lookAheadDepth": "미리보기 깊이",
-  "lookAheadDepthHelp": "랭킹 계산 시 고려할 미래 코드 수입니다.",
-  "showVoicingReasons": "보이싱 이유 표시",
-  "showVoicingReasonsHelp": "각 제안 카드에 짧은 설명 칩을 표시합니다.",
-  "voicingSuggestionNatural": "가장 자연스러움",
-  "voicingSuggestionColorful": "가장 컬러풀함",
-  "voicingSuggestionEasy": "가장 쉬움",
-  "voicingSuggestionNaturalSubtitle": "보이스 리딩 우선",
-  "voicingSuggestionColorfulSubtitle": "컬러 톤을 강조",
-  "voicingSuggestionEasySubtitle": "컴팩트한 손 모양",
-  "voicingSuggestionNaturalConnectedSubtitle": "연결과 해결 우선",
-  "voicingSuggestionNaturalStableSubtitle": "같은 모양, 안정적인 컴핑",
-  "voicingSuggestionTopLineSubtitle": "탑라인 우선",
-  "voicingSuggestionColorfulAlteredSubtitle": "얼터드 텐션을 전면에",
-  "voicingSuggestionColorfulQuartalSubtitle": "모던한 4도 보이싱 컬러",
-  "voicingSuggestionColorfulTritoneSubtitle": "밝은 가이드톤의 트라이톤 서브 느낌",
-  "voicingSuggestionColorfulUpperStructureSubtitle": "밝은 익스텐션을 더한 가이드톤 중심",
-  "voicingSuggestionEasyAnchoredSubtitle": "핵심 음 중심, 더 작은 도약",
-  "voicingSuggestionEasyStableSubtitle": "반복하기 쉬운 손 모양",
-  "voicingTopNoteLabel": "탑",
-  "voicingTopNoteContextExplicit": "목표 탑라인: {note}",
-  "@voicingTopNoteContextExplicit": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextLocked": "잠금된 탑라인: {note}",
-  "@voicingTopNoteContextLocked": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextCarry": "반복된 탑라인: {note}",
-  "@voicingTopNoteContextCarry": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextNearby": "$note에 가장 가까운 탑라인",
-  "@voicingTopNoteContextNearby": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextFallback": "$note에 정확히 맞는 탑라인이 없습니다",
-  "@voicingTopNoteContextFallback": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingFamilyShell": "셸",
-  "voicingFamilyRootlessA": "루트리스 A",
-  "voicingFamilyRootlessB": "루트리스 B",
-  "voicingFamilySpread": "스프레드",
-  "voicingFamilySus": "서스",
-  "voicingFamilyQuartal": "4도",
-  "voicingFamilyAltered": "얼터드",
-  "voicingFamilyUpperStructure": "어퍼 스트럭처",
-  "voicingLockSuggestion": "제안 잠그기",
-  "voicingUnlockSuggestion": "제안 잠금 해제",
-  "voicingSelected": "선택됨",
-  "voicingLocked": "잠김",
-  "voicingReasonEssentialCore": "핵심 음 포함",
-  "voicingReasonGuideToneAnchor": "3도/7도 앵커",
-  "voicingReasonGuideResolution": "가이드톤 해결 $count개",
-  "@voicingReasonGuideResolution": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "voicingReasonCommonToneRetention": "공통음 유지 $count개",
-  "@voicingReasonCommonToneRetention": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "voicingReasonStableRepeat": "안정적인 반복",
-  "voicingReasonTopLineTarget": "탑라인 목표",
-  "voicingReasonLowMudAvoided": "저음역 탁함 회피",
-  "voicingReasonCompactReach": "편한 손 뻗기",
-  "voicingReasonBassAnchor": "베이스 앵커 유지",
-  "voicingReasonNextChordReady": "다음 코드 준비",
-  "voicingReasonAlteredColor": "얼터드 텐션",
-  "voicingReasonRootlessClarity": "가벼운 루트리스 형태",
-  "voicingReasonSusRelease": "서스 해결 준비",
-  "voicingReasonQuartalColor": "4도 컬러",
-  "voicingReasonUpperStructureColor": "어퍼 스트럭처 컬러",
-  "voicingReasonTritoneSubFlavor": "트라이톤 서브 느낌",
-  "voicingReasonLockedContinuity": "잠금된 연속성",
-  "voicingReasonGentleMotion": "부드러운 손 이동",
-  "mainMenuIntro": "연습 생성기를 선택하거나, 별도의 진행 읽기 흐름을 위해 분석기를 열어 보세요.",
-  "mainMenuGeneratorTitle": "코드 생성기",
-  "mainMenuGeneratorDescription": "키 인식 랜덤 모드, 스마트 진행, 보이싱 제안으로 연습용 코드를 생성합니다.",
-  "mainMenuAnalyzerTitle": "코드 분석기",
-  "mainMenuAnalyzerDescription": "작성한 진행을 분석해 유력한 키 센터, 로마 숫자, 화성 기능을 보여줍니다.",
-  "openGenerator": "생성기 열기",
-  "openAnalyzer": "분석기 열기",
-  "chordAnalyzerTitle": "코드 분석기",
-  "chordAnalyzerSubtitle": "진행을 붙여 넣으면 보수적인 화성 해석 결과를 보여줍니다.",
-  "chordAnalyzerInputLabel": "코드 진행",
-  "chordAnalyzerInputHint": "Dm7 G7 Cmaj7",
-  "chordAnalyzerInputHelper": "공백, |, 쉼표를 사용할 수 있습니다. 슬래시 코드와 간단한 변형도 지원합니다. 터치 기기에서는 코드 패드를 쓰거나 ABC 입력으로 전환할 수 있습니다.",
-  "chordAnalyzerAnalyze": "분석",
-  "chordAnalyzerKeyboardTitle": "코드 패드",
-  "chordAnalyzerKeyboardTouchHint": "토큰을 눌러 진행을 구성하세요. 자유 입력이 필요할 때는 ABC 입력으로 전환하면 시스템 키보드를 계속 사용할 수 있습니다.",
-  "chordAnalyzerKeyboardDesktopHint": "입력하거나 붙여 넣거나 토큰을 눌러 커서 위치에 삽입하세요.",
-  "chordAnalyzerChordPad": "패드",
-  "chordAnalyzerRawInput": "ABC",
-  "chordAnalyzerPaste": "붙여넣기",
-  "chordAnalyzerClear": "지우기",
-  "chordAnalyzerBackspace": "백스페이스",
-  "chordAnalyzerSpace": "공백",
-  "chordAnalyzerAnalyzing": "진행을 분석하는 중...",
-  "chordAnalyzerInitialTitle": "진행부터 입력해 보세요",
-  "chordAnalyzerInitialBody": "Dm7 G7 Cmaj7 또는 Cmaj7 | Am7 D7 | Gmaj7 같은 진행을 입력하면, 가능한 키와 로마 숫자, 짧은 요약을 볼 수 있습니다.",
-  "chordAnalyzerDetectedKeys": "감지된 키",
-  "chordAnalyzerPrimaryReading": "기본 해석",
-  "chordAnalyzerAlternativeReading": "대안 해석",
-  "chordAnalyzerChordAnalysis": "코드별 분석",
-  "chordAnalyzerMeasureLabel": "{index}마디",
-  "@chordAnalyzerMeasureLabel": {
-    "placeholders": {
-      "index": {}
-    }
-  },
-  "chordAnalyzerProgressionSummary": "진행 요약",
-  "chordAnalyzerWarnings": "경고 및 모호한 지점",
-  "chordAnalyzerNoInputError": "분석할 코드 진행을 입력하세요.",
-  "chordAnalyzerNoRecognizedChordsError": "진행에서 인식 가능한 코드를 찾지 못했습니다.",
-  "chordAnalyzerPartialParseWarning": "일부 기호를 건너뛰었습니다: {tokens}",
-  "@chordAnalyzerPartialParseWarning": {
-    "placeholders": {
-      "tokens": {}
-    }
-  },
-  "chordAnalyzerKeyAmbiguityWarning": "키 센터가 {primary}와 {alternative} 사이에서 아직 다소 모호합니다.",
-  "@chordAnalyzerKeyAmbiguityWarning": {
-    "placeholders": {
-      "primary": {},
-      "alternative": {}
-    }
-  },
-  "chordAnalyzerUnresolvedWarning": "이 MVP 해석에서는 일부 코드가 여전히 모호하게 남아 있습니다.",
-  "chordAnalyzerFunctionTonic": "토닉",
-  "chordAnalyzerFunctionPredominant": "프리도미넌트",
-  "chordAnalyzerFunctionDominant": "도미넌트",
-  "chordAnalyzerFunctionOther": "기타",
-  "chordAnalyzerRemarkSecondaryDominant": "{target}을 향하는 세컨더리 도미넌트일 가능성이 있습니다.",
-  "@chordAnalyzerRemarkSecondaryDominant": {
-    "placeholders": {
-      "target": {}
-    }
-  },
-  "chordAnalyzerRemarkTritoneSub": "{target}을 향하는 트라이톤 서브스티튜트일 가능성이 있습니다.",
-  "@chordAnalyzerRemarkTritoneSub": {
-    "placeholders": {
-      "target": {}
-    }
-  },
-  "chordAnalyzerRemarkModalInterchange": "병행 단조에서 빌려온 모달 인터체인지일 가능성이 있습니다.",
-  "chordAnalyzerRemarkAmbiguous": "현재 해석에서는 이 코드가 여전히 모호합니다.",
-  "chordAnalyzerRemarkUnresolved": "이 코드는 현재 MVP 휴리스틱 범위 밖에 있습니다.",
-  "chordAnalyzerTagIiVI": "ii-V-I 진행",
-  "chordAnalyzerTagTurnaround": "턴어라운드",
-  "chordAnalyzerTagDominantResolution": "도미넌트 해결",
-  "chordAnalyzerTagPlagalColor": "플라갈/모달 컬러",
-  "chordAnalyzerSummaryCenter": "이 진행의 중심 조성은 {key}일 가능성이 가장 높습니다.",
-  "@chordAnalyzerSummaryCenter": {
-    "placeholders": {
-      "key": {}
-    }
-  },
-  "chordAnalyzerSummaryAlternative": "대안 해석으로는 {key}도 가능합니다.",
-  "@chordAnalyzerSummaryAlternative": {
-    "placeholders": {
-      "key": {}
-    }
-  },
-  "chordAnalyzerSummaryTag": "이 진행은 {tag} 성격을 보여줍니다.",
-  "@chordAnalyzerSummaryTag": {
-    "placeholders": {
-      "tag": {}
-    }
-  },
-  "chordAnalyzerSummaryFlow": "{from}와 {through}는 {target}으로 향하는 {fromFunction}, {throughFunction} 기능으로 해석할 수 있습니다.",
-  "@chordAnalyzerSummaryFlow": {
-    "placeholders": {
-      "from": {},
-      "through": {},
-      "fromFunction": {},
-      "throughFunction": {},
-      "target": {}
-    }
-  },
-  "chordAnalyzerSummarySecondaryDominant": "{chord}는 {target}을 향하는 세컨더리 도미넌트로 들릴 수 있습니다.",
-  "@chordAnalyzerSummarySecondaryDominant": {
-    "placeholders": {
-      "chord": {},
-      "target": {}
-    }
-  },
-  "chordAnalyzerSummaryTritoneSub": "{chord}는 {target}을 향하는 트라이톤 서브스티튜트로 들릴 수 있습니다.",
-  "@chordAnalyzerSummaryTritoneSub": {
-    "placeholders": {
-      "chord": {},
-      "target": {}
-    }
-  },
-  "chordAnalyzerSummaryModalInterchange": "{chord}는 모달 인터체인지 색채를 더해 줍니다.",
-  "@chordAnalyzerSummaryModalInterchange": {
-    "placeholders": {
-      "chord": {}
-    }
-  },
-  "chordAnalyzerSummaryAmbiguous": "일부 세부 요소는 여전히 모호하므로, 해석은 의도적으로 보수적으로 유지됩니다.",
-  "chordAnalyzerExamplesTitle": "예시",
-  "chordAnalyzerConfidenceLabel": "신뢰도",
-  "chordAnalyzerAmbiguityLabel": "모호성",
-  "chordAnalyzerWhyThisReading": "이렇게 해석한 이유",
-  "chordAnalyzerCompetingReadings": "함께 고려할 해석",
-  "chordAnalyzerIgnoredModifiersWarning": "무시된 수식: {details}",
-  "@chordAnalyzerIgnoredModifiersWarning": {
-    "placeholders": {
-      "details": {}
-    }
-  },
-  "chordAnalyzerParserDiagnosticWarning": "입력 경고: {details}",
-  "@chordAnalyzerParserDiagnosticWarning": {
-    "placeholders": {
-      "details": {}
-    }
-  },
-  "chordAnalyzerDiagnosticUnbalancedParentheses": "괄호가 맞지 않아 기호 일부를 확실히 해석하지 못했습니다.",
-  "chordAnalyzerDiagnosticUnexpectedCloseParenthesis": "예상치 못한 닫는 괄호를 무시했습니다.",
-  "chordAnalyzerEvidenceExtensionColor": "{extension} 컬러가 이 해석을 더 강하게 뒷받침합니다.",
-  "@chordAnalyzerEvidenceExtensionColor": {
-    "placeholders": {
-      "extension": {}
-    }
-  },
-  "chordAnalyzerEvidenceAlteredDominantColor": "얼터드 도미넌트 컬러가 도미넌트 기능을 뒷받침합니다.",
-  "chordAnalyzerEvidenceSlashBass": "슬래시 베이스 {bass}가 베이스 라인이나 전위의 의미를 살려 줍니다.",
-  "@chordAnalyzerEvidenceSlashBass": {
-    "placeholders": {
-      "bass": {}
-    }
-  },
-  "chordAnalyzerEvidenceResolution": "다음 코드가 {target}으로의 해결을 뒷받침합니다.",
-  "@chordAnalyzerEvidenceResolution": {
-    "placeholders": {
-      "target": {}
-    }
-  },
-  "chordAnalyzerEvidenceBorrowedColor": "이 색채는 병행 조성에서 빌려온 것으로 들릴 수 있습니다.",
-  "chordAnalyzerEvidenceSuspensionColor": "서스펜션 컬러가 도미넌트의 긴장을 완전히 지우지 않으면서도 부드럽게 만듭니다."
+    "@@locale":  "ko",
+    "settings":  "설정",
+    "closeSettings":  "설정 닫기",
+    "language":  "언어",
+    "systemDefaultLanguage":  "시스템 기본값",
+    "metronome":  "메트로놈",
+    "enabled":  "켜짐",
+    "disabled":  "꺼짐",
+    "metronomeHelp":  "연습 중 모든 박자에 클릭 소리를 들으려면 메트로놈을 켜세요.",
+    "metronomeSound":  "메트로놈 소리",
+    "metronomeSoundClassic":  "클래식",
+    "metronomeSoundClickB":  "클릭 B",
+    "metronomeSoundClickC":  "클릭 C",
+    "metronomeSoundClickD":  "클릭 D",
+    "metronomeSoundClickE":  "클릭 E",
+    "metronomeSoundClickF":  "클릭 F",
+    "metronomeVolume":  "메트로놈 볼륨",
+    "keys":  "키",
+    "noKeysSelected":  "선택된 키가 없습니다. 모두 끄면 모든 루트에서 자유 모드로 연습합니다.",
+    "keysSelectedHelp":  "선택한 키는 키 인식 랜덤 모드와 Smart Generator 모드에서 사용됩니다.",
+    "smartGeneratorMode":  "Smart Generator 모드",
+    "smartGeneratorHelp":  "활성화된 비다이어토닉 옵션을 유지하면서 기능적 화성 진행을 우선합니다.",
+    "advancedSmartGenerator":  "고급 Smart Generator",
+    "modulationIntensity":  "전조 강도",
+    "modulationIntensityOff":  "끔",
+    "modulationIntensityLow":  "낮음",
+    "modulationIntensityMedium":  "보통",
+    "modulationIntensityHigh":  "높음",
+    "jazzPreset":  "재즈 프리셋",
+    "jazzPresetStandardsCore":  "스탠더드 코어",
+    "jazzPresetModulationStudy":  "전조 스터디",
+    "jazzPresetAdvanced":  "고급",
+    "sourceProfile":  "소스 프로필",
+    "sourceProfileFakebookStandard":  "페이크북 표준",
+    "sourceProfileRecordingInspired":  "레코딩 영감",
+    "smartDiagnostics":  "Smart 진단",
+    "smartDiagnosticsHelp":  "디버깅을 위해 Smart Generator 결정 추적을 기록합니다.",
+    "keyModeRequiredForSmartGenerator":  "Smart Generator 모드를 사용하려면 키를 하나 이상 선택하세요.",
+    "nonDiatonic":  "비다이어토닉",
+    "nonDiatonicRequiresKeyMode":  "비다이어토닉 옵션은 키 모드에서만 사용할 수 있습니다.",
+    "secondaryDominant":  "세컨더리 도미넌트",
+    "substituteDominant":  "서브스티튜트 도미넌트",
+    "modalInterchange":  "모달 인터체인지",
+    "modalInterchangeDisabledHelp":  "모달 인터체인지는 키 모드에서만 나타나므로 자유 모드에서는 이 옵션이 비활성화됩니다.",
+    "rendering":  "표기",
+    "keyCenterLabelStyle":  "조성 표기 방식",
+    "keyCenterLabelStyleHelp":  "모드 이름을 직접 표시하는 방식과 전통적인 장·단조 대소문자 으뜸음 표기 중에서 선택하세요.",
+    "chordSymbolStyle":  "코드 심볼 스타일",
+    "chordSymbolStyleHelp":  "표시 방식만 바뀌며 화성 로직은 그대로 유지됩니다.",
+    "styleCompact":  "간결형",
+    "styleMajText":  "Maj 표기",
+    "styleDeltaJazz":  "델타 재즈",
+    "keyCenterLabelStyleModeText":  "C 장조: / C 단조:",
+    "keyCenterLabelStyleClassicalCase":  "C: / c:",
+    "allowV7sus4":  "V7sus4 허용 (V7, V7/x)",
+    "allowTensions":  "텐션 허용",
+    "tensionHelp":  "로마 숫자 프로필과 선택한 칩만 사용",
+    "inversions":  "전위",
+    "enableInversions":  "전위 사용",
+    "inversionHelp":  "코드를 고른 뒤 슬래시 베이스 표기를 무작위로 적용합니다. 이전 베이스 라인은 추적하지 않습니다.",
+    "firstInversion":  "1전위",
+    "secondInversion":  "2전위",
+    "thirdInversion":  "3전위",
+    "keyPracticeOverview":  "키 연습 개요",
+    "freePracticeOverview":  "자유 연습 개요",
+    "keyModeTag":  "키 모드",
+    "freeModeTag":  "자유 모드",
+    "allKeysTag":  "전체 키",
+    "metronomeOnTag":  "메트로놈 켜짐",
+    "metronomeOffTag":  "메트로놈 꺼짐",
+    "pressNextChordToBegin":  "시작하려면 다음 코드를 누르세요",
+    "freeModeActive":  "자유 모드 활성",
+    "freePracticeDescription":  "12개의 모든 반음계 루트에서 무작위 코드 성질을 사용해 폭넓은 리딩 연습을 합니다.",
+    "smartPracticeDescription":  "선택한 키 안에서 화성 기능의 흐름을 따르면서도 자연스러운 Smart Generator 진행을 허용합니다.",
+    "keyPracticeDescription":  "선택한 키와 활성화된 로마 숫자로 다이어토닉 연습 재료를 생성합니다.",
+    "keyboardShortcutHelp":  "Space: 다음 코드  Enter: 자동 재생 시작/정지  위/아래: BPM 조절",
+    "nextChord":  "다음 코드",
+    "startAutoplay":  "자동 재생 시작",
+    "stopAutoplay":  "자동 재생 중지",
+    "decreaseBpm":  "BPM 낮추기",
+    "increaseBpm":  "BPM 높이기",
+    "bpmLabel":  "BPM",
+    "bpmTag":  "{value} BPM",
+    "@bpmTag":  {
+                    "placeholders":  {
+                                         "value":  {
+                                                       "type":  "int"
+                                                   }
+                                     }
+                },
+    "allowedRange":  "허용 범위: {min}-{max}",
+    "@allowedRange":  {
+                          "placeholders":  {
+                                               "min":  {
+                                                           "type":  "int"
+                                                       },
+                                               "max":  {
+                                                           "type":  "int"
+                                                       }
+                                           }
+                      },
+    "modeMajor":  "장조",
+    "modeMinor":  "단조",
+    "analysisLabelWithCenter":  "{center}: {roman}",
+    "@analysisLabelWithCenter":  {
+                                     "placeholders":  {
+                                                          "center":  {
+
+                                                                     },
+                                                          "roman":  {
+
+                                                                    }
+                                                      }
+                                 },
+    "voicingSuggestionsTitle":  "보이싱 제안",
+    "voicingSuggestionsSubtitle":  "현재 코드에 맞는 구체적인 음 선택을 확인하세요.",
+    "voicingSuggestionsEnabled":  "보이싱 제안 사용",
+    "voicingSuggestionsHelp":  "현재 코드에 대해 연주 가능한 보이싱 아이디어 3개를 보여줍니다.",
+    "voicingComplexity":  "보이싱 복잡도",
+    "voicingComplexityHelp":  "제안이 얼마나 다채로워질 수 있는지 조절합니다.",
+    "voicingComplexityBasic":  "기본",
+    "voicingComplexityStandard":  "표준",
+    "voicingComplexityModern":  "모던",
+    "voicingTopNotePreference":  "탑노트 선호",
+    "voicingTopNotePreferenceHelp":  "제안이 선택한 탑라인 쪽으로 기울어집니다. 잠근 보이싱이 가장 우선하고, 그다음에는 반복되는 코드에서 안정적으로 유지됩니다.",
+    "voicingTopNotePreferenceAuto":  "자동",
+    "allowRootlessVoicings":  "루트리스 보이싱 허용",
+    "allowRootlessVoicingsHelp":  "가이드톤이 분명할 때 루트를 생략한 제안을 허용합니다.",
+    "maxVoicingNotes":  "최대 보이싱 음수",
+    "lookAheadDepth":  "미리보기 깊이",
+    "lookAheadDepthHelp":  "랭킹 계산 시 고려할 미래 코드 수입니다.",
+    "showVoicingReasons":  "보이싱 이유 표시",
+    "showVoicingReasonsHelp":  "각 제안 카드에 짧은 설명 칩을 표시합니다.",
+    "voicingSuggestionNatural":  "가장 자연스러움",
+    "voicingSuggestionColorful":  "가장 컬러풀함",
+    "voicingSuggestionEasy":  "가장 쉬움",
+    "voicingSuggestionNaturalSubtitle":  "보이스 리딩 우선",
+    "voicingSuggestionColorfulSubtitle":  "컬러 톤을 강조",
+    "voicingSuggestionEasySubtitle":  "컴팩트한 손 모양",
+    "voicingSuggestionNaturalConnectedSubtitle":  "연결과 해결 우선",
+    "voicingSuggestionNaturalStableSubtitle":  "같은 모양, 안정적인 컴핑",
+    "voicingSuggestionTopLineSubtitle":  "탑라인 우선",
+    "voicingSuggestionColorfulAlteredSubtitle":  "얼터드 텐션을 전면에",
+    "voicingSuggestionColorfulQuartalSubtitle":  "모던한 4도 보이싱 컬러",
+    "voicingSuggestionColorfulTritoneSubtitle":  "밝은 가이드톤의 트라이톤 서브 느낌",
+    "voicingSuggestionColorfulUpperStructureSubtitle":  "밝은 익스텐션을 더한 가이드톤 중심",
+    "voicingSuggestionEasyAnchoredSubtitle":  "핵심 음 중심, 더 작은 도약",
+    "voicingSuggestionEasyStableSubtitle":  "반복하기 쉬운 손 모양",
+    "voicingTopNoteLabel":  "탑",
+    "voicingTopNoteContextExplicit":  "목표 탑라인: {note}",
+    "@voicingTopNoteContextExplicit":  {
+                                           "placeholders":  {
+                                                                "note":  {
+
+                                                                         }
+                                                            }
+                                       },
+    "voicingTopNoteContextLocked":  "잠금된 탑라인: {note}",
+    "@voicingTopNoteContextLocked":  {
+                                         "placeholders":  {
+                                                              "note":  {
+
+                                                                       }
+                                                          }
+                                     },
+    "voicingTopNoteContextCarry":  "반복된 탑라인: {note}",
+    "@voicingTopNoteContextCarry":  {
+                                        "placeholders":  {
+                                                             "note":  {
+
+                                                                      }
+                                                         }
+                                    },
+    "voicingTopNoteContextNearby":  "$note에 가장 가까운 탑라인",
+    "@voicingTopNoteContextNearby":  {
+                                         "placeholders":  {
+                                                              "note":  {
+
+                                                                       }
+                                                          }
+                                     },
+    "voicingTopNoteContextFallback":  "$note에 정확히 맞는 탑라인이 없습니다",
+    "@voicingTopNoteContextFallback":  {
+                                           "placeholders":  {
+                                                                "note":  {
+
+                                                                         }
+                                                            }
+                                       },
+    "voicingFamilyShell":  "셸",
+    "voicingFamilyRootlessA":  "루트리스 A",
+    "voicingFamilyRootlessB":  "루트리스 B",
+    "voicingFamilySpread":  "스프레드",
+    "voicingFamilySus":  "서스",
+    "voicingFamilyQuartal":  "4도",
+    "voicingFamilyAltered":  "얼터드",
+    "voicingFamilyUpperStructure":  "어퍼 스트럭처",
+    "voicingLockSuggestion":  "제안 잠그기",
+    "voicingUnlockSuggestion":  "제안 잠금 해제",
+    "voicingSelected":  "선택됨",
+    "voicingLocked":  "잠김",
+    "voicingReasonEssentialCore":  "핵심 음 포함",
+    "voicingReasonGuideToneAnchor":  "3도/7도 앵커",
+    "voicingReasonGuideResolution":  "가이드톤 해결 $count개",
+    "@voicingReasonGuideResolution":  {
+                                          "placeholders":  {
+                                                               "count":  {
+                                                                             "type":  "int"
+                                                                         }
+                                                           }
+                                      },
+    "voicingReasonCommonToneRetention":  "공통음 유지 $count개",
+    "@voicingReasonCommonToneRetention":  {
+                                              "placeholders":  {
+                                                                   "count":  {
+                                                                                 "type":  "int"
+                                                                             }
+                                                               }
+                                          },
+    "voicingReasonStableRepeat":  "안정적인 반복",
+    "voicingReasonTopLineTarget":  "탑라인 목표",
+    "voicingReasonLowMudAvoided":  "저음역 탁함 회피",
+    "voicingReasonCompactReach":  "편한 손 뻗기",
+    "voicingReasonBassAnchor":  "베이스 앵커 유지",
+    "voicingReasonNextChordReady":  "다음 코드 준비",
+    "voicingReasonAlteredColor":  "얼터드 텐션",
+    "voicingReasonRootlessClarity":  "가벼운 루트리스 형태",
+    "voicingReasonSusRelease":  "서스 해결 준비",
+    "voicingReasonQuartalColor":  "4도 컬러",
+    "voicingReasonUpperStructureColor":  "어퍼 스트럭처 컬러",
+    "voicingReasonTritoneSubFlavor":  "트라이톤 서브 느낌",
+    "voicingReasonLockedContinuity":  "잠금된 연속성",
+    "voicingReasonGentleMotion":  "부드러운 손 이동",
+    "mainMenuIntro":  "연습 생성기를 선택하거나, 별도의 진행 읽기 흐름을 위해 분석기를 열어 보세요.",
+    "mainMenuGeneratorTitle":  "코드 생성기",
+    "mainMenuGeneratorDescription":  "키 인식 랜덤 모드, 스마트 진행, 보이싱 제안으로 연습용 코드를 생성합니다.",
+    "openGenerator":  "생성기 열기",
+    "openAnalyzer":  "분석기 열기",
+    "mainMenuAnalyzerTitle":  "코드 분석기",
+    "mainMenuAnalyzerDescription":  "입력한 코드 진행에서 가능한 조성, 로마 숫자, 화성 기능을 보수적으로 분석합니다.",
+    "chordAnalyzerTitle":  "코드 분석기",
+    "chordAnalyzerSubtitle":  "진행을 붙여 넣으면 보수적인 화성 해석을 보여줍니다.",
+    "chordAnalyzerInputLabel":  "코드 진행",
+    "chordAnalyzerInputHint":  "Dm7 G7 Cmaj7",
+    "chordAnalyzerInputHelper":  "괄호 바깥에서는 공백, |, 쉼표로 코드를 구분할 수 있습니다. 괄호 안의 쉼표는 같은 코드의 텐션 구분자로 유지됩니다. 소문자 루트, 슬래시 베이스, sus/alt/add 표기와 C7(b9, #11) 같은 괄호형 텐션을 지원합니다. 터치 기기에서는 코드 패드나 ABC 입력을 사용할 수 있습니다.",
+    "chordAnalyzerAnalyze":  "분석",
+    "chordAnalyzerKeyboardTitle":  "코드 패드",
+    "chordAnalyzerKeyboardTouchHint":  "토큰을 눌러 진행을 조합하세요. 자유 입력이 필요할 때는 ABC 입력으로 전환하면 시스템 키보드를 계속 사용할 수 있습니다.",
+    "chordAnalyzerKeyboardDesktopHint":  "직접 입력하거나 붙여 넣고, 토큰을 눌러 커서 위치에 삽입할 수도 있습니다.",
+    "chordAnalyzerChordPad":  "패드",
+    "chordAnalyzerRawInput":  "ABC",
+    "chordAnalyzerPaste":  "붙여넣기",
+    "chordAnalyzerClear":  "지우기",
+    "chordAnalyzerBackspace":  "백스페이스",
+    "chordAnalyzerSpace":  "공백",
+    "chordAnalyzerAnalyzing":  "진행을 분석하는 중...",
+    "chordAnalyzerInitialTitle":  "진행을 입력해 보세요",
+    "chordAnalyzerInitialBody":  "Dm7 G7 Cmaj7 또는 Cmaj7 | Am7 D7 | Gmaj7 같은 진행을 입력하면 가능한 조성, 로마 숫자, 짧은 요약을 볼 수 있습니다.",
+    "chordAnalyzerDetectedKeys":  "가능한 조성",
+    "chordAnalyzerPrimaryReading":  "주요 해석",
+    "chordAnalyzerAlternativeReading":  "대안 해석",
+    "chordAnalyzerChordAnalysis":  "코드별 분석",
+    "chordAnalyzerMeasureLabel":  "{index}마디",
+    "@chordAnalyzerMeasureLabel":  {
+                                       "placeholders":  {
+                                                            "index":  {
+
+                                                                      }
+                                                        }
+                                   },
+    "chordAnalyzerProgressionSummary":  "진행 요약",
+    "chordAnalyzerWarnings":  "경고와 모호한 지점",
+    "chordAnalyzerNoInputError":  "분석할 코드 진행을 입력해 주세요.",
+    "chordAnalyzerNoRecognizedChordsError":  "진행에서 인식 가능한 코드 표기를 찾지 못했습니다.",
+    "chordAnalyzerPartialParseWarning":  "일부 기호를 건너뛰었습니다: {tokens}",
+    "@chordAnalyzerPartialParseWarning":  {
+                                              "placeholders":  {
+                                                                   "tokens":  {
+
+                                                                              }
+                                                               }
+                                          },
+    "chordAnalyzerKeyAmbiguityWarning":  "조성 중심이 {primary}와 {alternative} 사이에서 아직 다소 모호합니다.",
+    "@chordAnalyzerKeyAmbiguityWarning":  {
+                                              "placeholders":  {
+                                                                   "primary":  {
+
+                                                                               },
+                                                                   "alternative":  {
+
+                                                                                   }
+                                                               }
+                                          },
+    "chordAnalyzerUnresolvedWarning":  "일부 코드는 여전히 모호하므로, 이번 해석은 의도적으로 보수적으로 유지됩니다.",
+    "chordAnalyzerFunctionTonic":  "토닉",
+    "chordAnalyzerFunctionPredominant":  "프리도미넌트",
+    "chordAnalyzerFunctionDominant":  "도미넌트",
+    "chordAnalyzerFunctionOther":  "기타",
+    "chordAnalyzerRemarkSecondaryDominant":  "{target}을 향하는 세컨더리 도미넌트일 가능성이 있습니다.",
+    "@chordAnalyzerRemarkSecondaryDominant":  {
+                                                  "placeholders":  {
+                                                                       "target":  {
+
+                                                                                  }
+                                                                   }
+                                              },
+    "chordAnalyzerRemarkTritoneSub":  "{target}을 향하는 트라이톤 대리도미넌트일 가능성이 있습니다.",
+    "@chordAnalyzerRemarkTritoneSub":  {
+                                           "placeholders":  {
+                                                                "target":  {
+
+                                                                           }
+                                                            }
+                                       },
+    "chordAnalyzerRemarkModalInterchange":  "병행 단조에서 빌려온 모달 인터체인지일 가능성이 있습니다.",
+    "chordAnalyzerRemarkAmbiguous":  "현재 해석에서는 이 코드가 여전히 모호합니다.",
+    "chordAnalyzerRemarkUnresolved":  "이 코드는 현재의 보수적 규칙만으로는 단정하기 어렵습니다.",
+    "chordAnalyzerTagIiVI":  "ii-V-I 진행",
+    "chordAnalyzerTagTurnaround":  "턴어라운드",
+    "chordAnalyzerTagDominantResolution":  "도미넌트 해결",
+    "chordAnalyzerTagPlagalColor":  "플래갈/모달 색채",
+    "chordAnalyzerSummaryCenter":  "이 진행의 중심 조성은 {key}일 가능성이 가장 높습니다.",
+    "@chordAnalyzerSummaryCenter":  {
+                                        "placeholders":  {
+                                                             "key":  {
+
+                                                                     }
+                                                         }
+                                    },
+    "chordAnalyzerSummaryAlternative":  "대안 해석으로는 {key}도 가능합니다.",
+    "@chordAnalyzerSummaryAlternative":  {
+                                             "placeholders":  {
+                                                                  "key":  {
+
+                                                                          }
+                                                              }
+                                         },
+    "chordAnalyzerSummaryTag":  "이 진행은 {tag}의 성격을 보여줍니다.",
+    "@chordAnalyzerSummaryTag":  {
+                                     "placeholders":  {
+                                                          "tag":  {
+
+                                                                  }
+                                                      }
+                                 },
+    "chordAnalyzerSummaryFlow":  "{from}와 {through}는 {target}으로 향하는 {fromFunction}, {throughFunction} 기능으로 볼 수 있습니다.",
+    "@chordAnalyzerSummaryFlow":  {
+                                      "placeholders":  {
+                                                           "from":  {
+
+                                                                    },
+                                                           "through":  {
+
+                                                                       },
+                                                           "fromFunction":  {
+
+                                                                            },
+                                                           "throughFunction":  {
+
+                                                                               },
+                                                           "target":  {
+
+                                                                      }
+                                                       }
+                                  },
+    "chordAnalyzerSummarySecondaryDominant":  "{chord}는 {target}을 향하는 세컨더리 도미넌트로 들릴 수 있습니다.",
+    "@chordAnalyzerSummarySecondaryDominant":  {
+                                                   "placeholders":  {
+                                                                        "chord":  {
+
+                                                                                  },
+                                                                        "target":  {
+
+                                                                                   }
+                                                                    }
+                                               },
+    "chordAnalyzerSummaryTritoneSub":  "{chord}는 {target}을 향하는 트라이톤 대리도미넌트로 들릴 수 있습니다.",
+    "@chordAnalyzerSummaryTritoneSub":  {
+                                            "placeholders":  {
+                                                                 "chord":  {
+
+                                                                           },
+                                                                 "target":  {
+
+                                                                            }
+                                                             }
+                                        },
+    "chordAnalyzerSummaryModalInterchange":  "{chord}가 모달 인터체인지 색채를 더해 줍니다.",
+    "@chordAnalyzerSummaryModalInterchange":  {
+                                                  "placeholders":  {
+                                                                       "chord":  {
+
+                                                                                 }
+                                                                   }
+                                              },
+    "chordAnalyzerSummaryAmbiguous":  "몇몇 세부 요소는 여전히 모호하므로, 해석을 의도적으로 보수적으로 유지합니다.",
+    "chordAnalyzerExamplesTitle":  "예시",
+    "chordAnalyzerConfidenceLabel":  "신뢰도",
+    "chordAnalyzerAmbiguityLabel":  "모호성",
+    "chordAnalyzerWhyThisReading":  "이렇게 해석한 이유",
+    "chordAnalyzerCompetingReadings":  "함께 고려할 해석",
+    "chordAnalyzerIgnoredModifiersWarning":  "무시된 modifier: {details}",
+    "@chordAnalyzerIgnoredModifiersWarning":  {
+                                                  "placeholders":  {
+                                                                       "details":  {
+
+                                                                                   }
+                                                                   }
+                                              },
+    "chordAnalyzerParserDiagnosticWarning":  "입력 경고: {details}",
+    "@chordAnalyzerParserDiagnosticWarning":  {
+                                                  "placeholders":  {
+                                                                       "details":  {
+
+                                                                                   }
+                                                                   }
+                                              },
+    "chordAnalyzerDiagnosticUnbalancedParentheses":  "괄호가 맞지 않아 기호 일부를 확정적으로 읽지 못했습니다.",
+    "chordAnalyzerDiagnosticUnexpectedCloseParenthesis":  "예상하지 못한 닫는 괄호를 무시했습니다.",
+    "chordAnalyzerEvidenceExtensionColor":  "{extension} 확장음 표기가 이 해석을 더 강하게 지지합니다.",
+    "@chordAnalyzerEvidenceExtensionColor":  {
+                                                 "placeholders":  {
+                                                                      "extension":  {
+
+                                                                                    }
+                                                                  }
+                                             },
+    "chordAnalyzerEvidenceAlteredDominantColor":  "altered dominant 색채가 도미넌트 기능 해석을 뒷받침합니다.",
+    "chordAnalyzerEvidenceSlashBass":  "슬래시 베이스 {bass}가 베이스 라인이나 전위 정보를 유지해 줍니다.",
+    "@chordAnalyzerEvidenceSlashBass":  {
+                                            "placeholders":  {
+                                                                 "bass":  {
+
+                                                                          }
+                                                             }
+                                        },
+    "chordAnalyzerEvidenceResolution":  "다음 코드가 {target}으로의 해결을 뒷받침합니다.",
+    "@chordAnalyzerEvidenceResolution":  {
+                                             "placeholders":  {
+                                                                  "target":  {
+
+                                                                             }
+                                                              }
+                                         },
+    "chordAnalyzerEvidenceBorrowedColor":  "이 색채는 병행 조성에서 빌려온 것으로 들릴 수 있습니다.",
+    "chordAnalyzerEvidenceSuspensionColor":  "서스펜션 색채가 도미넌트의 긴장을 완전히 지우지 않으면서 부드럽게 만듭니다.",
+    "chordAnalyzerLowConfidenceTitle":  "신뢰도가 낮은 해석",
+    "chordAnalyzerLowConfidenceBody":  "후보 조성이 서로 가깝거나 일부 표기가 부분 복구 상태라서, 우선 신중한 1차 해석으로 봐 주세요.",
+    "chordAnalyzerEmptyMeasure":  "이 마디는 비어 있지만 마디 번호 보존을 위해 그대로 표시했습니다.",
+    "chordAnalyzerNoAnalyzableChordsInMeasure":  "이 마디에서는 분석 가능한 코드 표기를 복구하지 못했습니다.",
+    "chordAnalyzerParseIssuesTitle":  "파싱 이슈",
+    "chordAnalyzerParseIssueLine":  "{token}: {reason}",
+    "@chordAnalyzerParseIssueLine":  {
+                                         "placeholders":  {
+                                                              "token":  {
+
+                                                                        },
+                                                              "reason":  {
+
+                                                                         }
+                                                          }
+                                     },
+    "chordAnalyzerParseIssueEmpty":  "비어 있는 토큰입니다.",
+    "chordAnalyzerParseIssueInvalidRoot":  "루트 음을 인식하지 못했습니다.",
+    "chordAnalyzerParseIssueUnknownRoot":  "{root} 표기는 지원되는 루트 음 표기가 아닙니다.",
+    "@chordAnalyzerParseIssueUnknownRoot":  {
+                                                "placeholders":  {
+                                                                     "root":  {
+
+                                                                              }
+                                                                 }
+                                            },
+    "chordAnalyzerParseIssueInvalidBass":  "슬래시 베이스 {bass} 표기는 지원되지 않습니다.",
+    "@chordAnalyzerParseIssueInvalidBass":  {
+                                                "placeholders":  {
+                                                                     "bass":  {
+
+                                                                              }
+                                                                 }
+                                            },
+    "chordAnalyzerParseIssueUnsupportedSuffix":  "지원하지 않는 suffix 또는 modifier입니다: {suffix}",
+    "@chordAnalyzerParseIssueUnsupportedSuffix":  {
+                                                      "placeholders":  {
+                                                                           "suffix":  {
+
+                                                                                      }
+                                                                       }
+                                                  }
 }

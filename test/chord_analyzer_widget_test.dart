@@ -49,6 +49,12 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  VoidCallback? insertButtonAction(WidgetTester tester, String id) {
+    return tester
+        .widget<FilledButton>(find.byKey(ValueKey('analyzer-key-$id')))
+        .onPressed;
+  }
+
   testWidgets('main menu shows a chord analyzer entry point', (
     WidgetTester tester,
   ) async {
@@ -194,6 +200,61 @@ void main() {
     expect(field.controller!.text, 'Db7(#11) Cmaj7');
   });
 
+  testWidgets(
+    'keyboard button activation updates immediately after chord-pad input',
+    (WidgetTester tester) async {
+      addTearDown(() => restoreDisplay(tester));
+      await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+      await tester.tap(find.byKey(const ValueKey('analyzer-input-field')));
+      await tester.pump();
+
+      expect(insertButtonAction(tester, 'openParen'), isNull);
+      expect(insertButtonAction(tester, 'closeParen'), isNull);
+
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-c')));
+      await tester.pump();
+
+      expect(insertButtonAction(tester, 'openParen'), isNotNull);
+
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-openParen')));
+      await tester.pump();
+
+      expect(insertButtonAction(tester, 'c'), isNull);
+      expect(insertButtonAction(tester, 'sharp'), isNull);
+      expect(insertButtonAction(tester, 'closeParen'), isNotNull);
+    },
+  );
+
+  testWidgets(
+    'comma insertion stays inside the same chord while editing tensions',
+    (WidgetTester tester) async {
+      addTearDown(() => restoreDisplay(tester));
+      await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+      await tester.tap(find.byKey(const ValueKey('analyzer-input-field')));
+      await tester.pump();
+
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-c')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-dom7')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-openParen')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-flat9')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-comma')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-key-sharp11')));
+      await tester.pump();
+
+      final field = tester.widget<TextField>(
+        find.byKey(const ValueKey('analyzer-input-field')),
+      );
+      expect(field.controller!.text, 'C7(b9, #11)');
+    },
+  );
+
   testWidgets('analysis results show confidence and evidence details', (
     WidgetTester tester,
   ) async {
@@ -232,4 +293,28 @@ void main() {
     expect(find.textContaining('Ignored modifiers'), findsOneWidget);
     expect(find.textContaining('C7(foo): foo'), findsOneWidget);
   });
+
+  testWidgets(
+    'empty and failure-only measures stay visible in analysis output',
+    (WidgetTester tester) async {
+      addTearDown(() => restoreDisplay(tester));
+      await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+      await tester.enterText(
+        find.byKey(const ValueKey('analyzer-input-field')),
+        'C | | H7 | G',
+      );
+      await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Measure 2'), findsOneWidget);
+      expect(
+        find.text('This measure is empty and was preserved in the count.'),
+        findsOneWidget,
+      );
+      expect(find.text('Measure 3'), findsOneWidget);
+      expect(find.textContaining('H7:'), findsWidgets);
+    },
+  );
 }

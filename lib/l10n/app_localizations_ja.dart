@@ -535,181 +535,177 @@ class AppLocalizationsJa extends AppLocalizations {
       'Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.';
 
   @override
-  String get mainMenuAnalyzerTitle => 'Chord Analyzer';
-
-  @override
-  String get mainMenuAnalyzerDescription =>
-      'Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.';
-
-  @override
   String get openGenerator => 'Open Generator';
 
   @override
-  String get openAnalyzer => 'Open Analyzer';
+  String get openAnalyzer => 'アナライザーを開く';
 
   @override
-  String get chordAnalyzerTitle => 'Chord Analyzer';
+  String get mainMenuAnalyzerTitle => 'コードアナライザー';
 
   @override
-  String get chordAnalyzerSubtitle =>
-      'Paste a progression and get a conservative harmonic reading.';
+  String get mainMenuAnalyzerDescription => '入力した進行から、あり得るキー、ローマ数字、和声機能を推定します。';
 
   @override
-  String get chordAnalyzerInputLabel => 'Chord progression';
+  String get chordAnalyzerTitle => 'コードアナライザー';
+
+  @override
+  String get chordAnalyzerSubtitle => '進行を貼り付けると、保守的な和声解釈を表示します。';
+
+  @override
+  String get chordAnalyzerInputLabel => 'コード進行';
 
   @override
   String get chordAnalyzerInputHint => 'Dm7 G7 Cmaj7';
 
   @override
   String get chordAnalyzerInputHelper =>
-      'Spaces, |, and commas are accepted. Slash chords and simple alterations are supported. Touch devices can use the chord pad or switch to ABC input.';
+      '括弧の外では、空白、|、カンマでコードを区切れます。括弧内のカンマは同じコード内のテンション区切りとして保持されます。小文字ルート、スラッシュベース、sus/alt/add 表記、C7(b9, #11) のような括弧付きテンションに対応しています。タッチ端末ではコードパッドと ABC 入力を切り替えられます。';
 
   @override
-  String get chordAnalyzerAnalyze => 'Analyze';
+  String get chordAnalyzerAnalyze => '解析';
 
   @override
-  String get chordAnalyzerKeyboardTitle => 'Chord Pad';
+  String get chordAnalyzerKeyboardTitle => 'コードパッド';
 
   @override
   String get chordAnalyzerKeyboardTouchHint =>
-      'Tap tokens to build a progression. ABC input keeps the system keyboard available when you need free typing.';
+      'トークンをタップして進行を組み立てます。自由入力が必要なときは ABC 入力に切り替えるとシステムキーボードを使い続けられます。';
 
   @override
   String get chordAnalyzerKeyboardDesktopHint =>
-      'Type, paste, or tap tokens to insert them at the cursor.';
+      '入力、貼り付け、またはトークンのタップでカーソル位置に挿入できます。';
 
   @override
-  String get chordAnalyzerChordPad => 'Pad';
+  String get chordAnalyzerChordPad => 'パッド';
 
   @override
   String get chordAnalyzerRawInput => 'ABC';
 
   @override
-  String get chordAnalyzerPaste => 'Paste';
+  String get chordAnalyzerPaste => '貼り付け';
 
   @override
-  String get chordAnalyzerClear => 'Clear';
+  String get chordAnalyzerClear => 'クリア';
 
   @override
-  String get chordAnalyzerBackspace => 'Backspace';
+  String get chordAnalyzerBackspace => 'バックスペース';
 
   @override
-  String get chordAnalyzerSpace => 'Space';
+  String get chordAnalyzerSpace => 'スペース';
 
   @override
-  String get chordAnalyzerAnalyzing => 'Analyzing progression...';
+  String get chordAnalyzerAnalyzing => '進行を解析中...';
 
   @override
-  String get chordAnalyzerInitialTitle => 'Start with a progression';
+  String get chordAnalyzerInitialTitle => '進行を入力してください';
 
   @override
   String get chordAnalyzerInitialBody =>
-      'Enter a progression such as Dm7 G7 Cmaj7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, and a short summary.';
+      'Dm7 G7 Cmaj7 や Cmaj7 | Am7 D7 | Gmaj7 のような進行を入力すると、候補キー、ローマ数字、短い要約を確認できます。';
 
   @override
-  String get chordAnalyzerDetectedKeys => 'Detected Keys';
+  String get chordAnalyzerDetectedKeys => '候補キー';
 
   @override
-  String get chordAnalyzerPrimaryReading => 'Primary reading';
+  String get chordAnalyzerPrimaryReading => '第一候補';
 
   @override
-  String get chordAnalyzerAlternativeReading => 'Alternative reading';
+  String get chordAnalyzerAlternativeReading => '別候補';
 
   @override
-  String get chordAnalyzerChordAnalysis => 'Chord-by-chord analysis';
+  String get chordAnalyzerChordAnalysis => 'コードごとの解析';
 
   @override
   String chordAnalyzerMeasureLabel(Object index) {
-    return 'Measure $index';
+    return '$index小節';
   }
 
   @override
-  String get chordAnalyzerProgressionSummary => 'Progression summary';
+  String get chordAnalyzerProgressionSummary => '進行の要約';
 
   @override
-  String get chordAnalyzerWarnings => 'Warnings and ambiguities';
+  String get chordAnalyzerWarnings => '警告とあいまいさ';
 
   @override
-  String get chordAnalyzerNoInputError =>
-      'Enter a chord progression to analyze.';
+  String get chordAnalyzerNoInputError => '解析するコード進行を入力してください。';
 
   @override
   String get chordAnalyzerNoRecognizedChordsError =>
-      'No recognizable chords were found in the progression.';
+      '進行内に認識可能なコード表記が見つかりませんでした。';
 
   @override
   String chordAnalyzerPartialParseWarning(Object tokens) {
-    return 'Some symbols were skipped: $tokens';
+    return '一部の記号はスキップされました: $tokens';
   }
 
   @override
   String chordAnalyzerKeyAmbiguityWarning(Object primary, Object alternative) {
-    return 'The key center is still somewhat ambiguous between $primary and $alternative.';
+    return 'キー中心は $primary と $alternative の間でまだやや曖昧です。';
   }
 
   @override
   String get chordAnalyzerUnresolvedWarning =>
-      'Some chords remain ambiguous under this MVP reading.';
+      'いくつかのコードはなお曖昧なので、この読みは意図的に保守的なままにしています。';
 
   @override
-  String get chordAnalyzerFunctionTonic => 'Tonic';
+  String get chordAnalyzerFunctionTonic => 'トニック';
 
   @override
-  String get chordAnalyzerFunctionPredominant => 'Predominant';
+  String get chordAnalyzerFunctionPredominant => 'プレドミナント';
 
   @override
-  String get chordAnalyzerFunctionDominant => 'Dominant';
+  String get chordAnalyzerFunctionDominant => 'ドミナント';
 
   @override
-  String get chordAnalyzerFunctionOther => 'Other';
+  String get chordAnalyzerFunctionOther => 'その他';
 
   @override
   String chordAnalyzerRemarkSecondaryDominant(Object target) {
-    return 'Possible secondary dominant targeting $target.';
+    return '$target に向かうセカンダリー・ドミナントの可能性があります。';
   }
 
   @override
   String chordAnalyzerRemarkTritoneSub(Object target) {
-    return 'Possible tritone substitute targeting $target.';
+    return '$target に向かうトライトーン・サブの可能性があります。';
   }
 
   @override
   String get chordAnalyzerRemarkModalInterchange =>
-      'Possible modal interchange from the parallel minor.';
+      '平行短調からのモーダルインターチェンジの可能性があります。';
 
   @override
-  String get chordAnalyzerRemarkAmbiguous =>
-      'This chord stays ambiguous in the current reading.';
+  String get chordAnalyzerRemarkAmbiguous => 'このコードは現在の読みではなお曖昧です。';
 
   @override
   String get chordAnalyzerRemarkUnresolved =>
-      'This chord falls outside the current MVP heuristics.';
+      'このコードは現在の保守的なヒューリスティクスだけでは確定できません。';
 
   @override
-  String get chordAnalyzerTagIiVI => 'ii-V-I cadence';
+  String get chordAnalyzerTagIiVI => 'ii-V-I カデンツ';
 
   @override
-  String get chordAnalyzerTagTurnaround => 'Turnaround';
+  String get chordAnalyzerTagTurnaround => 'ターンアラウンド';
 
   @override
-  String get chordAnalyzerTagDominantResolution => 'Dominant resolution';
+  String get chordAnalyzerTagDominantResolution => 'ドミナント解決';
 
   @override
-  String get chordAnalyzerTagPlagalColor => 'Plagal/modal color';
+  String get chordAnalyzerTagPlagalColor => 'プラガル/モーダルな色彩';
 
   @override
   String chordAnalyzerSummaryCenter(Object key) {
-    return 'This progression most likely centers on $key.';
+    return 'この進行の中心は $key である可能性が最も高いです。';
   }
 
   @override
   String chordAnalyzerSummaryAlternative(Object key) {
-    return 'An alternative reading is $key.';
+    return '別の読みとして $key も考えられます。';
   }
 
   @override
   String chordAnalyzerSummaryTag(Object tag) {
-    return 'It suggests a $tag.';
+    return 'これは $tag を示しています。';
   }
 
   @override
@@ -720,85 +716,126 @@ class AppLocalizationsJa extends AppLocalizations {
     Object throughFunction,
     Object target,
   ) {
-    return '$from and $through behave like $fromFunction and $throughFunction chords leading into $target.';
+    return '$from と $through は $target に向かう $fromFunction と $throughFunction の機能として捉えられます。';
   }
 
   @override
   String chordAnalyzerSummarySecondaryDominant(Object chord, Object target) {
-    return '$chord can be heard as a possible secondary dominant pointing toward $target.';
+    return '$chord は $target に向かうセカンダリー・ドミナントとして聞こえる可能性があります。';
   }
 
   @override
   String chordAnalyzerSummaryTritoneSub(Object chord, Object target) {
-    return '$chord can be heard as a possible tritone substitute pointing toward $target.';
+    return '$chord は $target に向かうトライトーン・サブとして聞こえる可能性があります。';
   }
 
   @override
   String chordAnalyzerSummaryModalInterchange(Object chord) {
-    return '$chord adds a possible modal interchange color.';
+    return '$chord がモーダルインターチェンジの色彩を加えています。';
   }
 
   @override
-  String get chordAnalyzerSummaryAmbiguous =>
-      'Some details remain ambiguous, so this reading stays intentionally conservative.';
+  String get chordAnalyzerSummaryAmbiguous => 'いくつかの細部はまだ曖昧なため、この読みは意図的に保守的です。';
 
   @override
-  String get chordAnalyzerExamplesTitle => 'Examples';
+  String get chordAnalyzerExamplesTitle => '例';
 
   @override
-  String get chordAnalyzerConfidenceLabel => 'Confidence';
+  String get chordAnalyzerConfidenceLabel => '信頼度';
 
   @override
-  String get chordAnalyzerAmbiguityLabel => 'Ambiguity';
+  String get chordAnalyzerAmbiguityLabel => '曖昧さ';
 
   @override
-  String get chordAnalyzerWhyThisReading => 'Why this reading';
+  String get chordAnalyzerWhyThisReading => 'この読みの根拠';
 
   @override
-  String get chordAnalyzerCompetingReadings => 'Also plausible';
+  String get chordAnalyzerCompetingReadings => '他にもあり得る読み';
 
   @override
   String chordAnalyzerIgnoredModifiersWarning(Object details) {
-    return 'Ignored modifiers: $details';
+    return '無視された modifier: $details';
   }
 
   @override
   String chordAnalyzerParserDiagnosticWarning(Object details) {
-    return 'Input warning: $details';
+    return '入力警告: $details';
   }
 
   @override
   String get chordAnalyzerDiagnosticUnbalancedParentheses =>
-      'Unbalanced parentheses left part of the symbol uncertain.';
+      '括弧の対応が崩れていたため、記号の一部が不確かになりました。';
 
   @override
   String get chordAnalyzerDiagnosticUnexpectedCloseParenthesis =>
-      'An unexpected closing parenthesis was ignored.';
+      '予期しない閉じ括弧は無視されました。';
 
   @override
   String chordAnalyzerEvidenceExtensionColor(Object extension) {
-    return 'Explicit $extension color strengthens this reading.';
+    return '明示された $extension の色彩がこの読みを強めます。';
   }
 
   @override
   String get chordAnalyzerEvidenceAlteredDominantColor =>
-      'Altered dominant color supports a dominant function.';
+      'オルタード・ドミナントの色彩がドミナント機能を支えています。';
 
   @override
   String chordAnalyzerEvidenceSlashBass(Object bass) {
-    return 'Slash bass $bass keeps the bass line or inversion meaningful.';
+    return 'スラッシュベース $bass がベースラインや転回の意味を保っています。';
   }
 
   @override
   String chordAnalyzerEvidenceResolution(Object target) {
-    return 'The next chord supports a resolution toward $target.';
+    return '次のコードが $target への解決を支えています。';
   }
 
   @override
-  String get chordAnalyzerEvidenceBorrowedColor =>
-      'This color can be heard as borrowed from the parallel mode.';
+  String get chordAnalyzerEvidenceBorrowedColor => 'この色彩は平行調から借用されたものとして聞こえます。';
 
   @override
   String get chordAnalyzerEvidenceSuspensionColor =>
-      'Suspension color softens the dominant pull without erasing it.';
+      'サスペンションの色彩がドミナントの引力を消さずに和らげています。';
+
+  @override
+  String get chordAnalyzerLowConfidenceTitle => '信頼度の低い読み';
+
+  @override
+  String get chordAnalyzerLowConfidenceBody =>
+      '候補キー同士が近いか、一部の記号が部分的にしか復元できなかったため、慎重な一次解釈として扱ってください。';
+
+  @override
+  String get chordAnalyzerEmptyMeasure => 'この小節は空ですが、小節番号を保つためにそのまま表示しています。';
+
+  @override
+  String get chordAnalyzerNoAnalyzableChordsInMeasure =>
+      'この小節では解析可能なコード表記を復元できませんでした。';
+
+  @override
+  String get chordAnalyzerParseIssuesTitle => 'パース上の問題';
+
+  @override
+  String chordAnalyzerParseIssueLine(Object token, Object reason) {
+    return '$token: $reason';
+  }
+
+  @override
+  String get chordAnalyzerParseIssueEmpty => '空のトークンです。';
+
+  @override
+  String get chordAnalyzerParseIssueInvalidRoot => 'ルート音を認識できませんでした。';
+
+  @override
+  String chordAnalyzerParseIssueUnknownRoot(Object root) {
+    return '$root は対応しているルート表記ではありません。';
+  }
+
+  @override
+  String chordAnalyzerParseIssueInvalidBass(Object bass) {
+    return 'スラッシュベース $bass は対応している表記ではありません。';
+  }
+
+  @override
+  String chordAnalyzerParseIssueUnsupportedSuffix(Object suffix) {
+    return '未対応の suffix / modifier です: $suffix';
+  }
 }

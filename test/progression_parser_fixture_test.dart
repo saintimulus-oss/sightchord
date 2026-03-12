@@ -6,7 +6,7 @@ class _ShapeFixture {
   const _ShapeFixture({
     required this.suffix,
     required this.displayQuality,
-    required this.analysisQuality,
+    required this.analysisFamily,
     this.extension,
     this.tensions = const [],
     this.addedTones = const [],
@@ -16,7 +16,7 @@ class _ShapeFixture {
 
   final String suffix;
   final ChordQuality displayQuality;
-  final ChordQuality analysisQuality;
+  final ChordFamily analysisFamily;
   final int? extension;
   final List<String> tensions;
   final List<String> addedTones;
@@ -30,7 +30,7 @@ class _SlashFixture {
     required this.root,
     required this.bass,
     required this.displayQuality,
-    required this.analysisQuality,
+    required this.analysisFamily,
     this.extension,
     this.tensions = const [],
     this.alterations = const [],
@@ -41,7 +41,7 @@ class _SlashFixture {
   final String root;
   final String bass;
   final ChordQuality displayQuality;
-  final ChordQuality analysisQuality;
+  final ChordFamily analysisFamily;
   final int? extension;
   final List<String> tensions;
   final List<String> alterations;
@@ -62,188 +62,252 @@ void main() {
     _ShapeFixture(
       suffix: '',
       displayQuality: ChordQuality.majorTriad,
-      analysisQuality: ChordQuality.majorTriad,
+      analysisFamily: ChordFamily.major,
     ),
     _ShapeFixture(
       suffix: 'maj7',
       displayQuality: ChordQuality.major7,
-      analysisQuality: ChordQuality.major7,
+      analysisFamily: ChordFamily.major,
+      extension: 7,
+    ),
+    _ShapeFixture(
+      suffix: 'M7',
+      displayQuality: ChordQuality.major7,
+      analysisFamily: ChordFamily.major,
+      extension: 7,
+    ),
+    _ShapeFixture(
+      suffix: 'Δ',
+      displayQuality: ChordQuality.major7,
+      analysisFamily: ChordFamily.major,
+      extension: 7,
+    ),
+    _ShapeFixture(
+      suffix: 'Δ7',
+      displayQuality: ChordQuality.major7,
+      analysisFamily: ChordFamily.major,
       extension: 7,
     ),
     _ShapeFixture(
       suffix: 'maj9',
       displayQuality: ChordQuality.major7,
-      analysisQuality: ChordQuality.major7,
+      analysisFamily: ChordFamily.major,
       extension: 9,
       tensions: ['9'],
     ),
     _ShapeFixture(
       suffix: 'maj11',
       displayQuality: ChordQuality.major7,
-      analysisQuality: ChordQuality.major7,
+      analysisFamily: ChordFamily.major,
       extension: 11,
       tensions: ['11'],
     ),
     _ShapeFixture(
       suffix: 'maj13',
       displayQuality: ChordQuality.major7,
-      analysisQuality: ChordQuality.major7,
+      analysisFamily: ChordFamily.major,
       extension: 13,
       tensions: ['13'],
     ),
     _ShapeFixture(
       suffix: '6',
       displayQuality: ChordQuality.six,
-      analysisQuality: ChordQuality.six,
+      analysisFamily: ChordFamily.major,
       extension: 6,
     ),
     _ShapeFixture(
       suffix: '6/9',
       displayQuality: ChordQuality.major69,
-      analysisQuality: ChordQuality.major69,
+      analysisFamily: ChordFamily.major,
       extension: 6,
       tensions: ['9'],
     ),
     _ShapeFixture(
       suffix: '69',
       displayQuality: ChordQuality.major69,
-      analysisQuality: ChordQuality.major69,
+      analysisFamily: ChordFamily.major,
       extension: 6,
       tensions: ['9'],
     ),
     _ShapeFixture(
       suffix: 'add9',
       displayQuality: ChordQuality.majorTriad,
-      analysisQuality: ChordQuality.majorTriad,
+      analysisFamily: ChordFamily.major,
       addedTones: ['9'],
     ),
     _ShapeFixture(
       suffix: 'add11',
       displayQuality: ChordQuality.majorTriad,
-      analysisQuality: ChordQuality.majorTriad,
+      analysisFamily: ChordFamily.major,
       addedTones: ['11'],
     ),
     _ShapeFixture(
       suffix: 'add13',
       displayQuality: ChordQuality.majorTriad,
-      analysisQuality: ChordQuality.majorTriad,
+      analysisFamily: ChordFamily.major,
       addedTones: ['13'],
     ),
     _ShapeFixture(
       suffix: 'm',
       displayQuality: ChordQuality.minorTriad,
-      analysisQuality: ChordQuality.minorTriad,
+      analysisFamily: ChordFamily.minor,
+    ),
+    _ShapeFixture(
+      suffix: '-',
+      displayQuality: ChordQuality.minorTriad,
+      analysisFamily: ChordFamily.minor,
+    ),
+    _ShapeFixture(
+      suffix: 'min',
+      displayQuality: ChordQuality.minorTriad,
+      analysisFamily: ChordFamily.minor,
     ),
     _ShapeFixture(
       suffix: 'm6',
       displayQuality: ChordQuality.minor6,
-      analysisQuality: ChordQuality.minor6,
+      analysisFamily: ChordFamily.minor,
       extension: 6,
     ),
     _ShapeFixture(
       suffix: 'm7',
       displayQuality: ChordQuality.minor7,
-      analysisQuality: ChordQuality.minor7,
+      analysisFamily: ChordFamily.minor,
+      extension: 7,
+    ),
+    _ShapeFixture(
+      suffix: '-7',
+      displayQuality: ChordQuality.minor7,
+      analysisFamily: ChordFamily.minor,
+      extension: 7,
+    ),
+    _ShapeFixture(
+      suffix: 'min7',
+      displayQuality: ChordQuality.minor7,
+      analysisFamily: ChordFamily.minor,
       extension: 7,
     ),
     _ShapeFixture(
       suffix: 'm9',
       displayQuality: ChordQuality.minor7,
-      analysisQuality: ChordQuality.minor7,
+      analysisFamily: ChordFamily.minor,
       extension: 9,
       tensions: ['9'],
     ),
     _ShapeFixture(
       suffix: 'm11',
       displayQuality: ChordQuality.minor7,
-      analysisQuality: ChordQuality.minor7,
+      analysisFamily: ChordFamily.minor,
       extension: 11,
       tensions: ['11'],
     ),
     _ShapeFixture(
       suffix: 'mMaj7',
       displayQuality: ChordQuality.minorMajor7,
-      analysisQuality: ChordQuality.minorMajor7,
+      analysisFamily: ChordFamily.minor,
       extension: 7,
     ),
     _ShapeFixture(
       suffix: 'm(maj7)',
       displayQuality: ChordQuality.minorMajor7,
-      analysisQuality: ChordQuality.minorMajor7,
+      analysisFamily: ChordFamily.minor,
       extension: 7,
     ),
     _ShapeFixture(
       suffix: 'mmaj9',
       displayQuality: ChordQuality.minorMajor7,
-      analysisQuality: ChordQuality.minorMajor7,
+      analysisFamily: ChordFamily.minor,
       extension: 9,
       tensions: ['9'],
     ),
     _ShapeFixture(
       suffix: 'mmaj13',
       displayQuality: ChordQuality.minorMajor7,
-      analysisQuality: ChordQuality.minorMajor7,
+      analysisFamily: ChordFamily.minor,
       extension: 13,
       tensions: ['13'],
     ),
     _ShapeFixture(
       suffix: 'm7b5',
       displayQuality: ChordQuality.halfDiminished7,
-      analysisQuality: ChordQuality.halfDiminished7,
+      analysisFamily: ChordFamily.halfDiminished,
+      extension: 7,
+    ),
+    _ShapeFixture(
+      suffix: 'ø',
+      displayQuality: ChordQuality.halfDiminished7,
+      analysisFamily: ChordFamily.halfDiminished,
       extension: 7,
     ),
     _ShapeFixture(
       suffix: 'dim',
       displayQuality: ChordQuality.diminishedTriad,
-      analysisQuality: ChordQuality.diminishedTriad,
+      analysisFamily: ChordFamily.diminished,
+    ),
+    _ShapeFixture(
+      suffix: '°',
+      displayQuality: ChordQuality.diminishedTriad,
+      analysisFamily: ChordFamily.diminished,
     ),
     _ShapeFixture(
       suffix: 'dim7',
       displayQuality: ChordQuality.diminished7,
-      analysisQuality: ChordQuality.diminished7,
+      analysisFamily: ChordFamily.diminished,
+      extension: 7,
+    ),
+    _ShapeFixture(
+      suffix: '°7',
+      displayQuality: ChordQuality.diminished7,
+      analysisFamily: ChordFamily.diminished,
       extension: 7,
     ),
     _ShapeFixture(
       suffix: 'aug',
       displayQuality: ChordQuality.augmentedTriad,
-      analysisQuality: ChordQuality.augmentedTriad,
+      analysisFamily: ChordFamily.augmented,
     ),
     _ShapeFixture(
       suffix: '+',
       displayQuality: ChordQuality.augmentedTriad,
-      analysisQuality: ChordQuality.augmentedTriad,
+      analysisFamily: ChordFamily.augmented,
+    ),
+    _ShapeFixture(
+      suffix: '+7',
+      displayQuality: ChordQuality.augmentedTriad,
+      analysisFamily: ChordFamily.dominant,
+      extension: 7,
+      alterations: ['#5'],
     ),
     _ShapeFixture(
       suffix: '7',
       displayQuality: ChordQuality.dominant7,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 7,
     ),
     _ShapeFixture(
       suffix: '9',
       displayQuality: ChordQuality.dominant7,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 9,
       tensions: ['9'],
     ),
     _ShapeFixture(
       suffix: '11',
       displayQuality: ChordQuality.dominant7,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 11,
       tensions: ['11'],
     ),
     _ShapeFixture(
       suffix: '13',
       displayQuality: ChordQuality.dominant7,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 13,
       tensions: ['13'],
     ),
     _ShapeFixture(
       suffix: '7b9',
       displayQuality: ChordQuality.dominant7Alt,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 7,
       tensions: ['b9'],
       alterations: ['b9'],
@@ -251,7 +315,7 @@ void main() {
     _ShapeFixture(
       suffix: '7#9',
       displayQuality: ChordQuality.dominant7Alt,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 7,
       tensions: ['#9'],
       alterations: ['#9'],
@@ -259,7 +323,7 @@ void main() {
     _ShapeFixture(
       suffix: '7#11',
       displayQuality: ChordQuality.dominant7Sharp11,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 7,
       tensions: ['#11'],
       alterations: ['#11'],
@@ -267,7 +331,7 @@ void main() {
     _ShapeFixture(
       suffix: '7b13',
       displayQuality: ChordQuality.dominant7Alt,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 7,
       tensions: ['b13'],
       alterations: ['b13'],
@@ -275,21 +339,21 @@ void main() {
     _ShapeFixture(
       suffix: 'alt',
       displayQuality: ChordQuality.dominant7Alt,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 7,
       alterations: ['alt'],
     ),
     _ShapeFixture(
       suffix: '7alt',
       displayQuality: ChordQuality.dominant7Alt,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 7,
       alterations: ['alt'],
     ),
     _ShapeFixture(
       suffix: '7(b9,#11)',
       displayQuality: ChordQuality.dominant7Sharp11,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 7,
       tensions: ['b9', '#11'],
       alterations: ['b9', '#11'],
@@ -297,7 +361,7 @@ void main() {
     _ShapeFixture(
       suffix: '7(b9,#11,b13)',
       displayQuality: ChordQuality.dominant7Sharp11,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 7,
       tensions: ['b9', '#11', 'b13'],
       alterations: ['b9', '#11', 'b13'],
@@ -305,14 +369,21 @@ void main() {
     _ShapeFixture(
       suffix: '7sus4',
       displayQuality: ChordQuality.dominant7sus4,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
+      extension: 7,
+      suspensions: ['4'],
+    ),
+    _ShapeFixture(
+      suffix: '7sus',
+      displayQuality: ChordQuality.dominant7sus4,
+      analysisFamily: ChordFamily.dominant,
       extension: 7,
       suspensions: ['4'],
     ),
     _ShapeFixture(
       suffix: '13sus4',
       displayQuality: ChordQuality.dominant13sus4,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 13,
       tensions: ['13'],
       suspensions: ['4'],
@@ -320,13 +391,19 @@ void main() {
     _ShapeFixture(
       suffix: 'sus4',
       displayQuality: ChordQuality.majorTriad,
-      analysisQuality: ChordQuality.majorTriad,
+      analysisFamily: ChordFamily.dominant,
+      suspensions: ['4'],
+    ),
+    _ShapeFixture(
+      suffix: 'sus',
+      displayQuality: ChordQuality.majorTriad,
+      analysisFamily: ChordFamily.dominant,
       suspensions: ['4'],
     ),
     _ShapeFixture(
       suffix: 'sus2',
       displayQuality: ChordQuality.majorTriad,
-      analysisQuality: ChordQuality.majorTriad,
+      analysisFamily: ChordFamily.major,
       suspensions: ['2'],
     ),
   ];
@@ -337,7 +414,7 @@ void main() {
       root: 'G',
       bass: 'B',
       displayQuality: ChordQuality.dominant7,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 7,
     ),
     _SlashFixture(
@@ -345,7 +422,7 @@ void main() {
       root: 'C',
       bass: 'E',
       displayQuality: ChordQuality.major7,
-      analysisQuality: ChordQuality.major7,
+      analysisFamily: ChordFamily.major,
       extension: 7,
     ),
     _SlashFixture(
@@ -353,7 +430,7 @@ void main() {
       root: 'D',
       bass: 'G',
       displayQuality: ChordQuality.minor7,
-      analysisQuality: ChordQuality.minor7,
+      analysisFamily: ChordFamily.minor,
       extension: 7,
     ),
     _SlashFixture(
@@ -361,17 +438,25 @@ void main() {
       root: 'Db',
       bass: 'C',
       displayQuality: ChordQuality.dominant7Sharp11,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 7,
       tensions: ['#11'],
       alterations: ['#11'],
+    ),
+    _SlashFixture(
+      symbol: 'db7/f',
+      root: 'Db',
+      bass: 'F',
+      displayQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
+      extension: 7,
     ),
     _SlashFixture(
       symbol: 'Cbmaj9/Eb',
       root: 'Cb',
       bass: 'Eb',
       displayQuality: ChordQuality.major7,
-      analysisQuality: ChordQuality.major7,
+      analysisFamily: ChordFamily.major,
       extension: 9,
       tensions: ['9'],
     ),
@@ -380,7 +465,7 @@ void main() {
       root: 'F#',
       bass: 'C#',
       displayQuality: ChordQuality.minor7,
-      analysisQuality: ChordQuality.minor7,
+      analysisFamily: ChordFamily.minor,
       extension: 11,
       tensions: ['11'],
     ),
@@ -389,7 +474,7 @@ void main() {
       root: 'Bb',
       bass: 'F',
       displayQuality: ChordQuality.dominant13sus4,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 13,
       tensions: ['13'],
       suspensions: ['4'],
@@ -399,7 +484,7 @@ void main() {
       root: 'E',
       bass: 'G#',
       displayQuality: ChordQuality.dominant7Alt,
-      analysisQuality: ChordQuality.dominant7,
+      analysisFamily: ChordFamily.dominant,
       extension: 7,
       alterations: ['alt'],
     ),
@@ -419,7 +504,7 @@ void main() {
         final chord = result.validChords.single;
         expect(chord.root, root.$2, reason: symbol);
         expect(chord.displayQuality, shape.displayQuality, reason: symbol);
-        expect(chord.analysisQuality, shape.analysisQuality, reason: symbol);
+        expect(chord.analysisFamily, shape.analysisFamily, reason: symbol);
         expect(chord.extension, shape.extension, reason: symbol);
         expect(chord.tensions, shape.tensions, reason: symbol);
         expect(chord.addedTones, shape.addedTones, reason: symbol);
@@ -437,8 +522,16 @@ void main() {
       expect(chord.root, fixture.root, reason: fixture.symbol);
       expect(chord.bass, fixture.bass, reason: fixture.symbol);
       expect(chord.hasSlashBass, isTrue, reason: fixture.symbol);
-      expect(chord.displayQuality, fixture.displayQuality, reason: fixture.symbol);
-      expect(chord.analysisQuality, fixture.analysisQuality, reason: fixture.symbol);
+      expect(
+        chord.displayQuality,
+        fixture.displayQuality,
+        reason: fixture.symbol,
+      );
+      expect(
+        chord.analysisFamily,
+        fixture.analysisFamily,
+        reason: fixture.symbol,
+      );
       expect(chord.extension, fixture.extension, reason: fixture.symbol);
       expect(chord.tensions, fixture.tensions, reason: fixture.symbol);
       expect(chord.alterations, fixture.alterations, reason: fixture.symbol);
@@ -457,15 +550,20 @@ void main() {
     expect(result.validChords[2].sourceSymbol, 'Bb13sus4');
   });
 
-  test('surfaces ignored modifiers and diagnostics instead of dropping them', () {
-    final ignored = parser.parse('C7(foo) Dm7');
-    final unbalanced = parser.parse('C7(b9,#11 Dm7');
+  test(
+    'surfaces ignored modifiers and diagnostics instead of dropping them',
+    () {
+      final ignored = parser.parse('C7(foo) Dm7');
+      final unbalanced = parser.parse('C7(b9,#11 Dm7');
 
-    expect(ignored.validChords.first.ignoredTokens, ['foo']);
-    expect(ignored.validChords.first.diagnostics, isEmpty);
-    expect(unbalanced.validChords.first.diagnostics, ['unbalanced-parentheses']);
-    expect(unbalanced.validChords.first.ignoredTokens, ['b9,#11 Dm7']);
-  });
+      expect(ignored.validChords.first.ignoredTokens, ['foo']);
+      expect(ignored.validChords.first.diagnostics, isEmpty);
+      expect(unbalanced.validChords.first.diagnostics, [
+        'unbalanced-parentheses',
+      ]);
+      expect(unbalanced.validChords.first.ignoredTokens, ['b9,#11 Dm7']);
+    },
+  );
 
   test('flags invalid roots while keeping valid neighboring symbols', () {
     final result = parser.parse('Cmaj7 H7 Qm7 G7');
@@ -475,5 +573,16 @@ void main() {
       'G7',
     ]);
     expect(result.issues.map((issue) => issue.rawText).toList(), ['H7', 'Qm7']);
+  });
+
+  test('does not silently coerce unsupported suffixes into major triads', () {
+    final result = parser.parse('Cfoobar Dm7');
+
+    expect(result.validChords.map((chord) => chord.sourceSymbol).toList(), [
+      'Dm7',
+    ]);
+    expect(result.issues, hasLength(1));
+    expect(result.issues.single.rawText, 'Cfoobar');
+    expect(result.issues.single.error, 'unsupported-suffix');
   });
 }

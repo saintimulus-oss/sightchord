@@ -6,24 +6,26 @@ import 'progression_analysis_models.dart';
 class ProgressionParser {
   const ProgressionParser();
 
-  static final RegExp _rootPattern = RegExp(r'^([A-Ga-g](?:#|b)?)(.*)$');
-  static final RegExp _bassPattern = RegExp(r'^[A-Ga-g](?:#|b)?$');
-  static final RegExp _whitespacePattern = RegExp(r'\s+');
+  static final RegExp _rootPattern = RegExp(r'^([A-Ga-g](?:[#b])?)(.*)$');
+  static final RegExp _bassPattern = RegExp(r'^[A-Ga-g](?:[#b])?$');
+  static final RegExp _whitespacePattern = RegExp(r'\s');
+  static final RegExp _compactWhitespacePattern = RegExp(r'\s+');
+  static final RegExp _uppercaseMajorPrefixPattern = RegExp(r'^[0-9(]');
 
   ProgressionParseResult parse(String input) {
-    final normalizedInput = _normalizeInput(input);
     final tokens = <ParsedChordToken>[];
     final measures = <ParsedMeasure>[];
+    final rawMeasures = _splitMeasures(input);
     var tokenIndex = 0;
-    var measureIndex = 0;
 
-    for (final rawMeasure in normalizedInput.split('|')) {
-      final rawTokens = _splitMeasureTokens(rawMeasure);
-      if (rawTokens.isEmpty) {
-        continue;
-      }
-
+    for (
+      var measureIndex = 0;
+      measureIndex < rawMeasures.length;
+      measureIndex += 1
+    ) {
+      final rawTokens = _splitMeasureTokens(rawMeasures[measureIndex]);
       final measureTokens = <ParsedChordToken>[];
+
       for (
         var positionInMeasure = 0;
         positionInMeasure < rawTokens.length;
@@ -43,10 +45,38 @@ class ProgressionParser {
       measures.add(
         ParsedMeasure(measureIndex: measureIndex, tokens: measureTokens),
       );
-      measureIndex += 1;
     }
 
     return ProgressionParseResult(tokens: tokens, measures: measures);
+  }
+
+  List<String> _splitMeasures(String input) {
+    final measures = <String>[];
+    var buffer = StringBuffer();
+    var parenthesisDepth = 0;
+
+    for (final rune in input.runes) {
+      final character = String.fromCharCode(rune);
+      if (character == '(') {
+        parenthesisDepth += 1;
+        buffer.write(character);
+        continue;
+      }
+      if (character == ')') {
+        parenthesisDepth = math.max(0, parenthesisDepth - 1);
+        buffer.write(character);
+        continue;
+      }
+      if (character == '|' && parenthesisDepth == 0) {
+        measures.add(buffer.toString());
+        buffer = StringBuffer();
+        continue;
+      }
+      buffer.write(character);
+    }
+
+    measures.add(buffer.toString());
+    return measures;
   }
 
   List<String> _splitMeasureTokens(String measure) {
@@ -74,6 +104,7 @@ class ProgressionParser {
         buffer.write(character);
         continue;
       }
+
       final isSeparator =
           parenthesisDepth == 0 &&
           (character == ',' || _whitespacePattern.hasMatch(character));
@@ -83,6 +114,7 @@ class ProgressionParser {
       }
       buffer.write(character);
     }
+
     flush();
     return tokens;
   }
@@ -93,8 +125,8 @@ class ProgressionParser {
     int measureIndex,
     int positionInMeasure,
   ) {
-    final normalizedToken = token.trim();
-    if (normalizedToken.isEmpty) {
+    final rawToken = token.trim();
+    if (rawToken.isEmpty) {
       return ParsedChordToken(
         index: index,
         rawText: token,
@@ -104,12 +136,13 @@ class ProgressionParser {
       );
     }
 
+    final normalizedToken = _normalizeInput(rawToken);
     final parts = _splitBass(normalizedToken);
     final rootMatch = _rootPattern.firstMatch(parts.prefix);
     if (rootMatch == null) {
       return ParsedChordToken(
         index: index,
-        rawText: token,
+        rawText: rawToken,
         measureIndex: measureIndex,
         positionInMeasure: positionInMeasure,
         error: 'invalid-root',
@@ -121,50 +154,63 @@ class ProgressionParser {
     if (rootSemitone == null) {
       return ParsedChordToken(
         index: index,
-        rawText: token,
+        rawText: rawToken,
         measureIndex: measureIndex,
         positionInMeasure: positionInMeasure,
         error: 'unknown-root',
+        errorDetail: root,
       );
     }
 
-    final suffix = rootMatch.group(2)?.trim() ?? '';
     final bass = parts.bass == null ? null : _normalizeNoteToken(parts.bass!);
     final bassSemitone = bass == null ? null : MusicTheory.noteToSemitone[bass];
     if (bass != null && bassSemitone == null) {
       return ParsedChordToken(
         index: index,
-        rawText: token,
+        rawText: rawToken,
         measureIndex: measureIndex,
         positionInMeasure: positionInMeasure,
         error: 'invalid-bass',
+        errorDetail: parts.bass,
       );
     }
 
-    final suffixParse = _parseSuffix(suffix);
+    final suffix = rootMatch.group(2)?.trim() ?? '';
+    final suffixResult = _parseSuffix(suffix);
+    if (!suffixResult.isValid) {
+      return ParsedChordToken(
+        index: index,
+        rawText: rawToken,
+        measureIndex: measureIndex,
+        positionInMeasure: positionInMeasure,
+        error: suffixResult.errorCode,
+        errorDetail: suffixResult.errorDetail,
+      );
+    }
 
+    final parsedSuffix = suffixResult.suffix!;
     return ParsedChordToken(
       index: index,
-      rawText: token,
+      rawText: rawToken,
       measureIndex: measureIndex,
       positionInMeasure: positionInMeasure,
       chord: ParsedChord(
-        sourceSymbol: normalizedToken,
+        sourceSymbol: rawToken,
         root: root,
         rootSemitone: rootSemitone,
+        displayQuality: parsedSuffix.displayQuality,
+        analysisFamily: parsedSuffix.analysisFamily,
         measureIndex: measureIndex,
         positionInMeasure: positionInMeasure,
         suffix: suffix,
-        normalizedSuffix: suffixParse.normalizedSuffix,
-        displayQuality: suffixParse.displayQuality,
-        analysisQuality: suffixParse.analysisQuality,
-        extension: suffixParse.extension,
-        tensions: suffixParse.tensions,
-        addedTones: suffixParse.addedTones,
-        alterations: suffixParse.alterations,
-        suspensions: suffixParse.suspensions,
-        ignoredTokens: suffixParse.ignoredTokens,
-        diagnostics: suffixParse.diagnostics,
+        normalizedSuffix: parsedSuffix.normalizedSuffix,
+        extension: parsedSuffix.extension,
+        tensions: parsedSuffix.tensions,
+        addedTones: parsedSuffix.addedTones,
+        alterations: parsedSuffix.alterations,
+        suspensions: parsedSuffix.suspensions,
+        ignoredTokens: parsedSuffix.ignoredTokens,
+        diagnostics: parsedSuffix.diagnostics,
         bass: bass,
         bassSemitone: bassSemitone,
       ),
@@ -172,7 +218,24 @@ class ProgressionParser {
   }
 
   _ChordWithBass _splitBass(String token) {
-    final lastSlash = token.lastIndexOf('/');
+    var lastSlash = -1;
+    var parenthesisDepth = 0;
+
+    for (var index = 0; index < token.length; index += 1) {
+      final character = token[index];
+      if (character == '(') {
+        parenthesisDepth += 1;
+        continue;
+      }
+      if (character == ')') {
+        parenthesisDepth = math.max(0, parenthesisDepth - 1);
+        continue;
+      }
+      if (character == '/' && parenthesisDepth == 0) {
+        lastSlash = index;
+      }
+    }
+
     if (lastSlash <= 0 || lastSlash >= token.length - 1) {
       return _ChordWithBass(prefix: token);
     }
@@ -182,16 +245,25 @@ class ProgressionParser {
       return _ChordWithBass(prefix: token);
     }
 
-    return _ChordWithBass(prefix: token.substring(0, lastSlash), bass: possibleBass);
+    return _ChordWithBass(
+      prefix: token.substring(0, lastSlash),
+      bass: possibleBass,
+    );
   }
 
-  _ParsedSuffix _parseSuffix(String suffix) {
-    final normalizedSuffix = _normalizeSuffix(suffix);
+  _SuffixParseResult _parseSuffix(String suffix) {
+    final normalizedSuffix = _normalizeInput(suffix);
     final extracted = _extractParentheticalSections(normalizedSuffix);
-    final compact = extracted.compact.replaceAll(_whitespacePattern, '');
+    final compact = _normalizeCompactSuffix(extracted.compact);
     final core = _parseCore(compact);
-    final modifierScan = _scanInlineModifiers(core.remaining);
+    if (core == null) {
+      return _SuffixParseResult.invalid(
+        errorCode: 'unsupported-suffix',
+        errorDetail: compact.isEmpty ? normalizedSuffix : compact,
+      );
+    }
 
+    final modifierScan = _scanInlineModifiers(core.remaining);
     final tensions = <String>[...core.tensions];
     final addedTones = <String>[...core.addedTones];
     final alterations = <String>[...core.alterations];
@@ -202,25 +274,18 @@ class ProgressionParser {
     ];
     final diagnostics = <String>[...extracted.diagnostics];
     var displayQuality = core.displayQuality;
-    var analysisQuality = core.analysisQuality;
+    var analysisFamily = core.analysisFamily;
     var extension = core.extension;
 
-    final modifierTokens = <String>[
-      ...modifierScan.tokens,
-      ...extracted.tokens,
-    ];
-    for (final token in modifierTokens) {
+    for (final token in [...modifierScan.tokens, ...extracted.tokens]) {
       switch (token) {
         case 'maj7':
           extension = _maxExtension(extension, 7);
-          if (analysisQuality == ChordQuality.minorTriad ||
-              analysisQuality == ChordQuality.minor7 ||
-              analysisQuality == ChordQuality.minor6) {
+          if (analysisFamily == ChordFamily.minor) {
             displayQuality = ChordQuality.minorMajor7;
-            analysisQuality = ChordQuality.minorMajor7;
           } else {
             displayQuality = ChordQuality.major7;
-            analysisQuality = ChordQuality.major7;
+            analysisFamily = ChordFamily.major;
           }
         case '9' || '11' || '13':
           _appendUnique(tensions, token);
@@ -233,60 +298,86 @@ class ProgressionParser {
           _appendUnique(addedTones, '13');
         case 'sus2':
           _appendUnique(suspensions, '2');
+          if (analysisFamily == ChordFamily.major) {
+            displayQuality = ChordQuality.majorTriad;
+          }
         case 'sus4':
           _appendUnique(suspensions, '4');
-          if (analysisQuality == ChordQuality.dominant7 &&
-              displayQuality != ChordQuality.dominant13sus4) {
-            displayQuality = ChordQuality.dominant7sus4;
+          if (analysisFamily == ChordFamily.dominant) {
+            if (extension == 13) {
+              displayQuality = ChordQuality.dominant13sus4;
+            } else if (extension == 7) {
+              displayQuality = ChordQuality.dominant7sus4;
+            } else if (extension == null) {
+              displayQuality = ChordQuality.majorTriad;
+            }
           }
         case 'alt':
+          analysisFamily = ChordFamily.dominant;
+          extension = _maxExtension(extension, 7);
           _appendUnique(alterations, 'alt');
-          if (analysisQuality == ChordQuality.dominant7) {
-            displayQuality = ChordQuality.dominant7Alt;
-          }
+          displayQuality = ChordQuality.dominant7Alt;
         case 'b9' || '#9' || 'b5' || '#5' || '#11' || 'b13':
           _appendUnique(tensions, token);
           _appendUnique(alterations, token);
-          if (token == '#11' && analysisQuality == ChordQuality.dominant7) {
-            displayQuality = ChordQuality.dominant7Sharp11;
-          } else if (analysisQuality == ChordQuality.dominant7 &&
-              token != '#11' &&
-              displayQuality == ChordQuality.dominant7) {
-            displayQuality = ChordQuality.dominant7Alt;
+          if (analysisFamily == ChordFamily.dominant) {
+            extension = _maxExtension(extension, 7);
+            if (token == '#11' || alterations.contains('#11')) {
+              displayQuality = ChordQuality.dominant7Sharp11;
+            } else if (displayQuality != ChordQuality.dominant13sus4) {
+              displayQuality = ChordQuality.dominant7Alt;
+            }
           }
         case '6/9':
           extension = _maxExtension(extension, 6);
           _appendUnique(tensions, '9');
-          if (analysisQuality == ChordQuality.majorTriad ||
-              analysisQuality == ChordQuality.six ||
-              analysisQuality == ChordQuality.major69) {
+          if (analysisFamily == ChordFamily.major) {
             displayQuality = ChordQuality.major69;
-            analysisQuality = ChordQuality.major69;
+          } else if (analysisFamily == ChordFamily.minor) {
+            displayQuality = ChordQuality.minor6;
           }
       }
     }
 
-    return _ParsedSuffix(
-      displayQuality: displayQuality,
-      analysisQuality: analysisQuality,
-      extension: extension,
-      tensions: tensions,
-      addedTones: addedTones,
-      alterations: alterations,
-      suspensions: suspensions,
-      ignoredTokens: ignoredTokens,
-      diagnostics: diagnostics,
-      normalizedSuffix: normalizedSuffix,
+    return _SuffixParseResult.valid(
+      _ParsedSuffix(
+        displayQuality: displayQuality,
+        analysisFamily: analysisFamily,
+        extension: extension,
+        tensions: tensions,
+        addedTones: addedTones,
+        alterations: alterations,
+        suspensions: suspensions,
+        ignoredTokens: ignoredTokens,
+        diagnostics: diagnostics,
+        normalizedSuffix: _buildNormalizedSuffix(
+          displayQuality: displayQuality,
+          analysisFamily: analysisFamily,
+          extension: extension,
+          tensions: tensions,
+          addedTones: addedTones,
+          alterations: alterations,
+          suspensions: suspensions,
+        ),
+      ),
     );
   }
 
-  _CoreParse _parseCore(String compact) {
+  _CoreParse? _parseCore(String compact) {
+    if (compact.isEmpty) {
+      return const _CoreParse(
+        displayQuality: ChordQuality.majorTriad,
+        analysisFamily: ChordFamily.major,
+        remaining: '',
+      );
+    }
+
     final lower = compact.toLowerCase();
 
     _CoreParse build({
-      required String consumed,
+      required int consumedLength,
       required ChordQuality displayQuality,
-      required ChordQuality analysisQuality,
+      required ChordFamily analysisFamily,
       int? extension,
       List<String> tensions = const [],
       List<String> addedTones = const [],
@@ -295,82 +386,82 @@ class ProgressionParser {
     }) {
       return _CoreParse(
         displayQuality: displayQuality,
-        analysisQuality: analysisQuality,
+        analysisFamily: analysisFamily,
         extension: extension,
         tensions: tensions,
         addedTones: addedTones,
         alterations: alterations,
         suspensions: suspensions,
-        remaining: compact.substring(consumed.length),
+        remaining: compact.substring(consumedLength),
       );
     }
 
-    if (lower.startsWith('mmaj13') || lower.startsWith('-maj13')) {
+    if (lower.startsWith('mmaj13')) {
       return build(
-        consumed: compact.substring(0, lower.startsWith('mmaj13') ? 6 : 6),
+        consumedLength: 6,
         displayQuality: ChordQuality.minorMajor7,
-        analysisQuality: ChordQuality.minorMajor7,
+        analysisFamily: ChordFamily.minor,
         extension: 13,
         tensions: const ['13'],
       );
     }
-    if (lower.startsWith('mmaj9') || lower.startsWith('-maj9')) {
+    if (lower.startsWith('mmaj9')) {
       return build(
-        consumed: compact.substring(0, lower.startsWith('mmaj9') ? 5 : 5),
+        consumedLength: 5,
         displayQuality: ChordQuality.minorMajor7,
-        analysisQuality: ChordQuality.minorMajor7,
+        analysisFamily: ChordFamily.minor,
         extension: 9,
         tensions: const ['9'],
       );
     }
-    if (lower.startsWith('mmaj7') || lower.startsWith('-maj7')) {
+    if (lower.startsWith('mmaj7')) {
       return build(
-        consumed: compact.substring(0, lower.startsWith('mmaj7') ? 5 : 5),
+        consumedLength: 5,
         displayQuality: ChordQuality.minorMajor7,
-        analysisQuality: ChordQuality.minorMajor7,
+        analysisFamily: ChordFamily.minor,
         extension: 7,
       );
     }
     if (lower.startsWith('maj13')) {
       return build(
-        consumed: compact.substring(0, 5),
+        consumedLength: 5,
         displayQuality: ChordQuality.major7,
-        analysisQuality: ChordQuality.major7,
+        analysisFamily: ChordFamily.major,
         extension: 13,
         tensions: const ['13'],
       );
     }
     if (lower.startsWith('maj11')) {
       return build(
-        consumed: compact.substring(0, 5),
+        consumedLength: 5,
         displayQuality: ChordQuality.major7,
-        analysisQuality: ChordQuality.major7,
+        analysisFamily: ChordFamily.major,
         extension: 11,
         tensions: const ['11'],
       );
     }
     if (lower.startsWith('maj9')) {
       return build(
-        consumed: compact.substring(0, 4),
+        consumedLength: 4,
         displayQuality: ChordQuality.major7,
-        analysisQuality: ChordQuality.major7,
+        analysisFamily: ChordFamily.major,
         extension: 9,
         tensions: const ['9'],
       );
     }
     if (lower.startsWith('maj7')) {
       return build(
-        consumed: compact.substring(0, 4),
+        consumedLength: 4,
         displayQuality: ChordQuality.major7,
-        analysisQuality: ChordQuality.major7,
+        analysisFamily: ChordFamily.major,
         extension: 7,
       );
     }
     if (lower.startsWith('13sus4')) {
       return build(
-        consumed: compact.substring(0, 6),
+        consumedLength: 6,
         displayQuality: ChordQuality.dominant13sus4,
-        analysisQuality: ChordQuality.dominant7,
+        analysisFamily: ChordFamily.dominant,
         extension: 13,
         tensions: const ['13'],
         suspensions: const ['4'],
@@ -378,224 +469,282 @@ class ProgressionParser {
     }
     if (lower.startsWith('7sus4')) {
       return build(
-        consumed: compact.substring(0, 5),
+        consumedLength: 5,
         displayQuality: ChordQuality.dominant7sus4,
-        analysisQuality: ChordQuality.dominant7,
+        analysisFamily: ChordFamily.dominant,
         extension: 7,
         suspensions: const ['4'],
       );
     }
-    if (lower.startsWith('sus4') || lower == 'sus') {
+    if (lower.startsWith('7sus')) {
       return build(
-        consumed: compact.substring(0, lower == 'sus' ? 3 : 4),
+        consumedLength: 4,
+        displayQuality: ChordQuality.dominant7sus4,
+        analysisFamily: ChordFamily.dominant,
+        extension: 7,
+        suspensions: const ['4'],
+      );
+    }
+    if (lower.startsWith('sus4')) {
+      return build(
+        consumedLength: 4,
         displayQuality: ChordQuality.majorTriad,
-        analysisQuality: ChordQuality.majorTriad,
+        analysisFamily: ChordFamily.dominant,
         suspensions: const ['4'],
       );
     }
     if (lower.startsWith('sus2')) {
       return build(
-        consumed: compact.substring(0, 4),
+        consumedLength: 4,
         displayQuality: ChordQuality.majorTriad,
-        analysisQuality: ChordQuality.majorTriad,
+        analysisFamily: ChordFamily.major,
         suspensions: const ['2'],
       );
     }
-    if (lower.startsWith('6/9') || lower.startsWith('69')) {
+    if (lower.startsWith('sus')) {
       return build(
-        consumed: compact.substring(0, lower.startsWith('6/9') ? 3 : 2),
+        consumedLength: 3,
+        displayQuality: ChordQuality.majorTriad,
+        analysisFamily: ChordFamily.dominant,
+        suspensions: const ['4'],
+      );
+    }
+    if (lower.startsWith('6/9')) {
+      return build(
+        consumedLength: 3,
         displayQuality: ChordQuality.major69,
-        analysisQuality: ChordQuality.major69,
+        analysisFamily: ChordFamily.major,
         extension: 6,
         tensions: const ['9'],
       );
     }
-    if (lower.startsWith('m7b5') || lower.startsWith('-7b5')) {
+    if (lower.startsWith('69')) {
       return build(
-        consumed: compact.substring(0, 4),
+        consumedLength: 2,
+        displayQuality: ChordQuality.major69,
+        analysisFamily: ChordFamily.major,
+        extension: 6,
+        tensions: const ['9'],
+      );
+    }
+    if (lower.startsWith('m7b5')) {
+      return build(
+        consumedLength: 4,
         displayQuality: ChordQuality.halfDiminished7,
-        analysisQuality: ChordQuality.halfDiminished7,
+        analysisFamily: ChordFamily.halfDiminished,
         extension: 7,
       );
     }
     if (lower.startsWith('dim7')) {
       return build(
-        consumed: compact.substring(0, 4),
+        consumedLength: 4,
         displayQuality: ChordQuality.diminished7,
-        analysisQuality: ChordQuality.diminished7,
+        analysisFamily: ChordFamily.diminished,
         extension: 7,
       );
     }
     if (lower.startsWith('dim')) {
       return build(
-        consumed: compact.substring(0, 3),
+        consumedLength: 3,
         displayQuality: ChordQuality.diminishedTriad,
-        analysisQuality: ChordQuality.diminishedTriad,
+        analysisFamily: ChordFamily.diminished,
       );
     }
-    if (lower.startsWith('aug') || lower.startsWith('+')) {
+    if (lower.startsWith('aug7')) {
       return build(
-        consumed: compact.substring(0, lower.startsWith('aug') ? 3 : 1),
+        consumedLength: 4,
         displayQuality: ChordQuality.augmentedTriad,
-        analysisQuality: ChordQuality.augmentedTriad,
+        analysisFamily: ChordFamily.dominant,
+        extension: 7,
+        alterations: const ['#5'],
       );
     }
-    if (lower.startsWith('m11') || lower.startsWith('-11')) {
+    if (lower.startsWith('+7')) {
       return build(
-        consumed: compact.substring(0, 3),
+        consumedLength: 2,
+        displayQuality: ChordQuality.augmentedTriad,
+        analysisFamily: ChordFamily.dominant,
+        extension: 7,
+        alterations: const ['#5'],
+      );
+    }
+    if (lower.startsWith('aug')) {
+      return build(
+        consumedLength: 3,
+        displayQuality: ChordQuality.augmentedTriad,
+        analysisFamily: ChordFamily.augmented,
+      );
+    }
+    if (lower.startsWith('+')) {
+      return build(
+        consumedLength: 1,
+        displayQuality: ChordQuality.augmentedTriad,
+        analysisFamily: ChordFamily.augmented,
+      );
+    }
+    if (lower.startsWith('m11')) {
+      return build(
+        consumedLength: 3,
         displayQuality: ChordQuality.minor7,
-        analysisQuality: ChordQuality.minor7,
+        analysisFamily: ChordFamily.minor,
         extension: 11,
         tensions: const ['11'],
       );
     }
-    if (lower.startsWith('m9') || lower.startsWith('-9')) {
+    if (lower.startsWith('m9')) {
       return build(
-        consumed: compact.substring(0, 2),
+        consumedLength: 2,
         displayQuality: ChordQuality.minor7,
-        analysisQuality: ChordQuality.minor7,
+        analysisFamily: ChordFamily.minor,
         extension: 9,
         tensions: const ['9'],
       );
     }
-    if (lower.startsWith('m7') || lower.startsWith('-7')) {
+    if (lower.startsWith('m7')) {
       return build(
-        consumed: compact.substring(0, 2),
+        consumedLength: 2,
         displayQuality: ChordQuality.minor7,
-        analysisQuality: ChordQuality.minor7,
+        analysisFamily: ChordFamily.minor,
         extension: 7,
       );
     }
-    if (lower.startsWith('m6') || lower.startsWith('-6')) {
+    if (lower.startsWith('m6')) {
       return build(
-        consumed: compact.substring(0, 2),
+        consumedLength: 2,
         displayQuality: ChordQuality.minor6,
-        analysisQuality: ChordQuality.minor6,
+        analysisFamily: ChordFamily.minor,
         extension: 6,
       );
     }
-    if (lower.startsWith('m') || lower.startsWith('-')) {
+    if (lower.startsWith('m')) {
       return build(
-        consumed: compact.substring(0, 1),
+        consumedLength: 1,
         displayQuality: ChordQuality.minorTriad,
-        analysisQuality: ChordQuality.minorTriad,
+        analysisFamily: ChordFamily.minor,
+      );
+    }
+    if (lower.startsWith('7alt')) {
+      return build(
+        consumedLength: 4,
+        displayQuality: ChordQuality.dominant7Alt,
+        analysisFamily: ChordFamily.dominant,
+        extension: 7,
+        alterations: const ['alt'],
+      );
+    }
+    if (lower.startsWith('alt')) {
+      return build(
+        consumedLength: 3,
+        displayQuality: ChordQuality.dominant7Alt,
+        analysisFamily: ChordFamily.dominant,
+        extension: 7,
+        alterations: const ['alt'],
       );
     }
     if (lower.startsWith('13')) {
       return build(
-        consumed: compact.substring(0, 2),
+        consumedLength: 2,
         displayQuality: ChordQuality.dominant7,
-        analysisQuality: ChordQuality.dominant7,
+        analysisFamily: ChordFamily.dominant,
         extension: 13,
         tensions: const ['13'],
       );
     }
     if (lower.startsWith('11')) {
       return build(
-        consumed: compact.substring(0, 2),
+        consumedLength: 2,
         displayQuality: ChordQuality.dominant7,
-        analysisQuality: ChordQuality.dominant7,
+        analysisFamily: ChordFamily.dominant,
         extension: 11,
         tensions: const ['11'],
       );
     }
     if (lower.startsWith('9')) {
       return build(
-        consumed: compact.substring(0, 1),
+        consumedLength: 1,
         displayQuality: ChordQuality.dominant7,
-        analysisQuality: ChordQuality.dominant7,
+        analysisFamily: ChordFamily.dominant,
         extension: 9,
         tensions: const ['9'],
       );
     }
     if (lower.startsWith('7')) {
       return build(
-        consumed: compact.substring(0, 1),
+        consumedLength: 1,
         displayQuality: ChordQuality.dominant7,
-        analysisQuality: ChordQuality.dominant7,
+        analysisFamily: ChordFamily.dominant,
         extension: 7,
       );
     }
     if (lower.startsWith('6')) {
       return build(
-        consumed: compact.substring(0, 1),
+        consumedLength: 1,
         displayQuality: ChordQuality.six,
-        analysisQuality: ChordQuality.six,
+        analysisFamily: ChordFamily.major,
         extension: 6,
       );
     }
     if (lower.startsWith('add13')) {
       return build(
-        consumed: compact.substring(0, 5),
+        consumedLength: 5,
         displayQuality: ChordQuality.majorTriad,
-        analysisQuality: ChordQuality.majorTriad,
+        analysisFamily: ChordFamily.major,
         addedTones: const ['13'],
       );
     }
     if (lower.startsWith('add11')) {
       return build(
-        consumed: compact.substring(0, 5),
+        consumedLength: 5,
         displayQuality: ChordQuality.majorTriad,
-        analysisQuality: ChordQuality.majorTriad,
+        analysisFamily: ChordFamily.major,
         addedTones: const ['11'],
       );
     }
     if (lower.startsWith('add9')) {
       return build(
-        consumed: compact.substring(0, 4),
+        consumedLength: 4,
         displayQuality: ChordQuality.majorTriad,
-        analysisQuality: ChordQuality.majorTriad,
+        analysisFamily: ChordFamily.major,
         addedTones: const ['9'],
       );
     }
-    if (lower.startsWith('alt')) {
-      return build(
-        consumed: compact.substring(0, 3),
-        displayQuality: ChordQuality.dominant7Alt,
-        analysisQuality: ChordQuality.dominant7,
-        extension: 7,
-        alterations: const ['alt'],
-      );
-    }
 
-    return const _CoreParse(
-      displayQuality: ChordQuality.majorTriad,
-      analysisQuality: ChordQuality.majorTriad,
-      remaining: '',
-    );
+    return null;
   }
 
   _ModifierScan _scanInlineModifiers(String input) {
     final tokens = <String>[];
     final ignoredTokens = <String>[];
     var remaining = input;
+
     while (remaining.isNotEmpty) {
       final token = _recognizedModifierFor(remaining);
       if (token != null) {
         tokens.add(token);
-        remaining = remaining.substring(_modifierTokenLength(token, remaining));
+        remaining = remaining.substring(_modifierTokenLength(token));
         continue;
       }
       final ignoredLength = _ignoredRunLength(remaining);
       ignoredTokens.add(remaining.substring(0, ignoredLength));
       remaining = remaining.substring(ignoredLength);
     }
+
     return _ModifierScan(tokens: tokens, ignoredTokens: ignoredTokens);
   }
 
   String? _recognizedModifierFor(String input) {
     final lower = input.toLowerCase();
-    for (final token in _orderedModifierTokens) {
-      if (lower.startsWith(token.$1)) {
-        return token.$2;
+    for (final candidate in _orderedModifierTokens) {
+      if (lower.startsWith(candidate.$1)) {
+        return candidate.$2;
       }
     }
     return null;
   }
 
-  int _modifierTokenLength(String token, String source) {
+  int _modifierTokenLength(String token) {
     for (final candidate in _orderedModifierTokens) {
-      if (candidate.$2 == token && source.toLowerCase().startsWith(candidate.$1)) {
+      if (candidate.$2 == token) {
         return candidate.$1.length;
       }
     }
@@ -661,7 +810,10 @@ class ProgressionParser {
 
     if (depth > 0) {
       diagnostics.add('unbalanced-parentheses');
-      ignoredTokens.add(buffer.toString());
+      final trailing = buffer.toString().trim();
+      if (trailing.isNotEmpty) {
+        ignoredTokens.add(trailing);
+      }
     }
 
     return _ExtractedParentheticalSections(
@@ -692,22 +844,27 @@ class ProgressionParser {
       }
       buffer.write(character);
     }
+
     flush();
     return tokens;
   }
 
   String? _normalizeModifierToken(String token) {
-    final lower = token.trim().toLowerCase();
-    if (lower.isEmpty) {
+    var normalized = _normalizeCompactSuffix(_normalizeInput(token));
+    if (normalized.isEmpty) {
       return null;
     }
+    normalized = normalized.toLowerCase();
+    if (normalized == 'maj') {
+      return 'maj7';
+    }
+    if (normalized == 'sus') {
+      return 'sus4';
+    }
     for (final candidate in _orderedModifierTokens) {
-      if (candidate.$1 == lower) {
+      if (candidate.$1 == normalized) {
         return candidate.$2;
       }
-    }
-    if (lower == 'maj') {
-      return 'maj7';
     }
     return null;
   }
@@ -716,36 +873,229 @@ class ProgressionParser {
     return input
         .replaceAll('♭', 'b')
         .replaceAll('♯', '#')
-        .replaceAll('Δ', 'maj')
-        .replaceAll('△', 'maj')
+        .replaceAll('＃', '#')
+        .replaceAll('ｂ', 'b')
+        .replaceAll('⁄', '/')
         .replaceAll('−', '-')
         .replaceAll('–', '-')
+        .replaceAll('—', '-')
+        .replaceAll('△7', 'maj7')
+        .replaceAll('Δ7', 'maj7')
+        .replaceAll('△', 'maj7')
+        .replaceAll('Δ', 'maj7')
+        .replaceAll('Ø7', 'm7b5')
+        .replaceAll('ø7', 'm7b5')
+        .replaceAll('Ø', 'm7b5')
         .replaceAll('ø', 'm7b5')
+        .replaceAll('°7', 'dim7')
         .replaceAll('°', 'dim')
         .trim();
   }
 
-  String _normalizeSuffix(String suffix) {
-    return suffix
-        .replaceAll('♭', 'b')
-        .replaceAll('♯', '#')
-        .replaceAll('Δ', 'maj')
-        .replaceAll('△', 'maj')
-        .replaceAll('−', '-')
-        .replaceAll('–', '-')
-        .replaceAll('ø', 'm7b5')
-        .replaceAll('°', 'dim')
-        .trim();
+  String _normalizeCompactSuffix(String suffix) {
+    var text = suffix.replaceAll(_compactWhitespacePattern, '').trim();
+    if (text.isEmpty) {
+      return '';
+    }
+
+    if (text.startsWith('M')) {
+      final tail = text.substring(1);
+      if (tail.isEmpty || _uppercaseMajorPrefixPattern.hasMatch(tail)) {
+        text = 'maj$tail';
+      }
+    }
+
+    final lower = text.toLowerCase();
+    if (lower.startsWith('minmaj')) {
+      text = 'mmaj${text.substring(6)}';
+    } else if (lower.startsWith('min')) {
+      text = 'm${text.substring(3)}';
+    } else if (text.startsWith('-')) {
+      text = 'm${text.substring(1)}';
+    }
+
+    if (text.toLowerCase() == 'sus') {
+      return 'sus4';
+    }
+    if (text.toLowerCase() == '7sus') {
+      return '7sus4';
+    }
+    return text;
   }
 
   String _normalizeNoteToken(String token) {
-    final trimmed = token.trim();
+    final trimmed = _normalizeInput(token);
     if (trimmed.isEmpty) {
       return trimmed;
     }
     final letter = trimmed[0].toUpperCase();
     final accidental = trimmed.length > 1 ? trimmed.substring(1) : '';
     return '$letter$accidental';
+  }
+
+  String _buildNormalizedSuffix({
+    required ChordQuality displayQuality,
+    required ChordFamily analysisFamily,
+    required int? extension,
+    required List<String> tensions,
+    required List<String> addedTones,
+    required List<String> alterations,
+    required List<String> suspensions,
+  }) {
+    final consumedTensions = <String>[];
+    final consumedAddedTones = <String>[];
+    final consumedAlterations = <String>[];
+    final consumedSuspensions = <String>[];
+
+    String base = '';
+
+    switch (displayQuality) {
+      case ChordQuality.majorTriad:
+        if (suspensions.contains('2')) {
+          base = 'sus2';
+          consumedSuspensions.add('2');
+        } else if (suspensions.contains('4')) {
+          base = 'sus4';
+          consumedSuspensions.add('4');
+        } else if (addedTones.isNotEmpty) {
+          base = 'add${addedTones.first}';
+          consumedAddedTones.add(addedTones.first);
+        }
+      case ChordQuality.major7:
+        if (_matchesExact(tensions, const ['13']) && extension == 13) {
+          base = 'maj13';
+          consumedTensions.add('13');
+        } else if (_matchesExact(tensions, const ['11']) && extension == 11) {
+          base = 'maj11';
+          consumedTensions.add('11');
+        } else if (_matchesExact(tensions, const ['9']) && extension == 9) {
+          base = 'maj9';
+          consumedTensions.add('9');
+        } else {
+          base = 'maj7';
+        }
+      case ChordQuality.minorTriad:
+        base = 'm';
+      case ChordQuality.minor7:
+        if (_matchesExact(tensions, const ['11']) && extension == 11) {
+          base = 'm11';
+          consumedTensions.add('11');
+        } else if (_matchesExact(tensions, const ['9']) && extension == 9) {
+          base = 'm9';
+          consumedTensions.add('9');
+        } else {
+          base = 'm7';
+        }
+      case ChordQuality.minorMajor7:
+        if (_matchesExact(tensions, const ['13']) && extension == 13) {
+          base = 'mMaj13';
+          consumedTensions.add('13');
+        } else if (_matchesExact(tensions, const ['9']) && extension == 9) {
+          base = 'mMaj9';
+          consumedTensions.add('9');
+        } else {
+          base = 'mMaj7';
+        }
+      case ChordQuality.halfDiminished7:
+        base = 'm7b5';
+      case ChordQuality.diminishedTriad:
+        base = 'dim';
+      case ChordQuality.diminished7:
+        base = 'dim7';
+      case ChordQuality.augmentedTriad:
+        if (extension == 7) {
+          base = 'aug7';
+          consumedAlterations.add('#5');
+        } else {
+          base = 'aug';
+        }
+      case ChordQuality.six:
+        base = '6';
+      case ChordQuality.minor6:
+        base = 'm6';
+      case ChordQuality.major69:
+        base = '6/9';
+        consumedTensions.add('9');
+      case ChordQuality.dominant7:
+        if (_matchesExact(tensions, const ['13']) && extension == 13) {
+          base = '13';
+          consumedTensions.add('13');
+        } else if (_matchesExact(tensions, const ['11']) && extension == 11) {
+          base = '11';
+          consumedTensions.add('11');
+        } else if (_matchesExact(tensions, const ['9']) && extension == 9) {
+          base = '9';
+          consumedTensions.add('9');
+        } else if (extension == 13) {
+          base = '13';
+        } else if (extension == 11) {
+          base = '11';
+        } else if (extension == 9) {
+          base = '9';
+        } else {
+          base = '7';
+        }
+      case ChordQuality.dominant7Alt:
+        if (alterations.length == 1 &&
+            alterations.single == 'alt' &&
+            tensions.isEmpty) {
+          base = '7alt';
+          consumedAlterations.add('alt');
+        } else {
+          base = '7';
+        }
+      case ChordQuality.dominant7Sharp11:
+        if (_matchesExact(tensions, const ['#11']) && extension == 7) {
+          base = '7(#11)';
+          consumedTensions.add('#11');
+          consumedAlterations.add('#11');
+        } else {
+          base = '7';
+        }
+      case ChordQuality.dominant13sus4:
+        base = '13sus4';
+        consumedTensions.add('13');
+        consumedSuspensions.add('4');
+      case ChordQuality.dominant7sus4:
+        base = '7sus4';
+        consumedSuspensions.add('4');
+    }
+
+    final extraTokens = <String>[
+      for (final tension in tensions)
+        if (!consumedTensions.contains(tension)) tension,
+      for (final tone in addedTones)
+        if (!consumedAddedTones.contains(tone)) 'add$tone',
+      for (final suspension in suspensions)
+        if (!consumedSuspensions.contains(suspension)) 'sus$suspension',
+      for (final alteration in alterations)
+        if (!consumedAlterations.contains(alteration) &&
+            !tensions.contains(alteration))
+          alteration,
+    ];
+
+    if (base.isEmpty && extraTokens.isEmpty) {
+      return analysisFamily == ChordFamily.minor ? 'm' : '';
+    }
+    if (extraTokens.isEmpty) {
+      return base;
+    }
+    if (base.isEmpty) {
+      return '(${extraTokens.join(',')})';
+    }
+    return '$base(${extraTokens.join(',')})';
+  }
+
+  bool _matchesExact(List<String> values, List<String> expected) {
+    if (values.length != expected.length) {
+      return false;
+    }
+    for (var index = 0; index < values.length; index += 1) {
+      if (values[index] != expected[index]) {
+        return false;
+      }
+    }
+    return true;
   }
 
   int _maxExtension(int? current, int next) {
@@ -769,10 +1119,26 @@ class _ChordWithBass {
   final String? bass;
 }
 
+class _SuffixParseResult {
+  const _SuffixParseResult.valid(this.suffix)
+    : isValid = true,
+      errorCode = null,
+      errorDetail = null;
+
+  const _SuffixParseResult.invalid({required this.errorCode, this.errorDetail})
+    : isValid = false,
+      suffix = null;
+
+  final bool isValid;
+  final _ParsedSuffix? suffix;
+  final String? errorCode;
+  final String? errorDetail;
+}
+
 class _ParsedSuffix {
   const _ParsedSuffix({
     required this.displayQuality,
-    required this.analysisQuality,
+    required this.analysisFamily,
     required this.extension,
     required this.tensions,
     required this.addedTones,
@@ -784,7 +1150,7 @@ class _ParsedSuffix {
   });
 
   final ChordQuality displayQuality;
-  final ChordQuality analysisQuality;
+  final ChordFamily analysisFamily;
   final int? extension;
   final List<String> tensions;
   final List<String> addedTones;
@@ -798,7 +1164,7 @@ class _ParsedSuffix {
 class _CoreParse {
   const _CoreParse({
     required this.displayQuality,
-    required this.analysisQuality,
+    required this.analysisFamily,
     required this.remaining,
     this.extension,
     this.tensions = const [],
@@ -808,7 +1174,7 @@ class _CoreParse {
   });
 
   final ChordQuality displayQuality;
-  final ChordQuality analysisQuality;
+  final ChordFamily analysisFamily;
   final int? extension;
   final List<String> tensions;
   final List<String> addedTones;
@@ -845,7 +1211,9 @@ const List<(String, String)> _orderedModifierTokens = [
   ('add9', 'add9'),
   ('sus4', 'sus4'),
   ('sus2', 'sus2'),
+  ('sus', 'sus4'),
   ('maj7', 'maj7'),
+  ('maj', 'maj7'),
   ('alt', 'alt'),
   ('#11', '#11'),
   ('#9', '#9'),

@@ -534,181 +534,172 @@ class AppLocalizationsZh extends AppLocalizations {
       'Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.';
 
   @override
-  String get mainMenuAnalyzerTitle => 'Chord Analyzer';
-
-  @override
-  String get mainMenuAnalyzerDescription =>
-      'Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.';
-
-  @override
   String get openGenerator => 'Open Generator';
 
   @override
-  String get openAnalyzer => 'Open Analyzer';
+  String get openAnalyzer => '打开分析器';
 
   @override
-  String get chordAnalyzerTitle => 'Chord Analyzer';
+  String get mainMenuAnalyzerTitle => '和弦分析器';
 
   @override
-  String get chordAnalyzerSubtitle =>
-      'Paste a progression and get a conservative harmonic reading.';
+  String get mainMenuAnalyzerDescription => '分析输入的和弦进行，给出可能的调性、罗马数字和和声功能。';
 
   @override
-  String get chordAnalyzerInputLabel => 'Chord progression';
+  String get chordAnalyzerTitle => '和弦分析器';
+
+  @override
+  String get chordAnalyzerSubtitle => '粘贴一段和弦进行，获得保守的和声解读。';
+
+  @override
+  String get chordAnalyzerInputLabel => '和弦进行';
 
   @override
   String get chordAnalyzerInputHint => 'Dm7 G7 Cmaj7';
 
   @override
   String get chordAnalyzerInputHelper =>
-      'Spaces, |, and commas are accepted. Slash chords and simple alterations are supported. Touch devices can use the chord pad or switch to ABC input.';
+      '在括号外可以用空格、| 或逗号分隔和弦。括号内的逗号会保留在同一个和弦里作为张力音分隔符。支持小写根音、斜线低音、sus/alt/add 形式，以及 C7(b9, #11) 这类括号张力音。触摸设备可以使用和弦面板或切换到 ABC 输入。';
 
   @override
-  String get chordAnalyzerAnalyze => 'Analyze';
+  String get chordAnalyzerAnalyze => '分析';
 
   @override
-  String get chordAnalyzerKeyboardTitle => 'Chord Pad';
+  String get chordAnalyzerKeyboardTitle => '和弦面板';
 
   @override
   String get chordAnalyzerKeyboardTouchHint =>
-      'Tap tokens to build a progression. ABC input keeps the system keyboard available when you need free typing.';
+      '点按符号来拼出进行。需要自由输入时，可以切换到 ABC 输入并继续使用系统键盘。';
 
   @override
-  String get chordAnalyzerKeyboardDesktopHint =>
-      'Type, paste, or tap tokens to insert them at the cursor.';
+  String get chordAnalyzerKeyboardDesktopHint => '可以直接输入、粘贴，或点按符号插入到光标位置。';
 
   @override
-  String get chordAnalyzerChordPad => 'Pad';
+  String get chordAnalyzerChordPad => '面板';
 
   @override
   String get chordAnalyzerRawInput => 'ABC';
 
   @override
-  String get chordAnalyzerPaste => 'Paste';
+  String get chordAnalyzerPaste => '粘贴';
 
   @override
-  String get chordAnalyzerClear => 'Clear';
+  String get chordAnalyzerClear => '清除';
 
   @override
-  String get chordAnalyzerBackspace => 'Backspace';
+  String get chordAnalyzerBackspace => '退格';
 
   @override
-  String get chordAnalyzerSpace => 'Space';
+  String get chordAnalyzerSpace => '空格';
 
   @override
-  String get chordAnalyzerAnalyzing => 'Analyzing progression...';
+  String get chordAnalyzerAnalyzing => '正在分析进行...';
 
   @override
-  String get chordAnalyzerInitialTitle => 'Start with a progression';
+  String get chordAnalyzerInitialTitle => '先输入一段进行';
 
   @override
   String get chordAnalyzerInitialBody =>
-      'Enter a progression such as Dm7 G7 Cmaj7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, and a short summary.';
+      '输入 Dm7 G7 Cmaj7 或 Cmaj7 | Am7 D7 | Gmaj7 这样的进行，即可查看可能的调性、罗马数字和简短摘要。';
 
   @override
-  String get chordAnalyzerDetectedKeys => 'Detected Keys';
+  String get chordAnalyzerDetectedKeys => '候选调性';
 
   @override
-  String get chordAnalyzerPrimaryReading => 'Primary reading';
+  String get chordAnalyzerPrimaryReading => '主要解读';
 
   @override
-  String get chordAnalyzerAlternativeReading => 'Alternative reading';
+  String get chordAnalyzerAlternativeReading => '备选解读';
 
   @override
-  String get chordAnalyzerChordAnalysis => 'Chord-by-chord analysis';
+  String get chordAnalyzerChordAnalysis => '逐和弦分析';
 
   @override
   String chordAnalyzerMeasureLabel(Object index) {
-    return 'Measure $index';
+    return '第 $index 小节';
   }
 
   @override
-  String get chordAnalyzerProgressionSummary => 'Progression summary';
+  String get chordAnalyzerProgressionSummary => '进行摘要';
 
   @override
-  String get chordAnalyzerWarnings => 'Warnings and ambiguities';
+  String get chordAnalyzerWarnings => '警告与歧义';
 
   @override
-  String get chordAnalyzerNoInputError =>
-      'Enter a chord progression to analyze.';
+  String get chordAnalyzerNoInputError => '请输入要分析的和弦进行。';
 
   @override
-  String get chordAnalyzerNoRecognizedChordsError =>
-      'No recognizable chords were found in the progression.';
+  String get chordAnalyzerNoRecognizedChordsError => '没有找到可识别的和弦标记。';
 
   @override
   String chordAnalyzerPartialParseWarning(Object tokens) {
-    return 'Some symbols were skipped: $tokens';
+    return '有些符号被跳过了: $tokens';
   }
 
   @override
   String chordAnalyzerKeyAmbiguityWarning(Object primary, Object alternative) {
-    return 'The key center is still somewhat ambiguous between $primary and $alternative.';
+    return '调性中心在 $primary 和 $alternative 之间仍有一些歧义。';
   }
 
   @override
-  String get chordAnalyzerUnresolvedWarning =>
-      'Some chords remain ambiguous under this MVP reading.';
+  String get chordAnalyzerUnresolvedWarning => '仍有一些和弦比较模糊，因此这份解读会刻意保持保守。';
 
   @override
-  String get chordAnalyzerFunctionTonic => 'Tonic';
+  String get chordAnalyzerFunctionTonic => '主功能';
 
   @override
-  String get chordAnalyzerFunctionPredominant => 'Predominant';
+  String get chordAnalyzerFunctionPredominant => '前属功能';
 
   @override
-  String get chordAnalyzerFunctionDominant => 'Dominant';
+  String get chordAnalyzerFunctionDominant => '属功能';
 
   @override
-  String get chordAnalyzerFunctionOther => 'Other';
+  String get chordAnalyzerFunctionOther => '其他';
 
   @override
   String chordAnalyzerRemarkSecondaryDominant(Object target) {
-    return 'Possible secondary dominant targeting $target.';
+    return '可能是指向 $target 的副属和弦。';
   }
 
   @override
   String chordAnalyzerRemarkTritoneSub(Object target) {
-    return 'Possible tritone substitute targeting $target.';
+    return '可能是指向 $target 的三全音替代。';
   }
 
   @override
-  String get chordAnalyzerRemarkModalInterchange =>
-      'Possible modal interchange from the parallel minor.';
+  String get chordAnalyzerRemarkModalInterchange => '可能是从平行小调借来的调式互换。';
 
   @override
-  String get chordAnalyzerRemarkAmbiguous =>
-      'This chord stays ambiguous in the current reading.';
+  String get chordAnalyzerRemarkAmbiguous => '这个和弦在当前解读下仍然有歧义。';
 
   @override
-  String get chordAnalyzerRemarkUnresolved =>
-      'This chord falls outside the current MVP heuristics.';
+  String get chordAnalyzerRemarkUnresolved => '仅凭当前保守规则还无法明确判断这个和弦。';
 
   @override
-  String get chordAnalyzerTagIiVI => 'ii-V-I cadence';
+  String get chordAnalyzerTagIiVI => 'ii-V-I 终止';
 
   @override
-  String get chordAnalyzerTagTurnaround => 'Turnaround';
+  String get chordAnalyzerTagTurnaround => '回转';
 
   @override
-  String get chordAnalyzerTagDominantResolution => 'Dominant resolution';
+  String get chordAnalyzerTagDominantResolution => '属功能解决';
 
   @override
-  String get chordAnalyzerTagPlagalColor => 'Plagal/modal color';
+  String get chordAnalyzerTagPlagalColor => '变格/调式色彩';
 
   @override
   String chordAnalyzerSummaryCenter(Object key) {
-    return 'This progression most likely centers on $key.';
+    return '这段进行最可能围绕 $key 展开。';
   }
 
   @override
   String chordAnalyzerSummaryAlternative(Object key) {
-    return 'An alternative reading is $key.';
+    return '另一种可能的解读是 $key。';
   }
 
   @override
   String chordAnalyzerSummaryTag(Object tag) {
-    return 'It suggests a $tag.';
+    return '它显示出 $tag 的特征。';
   }
 
   @override
@@ -719,87 +710,126 @@ class AppLocalizationsZh extends AppLocalizations {
     Object throughFunction,
     Object target,
   ) {
-    return '$from and $through behave like $fromFunction and $throughFunction chords leading into $target.';
+    return '$from 和 $through 可以理解为通向 $target 的 $fromFunction 与 $throughFunction 和声功能。';
   }
 
   @override
   String chordAnalyzerSummarySecondaryDominant(Object chord, Object target) {
-    return '$chord can be heard as a possible secondary dominant pointing toward $target.';
+    return '$chord 可以听成是指向 $target 的副属和弦。';
   }
 
   @override
   String chordAnalyzerSummaryTritoneSub(Object chord, Object target) {
-    return '$chord can be heard as a possible tritone substitute pointing toward $target.';
+    return '$chord 可以听成是指向 $target 的三全音替代。';
   }
 
   @override
   String chordAnalyzerSummaryModalInterchange(Object chord) {
-    return '$chord adds a possible modal interchange color.';
+    return '$chord 增添了可能的调式互换色彩。';
   }
 
   @override
-  String get chordAnalyzerSummaryAmbiguous =>
-      'Some details remain ambiguous, so this reading stays intentionally conservative.';
+  String get chordAnalyzerSummaryAmbiguous => '仍有一些细节存在歧义，因此这份解读会刻意保持保守。';
 
   @override
-  String get chordAnalyzerExamplesTitle => 'Examples';
+  String get chordAnalyzerExamplesTitle => '示例';
 
   @override
-  String get chordAnalyzerConfidenceLabel => 'Confidence';
+  String get chordAnalyzerConfidenceLabel => '置信度';
 
   @override
-  String get chordAnalyzerAmbiguityLabel => 'Ambiguity';
+  String get chordAnalyzerAmbiguityLabel => '歧义度';
 
   @override
-  String get chordAnalyzerWhyThisReading => 'Why this reading';
+  String get chordAnalyzerWhyThisReading => '这样解读的原因';
 
   @override
-  String get chordAnalyzerCompetingReadings => 'Also plausible';
+  String get chordAnalyzerCompetingReadings => '其他也可能';
 
   @override
   String chordAnalyzerIgnoredModifiersWarning(Object details) {
-    return 'Ignored modifiers: $details';
+    return '已忽略的修饰符: $details';
   }
 
   @override
   String chordAnalyzerParserDiagnosticWarning(Object details) {
-    return 'Input warning: $details';
+    return '输入警告: $details';
   }
 
   @override
   String get chordAnalyzerDiagnosticUnbalancedParentheses =>
-      'Unbalanced parentheses left part of the symbol uncertain.';
+      '括号不平衡，导致部分符号无法确定。';
 
   @override
   String get chordAnalyzerDiagnosticUnexpectedCloseParenthesis =>
-      'An unexpected closing parenthesis was ignored.';
+      '已忽略意外出现的右括号。';
 
   @override
   String chordAnalyzerEvidenceExtensionColor(Object extension) {
-    return 'Explicit $extension color strengthens this reading.';
+    return '明确写出的 $extension 色彩加强了这种解读。';
   }
 
   @override
   String get chordAnalyzerEvidenceAlteredDominantColor =>
-      'Altered dominant color supports a dominant function.';
+      'altered dominant 的色彩支持属功能解读。';
 
   @override
   String chordAnalyzerEvidenceSlashBass(Object bass) {
-    return 'Slash bass $bass keeps the bass line or inversion meaningful.';
+    return '斜线低音 $bass 让低音线或转位信息保持有效。';
   }
 
   @override
   String chordAnalyzerEvidenceResolution(Object target) {
-    return 'The next chord supports a resolution toward $target.';
+    return '下一个和弦支持向 $target 解决。';
   }
 
   @override
-  String get chordAnalyzerEvidenceBorrowedColor =>
-      'This color can be heard as borrowed from the parallel mode.';
+  String get chordAnalyzerEvidenceBorrowedColor => '这种色彩可以听成从平行调借来的。';
 
   @override
-  String get chordAnalyzerEvidenceSuspensionColor =>
-      'Suspension color softens the dominant pull without erasing it.';
+  String get chordAnalyzerEvidenceSuspensionColor => '挂留色彩会柔化属功能的拉力，但不会完全抹去它。';
+
+  @override
+  String get chordAnalyzerLowConfidenceTitle => '低置信度解读';
+
+  @override
+  String get chordAnalyzerLowConfidenceBody =>
+      '候选调性彼此非常接近，或部分标记只被部分恢复，因此请把它看作谨慎的第一版解读。';
+
+  @override
+  String get chordAnalyzerEmptyMeasure => '这一小节为空，但为了保留小节编号仍然显示。';
+
+  @override
+  String get chordAnalyzerNoAnalyzableChordsInMeasure => '这一小节没有恢复出可分析的和弦标记。';
+
+  @override
+  String get chordAnalyzerParseIssuesTitle => '解析问题';
+
+  @override
+  String chordAnalyzerParseIssueLine(Object token, Object reason) {
+    return '$token: $reason';
+  }
+
+  @override
+  String get chordAnalyzerParseIssueEmpty => '空标记。';
+
+  @override
+  String get chordAnalyzerParseIssueInvalidRoot => '无法识别根音。';
+
+  @override
+  String chordAnalyzerParseIssueUnknownRoot(Object root) {
+    return '$root 不是受支持的根音写法。';
+  }
+
+  @override
+  String chordAnalyzerParseIssueInvalidBass(Object bass) {
+    return '斜线低音 $bass 不是受支持的写法。';
+  }
+
+  @override
+  String chordAnalyzerParseIssueUnsupportedSuffix(Object suffix) {
+    return '不支持的后缀或修饰符: $suffix';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -1332,181 +1362,172 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
       'Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.';
 
   @override
-  String get mainMenuAnalyzerTitle => 'Chord Analyzer';
-
-  @override
-  String get mainMenuAnalyzerDescription =>
-      'Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.';
-
-  @override
   String get openGenerator => 'Open Generator';
 
   @override
-  String get openAnalyzer => 'Open Analyzer';
+  String get openAnalyzer => '打开分析器';
 
   @override
-  String get chordAnalyzerTitle => 'Chord Analyzer';
+  String get mainMenuAnalyzerTitle => '和弦分析器';
 
   @override
-  String get chordAnalyzerSubtitle =>
-      'Paste a progression and get a conservative harmonic reading.';
+  String get mainMenuAnalyzerDescription => '分析输入的和弦进行，给出可能的调性、罗马数字和和声功能。';
 
   @override
-  String get chordAnalyzerInputLabel => 'Chord progression';
+  String get chordAnalyzerTitle => '和弦分析器';
+
+  @override
+  String get chordAnalyzerSubtitle => '粘贴一段和弦进行，获得保守的和声解读。';
+
+  @override
+  String get chordAnalyzerInputLabel => '和弦进行';
 
   @override
   String get chordAnalyzerInputHint => 'Dm7 G7 Cmaj7';
 
   @override
   String get chordAnalyzerInputHelper =>
-      'Spaces, |, and commas are accepted. Slash chords and simple alterations are supported. Touch devices can use the chord pad or switch to ABC input.';
+      '在括号外可以用空格、| 或逗号分隔和弦。括号内的逗号会保留在同一个和弦里作为张力音分隔符。支持小写根音、斜线低音、sus/alt/add 形式，以及 C7(b9, #11) 这类括号张力音。触摸设备可以使用和弦面板或切换到 ABC 输入。';
 
   @override
-  String get chordAnalyzerAnalyze => 'Analyze';
+  String get chordAnalyzerAnalyze => '分析';
 
   @override
-  String get chordAnalyzerKeyboardTitle => 'Chord Pad';
+  String get chordAnalyzerKeyboardTitle => '和弦面板';
 
   @override
   String get chordAnalyzerKeyboardTouchHint =>
-      'Tap tokens to build a progression. ABC input keeps the system keyboard available when you need free typing.';
+      '点按符号来拼出进行。需要自由输入时，可以切换到 ABC 输入并继续使用系统键盘。';
 
   @override
-  String get chordAnalyzerKeyboardDesktopHint =>
-      'Type, paste, or tap tokens to insert them at the cursor.';
+  String get chordAnalyzerKeyboardDesktopHint => '可以直接输入、粘贴，或点按符号插入到光标位置。';
 
   @override
-  String get chordAnalyzerChordPad => 'Pad';
+  String get chordAnalyzerChordPad => '面板';
 
   @override
   String get chordAnalyzerRawInput => 'ABC';
 
   @override
-  String get chordAnalyzerPaste => 'Paste';
+  String get chordAnalyzerPaste => '粘贴';
 
   @override
-  String get chordAnalyzerClear => 'Clear';
+  String get chordAnalyzerClear => '清除';
 
   @override
-  String get chordAnalyzerBackspace => 'Backspace';
+  String get chordAnalyzerBackspace => '退格';
 
   @override
-  String get chordAnalyzerSpace => 'Space';
+  String get chordAnalyzerSpace => '空格';
 
   @override
-  String get chordAnalyzerAnalyzing => 'Analyzing progression...';
+  String get chordAnalyzerAnalyzing => '正在分析进行...';
 
   @override
-  String get chordAnalyzerInitialTitle => 'Start with a progression';
+  String get chordAnalyzerInitialTitle => '先输入一段进行';
 
   @override
   String get chordAnalyzerInitialBody =>
-      'Enter a progression such as Dm7 G7 Cmaj7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, and a short summary.';
+      '输入 Dm7 G7 Cmaj7 或 Cmaj7 | Am7 D7 | Gmaj7 这样的进行，即可查看可能的调性、罗马数字和简短摘要。';
 
   @override
-  String get chordAnalyzerDetectedKeys => 'Detected Keys';
+  String get chordAnalyzerDetectedKeys => '候选调性';
 
   @override
-  String get chordAnalyzerPrimaryReading => 'Primary reading';
+  String get chordAnalyzerPrimaryReading => '主要解读';
 
   @override
-  String get chordAnalyzerAlternativeReading => 'Alternative reading';
+  String get chordAnalyzerAlternativeReading => '备选解读';
 
   @override
-  String get chordAnalyzerChordAnalysis => 'Chord-by-chord analysis';
+  String get chordAnalyzerChordAnalysis => '逐和弦分析';
 
   @override
   String chordAnalyzerMeasureLabel(Object index) {
-    return 'Measure $index';
+    return '第 $index 小节';
   }
 
   @override
-  String get chordAnalyzerProgressionSummary => 'Progression summary';
+  String get chordAnalyzerProgressionSummary => '进行摘要';
 
   @override
-  String get chordAnalyzerWarnings => 'Warnings and ambiguities';
+  String get chordAnalyzerWarnings => '警告与歧义';
 
   @override
-  String get chordAnalyzerNoInputError =>
-      'Enter a chord progression to analyze.';
+  String get chordAnalyzerNoInputError => '请输入要分析的和弦进行。';
 
   @override
-  String get chordAnalyzerNoRecognizedChordsError =>
-      'No recognizable chords were found in the progression.';
+  String get chordAnalyzerNoRecognizedChordsError => '没有找到可识别的和弦标记。';
 
   @override
   String chordAnalyzerPartialParseWarning(Object tokens) {
-    return 'Some symbols were skipped: $tokens';
+    return '有些符号被跳过了: $tokens';
   }
 
   @override
   String chordAnalyzerKeyAmbiguityWarning(Object primary, Object alternative) {
-    return 'The key center is still somewhat ambiguous between $primary and $alternative.';
+    return '调性中心在 $primary 和 $alternative 之间仍有一些歧义。';
   }
 
   @override
-  String get chordAnalyzerUnresolvedWarning =>
-      'Some chords remain ambiguous under this MVP reading.';
+  String get chordAnalyzerUnresolvedWarning => '仍有一些和弦比较模糊，因此这份解读会刻意保持保守。';
 
   @override
-  String get chordAnalyzerFunctionTonic => 'Tonic';
+  String get chordAnalyzerFunctionTonic => '主功能';
 
   @override
-  String get chordAnalyzerFunctionPredominant => 'Predominant';
+  String get chordAnalyzerFunctionPredominant => '前属功能';
 
   @override
-  String get chordAnalyzerFunctionDominant => 'Dominant';
+  String get chordAnalyzerFunctionDominant => '属功能';
 
   @override
-  String get chordAnalyzerFunctionOther => 'Other';
+  String get chordAnalyzerFunctionOther => '其他';
 
   @override
   String chordAnalyzerRemarkSecondaryDominant(Object target) {
-    return 'Possible secondary dominant targeting $target.';
+    return '可能是指向 $target 的副属和弦。';
   }
 
   @override
   String chordAnalyzerRemarkTritoneSub(Object target) {
-    return 'Possible tritone substitute targeting $target.';
+    return '可能是指向 $target 的三全音替代。';
   }
 
   @override
-  String get chordAnalyzerRemarkModalInterchange =>
-      'Possible modal interchange from the parallel minor.';
+  String get chordAnalyzerRemarkModalInterchange => '可能是从平行小调借来的调式互换。';
 
   @override
-  String get chordAnalyzerRemarkAmbiguous =>
-      'This chord stays ambiguous in the current reading.';
+  String get chordAnalyzerRemarkAmbiguous => '这个和弦在当前解读下仍然有歧义。';
 
   @override
-  String get chordAnalyzerRemarkUnresolved =>
-      'This chord falls outside the current MVP heuristics.';
+  String get chordAnalyzerRemarkUnresolved => '仅凭当前保守规则还无法明确判断这个和弦。';
 
   @override
-  String get chordAnalyzerTagIiVI => 'ii-V-I cadence';
+  String get chordAnalyzerTagIiVI => 'ii-V-I 终止';
 
   @override
-  String get chordAnalyzerTagTurnaround => 'Turnaround';
+  String get chordAnalyzerTagTurnaround => '回转';
 
   @override
-  String get chordAnalyzerTagDominantResolution => 'Dominant resolution';
+  String get chordAnalyzerTagDominantResolution => '属功能解决';
 
   @override
-  String get chordAnalyzerTagPlagalColor => 'Plagal/modal color';
+  String get chordAnalyzerTagPlagalColor => '变格/调式色彩';
 
   @override
   String chordAnalyzerSummaryCenter(Object key) {
-    return 'This progression most likely centers on $key.';
+    return '这段进行最可能围绕 $key 展开。';
   }
 
   @override
   String chordAnalyzerSummaryAlternative(Object key) {
-    return 'An alternative reading is $key.';
+    return '另一种可能的解读是 $key。';
   }
 
   @override
   String chordAnalyzerSummaryTag(Object tag) {
-    return 'It suggests a $tag.';
+    return '它显示出 $tag 的特征。';
   }
 
   @override
@@ -1517,85 +1538,124 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
     Object throughFunction,
     Object target,
   ) {
-    return '$from and $through behave like $fromFunction and $throughFunction chords leading into $target.';
+    return '$from 和 $through 可以理解为通向 $target 的 $fromFunction 与 $throughFunction 和声功能。';
   }
 
   @override
   String chordAnalyzerSummarySecondaryDominant(Object chord, Object target) {
-    return '$chord can be heard as a possible secondary dominant pointing toward $target.';
+    return '$chord 可以听成是指向 $target 的副属和弦。';
   }
 
   @override
   String chordAnalyzerSummaryTritoneSub(Object chord, Object target) {
-    return '$chord can be heard as a possible tritone substitute pointing toward $target.';
+    return '$chord 可以听成是指向 $target 的三全音替代。';
   }
 
   @override
   String chordAnalyzerSummaryModalInterchange(Object chord) {
-    return '$chord adds a possible modal interchange color.';
+    return '$chord 增添了可能的调式互换色彩。';
   }
 
   @override
-  String get chordAnalyzerSummaryAmbiguous =>
-      'Some details remain ambiguous, so this reading stays intentionally conservative.';
+  String get chordAnalyzerSummaryAmbiguous => '仍有一些细节存在歧义，因此这份解读会刻意保持保守。';
 
   @override
-  String get chordAnalyzerExamplesTitle => 'Examples';
+  String get chordAnalyzerExamplesTitle => '示例';
 
   @override
-  String get chordAnalyzerConfidenceLabel => 'Confidence';
+  String get chordAnalyzerConfidenceLabel => '置信度';
 
   @override
-  String get chordAnalyzerAmbiguityLabel => 'Ambiguity';
+  String get chordAnalyzerAmbiguityLabel => '歧义度';
 
   @override
-  String get chordAnalyzerWhyThisReading => 'Why this reading';
+  String get chordAnalyzerWhyThisReading => '这样解读的原因';
 
   @override
-  String get chordAnalyzerCompetingReadings => 'Also plausible';
+  String get chordAnalyzerCompetingReadings => '其他也可能';
 
   @override
   String chordAnalyzerIgnoredModifiersWarning(Object details) {
-    return 'Ignored modifiers: $details';
+    return '已忽略的修饰符: $details';
   }
 
   @override
   String chordAnalyzerParserDiagnosticWarning(Object details) {
-    return 'Input warning: $details';
+    return '输入警告: $details';
   }
 
   @override
   String get chordAnalyzerDiagnosticUnbalancedParentheses =>
-      'Unbalanced parentheses left part of the symbol uncertain.';
+      '括号不平衡，导致部分符号无法确定。';
 
   @override
   String get chordAnalyzerDiagnosticUnexpectedCloseParenthesis =>
-      'An unexpected closing parenthesis was ignored.';
+      '已忽略意外出现的右括号。';
 
   @override
   String chordAnalyzerEvidenceExtensionColor(Object extension) {
-    return 'Explicit $extension color strengthens this reading.';
+    return '明确写出的 $extension 色彩加强了这种解读。';
   }
 
   @override
   String get chordAnalyzerEvidenceAlteredDominantColor =>
-      'Altered dominant color supports a dominant function.';
+      'altered dominant 的色彩支持属功能解读。';
 
   @override
   String chordAnalyzerEvidenceSlashBass(Object bass) {
-    return 'Slash bass $bass keeps the bass line or inversion meaningful.';
+    return '斜线低音 $bass 让低音线或转位信息保持有效。';
   }
 
   @override
   String chordAnalyzerEvidenceResolution(Object target) {
-    return 'The next chord supports a resolution toward $target.';
+    return '下一个和弦支持向 $target 解决。';
   }
 
   @override
-  String get chordAnalyzerEvidenceBorrowedColor =>
-      'This color can be heard as borrowed from the parallel mode.';
+  String get chordAnalyzerEvidenceBorrowedColor => '这种色彩可以听成从平行调借来的。';
 
   @override
-  String get chordAnalyzerEvidenceSuspensionColor =>
-      'Suspension color softens the dominant pull without erasing it.';
+  String get chordAnalyzerEvidenceSuspensionColor => '挂留色彩会柔化属功能的拉力，但不会完全抹去它。';
+
+  @override
+  String get chordAnalyzerLowConfidenceTitle => '低置信度解读';
+
+  @override
+  String get chordAnalyzerLowConfidenceBody =>
+      '候选调性彼此非常接近，或部分标记只被部分恢复，因此请把它看作谨慎的第一版解读。';
+
+  @override
+  String get chordAnalyzerEmptyMeasure => '这一小节为空，但为了保留小节编号仍然显示。';
+
+  @override
+  String get chordAnalyzerNoAnalyzableChordsInMeasure => '这一小节没有恢复出可分析的和弦标记。';
+
+  @override
+  String get chordAnalyzerParseIssuesTitle => '解析问题';
+
+  @override
+  String chordAnalyzerParseIssueLine(Object token, Object reason) {
+    return '$token: $reason';
+  }
+
+  @override
+  String get chordAnalyzerParseIssueEmpty => '空标记。';
+
+  @override
+  String get chordAnalyzerParseIssueInvalidRoot => '无法识别根音。';
+
+  @override
+  String chordAnalyzerParseIssueUnknownRoot(Object root) {
+    return '$root 不是受支持的根音写法。';
+  }
+
+  @override
+  String chordAnalyzerParseIssueInvalidBass(Object bass) {
+    return '斜线低音 $bass 不是受支持的写法。';
+  }
+
+  @override
+  String chordAnalyzerParseIssueUnsupportedSuffix(Object suffix) {
+    return '不支持的后缀或修饰符: $suffix';
+  }
 }

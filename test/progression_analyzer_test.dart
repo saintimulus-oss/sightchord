@@ -14,7 +14,7 @@ void main() {
     expect(analysis.chordAnalyses.map((chord) => chord.romanNumeral).toList(), [
       'IIm7',
       'V7',
-      'IM7',
+      'Imaj7',
     ]);
     expect(
       analysis.chordAnalyses.map((chord) => chord.harmonicFunction).toList(),
@@ -36,7 +36,7 @@ void main() {
     expect(analysis.chordAnalyses.map((chord) => chord.romanNumeral).toList(), [
       'IIm7',
       'V7',
-      'IM7',
+      'Imaj7',
     ]);
   });
 
@@ -90,7 +90,7 @@ void main() {
     final firstChord = analysis.chordAnalyses.first;
 
     expect(analysis.primaryKey.keyCenter.tonicName, 'C');
-    expect(firstChord.romanNumeral, 'subV7/IM7');
+    expect(firstChord.romanNumeral, 'subV7/I');
     expect(
       firstChord.remarks.any(
         (remark) =>
@@ -128,4 +128,133 @@ void main() {
       isTrue,
     );
   });
+
+  test('keeps roman display aligned with input quality extensions', () {
+    final analysis = analyzer.analyze('Dm9 G13 Cmaj9');
+
+    expect(analysis.primaryKey.keyCenter.tonicName, 'C');
+    expect(analysis.chordAnalyses.map((chord) => chord.romanNumeral).toList(), [
+      'IIm9',
+      'V13',
+      'Imaj9',
+    ]);
+  });
+
+  test('reads plain major triads as tonic, subdominant, and dominant', () {
+    final analysis = analyzer.analyze('C F G C');
+
+    expect(analysis.primaryKey.keyCenter.tonicName, 'C');
+    expect(analysis.primaryKey.keyCenter.mode, KeyMode.major);
+    expect(analysis.chordAnalyses.map((chord) => chord.romanNumeral).toList(), [
+      'I',
+      'IV',
+      'V',
+      'I',
+    ]);
+    expect(
+      analysis.chordAnalyses.map((chord) => chord.harmonicFunction).toList(),
+      [
+        ProgressionHarmonicFunction.tonic,
+        ProgressionHarmonicFunction.predominant,
+        ProgressionHarmonicFunction.dominant,
+        ProgressionHarmonicFunction.tonic,
+      ],
+    );
+  });
+
+  test('reads plain minor triads conservatively in minor', () {
+    final analysis = analyzer.analyze('Am Dm E Am');
+
+    expect(analysis.primaryKey.keyCenter.tonicName, 'A');
+    expect(analysis.primaryKey.keyCenter.mode, KeyMode.minor);
+    expect(analysis.chordAnalyses.map((chord) => chord.romanNumeral).toList(), [
+      'Im',
+      'IVm',
+      'V',
+      'Im',
+    ]);
+  });
+
+  test('uses mode-aware secondary dominant targets in minor', () {
+    final analysis = analyzer.analyze('B7 Em7b5 A7 Dm');
+
+    expect(analysis.primaryKey.keyCenter.tonicName, 'D');
+    expect(analysis.primaryKey.keyCenter.mode, KeyMode.minor);
+    expect(analysis.chordAnalyses.first.romanNumeral, 'V7/II');
+    expect(
+      analysis.chordAnalyses.first.remarks.any(
+        (remark) => remark.targetRomanNumeral == 'IIm7b5',
+      ),
+      isTrue,
+    );
+  });
+
+  test('preserves explicit empty measures in grouped analysis', () {
+    final analysis = analyzer.analyze('C | | F | G');
+
+    expect(analysis.groupedMeasures, hasLength(4));
+    expect(analysis.groupedMeasures[1].isEmpty, isTrue);
+    expect(analysis.groupedMeasures[1].chordAnalyses, isEmpty);
+  });
+
+  test('supports lowercase roots and slash-aware tokenization', () {
+    final analysis = analyzer.analyze('cmaj7 am7 d7 gmaj7');
+
+    expect(analysis.parseResult.issues, isEmpty);
+    expect(analysis.primaryKey.keyCenter.tonicName, 'G');
+    expect(analysis.chordAnalyses.last.romanNumeral, 'Imaj7');
+  });
+
+  test(
+    'keeps altered tensions on dominant readings without splitting tokens',
+    () {
+      final analysis = analyzer.analyze('C7(b9, #11) Fmaj7');
+
+      expect(analysis.parseResult.issues, isEmpty);
+      expect(analysis.primaryKey.keyCenter.tonicName, 'F');
+      expect(analysis.chordAnalyses.first.romanNumeral, 'V7(b9,#11)');
+      expect(
+        analysis.chordAnalyses.first.evidence.any(
+          (evidence) =>
+              evidence.kind == ProgressionEvidenceKind.alteredDominantColor,
+        ),
+        isTrue,
+      );
+    },
+  );
+
+  test('supports minor ii-V-i with tonic minor-major seventh display', () {
+    final analysis = analyzer.analyze('Dm7b5 G7 CmMaj7');
+
+    expect(analysis.primaryKey.keyCenter.tonicName, 'C');
+    expect(analysis.primaryKey.keyCenter.mode, KeyMode.minor);
+    expect(analysis.chordAnalyses.map((chord) => chord.romanNumeral).toList(), [
+      'IIm7b5',
+      'V7',
+      'ImMaj7',
+    ]);
+  });
+  test('does not label non-dominant chords as secondary dominants', () {
+    final analysis = analyzer.analyze('D G C');
+    final first = analysis.chordAnalyses.first;
+
+    expect(first.romanNumeral, 'II');
+    expect(
+      first.remarks.any(
+        (remark) =>
+            remark.kind == ProgressionRemarkKind.possibleSecondaryDominant,
+      ),
+      isFalse,
+    );
+  });
+
+  test('surfaces grouped measure parse issues with detailed token errors', () {
+    final analysis = analyzer.analyze('C/H | G7');
+    final firstMeasure = analysis.groupedMeasures.first;
+
+    expect(firstMeasure.parseIssues, hasLength(1));
+    expect(firstMeasure.parseIssues.single.error, 'invalid-bass');
+    expect(firstMeasure.parseIssues.single.errorDetail, 'H');
+  });
 }
+

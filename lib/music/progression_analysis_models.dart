@@ -28,7 +28,7 @@ class ParsedChord {
     required this.root,
     required this.rootSemitone,
     required this.displayQuality,
-    required this.analysisQuality,
+    required this.analysisFamily,
     required this.measureIndex,
     required this.positionInMeasure,
     this.suffix = '',
@@ -48,7 +48,7 @@ class ParsedChord {
   final String root;
   final int rootSemitone;
   final ChordQuality displayQuality;
-  final ChordQuality analysisQuality;
+  final ChordFamily analysisFamily;
   final int measureIndex;
   final int positionInMeasure;
   final String suffix;
@@ -68,18 +68,26 @@ class ParsedChord {
 
   bool get hasSlashBass => bass != null;
 
-  bool get isDominantFamily => analysisQuality == ChordQuality.dominant7;
+  bool get isDominantFamily => analysisFamily == ChordFamily.dominant;
+
+  bool get isDominantLike =>
+      analysisFamily == ChordFamily.dominant ||
+      (analysisFamily == ChordFamily.augmented && extension == 7);
 
   bool get hasExtension => extension != null;
 
   bool get hasSuspension => suspensions.isNotEmpty;
 
-  bool get hasParserWarnings => ignoredTokens.isNotEmpty || diagnostics.isNotEmpty;
+  bool get hasParserWarnings =>
+      ignoredTokens.isNotEmpty || diagnostics.isNotEmpty;
 
   bool get hasAlteredColor =>
-      displayQuality == ChordQuality.dominant7Alt ||
-      alterations.isNotEmpty ||
-      tensions.any((tension) => tension.contains('#') || tension.contains('b'));
+      isDominantLike &&
+      (displayQuality == ChordQuality.dominant7Alt ||
+          alterations.isNotEmpty ||
+          tensions.any(
+            (tension) => tension.contains('#') || tension.contains('b'),
+          ));
 }
 
 class ParsedChordToken {
@@ -90,6 +98,7 @@ class ParsedChordToken {
     required this.positionInMeasure,
     this.chord,
     this.error,
+    this.errorDetail,
   });
 
   final int index;
@@ -98,6 +107,7 @@ class ParsedChordToken {
   final int positionInMeasure;
   final ParsedChord? chord;
   final String? error;
+  final String? errorDetail;
 
   bool get isValid => chord != null;
 }
@@ -276,11 +286,20 @@ class ProgressionAnalysis {
 class AnalyzedMeasure {
   const AnalyzedMeasure({
     required this.measureIndex,
+    required this.tokens,
     required this.chordAnalyses,
   });
 
   final int measureIndex;
+  final List<ParsedChordToken> tokens;
   final List<AnalyzedChord> chordAnalyses;
+
+  List<ParsedChordToken> get parseIssues => [
+    for (final token in tokens)
+      if (!token.isValid) token,
+  ];
+
+  bool get isEmpty => tokens.isEmpty;
 }
 
 class ProgressionAnalysisException implements Exception {

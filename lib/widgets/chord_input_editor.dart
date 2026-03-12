@@ -52,10 +52,22 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
   void initState() {
     super.initState();
     _focusNode.addListener(_handleFocusChanged);
+    widget.controller.addListener(_handleControllerChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant ChordInputEditor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller == widget.controller) {
+      return;
+    }
+    oldWidget.controller.removeListener(_handleControllerChanged);
+    widget.controller.addListener(_handleControllerChanged);
   }
 
   @override
   void dispose() {
+    widget.controller.removeListener(_handleControllerChanged);
     _focusNode
       ..removeListener(_handleFocusChanged)
       ..dispose();
@@ -69,6 +81,13 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
     setState(() {
       _showKeyboard = _focusNode.hasFocus;
     });
+  }
+
+  void _handleControllerChanged() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
   }
 
   void _ensureValidSelection() {
@@ -161,6 +180,10 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
         }
         return;
       case _InsertKind.separator:
+        if (spec.id == 'comma' && context.inTension) {
+          _replaceSelection(', ');
+          return;
+        }
         _replaceSelection(spec.text);
         return;
     }
@@ -615,7 +638,7 @@ class _EditorTokenContext {
   final bool inTension;
 
   static final RegExp _separatorPattern = RegExp(r'[\s,|]');
-  static final RegExp _rootPattern = RegExp(r'^[A-G](?:#|b)?');
+  static final RegExp _rootPattern = RegExp(r'^[A-Ga-g](?:#|b)?');
 
   static _EditorTokenContext fromValue(TextEditingValue value) {
     final selection = value.selection.isValid
@@ -650,7 +673,7 @@ class _EditorTokenContext {
         : token.substring(0, math.min(localCaret, rootLength));
     final allowsAccidental =
         accidentalFragment.length == 1 &&
-        'ABCDEFG'.contains(accidentalFragment) &&
+        'ABCDEFG'.contains(accidentalFragment.toUpperCase()) &&
         !accidentalFragment.contains('#') &&
         !accidentalFragment.contains('b');
 
@@ -671,17 +694,51 @@ class _EditorTokenContext {
   }
 
   static int _tokenStart(String text, int caret) {
-    for (var index = math.min(caret, text.length) - 1; index >= 0; index -= 1) {
-      if (_separatorPattern.hasMatch(text[index])) {
-        return index + 1;
+    var start = 0;
+    var parenthesisDepth = 0;
+    for (var index = 0; index < math.min(caret, text.length); index += 1) {
+      final character = text[index];
+      if (character == '(') {
+        parenthesisDepth += 1;
+        continue;
+      }
+      if (character == ')') {
+        parenthesisDepth = math.max(0, parenthesisDepth - 1);
+        continue;
+      }
+      if (parenthesisDepth == 0 && _separatorPattern.hasMatch(character)) {
+        start = index + 1;
       }
     }
-    return 0;
+    return start;
+  }
+
+  static int _parenthesisDepthAt(String text, int offset) {
+    var depth = 0;
+    for (var index = 0; index < math.min(offset, text.length); index += 1) {
+      final character = text[index];
+      if (character == '(') {
+        depth += 1;
+      } else if (character == ')') {
+        depth = math.max(0, depth - 1);
+      }
+    }
+    return depth;
   }
 
   static int _tokenEnd(String text, int caret) {
+    var parenthesisDepth = _parenthesisDepthAt(text, caret);
     for (var index = math.max(0, caret); index < text.length; index += 1) {
-      if (_separatorPattern.hasMatch(text[index])) {
+      final character = text[index];
+      if (character == '(') {
+        parenthesisDepth += 1;
+        continue;
+      }
+      if (character == ')') {
+        parenthesisDepth = math.max(0, parenthesisDepth - 1);
+        continue;
+      }
+      if (parenthesisDepth == 0 && _separatorPattern.hasMatch(character)) {
         return index;
       }
     }

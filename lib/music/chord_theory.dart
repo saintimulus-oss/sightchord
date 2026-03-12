@@ -26,6 +26,15 @@ enum ChordQuality {
   dominant7sus4,
 }
 
+enum ChordFamily {
+  major,
+  minor,
+  dominant,
+  halfDiminished,
+  diminished,
+  augmented,
+}
+
 enum ChordSymbolStyle { compact, majText, deltaJazz }
 
 enum HarmonicFunction { tonic, predominant, dominant, free }
@@ -1058,8 +1067,92 @@ class MusicTheory {
   static RomanSpec specFor(RomanNumeralId romanNumeralId) =>
       romanSpecs[romanNumeralId]!;
 
+  static ChordFamily familyForQuality(ChordQuality quality) {
+    return switch (quality) {
+      ChordQuality.majorTriad ||
+      ChordQuality.major7 ||
+      ChordQuality.six ||
+      ChordQuality.major69 => ChordFamily.major,
+      ChordQuality.minorTriad ||
+      ChordQuality.minor7 ||
+      ChordQuality.minorMajor7 ||
+      ChordQuality.minor6 => ChordFamily.minor,
+      ChordQuality.dominant7 ||
+      ChordQuality.dominant7Alt ||
+      ChordQuality.dominant7Sharp11 ||
+      ChordQuality.dominant13sus4 ||
+      ChordQuality.dominant7sus4 => ChordFamily.dominant,
+      ChordQuality.halfDiminished7 => ChordFamily.halfDiminished,
+      ChordQuality.diminishedTriad ||
+      ChordQuality.diminished7 => ChordFamily.diminished,
+      ChordQuality.augmentedTriad => ChordFamily.augmented,
+    };
+  }
+
   static String romanTokenOf(RomanNumeralId romanNumeralId) =>
       specFor(romanNumeralId).token;
+
+  static String romanDegreeTokenOf(RomanNumeralId romanNumeralId) {
+    return switch (romanNumeralId) {
+      RomanNumeralId.iMaj7 ||
+      RomanNumeralId.iMaj69 ||
+      RomanNumeralId.iMinMaj7 ||
+      RomanNumeralId.iMin7 ||
+      RomanNumeralId.iMin6 => 'I',
+      RomanNumeralId.iiMin7 || RomanNumeralId.iiHalfDiminishedMinor => 'II',
+      RomanNumeralId.iiiMin7 => 'III',
+      RomanNumeralId.ivMaj7 ||
+      RomanNumeralId.ivMin7Minor ||
+      RomanNumeralId.borrowedIvMin7 => 'IV',
+      RomanNumeralId.vDom7 => 'V',
+      RomanNumeralId.viMin7 => 'VI',
+      RomanNumeralId.viiHalfDiminished7 => 'VII',
+      RomanNumeralId.sharpIDim7 => '#I',
+      RomanNumeralId.flatVIIDom7Minor ||
+      RomanNumeralId.borrowedFlatVII7 => 'bVII',
+      RomanNumeralId.flatVIMaj7Minor ||
+      RomanNumeralId.borrowedFlatVIMaj7 => 'bVI',
+      RomanNumeralId.flatIIIMaj7Minor ||
+      RomanNumeralId.borrowedFlatIIIMaj7 => 'bIII',
+      RomanNumeralId.borrowedIiHalfDiminished7 => 'II',
+      RomanNumeralId.borrowedFlatIIMaj7 => 'bII',
+      RomanNumeralId.relatedIiOfIII => 'II/III',
+      RomanNumeralId.relatedIiOfIV => 'II/IV',
+      RomanNumeralId.secondaryOfII => 'V/II',
+      RomanNumeralId.secondaryOfIII => 'V/III',
+      RomanNumeralId.secondaryOfIV => 'V/IV',
+      RomanNumeralId.secondaryOfV => 'V/V',
+      RomanNumeralId.secondaryOfVI => 'V/VI',
+      RomanNumeralId.substituteOfII => 'subV/II',
+      RomanNumeralId.substituteOfIII => 'subV/III',
+      RomanNumeralId.substituteOfIV => 'subV/IV',
+      RomanNumeralId.substituteOfV => 'subV/V',
+      RomanNumeralId.substituteOfVI => 'subV/VI',
+    };
+  }
+
+  static RomanNumeralId? modeAwareResolutionTarget(
+    RomanNumeralId romanNumeralId,
+    KeyMode mode,
+  ) {
+    final defaultTarget = specFor(romanNumeralId).resolutionTargetId;
+    if (mode == KeyMode.major) {
+      return defaultTarget;
+    }
+    return switch (romanNumeralId) {
+      RomanNumeralId.secondaryOfII ||
+      RomanNumeralId.substituteOfII => RomanNumeralId.iiHalfDiminishedMinor,
+      RomanNumeralId.secondaryOfIII ||
+      RomanNumeralId.substituteOfIII => RomanNumeralId.flatIIIMaj7Minor,
+      RomanNumeralId.secondaryOfIV ||
+      RomanNumeralId.substituteOfIV => RomanNumeralId.ivMin7Minor,
+      RomanNumeralId.secondaryOfV ||
+      RomanNumeralId.substituteOfV => RomanNumeralId.vDom7,
+      RomanNumeralId.secondaryOfVI ||
+      RomanNumeralId.substituteOfVI => RomanNumeralId.flatVIMaj7Minor,
+      _ => defaultTarget,
+    };
+  }
 
   static List<RomanNumeralId> diatonicRomansForMode(KeyMode mode) {
     return mode == KeyMode.major ? majorDiatonicRomans : minorDiatonicRomans;
@@ -1137,7 +1230,7 @@ class MusicTheory {
       );
     }
 
-    final targetId = spec.resolutionTargetId;
+    final targetId = modeAwareResolutionTarget(romanNumeralId, keyCenter.mode);
     if (targetId == null) {
       return displayRootForKey(keyCenter.tonicName);
     }

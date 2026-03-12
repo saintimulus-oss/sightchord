@@ -54,23 +54,33 @@ void main() {
       result.validChords.first.displayQuality,
       ChordQuality.dominant7Sharp11,
     );
-    expect(result.validChords.first.analysisQuality, ChordQuality.dominant7);
+    expect(result.validChords.first.analysisFamily, ChordFamily.dominant);
     expect(result.validChords.first.tensions, ['#11']);
     expect(result.validChords.last.displayQuality, ChordQuality.dominant7Alt);
   });
 
-  test('collapses empty measures while preserving measure metadata', () {
+  test('preserves empty measures while preserving measure metadata', () {
     final result = parser.parse('| Dm7 G7 || Cmaj7 |');
 
-    expect(result.measures, hasLength(2));
+    expect(result.measures, hasLength(5));
     expect(result.validChords.map((chord) => chord.measureIndex).toList(), [
-      0,
-      0,
       1,
+      1,
+      3,
     ]);
     expect(
       result.validChords.map((chord) => chord.positionInMeasure).toList(),
       [0, 1, 0],
     );
+  });
+
+  test('keeps explicit empty measures in their original positions', () {
+    final result = parser.parse('C | | F | G');
+
+    expect(result.measures, hasLength(4));
+    expect(result.measures[0].validChords.single.sourceSymbol, 'C');
+    expect(result.measures[1].tokens, isEmpty);
+    expect(result.measures[2].validChords.single.sourceSymbol, 'F');
+    expect(result.measures[3].validChords.single.sourceSymbol, 'G');
   });
 }

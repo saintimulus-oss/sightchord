@@ -517,23 +517,23 @@ class AppLocalizationsKo extends AppLocalizations {
       '키 인식 랜덤 모드, 스마트 진행, 보이싱 제안으로 연습용 코드를 생성합니다.';
 
   @override
-  String get mainMenuAnalyzerTitle => '코드 분석기';
-
-  @override
-  String get mainMenuAnalyzerDescription =>
-      '작성한 진행을 분석해 유력한 키 센터, 로마 숫자, 화성 기능을 보여줍니다.';
-
-  @override
   String get openGenerator => '생성기 열기';
 
   @override
   String get openAnalyzer => '분석기 열기';
 
   @override
+  String get mainMenuAnalyzerTitle => '코드 분석기';
+
+  @override
+  String get mainMenuAnalyzerDescription =>
+      '입력한 코드 진행에서 가능한 조성, 로마 숫자, 화성 기능을 보수적으로 분석합니다.';
+
+  @override
   String get chordAnalyzerTitle => '코드 분석기';
 
   @override
-  String get chordAnalyzerSubtitle => '진행을 붙여 넣으면 보수적인 화성 해석 결과를 보여줍니다.';
+  String get chordAnalyzerSubtitle => '진행을 붙여 넣으면 보수적인 화성 해석을 보여줍니다.';
 
   @override
   String get chordAnalyzerInputLabel => '코드 진행';
@@ -543,7 +543,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chordAnalyzerInputHelper =>
-      '공백, |, 쉼표를 사용할 수 있습니다. 슬래시 코드와 간단한 변형도 지원합니다. 터치 기기에서는 코드 패드를 쓰거나 ABC 입력으로 전환할 수 있습니다.';
+      '괄호 바깥에서는 공백, |, 쉼표로 코드를 구분할 수 있습니다. 괄호 안의 쉼표는 같은 코드의 텐션 구분자로 유지됩니다. 소문자 루트, 슬래시 베이스, sus/alt/add 표기와 C7(b9, #11) 같은 괄호형 텐션을 지원합니다. 터치 기기에서는 코드 패드나 ABC 입력을 사용할 수 있습니다.';
 
   @override
   String get chordAnalyzerAnalyze => '분석';
@@ -553,11 +553,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chordAnalyzerKeyboardTouchHint =>
-      '토큰을 눌러 진행을 구성하세요. 자유 입력이 필요할 때는 ABC 입력으로 전환하면 시스템 키보드를 계속 사용할 수 있습니다.';
+      '토큰을 눌러 진행을 조합하세요. 자유 입력이 필요할 때는 ABC 입력으로 전환하면 시스템 키보드를 계속 사용할 수 있습니다.';
 
   @override
   String get chordAnalyzerKeyboardDesktopHint =>
-      '입력하거나 붙여 넣거나 토큰을 눌러 커서 위치에 삽입하세요.';
+      '직접 입력하거나 붙여 넣고, 토큰을 눌러 커서 위치에 삽입할 수도 있습니다.';
 
   @override
   String get chordAnalyzerChordPad => '패드';
@@ -581,17 +581,17 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chordAnalyzerAnalyzing => '진행을 분석하는 중...';
 
   @override
-  String get chordAnalyzerInitialTitle => '진행부터 입력해 보세요';
+  String get chordAnalyzerInitialTitle => '진행을 입력해 보세요';
 
   @override
   String get chordAnalyzerInitialBody =>
-      'Dm7 G7 Cmaj7 또는 Cmaj7 | Am7 D7 | Gmaj7 같은 진행을 입력하면, 가능한 키와 로마 숫자, 짧은 요약을 볼 수 있습니다.';
+      'Dm7 G7 Cmaj7 또는 Cmaj7 | Am7 D7 | Gmaj7 같은 진행을 입력하면 가능한 조성, 로마 숫자, 짧은 요약을 볼 수 있습니다.';
 
   @override
-  String get chordAnalyzerDetectedKeys => '감지된 키';
+  String get chordAnalyzerDetectedKeys => '가능한 조성';
 
   @override
-  String get chordAnalyzerPrimaryReading => '기본 해석';
+  String get chordAnalyzerPrimaryReading => '주요 해석';
 
   @override
   String get chordAnalyzerAlternativeReading => '대안 해석';
@@ -608,14 +608,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chordAnalyzerProgressionSummary => '진행 요약';
 
   @override
-  String get chordAnalyzerWarnings => '경고 및 모호한 지점';
+  String get chordAnalyzerWarnings => '경고와 모호한 지점';
 
   @override
-  String get chordAnalyzerNoInputError => '분석할 코드 진행을 입력하세요.';
+  String get chordAnalyzerNoInputError => '분석할 코드 진행을 입력해 주세요.';
 
   @override
   String get chordAnalyzerNoRecognizedChordsError =>
-      '진행에서 인식 가능한 코드를 찾지 못했습니다.';
+      '진행에서 인식 가능한 코드 표기를 찾지 못했습니다.';
 
   @override
   String chordAnalyzerPartialParseWarning(Object tokens) {
@@ -624,12 +624,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String chordAnalyzerKeyAmbiguityWarning(Object primary, Object alternative) {
-    return '키 센터가 $primary와 $alternative 사이에서 아직 다소 모호합니다.';
+    return '조성 중심이 $primary와 $alternative 사이에서 아직 다소 모호합니다.';
   }
 
   @override
   String get chordAnalyzerUnresolvedWarning =>
-      '이 MVP 해석에서는 일부 코드가 여전히 모호하게 남아 있습니다.';
+      '일부 코드는 여전히 모호하므로, 이번 해석은 의도적으로 보수적으로 유지됩니다.';
 
   @override
   String get chordAnalyzerFunctionTonic => '토닉';
@@ -650,7 +650,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String chordAnalyzerRemarkTritoneSub(Object target) {
-    return '$target을 향하는 트라이톤 서브스티튜트일 가능성이 있습니다.';
+    return '$target을 향하는 트라이톤 대리도미넌트일 가능성이 있습니다.';
   }
 
   @override
@@ -661,7 +661,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chordAnalyzerRemarkAmbiguous => '현재 해석에서는 이 코드가 여전히 모호합니다.';
 
   @override
-  String get chordAnalyzerRemarkUnresolved => '이 코드는 현재 MVP 휴리스틱 범위 밖에 있습니다.';
+  String get chordAnalyzerRemarkUnresolved =>
+      '이 코드는 현재의 보수적 규칙만으로는 단정하기 어렵습니다.';
 
   @override
   String get chordAnalyzerTagIiVI => 'ii-V-I 진행';
@@ -673,7 +674,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chordAnalyzerTagDominantResolution => '도미넌트 해결';
 
   @override
-  String get chordAnalyzerTagPlagalColor => '플라갈/모달 컬러';
+  String get chordAnalyzerTagPlagalColor => '플래갈/모달 색채';
 
   @override
   String chordAnalyzerSummaryCenter(Object key) {
@@ -687,7 +688,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String chordAnalyzerSummaryTag(Object tag) {
-    return '이 진행은 $tag 성격을 보여줍니다.';
+    return '이 진행은 $tag의 성격을 보여줍니다.';
   }
 
   @override
@@ -698,7 +699,7 @@ class AppLocalizationsKo extends AppLocalizations {
     Object throughFunction,
     Object target,
   ) {
-    return '$from와 $through는 $target으로 향하는 $fromFunction, $throughFunction 기능으로 해석할 수 있습니다.';
+    return '$from와 $through는 $target으로 향하는 $fromFunction, $throughFunction 기능으로 볼 수 있습니다.';
   }
 
   @override
@@ -708,17 +709,17 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String chordAnalyzerSummaryTritoneSub(Object chord, Object target) {
-    return '$chord는 $target을 향하는 트라이톤 서브스티튜트로 들릴 수 있습니다.';
+    return '$chord는 $target을 향하는 트라이톤 대리도미넌트로 들릴 수 있습니다.';
   }
 
   @override
   String chordAnalyzerSummaryModalInterchange(Object chord) {
-    return '$chord는 모달 인터체인지 색채를 더해 줍니다.';
+    return '$chord가 모달 인터체인지 색채를 더해 줍니다.';
   }
 
   @override
   String get chordAnalyzerSummaryAmbiguous =>
-      '일부 세부 요소는 여전히 모호하므로, 해석은 의도적으로 보수적으로 유지됩니다.';
+      '몇몇 세부 요소는 여전히 모호하므로, 해석을 의도적으로 보수적으로 유지합니다.';
 
   @override
   String get chordAnalyzerExamplesTitle => '예시';
@@ -737,7 +738,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String chordAnalyzerIgnoredModifiersWarning(Object details) {
-    return '무시된 수식: $details';
+    return '무시된 modifier: $details';
   }
 
   @override
@@ -747,24 +748,24 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chordAnalyzerDiagnosticUnbalancedParentheses =>
-      '괄호가 맞지 않아 기호 일부를 확실히 해석하지 못했습니다.';
+      '괄호가 맞지 않아 기호 일부를 확정적으로 읽지 못했습니다.';
 
   @override
   String get chordAnalyzerDiagnosticUnexpectedCloseParenthesis =>
-      '예상치 못한 닫는 괄호를 무시했습니다.';
+      '예상하지 못한 닫는 괄호를 무시했습니다.';
 
   @override
   String chordAnalyzerEvidenceExtensionColor(Object extension) {
-    return '$extension 컬러가 이 해석을 더 강하게 뒷받침합니다.';
+    return '$extension 확장음 표기가 이 해석을 더 강하게 지지합니다.';
   }
 
   @override
   String get chordAnalyzerEvidenceAlteredDominantColor =>
-      '얼터드 도미넌트 컬러가 도미넌트 기능을 뒷받침합니다.';
+      'altered dominant 색채가 도미넌트 기능 해석을 뒷받침합니다.';
 
   @override
   String chordAnalyzerEvidenceSlashBass(Object bass) {
-    return '슬래시 베이스 $bass가 베이스 라인이나 전위의 의미를 살려 줍니다.';
+    return '슬래시 베이스 $bass가 베이스 라인이나 전위 정보를 유지해 줍니다.';
   }
 
   @override
@@ -778,5 +779,49 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chordAnalyzerEvidenceSuspensionColor =>
-      '서스펜션 컬러가 도미넌트의 긴장을 완전히 지우지 않으면서도 부드럽게 만듭니다.';
+      '서스펜션 색채가 도미넌트의 긴장을 완전히 지우지 않으면서 부드럽게 만듭니다.';
+
+  @override
+  String get chordAnalyzerLowConfidenceTitle => '신뢰도가 낮은 해석';
+
+  @override
+  String get chordAnalyzerLowConfidenceBody =>
+      '후보 조성이 서로 가깝거나 일부 표기가 부분 복구 상태라서, 우선 신중한 1차 해석으로 봐 주세요.';
+
+  @override
+  String get chordAnalyzerEmptyMeasure =>
+      '이 마디는 비어 있지만 마디 번호 보존을 위해 그대로 표시했습니다.';
+
+  @override
+  String get chordAnalyzerNoAnalyzableChordsInMeasure =>
+      '이 마디에서는 분석 가능한 코드 표기를 복구하지 못했습니다.';
+
+  @override
+  String get chordAnalyzerParseIssuesTitle => '파싱 이슈';
+
+  @override
+  String chordAnalyzerParseIssueLine(Object token, Object reason) {
+    return '$token: $reason';
+  }
+
+  @override
+  String get chordAnalyzerParseIssueEmpty => '비어 있는 토큰입니다.';
+
+  @override
+  String get chordAnalyzerParseIssueInvalidRoot => '루트 음을 인식하지 못했습니다.';
+
+  @override
+  String chordAnalyzerParseIssueUnknownRoot(Object root) {
+    return '$root 표기는 지원되는 루트 음 표기가 아닙니다.';
+  }
+
+  @override
+  String chordAnalyzerParseIssueInvalidBass(Object bass) {
+    return '슬래시 베이스 $bass 표기는 지원되지 않습니다.';
+  }
+
+  @override
+  String chordAnalyzerParseIssueUnsupportedSuffix(Object suffix) {
+    return '지원하지 않는 suffix 또는 modifier입니다: $suffix';
+  }
 }

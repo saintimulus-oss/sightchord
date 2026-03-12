@@ -537,17 +537,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.';
 
   @override
+  String get openGenerator => 'Open Generator';
+
+  @override
+  String get openAnalyzer => 'Open Analyzer';
+
+  @override
   String get mainMenuAnalyzerTitle => 'Chord Analyzer';
 
   @override
   String get mainMenuAnalyzerDescription =>
       'Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.';
-
-  @override
-  String get openGenerator => 'Open Generator';
-
-  @override
-  String get openAnalyzer => 'Open Analyzer';
 
   @override
   String get chordAnalyzerTitle => 'Chord Analyzer';
@@ -564,7 +564,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chordAnalyzerInputHelper =>
-      'Spaces, |, and commas are accepted. Slash chords and simple alterations are supported. Touch devices can use the chord pad or switch to ABC input.';
+      'Separators outside parentheses can be spaces, |, or commas. Commas inside parentheses stay inside one chord. Lowercase roots, slash bass, sus/alt/add forms, and tensions such as C7(b9, #11) are supported. Touch devices can use the chord pad or switch to ABC input.';
 
   @override
   String get chordAnalyzerAnalyze => 'Analyze';
@@ -651,7 +651,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chordAnalyzerUnresolvedWarning =>
-      'Some chords remain ambiguous under this MVP reading.';
+      'Some chords stay ambiguous, so this reading remains intentionally conservative.';
 
   @override
   String get chordAnalyzerFunctionTonic => 'Tonic';
@@ -685,7 +685,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chordAnalyzerRemarkUnresolved =>
-      'This chord falls outside the current MVP heuristics.';
+      'This chord stays unresolved under the current conservative heuristics.';
 
   @override
   String get chordAnalyzerTagIiVI => 'ii-V-I cadence';
@@ -803,4 +803,49 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chordAnalyzerEvidenceSuspensionColor =>
       'Suspension color softens the dominant pull without erasing it.';
+
+  @override
+  String get chordAnalyzerLowConfidenceTitle => 'Low-confidence reading';
+
+  @override
+  String get chordAnalyzerLowConfidenceBody =>
+      'The key candidates are close together or some symbols were only partially recovered, so treat this as a cautious first pass.';
+
+  @override
+  String get chordAnalyzerEmptyMeasure =>
+      'This measure is empty and was preserved in the count.';
+
+  @override
+  String get chordAnalyzerNoAnalyzableChordsInMeasure =>
+      'No analyzable chord symbols were recovered in this measure.';
+
+  @override
+  String get chordAnalyzerParseIssuesTitle => 'Parse issues';
+
+  @override
+  String chordAnalyzerParseIssueLine(Object token, Object reason) {
+    return '$token: $reason';
+  }
+
+  @override
+  String get chordAnalyzerParseIssueEmpty => 'Empty token.';
+
+  @override
+  String get chordAnalyzerParseIssueInvalidRoot =>
+      'The root could not be recognized.';
+
+  @override
+  String chordAnalyzerParseIssueUnknownRoot(Object root) {
+    return '$root is not a supported root spelling.';
+  }
+
+  @override
+  String chordAnalyzerParseIssueInvalidBass(Object bass) {
+    return 'Slash bass $bass is not a supported bass spelling.';
+  }
+
+  @override
+  String chordAnalyzerParseIssueUnsupportedSuffix(Object suffix) {
+    return 'Unsupported suffix or modifier: $suffix';
+  }
 }

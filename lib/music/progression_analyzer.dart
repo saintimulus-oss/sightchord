@@ -34,11 +34,7 @@ class ProgressionAnalyzer {
       parseResult: parseResult,
     );
     final keyCandidates = [
-      for (
-        var index = 0;
-        index < math.min(evaluations.length, 3);
-        index += 1
-      )
+      for (var index = 0; index < math.min(evaluations.length, 5); index += 1)
         ProgressionKeyCandidate(
           keyCenter: evaluations[index].keyCenter,
           score: evaluations[index].score,
@@ -69,7 +65,10 @@ class ProgressionAnalyzer {
             ),
       keyCandidates: keyCandidates,
       chordAnalyses: primary.chordAnalyses,
-      groupedMeasures: _groupAnalyzedMeasures(primary.chordAnalyses),
+      groupedMeasures: _groupAnalyzedMeasures(
+        parseResult,
+        primary.chordAnalyses,
+      ),
       tags: primary.tags,
       confidence: primaryConfidence,
       ambiguity: 1 - primaryConfidence,
@@ -182,6 +181,10 @@ class ProgressionAnalyzer {
       if (spec.homeMode != null && spec.homeMode != keyCenter.mode) {
         continue;
       }
+      final resolutionTarget = MusicTheory.modeAwareResolutionTarget(
+        entry.key,
+        keyCenter.mode,
+      );
 
       final resolvedRoot = MusicTheory.resolveChordRootForCenter(
         keyCenter,
@@ -197,6 +200,11 @@ class ProgressionAnalyzer {
         expected: spec.quality,
       );
       if (compatibility == null) {
+        continue;
+      }
+      if ((spec.sourceKind == ChordSourceKind.secondaryDominant ||
+              spec.sourceKind == ChordSourceKind.substituteDominant) &&
+          !chord.isDominantLike) {
         continue;
       }
 
@@ -220,9 +228,8 @@ class ProgressionAnalyzer {
 
       if (spec.sourceKind == ChordSourceKind.secondaryDominant ||
           spec.sourceKind == ChordSourceKind.substituteDominant) {
-        final resolutionTarget = spec.resolutionTargetId;
         if (resolutionTarget != null) {
-          final targetRoman = MusicTheory.romanTokenOf(resolutionTarget);
+          final targetRoman = _displayResolutionTargetRoman(resolutionTarget);
           final resolutionScore = _resolutionScore(
             sourceChord: chord,
             keyCenter: keyCenter,
@@ -264,13 +271,21 @@ class ProgressionAnalyzer {
           ),
         );
         evidence.add(
-          const ProgressionEvidence(kind: ProgressionEvidenceKind.borrowedColor),
+          const ProgressionEvidence(
+            kind: ProgressionEvidenceKind.borrowedColor,
+          ),
         );
       }
 
       candidates.add(
         _InterpretationCandidate(
-          romanNumeral: MusicTheory.romanTokenOf(entry.key),
+          romanNumeral: _displayRomanForCandidate(
+            chord: chord,
+            romanNumeralId: entry.key,
+            sourceKind: spec.sourceKind,
+            keyCenter: keyCenter,
+            resolutionTarget: resolutionTarget,
+          ),
           harmonicFunction: _mapFunction(spec.harmonicFunction),
           romanNumeralId: entry.key,
           sourceKind: spec.sourceKind,
@@ -300,13 +315,17 @@ class ProgressionAnalyzer {
     }
 
     final targetCandidate = _bestDiatonicTarget(nextChord, keyCenter);
+    final targetDegree = targetCandidate?.romanNumeralId == null
+        ? _fallbackDegreeForChord(nextChord, keyCenter)
+        : MusicTheory.romanDegreeTokenOf(targetCandidate!.romanNumeralId!);
     final targetRoman =
         targetCandidate?.romanNumeral ??
         _fallbackRomanForChord(nextChord, keyCenter);
 
     return [
       _InterpretationCandidate(
-        romanNumeral: 'subV7/$targetRoman',
+        romanNumeral:
+            'subV${chord.normalizedSuffix.isEmpty ? '7' : chord.normalizedSuffix}/$targetDegree',
         harmonicFunction: ProgressionHarmonicFunction.dominant,
         score: 8.4 + (targetCandidate == null ? 0 : 1.2),
         remarks: [
@@ -350,7 +369,12 @@ class ProgressionAnalyzer {
       if (semitone == chord.rootSemitone && compatibility != null) {
         candidates.add(
           _InterpretationCandidate(
-            romanNumeral: MusicTheory.romanTokenOf(romanId),
+            romanNumeral: _displayRomanForCandidate(
+              chord: chord,
+              romanNumeralId: romanId,
+              sourceKind: spec.sourceKind,
+              keyCenter: keyCenter,
+            ),
             harmonicFunction: _mapFunction(spec.harmonicFunction),
             romanNumeralId: romanId,
             sourceKind: spec.sourceKind,
@@ -385,12 +409,16 @@ class ProgressionAnalyzer {
   }
 
   String _fallbackRomanForChord(ParsedChord chord, KeyCenter keyCenter) {
+    return '${_fallbackDegreeForChord(chord, keyCenter)}${chord.normalizedSuffix}';
+  }
+
+  String _fallbackDegreeForChord(ParsedChord chord, KeyCenter keyCenter) {
     final tonic = keyCenter.tonicSemitone;
     if (tonic == null) {
       return '?';
     }
     final offset = (chord.rootSemitone - tonic) % 12;
-    final degree = switch (offset) {
+    return switch (offset) {
       0 => 'I',
       1 => 'bII',
       2 => 'II',
@@ -405,89 +433,172 @@ class ProgressionAnalyzer {
       11 => 'VII',
       _ => '?',
     };
-    return '$degree${_fallbackQualitySuffix(chord)}';
-  }
-
-  String _fallbackQualitySuffix(ParsedChord chord) {
-    if (chord.hasSuspension) {
-      return chord.suspensions.first == '2' ? 'sus2' : 'sus4';
-    }
-    if (chord.addedTones.isNotEmpty) {
-      return 'add${chord.addedTones.first}';
-    }
-    if (chord.extension == 9 &&
-        chord.analysisQuality == ChordQuality.dominant7) {
-      return '9';
-    }
-    if (chord.extension == 11 &&
-        chord.analysisQuality == ChordQuality.dominant7) {
-      return '11';
-    }
-    if (chord.extension == 13 &&
-        chord.analysisQuality == ChordQuality.dominant7) {
-      return '13';
-    }
-    final quality = chord.analysisQuality;
-    return switch (quality) {
-      ChordQuality.major7 => 'maj7',
-      ChordQuality.major69 => '6/9',
-      ChordQuality.six => '6',
-      ChordQuality.minor7 => 'm7',
-      ChordQuality.minorMajor7 => 'mMaj7',
-      ChordQuality.minor6 => 'm6',
-      ChordQuality.minorTriad => 'm',
-      ChordQuality.dominant7 => '7',
-      ChordQuality.halfDiminished7 => 'm7b5',
-      ChordQuality.diminished7 => 'dim7',
-      ChordQuality.diminishedTriad => 'dim',
-      ChordQuality.augmentedTriad => 'aug',
-      _ => '',
-    };
   }
 
   double? _qualityCompatibility({
     required ParsedChord chord,
     required ChordQuality expected,
   }) {
-    final actual = chord.analysisQuality;
-    if (actual == expected) {
-      return 1.0;
+    final actualFamily = chord.analysisFamily;
+    final expectedFamily = MusicTheory.familyForQuality(expected);
+
+    if (actualFamily == expectedFamily) {
+      return _sameFamilyCompatibility(chord: chord, expected: expected);
     }
 
-    if (actual == ChordQuality.majorTriad &&
-        (expected == ChordQuality.major7 || expected == ChordQuality.major69)) {
-      return 0.7;
+    if (actualFamily == ChordFamily.major &&
+        expectedFamily == ChordFamily.dominant) {
+      return chord.displayQuality == ChordQuality.majorTriad ? 0.86 : 0.72;
     }
 
-    if ((actual == ChordQuality.major7 || actual == ChordQuality.six) &&
-        expected == ChordQuality.major69) {
-      return 0.78;
+    if (actualFamily == ChordFamily.augmented &&
+        expectedFamily == ChordFamily.dominant &&
+        chord.extension == 7) {
+      return 0.84;
     }
 
-    if (actual == ChordQuality.major69 && expected == ChordQuality.major7) {
-      return 0.82;
-    }
-
-    if (actual == ChordQuality.minorTriad &&
-        (expected == ChordQuality.minor7 ||
-            expected == ChordQuality.minorMajor7 ||
-            expected == ChordQuality.minor6)) {
-      return 0.7;
-    }
-
-    if (actual == ChordQuality.diminishedTriad &&
-        (expected == ChordQuality.halfDiminished7 ||
-            expected == ChordQuality.diminished7)) {
-      return 0.55;
-    }
-
-    if (chord.hasSuspension &&
-        actual == ChordQuality.majorTriad &&
-        expected == ChordQuality.dominant7) {
+    if (actualFamily == ChordFamily.diminished &&
+        expectedFamily == ChordFamily.halfDiminished) {
       return 0.62;
     }
 
     return null;
+  }
+
+  double _sameFamilyCompatibility({
+    required ParsedChord chord,
+    required ChordQuality expected,
+  }) {
+    return switch (chord.analysisFamily) {
+      ChordFamily.major => switch (expected) {
+        ChordQuality.major7 =>
+          chord.displayQuality == ChordQuality.major7
+              ? 1.0
+              : chord.displayQuality == ChordQuality.majorTriad
+              ? 0.93
+              : chord.displayQuality == ChordQuality.six
+              ? 0.87
+              : 0.84,
+        ChordQuality.major69 =>
+          chord.displayQuality == ChordQuality.major69
+              ? 1.0
+              : chord.displayQuality == ChordQuality.six
+              ? 0.9
+              : chord.displayQuality == ChordQuality.majorTriad
+              ? 0.86
+              : 0.82,
+        _ => 0.92,
+      },
+      ChordFamily.minor => switch (expected) {
+        ChordQuality.minor7 =>
+          chord.displayQuality == ChordQuality.minor7
+              ? 1.0
+              : chord.displayQuality == ChordQuality.minorTriad
+              ? 0.93
+              : chord.displayQuality == ChordQuality.minor6
+              ? 0.88
+              : 0.84,
+        ChordQuality.minorMajor7 =>
+          chord.displayQuality == ChordQuality.minorMajor7
+              ? 1.0
+              : chord.displayQuality == ChordQuality.minorTriad
+              ? 0.88
+              : 0.82,
+        ChordQuality.minor6 =>
+          chord.displayQuality == ChordQuality.minor6
+              ? 1.0
+              : chord.displayQuality == ChordQuality.minorTriad
+              ? 0.9
+              : 0.84,
+        _ => 0.92,
+      },
+      ChordFamily.dominant => switch (expected) {
+        ChordQuality.dominant13sus4 =>
+          chord.displayQuality == ChordQuality.dominant13sus4
+              ? 1.0
+              : chord.hasSuspension
+              ? 0.9
+              : 0.8,
+        ChordQuality.dominant7sus4 =>
+          chord.displayQuality == ChordQuality.dominant7sus4
+              ? 1.0
+              : chord.displayQuality == ChordQuality.dominant13sus4
+              ? 0.95
+              : chord.hasSuspension
+              ? 0.88
+              : 0.8,
+        ChordQuality.dominant7 =>
+          chord.displayQuality == ChordQuality.dominant7
+              ? 1.0
+              : chord.hasSuspension
+              ? 0.9
+              : chord.hasAlteredColor
+              ? 0.98
+              : chord.normalizedSuffix.isEmpty
+              ? 0.86
+              : 0.94,
+        _ => 0.9,
+      },
+      ChordFamily.halfDiminished =>
+        expected == ChordQuality.halfDiminished7 ? 1.0 : 0.82,
+      ChordFamily.diminished => switch (expected) {
+        ChordQuality.diminished7 =>
+          chord.displayQuality == ChordQuality.diminished7 ? 1.0 : 0.74,
+        ChordQuality.diminishedTriad => 1.0,
+        _ => 0.7,
+      },
+      ChordFamily.augmented =>
+        chord.extension == 7 && expected == ChordQuality.dominant7
+            ? 0.84
+            : 0.72,
+    };
+  }
+
+  String _displayRomanForCandidate({
+    required ParsedChord chord,
+    required RomanNumeralId romanNumeralId,
+    required ChordSourceKind sourceKind,
+    required KeyCenter keyCenter,
+    RomanNumeralId? resolutionTarget,
+  }) {
+    if (sourceKind == ChordSourceKind.secondaryDominant ||
+        sourceKind == ChordSourceKind.substituteDominant) {
+      final dominantHead = sourceKind == ChordSourceKind.substituteDominant
+          ? 'subV'
+          : 'V';
+      final denominator = resolutionTarget == null
+          ? '?'
+          : MusicTheory.romanDegreeTokenOf(resolutionTarget);
+      return '$dominantHead${chord.normalizedSuffix}/$denominator';
+    }
+    return '${MusicTheory.romanDegreeTokenOf(romanNumeralId)}${chord.normalizedSuffix}';
+  }
+
+  String _displayResolutionTargetRoman(RomanNumeralId romanNumeralId) {
+    final spec = MusicTheory.specFor(romanNumeralId);
+    return '${MusicTheory.romanDegreeTokenOf(romanNumeralId)}${_specQualitySuffix(spec.quality)}';
+  }
+
+  String _specQualitySuffix(ChordQuality quality) {
+    return switch (quality) {
+      ChordQuality.majorTriad => '',
+      ChordQuality.minorTriad => 'm',
+      ChordQuality.dominant7 => '7',
+      ChordQuality.major7 => 'maj7',
+      ChordQuality.minor7 => 'm7',
+      ChordQuality.minorMajor7 => 'mMaj7',
+      ChordQuality.halfDiminished7 => 'm7b5',
+      ChordQuality.diminishedTriad => 'dim',
+      ChordQuality.diminished7 => 'dim7',
+      ChordQuality.augmentedTriad => 'aug',
+      ChordQuality.six => '6',
+      ChordQuality.minor6 => 'm6',
+      ChordQuality.major69 => '6/9',
+      ChordQuality.dominant7Alt => '7alt',
+      ChordQuality.dominant7Sharp11 => '7(#11)',
+      ChordQuality.dominant13sus4 => '13sus4',
+      ChordQuality.dominant7sus4 => '7sus4',
+    };
   }
 
   double _baseScoreForSource(ChordSourceKind sourceKind) {
@@ -511,10 +622,12 @@ class ProgressionAnalyzer {
         HarmonicFunction.free => 0.0,
       };
     }
-    if (chord.hasAlteredColor && spec.harmonicFunction == HarmonicFunction.dominant) {
+    if (chord.hasAlteredColor &&
+        spec.harmonicFunction == HarmonicFunction.dominant) {
       bonus += 0.9;
     }
-    if (chord.hasSuspension && spec.harmonicFunction == HarmonicFunction.dominant) {
+    if (chord.hasSuspension &&
+        spec.harmonicFunction == HarmonicFunction.dominant) {
       bonus += 0.45;
     }
     if (chord.hasSlashBass) {
@@ -537,7 +650,8 @@ class ProgressionAnalyzer {
         ),
       );
     }
-    if (chord.hasAlteredColor && spec.harmonicFunction == HarmonicFunction.dominant) {
+    if (chord.hasAlteredColor &&
+        spec.harmonicFunction == HarmonicFunction.dominant) {
       evidence.add(
         const ProgressionEvidence(
           kind: ProgressionEvidenceKind.alteredDominantColor,
@@ -562,7 +676,10 @@ class ProgressionAnalyzer {
     return evidence;
   }
 
-  double _slashBassBonus({required ParsedChord chord, required RomanSpec spec}) {
+  double _slashBassBonus({
+    required ParsedChord chord,
+    required RomanSpec spec,
+  }) {
     final bassSemitone = chord.bassSemitone;
     if (bassSemitone == null) {
       return 0;
@@ -590,7 +707,10 @@ class ProgressionAnalyzer {
     return 0.08;
   }
 
-  double _candidateConfidence({required ParsedChord chord, required double gap}) {
+  double _candidateConfidence({
+    required ParsedChord chord,
+    required double gap,
+  }) {
     var confidence = 0.56 + (gap / 6.5);
     if (chord.hasParserWarnings) {
       confidence -= 0.08;
@@ -617,9 +737,9 @@ class ProgressionAnalyzer {
     final ambiguousRatio = primary.chordAnalyses.isEmpty
         ? 0.0
         : primary.chordAnalyses
-                .where((analysis) => analysis.isAmbiguous)
-                .length /
-            primary.chordAnalyses.length;
+                  .where((analysis) => analysis.isAmbiguous)
+                  .length /
+              primary.chordAnalyses.length;
     confidence -= ambiguousRatio * 0.22;
     return (confidence.clamp(0.2, 0.98) as num).toDouble();
   }
@@ -814,22 +934,24 @@ class ProgressionAnalyzer {
     return score;
   }
 
-  List<AnalyzedMeasure> _groupAnalyzedMeasures(List<AnalyzedChord> analyses) {
-    final grouped = <AnalyzedMeasure>[];
+  List<AnalyzedMeasure> _groupAnalyzedMeasures(
+    ProgressionParseResult parseResult,
+    List<AnalyzedChord> analyses,
+  ) {
+    final analysesByMeasure = <int, List<AnalyzedChord>>{};
     for (final analysis in analyses) {
-      if (grouped.isEmpty ||
-          grouped.last.measureIndex != analysis.chord.measureIndex) {
-        grouped.add(
-          AnalyzedMeasure(
-            measureIndex: analysis.chord.measureIndex,
-            chordAnalyses: [analysis],
-          ),
-        );
-        continue;
-      }
-      grouped.last.chordAnalyses.add(analysis);
+      (analysesByMeasure[analysis.chord.measureIndex] ??= <AnalyzedChord>[])
+          .add(analysis);
     }
-    return grouped;
+
+    return [
+      for (final measure in parseResult.measures)
+        AnalyzedMeasure(
+          measureIndex: measure.measureIndex,
+          tokens: measure.tokens,
+          chordAnalyses: analysesByMeasure[measure.measureIndex] ?? const [],
+        ),
+    ];
   }
 
   bool _spansCadentialWindow(AnalyzedChord start, AnalyzedChord end) {

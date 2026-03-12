@@ -100,6 +100,11 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     final warnings = _analysis == null
         ? const <String>[]
         : _warningTexts(l10n, _analysis!);
+    final keyCandidates = _analysis == null
+        ? const <ProgressionKeyCandidate>[]
+        : _analysis!.keyCandidates.take(5).toList();
+    final groupedMeasures =
+        _analysis?.groupedMeasures ?? const <AnalyzedMeasure>[];
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.chordAnalyzerTitle)),
@@ -201,6 +206,13 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
                         child: Text(l10n.chordAnalyzerInitialBody),
                       )
                     else ...[
+                      if (_analysis!.confidence < 0.55) ...[
+                        _LowConfidenceBanner(
+                          title: l10n.chordAnalyzerLowConfidenceTitle,
+                          body: l10n.chordAnalyzerLowConfidenceBody,
+                        ),
+                        const SizedBox(height: 12),
+                      ],
                       _SectionCard(
                         key: const ValueKey('analyzer-results-card'),
                         title: l10n.chordAnalyzerDetectedKeys,
@@ -218,24 +230,21 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
                               invertColor: true,
                             ),
                             const SizedBox(height: 14),
-                            _KeyCandidateRow(
-                              label: l10n.chordAnalyzerPrimaryReading,
-                              value: _explainer.keyLabel(
-                                l10n,
-                                _analysis!.primaryKey.keyCenter,
-                              ),
-                              confidence: _analysis!.primaryKey.confidence,
-                            ),
-                            if (_analysis!.alternativeKey != null) ...[
-                              const SizedBox(height: 8),
+                            for (
+                              var index = 0;
+                              index < keyCandidates.length;
+                              index += 1
+                            ) ...[
                               _KeyCandidateRow(
-                                label: l10n.chordAnalyzerAlternativeReading,
+                                label: _candidateLabel(l10n, index),
                                 value: _explainer.keyLabel(
                                   l10n,
-                                  _analysis!.alternativeKey!.keyCenter,
+                                  keyCandidates[index].keyCenter,
                                 ),
-                                confidence: _analysis!.alternativeKey!.confidence,
+                                confidence: keyCandidates[index].confidence,
                               ),
+                              if (index != keyCandidates.length - 1)
+                                const SizedBox(height: 8),
                             ],
                           ],
                         ),
@@ -247,57 +256,99 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
                           children: [
                             for (
                               var measureIndex = 0;
-                              measureIndex < _analysis!.groupedMeasures.length;
+                              measureIndex < groupedMeasures.length;
                               measureIndex += 1
                             ) ...[
                               _MeasureSection(
                                 title: l10n.chordAnalyzerMeasureLabel(
-                                  _analysis!
-                                          .groupedMeasures[measureIndex]
-                                          .measureIndex +
+                                  groupedMeasures[measureIndex].measureIndex +
                                       1,
                                 ),
                                 children: [
+                                  if (groupedMeasures[measureIndex].isEmpty)
+                                    Text(
+                                      l10n.chordAnalyzerEmptyMeasure,
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: theme
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
+                                    ),
+                                  if (groupedMeasures[measureIndex]
+                                      .parseIssues
+                                      .isNotEmpty) ...[
+                                    Text(
+                                      l10n.chordAnalyzerParseIssuesTitle,
+                                      style: theme.textTheme.labelLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    for (final issue
+                                        in groupedMeasures[measureIndex]
+                                            .parseIssues) ...[
+                                      Text(_parseIssueText(l10n, issue)),
+                                      const SizedBox(height: 4),
+                                    ],
+                                    if (groupedMeasures[measureIndex]
+                                        .chordAnalyses
+                                        .isNotEmpty)
+                                      const SizedBox(height: 10),
+                                  ],
                                   for (
                                     var chordIndex = 0;
                                     chordIndex <
-                                        _analysis!
-                                            .groupedMeasures[measureIndex]
+                                        groupedMeasures[measureIndex]
                                             .chordAnalyses
                                             .length;
                                     chordIndex += 1
                                   ) ...[
                                     _ChordAnalysisRow(
-                                      analysis: _analysis!
-                                          .groupedMeasures[measureIndex]
+                                      analysis: groupedMeasures[measureIndex]
                                           .chordAnalyses[chordIndex],
                                       explainer: _explainer,
                                       functionLabel: _explainer.functionLabel(
                                         l10n,
-                                        _analysis!
-                                            .groupedMeasures[measureIndex]
+                                        groupedMeasures[measureIndex]
                                             .chordAnalyses[chordIndex]
                                             .harmonicFunction,
                                       ),
                                       remarkText: _remarkText(
                                         l10n,
-                                        _analysis!
-                                            .groupedMeasures[measureIndex]
+                                        groupedMeasures[measureIndex]
                                             .chordAnalyses[chordIndex],
                                       ),
                                     ),
                                     if (chordIndex !=
-                                        _analysis!
-                                                .groupedMeasures[measureIndex]
+                                        groupedMeasures[measureIndex]
                                                 .chordAnalyses
                                                 .length -
                                             1)
                                       const Divider(height: 20),
                                   ],
+                                  if (groupedMeasures[measureIndex]
+                                          .chordAnalyses
+                                          .isEmpty &&
+                                      groupedMeasures[measureIndex]
+                                          .parseIssues
+                                          .isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 4),
+                                      child: Text(
+                                        l10n.chordAnalyzerNoAnalyzableChordsInMeasure,
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color: theme
+                                                  .colorScheme
+                                                  .onSurfaceVariant,
+                                            ),
+                                      ),
+                                    ),
                                 ],
                               ),
-                              if (measureIndex !=
-                                  _analysis!.groupedMeasures.length - 1)
+                              if (measureIndex != groupedMeasures.length - 1)
                                 const SizedBox(height: 16),
                             ],
                           ],
@@ -386,12 +437,10 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     ProgressionAnalysis analysis,
   ) {
     final warnings = <String>[];
-    if (analysis.parseResult.issues.isNotEmpty) {
-      final skipped = analysis.parseResult.issues
-          .map((issue) => issue.rawText)
-          .join(', ');
-      warnings.add(l10n.chordAnalyzerPartialParseWarning(skipped));
-    }
+    warnings.addAll([
+      for (final issue in analysis.parseResult.issues)
+        _parseIssueText(l10n, issue),
+    ]);
     for (final chord in analysis.parseResult.validChords) {
       if (chord.ignoredTokens.isNotEmpty) {
         warnings.add(
@@ -433,11 +482,40 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
 
   String _diagnosticLabel(AppLocalizations l10n, String diagnostic) {
     return switch (diagnostic) {
-      'unbalanced-parentheses' => l10n.chordAnalyzerDiagnosticUnbalancedParentheses,
+      'unbalanced-parentheses' =>
+        l10n.chordAnalyzerDiagnosticUnbalancedParentheses,
       'unexpected-close-parenthesis' =>
         l10n.chordAnalyzerDiagnosticUnexpectedCloseParenthesis,
       _ => diagnostic,
     };
+  }
+
+  String _candidateLabel(AppLocalizations l10n, int index) {
+    if (index == 0) {
+      return l10n.chordAnalyzerPrimaryReading;
+    }
+    if (index == 1) {
+      return l10n.chordAnalyzerAlternativeReading;
+    }
+    return '#${index + 1}';
+  }
+
+  String _parseIssueText(AppLocalizations l10n, ParsedChordToken issue) {
+    final reason = switch (issue.error) {
+      'empty' => l10n.chordAnalyzerParseIssueEmpty,
+      'invalid-root' => l10n.chordAnalyzerParseIssueInvalidRoot,
+      'unknown-root' => l10n.chordAnalyzerParseIssueUnknownRoot(
+        issue.errorDetail ?? issue.rawText,
+      ),
+      'invalid-bass' => l10n.chordAnalyzerParseIssueInvalidBass(
+        issue.errorDetail ?? issue.rawText,
+      ),
+      'unsupported-suffix' => l10n.chordAnalyzerParseIssueUnsupportedSuffix(
+        issue.errorDetail ?? issue.rawText,
+      ),
+      _ => l10n.chordAnalyzerParseIssueUnsupportedSuffix(issue.rawText),
+    };
+    return l10n.chordAnalyzerParseIssueLine(issue.rawText, reason);
   }
 }
 
@@ -500,6 +578,58 @@ class _SectionCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             child,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LowConfidenceBanner extends StatelessWidget {
+  const _LowConfidenceBanner({required this.title, required this.body});
+
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.warning_amber_rounded,
+              color: theme.colorScheme.onSecondaryContainer,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: theme.colorScheme.onSecondaryContainer,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    body,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSecondaryContainer,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -637,10 +767,7 @@ class _ChordAnalysisRow extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  Text(
-                    analysis.romanNumeral,
-                    style: theme.textTheme.bodyLarge,
-                  ),
+                  Text(analysis.romanNumeral, style: theme.textTheme.bodyLarge),
                   Chip(
                     label: Text(
                       '${l10n.chordAnalyzerConfidenceLabel} '

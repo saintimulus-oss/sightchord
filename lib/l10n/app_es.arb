@@ -1,386 +1,490 @@
 {
-  "@@locale": "es",
-  "settings": "Configuracion",
-  "closeSettings": "Cerrar configuracion",
-  "language": "Idioma",
-  "systemDefaultLanguage": "Predeterminado del sistema",
-  "metronome": "Metronomo",
-  "enabled": "Activado",
-  "disabled": "Desactivado",
-  "metronomeHelp": "Activa el metronomo para escuchar un clic en cada pulso mientras practicas.",
-  "metronomeSound": "Sonido del metronomo",
-  "metronomeSoundClassic": "Clasico",
-  "metronomeSoundClickB": "Click B",
-  "metronomeSoundClickC": "Click C",
-  "metronomeSoundClickD": "Click D",
-  "metronomeSoundClickE": "Click E",
-  "metronomeSoundClickF": "Click F",
-  "metronomeVolume": "Volumen del metronomo",
-  "keys": "Tonalidades",
-  "noKeysSelected": "No keys selected. Leave all keys off to practice in free mode across every root.",
-  "keysSelectedHelp": "Selected keys are used for key-aware random mode and Smart Generator mode.",
-  "smartGeneratorMode": "Modo Smart Generator",
-  "smartGeneratorHelp": "Prioritizes functional harmonic motion while preserving the enabled non-diatonic options.",
-  "advancedSmartGenerator": "Smart Generator avanzado",
-  "modulationIntensity": "Intensidad de modulacion",
-  "modulationIntensityOff": "Off",
-  "modulationIntensityLow": "Low",
-  "modulationIntensityMedium": "Medium",
-  "modulationIntensityHigh": "High",
-  "jazzPreset": "Preajuste jazz",
-  "jazzPresetStandardsCore": "Standards Core",
-  "jazzPresetModulationStudy": "Modulation Study",
-  "jazzPresetAdvanced": "Advanced",
-  "sourceProfile": "Perfil de origen",
-  "sourceProfileFakebookStandard": "Fakebook Standard",
-  "sourceProfileRecordingInspired": "Recording Inspired",
-  "smartDiagnostics": "Diagnosticos Smart",
-  "smartDiagnosticsHelp": "Logs Smart Generator decision traces for debugging.",
-  "keyModeRequiredForSmartGenerator": "Select at least one key to use Smart Generator mode.",
-  "nonDiatonic": "Non-Diatonic",
-  "nonDiatonicRequiresKeyMode": "Non-diatonic options are available in key mode only.",
-  "secondaryDominant": "Dominante secundaria",
-  "substituteDominant": "Dominante sustituta",
-  "modalInterchange": "Intercambio modal",
-  "modalInterchangeDisabledHelp": "Modal interchange only appears in key mode, so this option is disabled in free mode.",
-  "rendering": "Representacion",
-  "keyCenterLabelStyle": "Estilo de tonalidad",
-  "keyCenterLabelStyleHelp": "Elige entre mostrar mayor/menor en texto o usar mayusculas y minusculas al estilo clasico.",
-  "chordSymbolStyle": "Estilo de simbolo de acorde",
-  "chordSymbolStyleHelp": "Changes the display layer only. Harmonic logic stays canonical.",
-  "styleCompact": "Compact",
-  "styleMajText": "MajText",
-  "styleDeltaJazz": "DeltaJazz",
-  "keyCenterLabelStyleModeText": "C mayor: / C menor:",
-  "keyCenterLabelStyleClassicalCase": "C: / c:",
-  "allowV7sus4": "Allow V7sus4 (V7, V7/x)",
-  "allowTensions": "Permitir tensiones",
-  "tensionHelp": "Roman numeral profile and selected chips only",
-  "inversions": "Inversiones",
-  "enableInversions": "Enable Inversions",
-  "inversionHelp": "Random slash-bass rendering after chord selection; it does not track the previous bass.",
-  "firstInversion": "1st Inversion",
-  "secondInversion": "2nd Inversion",
-  "thirdInversion": "3rd Inversion",
-  "keyPracticeOverview": "Resumen de practica tonal",
-  "freePracticeOverview": "Resumen de practica libre",
-  "keyModeTag": "Modo tonal",
-  "freeModeTag": "Modo libre",
-  "allKeysTag": "Todas las tonalidades",
-  "metronomeOnTag": "Metronome On",
-  "metronomeOffTag": "Metronome Off",
-  "pressNextChordToBegin": "Pulsa Next Chord para empezar",
-  "freeModeActive": "Modo libre activo",
-  "freePracticeDescription": "Uses all 12 chromatic roots with random chord qualities for broad reading practice.",
-  "smartPracticeDescription": "Follows harmonic function flow in the selected keys while allowing tasteful smart-generator movement.",
-  "keyPracticeDescription": "Uses the selected keys and enabled Roman numerals to generate diatonic practice material.",
-  "keyboardShortcutHelp": "Space: next chord  Enter: start or stop autoplay  Up/Down: adjust BPM",
-  "nextChord": "Siguiente acorde",
-  "startAutoplay": "Iniciar autoplay",
-  "stopAutoplay": "Detener autoplay",
-  "decreaseBpm": "Bajar BPM",
-  "increaseBpm": "Subir BPM",
-  "bpmLabel": "BPM",
-  "bpmTag": "{value} BPM",
-  "@bpmTag": {
-    "placeholders": {
-      "value": {
-        "type": "int"
-      }
-    }
-  },
-  "allowedRange": "Rango permitido: {min}-{max}",
-  "@allowedRange": {
-    "placeholders": {
-      "min": {
-        "type": "int"
-      },
-      "max": {
-        "type": "int"
-      }
-    }
-  },
-  "modeMajor": "mayor",
-  "modeMinor": "menor",
-  "analysisLabelWithCenter": "{center}: {roman}",
-  "@analysisLabelWithCenter": {
-    "placeholders": {
-      "center": {},
-      "roman": {}
-    }
-  },
-  "voicingSuggestionsTitle": "Sugerencias de voicing",
-  "voicingSuggestionsSubtitle": "Mira opciones concretas de notas para este acorde.",
-  "voicingSuggestionsEnabled": "Activar sugerencias de voicing",
-  "voicingSuggestionsHelp": "Shows three playable note-level voicing ideas for the current chord.",
-  "voicingComplexity": "Voicing Complexity",
-  "voicingComplexityHelp": "Controls how colorful the suggestions may become.",
-  "voicingComplexityBasic": "Basic",
-  "voicingComplexityStandard": "Standard",
-  "voicingComplexityModern": "Modern",
-  "voicingTopNotePreference": "Preferencia de nota superior",
-  "voicingTopNotePreferenceHelp": "Leans suggestions toward a chosen top line. Locked voicings win first, then repeated chords keep it steady.",
-  "voicingTopNotePreferenceAuto": "Auto",
-  "allowRootlessVoicings": "Allow Rootless Voicings",
-  "allowRootlessVoicingsHelp": "Lets suggestions omit the root when the guide tones stay clear.",
-  "maxVoicingNotes": "Max Voicing Notes",
-  "lookAheadDepth": "Look-Ahead Depth",
-  "lookAheadDepthHelp": "How many future chords the ranking may consider.",
-  "showVoicingReasons": "Show Voicing Reasons",
-  "showVoicingReasonsHelp": "Displays short explanation chips on each suggestion card.",
-  "voicingSuggestionNatural": "Most Natural",
-  "voicingSuggestionColorful": "Most Colorful",
-  "voicingSuggestionEasy": "Easiest",
-  "voicingSuggestionNaturalSubtitle": "Voice-leading first",
-  "voicingSuggestionColorfulSubtitle": "Leans into color tones",
-  "voicingSuggestionEasySubtitle": "Compact hand shape",
-  "voicingSuggestionNaturalConnectedSubtitle": "Connection and resolution first",
-  "voicingSuggestionNaturalStableSubtitle": "Same shape, steady comping",
-  "voicingSuggestionTopLineSubtitle": "Top line leads",
-  "voicingSuggestionColorfulAlteredSubtitle": "Altered tension up front",
-  "voicingSuggestionColorfulQuartalSubtitle": "Modern quartal color",
-  "voicingSuggestionColorfulTritoneSubtitle": "Tritone-sub edge with bright guide tones",
-  "voicingSuggestionColorfulUpperStructureSubtitle": "Guide tones with bright extensions",
-  "voicingSuggestionEasyAnchoredSubtitle": "Core tones, smaller reach",
-  "voicingSuggestionEasyStableSubtitle": "Repeat-friendly hand shape",
-  "voicingTopNoteLabel": "Superior",
-  "voicingTopNoteContextExplicit": "Top line target: {note}",
-  "@voicingTopNoteContextExplicit": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextLocked": "Locked top line: {note}",
-  "@voicingTopNoteContextLocked": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextCarry": "Repeated top line: {note}",
-  "@voicingTopNoteContextCarry": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextNearby": "Nearest top line to {note}",
-  "@voicingTopNoteContextNearby": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingTopNoteContextFallback": "No exact top line for {note}",
-  "@voicingTopNoteContextFallback": {
-    "placeholders": {
-      "note": {}
-    }
-  },
-  "voicingFamilyShell": "Shell",
-  "voicingFamilyRootlessA": "Rootless A",
-  "voicingFamilyRootlessB": "Rootless B",
-  "voicingFamilySpread": "Spread",
-  "voicingFamilySus": "Sus",
-  "voicingFamilyQuartal": "Quartal",
-  "voicingFamilyAltered": "Altered",
-  "voicingFamilyUpperStructure": "Upper Structure",
-  "voicingLockSuggestion": "Lock suggestion",
-  "voicingUnlockSuggestion": "Unlock suggestion",
-  "voicingSelected": "Seleccionado",
-  "voicingLocked": "Bloqueado",
-  "voicingReasonEssentialCore": "Essential tones covered",
-  "voicingReasonGuideToneAnchor": "3rd/7th anchor",
-  "voicingReasonGuideResolution": "{count} guide-tone resolves",
-  "@voicingReasonGuideResolution": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "voicingReasonCommonToneRetention": "{count} common tones kept",
-  "@voicingReasonCommonToneRetention": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "voicingReasonStableRepeat": "Stable repeat",
-  "voicingReasonTopLineTarget": "Top line target",
-  "voicingReasonLowMudAvoided": "Low-register clarity",
-  "voicingReasonCompactReach": "Comfortable reach",
-  "voicingReasonBassAnchor": "Bass anchor respected",
-  "voicingReasonNextChordReady": "Next chord ready",
-  "voicingReasonAlteredColor": "Altered tensions",
-  "voicingReasonRootlessClarity": "Light rootless shape",
-  "voicingReasonSusRelease": "Sus release set up",
-  "voicingReasonQuartalColor": "Quartal color",
-  "voicingReasonUpperStructureColor": "Upper-structure color",
-  "voicingReasonTritoneSubFlavor": "Tritone-sub flavor",
-  "voicingReasonLockedContinuity": "Locked continuity",
-  "voicingReasonGentleMotion": "Smooth hand move",
-  "mainMenuIntro": "Choose a practice generator or open the analyzer for a separate progression reading workflow.",
-  "mainMenuGeneratorTitle": "Chord Generator",
-  "mainMenuGeneratorDescription": "Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.",
-  "mainMenuAnalyzerTitle": "Chord Analyzer",
-  "mainMenuAnalyzerDescription": "Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.",
-  "openGenerator": "Open Generator",
-  "openAnalyzer": "Open Analyzer",
-  "chordAnalyzerTitle": "Chord Analyzer",
-  "chordAnalyzerSubtitle": "Paste a progression and get a conservative harmonic reading.",
-  "chordAnalyzerInputLabel": "Chord progression",
-  "chordAnalyzerInputHint": "Dm7 G7 Cmaj7",
-  "chordAnalyzerInputHelper": "Spaces, |, and commas are accepted. Slash chords and simple alterations are supported. Touch devices can use the chord pad or switch to ABC input.",
-  "chordAnalyzerAnalyze": "Analyze",
-  "chordAnalyzerKeyboardTitle": "Chord Pad",
-  "chordAnalyzerKeyboardTouchHint": "Tap tokens to build a progression. ABC input keeps the system keyboard available when you need free typing.",
-  "chordAnalyzerKeyboardDesktopHint": "Type, paste, or tap tokens to insert them at the cursor.",
-  "chordAnalyzerChordPad": "Pad",
-  "chordAnalyzerRawInput": "ABC",
-  "chordAnalyzerPaste": "Paste",
-  "chordAnalyzerClear": "Clear",
-  "chordAnalyzerBackspace": "Backspace",
-  "chordAnalyzerSpace": "Space",
-  "chordAnalyzerAnalyzing": "Analyzing progression...",
-  "chordAnalyzerInitialTitle": "Start with a progression",
-  "chordAnalyzerInitialBody": "Enter a progression such as Dm7 G7 Cmaj7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, and a short summary.",
-  "chordAnalyzerDetectedKeys": "Detected Keys",
-  "chordAnalyzerPrimaryReading": "Primary reading",
-  "chordAnalyzerAlternativeReading": "Alternative reading",
-  "chordAnalyzerChordAnalysis": "Chord-by-chord analysis",
-  "chordAnalyzerMeasureLabel": "Measure {index}",
-  "@chordAnalyzerMeasureLabel": {
-    "placeholders": {
-      "index": {}
-    }
-  },
-  "chordAnalyzerProgressionSummary": "Progression summary",
-  "chordAnalyzerWarnings": "Warnings and ambiguities",
-  "chordAnalyzerNoInputError": "Enter a chord progression to analyze.",
-  "chordAnalyzerNoRecognizedChordsError": "No recognizable chords were found in the progression.",
-  "chordAnalyzerPartialParseWarning": "Some symbols were skipped: {tokens}",
-  "@chordAnalyzerPartialParseWarning": {
-    "placeholders": {
-      "tokens": {}
-    }
-  },
-  "chordAnalyzerKeyAmbiguityWarning": "The key center is still somewhat ambiguous between {primary} and {alternative}.",
-  "@chordAnalyzerKeyAmbiguityWarning": {
-    "placeholders": {
-      "primary": {},
-      "alternative": {}
-    }
-  },
-  "chordAnalyzerUnresolvedWarning": "Some chords remain ambiguous under this MVP reading.",
-  "chordAnalyzerFunctionTonic": "Tonic",
-  "chordAnalyzerFunctionPredominant": "Predominant",
-  "chordAnalyzerFunctionDominant": "Dominant",
-  "chordAnalyzerFunctionOther": "Other",
-  "chordAnalyzerRemarkSecondaryDominant": "Possible secondary dominant targeting {target}.",
-  "@chordAnalyzerRemarkSecondaryDominant": {
-    "placeholders": {
-      "target": {}
-    }
-  },
-  "chordAnalyzerRemarkTritoneSub": "Possible tritone substitute targeting {target}.",
-  "@chordAnalyzerRemarkTritoneSub": {
-    "placeholders": {
-      "target": {}
-    }
-  },
-  "chordAnalyzerRemarkModalInterchange": "Possible modal interchange from the parallel minor.",
-  "chordAnalyzerRemarkAmbiguous": "This chord stays ambiguous in the current reading.",
-  "chordAnalyzerRemarkUnresolved": "This chord falls outside the current MVP heuristics.",
-  "chordAnalyzerTagIiVI": "ii-V-I cadence",
-  "chordAnalyzerTagTurnaround": "Turnaround",
-  "chordAnalyzerTagDominantResolution": "Dominant resolution",
-  "chordAnalyzerTagPlagalColor": "Plagal/modal color",
-  "chordAnalyzerSummaryCenter": "This progression most likely centers on {key}.",
-  "@chordAnalyzerSummaryCenter": {
-    "placeholders": {
-      "key": {}
-    }
-  },
-  "chordAnalyzerSummaryAlternative": "An alternative reading is {key}.",
-  "@chordAnalyzerSummaryAlternative": {
-    "placeholders": {
-      "key": {}
-    }
-  },
-  "chordAnalyzerSummaryTag": "It suggests a {tag}.",
-  "@chordAnalyzerSummaryTag": {
-    "placeholders": {
-      "tag": {}
-    }
-  },
-  "chordAnalyzerSummaryFlow": "{from} and {through} behave like {fromFunction} and {throughFunction} chords leading into {target}.",
-  "@chordAnalyzerSummaryFlow": {
-    "placeholders": {
-      "from": {},
-      "through": {},
-      "fromFunction": {},
-      "throughFunction": {},
-      "target": {}
-    }
-  },
-  "chordAnalyzerSummarySecondaryDominant": "{chord} can be heard as a possible secondary dominant pointing toward {target}.",
-  "@chordAnalyzerSummarySecondaryDominant": {
-    "placeholders": {
-      "chord": {},
-      "target": {}
-    }
-  },
-  "chordAnalyzerSummaryTritoneSub": "{chord} can be heard as a possible tritone substitute pointing toward {target}.",
-  "@chordAnalyzerSummaryTritoneSub": {
-    "placeholders": {
-      "chord": {},
-      "target": {}
-    }
-  },
-  "chordAnalyzerSummaryModalInterchange": "{chord} adds a possible modal interchange color.",
-  "@chordAnalyzerSummaryModalInterchange": {
-    "placeholders": {
-      "chord": {}
-    }
-  },
-  "chordAnalyzerSummaryAmbiguous": "Some details remain ambiguous, so this reading stays intentionally conservative.",
-  "chordAnalyzerExamplesTitle": "Examples",
-  "chordAnalyzerConfidenceLabel": "Confidence",
-  "chordAnalyzerAmbiguityLabel": "Ambiguity",
-  "chordAnalyzerWhyThisReading": "Why this reading",
-  "chordAnalyzerCompetingReadings": "Also plausible",
-  "chordAnalyzerIgnoredModifiersWarning": "Ignored modifiers: {details}",
-  "@chordAnalyzerIgnoredModifiersWarning": {
-    "placeholders": {
-      "details": {}
-    }
-  },
-  "chordAnalyzerParserDiagnosticWarning": "Input warning: {details}",
-  "@chordAnalyzerParserDiagnosticWarning": {
-    "placeholders": {
-      "details": {}
-    }
-  },
-  "chordAnalyzerDiagnosticUnbalancedParentheses": "Unbalanced parentheses left part of the symbol uncertain.",
-  "chordAnalyzerDiagnosticUnexpectedCloseParenthesis": "An unexpected closing parenthesis was ignored.",
-  "chordAnalyzerEvidenceExtensionColor": "Explicit {extension} color strengthens this reading.",
-  "@chordAnalyzerEvidenceExtensionColor": {
-    "placeholders": {
-      "extension": {}
-    }
-  },
-  "chordAnalyzerEvidenceAlteredDominantColor": "Altered dominant color supports a dominant function.",
-  "chordAnalyzerEvidenceSlashBass": "Slash bass {bass} keeps the bass line or inversion meaningful.",
-  "@chordAnalyzerEvidenceSlashBass": {
-    "placeholders": {
-      "bass": {}
-    }
-  },
-  "chordAnalyzerEvidenceResolution": "The next chord supports a resolution toward {target}.",
-  "@chordAnalyzerEvidenceResolution": {
-    "placeholders": {
-      "target": {}
-    }
-  },
-  "chordAnalyzerEvidenceBorrowedColor": "This color can be heard as borrowed from the parallel mode.",
-  "chordAnalyzerEvidenceSuspensionColor": "Suspension color softens the dominant pull without erasing it."
+    "@@locale":  "es",
+    "settings":  "Configuracion",
+    "closeSettings":  "Cerrar configuracion",
+    "language":  "Idioma",
+    "systemDefaultLanguage":  "Predeterminado del sistema",
+    "metronome":  "Metronomo",
+    "enabled":  "Activado",
+    "disabled":  "Desactivado",
+    "metronomeHelp":  "Activa el metronomo para escuchar un clic en cada pulso mientras practicas.",
+    "metronomeSound":  "Sonido del metronomo",
+    "metronomeSoundClassic":  "Clasico",
+    "metronomeSoundClickB":  "Click B",
+    "metronomeSoundClickC":  "Click C",
+    "metronomeSoundClickD":  "Click D",
+    "metronomeSoundClickE":  "Click E",
+    "metronomeSoundClickF":  "Click F",
+    "metronomeVolume":  "Volumen del metronomo",
+    "keys":  "Tonalidades",
+    "noKeysSelected":  "No keys selected. Leave all keys off to practice in free mode across every root.",
+    "keysSelectedHelp":  "Selected keys are used for key-aware random mode and Smart Generator mode.",
+    "smartGeneratorMode":  "Modo Smart Generator",
+    "smartGeneratorHelp":  "Prioritizes functional harmonic motion while preserving the enabled non-diatonic options.",
+    "advancedSmartGenerator":  "Smart Generator avanzado",
+    "modulationIntensity":  "Intensidad de modulacion",
+    "modulationIntensityOff":  "Off",
+    "modulationIntensityLow":  "Low",
+    "modulationIntensityMedium":  "Medium",
+    "modulationIntensityHigh":  "High",
+    "jazzPreset":  "Preajuste jazz",
+    "jazzPresetStandardsCore":  "Standards Core",
+    "jazzPresetModulationStudy":  "Modulation Study",
+    "jazzPresetAdvanced":  "Advanced",
+    "sourceProfile":  "Perfil de origen",
+    "sourceProfileFakebookStandard":  "Fakebook Standard",
+    "sourceProfileRecordingInspired":  "Recording Inspired",
+    "smartDiagnostics":  "Diagnosticos Smart",
+    "smartDiagnosticsHelp":  "Logs Smart Generator decision traces for debugging.",
+    "keyModeRequiredForSmartGenerator":  "Select at least one key to use Smart Generator mode.",
+    "nonDiatonic":  "Non-Diatonic",
+    "nonDiatonicRequiresKeyMode":  "Non-diatonic options are available in key mode only.",
+    "secondaryDominant":  "Dominante secundaria",
+    "substituteDominant":  "Dominante sustituta",
+    "modalInterchange":  "Intercambio modal",
+    "modalInterchangeDisabledHelp":  "Modal interchange only appears in key mode, so this option is disabled in free mode.",
+    "rendering":  "Representacion",
+    "keyCenterLabelStyle":  "Estilo de tonalidad",
+    "keyCenterLabelStyleHelp":  "Elige entre mostrar mayor/menor en texto o usar mayusculas y minusculas al estilo clasico.",
+    "chordSymbolStyle":  "Estilo de simbolo de acorde",
+    "chordSymbolStyleHelp":  "Changes the display layer only. Harmonic logic stays canonical.",
+    "styleCompact":  "Compact",
+    "styleMajText":  "MajText",
+    "styleDeltaJazz":  "DeltaJazz",
+    "keyCenterLabelStyleModeText":  "C mayor: / C menor:",
+    "keyCenterLabelStyleClassicalCase":  "C: / c:",
+    "allowV7sus4":  "Allow V7sus4 (V7, V7/x)",
+    "allowTensions":  "Permitir tensiones",
+    "tensionHelp":  "Roman numeral profile and selected chips only",
+    "inversions":  "Inversiones",
+    "enableInversions":  "Enable Inversions",
+    "inversionHelp":  "Random slash-bass rendering after chord selection; it does not track the previous bass.",
+    "firstInversion":  "1st Inversion",
+    "secondInversion":  "2nd Inversion",
+    "thirdInversion":  "3rd Inversion",
+    "keyPracticeOverview":  "Resumen de practica tonal",
+    "freePracticeOverview":  "Resumen de practica libre",
+    "keyModeTag":  "Modo tonal",
+    "freeModeTag":  "Modo libre",
+    "allKeysTag":  "Todas las tonalidades",
+    "metronomeOnTag":  "Metronome On",
+    "metronomeOffTag":  "Metronome Off",
+    "pressNextChordToBegin":  "Pulsa Next Chord para empezar",
+    "freeModeActive":  "Modo libre activo",
+    "freePracticeDescription":  "Uses all 12 chromatic roots with random chord qualities for broad reading practice.",
+    "smartPracticeDescription":  "Follows harmonic function flow in the selected keys while allowing tasteful smart-generator movement.",
+    "keyPracticeDescription":  "Uses the selected keys and enabled Roman numerals to generate diatonic practice material.",
+    "keyboardShortcutHelp":  "Space: next chord  Enter: start or stop autoplay  Up/Down: adjust BPM",
+    "nextChord":  "Siguiente acorde",
+    "startAutoplay":  "Iniciar autoplay",
+    "stopAutoplay":  "Detener autoplay",
+    "decreaseBpm":  "Bajar BPM",
+    "increaseBpm":  "Subir BPM",
+    "bpmLabel":  "BPM",
+    "bpmTag":  "{value} BPM",
+    "@bpmTag":  {
+                    "placeholders":  {
+                                         "value":  {
+                                                       "type":  "int"
+                                                   }
+                                     }
+                },
+    "allowedRange":  "Rango permitido: {min}-{max}",
+    "@allowedRange":  {
+                          "placeholders":  {
+                                               "min":  {
+                                                           "type":  "int"
+                                                       },
+                                               "max":  {
+                                                           "type":  "int"
+                                                       }
+                                           }
+                      },
+    "modeMajor":  "mayor",
+    "modeMinor":  "menor",
+    "analysisLabelWithCenter":  "{center}: {roman}",
+    "@analysisLabelWithCenter":  {
+                                     "placeholders":  {
+                                                          "center":  {
+
+                                                                     },
+                                                          "roman":  {
+
+                                                                    }
+                                                      }
+                                 },
+    "voicingSuggestionsTitle":  "Sugerencias de voicing",
+    "voicingSuggestionsSubtitle":  "Mira opciones concretas de notas para este acorde.",
+    "voicingSuggestionsEnabled":  "Activar sugerencias de voicing",
+    "voicingSuggestionsHelp":  "Shows three playable note-level voicing ideas for the current chord.",
+    "voicingComplexity":  "Voicing Complexity",
+    "voicingComplexityHelp":  "Controls how colorful the suggestions may become.",
+    "voicingComplexityBasic":  "Basic",
+    "voicingComplexityStandard":  "Standard",
+    "voicingComplexityModern":  "Modern",
+    "voicingTopNotePreference":  "Preferencia de nota superior",
+    "voicingTopNotePreferenceHelp":  "Leans suggestions toward a chosen top line. Locked voicings win first, then repeated chords keep it steady.",
+    "voicingTopNotePreferenceAuto":  "Auto",
+    "allowRootlessVoicings":  "Allow Rootless Voicings",
+    "allowRootlessVoicingsHelp":  "Lets suggestions omit the root when the guide tones stay clear.",
+    "maxVoicingNotes":  "Max Voicing Notes",
+    "lookAheadDepth":  "Look-Ahead Depth",
+    "lookAheadDepthHelp":  "How many future chords the ranking may consider.",
+    "showVoicingReasons":  "Show Voicing Reasons",
+    "showVoicingReasonsHelp":  "Displays short explanation chips on each suggestion card.",
+    "voicingSuggestionNatural":  "Most Natural",
+    "voicingSuggestionColorful":  "Most Colorful",
+    "voicingSuggestionEasy":  "Easiest",
+    "voicingSuggestionNaturalSubtitle":  "Voice-leading first",
+    "voicingSuggestionColorfulSubtitle":  "Leans into color tones",
+    "voicingSuggestionEasySubtitle":  "Compact hand shape",
+    "voicingSuggestionNaturalConnectedSubtitle":  "Connection and resolution first",
+    "voicingSuggestionNaturalStableSubtitle":  "Same shape, steady comping",
+    "voicingSuggestionTopLineSubtitle":  "Top line leads",
+    "voicingSuggestionColorfulAlteredSubtitle":  "Altered tension up front",
+    "voicingSuggestionColorfulQuartalSubtitle":  "Modern quartal color",
+    "voicingSuggestionColorfulTritoneSubtitle":  "Tritone-sub edge with bright guide tones",
+    "voicingSuggestionColorfulUpperStructureSubtitle":  "Guide tones with bright extensions",
+    "voicingSuggestionEasyAnchoredSubtitle":  "Core tones, smaller reach",
+    "voicingSuggestionEasyStableSubtitle":  "Repeat-friendly hand shape",
+    "voicingTopNoteLabel":  "Superior",
+    "voicingTopNoteContextExplicit":  "Top line target: {note}",
+    "@voicingTopNoteContextExplicit":  {
+                                           "placeholders":  {
+                                                                "note":  {
+
+                                                                         }
+                                                            }
+                                       },
+    "voicingTopNoteContextLocked":  "Locked top line: {note}",
+    "@voicingTopNoteContextLocked":  {
+                                         "placeholders":  {
+                                                              "note":  {
+
+                                                                       }
+                                                          }
+                                     },
+    "voicingTopNoteContextCarry":  "Repeated top line: {note}",
+    "@voicingTopNoteContextCarry":  {
+                                        "placeholders":  {
+                                                             "note":  {
+
+                                                                      }
+                                                         }
+                                    },
+    "voicingTopNoteContextNearby":  "Nearest top line to {note}",
+    "@voicingTopNoteContextNearby":  {
+                                         "placeholders":  {
+                                                              "note":  {
+
+                                                                       }
+                                                          }
+                                     },
+    "voicingTopNoteContextFallback":  "No exact top line for {note}",
+    "@voicingTopNoteContextFallback":  {
+                                           "placeholders":  {
+                                                                "note":  {
+
+                                                                         }
+                                                            }
+                                       },
+    "voicingFamilyShell":  "Shell",
+    "voicingFamilyRootlessA":  "Rootless A",
+    "voicingFamilyRootlessB":  "Rootless B",
+    "voicingFamilySpread":  "Spread",
+    "voicingFamilySus":  "Sus",
+    "voicingFamilyQuartal":  "Quartal",
+    "voicingFamilyAltered":  "Altered",
+    "voicingFamilyUpperStructure":  "Upper Structure",
+    "voicingLockSuggestion":  "Lock suggestion",
+    "voicingUnlockSuggestion":  "Unlock suggestion",
+    "voicingSelected":  "Seleccionado",
+    "voicingLocked":  "Bloqueado",
+    "voicingReasonEssentialCore":  "Essential tones covered",
+    "voicingReasonGuideToneAnchor":  "3rd/7th anchor",
+    "voicingReasonGuideResolution":  "{count} guide-tone resolves",
+    "@voicingReasonGuideResolution":  {
+                                          "placeholders":  {
+                                                               "count":  {
+                                                                             "type":  "int"
+                                                                         }
+                                                           }
+                                      },
+    "voicingReasonCommonToneRetention":  "{count} common tones kept",
+    "@voicingReasonCommonToneRetention":  {
+                                              "placeholders":  {
+                                                                   "count":  {
+                                                                                 "type":  "int"
+                                                                             }
+                                                               }
+                                          },
+    "voicingReasonStableRepeat":  "Stable repeat",
+    "voicingReasonTopLineTarget":  "Top line target",
+    "voicingReasonLowMudAvoided":  "Low-register clarity",
+    "voicingReasonCompactReach":  "Comfortable reach",
+    "voicingReasonBassAnchor":  "Bass anchor respected",
+    "voicingReasonNextChordReady":  "Next chord ready",
+    "voicingReasonAlteredColor":  "Altered tensions",
+    "voicingReasonRootlessClarity":  "Light rootless shape",
+    "voicingReasonSusRelease":  "Sus release set up",
+    "voicingReasonQuartalColor":  "Quartal color",
+    "voicingReasonUpperStructureColor":  "Upper-structure color",
+    "voicingReasonTritoneSubFlavor":  "Tritone-sub flavor",
+    "voicingReasonLockedContinuity":  "Locked continuity",
+    "voicingReasonGentleMotion":  "Smooth hand move",
+    "mainMenuIntro":  "Choose a practice generator or open the analyzer for a separate progression reading workflow.",
+    "mainMenuGeneratorTitle":  "Chord Generator",
+    "mainMenuGeneratorDescription":  "Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.",
+    "openGenerator":  "Open Generator",
+    "openAnalyzer":  "Abrir analizador",
+    "mainMenuAnalyzerTitle":  "Analizador de acordes",
+    "mainMenuAnalyzerDescription":  "Analiza una progresión escrita para estimar tonalidades, números romanos y funciones armónicas.",
+    "chordAnalyzerTitle":  "Analizador de acordes",
+    "chordAnalyzerSubtitle":  "Pega una progresión y obtén una lectura armónica conservadora.",
+    "chordAnalyzerInputLabel":  "Progresión de acordes",
+    "chordAnalyzerInputHint":  "Dm7 G7 Cmaj7",
+    "chordAnalyzerInputHelper":  "Fuera de paréntesis puedes separar con espacios, | o comas. Las comas dentro de paréntesis se mantienen dentro del mismo acorde. Se admiten raíces en minúscula, bajo con slash, formas sus/alt/add y tensiones como C7(b9, #11). En dispositivos táctiles puedes usar el panel de acordes o cambiar a entrada ABC.",
+    "chordAnalyzerAnalyze":  "Analizar",
+    "chordAnalyzerKeyboardTitle":  "Panel de acordes",
+    "chordAnalyzerKeyboardTouchHint":  "Toca símbolos para construir una progresión. La entrada ABC mantiene disponible el teclado del sistema cuando necesitas escribir libremente.",
+    "chordAnalyzerKeyboardDesktopHint":  "Escribe, pega o toca símbolos para insertarlos en el cursor.",
+    "chordAnalyzerChordPad":  "Panel",
+    "chordAnalyzerRawInput":  "ABC",
+    "chordAnalyzerPaste":  "Pegar",
+    "chordAnalyzerClear":  "Borrar",
+    "chordAnalyzerBackspace":  "Retroceso",
+    "chordAnalyzerSpace":  "Espacio",
+    "chordAnalyzerAnalyzing":  "Analizando progresión...",
+    "chordAnalyzerInitialTitle":  "Empieza con una progresión",
+    "chordAnalyzerInitialBody":  "Introduce una progresión como Dm7 G7 Cmaj7 o Cmaj7 | Am7 D7 | Gmaj7 para ver tonalidades probables, números romanos y un resumen breve.",
+    "chordAnalyzerDetectedKeys":  "Tonalidades detectadas",
+    "chordAnalyzerPrimaryReading":  "Lectura principal",
+    "chordAnalyzerAlternativeReading":  "Lectura alternativa",
+    "chordAnalyzerChordAnalysis":  "Análisis acorde por acorde",
+    "chordAnalyzerMeasureLabel":  "Compás {index}",
+    "@chordAnalyzerMeasureLabel":  {
+                                       "placeholders":  {
+                                                            "index":  {
+
+                                                                      }
+                                                        }
+                                   },
+    "chordAnalyzerProgressionSummary":  "Resumen de la progresión",
+    "chordAnalyzerWarnings":  "Advertencias y ambigüedades",
+    "chordAnalyzerNoInputError":  "Introduce una progresión de acordes para analizar.",
+    "chordAnalyzerNoRecognizedChordsError":  "No se encontraron acordes reconocibles en la progresión.",
+    "chordAnalyzerLowConfidenceTitle":  "Lectura de baja confianza",
+    "chordAnalyzerLowConfidenceBody":  "Las tonalidades candidatas están muy cerca entre sí o algunos símbolos solo se recuperaron parcialmente, así que tómalo como una primera lectura cautelosa.",
+    "chordAnalyzerEmptyMeasure":  "Este compás está vacío y se conservó en la numeración.",
+    "chordAnalyzerNoAnalyzableChordsInMeasure":  "No se recuperaron símbolos analizables en este compás.",
+    "chordAnalyzerParseIssuesTitle":  "Problemas de análisis",
+    "chordAnalyzerParseIssueLine":  "{token}: {reason}",
+    "@chordAnalyzerParseIssueLine":  {
+                                         "placeholders":  {
+                                                              "token":  {
+
+                                                                        },
+                                                              "reason":  {
+
+                                                                         }
+                                                          }
+                                     },
+    "chordAnalyzerParseIssueEmpty":  "Token vacío.",
+    "chordAnalyzerParseIssueInvalidRoot":  "No se pudo reconocer la raíz.",
+    "chordAnalyzerParseIssueUnknownRoot":  "{root} no es una escritura de raíz admitida.",
+    "@chordAnalyzerParseIssueUnknownRoot":  {
+                                                "placeholders":  {
+                                                                     "root":  {
+
+                                                                              }
+                                                                 }
+                                            },
+    "chordAnalyzerParseIssueInvalidBass":  "El bajo con slash {bass} no es una escritura admitida.",
+    "@chordAnalyzerParseIssueInvalidBass":  {
+                                                "placeholders":  {
+                                                                     "bass":  {
+
+                                                                              }
+                                                                 }
+                                            },
+    "chordAnalyzerParseIssueUnsupportedSuffix":  "Sufijo o modificador no admitido: {suffix}",
+    "@chordAnalyzerParseIssueUnsupportedSuffix":  {
+                                                      "placeholders":  {
+                                                                           "suffix":  {
+
+                                                                                      }
+                                                                       }
+                                                  },
+    "chordAnalyzerPartialParseWarning":  "Se omitieron algunos símbolos: {tokens}",
+    "@chordAnalyzerPartialParseWarning":  {
+                                              "placeholders":  {
+                                                                   "tokens":  {
+
+                                                                              }
+                                                               }
+                                          },
+    "chordAnalyzerKeyAmbiguityWarning":  "El centro tonal sigue siendo algo ambiguo entre {primary} y {alternative}.",
+    "@chordAnalyzerKeyAmbiguityWarning":  {
+                                              "placeholders":  {
+                                                                   "primary":  {
+
+                                                                               },
+                                                                   "alternative":  {
+
+                                                                                   }
+                                                               }
+                                          },
+    "chordAnalyzerUnresolvedWarning":  "Algunos acordes siguen siendo ambiguos, así que esta lectura se mantiene intencionalmente conservadora.",
+    "chordAnalyzerFunctionTonic":  "Tónica",
+    "chordAnalyzerFunctionPredominant":  "Predominante",
+    "chordAnalyzerFunctionDominant":  "Dominante",
+    "chordAnalyzerFunctionOther":  "Otro",
+    "chordAnalyzerRemarkSecondaryDominant":  "Posible dominante secundaria hacia {target}.",
+    "@chordAnalyzerRemarkSecondaryDominant":  {
+                                                  "placeholders":  {
+                                                                       "target":  {
+
+                                                                                  }
+                                                                   }
+                                              },
+    "chordAnalyzerRemarkTritoneSub":  "Posible sustituto por tritono hacia {target}.",
+    "@chordAnalyzerRemarkTritoneSub":  {
+                                           "placeholders":  {
+                                                                "target":  {
+
+                                                                           }
+                                                            }
+                                       },
+    "chordAnalyzerRemarkModalInterchange":  "Posible intercambio modal desde el modo paralelo menor.",
+    "chordAnalyzerRemarkAmbiguous":  "Este acorde sigue siendo ambiguo en la lectura actual.",
+    "chordAnalyzerRemarkUnresolved":  "Este acorde sigue sin resolverse con las heurísticas conservadoras actuales.",
+    "chordAnalyzerTagIiVI":  "cadencia ii-V-I",
+    "chordAnalyzerTagTurnaround":  "turnaround",
+    "chordAnalyzerTagDominantResolution":  "resolución dominante",
+    "chordAnalyzerTagPlagalColor":  "color plagal/modal",
+    "chordAnalyzerSummaryCenter":  "Esta progresión probablemente se centra en {key}.",
+    "@chordAnalyzerSummaryCenter":  {
+                                        "placeholders":  {
+                                                             "key":  {
+
+                                                                     }
+                                                         }
+                                    },
+    "chordAnalyzerSummaryAlternative":  "Una lectura alternativa es {key}.",
+    "@chordAnalyzerSummaryAlternative":  {
+                                             "placeholders":  {
+                                                                  "key":  {
+
+                                                                          }
+                                                              }
+                                         },
+    "chordAnalyzerSummaryTag":  "Sugiere un {tag}.",
+    "@chordAnalyzerSummaryTag":  {
+                                     "placeholders":  {
+                                                          "tag":  {
+
+                                                                  }
+                                                      }
+                                 },
+    "chordAnalyzerSummaryFlow":  "{from} y {through} funcionan como acordes de {fromFunction} y {throughFunction} que conducen a {target}.",
+    "@chordAnalyzerSummaryFlow":  {
+                                      "placeholders":  {
+                                                           "from":  {
+
+                                                                    },
+                                                           "through":  {
+
+                                                                       },
+                                                           "fromFunction":  {
+
+                                                                            },
+                                                           "throughFunction":  {
+
+                                                                               },
+                                                           "target":  {
+
+                                                                      }
+                                                       }
+                                  },
+    "chordAnalyzerSummarySecondaryDominant":  "{chord} puede oírse como una posible dominante secundaria que apunta hacia {target}.",
+    "@chordAnalyzerSummarySecondaryDominant":  {
+                                                   "placeholders":  {
+                                                                        "chord":  {
+
+                                                                                  },
+                                                                        "target":  {
+
+                                                                                   }
+                                                                    }
+                                               },
+    "chordAnalyzerSummaryTritoneSub":  "{chord} puede oírse como un posible sustituto por tritono que apunta hacia {target}.",
+    "@chordAnalyzerSummaryTritoneSub":  {
+                                            "placeholders":  {
+                                                                 "chord":  {
+
+                                                                           },
+                                                                 "target":  {
+
+                                                                            }
+                                                             }
+                                        },
+    "chordAnalyzerSummaryModalInterchange":  "{chord} añade un posible color de intercambio modal.",
+    "@chordAnalyzerSummaryModalInterchange":  {
+                                                  "placeholders":  {
+                                                                       "chord":  {
+
+                                                                                 }
+                                                                   }
+                                              },
+    "chordAnalyzerSummaryAmbiguous":  "Algunos detalles siguen siendo ambiguos, así que esta lectura se mantiene intencionalmente conservadora.",
+    "chordAnalyzerExamplesTitle":  "Ejemplos",
+    "chordAnalyzerConfidenceLabel":  "Confianza",
+    "chordAnalyzerAmbiguityLabel":  "Ambigüedad",
+    "chordAnalyzerWhyThisReading":  "Por qué esta lectura",
+    "chordAnalyzerCompetingReadings":  "También plausible",
+    "chordAnalyzerIgnoredModifiersWarning":  "Modificadores ignorados: {details}",
+    "@chordAnalyzerIgnoredModifiersWarning":  {
+                                                  "placeholders":  {
+                                                                       "details":  {
+
+                                                                                   }
+                                                                   }
+                                              },
+    "chordAnalyzerParserDiagnosticWarning":  "Advertencia de entrada: {details}",
+    "@chordAnalyzerParserDiagnosticWarning":  {
+                                                  "placeholders":  {
+                                                                       "details":  {
+
+                                                                                   }
+                                                                   }
+                                              },
+    "chordAnalyzerDiagnosticUnbalancedParentheses":  "Los paréntesis desequilibrados dejaron incierta parte del símbolo.",
+    "chordAnalyzerDiagnosticUnexpectedCloseParenthesis":  "Se ignoró un paréntesis de cierre inesperado.",
+    "chordAnalyzerEvidenceExtensionColor":  "El color explícito {extension} refuerza esta lectura.",
+    "@chordAnalyzerEvidenceExtensionColor":  {
+                                                 "placeholders":  {
+                                                                      "extension":  {
+
+                                                                                    }
+                                                                  }
+                                             },
+    "chordAnalyzerEvidenceAlteredDominantColor":  "El color dominante alterado apoya una función dominante.",
+    "chordAnalyzerEvidenceSlashBass":  "El bajo con slash {bass} mantiene significativa la línea de bajo o la inversión.",
+    "@chordAnalyzerEvidenceSlashBass":  {
+                                            "placeholders":  {
+                                                                 "bass":  {
+
+                                                                          }
+                                                             }
+                                        },
+    "chordAnalyzerEvidenceResolution":  "El siguiente acorde apoya una resolución hacia {target}.",
+    "@chordAnalyzerEvidenceResolution":  {
+                                             "placeholders":  {
+                                                                  "target":  {
+
+                                                                             }
+                                                              }
+                                         },
+    "chordAnalyzerEvidenceBorrowedColor":  "Este color puede oírse como prestado del modo paralelo.",
+    "chordAnalyzerEvidenceSuspensionColor":  "El color suspendido suaviza la atracción dominante sin borrarla."
 }

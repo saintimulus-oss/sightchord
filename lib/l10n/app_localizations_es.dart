@@ -537,181 +537,181 @@ class AppLocalizationsEs extends AppLocalizations {
       'Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.';
 
   @override
-  String get mainMenuAnalyzerTitle => 'Chord Analyzer';
-
-  @override
-  String get mainMenuAnalyzerDescription =>
-      'Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.';
-
-  @override
   String get openGenerator => 'Open Generator';
 
   @override
-  String get openAnalyzer => 'Open Analyzer';
+  String get openAnalyzer => 'Abrir analizador';
 
   @override
-  String get chordAnalyzerTitle => 'Chord Analyzer';
+  String get mainMenuAnalyzerTitle => 'Analizador de acordes';
+
+  @override
+  String get mainMenuAnalyzerDescription =>
+      'Analiza una progresión escrita para estimar tonalidades, números romanos y funciones armónicas.';
+
+  @override
+  String get chordAnalyzerTitle => 'Analizador de acordes';
 
   @override
   String get chordAnalyzerSubtitle =>
-      'Paste a progression and get a conservative harmonic reading.';
+      'Pega una progresión y obtén una lectura armónica conservadora.';
 
   @override
-  String get chordAnalyzerInputLabel => 'Chord progression';
+  String get chordAnalyzerInputLabel => 'Progresión de acordes';
 
   @override
   String get chordAnalyzerInputHint => 'Dm7 G7 Cmaj7';
 
   @override
   String get chordAnalyzerInputHelper =>
-      'Spaces, |, and commas are accepted. Slash chords and simple alterations are supported. Touch devices can use the chord pad or switch to ABC input.';
+      'Fuera de paréntesis puedes separar con espacios, | o comas. Las comas dentro de paréntesis se mantienen dentro del mismo acorde. Se admiten raíces en minúscula, bajo con slash, formas sus/alt/add y tensiones como C7(b9, #11). En dispositivos táctiles puedes usar el panel de acordes o cambiar a entrada ABC.';
 
   @override
-  String get chordAnalyzerAnalyze => 'Analyze';
+  String get chordAnalyzerAnalyze => 'Analizar';
 
   @override
-  String get chordAnalyzerKeyboardTitle => 'Chord Pad';
+  String get chordAnalyzerKeyboardTitle => 'Panel de acordes';
 
   @override
   String get chordAnalyzerKeyboardTouchHint =>
-      'Tap tokens to build a progression. ABC input keeps the system keyboard available when you need free typing.';
+      'Toca símbolos para construir una progresión. La entrada ABC mantiene disponible el teclado del sistema cuando necesitas escribir libremente.';
 
   @override
   String get chordAnalyzerKeyboardDesktopHint =>
-      'Type, paste, or tap tokens to insert them at the cursor.';
+      'Escribe, pega o toca símbolos para insertarlos en el cursor.';
 
   @override
-  String get chordAnalyzerChordPad => 'Pad';
+  String get chordAnalyzerChordPad => 'Panel';
 
   @override
   String get chordAnalyzerRawInput => 'ABC';
 
   @override
-  String get chordAnalyzerPaste => 'Paste';
+  String get chordAnalyzerPaste => 'Pegar';
 
   @override
-  String get chordAnalyzerClear => 'Clear';
+  String get chordAnalyzerClear => 'Borrar';
 
   @override
-  String get chordAnalyzerBackspace => 'Backspace';
+  String get chordAnalyzerBackspace => 'Retroceso';
 
   @override
-  String get chordAnalyzerSpace => 'Space';
+  String get chordAnalyzerSpace => 'Espacio';
 
   @override
-  String get chordAnalyzerAnalyzing => 'Analyzing progression...';
+  String get chordAnalyzerAnalyzing => 'Analizando progresión...';
 
   @override
-  String get chordAnalyzerInitialTitle => 'Start with a progression';
+  String get chordAnalyzerInitialTitle => 'Empieza con una progresión';
 
   @override
   String get chordAnalyzerInitialBody =>
-      'Enter a progression such as Dm7 G7 Cmaj7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, and a short summary.';
+      'Introduce una progresión como Dm7 G7 Cmaj7 o Cmaj7 | Am7 D7 | Gmaj7 para ver tonalidades probables, números romanos y un resumen breve.';
 
   @override
-  String get chordAnalyzerDetectedKeys => 'Detected Keys';
+  String get chordAnalyzerDetectedKeys => 'Tonalidades detectadas';
 
   @override
-  String get chordAnalyzerPrimaryReading => 'Primary reading';
+  String get chordAnalyzerPrimaryReading => 'Lectura principal';
 
   @override
-  String get chordAnalyzerAlternativeReading => 'Alternative reading';
+  String get chordAnalyzerAlternativeReading => 'Lectura alternativa';
 
   @override
-  String get chordAnalyzerChordAnalysis => 'Chord-by-chord analysis';
+  String get chordAnalyzerChordAnalysis => 'Análisis acorde por acorde';
 
   @override
   String chordAnalyzerMeasureLabel(Object index) {
-    return 'Measure $index';
+    return 'Compás $index';
   }
 
   @override
-  String get chordAnalyzerProgressionSummary => 'Progression summary';
+  String get chordAnalyzerProgressionSummary => 'Resumen de la progresión';
 
   @override
-  String get chordAnalyzerWarnings => 'Warnings and ambiguities';
+  String get chordAnalyzerWarnings => 'Advertencias y ambigüedades';
 
   @override
   String get chordAnalyzerNoInputError =>
-      'Enter a chord progression to analyze.';
+      'Introduce una progresión de acordes para analizar.';
 
   @override
   String get chordAnalyzerNoRecognizedChordsError =>
-      'No recognizable chords were found in the progression.';
+      'No se encontraron acordes reconocibles en la progresión.';
 
   @override
   String chordAnalyzerPartialParseWarning(Object tokens) {
-    return 'Some symbols were skipped: $tokens';
+    return 'Se omitieron algunos símbolos: $tokens';
   }
 
   @override
   String chordAnalyzerKeyAmbiguityWarning(Object primary, Object alternative) {
-    return 'The key center is still somewhat ambiguous between $primary and $alternative.';
+    return 'El centro tonal sigue siendo algo ambiguo entre $primary y $alternative.';
   }
 
   @override
   String get chordAnalyzerUnresolvedWarning =>
-      'Some chords remain ambiguous under this MVP reading.';
+      'Algunos acordes siguen siendo ambiguos, así que esta lectura se mantiene intencionalmente conservadora.';
 
   @override
-  String get chordAnalyzerFunctionTonic => 'Tonic';
+  String get chordAnalyzerFunctionTonic => 'Tónica';
 
   @override
-  String get chordAnalyzerFunctionPredominant => 'Predominant';
+  String get chordAnalyzerFunctionPredominant => 'Predominante';
 
   @override
-  String get chordAnalyzerFunctionDominant => 'Dominant';
+  String get chordAnalyzerFunctionDominant => 'Dominante';
 
   @override
-  String get chordAnalyzerFunctionOther => 'Other';
+  String get chordAnalyzerFunctionOther => 'Otro';
 
   @override
   String chordAnalyzerRemarkSecondaryDominant(Object target) {
-    return 'Possible secondary dominant targeting $target.';
+    return 'Posible dominante secundaria hacia $target.';
   }
 
   @override
   String chordAnalyzerRemarkTritoneSub(Object target) {
-    return 'Possible tritone substitute targeting $target.';
+    return 'Posible sustituto por tritono hacia $target.';
   }
 
   @override
   String get chordAnalyzerRemarkModalInterchange =>
-      'Possible modal interchange from the parallel minor.';
+      'Posible intercambio modal desde el modo paralelo menor.';
 
   @override
   String get chordAnalyzerRemarkAmbiguous =>
-      'This chord stays ambiguous in the current reading.';
+      'Este acorde sigue siendo ambiguo en la lectura actual.';
 
   @override
   String get chordAnalyzerRemarkUnresolved =>
-      'This chord falls outside the current MVP heuristics.';
+      'Este acorde sigue sin resolverse con las heurísticas conservadoras actuales.';
 
   @override
-  String get chordAnalyzerTagIiVI => 'ii-V-I cadence';
+  String get chordAnalyzerTagIiVI => 'cadencia ii-V-I';
 
   @override
-  String get chordAnalyzerTagTurnaround => 'Turnaround';
+  String get chordAnalyzerTagTurnaround => 'turnaround';
 
   @override
-  String get chordAnalyzerTagDominantResolution => 'Dominant resolution';
+  String get chordAnalyzerTagDominantResolution => 'resolución dominante';
 
   @override
-  String get chordAnalyzerTagPlagalColor => 'Plagal/modal color';
+  String get chordAnalyzerTagPlagalColor => 'color plagal/modal';
 
   @override
   String chordAnalyzerSummaryCenter(Object key) {
-    return 'This progression most likely centers on $key.';
+    return 'Esta progresión probablemente se centra en $key.';
   }
 
   @override
   String chordAnalyzerSummaryAlternative(Object key) {
-    return 'An alternative reading is $key.';
+    return 'Una lectura alternativa es $key.';
   }
 
   @override
   String chordAnalyzerSummaryTag(Object tag) {
-    return 'It suggests a $tag.';
+    return 'Sugiere un $tag.';
   }
 
   @override
@@ -722,85 +722,130 @@ class AppLocalizationsEs extends AppLocalizations {
     Object throughFunction,
     Object target,
   ) {
-    return '$from and $through behave like $fromFunction and $throughFunction chords leading into $target.';
+    return '$from y $through funcionan como acordes de $fromFunction y $throughFunction que conducen a $target.';
   }
 
   @override
   String chordAnalyzerSummarySecondaryDominant(Object chord, Object target) {
-    return '$chord can be heard as a possible secondary dominant pointing toward $target.';
+    return '$chord puede oírse como una posible dominante secundaria que apunta hacia $target.';
   }
 
   @override
   String chordAnalyzerSummaryTritoneSub(Object chord, Object target) {
-    return '$chord can be heard as a possible tritone substitute pointing toward $target.';
+    return '$chord puede oírse como un posible sustituto por tritono que apunta hacia $target.';
   }
 
   @override
   String chordAnalyzerSummaryModalInterchange(Object chord) {
-    return '$chord adds a possible modal interchange color.';
+    return '$chord añade un posible color de intercambio modal.';
   }
 
   @override
   String get chordAnalyzerSummaryAmbiguous =>
-      'Some details remain ambiguous, so this reading stays intentionally conservative.';
+      'Algunos detalles siguen siendo ambiguos, así que esta lectura se mantiene intencionalmente conservadora.';
 
   @override
-  String get chordAnalyzerExamplesTitle => 'Examples';
+  String get chordAnalyzerExamplesTitle => 'Ejemplos';
 
   @override
-  String get chordAnalyzerConfidenceLabel => 'Confidence';
+  String get chordAnalyzerConfidenceLabel => 'Confianza';
 
   @override
-  String get chordAnalyzerAmbiguityLabel => 'Ambiguity';
+  String get chordAnalyzerAmbiguityLabel => 'Ambigüedad';
 
   @override
-  String get chordAnalyzerWhyThisReading => 'Why this reading';
+  String get chordAnalyzerWhyThisReading => 'Por qué esta lectura';
 
   @override
-  String get chordAnalyzerCompetingReadings => 'Also plausible';
+  String get chordAnalyzerCompetingReadings => 'También plausible';
 
   @override
   String chordAnalyzerIgnoredModifiersWarning(Object details) {
-    return 'Ignored modifiers: $details';
+    return 'Modificadores ignorados: $details';
   }
 
   @override
   String chordAnalyzerParserDiagnosticWarning(Object details) {
-    return 'Input warning: $details';
+    return 'Advertencia de entrada: $details';
   }
 
   @override
   String get chordAnalyzerDiagnosticUnbalancedParentheses =>
-      'Unbalanced parentheses left part of the symbol uncertain.';
+      'Los paréntesis desequilibrados dejaron incierta parte del símbolo.';
 
   @override
   String get chordAnalyzerDiagnosticUnexpectedCloseParenthesis =>
-      'An unexpected closing parenthesis was ignored.';
+      'Se ignoró un paréntesis de cierre inesperado.';
 
   @override
   String chordAnalyzerEvidenceExtensionColor(Object extension) {
-    return 'Explicit $extension color strengthens this reading.';
+    return 'El color explícito $extension refuerza esta lectura.';
   }
 
   @override
   String get chordAnalyzerEvidenceAlteredDominantColor =>
-      'Altered dominant color supports a dominant function.';
+      'El color dominante alterado apoya una función dominante.';
 
   @override
   String chordAnalyzerEvidenceSlashBass(Object bass) {
-    return 'Slash bass $bass keeps the bass line or inversion meaningful.';
+    return 'El bajo con slash $bass mantiene significativa la línea de bajo o la inversión.';
   }
 
   @override
   String chordAnalyzerEvidenceResolution(Object target) {
-    return 'The next chord supports a resolution toward $target.';
+    return 'El siguiente acorde apoya una resolución hacia $target.';
   }
 
   @override
   String get chordAnalyzerEvidenceBorrowedColor =>
-      'This color can be heard as borrowed from the parallel mode.';
+      'Este color puede oírse como prestado del modo paralelo.';
 
   @override
   String get chordAnalyzerEvidenceSuspensionColor =>
-      'Suspension color softens the dominant pull without erasing it.';
+      'El color suspendido suaviza la atracción dominante sin borrarla.';
+
+  @override
+  String get chordAnalyzerLowConfidenceTitle => 'Lectura de baja confianza';
+
+  @override
+  String get chordAnalyzerLowConfidenceBody =>
+      'Las tonalidades candidatas están muy cerca entre sí o algunos símbolos solo se recuperaron parcialmente, así que tómalo como una primera lectura cautelosa.';
+
+  @override
+  String get chordAnalyzerEmptyMeasure =>
+      'Este compás está vacío y se conservó en la numeración.';
+
+  @override
+  String get chordAnalyzerNoAnalyzableChordsInMeasure =>
+      'No se recuperaron símbolos analizables en este compás.';
+
+  @override
+  String get chordAnalyzerParseIssuesTitle => 'Problemas de análisis';
+
+  @override
+  String chordAnalyzerParseIssueLine(Object token, Object reason) {
+    return '$token: $reason';
+  }
+
+  @override
+  String get chordAnalyzerParseIssueEmpty => 'Token vacío.';
+
+  @override
+  String get chordAnalyzerParseIssueInvalidRoot =>
+      'No se pudo reconocer la raíz.';
+
+  @override
+  String chordAnalyzerParseIssueUnknownRoot(Object root) {
+    return '$root no es una escritura de raíz admitida.';
+  }
+
+  @override
+  String chordAnalyzerParseIssueInvalidBass(Object bass) {
+    return 'El bajo con slash $bass no es una escritura admitida.';
+  }
+
+  @override
+  String chordAnalyzerParseIssueUnsupportedSuffix(Object suffix) {
+    return 'Sufijo o modificador no admitido: $suffix';
+  }
 }

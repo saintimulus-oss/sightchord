@@ -31,33 +31,29 @@ void main() {
   const analyzer = ProgressionAnalyzer();
 
   final majorCenters = [
-    for (
-      final tonic in const [
-        'C',
-        'G',
-        'D',
-        'F',
-        'A#/Bb',
-        'D#/Eb',
-        'A',
-        'C#/Db',
-      ]
-    )
+    for (final tonic in const [
+      'C',
+      'G',
+      'D',
+      'F',
+      'A#/Bb',
+      'D#/Eb',
+      'A',
+      'C#/Db',
+    ])
       KeyCenter(tonicName: tonic, mode: KeyMode.major),
   ];
   final minorCenters = [
-    for (
-      final tonic in const [
-        'A',
-        'E',
-        'D',
-        'G',
-        'C',
-        'F#/Gb',
-        'A#/Bb',
-        'C#/Db',
-      ]
-    )
+    for (final tonic in const [
+      'A',
+      'E',
+      'D',
+      'G',
+      'C',
+      'F#/Gb',
+      'A#/Bb',
+      'C#/Db',
+    ])
       KeyCenter(tonicName: tonic, mode: KeyMode.minor),
   ];
 
@@ -117,10 +113,7 @@ void main() {
 
   String genericTritoneToTonic(KeyCenter center) {
     final tonic = center.tonicSemitone!;
-    final root = MusicTheory.spellPitch(
-      tonic + 1,
-      preferFlat: true,
-    );
+    final root = MusicTheory.spellPitch(tonic + 1, preferFlat: true);
     return '${root}7(#11)';
   }
 
@@ -143,11 +136,9 @@ void main() {
         ].join(' '),
         expectedKey: center.tonicName,
         expectedMode: KeyMode.major,
-        expectedRomans: const ['IIm7', 'V7', 'IM7'],
+        expectedRomans: const ['IIm7', 'V13', 'Imaj9'],
         requiredTags: const [ProgressionTagId.iiVI],
-        requiredEvidence: const [
-          (1, ProgressionEvidenceKind.extensionColor),
-        ],
+        requiredEvidence: const [(1, ProgressionEvidenceKind.extensionColor)],
       ),
     for (final center in majorCenters)
       _AnalysisFixture(
@@ -181,9 +172,7 @@ void main() {
         requiredRemarks: const [
           (0, ProgressionRemarkKind.possibleTritoneSubstitute),
         ],
-        requiredEvidence: const [
-          (0, ProgressionEvidenceKind.resolution),
-        ],
+        requiredEvidence: const [(0, ProgressionEvidenceKind.resolution)],
       ),
     for (final center in majorCenters.take(6))
       _AnalysisFixture(
@@ -199,9 +188,7 @@ void main() {
         requiredRemarks: const [
           (0, ProgressionRemarkKind.possibleModalInterchange),
         ],
-        requiredEvidence: const [
-          (0, ProgressionEvidenceKind.borrowedColor),
-        ],
+        requiredEvidence: const [(0, ProgressionEvidenceKind.borrowedColor)],
       ),
     for (final center in minorCenters)
       _AnalysisFixture(
@@ -241,9 +228,7 @@ void main() {
         requiredRemarks: const [
           (1, ProgressionRemarkKind.possibleSecondaryDominant),
         ],
-        requiredEvidence: const [
-          (0, ProgressionEvidenceKind.slashBass),
-        ],
+        requiredEvidence: const [(0, ProgressionEvidenceKind.slashBass)],
       ),
     for (final center in majorCenters.take(6))
       _AnalysisFixture(
@@ -251,7 +236,11 @@ void main() {
         progression: [
           chordSymbolForRoman(center, RomanNumeralId.iMaj7),
           chordSymbolForRoman(center, RomanNumeralId.secondaryOfV),
-          chordSymbolForRoman(center, RomanNumeralId.vDom7, suffixOverride: '13'),
+          chordSymbolForRoman(
+            center,
+            RomanNumeralId.vDom7,
+            suffixOverride: '13',
+          ),
           chordSymbolForRoman(center, RomanNumeralId.iMaj7),
         ].join(' '),
         expectedKey: center.tonicName,
@@ -287,58 +276,73 @@ void main() {
       ),
   ];
 
-  test('covers at least 60 progression fixtures with real harmonic assertions', () {
-    expect(fixtures.length, greaterThanOrEqualTo(60));
+  test(
+    'covers at least 60 progression fixtures with real harmonic assertions',
+    () {
+      expect(fixtures.length, greaterThanOrEqualTo(60));
 
-    for (final fixture in fixtures) {
-      final analysis = analyzer.analyze(fixture.progression);
+      for (final fixture in fixtures) {
+        final analysis = analyzer.analyze(fixture.progression);
 
-      expect(
-        analysis.primaryKey.keyCenter.tonicName,
-        fixture.expectedKey,
-        reason: fixture.name,
-      );
-      expect(
-        analysis.primaryKey.keyCenter.mode,
-        fixture.expectedMode,
-        reason: fixture.name,
-      );
-      if (fixture.expectedRomans.isNotEmpty) {
         expect(
-          analysis.chordAnalyses
-              .take(fixture.expectedRomans.length)
-              .map((item) => item.romanNumeral)
-              .toList(),
-          fixture.expectedRomans,
+          analysis.primaryKey.keyCenter.tonicName,
+          fixture.expectedKey,
           reason: fixture.name,
         );
-      }
-      for (final tag in fixture.requiredTags) {
-        expect(analysis.tags, contains(tag), reason: fixture.name);
-      }
-      for (final requirement in fixture.requiredRemarks) {
         expect(
-          analysis.chordAnalyses[requirement.$1].remarks.any(
-            (remark) => remark.kind == requirement.$2,
-          ),
-          isTrue,
+          analysis.primaryKey.keyCenter.mode,
+          fixture.expectedMode,
           reason: fixture.name,
         );
-      }
-      for (final requirement in fixture.requiredEvidence) {
+        if (fixture.expectedRomans.isNotEmpty) {
+          expect(
+            analysis.chordAnalyses
+                .take(fixture.expectedRomans.length)
+                .map((item) => item.romanNumeral)
+                .toList(),
+            fixture.expectedRomans,
+            reason: fixture.name,
+          );
+        }
+        for (final tag in fixture.requiredTags) {
+          expect(analysis.tags, contains(tag), reason: fixture.name);
+        }
+        for (final requirement in fixture.requiredRemarks) {
+          expect(
+            analysis.chordAnalyses[requirement.$1].remarks.any(
+              (remark) => remark.kind == requirement.$2,
+            ),
+            isTrue,
+            reason: fixture.name,
+          );
+        }
+        for (final requirement in fixture.requiredEvidence) {
+          expect(
+            analysis.chordAnalyses[requirement.$1].evidence.any(
+              (evidence) => evidence.kind == requirement.$2,
+            ),
+            isTrue,
+            reason: fixture.name,
+          );
+        }
         expect(
-          analysis.chordAnalyses[requirement.$1].evidence.any(
-            (evidence) => evidence.kind == requirement.$2,
-          ),
-          isTrue,
+          analysis.confidence,
+          inInclusiveRange(0.0, 1.0),
           reason: fixture.name,
         );
+        expect(
+          analysis.ambiguity,
+          inInclusiveRange(0.0, 1.0),
+          reason: fixture.name,
+        );
+        if (fixture.expectPartialFailure) {
+          expect(
+            analysis.parseResult.hasPartialFailure,
+            isTrue,
+            reason: fixture.name,
+          );
+        }
       }
-      expect(analysis.confidence, inInclusiveRange(0.0, 1.0), reason: fixture.name);
-      expect(analysis.ambiguity, inInclusiveRange(0.0, 1.0), reason: fixture.name);
-      if (fixture.expectPartialFailure) {
-        expect(analysis.parseResult.hasPartialFailure, isTrue, reason: fixture.name);
-      }
-    }
-  });
+    },
+  );
 }
