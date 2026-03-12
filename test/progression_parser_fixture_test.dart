@@ -10,6 +10,7 @@ class _ShapeFixture {
     this.extension,
     this.tensions = const [],
     this.addedTones = const [],
+    this.omittedTones = const [],
     this.alterations = const [],
     this.suspensions = const [],
   });
@@ -20,6 +21,7 @@ class _ShapeFixture {
   final int? extension;
   final List<String> tensions;
   final List<String> addedTones;
+  final List<String> omittedTones;
   final List<String> alterations;
   final List<String> suspensions;
 }
@@ -33,6 +35,7 @@ class _SlashFixture {
     required this.analysisFamily,
     this.extension,
     this.tensions = const [],
+    this.omittedTones = const [],
     this.alterations = const [],
     this.suspensions = const [],
   });
@@ -44,6 +47,7 @@ class _SlashFixture {
   final ChordFamily analysisFamily;
   final int? extension;
   final List<String> tensions;
+  final List<String> omittedTones;
   final List<String> alterations;
   final List<String> suspensions;
 }
@@ -110,10 +114,23 @@ void main() {
       tensions: ['13'],
     ),
     _ShapeFixture(
+      suffix: 'maj7omit5',
+      displayQuality: ChordQuality.major7,
+      analysisFamily: ChordFamily.major,
+      extension: 7,
+      omittedTones: ['5'],
+    ),
+    _ShapeFixture(
       suffix: '6',
       displayQuality: ChordQuality.six,
       analysisFamily: ChordFamily.major,
       extension: 6,
+    ),
+    _ShapeFixture(
+      suffix: '5',
+      displayQuality: ChordQuality.majorTriad,
+      analysisFamily: ChordFamily.major,
+      omittedTones: ['3'],
     ),
     _ShapeFixture(
       suffix: '6/9',
@@ -146,6 +163,18 @@ void main() {
       displayQuality: ChordQuality.majorTriad,
       analysisFamily: ChordFamily.major,
       addedTones: ['13'],
+    ),
+    _ShapeFixture(
+      suffix: 'add2',
+      displayQuality: ChordQuality.majorTriad,
+      analysisFamily: ChordFamily.major,
+      addedTones: ['2'],
+    ),
+    _ShapeFixture(
+      suffix: 'omit5',
+      displayQuality: ChordQuality.majorTriad,
+      analysisFamily: ChordFamily.major,
+      omittedTones: ['5'],
     ),
     _ShapeFixture(
       suffix: 'm',
@@ -461,6 +490,14 @@ void main() {
       tensions: ['9'],
     ),
     _SlashFixture(
+      symbol: 'G5/D',
+      root: 'G',
+      bass: 'D',
+      displayQuality: ChordQuality.majorTriad,
+      analysisFamily: ChordFamily.major,
+      omittedTones: ['3'],
+    ),
+    _SlashFixture(
       symbol: 'F#m11/C#',
       root: 'F#',
       bass: 'C#',
@@ -508,6 +545,7 @@ void main() {
         expect(chord.extension, shape.extension, reason: symbol);
         expect(chord.tensions, shape.tensions, reason: symbol);
         expect(chord.addedTones, shape.addedTones, reason: symbol);
+        expect(chord.omittedTones, shape.omittedTones, reason: symbol);
         expect(chord.alterations, shape.alterations, reason: symbol);
         expect(chord.suspensions, shape.suspensions, reason: symbol);
       }
@@ -534,6 +572,7 @@ void main() {
       );
       expect(chord.extension, fixture.extension, reason: fixture.symbol);
       expect(chord.tensions, fixture.tensions, reason: fixture.symbol);
+      expect(chord.omittedTones, fixture.omittedTones, reason: fixture.symbol);
       expect(chord.alterations, fixture.alterations, reason: fixture.symbol);
       expect(chord.suspensions, fixture.suspensions, reason: fixture.symbol);
     }
