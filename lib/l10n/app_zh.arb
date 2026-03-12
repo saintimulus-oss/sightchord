@@ -80,6 +80,15 @@
   "stopAutoplay": "停止自動播放",
   "decreaseBpm": "降低 BPM",
   "increaseBpm": "提高 BPM",
+  "bpmLabel": "BPM",
+  "bpmTag": "{value} BPM",
+  "@bpmTag": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
   "allowedRange": "允許範圍：{min}-{max}",
   "@allowedRange": {
     "placeholders": {

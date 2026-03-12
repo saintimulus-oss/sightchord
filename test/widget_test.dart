@@ -152,8 +152,18 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> openChordAnalyzer(WidgetTester tester) async {
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('main-open-analyzer-button')),
+    );
+    await tester.tap(find.byKey(const ValueKey('main-open-analyzer-button')));
+    await tester.pumpAndSettle();
+  }
+
   Future<void> openMainMenuSettings(WidgetTester tester) async {
-    await tester.ensureVisible(find.byKey(const ValueKey('main-open-settings-button')));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('main-open-settings-button')),
+    );
     await tester.tap(find.byKey(const ValueKey('main-open-settings-button')));
     await tester.pumpAndSettle();
   }
@@ -1194,6 +1204,31 @@ void main() {
     expect(find.textContaining('\uAC04\uACB0\uD615'), findsWidgets);
     expect(find.textContaining('Maj \uD45C\uAE30'), findsWidgets);
     expect(find.textContaining('\uB378\uD0C0 \uC7AC\uC988'), findsWidgets);
+  });
+
+  testWidgets('korean localization covers main menu and analyzer entry flow', (
+    WidgetTester tester,
+  ) async {
+    await pumpMainMenuWithSettings(
+      tester,
+      PracticeSettings(language: AppLanguage.ko),
+    );
+
+    expect(find.text('\uCF54\uB4DC \uC0DD\uC131\uAE30'), findsOneWidget);
+    expect(find.text('\uC0DD\uC131\uAE30 \uC5F4\uAE30'), findsOneWidget);
+    expect(find.text('\uCF54\uB4DC \uBD84\uC11D\uAE30'), findsOneWidget);
+    expect(find.text('\uBD84\uC11D\uAE30 \uC5F4\uAE30'), findsOneWidget);
+    expect(find.text('Open Generator'), findsNothing);
+    expect(find.text('Open Analyzer'), findsNothing);
+
+    await openChordAnalyzer(tester);
+    await tester.tap(find.byKey(const ValueKey('analyzer-input-field')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('\uCF54\uB4DC \uC9C4\uD589'), findsOneWidget);
+    expect(find.text('\uBD84\uC11D'), findsWidgets);
+    expect(find.text('\uCF54\uB4DC \uD328\uB4DC'), findsOneWidget);
+    expect(find.text('\uC608\uC2DC'), findsOneWidget);
   });
 
   testWidgets('system language follows the platform locale', (

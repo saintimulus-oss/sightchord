@@ -64,7 +64,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get keysSelectedHelp =>
-      'Selected keys are used for key-aware random mode and Smart Generator mode.';
+      '선택한 키는 키 인식 랜덤 모드와 Smart Generator 모드에서 사용됩니다.';
 
   @override
   String get smartGeneratorMode => 'Smart Generator 모드';
@@ -119,7 +119,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get keyModeRequiredForSmartGenerator =>
-      'Select at least one key to use Smart Generator mode.';
+      'Smart Generator 모드를 사용하려면 키를 하나 이상 선택하세요.';
 
   @override
   String get nonDiatonic => '비다이어토닉';
@@ -138,7 +138,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get modalInterchangeDisabledHelp =>
-      'Modal interchange only appears in key mode, so this option is disabled in free mode.';
+      '모달 인터체인지는 키 모드에서만 나타나므로 자유 모드에서는 이 옵션이 비활성화됩니다.';
 
   @override
   String get rendering => '표기';
@@ -148,7 +148,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get keyCenterLabelStyleHelp =>
-      'Choose between explicit mode names and classical uppercase/lowercase tonic labels.';
+      '모드 이름을 직접 표시하는 방식과 전통적인 장·단조 대소문자 으뜸음 표기 중에서 선택하세요.';
 
   @override
   String get chordSymbolStyle => '코드 심볼 스타일';
@@ -188,7 +188,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get inversionHelp =>
-      'Random slash-bass rendering after chord selection; it does not track the previous bass.';
+      '코드를 고른 뒤 슬래시 베이스 표기를 무작위로 적용합니다. 이전 베이스 라인은 추적하지 않습니다.';
 
   @override
   String get firstInversion => '1전위';
@@ -221,25 +221,25 @@ class AppLocalizationsKo extends AppLocalizations {
   String get metronomeOffTag => '메트로놈 꺼짐';
 
   @override
-  String get pressNextChordToBegin => '시작하려면 Next Chord를 누르세요';
+  String get pressNextChordToBegin => '시작하려면 다음 코드를 누르세요';
 
   @override
   String get freeModeActive => '자유 모드 활성';
 
   @override
   String get freePracticeDescription =>
-      'Uses all 12 chromatic roots with random chord qualities for broad reading practice.';
+      '12개의 모든 반음계 루트에서 무작위 코드 성질을 사용해 폭넓은 리딩 연습을 합니다.';
 
   @override
   String get smartPracticeDescription =>
-      'Follows harmonic function flow in the selected keys while allowing tasteful smart-generator movement.';
+      '선택한 키 안에서 화성 기능의 흐름을 따르면서도 자연스러운 Smart Generator 진행을 허용합니다.';
 
   @override
   String get keyPracticeDescription => '선택한 키와 활성화된 로마 숫자로 다이어토닉 연습 재료를 생성합니다.';
 
   @override
   String get keyboardShortcutHelp =>
-      'Space: next chord  Enter: start or stop autoplay  Up/Down: adjust BPM';
+      'Space: 다음 코드  Enter: 자동 재생 시작/정지  위/아래: BPM 조절';
 
   @override
   String get nextChord => '다음 코드';
@@ -255,6 +255,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get increaseBpm => 'BPM 높이기';
+
+  @override
+  String get bpmLabel => 'BPM';
+
+  @override
+  String bpmTag(int value) {
+    return '$value BPM';
+  }
 
   @override
   String allowedRange(int min, int max) {
@@ -304,7 +312,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get voicingTopNotePreferenceHelp =>
-      'Leans suggestions toward a chosen top line. Locked voicings win first, then repeated chords keep it steady.';
+      '제안이 선택한 탑라인 쪽으로 기울어집니다. 잠근 보이싱이 가장 우선하고, 그다음에는 반복되는 코드에서 안정적으로 유지됩니다.';
 
   @override
   String get voicingTopNotePreferenceAuto => '자동';
@@ -368,7 +376,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get voicingSuggestionColorfulUpperStructureSubtitle =>
-      'Guide tones with bright extensions';
+      '밝은 익스텐션을 더한 가이드톤 중심';
 
   @override
   String get voicingSuggestionEasyAnchoredSubtitle => '핵심 음 중심, 더 작은 도약';
@@ -499,192 +507,187 @@ class AppLocalizationsKo extends AppLocalizations {
   String get voicingReasonGentleMotion => '부드러운 손 이동';
 
   @override
-  String get mainMenuIntro =>
-      'Choose a practice generator or open the analyzer for a separate progression reading workflow.';
+  String get mainMenuIntro => '연습 생성기를 선택하거나, 별도의 진행 읽기 흐름을 위해 분석기를 열어 보세요.';
 
   @override
-  String get mainMenuGeneratorTitle => 'Chord Generator';
+  String get mainMenuGeneratorTitle => '코드 생성기';
 
   @override
   String get mainMenuGeneratorDescription =>
-      'Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.';
+      '키 인식 랜덤 모드, 스마트 진행, 보이싱 제안으로 연습용 코드를 생성합니다.';
 
   @override
-  String get mainMenuAnalyzerTitle => 'Chord Analyzer';
+  String get mainMenuAnalyzerTitle => '코드 분석기';
 
   @override
   String get mainMenuAnalyzerDescription =>
-      'Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.';
+      '작성한 진행을 분석해 유력한 키 센터, 로마 숫자, 화성 기능을 보여줍니다.';
 
   @override
-  String get openGenerator => 'Open Generator';
+  String get openGenerator => '생성기 열기';
 
   @override
-  String get openAnalyzer => 'Open Analyzer';
+  String get openAnalyzer => '분석기 열기';
 
   @override
-  String get chordAnalyzerTitle => 'Chord Analyzer';
+  String get chordAnalyzerTitle => '코드 분석기';
 
   @override
-  String get chordAnalyzerSubtitle =>
-      'Paste a progression and get a conservative harmonic reading.';
+  String get chordAnalyzerSubtitle => '진행을 붙여 넣으면 보수적인 화성 해석 결과를 보여줍니다.';
 
   @override
-  String get chordAnalyzerInputLabel => 'Chord progression';
+  String get chordAnalyzerInputLabel => '코드 진행';
 
   @override
   String get chordAnalyzerInputHint => 'Dm7 G7 Cmaj7';
 
   @override
   String get chordAnalyzerInputHelper =>
-      'Spaces, |, and commas are accepted. Slash chords and simple alterations are supported. Touch devices can use the chord pad or switch to ABC input.';
+      '공백, |, 쉼표를 사용할 수 있습니다. 슬래시 코드와 간단한 변형도 지원합니다. 터치 기기에서는 코드 패드를 쓰거나 ABC 입력으로 전환할 수 있습니다.';
 
   @override
-  String get chordAnalyzerAnalyze => 'Analyze';
+  String get chordAnalyzerAnalyze => '분석';
 
   @override
-  String get chordAnalyzerKeyboardTitle => 'Chord Pad';
+  String get chordAnalyzerKeyboardTitle => '코드 패드';
 
   @override
   String get chordAnalyzerKeyboardTouchHint =>
-      'Tap tokens to build a progression. ABC input keeps the system keyboard available when you need free typing.';
+      '토큰을 눌러 진행을 구성하세요. 자유 입력이 필요할 때는 ABC 입력으로 전환하면 시스템 키보드를 계속 사용할 수 있습니다.';
 
   @override
   String get chordAnalyzerKeyboardDesktopHint =>
-      'Type, paste, or tap tokens to insert them at the cursor.';
+      '입력하거나 붙여 넣거나 토큰을 눌러 커서 위치에 삽입하세요.';
 
   @override
-  String get chordAnalyzerChordPad => 'Pad';
+  String get chordAnalyzerChordPad => '패드';
 
   @override
   String get chordAnalyzerRawInput => 'ABC';
 
   @override
-  String get chordAnalyzerPaste => 'Paste';
+  String get chordAnalyzerPaste => '붙여넣기';
 
   @override
-  String get chordAnalyzerClear => 'Clear';
+  String get chordAnalyzerClear => '지우기';
 
   @override
-  String get chordAnalyzerBackspace => 'Backspace';
+  String get chordAnalyzerBackspace => '백스페이스';
 
   @override
-  String get chordAnalyzerSpace => 'Space';
+  String get chordAnalyzerSpace => '공백';
 
   @override
-  String get chordAnalyzerAnalyzing => 'Analyzing progression...';
+  String get chordAnalyzerAnalyzing => '진행을 분석하는 중...';
 
   @override
-  String get chordAnalyzerInitialTitle => 'Start with a progression';
+  String get chordAnalyzerInitialTitle => '진행부터 입력해 보세요';
 
   @override
   String get chordAnalyzerInitialBody =>
-      'Enter a progression such as Dm7 G7 Cmaj7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, and a short summary.';
+      'Dm7 G7 Cmaj7 또는 Cmaj7 | Am7 D7 | Gmaj7 같은 진행을 입력하면, 가능한 키와 로마 숫자, 짧은 요약을 볼 수 있습니다.';
 
   @override
-  String get chordAnalyzerDetectedKeys => 'Detected Keys';
+  String get chordAnalyzerDetectedKeys => '감지된 키';
 
   @override
-  String get chordAnalyzerPrimaryReading => 'Primary reading';
+  String get chordAnalyzerPrimaryReading => '기본 해석';
 
   @override
-  String get chordAnalyzerAlternativeReading => 'Alternative reading';
+  String get chordAnalyzerAlternativeReading => '대안 해석';
 
   @override
-  String get chordAnalyzerChordAnalysis => 'Chord-by-chord analysis';
+  String get chordAnalyzerChordAnalysis => '코드별 분석';
 
   @override
   String chordAnalyzerMeasureLabel(Object index) {
-    return 'Measure $index';
+    return '$index마디';
   }
 
   @override
-  String get chordAnalyzerProgressionSummary => 'Progression summary';
+  String get chordAnalyzerProgressionSummary => '진행 요약';
 
   @override
-  String get chordAnalyzerWarnings => 'Warnings and ambiguities';
+  String get chordAnalyzerWarnings => '경고 및 모호한 지점';
 
   @override
-  String get chordAnalyzerNoInputError =>
-      'Enter a chord progression to analyze.';
+  String get chordAnalyzerNoInputError => '분석할 코드 진행을 입력하세요.';
 
   @override
   String get chordAnalyzerNoRecognizedChordsError =>
-      'No recognizable chords were found in the progression.';
+      '진행에서 인식 가능한 코드를 찾지 못했습니다.';
 
   @override
   String chordAnalyzerPartialParseWarning(Object tokens) {
-    return 'Some symbols were skipped: $tokens';
+    return '일부 기호를 건너뛰었습니다: $tokens';
   }
 
   @override
   String chordAnalyzerKeyAmbiguityWarning(Object primary, Object alternative) {
-    return 'The key center is still somewhat ambiguous between $primary and $alternative.';
+    return '키 센터가 $primary와 $alternative 사이에서 아직 다소 모호합니다.';
   }
 
   @override
   String get chordAnalyzerUnresolvedWarning =>
-      'Some chords remain ambiguous under this MVP reading.';
+      '이 MVP 해석에서는 일부 코드가 여전히 모호하게 남아 있습니다.';
 
   @override
-  String get chordAnalyzerFunctionTonic => 'Tonic';
+  String get chordAnalyzerFunctionTonic => '토닉';
 
   @override
-  String get chordAnalyzerFunctionPredominant => 'Predominant';
+  String get chordAnalyzerFunctionPredominant => '프리도미넌트';
 
   @override
-  String get chordAnalyzerFunctionDominant => 'Dominant';
+  String get chordAnalyzerFunctionDominant => '도미넌트';
 
   @override
-  String get chordAnalyzerFunctionOther => 'Other';
+  String get chordAnalyzerFunctionOther => '기타';
 
   @override
   String chordAnalyzerRemarkSecondaryDominant(Object target) {
-    return 'Possible secondary dominant targeting $target.';
+    return '$target을 향하는 세컨더리 도미넌트일 가능성이 있습니다.';
   }
 
   @override
   String chordAnalyzerRemarkTritoneSub(Object target) {
-    return 'Possible tritone substitute targeting $target.';
+    return '$target을 향하는 트라이톤 서브스티튜트일 가능성이 있습니다.';
   }
 
   @override
   String get chordAnalyzerRemarkModalInterchange =>
-      'Possible modal interchange from the parallel minor.';
+      '병행 단조에서 빌려온 모달 인터체인지일 가능성이 있습니다.';
 
   @override
-  String get chordAnalyzerRemarkAmbiguous =>
-      'This chord stays ambiguous in the current reading.';
+  String get chordAnalyzerRemarkAmbiguous => '현재 해석에서는 이 코드가 여전히 모호합니다.';
 
   @override
-  String get chordAnalyzerRemarkUnresolved =>
-      'This chord falls outside the current MVP heuristics.';
+  String get chordAnalyzerRemarkUnresolved => '이 코드는 현재 MVP 휴리스틱 범위 밖에 있습니다.';
 
   @override
-  String get chordAnalyzerTagIiVI => 'ii-V-I cadence';
+  String get chordAnalyzerTagIiVI => 'ii-V-I 진행';
 
   @override
-  String get chordAnalyzerTagTurnaround => 'Turnaround';
+  String get chordAnalyzerTagTurnaround => '턴어라운드';
 
   @override
-  String get chordAnalyzerTagDominantResolution => 'Dominant resolution';
+  String get chordAnalyzerTagDominantResolution => '도미넌트 해결';
 
   @override
-  String get chordAnalyzerTagPlagalColor => 'Plagal/modal color';
+  String get chordAnalyzerTagPlagalColor => '플라갈/모달 컬러';
 
   @override
   String chordAnalyzerSummaryCenter(Object key) {
-    return 'This progression most likely centers on $key.';
+    return '이 진행의 중심 조성은 $key일 가능성이 가장 높습니다.';
   }
 
   @override
   String chordAnalyzerSummaryAlternative(Object key) {
-    return 'An alternative reading is $key.';
+    return '대안 해석으로는 $key도 가능합니다.';
   }
 
   @override
   String chordAnalyzerSummaryTag(Object tag) {
-    return 'It suggests a $tag.';
+    return '이 진행은 $tag 성격을 보여줍니다.';
   }
 
   @override
@@ -695,85 +698,85 @@ class AppLocalizationsKo extends AppLocalizations {
     Object throughFunction,
     Object target,
   ) {
-    return '$from and $through behave like $fromFunction and $throughFunction chords leading into $target.';
+    return '$from와 $through는 $target으로 향하는 $fromFunction, $throughFunction 기능으로 해석할 수 있습니다.';
   }
 
   @override
   String chordAnalyzerSummarySecondaryDominant(Object chord, Object target) {
-    return '$chord can be heard as a possible secondary dominant pointing toward $target.';
+    return '$chord는 $target을 향하는 세컨더리 도미넌트로 들릴 수 있습니다.';
   }
 
   @override
   String chordAnalyzerSummaryTritoneSub(Object chord, Object target) {
-    return '$chord can be heard as a possible tritone substitute pointing toward $target.';
+    return '$chord는 $target을 향하는 트라이톤 서브스티튜트로 들릴 수 있습니다.';
   }
 
   @override
   String chordAnalyzerSummaryModalInterchange(Object chord) {
-    return '$chord adds a possible modal interchange color.';
+    return '$chord는 모달 인터체인지 색채를 더해 줍니다.';
   }
 
   @override
   String get chordAnalyzerSummaryAmbiguous =>
-      'Some details remain ambiguous, so this reading stays intentionally conservative.';
+      '일부 세부 요소는 여전히 모호하므로, 해석은 의도적으로 보수적으로 유지됩니다.';
 
   @override
-  String get chordAnalyzerExamplesTitle => 'Examples';
+  String get chordAnalyzerExamplesTitle => '예시';
 
   @override
-  String get chordAnalyzerConfidenceLabel => 'Confidence';
+  String get chordAnalyzerConfidenceLabel => '신뢰도';
 
   @override
-  String get chordAnalyzerAmbiguityLabel => 'Ambiguity';
+  String get chordAnalyzerAmbiguityLabel => '모호성';
 
   @override
-  String get chordAnalyzerWhyThisReading => 'Why this reading';
+  String get chordAnalyzerWhyThisReading => '이렇게 해석한 이유';
 
   @override
-  String get chordAnalyzerCompetingReadings => 'Also plausible';
+  String get chordAnalyzerCompetingReadings => '함께 고려할 해석';
 
   @override
   String chordAnalyzerIgnoredModifiersWarning(Object details) {
-    return 'Ignored modifiers: $details';
+    return '무시된 수식: $details';
   }
 
   @override
   String chordAnalyzerParserDiagnosticWarning(Object details) {
-    return 'Input warning: $details';
+    return '입력 경고: $details';
   }
 
   @override
   String get chordAnalyzerDiagnosticUnbalancedParentheses =>
-      'Unbalanced parentheses left part of the symbol uncertain.';
+      '괄호가 맞지 않아 기호 일부를 확실히 해석하지 못했습니다.';
 
   @override
   String get chordAnalyzerDiagnosticUnexpectedCloseParenthesis =>
-      'An unexpected closing parenthesis was ignored.';
+      '예상치 못한 닫는 괄호를 무시했습니다.';
 
   @override
   String chordAnalyzerEvidenceExtensionColor(Object extension) {
-    return 'Explicit $extension color strengthens this reading.';
+    return '$extension 컬러가 이 해석을 더 강하게 뒷받침합니다.';
   }
 
   @override
   String get chordAnalyzerEvidenceAlteredDominantColor =>
-      'Altered dominant color supports a dominant function.';
+      '얼터드 도미넌트 컬러가 도미넌트 기능을 뒷받침합니다.';
 
   @override
   String chordAnalyzerEvidenceSlashBass(Object bass) {
-    return 'Slash bass $bass keeps the bass line or inversion meaningful.';
+    return '슬래시 베이스 $bass가 베이스 라인이나 전위의 의미를 살려 줍니다.';
   }
 
   @override
   String chordAnalyzerEvidenceResolution(Object target) {
-    return 'The next chord supports a resolution toward $target.';
+    return '다음 코드가 $target으로의 해결을 뒷받침합니다.';
   }
 
   @override
   String get chordAnalyzerEvidenceBorrowedColor =>
-      'This color can be heard as borrowed from the parallel mode.';
+      '이 색채는 병행 조성에서 빌려온 것으로 들릴 수 있습니다.';
 
   @override
   String get chordAnalyzerEvidenceSuspensionColor =>
-      'Suspension color softens the dominant pull without erasing it.';
+      '서스펜션 컬러가 도미넌트의 긴장을 완전히 지우지 않으면서도 부드럽게 만듭니다.';
 }

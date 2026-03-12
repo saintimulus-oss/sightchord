@@ -264,6 +264,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get increaseBpm => 'Increase BPM';
 
   @override
+  String get bpmLabel => 'BPM';
+
+  @override
+  String bpmTag(int value) {
+    return '$value BPM';
+  }
+
+  @override
   String allowedRange(int min, int max) {
     return 'Allowed range: $min-$max';
   }

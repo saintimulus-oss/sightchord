@@ -262,6 +262,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get increaseBpm => '提高 BPM';
 
   @override
+  String get bpmLabel => 'BPM';
+
+  @override
+  String bpmTag(int value) {
+    return '$value BPM';
+  }
+
+  @override
   String allowedRange(int min, int max) {
     return '允許範圍：$min-$max';
   }
@@ -1050,6 +1058,14 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get increaseBpm => '提高 BPM';
+
+  @override
+  String get bpmLabel => 'BPM';
+
+  @override
+  String bpmTag(int value) {
+    return '$value BPM';
+  }
 
   @override
   String allowedRange(int min, int max) {

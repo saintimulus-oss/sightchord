@@ -80,6 +80,15 @@
   "stopAutoplay": "自動再生を停止",
   "decreaseBpm": "BPM を下げる",
   "increaseBpm": "BPM を上げる",
+  "bpmLabel": "BPM",
+  "bpmTag": "{value} BPM",
+  "@bpmTag": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
   "allowedRange": "許容範囲: {min}-{max}",
   "@allowedRange": {
     "placeholders": {

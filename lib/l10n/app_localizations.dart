@@ -585,6 +585,18 @@ abstract class AppLocalizations {
   /// **'Increase BPM'**
   String get increaseBpm;
 
+  /// No description provided for @bpmLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'BPM'**
+  String get bpmLabel;
+
+  /// No description provided for @bpmTag.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} BPM'**
+  String bpmTag(int value);
+
   /// No description provided for @allowedRange.
   ///
   /// In en, this message translates to:

@@ -18,7 +18,7 @@
   "metronomeVolume": "메트로놈 볼륨",
   "keys": "키",
   "noKeysSelected": "선택된 키가 없습니다. 모두 끄면 모든 루트에서 자유 모드로 연습합니다.",
-  "keysSelectedHelp": "Selected keys are used for key-aware random mode and Smart Generator mode.",
+  "keysSelectedHelp": "선택한 키는 키 인식 랜덤 모드와 Smart Generator 모드에서 사용됩니다.",
   "smartGeneratorMode": "Smart Generator 모드",
   "smartGeneratorHelp": "활성화된 비다이어토닉 옵션을 유지하면서 기능적 화성 진행을 우선합니다.",
   "advancedSmartGenerator": "고급 Smart Generator",
@@ -36,16 +36,16 @@
   "sourceProfileRecordingInspired": "레코딩 영감",
   "smartDiagnostics": "Smart 진단",
   "smartDiagnosticsHelp": "디버깅을 위해 Smart Generator 결정 추적을 기록합니다.",
-  "keyModeRequiredForSmartGenerator": "Select at least one key to use Smart Generator mode.",
+  "keyModeRequiredForSmartGenerator": "Smart Generator 모드를 사용하려면 키를 하나 이상 선택하세요.",
   "nonDiatonic": "비다이어토닉",
   "nonDiatonicRequiresKeyMode": "비다이어토닉 옵션은 키 모드에서만 사용할 수 있습니다.",
   "secondaryDominant": "세컨더리 도미넌트",
   "substituteDominant": "서브스티튜트 도미넌트",
   "modalInterchange": "모달 인터체인지",
-  "modalInterchangeDisabledHelp": "Modal interchange only appears in key mode, so this option is disabled in free mode.",
+  "modalInterchangeDisabledHelp": "모달 인터체인지는 키 모드에서만 나타나므로 자유 모드에서는 이 옵션이 비활성화됩니다.",
   "rendering": "표기",
   "keyCenterLabelStyle": "조성 표기 방식",
-  "keyCenterLabelStyleHelp": "Choose between explicit mode names and classical uppercase/lowercase tonic labels.",
+  "keyCenterLabelStyleHelp": "모드 이름을 직접 표시하는 방식과 전통적인 장·단조 대소문자 으뜸음 표기 중에서 선택하세요.",
   "chordSymbolStyle": "코드 심볼 스타일",
   "chordSymbolStyleHelp": "표시 방식만 바뀌며 화성 로직은 그대로 유지됩니다.",
   "styleCompact": "간결형",
@@ -58,7 +58,7 @@
   "tensionHelp": "로마 숫자 프로필과 선택한 칩만 사용",
   "inversions": "전위",
   "enableInversions": "전위 사용",
-  "inversionHelp": "Random slash-bass rendering after chord selection; it does not track the previous bass.",
+  "inversionHelp": "코드를 고른 뒤 슬래시 베이스 표기를 무작위로 적용합니다. 이전 베이스 라인은 추적하지 않습니다.",
   "firstInversion": "1전위",
   "secondInversion": "2전위",
   "thirdInversion": "3전위",
@@ -69,17 +69,26 @@
   "allKeysTag": "전체 키",
   "metronomeOnTag": "메트로놈 켜짐",
   "metronomeOffTag": "메트로놈 꺼짐",
-  "pressNextChordToBegin": "시작하려면 Next Chord를 누르세요",
+  "pressNextChordToBegin": "시작하려면 다음 코드를 누르세요",
   "freeModeActive": "자유 모드 활성",
-  "freePracticeDescription": "Uses all 12 chromatic roots with random chord qualities for broad reading practice.",
-  "smartPracticeDescription": "Follows harmonic function flow in the selected keys while allowing tasteful smart-generator movement.",
+  "freePracticeDescription": "12개의 모든 반음계 루트에서 무작위 코드 성질을 사용해 폭넓은 리딩 연습을 합니다.",
+  "smartPracticeDescription": "선택한 키 안에서 화성 기능의 흐름을 따르면서도 자연스러운 Smart Generator 진행을 허용합니다.",
   "keyPracticeDescription": "선택한 키와 활성화된 로마 숫자로 다이어토닉 연습 재료를 생성합니다.",
-  "keyboardShortcutHelp": "Space: next chord  Enter: start or stop autoplay  Up/Down: adjust BPM",
+  "keyboardShortcutHelp": "Space: 다음 코드  Enter: 자동 재생 시작/정지  위/아래: BPM 조절",
   "nextChord": "다음 코드",
   "startAutoplay": "자동 재생 시작",
   "stopAutoplay": "자동 재생 중지",
   "decreaseBpm": "BPM 낮추기",
   "increaseBpm": "BPM 높이기",
+  "bpmLabel": "BPM",
+  "bpmTag": "{value} BPM",
+  "@bpmTag": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
   "allowedRange": "허용 범위: {min}-{max}",
   "@allowedRange": {
     "placeholders": {
@@ -110,7 +119,7 @@
   "voicingComplexityStandard": "표준",
   "voicingComplexityModern": "모던",
   "voicingTopNotePreference": "탑노트 선호",
-  "voicingTopNotePreferenceHelp": "Leans suggestions toward a chosen top line. Locked voicings win first, then repeated chords keep it steady.",
+  "voicingTopNotePreferenceHelp": "제안이 선택한 탑라인 쪽으로 기울어집니다. 잠근 보이싱이 가장 우선하고, 그다음에는 반복되는 코드에서 안정적으로 유지됩니다.",
   "voicingTopNotePreferenceAuto": "자동",
   "allowRootlessVoicings": "루트리스 보이싱 허용",
   "allowRootlessVoicingsHelp": "가이드톤이 분명할 때 루트를 생략한 제안을 허용합니다.",
@@ -131,7 +140,7 @@
   "voicingSuggestionColorfulAlteredSubtitle": "얼터드 텐션을 전면에",
   "voicingSuggestionColorfulQuartalSubtitle": "모던한 4도 보이싱 컬러",
   "voicingSuggestionColorfulTritoneSubtitle": "밝은 가이드톤의 트라이톤 서브 느낌",
-  "voicingSuggestionColorfulUpperStructureSubtitle": "Guide tones with bright extensions",
+  "voicingSuggestionColorfulUpperStructureSubtitle": "밝은 익스텐션을 더한 가이드톤 중심",
   "voicingSuggestionEasyAnchoredSubtitle": "핵심 음 중심, 더 작은 도약",
   "voicingSuggestionEasyStableSubtitle": "반복하기 쉬운 손 모양",
   "voicingTopNoteLabel": "탑",
@@ -209,101 +218,101 @@
   "voicingReasonTritoneSubFlavor": "트라이톤 서브 느낌",
   "voicingReasonLockedContinuity": "잠금된 연속성",
   "voicingReasonGentleMotion": "부드러운 손 이동",
-  "mainMenuIntro": "Choose a practice generator or open the analyzer for a separate progression reading workflow.",
-  "mainMenuGeneratorTitle": "Chord Generator",
-  "mainMenuGeneratorDescription": "Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.",
-  "mainMenuAnalyzerTitle": "Chord Analyzer",
-  "mainMenuAnalyzerDescription": "Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.",
-  "openGenerator": "Open Generator",
-  "openAnalyzer": "Open Analyzer",
-  "chordAnalyzerTitle": "Chord Analyzer",
-  "chordAnalyzerSubtitle": "Paste a progression and get a conservative harmonic reading.",
-  "chordAnalyzerInputLabel": "Chord progression",
+  "mainMenuIntro": "연습 생성기를 선택하거나, 별도의 진행 읽기 흐름을 위해 분석기를 열어 보세요.",
+  "mainMenuGeneratorTitle": "코드 생성기",
+  "mainMenuGeneratorDescription": "키 인식 랜덤 모드, 스마트 진행, 보이싱 제안으로 연습용 코드를 생성합니다.",
+  "mainMenuAnalyzerTitle": "코드 분석기",
+  "mainMenuAnalyzerDescription": "작성한 진행을 분석해 유력한 키 센터, 로마 숫자, 화성 기능을 보여줍니다.",
+  "openGenerator": "생성기 열기",
+  "openAnalyzer": "분석기 열기",
+  "chordAnalyzerTitle": "코드 분석기",
+  "chordAnalyzerSubtitle": "진행을 붙여 넣으면 보수적인 화성 해석 결과를 보여줍니다.",
+  "chordAnalyzerInputLabel": "코드 진행",
   "chordAnalyzerInputHint": "Dm7 G7 Cmaj7",
-  "chordAnalyzerInputHelper": "Spaces, |, and commas are accepted. Slash chords and simple alterations are supported. Touch devices can use the chord pad or switch to ABC input.",
-  "chordAnalyzerAnalyze": "Analyze",
-  "chordAnalyzerKeyboardTitle": "Chord Pad",
-  "chordAnalyzerKeyboardTouchHint": "Tap tokens to build a progression. ABC input keeps the system keyboard available when you need free typing.",
-  "chordAnalyzerKeyboardDesktopHint": "Type, paste, or tap tokens to insert them at the cursor.",
-  "chordAnalyzerChordPad": "Pad",
+  "chordAnalyzerInputHelper": "공백, |, 쉼표를 사용할 수 있습니다. 슬래시 코드와 간단한 변형도 지원합니다. 터치 기기에서는 코드 패드를 쓰거나 ABC 입력으로 전환할 수 있습니다.",
+  "chordAnalyzerAnalyze": "분석",
+  "chordAnalyzerKeyboardTitle": "코드 패드",
+  "chordAnalyzerKeyboardTouchHint": "토큰을 눌러 진행을 구성하세요. 자유 입력이 필요할 때는 ABC 입력으로 전환하면 시스템 키보드를 계속 사용할 수 있습니다.",
+  "chordAnalyzerKeyboardDesktopHint": "입력하거나 붙여 넣거나 토큰을 눌러 커서 위치에 삽입하세요.",
+  "chordAnalyzerChordPad": "패드",
   "chordAnalyzerRawInput": "ABC",
-  "chordAnalyzerPaste": "Paste",
-  "chordAnalyzerClear": "Clear",
-  "chordAnalyzerBackspace": "Backspace",
-  "chordAnalyzerSpace": "Space",
-  "chordAnalyzerAnalyzing": "Analyzing progression...",
-  "chordAnalyzerInitialTitle": "Start with a progression",
-  "chordAnalyzerInitialBody": "Enter a progression such as Dm7 G7 Cmaj7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, and a short summary.",
-  "chordAnalyzerDetectedKeys": "Detected Keys",
-  "chordAnalyzerPrimaryReading": "Primary reading",
-  "chordAnalyzerAlternativeReading": "Alternative reading",
-  "chordAnalyzerChordAnalysis": "Chord-by-chord analysis",
-  "chordAnalyzerMeasureLabel": "Measure {index}",
+  "chordAnalyzerPaste": "붙여넣기",
+  "chordAnalyzerClear": "지우기",
+  "chordAnalyzerBackspace": "백스페이스",
+  "chordAnalyzerSpace": "공백",
+  "chordAnalyzerAnalyzing": "진행을 분석하는 중...",
+  "chordAnalyzerInitialTitle": "진행부터 입력해 보세요",
+  "chordAnalyzerInitialBody": "Dm7 G7 Cmaj7 또는 Cmaj7 | Am7 D7 | Gmaj7 같은 진행을 입력하면, 가능한 키와 로마 숫자, 짧은 요약을 볼 수 있습니다.",
+  "chordAnalyzerDetectedKeys": "감지된 키",
+  "chordAnalyzerPrimaryReading": "기본 해석",
+  "chordAnalyzerAlternativeReading": "대안 해석",
+  "chordAnalyzerChordAnalysis": "코드별 분석",
+  "chordAnalyzerMeasureLabel": "{index}마디",
   "@chordAnalyzerMeasureLabel": {
     "placeholders": {
       "index": {}
     }
   },
-  "chordAnalyzerProgressionSummary": "Progression summary",
-  "chordAnalyzerWarnings": "Warnings and ambiguities",
-  "chordAnalyzerNoInputError": "Enter a chord progression to analyze.",
-  "chordAnalyzerNoRecognizedChordsError": "No recognizable chords were found in the progression.",
-  "chordAnalyzerPartialParseWarning": "Some symbols were skipped: {tokens}",
+  "chordAnalyzerProgressionSummary": "진행 요약",
+  "chordAnalyzerWarnings": "경고 및 모호한 지점",
+  "chordAnalyzerNoInputError": "분석할 코드 진행을 입력하세요.",
+  "chordAnalyzerNoRecognizedChordsError": "진행에서 인식 가능한 코드를 찾지 못했습니다.",
+  "chordAnalyzerPartialParseWarning": "일부 기호를 건너뛰었습니다: {tokens}",
   "@chordAnalyzerPartialParseWarning": {
     "placeholders": {
       "tokens": {}
     }
   },
-  "chordAnalyzerKeyAmbiguityWarning": "The key center is still somewhat ambiguous between {primary} and {alternative}.",
+  "chordAnalyzerKeyAmbiguityWarning": "키 센터가 {primary}와 {alternative} 사이에서 아직 다소 모호합니다.",
   "@chordAnalyzerKeyAmbiguityWarning": {
     "placeholders": {
       "primary": {},
       "alternative": {}
     }
   },
-  "chordAnalyzerUnresolvedWarning": "Some chords remain ambiguous under this MVP reading.",
-  "chordAnalyzerFunctionTonic": "Tonic",
-  "chordAnalyzerFunctionPredominant": "Predominant",
-  "chordAnalyzerFunctionDominant": "Dominant",
-  "chordAnalyzerFunctionOther": "Other",
-  "chordAnalyzerRemarkSecondaryDominant": "Possible secondary dominant targeting {target}.",
+  "chordAnalyzerUnresolvedWarning": "이 MVP 해석에서는 일부 코드가 여전히 모호하게 남아 있습니다.",
+  "chordAnalyzerFunctionTonic": "토닉",
+  "chordAnalyzerFunctionPredominant": "프리도미넌트",
+  "chordAnalyzerFunctionDominant": "도미넌트",
+  "chordAnalyzerFunctionOther": "기타",
+  "chordAnalyzerRemarkSecondaryDominant": "{target}을 향하는 세컨더리 도미넌트일 가능성이 있습니다.",
   "@chordAnalyzerRemarkSecondaryDominant": {
     "placeholders": {
       "target": {}
     }
   },
-  "chordAnalyzerRemarkTritoneSub": "Possible tritone substitute targeting {target}.",
+  "chordAnalyzerRemarkTritoneSub": "{target}을 향하는 트라이톤 서브스티튜트일 가능성이 있습니다.",
   "@chordAnalyzerRemarkTritoneSub": {
     "placeholders": {
       "target": {}
     }
   },
-  "chordAnalyzerRemarkModalInterchange": "Possible modal interchange from the parallel minor.",
-  "chordAnalyzerRemarkAmbiguous": "This chord stays ambiguous in the current reading.",
-  "chordAnalyzerRemarkUnresolved": "This chord falls outside the current MVP heuristics.",
-  "chordAnalyzerTagIiVI": "ii-V-I cadence",
-  "chordAnalyzerTagTurnaround": "Turnaround",
-  "chordAnalyzerTagDominantResolution": "Dominant resolution",
-  "chordAnalyzerTagPlagalColor": "Plagal/modal color",
-  "chordAnalyzerSummaryCenter": "This progression most likely centers on {key}.",
+  "chordAnalyzerRemarkModalInterchange": "병행 단조에서 빌려온 모달 인터체인지일 가능성이 있습니다.",
+  "chordAnalyzerRemarkAmbiguous": "현재 해석에서는 이 코드가 여전히 모호합니다.",
+  "chordAnalyzerRemarkUnresolved": "이 코드는 현재 MVP 휴리스틱 범위 밖에 있습니다.",
+  "chordAnalyzerTagIiVI": "ii-V-I 진행",
+  "chordAnalyzerTagTurnaround": "턴어라운드",
+  "chordAnalyzerTagDominantResolution": "도미넌트 해결",
+  "chordAnalyzerTagPlagalColor": "플라갈/모달 컬러",
+  "chordAnalyzerSummaryCenter": "이 진행의 중심 조성은 {key}일 가능성이 가장 높습니다.",
   "@chordAnalyzerSummaryCenter": {
     "placeholders": {
       "key": {}
     }
   },
-  "chordAnalyzerSummaryAlternative": "An alternative reading is {key}.",
+  "chordAnalyzerSummaryAlternative": "대안 해석으로는 {key}도 가능합니다.",
   "@chordAnalyzerSummaryAlternative": {
     "placeholders": {
       "key": {}
     }
   },
-  "chordAnalyzerSummaryTag": "It suggests a {tag}.",
+  "chordAnalyzerSummaryTag": "이 진행은 {tag} 성격을 보여줍니다.",
   "@chordAnalyzerSummaryTag": {
     "placeholders": {
       "tag": {}
     }
   },
-  "chordAnalyzerSummaryFlow": "{from} and {through} behave like {fromFunction} and {throughFunction} chords leading into {target}.",
+  "chordAnalyzerSummaryFlow": "{from}와 {through}는 {target}으로 향하는 {fromFunction}, {throughFunction} 기능으로 해석할 수 있습니다.",
   "@chordAnalyzerSummaryFlow": {
     "placeholders": {
       "from": {},
@@ -313,65 +322,65 @@
       "target": {}
     }
   },
-  "chordAnalyzerSummarySecondaryDominant": "{chord} can be heard as a possible secondary dominant pointing toward {target}.",
+  "chordAnalyzerSummarySecondaryDominant": "{chord}는 {target}을 향하는 세컨더리 도미넌트로 들릴 수 있습니다.",
   "@chordAnalyzerSummarySecondaryDominant": {
     "placeholders": {
       "chord": {},
       "target": {}
     }
   },
-  "chordAnalyzerSummaryTritoneSub": "{chord} can be heard as a possible tritone substitute pointing toward {target}.",
+  "chordAnalyzerSummaryTritoneSub": "{chord}는 {target}을 향하는 트라이톤 서브스티튜트로 들릴 수 있습니다.",
   "@chordAnalyzerSummaryTritoneSub": {
     "placeholders": {
       "chord": {},
       "target": {}
     }
   },
-  "chordAnalyzerSummaryModalInterchange": "{chord} adds a possible modal interchange color.",
+  "chordAnalyzerSummaryModalInterchange": "{chord}는 모달 인터체인지 색채를 더해 줍니다.",
   "@chordAnalyzerSummaryModalInterchange": {
     "placeholders": {
       "chord": {}
     }
   },
-  "chordAnalyzerSummaryAmbiguous": "Some details remain ambiguous, so this reading stays intentionally conservative.",
-  "chordAnalyzerExamplesTitle": "Examples",
-  "chordAnalyzerConfidenceLabel": "Confidence",
-  "chordAnalyzerAmbiguityLabel": "Ambiguity",
-  "chordAnalyzerWhyThisReading": "Why this reading",
-  "chordAnalyzerCompetingReadings": "Also plausible",
-  "chordAnalyzerIgnoredModifiersWarning": "Ignored modifiers: {details}",
+  "chordAnalyzerSummaryAmbiguous": "일부 세부 요소는 여전히 모호하므로, 해석은 의도적으로 보수적으로 유지됩니다.",
+  "chordAnalyzerExamplesTitle": "예시",
+  "chordAnalyzerConfidenceLabel": "신뢰도",
+  "chordAnalyzerAmbiguityLabel": "모호성",
+  "chordAnalyzerWhyThisReading": "이렇게 해석한 이유",
+  "chordAnalyzerCompetingReadings": "함께 고려할 해석",
+  "chordAnalyzerIgnoredModifiersWarning": "무시된 수식: {details}",
   "@chordAnalyzerIgnoredModifiersWarning": {
     "placeholders": {
       "details": {}
     }
   },
-  "chordAnalyzerParserDiagnosticWarning": "Input warning: {details}",
+  "chordAnalyzerParserDiagnosticWarning": "입력 경고: {details}",
   "@chordAnalyzerParserDiagnosticWarning": {
     "placeholders": {
       "details": {}
     }
   },
-  "chordAnalyzerDiagnosticUnbalancedParentheses": "Unbalanced parentheses left part of the symbol uncertain.",
-  "chordAnalyzerDiagnosticUnexpectedCloseParenthesis": "An unexpected closing parenthesis was ignored.",
-  "chordAnalyzerEvidenceExtensionColor": "Explicit {extension} color strengthens this reading.",
+  "chordAnalyzerDiagnosticUnbalancedParentheses": "괄호가 맞지 않아 기호 일부를 확실히 해석하지 못했습니다.",
+  "chordAnalyzerDiagnosticUnexpectedCloseParenthesis": "예상치 못한 닫는 괄호를 무시했습니다.",
+  "chordAnalyzerEvidenceExtensionColor": "{extension} 컬러가 이 해석을 더 강하게 뒷받침합니다.",
   "@chordAnalyzerEvidenceExtensionColor": {
     "placeholders": {
       "extension": {}
     }
   },
-  "chordAnalyzerEvidenceAlteredDominantColor": "Altered dominant color supports a dominant function.",
-  "chordAnalyzerEvidenceSlashBass": "Slash bass {bass} keeps the bass line or inversion meaningful.",
+  "chordAnalyzerEvidenceAlteredDominantColor": "얼터드 도미넌트 컬러가 도미넌트 기능을 뒷받침합니다.",
+  "chordAnalyzerEvidenceSlashBass": "슬래시 베이스 {bass}가 베이스 라인이나 전위의 의미를 살려 줍니다.",
   "@chordAnalyzerEvidenceSlashBass": {
     "placeholders": {
       "bass": {}
     }
   },
-  "chordAnalyzerEvidenceResolution": "The next chord supports a resolution toward {target}.",
+  "chordAnalyzerEvidenceResolution": "다음 코드가 {target}으로의 해결을 뒷받침합니다.",
   "@chordAnalyzerEvidenceResolution": {
     "placeholders": {
       "target": {}
     }
   },
-  "chordAnalyzerEvidenceBorrowedColor": "This color can be heard as borrowed from the parallel mode.",
-  "chordAnalyzerEvidenceSuspensionColor": "Suspension color softens the dominant pull without erasing it."
+  "chordAnalyzerEvidenceBorrowedColor": "이 색채는 병행 조성에서 빌려온 것으로 들릴 수 있습니다.",
+  "chordAnalyzerEvidenceSuspensionColor": "서스펜션 컬러가 도미넌트의 긴장을 완전히 지우지 않으면서도 부드럽게 만듭니다."
 }

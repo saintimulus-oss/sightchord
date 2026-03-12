@@ -120,9 +120,7 @@ class MainMenuPage extends StatelessWidget {
 
   void _openChordAnalyzer(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => const ChordAnalyzerPage(),
-      ),
+      MaterialPageRoute<void>(builder: (context) => const ChordAnalyzerPage()),
     );
   }
 
@@ -569,7 +567,7 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       tags.add(l10n.allKeysTag);
     }
-    tags.add('${_effectiveBpm()} BPM');
+    tags.add(l10n.bpmTag(_effectiveBpm()));
     tags.add(
       _settings.metronomeEnabled ? l10n.metronomeOnTag : l10n.metronomeOffTag,
     );
@@ -593,13 +591,13 @@ class _MyHomePageState extends State<MyHomePage> {
     final keyCenter = chord.keyCenter;
     final centerLabel = keyCenter == null
         ? chord.keyName
-        : _keyCenterLabel(l10n, keyCenter, trailingColon: true);
+        : _keyCenterLabel(l10n, keyCenter, trailingColon: false);
     final roman = MusicTheory.romanTokenOf(romanNumeralId);
 
     if (centerLabel == null || centerLabel.isEmpty) {
       return roman;
     }
-    return '$centerLabel $roman';
+    return l10n.analysisLabelWithCenter(centerLabel, roman);
   }
 
   String _keyCenterLabel(
@@ -1978,7 +1976,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ),
                                     const SizedBox(width: 10),
                                     Text(
-                                      'BPM',
+                                      l10n.bpmLabel,
                                       style: theme.textTheme.titleMedium
                                           ?.copyWith(
                                             fontWeight: FontWeight.w700,
@@ -2009,5 +2007,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
-

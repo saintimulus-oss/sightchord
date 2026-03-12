@@ -80,6 +80,15 @@
   "stopAutoplay": "Detener autoplay",
   "decreaseBpm": "Bajar BPM",
   "increaseBpm": "Subir BPM",
+  "bpmLabel": "BPM",
+  "bpmTag": "{value} BPM",
+  "@bpmTag": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
   "allowedRange": "Rango permitido: {min}-{max}",
   "@allowedRange": {
     "placeholders": {
