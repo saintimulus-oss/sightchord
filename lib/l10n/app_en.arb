@@ -244,11 +244,12 @@
     "openStudyHarmony":  "Open Study Harmony",
     "studyHarmonyTitle":  "Study Harmony",
     "studyHarmonySubtitle":  "Work through a structured harmony hub with quick lesson entries and chapter progress.",
-    "studyHarmonyPlaceholderTag":  "Prototype system",
-    "studyHarmonyPlaceholderBody":  "The prototype separates level data, prompt presentation, and answer input so future note, chord, scale, and reverse-identification drills can reuse the same flow.",
-    "studyHarmonyTestLevelTag":  "Test level",
-    "studyHarmonyTestLevelAction":  "Open test level",
+    "studyHarmonyPlaceholderTag":  "Study deck",
+    "studyHarmonyPlaceholderBody":  "Lesson data, prompts, and answer surfaces already share one reusable study flow for notes, chords, scales, and progression drills.",
+    "studyHarmonyTestLevelTag":  "Practice drill",
+    "studyHarmonyTestLevelAction":  "Open drill",
     "studyHarmonySubmit":  "Submit",
+    "studyHarmonyNextPrompt":  "Next prompt",
     "studyHarmonySelectedAnswers":  "Selected answers",
     "studyHarmonySelectionEmpty":  "No answers selected yet.",
     "studyHarmonyClearProgress":  "{current}/{total} correct",
@@ -324,6 +325,14 @@
     "studyHarmonyContinueCardTitle":  "Continue",
     "studyHarmonyContinueResumeHint":  "Resume the lesson you touched most recently.",
     "studyHarmonyContinueFrontierHint":  "Jump to the next lesson at your current frontier.",
+    "studyHarmonyContinueLessonLabel":  "Continue: {lessonTitle}",
+    "@studyHarmonyContinueLessonLabel":  {
+                                            "placeholders":  {
+                                                                 "lessonTitle":  {
+
+                                                                                 }
+                                                             }
+                                        },
     "studyHarmonyContinueAction":  "Continue",
     "studyHarmonyReviewCardTitle":  "Review",
     "studyHarmonyReviewQueueHint":  "Pulled from your current review queue placeholder.",
@@ -364,7 +373,19 @@
     "studyHarmonyModeLesson":  "Lesson Mode",
     "studyHarmonyModeReview":  "Review Mode",
     "studyHarmonyModeDaily":  "Daily Mode",
-    "studyHarmonyModeLegacy":  "Legacy Mode",
+    "studyHarmonyModeLegacy":  "Practice Mode",
+    "studyHarmonyShortcutHint":  "Enter submits or moves on. R restarts. 1-9 chooses an answer. Tab and Shift+Tab move focus.",
+    "studyHarmonyLivesRemaining":  "{remaining} of {total} lives remaining",
+    "@studyHarmonyLivesRemaining":  {
+                                        "placeholders":  {
+                                                             "remaining":  {
+                                                                               "type":  "int"
+                                                                           },
+                                                             "total":  {
+                                                                           "type":  "int"
+                                                                       }
+                                                         }
+                                    },
     "studyHarmonyResultSkillGainTitle":  "Skill gains",
     "studyHarmonyResultReviewFocusTitle":  "Review focus",
     "studyHarmonyResultSkillGainLine":  "{skill} {delta}",

@@ -113,52 +113,63 @@ class _PianoKeyTile extends StatelessWidget {
         ? colorScheme.onPrimaryContainer
         : colorScheme.onSurface;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: readOnly ? null : onTap,
-        borderRadius: BorderRadius.circular(isBlack ? 12 : 16),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutCubic,
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(isBlack ? 12 : 16),
-            border: Border.all(
-              color: isBlack
-                  ? colorScheme.outline.withValues(alpha: 0.2)
-                  : colorScheme.outlineVariant,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isBlack ? 0.22 : 0.08),
-                blurRadius: isBlack ? 14 : 10,
-                offset: Offset(0, isBlack ? 6 : 4),
-              ),
-            ],
-          ),
-          padding: EdgeInsets.fromLTRB(6, isBlack ? 10 : 12, 6, 12),
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                if (!isBlack)
-                  Text(
-                    definition.solfegeLabel,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: foregroundColor,
-                    ),
-                  ),
-                Text(
-                  definition.westernLabel,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: foregroundColor,
-                  ),
+    return Semantics(
+      button: !readOnly,
+      enabled: !readOnly,
+      selected: selected,
+      label: definition.combinedLabel,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: readOnly ? null : onTap,
+          canRequestFocus: !readOnly,
+          borderRadius: BorderRadius.circular(isBlack ? 12 : 16),
+          child: ExcludeSemantics(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(isBlack ? 12 : 16),
+                border: Border.all(
+                  color: isBlack
+                      ? colorScheme.outline.withValues(alpha: 0.2)
+                      : colorScheme.outlineVariant,
                 ),
-              ],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(
+                      alpha: isBlack ? 0.22 : 0.08,
+                    ),
+                    blurRadius: isBlack ? 14 : 10,
+                    offset: Offset(0, isBlack ? 6 : 4),
+                  ),
+                ],
+              ),
+              padding: EdgeInsets.fromLTRB(6, isBlack ? 10 : 12, 6, 12),
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (!isBlack)
+                      Text(
+                        definition.solfegeLabel,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: foregroundColor,
+                        ),
+                      ),
+                    Text(
+                      definition.westernLabel,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: foregroundColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),

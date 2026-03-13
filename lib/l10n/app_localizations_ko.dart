@@ -547,26 +547,29 @@ class AppLocalizationsKo extends AppLocalizations {
       '빠른 수업 진입과 챕터 진행도를 갖춘 구조화된 화성 학습 허브를 진행해 보세요.';
 
   @override
-  String get studyHarmonyPlaceholderTag => '프로토타입 시스템';
+  String get studyHarmonyPlaceholderTag => '학습 덱';
 
   @override
   String get studyHarmonyPlaceholderBody =>
-      '레벨 데이터, 문제 표현 방식, 정답 입력 UI를 분리해 두어서 앞으로 음, 코드, 스케일, 역문제 식 훈련까지 같은 흐름으로 확장할 수 있습니다.';
+      '레슨 데이터, 문제 표현, 정답 입력 표면을 하나의 학습 흐름으로 묶어 두어 음, 코드, 스케일, 진행 과제를 같은 방식으로 확장할 수 있습니다.';
 
   @override
-  String get studyHarmonyTestLevelTag => '테스트 레벨';
+  String get studyHarmonyTestLevelTag => '연습 드릴';
 
   @override
-  String get studyHarmonyTestLevelAction => '테스트 레벨 열기';
+  String get studyHarmonyTestLevelAction => '드릴 열기';
 
   @override
   String get studyHarmonySubmit => '제출';
 
   @override
-  String get studyHarmonySelectedAnswers => 'Selected answers';
+  String get studyHarmonyNextPrompt => '다음 문제';
 
   @override
-  String get studyHarmonySelectionEmpty => 'No answers selected yet.';
+  String get studyHarmonySelectedAnswers => '선택한 답';
+
+  @override
+  String get studyHarmonySelectionEmpty => '아직 선택한 답이 없습니다.';
 
   @override
   String studyHarmonyClearProgress(int current, int total) {
@@ -586,11 +589,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyObjective => '목표';
 
   @override
-  String get studyHarmonyPromptInstruction => 'Pick the matching answer';
+  String get studyHarmonyPromptInstruction => '맞는 답을 고르세요';
 
   @override
-  String get studyHarmonyNeedSelection =>
-      'Choose at least one answer before submitting.';
+  String get studyHarmonyNeedSelection => '제출하기 전에 답을 하나 이상 선택하세요.';
 
   @override
   String get studyHarmonyCorrectLabel => '정답';
@@ -620,7 +622,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyLevelCompleteBody =>
-      'You reached the lesson goal. Check your accuracy and clear time below.';
+      '레슨 목표를 달성했습니다. 아래에서 정답률과 클리어 시간을 확인하세요.';
 
   @override
   String get studyHarmonyBackToHub => 'Study Harmony로 돌아가기';
@@ -668,6 +670,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyContinueFrontierHint => '현재 진행선에서 다음 수업으로 바로 이동합니다.';
+
+  @override
+  String studyHarmonyContinueLessonLabel(Object lessonTitle) {
+    return '$lessonTitle 이어하기';
+  }
 
   @override
   String get studyHarmonyContinueAction => '계속하기';
@@ -736,7 +743,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyModeDaily => '데일리 모드';
 
   @override
-  String get studyHarmonyModeLegacy => '레거시 모드';
+  String get studyHarmonyModeLegacy => '연습 모드';
+
+  @override
+  String get studyHarmonyShortcutHint =>
+      'Enter: 제출/다음 · R: 다시 시작 · 1-9: 보기 선택 · Tab/Shift+Tab: 포커스 이동';
+
+  @override
+  String studyHarmonyLivesRemaining(int remaining, int total) {
+    return '라이프 $total개 중 $remaining개 남음';
+  }
 
   @override
   String get studyHarmonyResultSkillGainTitle => '스킬 변화';

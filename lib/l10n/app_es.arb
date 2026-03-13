@@ -1,879 +1,840 @@
-﻿{
-    "@@locale":  "es",
-    "settings":  "Configuracion",
-    "closeSettings":  "Cerrar configuracion",
-    "language":  "Idioma",
-    "systemDefaultLanguage":  "Predeterminado del sistema",
-    "metronome":  "Metronomo",
-    "enabled":  "Activado",
-    "disabled":  "Desactivado",
-    "metronomeHelp":  "Activa el metronomo para escuchar un clic en cada pulso mientras practicas.",
-    "metronomeSound":  "Sonido del metronomo",
-    "metronomeSoundClassic":  "Clasico",
-    "metronomeSoundClickB":  "Click B",
-    "metronomeSoundClickC":  "Click C",
-    "metronomeSoundClickD":  "Click D",
-    "metronomeSoundClickE":  "Click E",
-    "metronomeSoundClickF":  "Click F",
-    "metronomeVolume":  "Volumen del metronomo",
-    "keys":  "Tonalidades",
-    "noKeysSelected":  "No keys selected. Leave all keys off to practice in free mode across every root.",
-    "keysSelectedHelp":  "Selected keys are used for key-aware random mode and Smart Generator mode.",
-    "smartGeneratorMode":  "Modo Smart Generator",
-    "smartGeneratorHelp":  "Prioritizes functional harmonic motion while preserving the enabled non-diatonic options.",
-    "advancedSmartGenerator":  "Smart Generator avanzado",
-    "modulationIntensity":  "Intensidad de modulacion",
-    "modulationIntensityOff":  "Off",
-    "modulationIntensityLow":  "Low",
-    "modulationIntensityMedium":  "Medium",
-    "modulationIntensityHigh":  "High",
-    "jazzPreset":  "Preajuste jazz",
-    "jazzPresetStandardsCore":  "Standards Core",
-    "jazzPresetModulationStudy":  "Modulation Study",
-    "jazzPresetAdvanced":  "Advanced",
-    "sourceProfile":  "Perfil de origen",
-    "sourceProfileFakebookStandard":  "Fakebook Standard",
-    "sourceProfileRecordingInspired":  "Recording Inspired",
-    "smartDiagnostics":  "Diagnosticos Smart",
-    "smartDiagnosticsHelp":  "Logs Smart Generator decision traces for debugging.",
-    "keyModeRequiredForSmartGenerator":  "Select at least one key to use Smart Generator mode.",
-    "nonDiatonic":  "Non-Diatonic",
-    "nonDiatonicRequiresKeyMode":  "Non-diatonic options are available in key mode only.",
-    "secondaryDominant":  "Dominante secundaria",
-    "substituteDominant":  "Dominante sustituta",
-    "modalInterchange":  "Intercambio modal",
-    "modalInterchangeDisabledHelp":  "Modal interchange only appears in key mode, so this option is disabled in free mode.",
-    "rendering":  "Representacion",
-    "keyCenterLabelStyle":  "Estilo de tonalidad",
-    "keyCenterLabelStyleHelp":  "Elige entre mostrar mayor/menor en texto o usar mayusculas y minusculas al estilo clasico.",
-    "chordSymbolStyle":  "Estilo de simbolo de acorde",
-    "chordSymbolStyleHelp":  "Changes the display layer only. Harmonic logic stays canonical.",
-    "styleCompact":  "Compact",
-    "styleMajText":  "MajText",
-    "styleDeltaJazz":  "DeltaJazz",
-    "keyCenterLabelStyleModeText":  "C mayor: / C menor:",
-    "keyCenterLabelStyleClassicalCase":  "C: / c:",
-    "allowV7sus4":  "Allow V7sus4 (V7, V7/x)",
-    "allowTensions":  "Permitir tensiones",
-    "tensionHelp":  "Roman numeral profile and selected chips only",
-    "inversions":  "Inversiones",
-    "enableInversions":  "Enable Inversions",
-    "inversionHelp":  "Random slash-bass rendering after chord selection; it does not track the previous bass.",
-    "firstInversion":  "1st Inversion",
-    "secondInversion":  "2nd Inversion",
-    "thirdInversion":  "3rd Inversion",
-    "keyPracticeOverview":  "Resumen de practica tonal",
-    "freePracticeOverview":  "Resumen de practica libre",
-    "keyModeTag":  "Modo tonal",
-    "freeModeTag":  "Modo libre",
-    "allKeysTag":  "Todas las tonalidades",
-    "metronomeOnTag":  "Metronome On",
-    "metronomeOffTag":  "Metronome Off",
-    "pressNextChordToBegin":  "Pulsa Next Chord para empezar",
-    "freeModeActive":  "Modo libre activo",
-    "freePracticeDescription":  "Uses all 12 chromatic roots with random chord qualities for broad reading practice.",
-    "smartPracticeDescription":  "Follows harmonic function flow in the selected keys while allowing tasteful smart-generator movement.",
-    "keyPracticeDescription":  "Uses the selected keys and enabled Roman numerals to generate diatonic practice material.",
-    "keyboardShortcutHelp":  "Space: next chord  Enter: start or stop autoplay  Up/Down: adjust BPM",
-    "nextChord":  "Siguiente acorde",
-    "startAutoplay":  "Iniciar autoplay",
-    "stopAutoplay":  "Detener autoplay",
-    "decreaseBpm":  "Bajar BPM",
-    "increaseBpm":  "Subir BPM",
-    "bpmLabel":  "BPM",
-    "bpmTag":  "{value} BPM",
-    "@bpmTag":  {
-                    "placeholders":  {
-                                         "value":  {
-                                                       "type":  "int"
-                                                   }
-                                     }
-                },
-    "allowedRange":  "Rango permitido: {min}-{max}",
-    "@allowedRange":  {
-                          "placeholders":  {
-                                               "min":  {
-                                                           "type":  "int"
-                                                       },
-                                               "max":  {
-                                                           "type":  "int"
-                                                       }
-                                           }
-                      },
-    "modeMajor":  "mayor",
-    "modeMinor":  "menor",
-    "analysisLabelWithCenter":  "{center}: {roman}",
-    "@analysisLabelWithCenter":  {
-                                     "placeholders":  {
-                                                          "center":  {
-
-                                                                     },
-                                                          "roman":  {
-
-                                                                    }
-                                                      }
-                                 },
-    "voicingSuggestionsTitle":  "Sugerencias de voicing",
-    "voicingSuggestionsSubtitle":  "Mira opciones concretas de notas para este acorde.",
-    "voicingSuggestionsEnabled":  "Activar sugerencias de voicing",
-    "voicingSuggestionsHelp":  "Shows three playable note-level voicing ideas for the current chord.",
-    "voicingComplexity":  "Voicing Complexity",
-    "voicingComplexityHelp":  "Controls how colorful the suggestions may become.",
-    "voicingComplexityBasic":  "Basic",
-    "voicingComplexityStandard":  "Standard",
-    "voicingComplexityModern":  "Modern",
-    "voicingTopNotePreference":  "Preferencia de nota superior",
-    "voicingTopNotePreferenceHelp":  "Leans suggestions toward a chosen top line. Locked voicings win first, then repeated chords keep it steady.",
-    "voicingTopNotePreferenceAuto":  "Auto",
-    "allowRootlessVoicings":  "Allow Rootless Voicings",
-    "allowRootlessVoicingsHelp":  "Lets suggestions omit the root when the guide tones stay clear.",
-    "maxVoicingNotes":  "Max Voicing Notes",
-    "lookAheadDepth":  "Look-Ahead Depth",
-    "lookAheadDepthHelp":  "How many future chords the ranking may consider.",
-    "showVoicingReasons":  "Show Voicing Reasons",
-    "showVoicingReasonsHelp":  "Displays short explanation chips on each suggestion card.",
-    "voicingSuggestionNatural":  "Most Natural",
-    "voicingSuggestionColorful":  "Most Colorful",
-    "voicingSuggestionEasy":  "Easiest",
-    "voicingSuggestionNaturalSubtitle":  "Voice-leading first",
-    "voicingSuggestionColorfulSubtitle":  "Leans into color tones",
-    "voicingSuggestionEasySubtitle":  "Compact hand shape",
-    "voicingSuggestionNaturalConnectedSubtitle":  "Connection and resolution first",
-    "voicingSuggestionNaturalStableSubtitle":  "Same shape, steady comping",
-    "voicingSuggestionTopLineSubtitle":  "Top line leads",
-    "voicingSuggestionColorfulAlteredSubtitle":  "Altered tension up front",
-    "voicingSuggestionColorfulQuartalSubtitle":  "Modern quartal color",
-    "voicingSuggestionColorfulTritoneSubtitle":  "Tritone-sub edge with bright guide tones",
-    "voicingSuggestionColorfulUpperStructureSubtitle":  "Guide tones with bright extensions",
-    "voicingSuggestionEasyAnchoredSubtitle":  "Core tones, smaller reach",
-    "voicingSuggestionEasyStableSubtitle":  "Repeat-friendly hand shape",
-    "voicingTopNoteLabel":  "Superior",
-    "voicingTopNoteContextExplicit":  "Top line target: {note}",
-    "@voicingTopNoteContextExplicit":  {
-                                           "placeholders":  {
-                                                                "note":  {
-
-                                                                         }
-                                                            }
-                                       },
-    "voicingTopNoteContextLocked":  "Locked top line: {note}",
-    "@voicingTopNoteContextLocked":  {
-                                         "placeholders":  {
-                                                              "note":  {
-
-                                                                       }
-                                                          }
-                                     },
-    "voicingTopNoteContextCarry":  "Repeated top line: {note}",
-    "@voicingTopNoteContextCarry":  {
-                                        "placeholders":  {
-                                                             "note":  {
-
-                                                                      }
-                                                         }
-                                    },
-    "voicingTopNoteContextNearby":  "Nearest top line to {note}",
-    "@voicingTopNoteContextNearby":  {
-                                         "placeholders":  {
-                                                              "note":  {
-
-                                                                       }
-                                                          }
-                                     },
-    "voicingTopNoteContextFallback":  "No exact top line for {note}",
-    "@voicingTopNoteContextFallback":  {
-                                           "placeholders":  {
-                                                                "note":  {
-
-                                                                         }
-                                                            }
-                                       },
-    "voicingFamilyShell":  "Shell",
-    "voicingFamilyRootlessA":  "Rootless A",
-    "voicingFamilyRootlessB":  "Rootless B",
-    "voicingFamilySpread":  "Spread",
-    "voicingFamilySus":  "Sus",
-    "voicingFamilyQuartal":  "Quartal",
-    "voicingFamilyAltered":  "Altered",
-    "voicingFamilyUpperStructure":  "Upper Structure",
-    "voicingLockSuggestion":  "Lock suggestion",
-    "voicingUnlockSuggestion":  "Unlock suggestion",
-    "voicingSelected":  "Seleccionado",
-    "voicingLocked":  "Bloqueado",
-    "voicingReasonEssentialCore":  "Essential tones covered",
-    "voicingReasonGuideToneAnchor":  "3rd/7th anchor",
-    "voicingReasonGuideResolution":  "{count} guide-tone resolves",
-    "@voicingReasonGuideResolution":  {
-                                          "placeholders":  {
-                                                               "count":  {
-                                                                             "type":  "int"
-                                                                         }
-                                                           }
-                                      },
-    "voicingReasonCommonToneRetention":  "{count} common tones kept",
-    "@voicingReasonCommonToneRetention":  {
-                                              "placeholders":  {
-                                                                   "count":  {
-                                                                                 "type":  "int"
-                                                                             }
-                                                               }
-                                          },
-    "voicingReasonStableRepeat":  "Stable repeat",
-    "voicingReasonTopLineTarget":  "Top line target",
-    "voicingReasonLowMudAvoided":  "Low-register clarity",
-    "voicingReasonCompactReach":  "Comfortable reach",
-    "voicingReasonBassAnchor":  "Bass anchor respected",
-    "voicingReasonNextChordReady":  "Next chord ready",
-    "voicingReasonAlteredColor":  "Altered tensions",
-    "voicingReasonRootlessClarity":  "Light rootless shape",
-    "voicingReasonSusRelease":  "Sus release set up",
-    "voicingReasonQuartalColor":  "Quartal color",
-    "voicingReasonUpperStructureColor":  "Upper-structure color",
-    "voicingReasonTritoneSubFlavor":  "Tritone-sub flavor",
-    "voicingReasonLockedContinuity":  "Locked continuity",
-    "voicingReasonGentleMotion":  "Smooth hand move",
-    "mainMenuIntro":  "Choose a practice generator or open the analyzer for a separate progression reading workflow.",
-    "mainMenuGeneratorTitle":  "Chord Generator",
-    "mainMenuGeneratorDescription":  "Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.",
-    "openGenerator":  "Open Generator",
-    "openAnalyzer":  "Abrir analizador",
-    "mainMenuAnalyzerTitle":  "Analizador de acordes",
-    "mainMenuAnalyzerDescription":  "Analiza una progresión escrita para estimar tonalidades, números romanos y funciones armónicas.",
-    "mainMenuStudyHarmonyTitle":  "Study Harmony",
-    "mainMenuStudyHarmonyDescription":  "Move through a real harmony study hub with continue, review, daily, and chapter-based lessons.",
-    "openStudyHarmony":  "Abrir Study Harmony",
-    "studyHarmonyTitle":  "Study Harmony",
-    "studyHarmonySubtitle":  "Work through a structured harmony hub with quick lesson entries and chapter progress.",
-    "studyHarmonyPlaceholderTag":  "Prototype system",
-    "studyHarmonyPlaceholderBody":  "The prototype separates level data, prompt presentation, and answer input so future note, chord, scale, and reverse-identification drills can reuse the same flow.",
-    "studyHarmonyTestLevelTag":  "Test level",
-    "studyHarmonyTestLevelAction":  "Open test level",
-    "studyHarmonySubmit":  "Submit",
-    "studyHarmonySelectedAnswers":  "Selected answers",
-    "studyHarmonySelectionEmpty":  "No answers selected yet.",
-    "studyHarmonyClearProgress":  "{current}/{total} correct",
-    "@studyHarmonyClearProgress":  {
-                                     "placeholders":  {
-                                                          "current":  {
-                                                                          "type":  "int"
-                                                                      },
-                                                          "total":  {
-                                                                        "type":  "int"
-                                                                    }
-                                                      }
-                                 },
-    "studyHarmonyAttempts":  "Attempts",
-    "studyHarmonyAccuracy":  "Accuracy",
-    "studyHarmonyElapsedTime":  "Time",
-    "studyHarmonyObjective":  "Goal",
-    "studyHarmonyPromptInstruction":  "Pick the matching answer",
-    "studyHarmonyNeedSelection":  "Choose at least one answer before submitting.",
-    "studyHarmonyCorrectLabel":  "Correct",
-    "studyHarmonyIncorrectLabel":  "Incorrect",
-    "studyHarmonyCorrectFeedback":  "Correct. {answer} was the right answer.",
-    "@studyHarmonyCorrectFeedback":  {
-                                         "placeholders":  {
-                                                              "answer":  {
-
-                                                                         }
-                                                          }
-                                     },
-    "studyHarmonyIncorrectFeedback":  "Incorrect. {answer} was the right answer and you lost one life.",
-    "@studyHarmonyIncorrectFeedback":  {
-                                           "placeholders":  {
-                                                                "answer":  {
-
-                                                                           }
-                                                            }
-                                       },
-    "studyHarmonyGameOverTitle":  "Game Over",
-    "studyHarmonyGameOverBody":  "All three lives are gone. Retry this level or go back to the Study Harmony hub.",
-    "studyHarmonyLevelCompleteTitle":  "Level Cleared",
-    "studyHarmonyLevelCompleteBody":  "You reached the lesson goal. Check your accuracy and clear time below.",
-    "studyHarmonyBackToHub":  "Back to Study Harmony",
-    "studyHarmonyRetry":  "Retry",
-    "studyHarmonyHubHeroEyebrow":  "Study Hub",
-    "studyHarmonyHubHeroBody":  "Use Continue to resume momentum, Review to revisit weak spots, and Daily to get one deterministic lesson from your unlocked path.",
-    "studyHarmonyTrackFilterLabel":  "Tracks",
-    "studyHarmonyTrackCoreFilterLabel":  "Core",
-    "studyHarmonyTrackPopFilterLabel":  "Pop",
-    "studyHarmonyTrackJazzFilterLabel":  "Jazz",
-    "studyHarmonyTrackClassicalFilterLabel":  "Classical",
-    "studyHarmonyHubLessonsProgress":  "{cleared}/{total} lessons cleared",
-    "@studyHarmonyHubLessonsProgress":  {
-                                           "placeholders":  {
-                                                                "cleared":  {
-                                                                                "type":  "int"
-                                                                            },
-                                                                "total":  {
-                                                                              "type":  "int"
-                                                                          }
-                                                            }
-                                       },
-    "studyHarmonyHubChaptersProgress":  "{cleared}/{total} chapters completed",
-    "@studyHarmonyHubChaptersProgress":  {
-                                            "placeholders":  {
-                                                                 "cleared":  {
-                                                                                 "type":  "int"
-                                                                             },
-                                                                 "total":  {
-                                                                               "type":  "int"
-                                                                           }
-                                                             }
-                                        },
-    "studyHarmonyContinueCardTitle":  "Continue",
-    "studyHarmonyContinueResumeHint":  "Resume the lesson you touched most recently.",
-    "studyHarmonyContinueFrontierHint":  "Jump to the next lesson at your current frontier.",
-    "studyHarmonyContinueAction":  "Continue",
-    "studyHarmonyReviewCardTitle":  "Review",
-    "studyHarmonyReviewQueueHint":  "Pulled from your current review queue placeholder.",
-    "studyHarmonyReviewWeakHint":  "Picked from the weakest result in your played lessons.",
-    "studyHarmonyReviewFallbackHint":  "No review debt yet, so this falls back to your current frontier.",
-    "studyHarmonyReviewRetryNeededHint":  "This lesson needs another pass after a miss or unfinished run.",
-    "studyHarmonyReviewAccuracyRefreshHint":  "This lesson is queued for a quick accuracy refresh.",
-    "studyHarmonyReviewAction":  "Review",
-    "studyHarmonyDailyCardTitle":  "Daily Challenge",
-    "studyHarmonyDailyCardHint":  "Open today's deterministic lesson from your unlocked path.",
-    "studyHarmonyDailyAction":  "Play Daily",
-    "studyHarmonyDailyDateBadge":  "Seed {dateKey}",
-    "@studyHarmonyDailyDateBadge":  {
-                                       "placeholders":  {
-                                                            "dateKey":  {
-
-                                                                        }
-                                                        }
-                                   },
-    "studyHarmonyReviewSessionTitle":  "Weak Spot Review",
-    "studyHarmonyReviewSessionDescription":  "Mix a short review set around {chapterTitle} and your weakest recent skills.",
-    "@studyHarmonyReviewSessionDescription":  {
-                                                  "placeholders":  {
-                                                                       "chapterTitle":  {
-
-                                                                                        }
-                                                                   }
-                                              },
-    "studyHarmonyDailySessionTitle":  "Daily Challenge",
-    "studyHarmonyDailySessionDescription":  "Play today's seeded mix built from {chapterTitle} and your current frontier.",
-    "@studyHarmonyDailySessionDescription":  {
-                                                 "placeholders":  {
-                                                                      "chapterTitle":  {
-
-                                                                                       }
-                                                                  }
-                                             },
-    "studyHarmonyModeLesson":  "Lesson Mode",
-    "studyHarmonyModeReview":  "Review Mode",
-    "studyHarmonyModeDaily":  "Daily Mode",
-    "studyHarmonyModeLegacy":  "Legacy Mode",
-    "studyHarmonyResultSkillGainTitle":  "Skill gains",
-    "studyHarmonyResultReviewFocusTitle":  "Review focus",
-    "studyHarmonyResultSkillGainLine":  "{skill} {delta}",
-    "@studyHarmonyResultSkillGainLine":  {
-                                             "placeholders":  {
-                                                                  "skill":  {
-
-                                                                            },
-                                                                  "delta":  {
-
-                                                                            }
-                                                              }
-                                         },
-    "studyHarmonyReviewReasonRetryNeeded":  "Review reason: retry needed",
-    "studyHarmonyReviewReasonAccuracyRefresh":  "Review reason: accuracy refresh",
-    "studyHarmonyReviewReasonLowMastery":  "Review reason: low mastery",
-    "studyHarmonyReviewReasonStaleSkill":  "Review reason: stale skill",
-    "studyHarmonyReviewReasonWeakSpot":  "Review reason: weak spot",
-    "studyHarmonyReviewReasonFrontierRefresh":  "Review reason: frontier refresh",
-    "studyHarmonySkillNoteRead":  "Note reading",
-    "studyHarmonySkillNoteFindKeyboard":  "Keyboard note finding",
-    "studyHarmonySkillNoteAccidentals":  "Sharps and flats",
-    "studyHarmonySkillChordSymbolToKeys":  "Chord symbol to keys",
-    "studyHarmonySkillChordNameFromTones":  "Chord naming",
-    "studyHarmonySkillScaleBuild":  "Scale building",
-    "studyHarmonySkillRomanRealize":  "Roman numeral realization",
-    "studyHarmonySkillRomanIdentify":  "Roman numeral identification",
-    "studyHarmonySkillHarmonyDiatonicity":  "Diatonicity",
-    "studyHarmonySkillHarmonyFunction":  "Function basics",
-    "studyHarmonyHubChapterSectionTitle":  "Chapters",
-    "studyHarmonyChapterProgressText":  "{cleared}/{total} lessons cleared",
-    "@studyHarmonyChapterProgressText":  {
-                                            "placeholders":  {
-                                                                 "cleared":  {
-                                                                                 "type":  "int"
-                                                                             },
-                                                                 "total":  {
-                                                                               "type":  "int"
-                                                                           }
-                                                             }
-                                        },
-    "studyHarmonyLessonsCount":  "{count} lessons",
-    "@studyHarmonyLessonsCount":  {
-                                     "placeholders":  {
-                                                          "count":  {
-                                                                        "type":  "int"
-                                                                    }
-                                                      }
-                                 },
-    "studyHarmonyCompletedLessonsCount":  "{count} completed",
-    "@studyHarmonyCompletedLessonsCount":  {
-                                               "placeholders":  {
-                                                                    "count":  {
-                                                                                  "type":  "int"
-                                                                              }
-                                                                }
-                                           },
-    "studyHarmonyOpenChapterAction":  "Open chapter",
-    "studyHarmonyLockedChapterTag":  "Locked",
-    "studyHarmonyChapterNextUp":  "Next up: {lessonTitle}",
-    "@studyHarmonyChapterNextUp":  {
-                                      "placeholders":  {
-                                                           "lessonTitle":  {
-
-                                                                      }
-                                                       }
-                                  },
-    "studyHarmonyChapterViewTitle":  "{chapterTitle}",
-    "@studyHarmonyChapterViewTitle":  {
-                                         "placeholders":  {
-                                                              "chapterTitle":  {
-
-                                                                          }
-                                                          }
-                                     },
-    "studyHarmonyTrackPlaceholderBody":  "{coreTrack} is the active path right now. The other tracks stay visible so the hub can grow without another navigation rewrite.",
-    "@studyHarmonyTrackPlaceholderBody":  {
-                                             "placeholders":  {
-                                                                  "coreTrack":  {
-
-                                                                                  }
-                                                              }
-                                         },
-    "studyHarmonyCoreTrackTitle":  "Core Track",
-    "studyHarmonyCoreTrackDescription":  "Start with notes and the keyboard, then build up through chords, scales, Roman numerals, and diatonic basics.",
-    "studyHarmonyChapterNotesTitle":  "Chapter 1: Notes & Keyboard",
-    "studyHarmonyChapterNotesDescription":  "Map note names to the keyboard and get comfortable with white keys and simple accidentals.",
-    "studyHarmonyChapterChordsTitle":  "Chapter 2: Chord Basics",
-    "studyHarmonyChapterChordsDescription":  "Spell basic triads and sevenths, then name common chord shapes from their tones.",
-    "studyHarmonyChapterScalesTitle":  "Chapter 3: Scales & Keys",
-    "studyHarmonyChapterScalesDescription":  "Build major and minor scales, then spot which tones belong inside a key.",
-    "studyHarmonyChapterRomanTitle":  "Chapter 4: Roman Numerals & Diatonicity",
-    "studyHarmonyChapterRomanDescription":  "Turn simple Roman numerals into chords, identify them from chords, and sort diatonic basics by function.",
-    "studyHarmonyOpenLessonAction":  "Open lesson",
-    "studyHarmonyLockedLessonAction":  "Locked",
-    "studyHarmonyClearedTag":  "Cleared",
-    "studyHarmonyComingSoonTag":  "Coming soon",
-    "studyHarmonyPopTrackTitle":  "Pop Track",
-    "studyHarmonyPopTrackDescription":  "A song-focused path is planned after the Core track is stable.",
-    "studyHarmonyJazzTrackTitle":  "Jazz Track",
-    "studyHarmonyJazzTrackDescription":  "Jazz harmony content stays locked until the Core curriculum settles.",
-    "studyHarmonyClassicalTrackTitle":  "Classical Track",
-    "studyHarmonyClassicalTrackDescription":  "Functional harmony in classical contexts will arrive in a later phase.",
-    "studyHarmonyObjectiveQuickDrill":  "Quick Drill",
-    "studyHarmonyObjectiveBossReview":  "Boss Review",
-    "studyHarmonyLessonNotesKeyboardTitle":  "White-Key Note Hunt",
-    "studyHarmonyLessonNotesKeyboardDescription":  "Read note names and tap the matching white key.",
-    "studyHarmonyLessonNotesPreviewTitle":  "Name the Highlighted Note",
-    "studyHarmonyLessonNotesPreviewDescription":  "Look at a highlighted key and choose the correct note name.",
-    "studyHarmonyLessonNotesAccidentalsTitle":  "Black Keys and Twins",
-    "studyHarmonyLessonNotesAccidentalsDescription":  "Get a first look at sharp and flat spellings for the black keys.",
-    "studyHarmonyLessonNotesBossTitle":  "Boss: Fast Note Hunt",
-    "studyHarmonyLessonNotesBossDescription":  "Mix note reading and keyboard finding into one short speed round.",
-    "studyHarmonyLessonTriadKeyboardTitle":  "Triads on the Keyboard",
-    "studyHarmonyLessonTriadKeyboardDescription":  "Build common major, minor, and diminished triads directly on the keyboard.",
-    "studyHarmonyLessonSeventhKeyboardTitle":  "Sevenths on the Keyboard",
-    "studyHarmonyLessonSeventhKeyboardDescription":  "Add the seventh and spell a few common 7th chords on the keyboard.",
-    "studyHarmonyLessonChordNameTitle":  "Name the Highlighted Chord",
-    "studyHarmonyLessonChordNameDescription":  "Read a highlighted chord shape and choose the correct chord name.",
-    "studyHarmonyLessonChordsBossTitle":  "Boss: Triads and Sevenths Review",
-    "studyHarmonyLessonChordsBossDescription":  "Switch between chord spelling and chord naming in one mixed review.",
-    "studyHarmonyLessonMajorScaleTitle":  "Build Major Scales",
-    "studyHarmonyLessonMajorScaleDescription":  "Choose every tone that belongs to a simple major scale.",
-    "studyHarmonyLessonMinorScaleTitle":  "Build Minor Scales",
-    "studyHarmonyLessonMinorScaleDescription":  "Build natural minor and harmonic minor scales from a few common keys.",
-    "studyHarmonyLessonKeyMembershipTitle":  "Key Membership",
-    "studyHarmonyLessonKeyMembershipDescription":  "Find which tones belong inside a named key.",
-    "studyHarmonyLessonScalesBossTitle":  "Boss: Scale Repair",
-    "studyHarmonyLessonScalesBossDescription":  "Mix scale building and key membership in a short repair round.",
-    "studyHarmonyLessonRomanToChordTitle":  "Roman to Chord",
-    "studyHarmonyLessonRomanToChordDescription":  "Read a key and Roman numeral, then choose the matching chord.",
-    "studyHarmonyLessonChordToRomanTitle":  "Chord to Roman",
-    "studyHarmonyLessonChordToRomanDescription":  "Read a chord inside a key and choose the matching Roman numeral.",
-    "studyHarmonyLessonDiatonicityTitle":  "Diatonic or Not",
-    "studyHarmonyLessonDiatonicityDescription":  "Sort chords into diatonic and non-diatonic answers in simple keys.",
-    "studyHarmonyLessonFunctionTitle":  "Function Basics",
-    "studyHarmonyLessonFunctionDescription":  "Classify easy chords as tonic, predominant, or dominant.",
-    "studyHarmonyLessonRomanBossTitle":  "Boss: Functional Basics Mix",
-    "studyHarmonyLessonRomanBossDescription":  "Review Roman-to-chord, chord-to-Roman, diatonicity, and function together.",
-    "studyHarmonyPromptFindNoteOnKeyboard":  "Find {note} on the keyboard",
-    "@studyHarmonyPromptFindNoteOnKeyboard":  {
-                                                  "placeholders":  {
-                                                                       "note":  {
-
-                                                                                }
-                                                                   }
-                                              },
-    "studyHarmonyPromptNameHighlightedNote":  "Which note is highlighted?",
-    "studyHarmonyPromptFindChordOnKeyboard":  "Build {chord} on the keyboard",
-    "@studyHarmonyPromptFindChordOnKeyboard":  {
-                                                   "placeholders":  {
-                                                                        "chord":  {
-
-                                                                                  }
-                                                                    }
-                                               },
-    "studyHarmonyPromptNameHighlightedChord":  "Which chord is highlighted?",
-    "studyHarmonyPromptBuildScale":  "Pick every note in {scaleName}",
-    "@studyHarmonyPromptBuildScale":  {
-                                          "placeholders":  {
-                                                               "scaleName":  {
-
-                                                                               }
-                                                           }
-                                      },
-    "studyHarmonyPromptKeyMembership":  "Pick the notes that belong to {keyName}",
-    "@studyHarmonyPromptKeyMembership":  {
-                                            "placeholders":  {
-                                                                 "keyName":  {
-
-                                                                             }
-                                                             }
-                                        },
-    "studyHarmonyPromptRomanToChord":  "In {keyName}, which chord matches {roman}?",
-    "@studyHarmonyPromptRomanToChord":  {
-                                           "placeholders":  {
-                                                                "keyName":  {
-
-                                                                            },
-                                                                "roman":  {
-
-                                                                          }
-                                                            }
-                                       },
-    "studyHarmonyPromptChordToRoman":  "In {keyName}, what Roman numeral matches {chord}?",
-    "@studyHarmonyPromptChordToRoman":  {
-                                           "placeholders":  {
-                                                                "keyName":  {
-
-                                                                            },
-                                                                "chord":  {
-
-                                                                          }
-                                                            }
-                                       },
-    "studyHarmonyPromptDiatonicity":  "In {keyName}, is {chord} diatonic?",
-    "@studyHarmonyPromptDiatonicity":  {
-                                          "placeholders":  {
-                                                               "keyName":  {
-
-                                                                           },
-                                                               "chord":  {
-
-                                                                         }
-                                                           }
-                                      },
-    "studyHarmonyPromptFunction":  "In {keyName}, what function does {chord} have?",
-    "@studyHarmonyPromptFunction":  {
-                                       "placeholders":  {
-                                                            "keyName":  {
-
-                                                                        },
-                                                            "chord":  {
-
-                                                                      }
-                                                        }
-                                   },
-    "studyHarmonyScaleNameMajor":  "{tonic} major",
-    "@studyHarmonyScaleNameMajor":  {
-                                       "placeholders":  {
-                                                            "tonic":  {
-
-                                                                       }
-                                                        }
-                                   },
-    "studyHarmonyScaleNameNaturalMinor":  "{tonic} natural minor",
-    "@studyHarmonyScaleNameNaturalMinor":  {
-                                              "placeholders":  {
-                                                                   "tonic":  {
-
-                                                                              }
-                                                               }
-                                          },
-    "studyHarmonyScaleNameHarmonicMinor":  "{tonic} harmonic minor",
-    "@studyHarmonyScaleNameHarmonicMinor":  {
-                                               "placeholders":  {
-                                                                    "tonic":  {
-
-                                                                               }
-                                                                }
-                                           },
-    "studyHarmonyKeyNameMajor":  "{tonic} major",
-    "@studyHarmonyKeyNameMajor":  {
-                                     "placeholders":  {
-                                                          "tonic":  {
-
-                                                                     }
-                                                      }
-                                 },
-    "studyHarmonyKeyNameMinor":  "{tonic} minor",
-    "@studyHarmonyKeyNameMinor":  {
-                                     "placeholders":  {
-                                                          "tonic":  {
-
-                                                                     }
-                                                      }
-                                 },
-    "studyHarmonyChoiceDiatonic":  "Diatonic",
-    "studyHarmonyChoiceNonDiatonic":  "Non-diatonic",
-    "studyHarmonyChoiceTonic":  "Tonic",
-    "studyHarmonyChoicePredominant":  "Predominant",
-    "studyHarmonyChoiceDominant":  "Dominant",
-    "chordAnalyzerTitle":  "Analizador de acordes",
-    "chordAnalyzerSubtitle":  "Pega una progresión y obtén una lectura armónica conservadora.",
-    "chordAnalyzerInputLabel":  "Progresión de acordes",
-    "chordAnalyzerInputHint":  "Dm7 G7 Cmaj7",
-    "chordAnalyzerInputHelper":  "Fuera de paréntesis puedes separar con espacios, | o comas. Las comas dentro de paréntesis se mantienen dentro del mismo acorde. Se admiten raíces en minúscula, bajo con slash, formas sus/alt/add y tensiones como C7(b9, #11). En dispositivos táctiles puedes usar el panel de acordes o cambiar a entrada ABC.",
-    "chordAnalyzerAnalyze":  "Analizar",
-    "chordAnalyzerKeyboardTitle":  "Panel de acordes",
-    "chordAnalyzerKeyboardTouchHint":  "Toca símbolos para construir una progresión. La entrada ABC mantiene disponible el teclado del sistema cuando necesitas escribir libremente.",
-    "chordAnalyzerKeyboardDesktopHint":  "Escribe, pega o toca símbolos para insertarlos en el cursor.",
-    "chordAnalyzerChordPad":  "Panel",
-    "chordAnalyzerRawInput":  "ABC",
-    "chordAnalyzerPaste":  "Pegar",
-    "chordAnalyzerClear":  "Borrar",
-    "chordAnalyzerBackspace":  "Retroceso",
-    "chordAnalyzerSpace":  "Espacio",
-    "chordAnalyzerAnalyzing":  "Analizando progresión...",
-    "chordAnalyzerInitialTitle":  "Empieza con una progresión",
-    "chordAnalyzerInitialBody":  "Introduce una progresión como Dm7 G7 Cmaj7 o Cmaj7 | Am7 D7 | Gmaj7 para ver tonalidades probables, números romanos y un resumen breve.",
-    "chordAnalyzerDetectedKeys":  "Tonalidades detectadas",
-    "chordAnalyzerPrimaryReading":  "Lectura principal",
-    "chordAnalyzerAlternativeReading":  "Lectura alternativa",
-    "chordAnalyzerChordAnalysis":  "Análisis acorde por acorde",
-    "chordAnalyzerMeasureLabel":  "Compás {index}",
-    "@chordAnalyzerMeasureLabel":  {
-                                       "placeholders":  {
-                                                            "index":  {
-
-                                                                      }
-                                                        }
-                                   },
-    "chordAnalyzerProgressionSummary":  "Resumen de la progresión",
-    "chordAnalyzerWarnings":  "Advertencias y ambigüedades",
-    "chordAnalyzerNoInputError":  "Introduce una progresión de acordes para analizar.",
-    "chordAnalyzerNoRecognizedChordsError":  "No se encontraron acordes reconocibles en la progresión.",
-    "chordAnalyzerLowConfidenceTitle":  "Lectura de baja confianza",
-    "chordAnalyzerLowConfidenceBody":  "Las tonalidades candidatas están muy cerca entre sí o algunos símbolos solo se recuperaron parcialmente, así que tómalo como una primera lectura cautelosa.",
-    "chordAnalyzerEmptyMeasure":  "Este compás está vacío y se conservó en la numeración.",
-    "chordAnalyzerNoAnalyzableChordsInMeasure":  "No se recuperaron símbolos analizables en este compás.",
-    "chordAnalyzerParseIssuesTitle":  "Problemas de análisis",
-    "chordAnalyzerParseIssueLine":  "{token}: {reason}",
-    "@chordAnalyzerParseIssueLine":  {
-                                         "placeholders":  {
-                                                              "token":  {
-
-                                                                        },
-                                                              "reason":  {
-
-                                                                         }
-                                                          }
-                                     },
-    "chordAnalyzerParseIssueEmpty":  "Token vacío.",
-    "chordAnalyzerParseIssueInvalidRoot":  "No se pudo reconocer la raíz.",
-    "chordAnalyzerParseIssueUnknownRoot":  "{root} no es una escritura de raíz admitida.",
-    "@chordAnalyzerParseIssueUnknownRoot":  {
-                                                "placeholders":  {
-                                                                     "root":  {
-
-                                                                              }
-                                                                 }
-                                            },
-    "chordAnalyzerParseIssueInvalidBass":  "El bajo con slash {bass} no es una escritura admitida.",
-    "@chordAnalyzerParseIssueInvalidBass":  {
-                                                "placeholders":  {
-                                                                     "bass":  {
-
-                                                                              }
-                                                                 }
-                                            },
-    "chordAnalyzerParseIssueUnsupportedSuffix":  "Sufijo o modificador no admitido: {suffix}",
-    "@chordAnalyzerParseIssueUnsupportedSuffix":  {
-                                                      "placeholders":  {
-                                                                           "suffix":  {
-
-                                                                                      }
-                                                                       }
-                                                  },
-    "chordAnalyzerPartialParseWarning":  "Se omitieron algunos símbolos: {tokens}",
-    "@chordAnalyzerPartialParseWarning":  {
-                                              "placeholders":  {
-                                                                   "tokens":  {
-
-                                                                              }
-                                                               }
-                                          },
-    "chordAnalyzerKeyAmbiguityWarning":  "El centro tonal sigue siendo algo ambiguo entre {primary} y {alternative}.",
-    "@chordAnalyzerKeyAmbiguityWarning":  {
-                                              "placeholders":  {
-                                                                   "primary":  {
-
-                                                                               },
-                                                                   "alternative":  {
-
-                                                                                   }
-                                                               }
-                                          },
-    "chordAnalyzerUnresolvedWarning":  "Algunos acordes siguen siendo ambiguos, así que esta lectura se mantiene intencionalmente conservadora.",
-    "chordAnalyzerFunctionTonic":  "Tónica",
-    "chordAnalyzerFunctionPredominant":  "Predominante",
-    "chordAnalyzerFunctionDominant":  "Dominante",
-    "chordAnalyzerFunctionOther":  "Otro",
-    "chordAnalyzerRemarkSecondaryDominant":  "Posible dominante secundaria hacia {target}.",
-    "@chordAnalyzerRemarkSecondaryDominant":  {
-                                                  "placeholders":  {
-                                                                       "target":  {
-
-                                                                                  }
-                                                                   }
-                                              },
-    "chordAnalyzerRemarkTritoneSub":  "Posible sustituto por tritono hacia {target}.",
-    "@chordAnalyzerRemarkTritoneSub":  {
-                                           "placeholders":  {
-                                                                "target":  {
-
-                                                                           }
-                                                            }
-                                       },
-    "chordAnalyzerRemarkModalInterchange":  "Posible intercambio modal desde el modo paralelo menor.",
-    "chordAnalyzerRemarkAmbiguous":  "Este acorde sigue siendo ambiguo en la lectura actual.",
-    "chordAnalyzerRemarkUnresolved":  "Este acorde sigue sin resolverse con las heurísticas conservadoras actuales.",
-    "chordAnalyzerTagIiVI":  "cadencia ii-V-I",
-    "chordAnalyzerTagTurnaround":  "turnaround",
-    "chordAnalyzerTagDominantResolution":  "resolución dominante",
-    "chordAnalyzerTagPlagalColor":  "color plagal/modal",
-    "chordAnalyzerSummaryCenter":  "Esta progresión probablemente se centra en {key}.",
-    "@chordAnalyzerSummaryCenter":  {
-                                        "placeholders":  {
-                                                             "key":  {
-
-                                                                     }
-                                                         }
-                                    },
-    "chordAnalyzerSummaryAlternative":  "Una lectura alternativa es {key}.",
-    "@chordAnalyzerSummaryAlternative":  {
-                                             "placeholders":  {
-                                                                  "key":  {
-
-                                                                          }
-                                                              }
-                                         },
-    "chordAnalyzerSummaryTag":  "Sugiere un {tag}.",
-    "@chordAnalyzerSummaryTag":  {
-                                     "placeholders":  {
-                                                          "tag":  {
-
-                                                                  }
-                                                      }
-                                 },
-    "chordAnalyzerSummaryFlow":  "{from} y {through} funcionan como acordes de {fromFunction} y {throughFunction} que conducen a {target}.",
-    "@chordAnalyzerSummaryFlow":  {
-                                      "placeholders":  {
-                                                           "from":  {
-
-                                                                    },
-                                                           "through":  {
-
-                                                                       },
-                                                           "fromFunction":  {
-
-                                                                            },
-                                                           "throughFunction":  {
-
-                                                                               },
-                                                           "target":  {
-
-                                                                      }
-                                                       }
-                                  },
-    "chordAnalyzerSummarySecondaryDominant":  "{chord} puede oírse como una posible dominante secundaria que apunta hacia {target}.",
-    "@chordAnalyzerSummarySecondaryDominant":  {
-                                                   "placeholders":  {
-                                                                        "chord":  {
-
-                                                                                  },
-                                                                        "target":  {
-
-                                                                                   }
-                                                                    }
-                                               },
-    "chordAnalyzerSummaryTritoneSub":  "{chord} puede oírse como un posible sustituto por tritono que apunta hacia {target}.",
-    "@chordAnalyzerSummaryTritoneSub":  {
-                                            "placeholders":  {
-                                                                 "chord":  {
-
-                                                                           },
-                                                                 "target":  {
-
-                                                                            }
-                                                             }
-                                        },
-    "chordAnalyzerSummaryModalInterchange":  "{chord} añade un posible color de intercambio modal.",
-    "@chordAnalyzerSummaryModalInterchange":  {
-                                                  "placeholders":  {
-                                                                       "chord":  {
-
-                                                                                 }
-                                                                   }
-                                              },
-    "chordAnalyzerSummaryAmbiguous":  "Algunos detalles siguen siendo ambiguos, así que esta lectura se mantiene intencionalmente conservadora.",
-    "chordAnalyzerExamplesTitle":  "Ejemplos",
-    "chordAnalyzerConfidenceLabel":  "Confianza",
-    "chordAnalyzerAmbiguityLabel":  "Ambigüedad",
-    "chordAnalyzerWhyThisReading":  "Por qué esta lectura",
-    "chordAnalyzerCompetingReadings":  "También plausible",
-    "chordAnalyzerIgnoredModifiersWarning":  "Modificadores ignorados: {details}",
-    "@chordAnalyzerIgnoredModifiersWarning":  {
-                                                  "placeholders":  {
-                                                                       "details":  {
-
-                                                                                   }
-                                                                   }
-                                              },
-    "chordAnalyzerParserDiagnosticWarning":  "Advertencia de entrada: {details}",
-    "@chordAnalyzerParserDiagnosticWarning":  {
-                                                  "placeholders":  {
-                                                                       "details":  {
-
-                                                                                   }
-                                                                   }
-                                              },
-    "chordAnalyzerDiagnosticUnbalancedParentheses":  "Los paréntesis desequilibrados dejaron incierta parte del símbolo.",
-    "chordAnalyzerDiagnosticUnexpectedCloseParenthesis":  "Se ignoró un paréntesis de cierre inesperado.",
-    "chordAnalyzerEvidenceExtensionColor":  "El color explícito {extension} refuerza esta lectura.",
-    "@chordAnalyzerEvidenceExtensionColor":  {
-                                                 "placeholders":  {
-                                                                      "extension":  {
-
-                                                                                    }
-                                                                  }
-                                             },
-    "chordAnalyzerEvidenceAlteredDominantColor":  "El color dominante alterado apoya una función dominante.",
-    "chordAnalyzerEvidenceSlashBass":  "El bajo con slash {bass} mantiene significativa la línea de bajo o la inversión.",
-    "@chordAnalyzerEvidenceSlashBass":  {
-                                            "placeholders":  {
-                                                                 "bass":  {
-
-                                                                          }
-                                                             }
-                                        },
-    "chordAnalyzerEvidenceResolution":  "El siguiente acorde apoya una resolución hacia {target}.",
-    "@chordAnalyzerEvidenceResolution":  {
-                                             "placeholders":  {
-                                                                  "target":  {
-
-                                                                             }
-                                                              }
-                                         },
-    "chordAnalyzerEvidenceBorrowedColor":  "Este color puede oírse como prestado del modo paralelo.",
-    "chordAnalyzerEvidenceSuspensionColor":  "El color suspendido suaviza la atracción dominante sin borrarla."
+{
+  "@@locale": "es",
+  "settings": "Configuracion",
+  "closeSettings": "Cerrar configuracion",
+  "language": "Idioma",
+  "systemDefaultLanguage": "Predeterminado del sistema",
+  "metronome": "Metronomo",
+  "enabled": "Activado",
+  "disabled": "Desactivado",
+  "metronomeHelp": "Activa el metronomo para escuchar un clic en cada pulso mientras practicas.",
+  "metronomeSound": "Sonido del metronomo",
+  "metronomeSoundClassic": "Clasico",
+  "metronomeSoundClickB": "Click B",
+  "metronomeSoundClickC": "Click C",
+  "metronomeSoundClickD": "Click D",
+  "metronomeSoundClickE": "Click E",
+  "metronomeSoundClickF": "Click F",
+  "metronomeVolume": "Volumen del metronomo",
+  "keys": "Tonalidades",
+  "noKeysSelected": "No keys selected. Leave all keys off to practice in free mode across every root.",
+  "keysSelectedHelp": "Selected keys are used for key-aware random mode and Smart Generator mode.",
+  "smartGeneratorMode": "Modo Smart Generator",
+  "smartGeneratorHelp": "Prioritizes functional harmonic motion while preserving the enabled non-diatonic options.",
+  "advancedSmartGenerator": "Smart Generator avanzado",
+  "modulationIntensity": "Intensidad de modulacion",
+  "modulationIntensityOff": "Off",
+  "modulationIntensityLow": "Low",
+  "modulationIntensityMedium": "Medium",
+  "modulationIntensityHigh": "High",
+  "jazzPreset": "Preajuste jazz",
+  "jazzPresetStandardsCore": "Standards Core",
+  "jazzPresetModulationStudy": "Modulation Study",
+  "jazzPresetAdvanced": "Advanced",
+  "sourceProfile": "Perfil de origen",
+  "sourceProfileFakebookStandard": "Fakebook Standard",
+  "sourceProfileRecordingInspired": "Recording Inspired",
+  "smartDiagnostics": "Diagnosticos Smart",
+  "smartDiagnosticsHelp": "Logs Smart Generator decision traces for debugging.",
+  "keyModeRequiredForSmartGenerator": "Select at least one key to use Smart Generator mode.",
+  "nonDiatonic": "Non-Diatonic",
+  "nonDiatonicRequiresKeyMode": "Non-diatonic options are available in key mode only.",
+  "secondaryDominant": "Dominante secundaria",
+  "substituteDominant": "Dominante sustituta",
+  "modalInterchange": "Intercambio modal",
+  "modalInterchangeDisabledHelp": "Modal interchange only appears in key mode, so this option is disabled in free mode.",
+  "rendering": "Representacion",
+  "keyCenterLabelStyle": "Estilo de tonalidad",
+  "keyCenterLabelStyleHelp": "Elige entre mostrar mayor/menor en texto o usar mayusculas y minusculas al estilo clasico.",
+  "chordSymbolStyle": "Estilo de simbolo de acorde",
+  "chordSymbolStyleHelp": "Changes the display layer only. Harmonic logic stays canonical.",
+  "styleCompact": "Compact",
+  "styleMajText": "MajText",
+  "styleDeltaJazz": "DeltaJazz",
+  "keyCenterLabelStyleModeText": "C mayor: / C menor:",
+  "keyCenterLabelStyleClassicalCase": "C: / c:",
+  "allowV7sus4": "Allow V7sus4 (V7, V7/x)",
+  "allowTensions": "Permitir tensiones",
+  "tensionHelp": "Roman numeral profile and selected chips only",
+  "inversions": "Inversiones",
+  "enableInversions": "Enable Inversions",
+  "inversionHelp": "Random slash-bass rendering after chord selection; it does not track the previous bass.",
+  "firstInversion": "1st Inversion",
+  "secondInversion": "2nd Inversion",
+  "thirdInversion": "3rd Inversion",
+  "keyPracticeOverview": "Resumen de practica tonal",
+  "freePracticeOverview": "Resumen de practica libre",
+  "keyModeTag": "Modo tonal",
+  "freeModeTag": "Modo libre",
+  "allKeysTag": "Todas las tonalidades",
+  "metronomeOnTag": "Metronome On",
+  "metronomeOffTag": "Metronome Off",
+  "pressNextChordToBegin": "Pulsa Next Chord para empezar",
+  "freeModeActive": "Modo libre activo",
+  "freePracticeDescription": "Uses all 12 chromatic roots with random chord qualities for broad reading practice.",
+  "smartPracticeDescription": "Follows harmonic function flow in the selected keys while allowing tasteful smart-generator movement.",
+  "keyPracticeDescription": "Uses the selected keys and enabled Roman numerals to generate diatonic practice material.",
+  "keyboardShortcutHelp": "Space: next chord  Enter: start or stop autoplay  Up/Down: adjust BPM",
+  "nextChord": "Siguiente acorde",
+  "startAutoplay": "Iniciar autoplay",
+  "stopAutoplay": "Detener autoplay",
+  "decreaseBpm": "Bajar BPM",
+  "increaseBpm": "Subir BPM",
+  "bpmLabel": "BPM",
+  "bpmTag": "{value} BPM",
+  "@bpmTag": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "allowedRange": "Rango permitido: {min}-{max}",
+  "@allowedRange": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "modeMajor": "mayor",
+  "modeMinor": "menor",
+  "analysisLabelWithCenter": "{center}: {roman}",
+  "@analysisLabelWithCenter": {
+    "placeholders": {
+      "center": {},
+      "roman": {}
+    }
+  },
+  "voicingSuggestionsTitle": "Sugerencias de voicing",
+  "voicingSuggestionsSubtitle": "Mira opciones concretas de notas para este acorde.",
+  "voicingSuggestionsEnabled": "Activar sugerencias de voicing",
+  "voicingSuggestionsHelp": "Shows three playable note-level voicing ideas for the current chord.",
+  "voicingComplexity": "Voicing Complexity",
+  "voicingComplexityHelp": "Controls how colorful the suggestions may become.",
+  "voicingComplexityBasic": "Basic",
+  "voicingComplexityStandard": "Standard",
+  "voicingComplexityModern": "Modern",
+  "voicingTopNotePreference": "Preferencia de nota superior",
+  "voicingTopNotePreferenceHelp": "Leans suggestions toward a chosen top line. Locked voicings win first, then repeated chords keep it steady.",
+  "voicingTopNotePreferenceAuto": "Auto",
+  "allowRootlessVoicings": "Allow Rootless Voicings",
+  "allowRootlessVoicingsHelp": "Lets suggestions omit the root when the guide tones stay clear.",
+  "maxVoicingNotes": "Max Voicing Notes",
+  "lookAheadDepth": "Look-Ahead Depth",
+  "lookAheadDepthHelp": "How many future chords the ranking may consider.",
+  "showVoicingReasons": "Show Voicing Reasons",
+  "showVoicingReasonsHelp": "Displays short explanation chips on each suggestion card.",
+  "voicingSuggestionNatural": "Most Natural",
+  "voicingSuggestionColorful": "Most Colorful",
+  "voicingSuggestionEasy": "Easiest",
+  "voicingSuggestionNaturalSubtitle": "Voice-leading first",
+  "voicingSuggestionColorfulSubtitle": "Leans into color tones",
+  "voicingSuggestionEasySubtitle": "Compact hand shape",
+  "voicingSuggestionNaturalConnectedSubtitle": "Connection and resolution first",
+  "voicingSuggestionNaturalStableSubtitle": "Same shape, steady comping",
+  "voicingSuggestionTopLineSubtitle": "Top line leads",
+  "voicingSuggestionColorfulAlteredSubtitle": "Altered tension up front",
+  "voicingSuggestionColorfulQuartalSubtitle": "Modern quartal color",
+  "voicingSuggestionColorfulTritoneSubtitle": "Tritone-sub edge with bright guide tones",
+  "voicingSuggestionColorfulUpperStructureSubtitle": "Guide tones with bright extensions",
+  "voicingSuggestionEasyAnchoredSubtitle": "Core tones, smaller reach",
+  "voicingSuggestionEasyStableSubtitle": "Repeat-friendly hand shape",
+  "voicingTopNoteLabel": "Superior",
+  "voicingTopNoteContextExplicit": "Top line target: {note}",
+  "@voicingTopNoteContextExplicit": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextLocked": "Locked top line: {note}",
+  "@voicingTopNoteContextLocked": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextCarry": "Repeated top line: {note}",
+  "@voicingTopNoteContextCarry": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextNearby": "Nearest top line to {note}",
+  "@voicingTopNoteContextNearby": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextFallback": "No exact top line for {note}",
+  "@voicingTopNoteContextFallback": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingFamilyShell": "Shell",
+  "voicingFamilyRootlessA": "Rootless A",
+  "voicingFamilyRootlessB": "Rootless B",
+  "voicingFamilySpread": "Spread",
+  "voicingFamilySus": "Sus",
+  "voicingFamilyQuartal": "Quartal",
+  "voicingFamilyAltered": "Altered",
+  "voicingFamilyUpperStructure": "Upper Structure",
+  "voicingLockSuggestion": "Lock suggestion",
+  "voicingUnlockSuggestion": "Unlock suggestion",
+  "voicingSelected": "Seleccionado",
+  "voicingLocked": "Bloqueado",
+  "voicingReasonEssentialCore": "Essential tones covered",
+  "voicingReasonGuideToneAnchor": "3rd/7th anchor",
+  "voicingReasonGuideResolution": "{count} guide-tone resolves",
+  "@voicingReasonGuideResolution": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "voicingReasonCommonToneRetention": "{count} common tones kept",
+  "@voicingReasonCommonToneRetention": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "voicingReasonStableRepeat": "Stable repeat",
+  "voicingReasonTopLineTarget": "Top line target",
+  "voicingReasonLowMudAvoided": "Low-register clarity",
+  "voicingReasonCompactReach": "Comfortable reach",
+  "voicingReasonBassAnchor": "Bass anchor respected",
+  "voicingReasonNextChordReady": "Next chord ready",
+  "voicingReasonAlteredColor": "Altered tensions",
+  "voicingReasonRootlessClarity": "Light rootless shape",
+  "voicingReasonSusRelease": "Sus release set up",
+  "voicingReasonQuartalColor": "Quartal color",
+  "voicingReasonUpperStructureColor": "Upper-structure color",
+  "voicingReasonTritoneSubFlavor": "Tritone-sub flavor",
+  "voicingReasonLockedContinuity": "Locked continuity",
+  "voicingReasonGentleMotion": "Smooth hand move",
+  "mainMenuIntro": "Choose a practice generator or open the analyzer for a separate progression reading workflow.",
+  "mainMenuGeneratorTitle": "Chord Generator",
+  "mainMenuGeneratorDescription": "Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.",
+  "openGenerator": "Open Generator",
+  "openAnalyzer": "Abrir analizador",
+  "mainMenuAnalyzerTitle": "Analizador de acordes",
+  "mainMenuAnalyzerDescription": "Analiza una progresión escrita para estimar tonalidades, números romanos y funciones armónicas.",
+  "mainMenuStudyHarmonyTitle": "Study Harmony",
+  "mainMenuStudyHarmonyDescription": "Move through a real harmony study hub with continue, review, daily, and chapter-based lessons.",
+  "openStudyHarmony": "Abrir Study Harmony",
+  "studyHarmonyTitle": "Study Harmony",
+  "studyHarmonySubtitle": "Work through a structured harmony hub with quick lesson entries and chapter progress.",
+  "studyHarmonyPlaceholderTag": "Study deck",
+  "studyHarmonyPlaceholderBody": "Lesson data, prompts, and answer surfaces already share one reusable study flow for notes, chords, scales, and progression drills.",
+  "studyHarmonyTestLevelTag": "Practice drill",
+  "studyHarmonyTestLevelAction": "Open drill",
+  "studyHarmonySubmit": "Submit",
+  "studyHarmonyNextPrompt": "Next prompt",
+  "studyHarmonySelectedAnswers": "Selected answers",
+  "studyHarmonySelectionEmpty": "No answers selected yet.",
+  "studyHarmonyClearProgress": "{current}/{total} correct",
+  "@studyHarmonyClearProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyAttempts": "Attempts",
+  "studyHarmonyAccuracy": "Accuracy",
+  "studyHarmonyElapsedTime": "Time",
+  "studyHarmonyObjective": "Goal",
+  "studyHarmonyPromptInstruction": "Pick the matching answer",
+  "studyHarmonyNeedSelection": "Choose at least one answer before submitting.",
+  "studyHarmonyCorrectLabel": "Correct",
+  "studyHarmonyIncorrectLabel": "Incorrect",
+  "studyHarmonyCorrectFeedback": "Correct. {answer} was the right answer.",
+  "@studyHarmonyCorrectFeedback": {
+    "placeholders": {
+      "answer": {}
+    }
+  },
+  "studyHarmonyIncorrectFeedback": "Incorrect. {answer} was the right answer and you lost one life.",
+  "@studyHarmonyIncorrectFeedback": {
+    "placeholders": {
+      "answer": {}
+    }
+  },
+  "studyHarmonyGameOverTitle": "Game Over",
+  "studyHarmonyGameOverBody": "All three lives are gone. Retry this level or go back to the Study Harmony hub.",
+  "studyHarmonyLevelCompleteTitle": "Level Cleared",
+  "studyHarmonyLevelCompleteBody": "You reached the lesson goal. Check your accuracy and clear time below.",
+  "studyHarmonyBackToHub": "Back to Study Harmony",
+  "studyHarmonyRetry": "Retry",
+  "studyHarmonyHubHeroEyebrow": "Study Hub",
+  "studyHarmonyHubHeroBody": "Use Continue to resume momentum, Review to revisit weak spots, and Daily to get one deterministic lesson from your unlocked path.",
+  "studyHarmonyTrackFilterLabel": "Tracks",
+  "studyHarmonyTrackCoreFilterLabel": "Core",
+  "studyHarmonyTrackPopFilterLabel": "Pop",
+  "studyHarmonyTrackJazzFilterLabel": "Jazz",
+  "studyHarmonyTrackClassicalFilterLabel": "Classical",
+  "studyHarmonyHubLessonsProgress": "{cleared}/{total} lessons cleared",
+  "@studyHarmonyHubLessonsProgress": {
+    "placeholders": {
+      "cleared": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyHubChaptersProgress": "{cleared}/{total} chapters completed",
+  "@studyHarmonyHubChaptersProgress": {
+    "placeholders": {
+      "cleared": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyContinueCardTitle": "Continue",
+  "studyHarmonyContinueResumeHint": "Resume the lesson you touched most recently.",
+  "studyHarmonyContinueFrontierHint": "Jump to the next lesson at your current frontier.",
+  "studyHarmonyContinueLessonLabel": "Continue: {lessonTitle}",
+  "@studyHarmonyContinueLessonLabel": {
+    "placeholders": {
+      "lessonTitle": {}
+    }
+  },
+  "studyHarmonyContinueAction": "Continue",
+  "studyHarmonyReviewCardTitle": "Review",
+  "studyHarmonyReviewQueueHint": "Pulled from your current review queue placeholder.",
+  "studyHarmonyReviewWeakHint": "Picked from the weakest result in your played lessons.",
+  "studyHarmonyReviewFallbackHint": "No review debt yet, so this falls back to your current frontier.",
+  "studyHarmonyReviewRetryNeededHint": "This lesson needs another pass after a miss or unfinished run.",
+  "studyHarmonyReviewAccuracyRefreshHint": "This lesson is queued for a quick accuracy refresh.",
+  "studyHarmonyReviewAction": "Review",
+  "studyHarmonyDailyCardTitle": "Daily Challenge",
+  "studyHarmonyDailyCardHint": "Open today's deterministic lesson from your unlocked path.",
+  "studyHarmonyDailyAction": "Play Daily",
+  "studyHarmonyDailyDateBadge": "Seed {dateKey}",
+  "@studyHarmonyDailyDateBadge": {
+    "placeholders": {
+      "dateKey": {}
+    }
+  },
+  "studyHarmonyReviewSessionTitle": "Weak Spot Review",
+  "studyHarmonyReviewSessionDescription": "Mix a short review set around {chapterTitle} and your weakest recent skills.",
+  "@studyHarmonyReviewSessionDescription": {
+    "placeholders": {
+      "chapterTitle": {}
+    }
+  },
+  "studyHarmonyDailySessionTitle": "Daily Challenge",
+  "studyHarmonyDailySessionDescription": "Play today's seeded mix built from {chapterTitle} and your current frontier.",
+  "@studyHarmonyDailySessionDescription": {
+    "placeholders": {
+      "chapterTitle": {}
+    }
+  },
+  "studyHarmonyModeLesson": "Lesson Mode",
+  "studyHarmonyModeReview": "Review Mode",
+  "studyHarmonyModeDaily": "Daily Mode",
+  "studyHarmonyModeLegacy": "Practice Mode",
+  "studyHarmonyShortcutHint": "Enter submits or moves on. R restarts. 1-9 chooses an answer. Tab and Shift+Tab move focus.",
+  "studyHarmonyLivesRemaining": "{remaining} of {total} lives remaining",
+  "@studyHarmonyLivesRemaining": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyResultSkillGainTitle": "Skill gains",
+  "studyHarmonyResultReviewFocusTitle": "Review focus",
+  "studyHarmonyResultSkillGainLine": "{skill} {delta}",
+  "@studyHarmonyResultSkillGainLine": {
+    "placeholders": {
+      "skill": {},
+      "delta": {}
+    }
+  },
+  "studyHarmonyReviewReasonRetryNeeded": "Review reason: retry needed",
+  "studyHarmonyReviewReasonAccuracyRefresh": "Review reason: accuracy refresh",
+  "studyHarmonyReviewReasonLowMastery": "Review reason: low mastery",
+  "studyHarmonyReviewReasonStaleSkill": "Review reason: stale skill",
+  "studyHarmonyReviewReasonWeakSpot": "Review reason: weak spot",
+  "studyHarmonyReviewReasonFrontierRefresh": "Review reason: frontier refresh",
+  "studyHarmonySkillNoteRead": "Note reading",
+  "studyHarmonySkillNoteFindKeyboard": "Keyboard note finding",
+  "studyHarmonySkillNoteAccidentals": "Sharps and flats",
+  "studyHarmonySkillChordSymbolToKeys": "Chord symbol to keys",
+  "studyHarmonySkillChordNameFromTones": "Chord naming",
+  "studyHarmonySkillScaleBuild": "Scale building",
+  "studyHarmonySkillRomanRealize": "Roman numeral realization",
+  "studyHarmonySkillRomanIdentify": "Roman numeral identification",
+  "studyHarmonySkillHarmonyDiatonicity": "Diatonicity",
+  "studyHarmonySkillHarmonyFunction": "Function basics",
+  "studyHarmonySkillProgressionKeyCenter": "Progression key center",
+  "studyHarmonySkillProgressionFunction": "Progression function reading",
+  "studyHarmonySkillProgressionNonDiatonic": "Progression non-diatonic detection",
+  "studyHarmonySkillProgressionFillBlank": "Progression fill-in",
+  "studyHarmonyHubChapterSectionTitle": "Chapters",
+  "studyHarmonyChapterProgressText": "{cleared}/{total} lessons cleared",
+  "@studyHarmonyChapterProgressText": {
+    "placeholders": {
+      "cleared": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyLessonsCount": "{count} lessons",
+  "@studyHarmonyLessonsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyCompletedLessonsCount": "{count} completed",
+  "@studyHarmonyCompletedLessonsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyOpenChapterAction": "Open chapter",
+  "studyHarmonyLockedChapterTag": "Locked",
+  "studyHarmonyChapterNextUp": "Next up: {lessonTitle}",
+  "@studyHarmonyChapterNextUp": {
+    "placeholders": {
+      "lessonTitle": {}
+    }
+  },
+  "studyHarmonyChapterViewTitle": "{chapterTitle}",
+  "@studyHarmonyChapterViewTitle": {
+    "placeholders": {
+      "chapterTitle": {}
+    }
+  },
+  "studyHarmonyTrackPlaceholderBody": "{coreTrack} is the active path right now. The other tracks stay visible so the hub can grow without another navigation rewrite.",
+  "@studyHarmonyTrackPlaceholderBody": {
+    "placeholders": {
+      "coreTrack": {}
+    }
+  },
+  "studyHarmonyCoreTrackTitle": "Core Track",
+  "studyHarmonyCoreTrackDescription": "Start with notes and the keyboard, then build up through chords, scales, Roman numerals, and diatonic basics.",
+  "studyHarmonyChapterNotesTitle": "Chapter 1: Notes & Keyboard",
+  "studyHarmonyChapterNotesDescription": "Map note names to the keyboard and get comfortable with white keys and simple accidentals.",
+  "studyHarmonyChapterChordsTitle": "Chapter 2: Chord Basics",
+  "studyHarmonyChapterChordsDescription": "Spell basic triads and sevenths, then name common chord shapes from their tones.",
+  "studyHarmonyChapterScalesTitle": "Chapter 3: Scales & Keys",
+  "studyHarmonyChapterScalesDescription": "Build major and minor scales, then spot which tones belong inside a key.",
+  "studyHarmonyChapterRomanTitle": "Chapter 4: Roman Numerals & Diatonicity",
+  "studyHarmonyChapterRomanDescription": "Turn simple Roman numerals into chords, identify them from chords, and sort diatonic basics by function.",
+  "studyHarmonyChapterProgressionDetectiveTitle": "Chapter 5: Progression Detective I",
+  "studyHarmonyChapterProgressionDetectiveDescription": "Read short core progressions, find the likely key center, and spot the chord function or odd one out.",
+  "studyHarmonyChapterMissingChordTitle": "Chapter 6: Missing Chord I",
+  "studyHarmonyChapterMissingChordDescription": "Fill one blank inside a short progression and learn where cadence and function want to go next.",
+  "studyHarmonyOpenLessonAction": "Open lesson",
+  "studyHarmonyLockedLessonAction": "Locked",
+  "studyHarmonyClearedTag": "Cleared",
+  "studyHarmonyComingSoonTag": "Coming soon",
+  "studyHarmonyPopTrackTitle": "Pop Track",
+  "studyHarmonyPopTrackDescription": "A song-focused path is planned after the Core track is stable.",
+  "studyHarmonyJazzTrackTitle": "Jazz Track",
+  "studyHarmonyJazzTrackDescription": "Jazz harmony content stays locked until the Core curriculum settles.",
+  "studyHarmonyClassicalTrackTitle": "Classical Track",
+  "studyHarmonyClassicalTrackDescription": "Functional harmony in classical contexts will arrive in a later phase.",
+  "studyHarmonyObjectiveQuickDrill": "Quick Drill",
+  "studyHarmonyObjectiveBossReview": "Boss Review",
+  "studyHarmonyLessonNotesKeyboardTitle": "White-Key Note Hunt",
+  "studyHarmonyLessonNotesKeyboardDescription": "Read note names and tap the matching white key.",
+  "studyHarmonyLessonNotesPreviewTitle": "Name the Highlighted Note",
+  "studyHarmonyLessonNotesPreviewDescription": "Look at a highlighted key and choose the correct note name.",
+  "studyHarmonyLessonNotesAccidentalsTitle": "Black Keys and Twins",
+  "studyHarmonyLessonNotesAccidentalsDescription": "Get a first look at sharp and flat spellings for the black keys.",
+  "studyHarmonyLessonNotesBossTitle": "Boss: Fast Note Hunt",
+  "studyHarmonyLessonNotesBossDescription": "Mix note reading and keyboard finding into one short speed round.",
+  "studyHarmonyLessonTriadKeyboardTitle": "Triads on the Keyboard",
+  "studyHarmonyLessonTriadKeyboardDescription": "Build common major, minor, and diminished triads directly on the keyboard.",
+  "studyHarmonyLessonSeventhKeyboardTitle": "Sevenths on the Keyboard",
+  "studyHarmonyLessonSeventhKeyboardDescription": "Add the seventh and spell a few common 7th chords on the keyboard.",
+  "studyHarmonyLessonChordNameTitle": "Name the Highlighted Chord",
+  "studyHarmonyLessonChordNameDescription": "Read a highlighted chord shape and choose the correct chord name.",
+  "studyHarmonyLessonChordsBossTitle": "Boss: Triads and Sevenths Review",
+  "studyHarmonyLessonChordsBossDescription": "Switch between chord spelling and chord naming in one mixed review.",
+  "studyHarmonyLessonMajorScaleTitle": "Build Major Scales",
+  "studyHarmonyLessonMajorScaleDescription": "Choose every tone that belongs to a simple major scale.",
+  "studyHarmonyLessonMinorScaleTitle": "Build Minor Scales",
+  "studyHarmonyLessonMinorScaleDescription": "Build natural minor and harmonic minor scales from a few common keys.",
+  "studyHarmonyLessonKeyMembershipTitle": "Key Membership",
+  "studyHarmonyLessonKeyMembershipDescription": "Find which tones belong inside a named key.",
+  "studyHarmonyLessonScalesBossTitle": "Boss: Scale Repair",
+  "studyHarmonyLessonScalesBossDescription": "Mix scale building and key membership in a short repair round.",
+  "studyHarmonyLessonRomanToChordTitle": "Roman to Chord",
+  "studyHarmonyLessonRomanToChordDescription": "Read a key and Roman numeral, then choose the matching chord.",
+  "studyHarmonyLessonChordToRomanTitle": "Chord to Roman",
+  "studyHarmonyLessonChordToRomanDescription": "Read a chord inside a key and choose the matching Roman numeral.",
+  "studyHarmonyLessonDiatonicityTitle": "Diatonic or Not",
+  "studyHarmonyLessonDiatonicityDescription": "Sort chords into diatonic and non-diatonic answers in simple keys.",
+  "studyHarmonyLessonFunctionTitle": "Function Basics",
+  "studyHarmonyLessonFunctionDescription": "Classify easy chords as tonic, predominant, or dominant.",
+  "studyHarmonyLessonRomanBossTitle": "Boss: Functional Basics Mix",
+  "studyHarmonyLessonRomanBossDescription": "Review Roman-to-chord, chord-to-Roman, diatonicity, and function together.",
+  "studyHarmonyLessonProgressionKeyCenterTitle": "Find the Key Center",
+  "studyHarmonyLessonProgressionKeyCenterDescription": "Read a short progression and choose the key center that makes the clearest sense.",
+  "studyHarmonyLessonProgressionFunctionTitle": "Function in Context",
+  "studyHarmonyLessonProgressionFunctionDescription": "Focus on one highlighted chord and name its role inside a short progression.",
+  "studyHarmonyLessonProgressionNonDiatonicTitle": "Find the Outsider",
+  "studyHarmonyLessonProgressionNonDiatonicDescription": "Spot the one chord that falls outside the main diatonic reading.",
+  "studyHarmonyLessonProgressionBossTitle": "Boss: Mixed Analysis",
+  "studyHarmonyLessonProgressionBossDescription": "Mix key-center reading, function spotting, and non-diatonic detection in one short detective round.",
+  "studyHarmonyLessonMissingChordPatternTitle": "Fill the Missing Chord",
+  "studyHarmonyLessonMissingChordPatternDescription": "Complete a short four-chord progression by choosing the chord that fits the local function best.",
+  "studyHarmonyLessonMissingChordCadenceTitle": "Cadence Fill-In",
+  "studyHarmonyLessonMissingChordCadenceDescription": "Use the pull toward a cadence to choose the missing chord near the end of a phrase.",
+  "studyHarmonyLessonMissingChordBossTitle": "Boss: Mixed Fill-In",
+  "studyHarmonyLessonMissingChordBossDescription": "Solve a short set of fill-in progression questions with a little more harmonic pressure.",
+  "studyHarmonyPromptFindNoteOnKeyboard": "Find {note} on the keyboard",
+  "@studyHarmonyPromptFindNoteOnKeyboard": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "studyHarmonyPromptNameHighlightedNote": "Which note is highlighted?",
+  "studyHarmonyPromptFindChordOnKeyboard": "Build {chord} on the keyboard",
+  "@studyHarmonyPromptFindChordOnKeyboard": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "studyHarmonyPromptNameHighlightedChord": "Which chord is highlighted?",
+  "studyHarmonyPromptBuildScale": "Pick every note in {scaleName}",
+  "@studyHarmonyPromptBuildScale": {
+    "placeholders": {
+      "scaleName": {}
+    }
+  },
+  "studyHarmonyPromptKeyMembership": "Pick the notes that belong to {keyName}",
+  "@studyHarmonyPromptKeyMembership": {
+    "placeholders": {
+      "keyName": {}
+    }
+  },
+  "studyHarmonyPromptRomanToChord": "In {keyName}, which chord matches {roman}?",
+  "@studyHarmonyPromptRomanToChord": {
+    "placeholders": {
+      "keyName": {},
+      "roman": {}
+    }
+  },
+  "studyHarmonyPromptChordToRoman": "In {keyName}, what Roman numeral matches {chord}?",
+  "@studyHarmonyPromptChordToRoman": {
+    "placeholders": {
+      "keyName": {},
+      "chord": {}
+    }
+  },
+  "studyHarmonyPromptDiatonicity": "In {keyName}, is {chord} diatonic?",
+  "@studyHarmonyPromptDiatonicity": {
+    "placeholders": {
+      "keyName": {},
+      "chord": {}
+    }
+  },
+  "studyHarmonyPromptFunction": "In {keyName}, what function does {chord} have?",
+  "@studyHarmonyPromptFunction": {
+    "placeholders": {
+      "keyName": {},
+      "chord": {}
+    }
+  },
+  "studyHarmonyProgressionStripLabel": "Progression",
+  "studyHarmonyPromptProgressionKeyCenter": "Which key center best fits this progression?",
+  "studyHarmonyPromptProgressionFunction": "What function does {chord} play here?",
+  "@studyHarmonyPromptProgressionFunction": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "studyHarmonyPromptProgressionNonDiatonic": "Which chord feels least diatonic in this progression?",
+  "studyHarmonyPromptProgressionMissingChord": "Which chord best fills the blank?",
+  "studyHarmonyProgressionExplanationKeyCenter": "The analyzer reads this progression most clearly in {keyLabel}.",
+  "@studyHarmonyProgressionExplanationKeyCenter": {
+    "placeholders": {
+      "keyLabel": {}
+    }
+  },
+  "studyHarmonyProgressionExplanationFunction": "{chord} behaves most like a {functionLabel} chord in this context.",
+  "@studyHarmonyProgressionExplanationFunction": {
+    "placeholders": {
+      "chord": {},
+      "functionLabel": {}
+    }
+  },
+  "studyHarmonyProgressionExplanationNonDiatonic": "{chord} stands out against the main {keyLabel} reading, so it is the best non-diatonic pick.",
+  "@studyHarmonyProgressionExplanationNonDiatonic": {
+    "placeholders": {
+      "chord": {},
+      "keyLabel": {}
+    }
+  },
+  "studyHarmonyProgressionExplanationMissingChord": "{chord} restores the expected {functionLabel} pull in this progression.",
+  "@studyHarmonyProgressionExplanationMissingChord": {
+    "placeholders": {
+      "chord": {},
+      "functionLabel": {}
+    }
+  },
+  "studyHarmonyProgressionChoiceSlot": "{index}. {chord}",
+  "@studyHarmonyProgressionChoiceSlot": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "chord": {}
+    }
+  },
+  "studyHarmonyScaleNameMajor": "{tonic} major",
+  "@studyHarmonyScaleNameMajor": {
+    "placeholders": {
+      "tonic": {}
+    }
+  },
+  "studyHarmonyScaleNameNaturalMinor": "{tonic} natural minor",
+  "@studyHarmonyScaleNameNaturalMinor": {
+    "placeholders": {
+      "tonic": {}
+    }
+  },
+  "studyHarmonyScaleNameHarmonicMinor": "{tonic} harmonic minor",
+  "@studyHarmonyScaleNameHarmonicMinor": {
+    "placeholders": {
+      "tonic": {}
+    }
+  },
+  "studyHarmonyKeyNameMajor": "{tonic} major",
+  "@studyHarmonyKeyNameMajor": {
+    "placeholders": {
+      "tonic": {}
+    }
+  },
+  "studyHarmonyKeyNameMinor": "{tonic} minor",
+  "@studyHarmonyKeyNameMinor": {
+    "placeholders": {
+      "tonic": {}
+    }
+  },
+  "studyHarmonyChoiceDiatonic": "Diatonic",
+  "studyHarmonyChoiceNonDiatonic": "Non-diatonic",
+  "studyHarmonyChoiceTonic": "Tonic",
+  "studyHarmonyChoicePredominant": "Predominant",
+  "studyHarmonyChoiceDominant": "Dominant",
+  "studyHarmonyChoiceOther": "Other",
+  "chordAnalyzerTitle": "Analizador de acordes",
+  "chordAnalyzerSubtitle": "Pega una progresión y obtén una lectura armónica conservadora.",
+  "chordAnalyzerInputLabel": "Progresión de acordes",
+  "chordAnalyzerInputHint": "Dm7 G7 Cmaj7",
+  "chordAnalyzerInputHelper": "Fuera de paréntesis puedes separar con espacios, | o comas. Las comas dentro de paréntesis se mantienen dentro del mismo acorde. Se admiten raíces en minúscula, bajo con slash, formas sus/alt/add y tensiones como C7(b9, #11). En dispositivos táctiles puedes usar el panel de acordes o cambiar a entrada ABC.",
+  "chordAnalyzerAnalyze": "Analizar",
+  "chordAnalyzerKeyboardTitle": "Panel de acordes",
+  "chordAnalyzerKeyboardTouchHint": "Toca símbolos para construir una progresión. La entrada ABC mantiene disponible el teclado del sistema cuando necesitas escribir libremente.",
+  "chordAnalyzerKeyboardDesktopHint": "Escribe, pega o toca símbolos para insertarlos en el cursor.",
+  "chordAnalyzerChordPad": "Panel",
+  "chordAnalyzerRawInput": "ABC",
+  "chordAnalyzerPaste": "Pegar",
+  "chordAnalyzerClear": "Borrar",
+  "chordAnalyzerBackspace": "Retroceso",
+  "chordAnalyzerSpace": "Espacio",
+  "chordAnalyzerAnalyzing": "Analizando progresión...",
+  "chordAnalyzerInitialTitle": "Empieza con una progresión",
+  "chordAnalyzerInitialBody": "Introduce una progresión como Dm7 G7 Cmaj7 o Cmaj7 | Am7 D7 | Gmaj7 para ver tonalidades probables, números romanos y un resumen breve.",
+  "chordAnalyzerDetectedKeys": "Tonalidades detectadas",
+  "chordAnalyzerPrimaryReading": "Lectura principal",
+  "chordAnalyzerAlternativeReading": "Lectura alternativa",
+  "chordAnalyzerChordAnalysis": "Análisis acorde por acorde",
+  "chordAnalyzerMeasureLabel": "Compás {index}",
+  "@chordAnalyzerMeasureLabel": {
+    "placeholders": {
+      "index": {}
+    }
+  },
+  "chordAnalyzerProgressionSummary": "Resumen de la progresión",
+  "chordAnalyzerWarnings": "Advertencias y ambigüedades",
+  "chordAnalyzerNoInputError": "Introduce una progresión de acordes para analizar.",
+  "chordAnalyzerNoRecognizedChordsError": "No se encontraron acordes reconocibles en la progresión.",
+  "chordAnalyzerPartialParseWarning": "Se omitieron algunos símbolos: {tokens}",
+  "@chordAnalyzerPartialParseWarning": {
+    "placeholders": {
+      "tokens": {}
+    }
+  },
+  "chordAnalyzerKeyAmbiguityWarning": "El centro tonal sigue siendo algo ambiguo entre {primary} y {alternative}.",
+  "@chordAnalyzerKeyAmbiguityWarning": {
+    "placeholders": {
+      "primary": {},
+      "alternative": {}
+    }
+  },
+  "chordAnalyzerUnresolvedWarning": "Algunos acordes siguen siendo ambiguos, así que esta lectura se mantiene intencionalmente conservadora.",
+  "chordAnalyzerFunctionTonic": "Tónica",
+  "chordAnalyzerFunctionPredominant": "Predominante",
+  "chordAnalyzerFunctionDominant": "Dominante",
+  "chordAnalyzerFunctionOther": "Otro",
+  "chordAnalyzerRemarkSecondaryDominant": "Posible dominante secundaria hacia {target}.",
+  "@chordAnalyzerRemarkSecondaryDominant": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "chordAnalyzerRemarkTritoneSub": "Posible sustituto por tritono hacia {target}.",
+  "@chordAnalyzerRemarkTritoneSub": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "chordAnalyzerRemarkModalInterchange": "Posible intercambio modal desde el modo paralelo menor.",
+  "chordAnalyzerRemarkAmbiguous": "Este acorde sigue siendo ambiguo en la lectura actual.",
+  "chordAnalyzerRemarkUnresolved": "Este acorde sigue sin resolverse con las heurísticas conservadoras actuales.",
+  "chordAnalyzerTagIiVI": "cadencia ii-V-I",
+  "chordAnalyzerTagTurnaround": "turnaround",
+  "chordAnalyzerTagDominantResolution": "resolución dominante",
+  "chordAnalyzerTagPlagalColor": "color plagal/modal",
+  "chordAnalyzerSummaryCenter": "Esta progresión probablemente se centra en {key}.",
+  "@chordAnalyzerSummaryCenter": {
+    "placeholders": {
+      "key": {}
+    }
+  },
+  "chordAnalyzerSummaryAlternative": "Una lectura alternativa es {key}.",
+  "@chordAnalyzerSummaryAlternative": {
+    "placeholders": {
+      "key": {}
+    }
+  },
+  "chordAnalyzerSummaryTag": "Sugiere un {tag}.",
+  "@chordAnalyzerSummaryTag": {
+    "placeholders": {
+      "tag": {}
+    }
+  },
+  "chordAnalyzerSummaryFlow": "{from} y {through} funcionan como acordes de {fromFunction} y {throughFunction} que conducen a {target}.",
+  "@chordAnalyzerSummaryFlow": {
+    "placeholders": {
+      "from": {},
+      "through": {},
+      "fromFunction": {},
+      "throughFunction": {},
+      "target": {}
+    }
+  },
+  "chordAnalyzerSummarySecondaryDominant": "{chord} puede oírse como una posible dominante secundaria que apunta hacia {target}.",
+  "@chordAnalyzerSummarySecondaryDominant": {
+    "placeholders": {
+      "chord": {},
+      "target": {}
+    }
+  },
+  "chordAnalyzerSummaryTritoneSub": "{chord} puede oírse como un posible sustituto por tritono que apunta hacia {target}.",
+  "@chordAnalyzerSummaryTritoneSub": {
+    "placeholders": {
+      "chord": {},
+      "target": {}
+    }
+  },
+  "chordAnalyzerSummaryModalInterchange": "{chord} añade un posible color de intercambio modal.",
+  "@chordAnalyzerSummaryModalInterchange": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "chordAnalyzerSummaryAmbiguous": "Algunos detalles siguen siendo ambiguos, así que esta lectura se mantiene intencionalmente conservadora.",
+  "chordAnalyzerExamplesTitle": "Ejemplos",
+  "chordAnalyzerConfidenceLabel": "Confianza",
+  "chordAnalyzerAmbiguityLabel": "Ambigüedad",
+  "chordAnalyzerWhyThisReading": "Por qué esta lectura",
+  "chordAnalyzerCompetingReadings": "También plausible",
+  "chordAnalyzerIgnoredModifiersWarning": "Modificadores ignorados: {details}",
+  "@chordAnalyzerIgnoredModifiersWarning": {
+    "placeholders": {
+      "details": {}
+    }
+  },
+  "chordAnalyzerParserDiagnosticWarning": "Advertencia de entrada: {details}",
+  "@chordAnalyzerParserDiagnosticWarning": {
+    "placeholders": {
+      "details": {}
+    }
+  },
+  "chordAnalyzerDiagnosticUnbalancedParentheses": "Los paréntesis desequilibrados dejaron incierta parte del símbolo.",
+  "chordAnalyzerDiagnosticUnexpectedCloseParenthesis": "Se ignoró un paréntesis de cierre inesperado.",
+  "chordAnalyzerEvidenceExtensionColor": "El color explícito {extension} refuerza esta lectura.",
+  "@chordAnalyzerEvidenceExtensionColor": {
+    "placeholders": {
+      "extension": {}
+    }
+  },
+  "chordAnalyzerEvidenceAlteredDominantColor": "El color dominante alterado apoya una función dominante.",
+  "chordAnalyzerEvidenceSlashBass": "El bajo con slash {bass} mantiene significativa la línea de bajo o la inversión.",
+  "@chordAnalyzerEvidenceSlashBass": {
+    "placeholders": {
+      "bass": {}
+    }
+  },
+  "chordAnalyzerEvidenceResolution": "El siguiente acorde apoya una resolución hacia {target}.",
+  "@chordAnalyzerEvidenceResolution": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "chordAnalyzerEvidenceBorrowedColor": "Este color puede oírse como prestado del modo paralelo.",
+  "chordAnalyzerEvidenceSuspensionColor": "El color suspendido suaviza la atracción dominante sin borrarla.",
+  "chordAnalyzerLowConfidenceTitle": "Lectura de baja confianza",
+  "chordAnalyzerLowConfidenceBody": "Las tonalidades candidatas están muy cerca entre sí o algunos símbolos solo se recuperaron parcialmente, así que tómalo como una primera lectura cautelosa.",
+  "chordAnalyzerEmptyMeasure": "Este compás está vacío y se conservó en la numeración.",
+  "chordAnalyzerNoAnalyzableChordsInMeasure": "No se recuperaron símbolos analizables en este compás.",
+  "chordAnalyzerParseIssuesTitle": "Problemas de análisis",
+  "chordAnalyzerParseIssueLine": "{token}: {reason}",
+  "@chordAnalyzerParseIssueLine": {
+    "placeholders": {
+      "token": {},
+      "reason": {}
+    }
+  },
+  "chordAnalyzerParseIssueEmpty": "Token vacío.",
+  "chordAnalyzerParseIssueInvalidRoot": "No se pudo reconocer la raíz.",
+  "chordAnalyzerParseIssueUnknownRoot": "{root} no es una escritura de raíz admitida.",
+  "@chordAnalyzerParseIssueUnknownRoot": {
+    "placeholders": {
+      "root": {}
+    }
+  },
+  "chordAnalyzerParseIssueInvalidBass": "El bajo con slash {bass} no es una escritura admitida.",
+  "@chordAnalyzerParseIssueInvalidBass": {
+    "placeholders": {
+      "bass": {}
+    }
+  },
+  "chordAnalyzerParseIssueUnsupportedSuffix": "Sufijo o modificador no admitido: {suffix}",
+  "@chordAnalyzerParseIssueUnsupportedSuffix": {
+    "placeholders": {
+      "suffix": {}
+    }
+  }
 }
-

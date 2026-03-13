@@ -489,6 +489,13 @@ class ProgressionParser {
         extension: 7,
       );
     }
+    if (lower.startsWith('maj')) {
+      return build(
+        consumedLength: 3,
+        displayQuality: ChordQuality.majorTriad,
+        analysisFamily: ChordFamily.major,
+      );
+    }
     if (lower.startsWith('13sus4')) {
       return build(
         consumedLength: 6,

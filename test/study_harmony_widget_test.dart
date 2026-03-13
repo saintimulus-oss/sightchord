@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sightchord/app.dart';
@@ -9,9 +10,64 @@ import 'package:sightchord/settings/settings_controller.dart';
 import 'package:sightchord/study_harmony/application/study_harmony_progress_controller.dart';
 import 'package:sightchord/study_harmony/content/core_curriculum_catalog.dart';
 import 'package:sightchord/study_harmony/domain/study_harmony_progress_models.dart';
+import 'package:sightchord/study_harmony/domain/study_harmony_session_models.dart';
+import 'package:sightchord/study_harmony/domain/study_harmony_task_evaluators.dart';
 import 'package:sightchord/study_harmony_page.dart';
 import 'package:sightchord/study_harmony/study_harmony_level_page.dart';
 import 'package:sightchord/study_harmony/study_harmony_models.dart';
+import 'package:sightchord/study_harmony/study_harmony_session_page.dart';
+
+StudyHarmonyLessonDefinition _buildShortcutLesson() {
+  const lessonId = 'shortcut-lesson';
+  const choiceA = StudyHarmonyAnswerChoice(id: 'choice-a', label: 'C');
+  const choiceB = StudyHarmonyAnswerChoice(id: 'choice-b', label: 'D');
+
+  return StudyHarmonyLessonDefinition(
+    id: lessonId,
+    chapterId: studyHarmonyCoreNotesChapterId,
+    title: 'Shortcut Lesson',
+    description: 'Test keyboard actions and focus flow.',
+    objectiveLabel: 'Quick Drill',
+    goalCorrectAnswers: 2,
+    startingLives: 2,
+    sessionMode: StudyHarmonySessionMode.lesson,
+    tasks: [
+      StudyHarmonyTaskBlueprint(
+        id: 'shortcut-blueprint',
+        lessonId: lessonId,
+        taskKind: StudyHarmonyTaskKind.noteNameChoice,
+        promptSpec: const StudyHarmonyPromptSpec(
+          id: 'shortcut-template',
+          surface: StudyHarmonyPromptSurfaceKind.text,
+          primaryLabel: 'Question 1',
+        ),
+        answerOptions: const [choiceA, choiceB],
+        answerSummaryLabel: 'C',
+        answerSurface: StudyHarmonyAnswerSurfaceKind.choiceChips,
+        evaluator: SingleChoiceEvaluator(acceptedChoiceIds: ['choice-a']),
+        instanceFactory:
+            ({required blueprint, required sequenceNumber, required random}) =>
+                StudyHarmonyTaskInstance(
+                  blueprintId: blueprint.id,
+                  lessonId: blueprint.lessonId,
+                  taskKind: blueprint.taskKind,
+                  prompt: StudyHarmonyPromptSpec(
+                    id: 'shortcut-question-$sequenceNumber',
+                    surface: StudyHarmonyPromptSurfaceKind.text,
+                    primaryLabel: 'Question ${sequenceNumber + 1}',
+                  ),
+                  answerOptions: blueprint.answerOptions,
+                  answerSummaryLabel: blueprint.answerSummaryLabel,
+                  answerSurface: blueprint.answerSurface,
+                  evaluator: blueprint.evaluator,
+                  skillTags: const {'note.read'},
+                  sequenceNumber: sequenceNumber,
+                ),
+      ),
+    ],
+    skillTags: const {'note.read'},
+  );
+}
 
 void main() {
   setUp(() {
@@ -54,6 +110,45 @@ void main() {
     );
     expect(find.text('Study Harmony'), findsWidgets);
   });
+
+  testWidgets(
+    'main menu surfaces a lightweight study harmony progress summary',
+    (WidgetTester tester) async {
+      final snapshot = StudyHarmonyProgressSnapshot.initial().copyWith(
+        lastPlayedTrackId: studyHarmonyCoreTrackId,
+        lastPlayedChapterId: studyHarmonyCoreNotesChapterId,
+        lastPlayedLessonId: 'core-notes-2-name-preview',
+        unlockedChapterIds: {studyHarmonyCoreNotesChapterId},
+        unlockedLessonIds: {
+          'core-notes-1-note-keyboard',
+          'core-notes-2-name-preview',
+        },
+        lessonResults: {
+          'core-notes-1-note-keyboard': const StudyHarmonyLessonProgressSummary(
+            lessonId: 'core-notes-1-note-keyboard',
+            isCleared: true,
+            bestAccuracy: 0.92,
+            bestAttemptCount: 2,
+            bestStars: 3,
+            bestRank: 'A',
+            bestElapsedMillis: 16000,
+            playCount: 1,
+            lastPlayedAtIso8601: '2026-03-12T00:00:00.000Z',
+          ),
+        },
+      );
+
+      await pumpApp(tester, progressSnapshot: snapshot);
+
+      expect(
+        find.byKey(const ValueKey('main-open-study-harmony-button-supporting')),
+        findsOneWidget,
+      );
+      expect(find.text('Continue: Name the Highlighted Note'), findsOneWidget);
+      expect(find.text('Chapter 1: Notes & Keyboard'), findsOneWidget);
+      expect(find.text('1/24 lessons cleared'), findsOneWidget);
+    },
+  );
 
   testWidgets(
     'study harmony hub renders continue, review, daily, and chapter cards',
@@ -331,6 +426,66 @@ void main() {
 
     expect(find.text('Daily Mode'), findsWidgets);
   });
+
+  testWidgets(
+    'session page supports shortcut selection, submit, next, and restart',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1280, 1800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: StudyHarmonySessionPage(
+            lesson: _buildShortcutLesson(),
+            trackId: studyHarmonyCoreTrackId,
+            progressController: StudyHarmonyProgressController(
+              initialSnapshot: StudyHarmonyProgressSnapshot.initial(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Question 1'), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('study-harmony-selected-C')),
+        findsOneWidget,
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('study-harmony-feedback-banner')),
+        findsOneWidget,
+      );
+      expect(find.text('Next prompt'), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Question 2'), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyR);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Question 1'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('study-harmony-feedback-banner')),
+        findsNothing,
+      );
+    },
+  );
 
   test('core course catalog exposes six chapters and lesson counts', () {
     final course = buildStudyHarmonyCoreCourse(AppLocalizationsEn());

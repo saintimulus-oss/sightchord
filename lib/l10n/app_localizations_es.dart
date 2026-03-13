@@ -567,20 +567,23 @@ class AppLocalizationsEs extends AppLocalizations {
       'Work through a structured harmony hub with quick lesson entries and chapter progress.';
 
   @override
-  String get studyHarmonyPlaceholderTag => 'Prototype system';
+  String get studyHarmonyPlaceholderTag => 'Study deck';
 
   @override
   String get studyHarmonyPlaceholderBody =>
-      'The prototype separates level data, prompt presentation, and answer input so future note, chord, scale, and reverse-identification drills can reuse the same flow.';
+      'Lesson data, prompts, and answer surfaces already share one reusable study flow for notes, chords, scales, and progression drills.';
 
   @override
-  String get studyHarmonyTestLevelTag => 'Test level';
+  String get studyHarmonyTestLevelTag => 'Practice drill';
 
   @override
-  String get studyHarmonyTestLevelAction => 'Open test level';
+  String get studyHarmonyTestLevelAction => 'Open drill';
 
   @override
   String get studyHarmonySubmit => 'Submit';
+
+  @override
+  String get studyHarmonyNextPrompt => 'Next prompt';
 
   @override
   String get studyHarmonySelectedAnswers => 'Selected answers';
@@ -692,6 +695,11 @@ class AppLocalizationsEs extends AppLocalizations {
       'Jump to the next lesson at your current frontier.';
 
   @override
+  String studyHarmonyContinueLessonLabel(Object lessonTitle) {
+    return 'Continue: $lessonTitle';
+  }
+
+  @override
   String get studyHarmonyContinueAction => 'Continue';
 
   @override
@@ -761,7 +769,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get studyHarmonyModeDaily => 'Daily Mode';
 
   @override
-  String get studyHarmonyModeLegacy => 'Legacy Mode';
+  String get studyHarmonyModeLegacy => 'Practice Mode';
+
+  @override
+  String get studyHarmonyShortcutHint =>
+      'Enter submits or moves on. R restarts. 1-9 chooses an answer. Tab and Shift+Tab move focus.';
+
+  @override
+  String studyHarmonyLivesRemaining(int remaining, int total) {
+    return '$remaining of $total lives remaining';
+  }
 
   @override
   String get studyHarmonyResultSkillGainTitle => 'Skill gains';

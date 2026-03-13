@@ -220,7 +220,7 @@ class StudyHarmonyProgressionAdapter {
               random: random,
               minLength: 4,
               maxLength: 4,
-              allowNonDiatonic: cadenceFocus,
+              allowNonDiatonic: false,
               extraAcceptance: (progression) => cadenceFocus
                   ? _hasCadentialWindow(progression.analysis)
                   : progression.analysis.chordAnalyses.length == 4,

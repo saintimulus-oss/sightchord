@@ -627,62 +627,65 @@ class _HubHeroCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Card(
-      key: const ValueKey('study-harmony-hero-card'),
-      elevation: 0,
-      color: colorScheme.surface.withValues(alpha: 0.94),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              eyebrow,
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: colorScheme.primary,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.2,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              subtitle,
-              style: theme.textTheme.titleLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              body,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                height: 1.45,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                Chip(
-                  avatar: const Icon(Icons.flag_rounded, size: 18),
-                  label: Text(lessonsProgressLabel),
+    return Semantics(
+      container: true,
+      child: Card(
+        key: const ValueKey('study-harmony-hero-card'),
+        elevation: 0,
+        color: colorScheme.surface.withValues(alpha: 0.94),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                eyebrow,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.2,
                 ),
-                Chip(
-                  avatar: const Icon(Icons.auto_stories_rounded, size: 18),
-                  label: Text(chapterProgressLabel),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                title,
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
                 ),
-              ],
-            ),
-          ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                subtitle,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                body,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  Chip(
+                    avatar: const Icon(Icons.flag_rounded, size: 18),
+                    label: Text(lessonsProgressLabel),
+                  ),
+                  Chip(
+                    avatar: const Icon(Icons.auto_stories_rounded, size: 18),
+                    label: Text(chapterProgressLabel),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -716,59 +719,61 @@ class _HubActionCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Card(
-      elevation: 0,
-      color: colorScheme.surface.withValues(alpha: 0.94),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: colorScheme.primary),
-            const SizedBox(height: 14),
-            Text(
-              title,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
+    return MergeSemantics(
+      child: Card(
+        elevation: 0,
+        color: colorScheme.surface.withValues(alpha: 0.94),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: colorScheme.primary),
+              const SizedBox(height: 14),
+              Text(
+                title,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              headline,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w900,
+              const SizedBox(height: 8),
+              Text(
+                headline,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w900,
+                ),
               ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              supportingLabel,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: colorScheme.primary,
-                fontWeight: FontWeight.w700,
+              const SizedBox(height: 6),
+              Text(
+                supportingLabel,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              body,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                height: 1.4,
+              const SizedBox(height: 10),
+              Text(
+                body,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  height: 1.4,
+                ),
               ),
-            ),
-            if (footerLabel case final footer?) ...[
-              const SizedBox(height: 12),
-              Chip(label: Text(footer)),
+              if (footerLabel case final footer?) ...[
+                const SizedBox(height: 12),
+                Chip(label: Text(footer)),
+              ],
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: onPressed,
+                  icon: const Icon(Icons.arrow_forward_rounded),
+                  label: Text(actionLabel),
+                ),
+              ),
             ],
-            const SizedBox(height: 18),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: onPressed,
-                icon: const Icon(Icons.arrow_forward_rounded),
-                label: Text(actionLabel),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -802,103 +807,110 @@ class _HubChapterCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
-    return Card(
-      key: ValueKey('study-harmony-chapter-card-${summary.chapter.id}'),
-      elevation: 0,
-      color: colorScheme.surface.withValues(alpha: 0.94),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                if (!summary.unlocked)
-                  Chip(
-                    key: ValueKey(
-                      'study-harmony-chapter-lock-${summary.chapter.id}',
+    return MergeSemantics(
+      child: Card(
+        key: ValueKey('study-harmony-chapter-card-${summary.chapter.id}'),
+        elevation: 0,
+        color: colorScheme.surface.withValues(alpha: 0.94),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if (!summary.unlocked)
+                    Chip(
+                      key: ValueKey(
+                        'study-harmony-chapter-lock-${summary.chapter.id}',
+                      ),
+                      avatar: const Icon(Icons.lock_outline_rounded, size: 18),
+                      label: Text(lockedLabel),
                     ),
-                    avatar: const Icon(Icons.lock_outline_rounded, size: 18),
-                    label: Text(lockedLabel),
-                  ),
-                if (summary.isCompleted)
-                  Chip(
-                    avatar: const Icon(Icons.check_circle_rounded, size: 18),
-                    label: Text(l10n.studyHarmonyClearedTag),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              summary.chapter.title,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w900,
+                  if (summary.isCompleted)
+                    Chip(
+                      avatar: const Icon(Icons.check_circle_rounded, size: 18),
+                      label: Text(l10n.studyHarmonyClearedTag),
+                    ),
+                ],
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              summary.chapter.description,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                height: 1.45,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(999),
-              child: LinearProgressIndicator(
-                key: ValueKey(
-                  'study-harmony-chapter-progress-${summary.chapter.id}',
-                ),
-                value: summary.progressFraction,
-                minHeight: 10,
-                backgroundColor: colorScheme.surfaceContainerHighest,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              progressLabel,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                Chip(label: Text(lessonCountLabel)),
-                Chip(label: Text(completedCountLabel)),
-              ],
-            ),
-            if (nextLessonLabel case final nextLesson?) ...[
               const SizedBox(height: 12),
               Text(
-                nextLesson,
-                style: theme.textTheme.bodyMedium?.copyWith(
+                summary.chapter.title,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                summary.chapter.description,
+                style: theme.textTheme.bodyLarge?.copyWith(
                   color: colorScheme.onSurfaceVariant,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Semantics(
+                label: progressLabel,
+                child: ExcludeSemantics(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(999),
+                    child: LinearProgressIndicator(
+                      key: ValueKey(
+                        'study-harmony-chapter-progress-${summary.chapter.id}',
+                      ),
+                      value: summary.progressFraction,
+                      minHeight: 10,
+                      backgroundColor: colorScheme.surfaceContainerHighest,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                progressLabel,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  Chip(label: Text(lessonCountLabel)),
+                  Chip(label: Text(completedCountLabel)),
+                ],
+              ),
+              if (nextLessonLabel case final nextLesson?) ...[
+                const SizedBox(height: 12),
+                Text(
+                  nextLesson,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.tonalIcon(
+                  key: ValueKey(
+                    'study-harmony-open-chapter-${summary.chapter.id}',
+                  ),
+                  onPressed: onOpen,
+                  icon: Icon(
+                    summary.unlocked
+                        ? Icons.auto_stories_rounded
+                        : Icons.lock_outline_rounded,
+                  ),
+                  label: Text(actionLabel),
                 ),
               ),
             ],
-            const SizedBox(height: 18),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.tonalIcon(
-                key: ValueKey(
-                  'study-harmony-open-chapter-${summary.chapter.id}',
-                ),
-                onPressed: onOpen,
-                icon: Icon(
-                  summary.unlocked
-                      ? Icons.auto_stories_rounded
-                      : Icons.lock_outline_rounded,
-                ),
-                label: Text(actionLabel),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -923,57 +935,59 @@ class _ChapterLessonTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                Chip(label: Text(lesson.objectiveLabel)),
-                if (cleared) Chip(label: Text(l10n.studyHarmonyClearedTag)),
-                if (!unlocked)
-                  Chip(label: Text(l10n.studyHarmonyLockedLessonAction)),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              lesson.title,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              lesson.description,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+    return MergeSemantics(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  Chip(label: Text(lesson.objectiveLabel)),
+                  if (cleared) Chip(label: Text(l10n.studyHarmonyClearedTag)),
+                  if (!unlocked)
+                    Chip(label: Text(l10n.studyHarmonyLockedLessonAction)),
+                ],
               ),
-            ),
-            const SizedBox(height: 14),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                key: ValueKey('study-harmony-open-lesson-${lesson.id}'),
-                onPressed: onOpen,
-                icon: Icon(
-                  unlocked ? Icons.play_arrow_rounded : Icons.lock_rounded,
-                ),
-                label: Text(
-                  unlocked
-                      ? l10n.studyHarmonyOpenLessonAction
-                      : l10n.studyHarmonyLockedLessonAction,
+              const SizedBox(height: 10),
+              Text(
+                lesson.title,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                lesson.description,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  key: ValueKey('study-harmony-open-lesson-${lesson.id}'),
+                  onPressed: onOpen,
+                  icon: Icon(
+                    unlocked ? Icons.play_arrow_rounded : Icons.lock_rounded,
+                  ),
+                  label: Text(
+                    unlocked
+                        ? l10n.studyHarmonyOpenLessonAction
+                        : l10n.studyHarmonyLockedLessonAction,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -998,42 +1012,45 @@ class _LockedTrackPlaceholderCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Card(
-      key: const ValueKey('study-harmony-track-placeholder'),
-      elevation: 0,
-      color: colorScheme.surface.withValues(alpha: 0.94),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Chip(
-              avatar: const Icon(Icons.lock_outline_rounded, size: 18),
-              label: Text(badgeLabel),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              trackTitle,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w900,
+    return Semantics(
+      container: true,
+      child: Card(
+        key: const ValueKey('study-harmony-track-placeholder'),
+        elevation: 0,
+        color: colorScheme.surface.withValues(alpha: 0.94),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Chip(
+                avatar: const Icon(Icons.lock_outline_rounded, size: 18),
+                label: Text(badgeLabel),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              trackDescription,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+              const SizedBox(height: 14),
+              Text(
+                trackTitle,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w900,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              body,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                height: 1.45,
+              const SizedBox(height: 8),
+              Text(
+                trackDescription,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              Text(
+                body,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  height: 1.45,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

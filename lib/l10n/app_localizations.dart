@@ -1116,25 +1116,25 @@ abstract class AppLocalizations {
   /// No description provided for @studyHarmonyPlaceholderTag.
   ///
   /// In en, this message translates to:
-  /// **'Prototype system'**
+  /// **'Study deck'**
   String get studyHarmonyPlaceholderTag;
 
   /// No description provided for @studyHarmonyPlaceholderBody.
   ///
   /// In en, this message translates to:
-  /// **'The prototype separates level data, prompt presentation, and answer input so future note, chord, scale, and reverse-identification drills can reuse the same flow.'**
+  /// **'Lesson data, prompts, and answer surfaces already share one reusable study flow for notes, chords, scales, and progression drills.'**
   String get studyHarmonyPlaceholderBody;
 
   /// No description provided for @studyHarmonyTestLevelTag.
   ///
   /// In en, this message translates to:
-  /// **'Test level'**
+  /// **'Practice drill'**
   String get studyHarmonyTestLevelTag;
 
   /// No description provided for @studyHarmonyTestLevelAction.
   ///
   /// In en, this message translates to:
-  /// **'Open test level'**
+  /// **'Open drill'**
   String get studyHarmonyTestLevelAction;
 
   /// No description provided for @studyHarmonySubmit.
@@ -1142,6 +1142,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Submit'**
   String get studyHarmonySubmit;
+
+  /// No description provided for @studyHarmonyNextPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Next prompt'**
+  String get studyHarmonyNextPrompt;
 
   /// No description provided for @studyHarmonySelectedAnswers.
   ///
@@ -1329,6 +1335,12 @@ abstract class AppLocalizations {
   /// **'Jump to the next lesson at your current frontier.'**
   String get studyHarmonyContinueFrontierHint;
 
+  /// No description provided for @studyHarmonyContinueLessonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue: {lessonTitle}'**
+  String studyHarmonyContinueLessonLabel(Object lessonTitle);
+
   /// No description provided for @studyHarmonyContinueAction.
   ///
   /// In en, this message translates to:
@@ -1446,8 +1458,20 @@ abstract class AppLocalizations {
   /// No description provided for @studyHarmonyModeLegacy.
   ///
   /// In en, this message translates to:
-  /// **'Legacy Mode'**
+  /// **'Practice Mode'**
   String get studyHarmonyModeLegacy;
+
+  /// No description provided for @studyHarmonyShortcutHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter submits or moves on. R restarts. 1-9 chooses an answer. Tab and Shift+Tab move focus.'**
+  String get studyHarmonyShortcutHint;
+
+  /// No description provided for @studyHarmonyLivesRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{remaining} of {total} lives remaining'**
+  String studyHarmonyLivesRemaining(int remaining, int total);
 
   /// No description provided for @studyHarmonyResultSkillGainTitle.
   ///

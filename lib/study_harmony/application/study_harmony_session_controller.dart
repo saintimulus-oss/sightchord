@@ -45,6 +45,17 @@ class StudyHarmonySessionController extends ChangeNotifier {
     _initializeSession(notify: true);
   }
 
+  void advanceAfterFeedback() {
+    if (_state.isFinished ||
+        (_state.phase != StudyHarmonySessionPhase.submittedCorrect &&
+            _state.phase != StudyHarmonySessionPhase.submittedIncorrect)) {
+      return;
+    }
+
+    _advanceToNextTask();
+    notifyListeners();
+  }
+
   void toggleAnswer(StudyHarmonyAnswerOptionId answerId) {
     if (_state.isFinished || _state.phase == StudyHarmonySessionPhase.loading) {
       return;
@@ -206,8 +217,9 @@ class StudyHarmonySessionController extends ChangeNotifier {
     required StudyHarmonyTaskInstance task,
     required bool wasCorrect,
   }) {
-    final skillTags =
-        task.skillTags.isNotEmpty ? task.skillTags : _lesson.skillTags;
+    final skillTags = task.skillTags.isNotEmpty
+        ? task.skillTags
+        : _lesson.skillTags;
     for (final skillId in skillTags) {
       _skillAttemptCounts.update(
         skillId,

@@ -244,13 +244,14 @@
     "openStudyHarmony":  "Study Harmony 열기",
     "studyHarmonyTitle":  "Study Harmony",
     "studyHarmonySubtitle":  "빠른 수업 진입과 챕터 진행도를 갖춘 구조화된 화성 학습 허브를 진행해 보세요.",
-    "studyHarmonyPlaceholderTag":  "프로토타입 시스템",
-    "studyHarmonyPlaceholderBody":  "레벨 데이터, 문제 표현 방식, 정답 입력 UI를 분리해 두어서 앞으로 음, 코드, 스케일, 역문제 식 훈련까지 같은 흐름으로 확장할 수 있습니다.",
-    "studyHarmonyTestLevelTag":  "테스트 레벨",
-    "studyHarmonyTestLevelAction":  "테스트 레벨 열기",
+    "studyHarmonyPlaceholderTag":  "학습 덱",
+    "studyHarmonyPlaceholderBody":  "레슨 데이터, 문제 표현, 정답 입력 표면을 하나의 학습 흐름으로 묶어 두어 음, 코드, 스케일, 진행 과제를 같은 방식으로 확장할 수 있습니다.",
+    "studyHarmonyTestLevelTag":  "연습 드릴",
+    "studyHarmonyTestLevelAction":  "드릴 열기",
     "studyHarmonySubmit":  "제출",
-    "studyHarmonySelectedAnswers":  "Selected answers",
-    "studyHarmonySelectionEmpty":  "No answers selected yet.",
+    "studyHarmonyNextPrompt":  "다음 문제",
+    "studyHarmonySelectedAnswers":  "선택한 답",
+    "studyHarmonySelectionEmpty":  "아직 선택한 답이 없습니다.",
     "studyHarmonyClearProgress":  "{current}/{total} 정답",
     "@studyHarmonyClearProgress":  {
                                      "placeholders":  {
@@ -266,8 +267,8 @@
     "studyHarmonyAccuracy":  "정답률",
     "studyHarmonyElapsedTime":  "시간",
     "studyHarmonyObjective":  "목표",
-    "studyHarmonyPromptInstruction":  "Pick the matching answer",
-    "studyHarmonyNeedSelection":  "Choose at least one answer before submitting.",
+    "studyHarmonyPromptInstruction":  "맞는 답을 고르세요",
+    "studyHarmonyNeedSelection":  "제출하기 전에 답을 하나 이상 선택하세요.",
     "studyHarmonyCorrectLabel":  "정답",
     "studyHarmonyIncorrectLabel":  "오답",
     "studyHarmonyCorrectFeedback":  "정답입니다. {answer}가 맞았습니다.",
@@ -289,7 +290,7 @@
     "studyHarmonyGameOverTitle":  "게임 오버",
     "studyHarmonyGameOverBody":  "라이프 3개를 모두 잃었습니다. 이 레벨을 다시 하거나 Study Harmony 허브로 돌아가세요.",
     "studyHarmonyLevelCompleteTitle":  "레벨 클리어",
-    "studyHarmonyLevelCompleteBody":  "You reached the lesson goal. Check your accuracy and clear time below.",
+    "studyHarmonyLevelCompleteBody":  "레슨 목표를 달성했습니다. 아래에서 정답률과 클리어 시간을 확인하세요.",
     "studyHarmonyBackToHub":  "Study Harmony로 돌아가기",
     "studyHarmonyRetry":  "다시 하기",
     "studyHarmonyHubHeroEyebrow":  "학습 허브",
@@ -324,6 +325,14 @@
     "studyHarmonyContinueCardTitle":  "계속하기",
     "studyHarmonyContinueResumeHint":  "가장 최근에 건드린 수업부터 이어서 시작합니다.",
     "studyHarmonyContinueFrontierHint":  "현재 진행선에서 다음 수업으로 바로 이동합니다.",
+    "studyHarmonyContinueLessonLabel":  "{lessonTitle} 이어하기",
+    "@studyHarmonyContinueLessonLabel":  {
+                                            "placeholders":  {
+                                                                 "lessonTitle":  {
+
+                                                                                         }
+                                                             }
+                                        },
     "studyHarmonyContinueAction":  "계속하기",
     "studyHarmonyReviewCardTitle":  "복습하기",
     "studyHarmonyReviewQueueHint":  "현재 review queue placeholder 기준으로 가져왔습니다.",
@@ -364,7 +373,19 @@
     "studyHarmonyModeLesson":  "레슨 모드",
     "studyHarmonyModeReview":  "복습 모드",
     "studyHarmonyModeDaily":  "데일리 모드",
-    "studyHarmonyModeLegacy":  "레거시 모드",
+    "studyHarmonyModeLegacy":  "연습 모드",
+    "studyHarmonyShortcutHint":  "Enter: 제출/다음 · R: 다시 시작 · 1-9: 보기 선택 · Tab/Shift+Tab: 포커스 이동",
+    "studyHarmonyLivesRemaining":  "라이프 {total}개 중 {remaining}개 남음",
+    "@studyHarmonyLivesRemaining":  {
+                                        "placeholders":  {
+                                                             "remaining":  {
+                                                                               "type":  "int"
+                                                                           },
+                                                             "total":  {
+                                                                           "type":  "int"
+                                                                       }
+                                                         }
+                                    },
     "studyHarmonyResultSkillGainTitle":  "스킬 변화",
     "studyHarmonyResultReviewFocusTitle":  "복습 포인트",
     "studyHarmonyResultSkillGainLine":  "{skill} {delta}",
