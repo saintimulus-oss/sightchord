@@ -7,11 +7,18 @@ import 'l10n/app_localizations.dart';
 import 'practice_home_page.dart';
 import 'settings/practice_settings.dart';
 import 'settings/settings_controller.dart';
+import 'study_harmony/application/study_harmony_progress_controller.dart';
+import 'study_harmony_page.dart';
 
 class MainMenuPage extends StatelessWidget {
-  const MainMenuPage({super.key, required this.controller});
+  const MainMenuPage({
+    super.key,
+    required this.controller,
+    required this.studyHarmonyProgressController,
+  });
 
   final AppSettingsController controller;
+  final StudyHarmonyProgressController studyHarmonyProgressController;
 
   Future<void> _openLanguageSettings(BuildContext context) {
     return showModalBottomSheet<void>(
@@ -33,6 +40,16 @@ class MainMenuPage extends StatelessWidget {
   void _openChordAnalyzer(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (context) => const ChordAnalyzerPage()),
+    );
+  }
+
+  void _openStudyHarmony(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => StudyHarmonyPage(
+          progressController: studyHarmonyProgressController,
+        ),
+      ),
     );
   }
 
@@ -118,6 +135,17 @@ class MainMenuPage extends StatelessWidget {
                             'main-open-analyzer-button',
                           ),
                           onPressed: () => _openChordAnalyzer(context),
+                        ),
+                        const SizedBox(height: 12),
+                        _MainEntryCard(
+                          icon: Icons.school_rounded,
+                          title: l10n.mainMenuStudyHarmonyTitle,
+                          description: l10n.mainMenuStudyHarmonyDescription,
+                          buttonLabel: l10n.openStudyHarmony,
+                          buttonKey: const ValueKey(
+                            'main-open-study-harmony-button',
+                          ),
+                          onPressed: () => _openStudyHarmony(context),
                         ),
                         const SizedBox(height: 12),
                         OutlinedButton.icon(

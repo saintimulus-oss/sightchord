@@ -334,6 +334,74 @@ void main() {
     }
   });
 
+  test(
+    'explicit tensions stay present even when normally treated as avoids',
+    () {
+      final cMaj11 = _buildChord(
+        root: 'C',
+        quality: ChordQuality.major7,
+        repeatKey: 'cMaj11',
+        romanNumeralId: RomanNumeralId.iMaj7,
+        keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        harmonicFunction: HarmonicFunction.tonic,
+        tensions: const ['11'],
+      );
+
+      final result = VoicingEngine.recommend(
+        context: VoicingContext(currentChord: cMaj11, settings: settings),
+      );
+
+      expect(result.suggestions, isNotEmpty);
+      for (final suggestion in result.suggestions) {
+        expect(suggestion.voicing.toneLabels, contains('11'));
+      }
+    },
+  );
+
+  test('rootless candidates retain explicit sharp11 color', () {
+    final cMajSharp11 = _buildChord(
+      root: 'C',
+      quality: ChordQuality.major7,
+      repeatKey: 'cMajSharp11',
+      romanNumeralId: RomanNumeralId.iMaj7,
+      keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+      harmonicFunction: HarmonicFunction.tonic,
+      tensions: const ['#11'],
+    );
+
+    final rootlessCandidates = VoicingEngine.generateCandidates(
+      chord: cMajSharp11,
+      settings: settings,
+    ).where((candidate) => candidate.isRootless).toList(growable: false);
+
+    expect(rootlessCandidates, isNotEmpty);
+    for (final candidate in rootlessCandidates) {
+      expect(candidate.toneLabels, contains('#11'));
+    }
+  });
+
+  test('dominant13sus suggestions keep the thirteenth present', () {
+    final g13sus = _buildChord(
+      root: 'G',
+      quality: ChordQuality.dominant13sus4,
+      repeatKey: 'g13sus',
+      romanNumeralId: RomanNumeralId.vDom7,
+      keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+      harmonicFunction: HarmonicFunction.dominant,
+      dominantContext: DominantContext.susDominant,
+      dominantIntent: DominantIntent.susDelay,
+    );
+
+    final result = VoicingEngine.recommend(
+      context: VoicingContext(currentChord: g13sus, settings: settings),
+    );
+
+    expect(result.suggestions, isNotEmpty);
+    for (final suggestion in result.suggestions) {
+      expect(suggestion.voicing.toneLabels, contains('13'));
+    }
+  });
+
   test('locked voicing is preserved on rebuild for the same chord', () {
     final g7 = _buildChord(
       root: 'G',

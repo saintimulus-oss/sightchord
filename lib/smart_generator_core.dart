@@ -355,7 +355,20 @@ class SmartGeneratorHelper {
     required bool allowV7sus4,
   }) {
     if (candidate.renderQualityOverride != null) {
-      return [candidate.renderQualityOverride!];
+      final override = candidate.renderQualityOverride!;
+      if (!allowV7sus4 && _isSusDominantQuality(override)) {
+        return [
+          MusicTheory.resolveRenderQuality(
+            romanNumeralId: candidate.romanNumeralId,
+            plannedChordKind: candidate.plannedChordKind,
+            allowV7sus4: false,
+            randomRoll: random.nextInt(100),
+            dominantContext: candidate.dominantContext,
+            dominantIntent: candidate.dominantIntent,
+          ),
+        ];
+      }
+      return [override];
     }
     final defaultQuality = MusicTheory.resolveRenderQuality(
       romanNumeralId: candidate.romanNumeralId,
@@ -387,10 +400,12 @@ class SmartGeneratorHelper {
         ChordQuality.dominant7,
       ]);
     } else if (effectiveIntent == DominantIntent.susDelay) {
-      options.addAll(const [
-        ChordQuality.dominant13sus4,
-        ChordQuality.dominant7sus4,
-      ]);
+      if (allowV7sus4) {
+        options.addAll(const [
+          ChordQuality.dominant13sus4,
+          ChordQuality.dominant7sus4,
+        ]);
+      }
     } else {
       options.add(ChordQuality.dominant7);
       if (allowV7sus4) {
@@ -1715,6 +1730,10 @@ class SmartGeneratorHelper {
       modulationIntensity: request.modulationIntensity,
       jazzPreset: request.jazzPreset,
       sourceProfile: request.sourceProfile,
+      allowV7sus4: request.allowV7sus4,
+      allowTensions: request.allowTensions,
+      selectedTensionOptions: request.selectedTensionOptions,
+      inversionSettings: request.inversionSettings,
       smartDiagnosticsEnabled: request.smartDiagnosticsEnabled,
       previousRomanNumeralId: null,
       previousHarmonicFunction: null,
@@ -1943,6 +1962,10 @@ class SmartGeneratorHelper {
               modulationIntensity: request.modulationIntensity,
               jazzPreset: request.jazzPreset,
               sourceProfile: request.sourceProfile,
+              allowV7sus4: request.allowV7sus4,
+              allowTensions: request.allowTensions,
+              selectedTensionOptions: request.selectedTensionOptions,
+              inversionSettings: request.inversionSettings,
               smartDiagnosticsEnabled: request.smartDiagnosticsEnabled,
               previousRomanNumeralId:
                   (currentChord.smartDebug as SmartDecisionTrace?)
@@ -1980,6 +2003,10 @@ class SmartGeneratorHelper {
         final primaryComparison = compareVoiceLeadingCandidates(
           random: random,
           previousChord: currentChord,
+          allowV7sus4: request.allowV7sus4,
+          allowTensions: request.allowTensions,
+          selectedTensionOptions: request.selectedTensionOptions,
+          inversionSettings: request.inversionSettings,
           candidates: [
             SmartRenderCandidate(
               keyCenter: plan.finalKeyCenter,
@@ -2008,6 +2035,10 @@ class SmartGeneratorHelper {
           final fallbackComparison = compareVoiceLeadingCandidates(
             random: random,
             previousChord: currentChord,
+            allowV7sus4: request.allowV7sus4,
+            allowTensions: request.allowTensions,
+            selectedTensionOptions: request.selectedTensionOptions,
+            inversionSettings: request.inversionSettings,
             candidates: [
               for (final roman in prioritizedFallbackRomans(
                 keyMode: plan.finalKeyCenter.mode,
@@ -2053,6 +2084,10 @@ class SmartGeneratorHelper {
           simulatedChord ??= compareVoiceLeadingCandidates(
             random: random,
             previousChord: currentChord,
+            allowV7sus4: request.allowV7sus4,
+            allowTensions: request.allowTensions,
+            selectedTensionOptions: request.selectedTensionOptions,
+            inversionSettings: request.inversionSettings,
             candidates: [
               SmartRenderCandidate(
                 keyCenter:
@@ -2162,12 +2197,18 @@ class SmartGeneratorHelper {
       final rareColorUsage = _rareColorUsage(traces);
       final rareColorDebtOpenCount = _rareColorDebtOpenCount(traces);
       final rareColorPayoffCount = _rareColorPayoffCount(traces);
+      final modulationPotentialAvailable =
+          request.modulationIntensity != ModulationIntensity.off &&
+          request.activeKeys.length > 1;
+      final minorCenterPotentialAvailable = _hasMinorCenterPotential(request);
       final qaChecks = _qaChecksForSummary(
         jazzPreset: request.jazzPreset,
         steps: steps,
         familyHistogram: familyHistogram,
         realModulationCount: realModulationCount,
         minorCenterOccupancy: minorCenterOccupancy,
+        modulationPotentialAvailable: modulationPotentialAvailable,
+        minorCenterPotentialAvailable: minorCenterPotentialAvailable,
         fallbackCount: fallbackCount,
         rareColorUsage: rareColorUsage,
         rareColorDebtOpenCount: rareColorDebtOpenCount,
@@ -2300,6 +2341,8 @@ class SmartGeneratorHelper {
     required Map<String, int> familyHistogram,
     required int realModulationCount,
     required double minorCenterOccupancy,
+    required bool modulationPotentialAvailable,
+    required bool minorCenterPotentialAvailable,
     required int fallbackCount,
     required Map<String, int> rareColorUsage,
     required int rareColorDebtOpenCount,
@@ -2339,46 +2382,50 @@ class SmartGeneratorHelper {
             : SmartQaStatus.fail,
     };
     final modulationDensity = realModulationCount / max(1, steps);
-    final modulationStatus = switch (jazzPreset) {
-      JazzPreset.standardsCore =>
-        modulationDensity <= 0.03
-            ? SmartQaStatus.pass
-            : modulationDensity <= 0.05
-            ? SmartQaStatus.warn
-            : SmartQaStatus.fail,
-      JazzPreset.modulationStudy =>
-        modulationDensity >= 0.015
-            ? SmartQaStatus.pass
-            : modulationDensity >= 0.008
-            ? SmartQaStatus.warn
-            : SmartQaStatus.fail,
-      JazzPreset.advanced =>
-        modulationDensity >= 0.01
-            ? SmartQaStatus.pass
-            : modulationDensity >= 0.005
-            ? SmartQaStatus.warn
-            : SmartQaStatus.fail,
-    };
-    final minorStatus = switch (jazzPreset) {
-      JazzPreset.standardsCore =>
-        minorCenterOccupancy >= 0.08
-            ? SmartQaStatus.pass
-            : minorCenterOccupancy >= 0.04
-            ? SmartQaStatus.warn
-            : SmartQaStatus.fail,
-      JazzPreset.modulationStudy =>
-        minorCenterOccupancy >= 0.18
-            ? SmartQaStatus.pass
-            : minorCenterOccupancy >= 0.1
-            ? SmartQaStatus.warn
-            : SmartQaStatus.fail,
-      JazzPreset.advanced =>
-        minorCenterOccupancy >= 0.1
-            ? SmartQaStatus.pass
-            : minorCenterOccupancy >= 0.05
-            ? SmartQaStatus.warn
-            : SmartQaStatus.fail,
-    };
+    final modulationStatus = !modulationPotentialAvailable
+        ? SmartQaStatus.pass
+        : switch (jazzPreset) {
+            JazzPreset.standardsCore =>
+              modulationDensity <= 0.03
+                  ? SmartQaStatus.pass
+                  : modulationDensity <= 0.05
+                  ? SmartQaStatus.warn
+                  : SmartQaStatus.fail,
+            JazzPreset.modulationStudy =>
+              modulationDensity >= 0.015
+                  ? SmartQaStatus.pass
+                  : modulationDensity >= 0.008
+                  ? SmartQaStatus.warn
+                  : SmartQaStatus.fail,
+            JazzPreset.advanced =>
+              modulationDensity >= 0.01
+                  ? SmartQaStatus.pass
+                  : modulationDensity >= 0.005
+                  ? SmartQaStatus.warn
+                  : SmartQaStatus.fail,
+          };
+    final minorStatus = !minorCenterPotentialAvailable
+        ? SmartQaStatus.pass
+        : switch (jazzPreset) {
+            JazzPreset.standardsCore =>
+              minorCenterOccupancy >= 0.08
+                  ? SmartQaStatus.pass
+                  : minorCenterOccupancy >= 0.04
+                  ? SmartQaStatus.warn
+                  : SmartQaStatus.fail,
+            JazzPreset.modulationStudy =>
+              minorCenterOccupancy >= 0.18
+                  ? SmartQaStatus.pass
+                  : minorCenterOccupancy >= 0.1
+                  ? SmartQaStatus.warn
+                  : SmartQaStatus.fail,
+            JazzPreset.advanced =>
+              minorCenterOccupancy >= 0.1
+                  ? SmartQaStatus.pass
+                  : minorCenterOccupancy >= 0.05
+                  ? SmartQaStatus.warn
+                  : SmartQaStatus.fail,
+          };
     final fallbackRatio = fallbackCount / max(1, steps);
     final fallbackStatus = fallbackRatio <= 0.12
         ? SmartQaStatus.pass
@@ -2442,12 +2489,16 @@ class SmartGeneratorHelper {
       SmartQaCheck(
         id: 'modulation_density',
         status: modulationStatus,
-        detail: 'realModPerStep=${modulationDensity.toStringAsFixed(3)}',
+        detail: !modulationPotentialAvailable
+            ? 'real modulation unavailable for current configuration'
+            : 'realModPerStep=${modulationDensity.toStringAsFixed(3)}',
       ),
       SmartQaCheck(
         id: 'minor_center_support',
         status: minorStatus,
-        detail: 'minorOccupancy=${minorCenterOccupancy.toStringAsFixed(3)}',
+        detail: !minorCenterPotentialAvailable
+            ? 'minor centers unavailable for current configuration'
+            : 'minorOccupancy=${minorCenterOccupancy.toStringAsFixed(3)}',
       ),
       SmartQaCheck(
         id: 'fallback_pressure',
@@ -2712,9 +2763,7 @@ class SmartGeneratorHelper {
   }
 
   static int _susResolutionOpportunities(List<SmartDecisionTrace> traces) {
-    return traces
-        .where((trace) => trace.dominantIntent == DominantIntent.susDelay)
-        .length;
+    return traces.where((trace) => _isSurfacedSusDominant(trace)).length;
   }
 
   static int _susReleaseCount(List<SmartDecisionTrace> traces) {
@@ -2722,7 +2771,7 @@ class SmartGeneratorHelper {
     for (var index = 0; index < traces.length - 1; index += 1) {
       final current = traces[index];
       final next = traces[index + 1];
-      if (current.dominantIntent != DominantIntent.susDelay) {
+      if (!_isSurfacedSusDominant(current)) {
         continue;
       }
       if (current.finalRoot == null ||
@@ -2736,6 +2785,12 @@ class SmartGeneratorHelper {
       }
     }
     return count;
+  }
+
+  static bool _isSurfacedSusDominant(SmartDecisionTrace trace) {
+    return trace.dominantIntent == DominantIntent.susDelay &&
+        trace.finalRenderQuality != null &&
+        _isSusDominantQuality(trace.finalRenderQuality!);
   }
 
   static int _bridgeIvStabilizationSuccessCount(
@@ -2767,6 +2822,16 @@ class SmartGeneratorHelper {
         .where((trace) => trace.finalKeyMode == KeyMode.minor)
         .length;
     return minorSteps / steps;
+  }
+
+  static bool _hasMinorCenterPotential(SmartStartRequest request) {
+    if (request.selectedKeyCenters.any(
+      (center) => center.mode == KeyMode.minor,
+    )) {
+      return true;
+    }
+    return request.modulationIntensity != ModulationIntensity.off &&
+        request.activeKeys.length > 1;
   }
 
   static bool _isTonicRoman(RomanNumeralId? romanNumeralId) {

@@ -204,6 +204,21 @@ void main() {
         .join(' ');
   }
 
+  String voicingToneLabelsFor(WidgetTester tester, String kind) {
+    final textWidgets = tester
+        .widgetList<Text>(
+          find.descendant(
+            of: find.byKey(ValueKey('voicing-tones-$kind')),
+            matching: find.byType(Text),
+          ),
+        )
+        .toList();
+    return textWidgets
+        .map((widget) => widget.data ?? widget.textSpan?.toPlainText() ?? '')
+        .where((value) => value.isNotEmpty)
+        .join(' ');
+  }
+
   String? voicingBadgeKind(WidgetTester tester, String badge) {
     for (final kind in const ['natural', 'colorful', 'easy']) {
       if (find
@@ -580,8 +595,14 @@ void main() {
       find.byKey(const ValueKey('voicing-note-slot-easy-4')),
       findsOneWidget,
     );
+    expect(
+      find.byKey(const ValueKey('voicing-tone-slot-colorful-4')),
+      findsOneWidget,
+    );
     expect(voicingNotesFor(tester, 'easy'), 'E B E');
     expect(voicingNotesFor(tester, 'colorful'), 'B F# B E G');
+    expect(voicingToneLabelsFor(tester, 'easy'), '13 3 13');
+    expect(voicingToneLabelsFor(tester, 'colorful'), '3 7 3 13 #9');
   });
 
   testWidgets(

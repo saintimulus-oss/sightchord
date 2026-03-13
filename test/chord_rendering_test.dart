@@ -253,6 +253,20 @@ void main() {
         ChordQuality.dominant7,
       );
     });
+
+    test('falls back to dominant7 for sus-delay intent when disabled', () {
+      expect(
+        MusicTheory.resolveRenderQuality(
+          romanNumeralId: RomanNumeralId.vDom7,
+          plannedChordKind: PlannedChordKind.resolvedRoman,
+          allowV7sus4: false,
+          randomRoll: 0,
+          dominantContext: DominantContext.susDominant,
+          dominantIntent: DominantIntent.susDelay,
+        ),
+        ChordQuality.dominant7,
+      );
+    });
   });
 
   group('Inversions', () {

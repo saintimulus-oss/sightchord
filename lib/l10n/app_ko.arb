@@ -1,4 +1,4 @@
-{
+﻿{
     "@@locale":  "ko",
     "settings":  "설정",
     "closeSettings":  "설정 닫기",
@@ -239,6 +239,481 @@
     "openAnalyzer":  "분석기 열기",
     "mainMenuAnalyzerTitle":  "코드 분석기",
     "mainMenuAnalyzerDescription":  "입력한 코드 진행에서 가능한 조성, 로마 숫자, 화성 기능을 보수적으로 분석합니다.",
+    "mainMenuStudyHarmonyTitle":  "Study Harmony",
+    "mainMenuStudyHarmonyDescription":  "계속하기, 복습, 데일리, 챕터 수업이 있는 실제 화성 학습 허브로 이동합니다.",
+    "openStudyHarmony":  "Study Harmony 열기",
+    "studyHarmonyTitle":  "Study Harmony",
+    "studyHarmonySubtitle":  "빠른 수업 진입과 챕터 진행도를 갖춘 구조화된 화성 학습 허브를 진행해 보세요.",
+    "studyHarmonyPlaceholderTag":  "프로토타입 시스템",
+    "studyHarmonyPlaceholderBody":  "레벨 데이터, 문제 표현 방식, 정답 입력 UI를 분리해 두어서 앞으로 음, 코드, 스케일, 역문제 식 훈련까지 같은 흐름으로 확장할 수 있습니다.",
+    "studyHarmonyTestLevelTag":  "테스트 레벨",
+    "studyHarmonyTestLevelAction":  "테스트 레벨 열기",
+    "studyHarmonySubmit":  "제출",
+    "studyHarmonySelectedAnswers":  "Selected answers",
+    "studyHarmonySelectionEmpty":  "No answers selected yet.",
+    "studyHarmonyClearProgress":  "{current}/{total} 정답",
+    "@studyHarmonyClearProgress":  {
+                                     "placeholders":  {
+                                                          "current":  {
+                                                                          "type":  "int"
+                                                                      },
+                                                          "total":  {
+                                                                        "type":  "int"
+                                                                    }
+                                                      }
+                                 },
+    "studyHarmonyAttempts":  "시도",
+    "studyHarmonyAccuracy":  "정답률",
+    "studyHarmonyElapsedTime":  "시간",
+    "studyHarmonyObjective":  "목표",
+    "studyHarmonyPromptInstruction":  "Pick the matching answer",
+    "studyHarmonyNeedSelection":  "Choose at least one answer before submitting.",
+    "studyHarmonyCorrectLabel":  "정답",
+    "studyHarmonyIncorrectLabel":  "오답",
+    "studyHarmonyCorrectFeedback":  "정답입니다. {answer}가 맞았습니다.",
+    "@studyHarmonyCorrectFeedback":  {
+                                         "placeholders":  {
+                                                              "answer":  {
+
+                                                                         }
+                                                          }
+                                     },
+    "studyHarmonyIncorrectFeedback":  "오답입니다. 정답은 {answer}이며 라이프가 1개 줄었습니다.",
+    "@studyHarmonyIncorrectFeedback":  {
+                                           "placeholders":  {
+                                                                "answer":  {
+
+                                                                           }
+                                                            }
+                                       },
+    "studyHarmonyGameOverTitle":  "게임 오버",
+    "studyHarmonyGameOverBody":  "라이프 3개를 모두 잃었습니다. 이 레벨을 다시 하거나 Study Harmony 허브로 돌아가세요.",
+    "studyHarmonyLevelCompleteTitle":  "레벨 클리어",
+    "studyHarmonyLevelCompleteBody":  "You reached the lesson goal. Check your accuracy and clear time below.",
+    "studyHarmonyBackToHub":  "Study Harmony로 돌아가기",
+    "studyHarmonyRetry":  "다시 하기",
+    "studyHarmonyHubHeroEyebrow":  "학습 허브",
+    "studyHarmonyHubHeroBody":  "계속하기로 흐름을 이어가고, 복습으로 약한 지점을 다시 보고, 데일리로 현재 열린 경로에서 오늘의 고정 수업 하나를 바로 시작하세요.",
+    "studyHarmonyTrackFilterLabel":  "트랙",
+    "studyHarmonyTrackCoreFilterLabel":  "Core",
+    "studyHarmonyTrackPopFilterLabel":  "Pop",
+    "studyHarmonyTrackJazzFilterLabel":  "Jazz",
+    "studyHarmonyTrackClassicalFilterLabel":  "Classical",
+    "studyHarmonyHubLessonsProgress":  "{cleared}/{total} 수업 완료",
+    "@studyHarmonyHubLessonsProgress":  {
+                                           "placeholders":  {
+                                                                "cleared":  {
+                                                                                "type":  "int"
+                                                                            },
+                                                                "total":  {
+                                                                              "type":  "int"
+                                                                          }
+                                                            }
+                                       },
+    "studyHarmonyHubChaptersProgress":  "{cleared}/{total} 챕터 완료",
+    "@studyHarmonyHubChaptersProgress":  {
+                                            "placeholders":  {
+                                                                 "cleared":  {
+                                                                                 "type":  "int"
+                                                                             },
+                                                                 "total":  {
+                                                                               "type":  "int"
+                                                                           }
+                                                             }
+                                        },
+    "studyHarmonyContinueCardTitle":  "계속하기",
+    "studyHarmonyContinueResumeHint":  "가장 최근에 건드린 수업부터 이어서 시작합니다.",
+    "studyHarmonyContinueFrontierHint":  "현재 진행선에서 다음 수업으로 바로 이동합니다.",
+    "studyHarmonyContinueAction":  "계속하기",
+    "studyHarmonyReviewCardTitle":  "복습하기",
+    "studyHarmonyReviewQueueHint":  "현재 review queue placeholder 기준으로 가져왔습니다.",
+    "studyHarmonyReviewWeakHint":  "플레이한 수업 중 가장 약한 결과를 기준으로 골랐습니다.",
+    "studyHarmonyReviewFallbackHint":  "아직 복습 부채가 없어 현재 진행선으로 되돌아갑니다.",
+    "studyHarmonyReviewRetryNeededHint":  "오답이나 미완료 기록이 있어 한 번 더 볼 필요가 있습니다.",
+    "studyHarmonyReviewAccuracyRefreshHint":  "정답률을 다시 다듬기 위한 빠른 복습 대상으로 잡혔습니다.",
+    "studyHarmonyReviewAction":  "복습하기",
+    "studyHarmonyDailyCardTitle":  "데일리 챌린지",
+    "studyHarmonyDailyCardHint":  "현재 열린 경로에서 오늘의 고정 수업을 엽니다.",
+    "studyHarmonyDailyAction":  "데일리 시작",
+    "studyHarmonyDailyDateBadge":  "시드 {dateKey}",
+    "@studyHarmonyDailyDateBadge":  {
+                                       "placeholders":  {
+                                                            "dateKey":  {
+
+                                                                        }
+                                                        }
+                                   },
+    "studyHarmonyReviewSessionTitle":  "약점 복습",
+    "studyHarmonyReviewSessionDescription":  "{chapterTitle} 주변의 약한 기술을 짧게 섞어 복습합니다.",
+    "@studyHarmonyReviewSessionDescription":  {
+                                                  "placeholders":  {
+                                                                       "chapterTitle":  {
+
+                                                                                         }
+                                                                   }
+                                              },
+    "studyHarmonyDailySessionTitle":  "데일리 챌린지",
+    "studyHarmonyDailySessionDescription":  "{chapterTitle}와 현재 진행 구간을 바탕으로 오늘의 고정 믹스를 플레이합니다.",
+    "@studyHarmonyDailySessionDescription":  {
+                                                 "placeholders":  {
+                                                                      "chapterTitle":  {
+
+                                                                                        }
+                                                                  }
+                                             },
+    "studyHarmonyModeLesson":  "레슨 모드",
+    "studyHarmonyModeReview":  "복습 모드",
+    "studyHarmonyModeDaily":  "데일리 모드",
+    "studyHarmonyModeLegacy":  "레거시 모드",
+    "studyHarmonyResultSkillGainTitle":  "스킬 변화",
+    "studyHarmonyResultReviewFocusTitle":  "복습 포인트",
+    "studyHarmonyResultSkillGainLine":  "{skill} {delta}",
+    "@studyHarmonyResultSkillGainLine":  {
+                                             "placeholders":  {
+                                                                  "skill":  {
+
+                                                                             },
+                                                                  "delta":  {
+
+                                                                             }
+                                                              }
+                                         },
+    "studyHarmonyReviewReasonRetryNeeded":  "복습 이유: 다시 시도 필요",
+    "studyHarmonyReviewReasonAccuracyRefresh":  "복습 이유: 정답률 다듬기",
+    "studyHarmonyReviewReasonLowMastery":  "복습 이유: mastery 낮음",
+    "studyHarmonyReviewReasonStaleSkill":  "복습 이유: 오래 안 본 스킬",
+    "studyHarmonyReviewReasonWeakSpot":  "복습 이유: 약점 보강",
+    "studyHarmonyReviewReasonFrontierRefresh":  "복습 이유: 현재 진행선 정리",
+    "studyHarmonySkillNoteRead":  "음이름 읽기",
+    "studyHarmonySkillNoteFindKeyboard":  "건반에서 음 찾기",
+    "studyHarmonySkillNoteAccidentals":  "샵과 플랫",
+    "studyHarmonySkillChordSymbolToKeys":  "코드명에서 건반 찾기",
+    "studyHarmonySkillChordNameFromTones":  "구성음으로 코드명 찾기",
+    "studyHarmonySkillScaleBuild":  "스케일 구성",
+    "studyHarmonySkillRomanRealize":  "로마숫자에서 코드 만들기",
+    "studyHarmonySkillRomanIdentify":  "코드의 로마숫자 찾기",
+    "studyHarmonySkillHarmonyDiatonicity":  "다이아토닉 판별",
+    "studyHarmonySkillHarmonyFunction":  "기능 분류 기초",
+    "studyHarmonySkillProgressionKeyCenter":  "진행의 조성 찾기",
+    "studyHarmonySkillProgressionFunction":  "진행 안에서 기능 읽기",
+    "studyHarmonySkillProgressionNonDiatonic":  "비다이아토닉 코드 찾기",
+    "studyHarmonySkillProgressionFillBlank":  "진행 빈칸 채우기",
+    "studyHarmonyHubChapterSectionTitle":  "챕터",
+    "studyHarmonyChapterProgressText":  "{cleared}/{total} 수업 완료",
+    "@studyHarmonyChapterProgressText":  {
+                                            "placeholders":  {
+                                                                 "cleared":  {
+                                                                                 "type":  "int"
+                                                                             },
+                                                                 "total":  {
+                                                                               "type":  "int"
+                                                                           }
+                                                             }
+                                        },
+    "studyHarmonyLessonsCount":  "{count}개 수업",
+    "@studyHarmonyLessonsCount":  {
+                                     "placeholders":  {
+                                                          "count":  {
+                                                                        "type":  "int"
+                                                                    }
+                                                      }
+                                 },
+    "studyHarmonyCompletedLessonsCount":  "{count}개 완료",
+    "@studyHarmonyCompletedLessonsCount":  {
+                                               "placeholders":  {
+                                                                    "count":  {
+                                                                                  "type":  "int"
+                                                                              }
+                                                                }
+                                           },
+    "studyHarmonyOpenChapterAction":  "챕터 열기",
+    "studyHarmonyLockedChapterTag":  "잠김",
+    "studyHarmonyChapterNextUp":  "다음: {lessonTitle}",
+    "@studyHarmonyChapterNextUp":  {
+                                      "placeholders":  {
+                                                           "lessonTitle":  {
+
+                                                                      }
+                                                       }
+                                  },
+    "studyHarmonyChapterViewTitle":  "{chapterTitle}",
+    "@studyHarmonyChapterViewTitle":  {
+                                         "placeholders":  {
+                                                              "chapterTitle":  {
+
+                                                                          }
+                                                          }
+                                     },
+    "studyHarmonyTrackPlaceholderBody":  "지금은 {coreTrack} 트랙이 활성 경로입니다. 다른 트랙은 이후 허브를 다시 뜯어고치지 않고 확장할 수 있도록 자리만 먼저 보여 줍니다.",
+    "@studyHarmonyTrackPlaceholderBody":  {
+                                             "placeholders":  {
+                                                                  "coreTrack":  {
+
+                                                                                  }
+                                                              }
+                                         },
+    "studyHarmonyCoreTrackTitle":  "Core Track",
+    "studyHarmonyCoreTrackDescription":  "음과 건반에서 시작해 코드, 스케일, 로마숫자, 다이아토닉 기초를 거쳐 짧은 코드 진행 분석까지 올라가는 기본 경로입니다.",
+    "studyHarmonyChapterNotesTitle":  "Chapter 1: Notes & Keyboard",
+    "studyHarmonyChapterNotesDescription":  "Map note names to the keyboard and get comfortable with white keys and simple accidentals.",
+    "studyHarmonyChapterChordsTitle":  "Chapter 2: Chord Basics",
+    "studyHarmonyChapterChordsDescription":  "Spell basic triads and sevenths, then name common chord shapes from their tones.",
+    "studyHarmonyChapterScalesTitle":  "Chapter 3: Scales & Keys",
+    "studyHarmonyChapterScalesDescription":  "Build major and minor scales, then spot which tones belong inside a key.",
+    "studyHarmonyChapterRomanTitle":  "Chapter 4: Roman Numerals & Diatonicity",
+    "studyHarmonyChapterRomanDescription":  "Turn simple Roman numerals into chords, identify them from chords, and sort diatonic basics by function.",
+    "studyHarmonyChapterProgressionDetectiveTitle":  "Chapter 5: Progression Detective I",
+    "studyHarmonyChapterProgressionDetectiveDescription":  "짧은 기본 진행을 보고 조성을 맞히고, 기능을 읽고, 어울리지 않는 코드를 찾아봅니다.",
+    "studyHarmonyChapterMissingChordTitle":  "Chapter 6: Missing Chord I",
+    "studyHarmonyChapterMissingChordDescription":  "짧은 진행의 빈칸 하나를 채우면서 기능과 종지의 흐름을 읽는 감각을 익힙니다.",
+    "studyHarmonyOpenLessonAction":  "Open lesson",
+    "studyHarmonyLockedLessonAction":  "Locked",
+    "studyHarmonyClearedTag":  "Cleared",
+    "studyHarmonyComingSoonTag":  "Coming soon",
+    "studyHarmonyPopTrackTitle":  "Pop Track",
+    "studyHarmonyPopTrackDescription":  "A song-focused path is planned after the Core track is stable.",
+    "studyHarmonyJazzTrackTitle":  "Jazz Track",
+    "studyHarmonyJazzTrackDescription":  "Jazz harmony content stays locked until the Core curriculum settles.",
+    "studyHarmonyClassicalTrackTitle":  "Classical Track",
+    "studyHarmonyClassicalTrackDescription":  "Functional harmony in classical contexts will arrive in a later phase.",
+    "studyHarmonyObjectiveQuickDrill":  "Quick Drill",
+    "studyHarmonyObjectiveBossReview":  "Boss Review",
+    "studyHarmonyLessonNotesKeyboardTitle":  "White-Key Note Hunt",
+    "studyHarmonyLessonNotesKeyboardDescription":  "Read note names and tap the matching white key.",
+    "studyHarmonyLessonNotesPreviewTitle":  "Name the Highlighted Note",
+    "studyHarmonyLessonNotesPreviewDescription":  "Look at a highlighted key and choose the correct note name.",
+    "studyHarmonyLessonNotesAccidentalsTitle":  "Black Keys and Twins",
+    "studyHarmonyLessonNotesAccidentalsDescription":  "Get a first look at sharp and flat spellings for the black keys.",
+    "studyHarmonyLessonNotesBossTitle":  "Boss: Fast Note Hunt",
+    "studyHarmonyLessonNotesBossDescription":  "Mix note reading and keyboard finding into one short speed round.",
+    "studyHarmonyLessonTriadKeyboardTitle":  "Triads on the Keyboard",
+    "studyHarmonyLessonTriadKeyboardDescription":  "Build common major, minor, and diminished triads directly on the keyboard.",
+    "studyHarmonyLessonSeventhKeyboardTitle":  "Sevenths on the Keyboard",
+    "studyHarmonyLessonSeventhKeyboardDescription":  "Add the seventh and spell a few common 7th chords on the keyboard.",
+    "studyHarmonyLessonChordNameTitle":  "Name the Highlighted Chord",
+    "studyHarmonyLessonChordNameDescription":  "Read a highlighted chord shape and choose the correct chord name.",
+    "studyHarmonyLessonChordsBossTitle":  "Boss: Triads and Sevenths Review",
+    "studyHarmonyLessonChordsBossDescription":  "Switch between chord spelling and chord naming in one mixed review.",
+    "studyHarmonyLessonMajorScaleTitle":  "Build Major Scales",
+    "studyHarmonyLessonMajorScaleDescription":  "Choose every tone that belongs to a simple major scale.",
+    "studyHarmonyLessonMinorScaleTitle":  "Build Minor Scales",
+    "studyHarmonyLessonMinorScaleDescription":  "Build natural minor and harmonic minor scales from a few common keys.",
+    "studyHarmonyLessonKeyMembershipTitle":  "Key Membership",
+    "studyHarmonyLessonKeyMembershipDescription":  "Find which tones belong inside a named key.",
+    "studyHarmonyLessonScalesBossTitle":  "Boss: Scale Repair",
+    "studyHarmonyLessonScalesBossDescription":  "Mix scale building and key membership in a short repair round.",
+    "studyHarmonyLessonRomanToChordTitle":  "Roman to Chord",
+    "studyHarmonyLessonRomanToChordDescription":  "Read a key and Roman numeral, then choose the matching chord.",
+    "studyHarmonyLessonChordToRomanTitle":  "Chord to Roman",
+    "studyHarmonyLessonChordToRomanDescription":  "Read a chord inside a key and choose the matching Roman numeral.",
+    "studyHarmonyLessonDiatonicityTitle":  "Diatonic or Not",
+    "studyHarmonyLessonDiatonicityDescription":  "Sort chords into diatonic and non-diatonic answers in simple keys.",
+    "studyHarmonyLessonFunctionTitle":  "Function Basics",
+    "studyHarmonyLessonFunctionDescription":  "Classify easy chords as tonic, predominant, or dominant.",
+    "studyHarmonyLessonRomanBossTitle":  "Boss: Functional Basics Mix",
+    "studyHarmonyLessonRomanBossDescription":  "Review Roman-to-chord, chord-to-Roman, diatonicity, and function together.",
+    "studyHarmonyLessonProgressionKeyCenterTitle":  "조성 찾기",
+    "studyHarmonyLessonProgressionKeyCenterDescription":  "짧은 코드 진행을 보고 가장 자연스러운 key center를 고릅니다.",
+    "studyHarmonyLessonProgressionFunctionTitle":  "맥락 속 기능 읽기",
+    "studyHarmonyLessonProgressionFunctionDescription":  "하이라이트된 코드 하나를 보고 진행 안에서 어떤 기능을 하는지 고릅니다.",
+    "studyHarmonyLessonProgressionNonDiatonicTitle":  "튀는 코드 찾기",
+    "studyHarmonyLessonProgressionNonDiatonicDescription":  "주된 다이아토닉 읽기에서 벗어나는 코드를 하나 골라냅니다.",
+    "studyHarmonyLessonProgressionBossTitle":  "Boss: 혼합 분석",
+    "studyHarmonyLessonProgressionBossDescription":  "조성, 기능, 비다이아토닉 판별을 짧은 분석 라운드로 함께 복습합니다.",
+    "studyHarmonyLessonMissingChordPatternTitle":  "빈칸 코드 채우기",
+    "studyHarmonyLessonMissingChordPatternDescription":  "짧은 4코드 진행의 빈칸에 가장 잘 맞는 코드를 골라 넣습니다.",
+    "studyHarmonyLessonMissingChordCadenceTitle":  "종지 빈칸 채우기",
+    "studyHarmonyLessonMissingChordCadenceDescription":  "구의 끝에서 어디로 끌리는지 보고 빈칸 코드를 고릅니다.",
+    "studyHarmonyLessonMissingChordBossTitle":  "Boss: 혼합 빈칸 채우기",
+    "studyHarmonyLessonMissingChordBossDescription":  "기능과 흐름을 더 강하게 요구하는 빈칸 채우기 문제를 짧게 섞어 풉니다.",
+    "studyHarmonyPromptFindNoteOnKeyboard":  "Find {note} on the keyboard",
+    "@studyHarmonyPromptFindNoteOnKeyboard":  {
+                                                  "placeholders":  {
+                                                                       "note":  {
+
+                                                                                }
+                                                                   }
+                                              },
+    "studyHarmonyPromptNameHighlightedNote":  "Which note is highlighted?",
+    "studyHarmonyPromptFindChordOnKeyboard":  "Build {chord} on the keyboard",
+    "@studyHarmonyPromptFindChordOnKeyboard":  {
+                                                   "placeholders":  {
+                                                                        "chord":  {
+
+                                                                                  }
+                                                                    }
+                                               },
+    "studyHarmonyPromptNameHighlightedChord":  "Which chord is highlighted?",
+    "studyHarmonyPromptBuildScale":  "Pick every note in {scaleName}",
+    "@studyHarmonyPromptBuildScale":  {
+                                          "placeholders":  {
+                                                               "scaleName":  {
+
+                                                                               }
+                                                           }
+                                      },
+    "studyHarmonyPromptKeyMembership":  "Pick the notes that belong to {keyName}",
+    "@studyHarmonyPromptKeyMembership":  {
+                                            "placeholders":  {
+                                                                 "keyName":  {
+
+                                                                             }
+                                                             }
+                                        },
+    "studyHarmonyPromptRomanToChord":  "In {keyName}, which chord matches {roman}?",
+    "@studyHarmonyPromptRomanToChord":  {
+                                           "placeholders":  {
+                                                                "keyName":  {
+
+                                                                            },
+                                                                "roman":  {
+
+                                                                          }
+                                                            }
+                                       },
+    "studyHarmonyPromptChordToRoman":  "In {keyName}, what Roman numeral matches {chord}?",
+    "@studyHarmonyPromptChordToRoman":  {
+                                           "placeholders":  {
+                                                                "keyName":  {
+
+                                                                            },
+                                                                "chord":  {
+
+                                                                          }
+                                                            }
+                                       },
+    "studyHarmonyPromptDiatonicity":  "In {keyName}, is {chord} diatonic?",
+    "@studyHarmonyPromptDiatonicity":  {
+                                          "placeholders":  {
+                                                               "keyName":  {
+
+                                                                           },
+                                                               "chord":  {
+
+                                                                         }
+                                                           }
+                                      },
+    "studyHarmonyPromptFunction":  "In {keyName}, what function does {chord} have?",
+    "@studyHarmonyPromptFunction":  {
+                                       "placeholders":  {
+                                                            "keyName":  {
+
+                                                                        },
+                                                            "chord":  {
+
+                                                                      }
+                                                        }
+                                   },
+    "studyHarmonyProgressionStripLabel":  "진행",
+    "studyHarmonyPromptProgressionKeyCenter":  "이 진행에 가장 잘 맞는 key center는 무엇인가요?",
+    "studyHarmonyPromptProgressionFunction":  "{chord}는 여기서 어떤 기능을 하나요?",
+    "@studyHarmonyPromptProgressionFunction":  {
+                                                  "placeholders":  {
+                                                                       "chord":  {
+
+                                                                                 }
+                                                                   }
+                                              },
+    "studyHarmonyPromptProgressionNonDiatonic":  "이 진행에서 가장 비다이아토닉한 코드는 무엇인가요?",
+    "studyHarmonyPromptProgressionMissingChord":  "빈칸에 가장 잘 들어갈 코드는 무엇인가요?",
+    "studyHarmonyProgressionExplanationKeyCenter":  "분석기는 이 진행을 {keyLabel} 중심으로 읽는 것이 가장 자연스럽다고 봅니다.",
+    "@studyHarmonyProgressionExplanationKeyCenter":  {
+                                                        "placeholders":  {
+                                                                             "keyLabel":  {
+
+                                                                                            }
+                                                                         }
+                                                    },
+    "studyHarmonyProgressionExplanationFunction":  "{chord}는 이 문맥에서 {functionLabel} 기능으로 읽는 것이 가장 자연스럽습니다.",
+    "@studyHarmonyProgressionExplanationFunction":  {
+                                                       "placeholders":  {
+                                                                            "chord":  {
+
+                                                                                      },
+                                                                            "functionLabel":  {
+
+                                                                                              }
+                                                                        }
+                                                   },
+    "studyHarmonyProgressionExplanationNonDiatonic":  "{chord}는 주된 {keyLabel} 읽기에서 벗어나므로 비다이아토닉 후보로 가장 적절합니다.",
+    "@studyHarmonyProgressionExplanationNonDiatonic":  {
+                                                          "placeholders":  {
+                                                                               "chord":  {
+
+                                                                                         },
+                                                                               "keyLabel":  {
+
+                                                                                                }
+                                                                           }
+                                                      },
+    "studyHarmonyProgressionExplanationMissingChord":  "{chord}를 넣으면 이 진행의 {functionLabel} 흐름이 가장 자연스럽게 복원됩니다.",
+    "@studyHarmonyProgressionExplanationMissingChord":  {
+                                                          "placeholders":  {
+                                                                               "chord":  {
+
+                                                                                         },
+                                                                               "functionLabel":  {
+
+                                                                                                   }
+                                                                           }
+                                                      },
+    "studyHarmonyProgressionChoiceSlot":  "{index}. {chord}",
+    "@studyHarmonyProgressionChoiceSlot":  {
+                                              "placeholders":  {
+                                                                   "index":  {
+                                                                                  "type":  "int"
+                                                                              },
+                                                                   "chord":  {
+
+                                                                               }
+                                                               }
+                                          },
+    "studyHarmonyScaleNameMajor":  "{tonic} major",
+    "@studyHarmonyScaleNameMajor":  {
+                                       "placeholders":  {
+                                                            "tonic":  {
+
+                                                                       }
+                                                        }
+                                   },
+    "studyHarmonyScaleNameNaturalMinor":  "{tonic} natural minor",
+    "@studyHarmonyScaleNameNaturalMinor":  {
+                                              "placeholders":  {
+                                                                   "tonic":  {
+
+                                                                              }
+                                                               }
+                                          },
+    "studyHarmonyScaleNameHarmonicMinor":  "{tonic} harmonic minor",
+    "@studyHarmonyScaleNameHarmonicMinor":  {
+                                               "placeholders":  {
+                                                                    "tonic":  {
+
+                                                                               }
+                                                                }
+                                           },
+    "studyHarmonyKeyNameMajor":  "{tonic} major",
+    "@studyHarmonyKeyNameMajor":  {
+                                     "placeholders":  {
+                                                          "tonic":  {
+
+                                                                     }
+                                                      }
+                                 },
+    "studyHarmonyKeyNameMinor":  "{tonic} minor",
+    "@studyHarmonyKeyNameMinor":  {
+                                     "placeholders":  {
+                                                          "tonic":  {
+
+                                                                     }
+                                                      }
+                                 },
+    "studyHarmonyChoiceDiatonic":  "Diatonic",
+    "studyHarmonyChoiceNonDiatonic":  "Non-diatonic",
+    "studyHarmonyChoiceTonic":  "Tonic",
+    "studyHarmonyChoicePredominant":  "Predominant",
+    "studyHarmonyChoiceDominant":  "Dominant",
+    "studyHarmonyChoiceOther":  "Other",
     "chordAnalyzerTitle":  "코드 분석기",
     "chordAnalyzerSubtitle":  "진행을 붙여 넣으면 보수적인 화성 해석을 보여줍니다.",
     "chordAnalyzerInputLabel":  "코드 진행",
@@ -488,3 +963,4 @@
                                                                        }
                                                   }
 }
+

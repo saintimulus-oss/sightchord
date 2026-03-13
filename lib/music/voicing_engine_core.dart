@@ -207,6 +207,10 @@ class VoicingEngine {
       ...explicitTensions,
       ...prioritizedTensions,
     ]);
+    final protectedTensionLabels = _protectedTensionLabelsForChord(
+      symbol: symbol,
+      explicitTensions: explicitTensions,
+    );
 
     List<String> essentialLabels;
     final optionalLabels = <String>[];
@@ -382,6 +386,7 @@ class VoicingEngine {
       ),
       avoidTones: _tonesFromLabels(avoidLabels, startPriority: 20),
       styleTags: styleTags,
+      protectedTensionLabels: protectedTensionLabels,
       bassAnchorLabel: bassAnchorLabel,
       bassAnchorSemitone: bassAnchorSemitone,
       requiredAlteredToneCount: requiredAlteredToneCount,
@@ -2545,6 +2550,7 @@ class VoicingEngine {
     required int maxNotes,
   }) {
     final essentialSet = interpretation.essentialLabels.toSet();
+    final protectedTensionLabels = interpretation.protectedTensionLabels;
     var labels = _dedupeLabels(template.coreLabels);
 
     if (interpretation.bassAnchorLabel != null &&
@@ -2563,7 +2569,8 @@ class VoicingEngine {
       if (labels.length >= desiredMax) {
         break;
       }
-      if (interpretation.avoidTones.any((tone) => tone.label == optional)) {
+      if (interpretation.avoidTones.any((tone) => tone.label == optional) &&
+          !protectedTensionLabels.contains(optional)) {
         continue;
       }
       if (!labels.contains(optional)) {
@@ -2585,11 +2592,18 @@ class VoicingEngine {
       }
     }
 
+    for (final protectedLabel in protectedTensionLabels) {
+      if (!labels.contains(protectedLabel)) {
+        labels.add(protectedLabel);
+      }
+    }
+
     final baseLabels = _trimLabelsToMax(
       labels: labels,
       maxNotes: desiredMax,
       essentialSet: essentialSet,
       bassAnchorLabel: interpretation.bassAnchorLabel,
+      protectedTensionLabels: protectedTensionLabels,
       family: template.family,
     );
     final variants = <List<String>>[];
@@ -2612,6 +2626,7 @@ class VoicingEngine {
         labels: working,
         essentialSet: essentialSet,
         bassAnchorLabel: interpretation.bassAnchorLabel,
+        protectedTensionLabels: protectedTensionLabels,
         family: template.family,
       );
       if (removable == null) {
@@ -2629,6 +2644,7 @@ class VoicingEngine {
     required int maxNotes,
     required Set<String> essentialSet,
     required String? bassAnchorLabel,
+    required Set<String> protectedTensionLabels,
     required VoicingFamily family,
   }) {
     final working = [...labels];
@@ -2649,24 +2665,29 @@ class VoicingEngine {
       var removed = false;
       for (final candidate in removablePreference) {
         if (working.contains(candidate) &&
-            !essentialSet.contains(candidate) &&
-            candidate != bassAnchorLabel &&
-            !(family == VoicingFamily.altered && _isAlteredLabel(candidate))) {
+            _canRemoveOptionalLabel(
+              label: candidate,
+              labels: working,
+              essentialSet: essentialSet,
+              bassAnchorLabel: bassAnchorLabel,
+              protectedTensionLabels: protectedTensionLabels,
+              family: family,
+            )) {
           working.remove(candidate);
           removed = true;
           break;
         }
       }
-      if (!removed &&
-          working.contains('1') &&
-          '1' != bassAnchorLabel &&
-          family != VoicingFamily.shell) {
-        working.remove('1');
-        removed = true;
-      }
       if (!removed) {
         final removable = working.lastWhere(
-          (label) => !essentialSet.contains(label) && label != bassAnchorLabel,
+          (label) => _canRemoveOptionalLabel(
+            label: label,
+            labels: working,
+            essentialSet: essentialSet,
+            bassAnchorLabel: bassAnchorLabel,
+            protectedTensionLabels: protectedTensionLabels,
+            family: family,
+          ),
           orElse: () => '',
         );
         if (removable.isEmpty) {
@@ -2682,6 +2703,7 @@ class VoicingEngine {
     required List<String> labels,
     required Set<String> essentialSet,
     required String? bassAnchorLabel,
+    required Set<String> protectedTensionLabels,
     required VoicingFamily family,
   }) {
     final removablePreference = switch (family) {
@@ -2737,17 +2759,90 @@ class VoicingEngine {
     };
     for (final candidate in removablePreference) {
       if (labels.contains(candidate) &&
-          !essentialSet.contains(candidate) &&
-          candidate != bassAnchorLabel) {
+          _canRemoveOptionalLabel(
+            label: candidate,
+            labels: labels,
+            essentialSet: essentialSet,
+            bassAnchorLabel: bassAnchorLabel,
+            protectedTensionLabels: protectedTensionLabels,
+            family: family,
+          )) {
         return candidate;
       }
     }
     for (final label in labels.reversed) {
-      if (!essentialSet.contains(label) && label != bassAnchorLabel) {
+      if (_canRemoveOptionalLabel(
+        label: label,
+        labels: labels,
+        essentialSet: essentialSet,
+        bassAnchorLabel: bassAnchorLabel,
+        protectedTensionLabels: protectedTensionLabels,
+        family: family,
+      )) {
         return label;
       }
     }
     return null;
+  }
+
+  static bool _canRemoveOptionalLabel({
+    required String label,
+    required List<String> labels,
+    required Set<String> essentialSet,
+    required String? bassAnchorLabel,
+    required Set<String> protectedTensionLabels,
+    required VoicingFamily family,
+  }) {
+    if (essentialSet.contains(label) || label == bassAnchorLabel) {
+      return false;
+    }
+    if (!_isProtectedFromEarlyRemoval(
+      label: label,
+      family: family,
+      protectedTensionLabels: protectedTensionLabels,
+    )) {
+      return true;
+    }
+    return !_hasRemovableUnprotectedLabel(
+      labels: labels,
+      essentialSet: essentialSet,
+      bassAnchorLabel: bassAnchorLabel,
+      protectedTensionLabels: protectedTensionLabels,
+      family: family,
+      exceptLabel: label,
+    );
+  }
+
+  static bool _hasRemovableUnprotectedLabel({
+    required List<String> labels,
+    required Set<String> essentialSet,
+    required String? bassAnchorLabel,
+    required Set<String> protectedTensionLabels,
+    required VoicingFamily family,
+    String? exceptLabel,
+  }) {
+    return labels.any(
+      (candidate) =>
+          candidate != exceptLabel &&
+          !essentialSet.contains(candidate) &&
+          candidate != bassAnchorLabel &&
+          !_isProtectedFromEarlyRemoval(
+            label: candidate,
+            family: family,
+            protectedTensionLabels: protectedTensionLabels,
+          ),
+    );
+  }
+
+  static bool _isProtectedFromEarlyRemoval({
+    required String label,
+    required VoicingFamily family,
+    required Set<String> protectedTensionLabels,
+  }) {
+    if (family == VoicingFamily.altered && _isAlteredLabel(label)) {
+      return true;
+    }
+    return protectedTensionLabels.contains(label);
   }
 
   static ConcreteVoicing? _realizeTemplate({
@@ -2988,6 +3083,43 @@ class VoicingEngine {
       );
     }
     return tones;
+  }
+
+  static Set<String> _protectedTensionLabelsForChord({
+    required ChordSymbolData symbol,
+    required List<String> explicitTensions,
+  }) {
+    final labels = <String>{...explicitTensions};
+    switch (symbol.renderQuality) {
+      case ChordQuality.major69:
+        labels.add('9');
+        break;
+      case ChordQuality.dominant7Sharp11:
+        labels.add('#11');
+        break;
+      case ChordQuality.dominant13sus4:
+        labels.add('13');
+        break;
+      case ChordQuality.majorTriad:
+      case ChordQuality.minorTriad:
+      case ChordQuality.dominant7:
+      case ChordQuality.major7:
+      case ChordQuality.minor7:
+      case ChordQuality.minorMajor7:
+      case ChordQuality.halfDiminished7:
+      case ChordQuality.diminishedTriad:
+      case ChordQuality.diminished7:
+      case ChordQuality.augmentedTriad:
+      case ChordQuality.six:
+      case ChordQuality.minor6:
+      case ChordQuality.dominant7Alt:
+      case ChordQuality.dominant7sus4:
+        break;
+    }
+    return {
+      for (final label in labels)
+        if (_tensionLabels.contains(label) || _isAlteredLabel(label)) label,
+    };
   }
 
   static String _bestLabelForRelativeSemitone({

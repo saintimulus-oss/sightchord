@@ -917,9 +917,6 @@ class ProgressionParser {
       return null;
     }
     normalized = normalized.toLowerCase();
-    if (normalized == 'maj') {
-      return 'maj7';
-    }
     if (normalized == 'sus') {
       return 'sus4';
     }
@@ -1295,7 +1292,7 @@ const List<(String, String)> _orderedModifierTokens = [
   ('sus2', 'sus2'),
   ('sus', 'sus4'),
   ('maj7', 'maj7'),
-  ('maj', 'maj7'),
+  ('maj', 'maj'),
   ('alt', 'alt'),
   ('#11', '#11'),
   ('#9', '#9'),

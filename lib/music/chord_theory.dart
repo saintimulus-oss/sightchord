@@ -1377,7 +1377,9 @@ class MusicTheory {
           dominantContext: dominantContext,
         );
         if (effectiveIntent == DominantIntent.susDelay) {
-          return ChordQuality.dominant13sus4;
+          return allowV7sus4
+              ? ChordQuality.dominant13sus4
+              : ChordQuality.dominant7;
         }
         if (effectiveIntent == DominantIntent.primaryAuthenticMinor ||
             effectiveIntent == DominantIntent.secondaryToMinor) {

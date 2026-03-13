@@ -546,6 +546,605 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mainMenuAnalyzerDescription => '分析输入的和弦进行，给出可能的调性、罗马数字和和声功能。';
 
   @override
+  String get mainMenuStudyHarmonyTitle => 'Study Harmony';
+
+  @override
+  String get mainMenuStudyHarmonyDescription =>
+      'Move through a real harmony study hub with continue, review, daily, and chapter-based lessons.';
+
+  @override
+  String get openStudyHarmony => '開啟 Study Harmony';
+
+  @override
+  String get studyHarmonyTitle => 'Study Harmony';
+
+  @override
+  String get studyHarmonySubtitle =>
+      'Work through a structured harmony hub with quick lesson entries and chapter progress.';
+
+  @override
+  String get studyHarmonyPlaceholderTag => 'Prototype system';
+
+  @override
+  String get studyHarmonyPlaceholderBody =>
+      'The prototype separates level data, prompt presentation, and answer input so future note, chord, scale, and reverse-identification drills can reuse the same flow.';
+
+  @override
+  String get studyHarmonyTestLevelTag => 'Test level';
+
+  @override
+  String get studyHarmonyTestLevelAction => 'Open test level';
+
+  @override
+  String get studyHarmonySubmit => 'Submit';
+
+  @override
+  String get studyHarmonySelectedAnswers => 'Selected answers';
+
+  @override
+  String get studyHarmonySelectionEmpty => 'No answers selected yet.';
+
+  @override
+  String studyHarmonyClearProgress(int current, int total) {
+    return '$current/$total correct';
+  }
+
+  @override
+  String get studyHarmonyAttempts => 'Attempts';
+
+  @override
+  String get studyHarmonyAccuracy => 'Accuracy';
+
+  @override
+  String get studyHarmonyElapsedTime => 'Time';
+
+  @override
+  String get studyHarmonyObjective => 'Goal';
+
+  @override
+  String get studyHarmonyPromptInstruction => 'Pick the matching answer';
+
+  @override
+  String get studyHarmonyNeedSelection =>
+      'Choose at least one answer before submitting.';
+
+  @override
+  String get studyHarmonyCorrectLabel => 'Correct';
+
+  @override
+  String get studyHarmonyIncorrectLabel => 'Incorrect';
+
+  @override
+  String studyHarmonyCorrectFeedback(Object answer) {
+    return 'Correct. $answer was the right answer.';
+  }
+
+  @override
+  String studyHarmonyIncorrectFeedback(Object answer) {
+    return 'Incorrect. $answer was the right answer and you lost one life.';
+  }
+
+  @override
+  String get studyHarmonyGameOverTitle => 'Game Over';
+
+  @override
+  String get studyHarmonyGameOverBody =>
+      'All three lives are gone. Retry this level or go back to the Study Harmony hub.';
+
+  @override
+  String get studyHarmonyLevelCompleteTitle => 'Level Cleared';
+
+  @override
+  String get studyHarmonyLevelCompleteBody =>
+      'You reached the lesson goal. Check your accuracy and clear time below.';
+
+  @override
+  String get studyHarmonyBackToHub => 'Back to Study Harmony';
+
+  @override
+  String get studyHarmonyRetry => 'Retry';
+
+  @override
+  String get studyHarmonyHubHeroEyebrow => 'Study Hub';
+
+  @override
+  String get studyHarmonyHubHeroBody =>
+      'Use Continue to resume momentum, Review to revisit weak spots, and Daily to get one deterministic lesson from your unlocked path.';
+
+  @override
+  String get studyHarmonyTrackFilterLabel => 'Tracks';
+
+  @override
+  String get studyHarmonyTrackCoreFilterLabel => 'Core';
+
+  @override
+  String get studyHarmonyTrackPopFilterLabel => 'Pop';
+
+  @override
+  String get studyHarmonyTrackJazzFilterLabel => 'Jazz';
+
+  @override
+  String get studyHarmonyTrackClassicalFilterLabel => 'Classical';
+
+  @override
+  String studyHarmonyHubLessonsProgress(int cleared, int total) {
+    return '$cleared/$total lessons cleared';
+  }
+
+  @override
+  String studyHarmonyHubChaptersProgress(int cleared, int total) {
+    return '$cleared/$total chapters completed';
+  }
+
+  @override
+  String get studyHarmonyContinueCardTitle => 'Continue';
+
+  @override
+  String get studyHarmonyContinueResumeHint =>
+      'Resume the lesson you touched most recently.';
+
+  @override
+  String get studyHarmonyContinueFrontierHint =>
+      'Jump to the next lesson at your current frontier.';
+
+  @override
+  String get studyHarmonyContinueAction => 'Continue';
+
+  @override
+  String get studyHarmonyReviewCardTitle => 'Review';
+
+  @override
+  String get studyHarmonyReviewQueueHint =>
+      'Pulled from your current review queue placeholder.';
+
+  @override
+  String get studyHarmonyReviewWeakHint =>
+      'Picked from the weakest result in your played lessons.';
+
+  @override
+  String get studyHarmonyReviewFallbackHint =>
+      'No review debt yet, so this falls back to your current frontier.';
+
+  @override
+  String get studyHarmonyReviewRetryNeededHint =>
+      'This lesson needs another pass after a miss or unfinished run.';
+
+  @override
+  String get studyHarmonyReviewAccuracyRefreshHint =>
+      'This lesson is queued for a quick accuracy refresh.';
+
+  @override
+  String get studyHarmonyReviewAction => 'Review';
+
+  @override
+  String get studyHarmonyDailyCardTitle => 'Daily Challenge';
+
+  @override
+  String get studyHarmonyDailyCardHint =>
+      'Open today\'s deterministic lesson from your unlocked path.';
+
+  @override
+  String get studyHarmonyDailyAction => 'Play Daily';
+
+  @override
+  String studyHarmonyDailyDateBadge(Object dateKey) {
+    return 'Seed $dateKey';
+  }
+
+  @override
+  String get studyHarmonyReviewSessionTitle => 'Weak Spot Review';
+
+  @override
+  String studyHarmonyReviewSessionDescription(Object chapterTitle) {
+    return 'Mix a short review set around $chapterTitle and your weakest recent skills.';
+  }
+
+  @override
+  String get studyHarmonyDailySessionTitle => 'Daily Challenge';
+
+  @override
+  String studyHarmonyDailySessionDescription(Object chapterTitle) {
+    return 'Play today\'s seeded mix built from $chapterTitle and your current frontier.';
+  }
+
+  @override
+  String get studyHarmonyModeLesson => 'Lesson Mode';
+
+  @override
+  String get studyHarmonyModeReview => 'Review Mode';
+
+  @override
+  String get studyHarmonyModeDaily => 'Daily Mode';
+
+  @override
+  String get studyHarmonyModeLegacy => 'Legacy Mode';
+
+  @override
+  String get studyHarmonyResultSkillGainTitle => 'Skill gains';
+
+  @override
+  String get studyHarmonyResultReviewFocusTitle => 'Review focus';
+
+  @override
+  String studyHarmonyResultSkillGainLine(Object skill, Object delta) {
+    return '$skill $delta';
+  }
+
+  @override
+  String get studyHarmonyReviewReasonRetryNeeded =>
+      'Review reason: retry needed';
+
+  @override
+  String get studyHarmonyReviewReasonAccuracyRefresh =>
+      'Review reason: accuracy refresh';
+
+  @override
+  String get studyHarmonyReviewReasonLowMastery => 'Review reason: low mastery';
+
+  @override
+  String get studyHarmonyReviewReasonStaleSkill => 'Review reason: stale skill';
+
+  @override
+  String get studyHarmonyReviewReasonWeakSpot => 'Review reason: weak spot';
+
+  @override
+  String get studyHarmonyReviewReasonFrontierRefresh =>
+      'Review reason: frontier refresh';
+
+  @override
+  String get studyHarmonySkillNoteRead => 'Note reading';
+
+  @override
+  String get studyHarmonySkillNoteFindKeyboard => 'Keyboard note finding';
+
+  @override
+  String get studyHarmonySkillNoteAccidentals => 'Sharps and flats';
+
+  @override
+  String get studyHarmonySkillChordSymbolToKeys => 'Chord symbol to keys';
+
+  @override
+  String get studyHarmonySkillChordNameFromTones => 'Chord naming';
+
+  @override
+  String get studyHarmonySkillScaleBuild => 'Scale building';
+
+  @override
+  String get studyHarmonySkillRomanRealize => 'Roman numeral realization';
+
+  @override
+  String get studyHarmonySkillRomanIdentify => 'Roman numeral identification';
+
+  @override
+  String get studyHarmonySkillHarmonyDiatonicity => 'Diatonicity';
+
+  @override
+  String get studyHarmonySkillHarmonyFunction => 'Function basics';
+
+  @override
+  String get studyHarmonyHubChapterSectionTitle => 'Chapters';
+
+  @override
+  String studyHarmonyChapterProgressText(int cleared, int total) {
+    return '$cleared/$total lessons cleared';
+  }
+
+  @override
+  String studyHarmonyLessonsCount(int count) {
+    return '$count lessons';
+  }
+
+  @override
+  String studyHarmonyCompletedLessonsCount(int count) {
+    return '$count completed';
+  }
+
+  @override
+  String get studyHarmonyOpenChapterAction => 'Open chapter';
+
+  @override
+  String get studyHarmonyLockedChapterTag => 'Locked';
+
+  @override
+  String studyHarmonyChapterNextUp(Object lessonTitle) {
+    return 'Next up: $lessonTitle';
+  }
+
+  @override
+  String studyHarmonyChapterViewTitle(Object chapterTitle) {
+    return '$chapterTitle';
+  }
+
+  @override
+  String studyHarmonyTrackPlaceholderBody(Object coreTrack) {
+    return '$coreTrack is the active path right now. The other tracks stay visible so the hub can grow without another navigation rewrite.';
+  }
+
+  @override
+  String get studyHarmonyCoreTrackTitle => 'Core Track';
+
+  @override
+  String get studyHarmonyCoreTrackDescription =>
+      'Start with notes and the keyboard, then build up through chords, scales, Roman numerals, and diatonic basics.';
+
+  @override
+  String get studyHarmonyChapterNotesTitle => 'Chapter 1: Notes & Keyboard';
+
+  @override
+  String get studyHarmonyChapterNotesDescription =>
+      'Map note names to the keyboard and get comfortable with white keys and simple accidentals.';
+
+  @override
+  String get studyHarmonyChapterChordsTitle => 'Chapter 2: Chord Basics';
+
+  @override
+  String get studyHarmonyChapterChordsDescription =>
+      'Spell basic triads and sevenths, then name common chord shapes from their tones.';
+
+  @override
+  String get studyHarmonyChapterScalesTitle => 'Chapter 3: Scales & Keys';
+
+  @override
+  String get studyHarmonyChapterScalesDescription =>
+      'Build major and minor scales, then spot which tones belong inside a key.';
+
+  @override
+  String get studyHarmonyChapterRomanTitle =>
+      'Chapter 4: Roman Numerals & Diatonicity';
+
+  @override
+  String get studyHarmonyChapterRomanDescription =>
+      'Turn simple Roman numerals into chords, identify them from chords, and sort diatonic basics by function.';
+
+  @override
+  String get studyHarmonyOpenLessonAction => 'Open lesson';
+
+  @override
+  String get studyHarmonyLockedLessonAction => 'Locked';
+
+  @override
+  String get studyHarmonyClearedTag => 'Cleared';
+
+  @override
+  String get studyHarmonyComingSoonTag => 'Coming soon';
+
+  @override
+  String get studyHarmonyPopTrackTitle => 'Pop Track';
+
+  @override
+  String get studyHarmonyPopTrackDescription =>
+      'A song-focused path is planned after the Core track is stable.';
+
+  @override
+  String get studyHarmonyJazzTrackTitle => 'Jazz Track';
+
+  @override
+  String get studyHarmonyJazzTrackDescription =>
+      'Jazz harmony content stays locked until the Core curriculum settles.';
+
+  @override
+  String get studyHarmonyClassicalTrackTitle => 'Classical Track';
+
+  @override
+  String get studyHarmonyClassicalTrackDescription =>
+      'Functional harmony in classical contexts will arrive in a later phase.';
+
+  @override
+  String get studyHarmonyObjectiveQuickDrill => 'Quick Drill';
+
+  @override
+  String get studyHarmonyObjectiveBossReview => 'Boss Review';
+
+  @override
+  String get studyHarmonyLessonNotesKeyboardTitle => 'White-Key Note Hunt';
+
+  @override
+  String get studyHarmonyLessonNotesKeyboardDescription =>
+      'Read note names and tap the matching white key.';
+
+  @override
+  String get studyHarmonyLessonNotesPreviewTitle => 'Name the Highlighted Note';
+
+  @override
+  String get studyHarmonyLessonNotesPreviewDescription =>
+      'Look at a highlighted key and choose the correct note name.';
+
+  @override
+  String get studyHarmonyLessonNotesAccidentalsTitle => 'Black Keys and Twins';
+
+  @override
+  String get studyHarmonyLessonNotesAccidentalsDescription =>
+      'Get a first look at sharp and flat spellings for the black keys.';
+
+  @override
+  String get studyHarmonyLessonNotesBossTitle => 'Boss: Fast Note Hunt';
+
+  @override
+  String get studyHarmonyLessonNotesBossDescription =>
+      'Mix note reading and keyboard finding into one short speed round.';
+
+  @override
+  String get studyHarmonyLessonTriadKeyboardTitle => 'Triads on the Keyboard';
+
+  @override
+  String get studyHarmonyLessonTriadKeyboardDescription =>
+      'Build common major, minor, and diminished triads directly on the keyboard.';
+
+  @override
+  String get studyHarmonyLessonSeventhKeyboardTitle =>
+      'Sevenths on the Keyboard';
+
+  @override
+  String get studyHarmonyLessonSeventhKeyboardDescription =>
+      'Add the seventh and spell a few common 7th chords on the keyboard.';
+
+  @override
+  String get studyHarmonyLessonChordNameTitle => 'Name the Highlighted Chord';
+
+  @override
+  String get studyHarmonyLessonChordNameDescription =>
+      'Read a highlighted chord shape and choose the correct chord name.';
+
+  @override
+  String get studyHarmonyLessonChordsBossTitle =>
+      'Boss: Triads and Sevenths Review';
+
+  @override
+  String get studyHarmonyLessonChordsBossDescription =>
+      'Switch between chord spelling and chord naming in one mixed review.';
+
+  @override
+  String get studyHarmonyLessonMajorScaleTitle => 'Build Major Scales';
+
+  @override
+  String get studyHarmonyLessonMajorScaleDescription =>
+      'Choose every tone that belongs to a simple major scale.';
+
+  @override
+  String get studyHarmonyLessonMinorScaleTitle => 'Build Minor Scales';
+
+  @override
+  String get studyHarmonyLessonMinorScaleDescription =>
+      'Build natural minor and harmonic minor scales from a few common keys.';
+
+  @override
+  String get studyHarmonyLessonKeyMembershipTitle => 'Key Membership';
+
+  @override
+  String get studyHarmonyLessonKeyMembershipDescription =>
+      'Find which tones belong inside a named key.';
+
+  @override
+  String get studyHarmonyLessonScalesBossTitle => 'Boss: Scale Repair';
+
+  @override
+  String get studyHarmonyLessonScalesBossDescription =>
+      'Mix scale building and key membership in a short repair round.';
+
+  @override
+  String get studyHarmonyLessonRomanToChordTitle => 'Roman to Chord';
+
+  @override
+  String get studyHarmonyLessonRomanToChordDescription =>
+      'Read a key and Roman numeral, then choose the matching chord.';
+
+  @override
+  String get studyHarmonyLessonChordToRomanTitle => 'Chord to Roman';
+
+  @override
+  String get studyHarmonyLessonChordToRomanDescription =>
+      'Read a chord inside a key and choose the matching Roman numeral.';
+
+  @override
+  String get studyHarmonyLessonDiatonicityTitle => 'Diatonic or Not';
+
+  @override
+  String get studyHarmonyLessonDiatonicityDescription =>
+      'Sort chords into diatonic and non-diatonic answers in simple keys.';
+
+  @override
+  String get studyHarmonyLessonFunctionTitle => 'Function Basics';
+
+  @override
+  String get studyHarmonyLessonFunctionDescription =>
+      'Classify easy chords as tonic, predominant, or dominant.';
+
+  @override
+  String get studyHarmonyLessonRomanBossTitle => 'Boss: Functional Basics Mix';
+
+  @override
+  String get studyHarmonyLessonRomanBossDescription =>
+      'Review Roman-to-chord, chord-to-Roman, diatonicity, and function together.';
+
+  @override
+  String studyHarmonyPromptFindNoteOnKeyboard(Object note) {
+    return 'Find $note on the keyboard';
+  }
+
+  @override
+  String get studyHarmonyPromptNameHighlightedNote =>
+      'Which note is highlighted?';
+
+  @override
+  String studyHarmonyPromptFindChordOnKeyboard(Object chord) {
+    return 'Build $chord on the keyboard';
+  }
+
+  @override
+  String get studyHarmonyPromptNameHighlightedChord =>
+      'Which chord is highlighted?';
+
+  @override
+  String studyHarmonyPromptBuildScale(Object scaleName) {
+    return 'Pick every note in $scaleName';
+  }
+
+  @override
+  String studyHarmonyPromptKeyMembership(Object keyName) {
+    return 'Pick the notes that belong to $keyName';
+  }
+
+  @override
+  String studyHarmonyPromptRomanToChord(Object keyName, Object roman) {
+    return 'In $keyName, which chord matches $roman?';
+  }
+
+  @override
+  String studyHarmonyPromptChordToRoman(Object keyName, Object chord) {
+    return 'In $keyName, what Roman numeral matches $chord?';
+  }
+
+  @override
+  String studyHarmonyPromptDiatonicity(Object keyName, Object chord) {
+    return 'In $keyName, is $chord diatonic?';
+  }
+
+  @override
+  String studyHarmonyPromptFunction(Object keyName, Object chord) {
+    return 'In $keyName, what function does $chord have?';
+  }
+
+  @override
+  String studyHarmonyScaleNameMajor(Object tonic) {
+    return '$tonic major';
+  }
+
+  @override
+  String studyHarmonyScaleNameNaturalMinor(Object tonic) {
+    return '$tonic natural minor';
+  }
+
+  @override
+  String studyHarmonyScaleNameHarmonicMinor(Object tonic) {
+    return '$tonic harmonic minor';
+  }
+
+  @override
+  String studyHarmonyKeyNameMajor(Object tonic) {
+    return '$tonic major';
+  }
+
+  @override
+  String studyHarmonyKeyNameMinor(Object tonic) {
+    return '$tonic minor';
+  }
+
+  @override
+  String get studyHarmonyChoiceDiatonic => 'Diatonic';
+
+  @override
+  String get studyHarmonyChoiceNonDiatonic => 'Non-diatonic';
+
+  @override
+  String get studyHarmonyChoiceTonic => 'Tonic';
+
+  @override
+  String get studyHarmonyChoicePredominant => 'Predominant';
+
+  @override
+  String get studyHarmonyChoiceDominant => 'Dominant';
+
+  @override
   String get chordAnalyzerTitle => '和弦分析器';
 
   @override
@@ -1372,6 +1971,605 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get mainMenuAnalyzerDescription => '分析输入的和弦进行，给出可能的调性、罗马数字和和声功能。';
+
+  @override
+  String get mainMenuStudyHarmonyTitle => 'Study Harmony';
+
+  @override
+  String get mainMenuStudyHarmonyDescription =>
+      'Move through a real harmony study hub with continue, review, daily, and chapter-based lessons.';
+
+  @override
+  String get openStudyHarmony => '打开 Study Harmony';
+
+  @override
+  String get studyHarmonyTitle => 'Study Harmony';
+
+  @override
+  String get studyHarmonySubtitle =>
+      'Work through a structured harmony hub with quick lesson entries and chapter progress.';
+
+  @override
+  String get studyHarmonyPlaceholderTag => 'Prototype system';
+
+  @override
+  String get studyHarmonyPlaceholderBody =>
+      'The prototype separates level data, prompt presentation, and answer input so future note, chord, scale, and reverse-identification drills can reuse the same flow.';
+
+  @override
+  String get studyHarmonyTestLevelTag => 'Test level';
+
+  @override
+  String get studyHarmonyTestLevelAction => 'Open test level';
+
+  @override
+  String get studyHarmonySubmit => 'Submit';
+
+  @override
+  String get studyHarmonySelectedAnswers => 'Selected answers';
+
+  @override
+  String get studyHarmonySelectionEmpty => 'No answers selected yet.';
+
+  @override
+  String studyHarmonyClearProgress(int current, int total) {
+    return '$current/$total correct';
+  }
+
+  @override
+  String get studyHarmonyAttempts => 'Attempts';
+
+  @override
+  String get studyHarmonyAccuracy => 'Accuracy';
+
+  @override
+  String get studyHarmonyElapsedTime => 'Time';
+
+  @override
+  String get studyHarmonyObjective => 'Goal';
+
+  @override
+  String get studyHarmonyPromptInstruction => 'Pick the matching answer';
+
+  @override
+  String get studyHarmonyNeedSelection =>
+      'Choose at least one answer before submitting.';
+
+  @override
+  String get studyHarmonyCorrectLabel => 'Correct';
+
+  @override
+  String get studyHarmonyIncorrectLabel => 'Incorrect';
+
+  @override
+  String studyHarmonyCorrectFeedback(Object answer) {
+    return 'Correct. $answer was the right answer.';
+  }
+
+  @override
+  String studyHarmonyIncorrectFeedback(Object answer) {
+    return 'Incorrect. $answer was the right answer and you lost one life.';
+  }
+
+  @override
+  String get studyHarmonyGameOverTitle => 'Game Over';
+
+  @override
+  String get studyHarmonyGameOverBody =>
+      'All three lives are gone. Retry this level or go back to the Study Harmony hub.';
+
+  @override
+  String get studyHarmonyLevelCompleteTitle => 'Level Cleared';
+
+  @override
+  String get studyHarmonyLevelCompleteBody =>
+      'You reached the lesson goal. Check your accuracy and clear time below.';
+
+  @override
+  String get studyHarmonyBackToHub => 'Back to Study Harmony';
+
+  @override
+  String get studyHarmonyRetry => 'Retry';
+
+  @override
+  String get studyHarmonyHubHeroEyebrow => 'Study Hub';
+
+  @override
+  String get studyHarmonyHubHeroBody =>
+      'Use Continue to resume momentum, Review to revisit weak spots, and Daily to get one deterministic lesson from your unlocked path.';
+
+  @override
+  String get studyHarmonyTrackFilterLabel => 'Tracks';
+
+  @override
+  String get studyHarmonyTrackCoreFilterLabel => 'Core';
+
+  @override
+  String get studyHarmonyTrackPopFilterLabel => 'Pop';
+
+  @override
+  String get studyHarmonyTrackJazzFilterLabel => 'Jazz';
+
+  @override
+  String get studyHarmonyTrackClassicalFilterLabel => 'Classical';
+
+  @override
+  String studyHarmonyHubLessonsProgress(int cleared, int total) {
+    return '$cleared/$total lessons cleared';
+  }
+
+  @override
+  String studyHarmonyHubChaptersProgress(int cleared, int total) {
+    return '$cleared/$total chapters completed';
+  }
+
+  @override
+  String get studyHarmonyContinueCardTitle => 'Continue';
+
+  @override
+  String get studyHarmonyContinueResumeHint =>
+      'Resume the lesson you touched most recently.';
+
+  @override
+  String get studyHarmonyContinueFrontierHint =>
+      'Jump to the next lesson at your current frontier.';
+
+  @override
+  String get studyHarmonyContinueAction => 'Continue';
+
+  @override
+  String get studyHarmonyReviewCardTitle => 'Review';
+
+  @override
+  String get studyHarmonyReviewQueueHint =>
+      'Pulled from your current review queue placeholder.';
+
+  @override
+  String get studyHarmonyReviewWeakHint =>
+      'Picked from the weakest result in your played lessons.';
+
+  @override
+  String get studyHarmonyReviewFallbackHint =>
+      'No review debt yet, so this falls back to your current frontier.';
+
+  @override
+  String get studyHarmonyReviewRetryNeededHint =>
+      'This lesson needs another pass after a miss or unfinished run.';
+
+  @override
+  String get studyHarmonyReviewAccuracyRefreshHint =>
+      'This lesson is queued for a quick accuracy refresh.';
+
+  @override
+  String get studyHarmonyReviewAction => 'Review';
+
+  @override
+  String get studyHarmonyDailyCardTitle => 'Daily Challenge';
+
+  @override
+  String get studyHarmonyDailyCardHint =>
+      'Open today\'s deterministic lesson from your unlocked path.';
+
+  @override
+  String get studyHarmonyDailyAction => 'Play Daily';
+
+  @override
+  String studyHarmonyDailyDateBadge(Object dateKey) {
+    return 'Seed $dateKey';
+  }
+
+  @override
+  String get studyHarmonyReviewSessionTitle => 'Weak Spot Review';
+
+  @override
+  String studyHarmonyReviewSessionDescription(Object chapterTitle) {
+    return 'Mix a short review set around $chapterTitle and your weakest recent skills.';
+  }
+
+  @override
+  String get studyHarmonyDailySessionTitle => 'Daily Challenge';
+
+  @override
+  String studyHarmonyDailySessionDescription(Object chapterTitle) {
+    return 'Play today\'s seeded mix built from $chapterTitle and your current frontier.';
+  }
+
+  @override
+  String get studyHarmonyModeLesson => 'Lesson Mode';
+
+  @override
+  String get studyHarmonyModeReview => 'Review Mode';
+
+  @override
+  String get studyHarmonyModeDaily => 'Daily Mode';
+
+  @override
+  String get studyHarmonyModeLegacy => 'Legacy Mode';
+
+  @override
+  String get studyHarmonyResultSkillGainTitle => 'Skill gains';
+
+  @override
+  String get studyHarmonyResultReviewFocusTitle => 'Review focus';
+
+  @override
+  String studyHarmonyResultSkillGainLine(Object skill, Object delta) {
+    return '$skill $delta';
+  }
+
+  @override
+  String get studyHarmonyReviewReasonRetryNeeded =>
+      'Review reason: retry needed';
+
+  @override
+  String get studyHarmonyReviewReasonAccuracyRefresh =>
+      'Review reason: accuracy refresh';
+
+  @override
+  String get studyHarmonyReviewReasonLowMastery => 'Review reason: low mastery';
+
+  @override
+  String get studyHarmonyReviewReasonStaleSkill => 'Review reason: stale skill';
+
+  @override
+  String get studyHarmonyReviewReasonWeakSpot => 'Review reason: weak spot';
+
+  @override
+  String get studyHarmonyReviewReasonFrontierRefresh =>
+      'Review reason: frontier refresh';
+
+  @override
+  String get studyHarmonySkillNoteRead => 'Note reading';
+
+  @override
+  String get studyHarmonySkillNoteFindKeyboard => 'Keyboard note finding';
+
+  @override
+  String get studyHarmonySkillNoteAccidentals => 'Sharps and flats';
+
+  @override
+  String get studyHarmonySkillChordSymbolToKeys => 'Chord symbol to keys';
+
+  @override
+  String get studyHarmonySkillChordNameFromTones => 'Chord naming';
+
+  @override
+  String get studyHarmonySkillScaleBuild => 'Scale building';
+
+  @override
+  String get studyHarmonySkillRomanRealize => 'Roman numeral realization';
+
+  @override
+  String get studyHarmonySkillRomanIdentify => 'Roman numeral identification';
+
+  @override
+  String get studyHarmonySkillHarmonyDiatonicity => 'Diatonicity';
+
+  @override
+  String get studyHarmonySkillHarmonyFunction => 'Function basics';
+
+  @override
+  String get studyHarmonyHubChapterSectionTitle => 'Chapters';
+
+  @override
+  String studyHarmonyChapterProgressText(int cleared, int total) {
+    return '$cleared/$total lessons cleared';
+  }
+
+  @override
+  String studyHarmonyLessonsCount(int count) {
+    return '$count lessons';
+  }
+
+  @override
+  String studyHarmonyCompletedLessonsCount(int count) {
+    return '$count completed';
+  }
+
+  @override
+  String get studyHarmonyOpenChapterAction => 'Open chapter';
+
+  @override
+  String get studyHarmonyLockedChapterTag => 'Locked';
+
+  @override
+  String studyHarmonyChapterNextUp(Object lessonTitle) {
+    return 'Next up: $lessonTitle';
+  }
+
+  @override
+  String studyHarmonyChapterViewTitle(Object chapterTitle) {
+    return '$chapterTitle';
+  }
+
+  @override
+  String studyHarmonyTrackPlaceholderBody(Object coreTrack) {
+    return '$coreTrack is the active path right now. The other tracks stay visible so the hub can grow without another navigation rewrite.';
+  }
+
+  @override
+  String get studyHarmonyCoreTrackTitle => 'Core Track';
+
+  @override
+  String get studyHarmonyCoreTrackDescription =>
+      'Start with notes and the keyboard, then build up through chords, scales, Roman numerals, and diatonic basics.';
+
+  @override
+  String get studyHarmonyChapterNotesTitle => 'Chapter 1: Notes & Keyboard';
+
+  @override
+  String get studyHarmonyChapterNotesDescription =>
+      'Map note names to the keyboard and get comfortable with white keys and simple accidentals.';
+
+  @override
+  String get studyHarmonyChapterChordsTitle => 'Chapter 2: Chord Basics';
+
+  @override
+  String get studyHarmonyChapterChordsDescription =>
+      'Spell basic triads and sevenths, then name common chord shapes from their tones.';
+
+  @override
+  String get studyHarmonyChapterScalesTitle => 'Chapter 3: Scales & Keys';
+
+  @override
+  String get studyHarmonyChapterScalesDescription =>
+      'Build major and minor scales, then spot which tones belong inside a key.';
+
+  @override
+  String get studyHarmonyChapterRomanTitle =>
+      'Chapter 4: Roman Numerals & Diatonicity';
+
+  @override
+  String get studyHarmonyChapterRomanDescription =>
+      'Turn simple Roman numerals into chords, identify them from chords, and sort diatonic basics by function.';
+
+  @override
+  String get studyHarmonyOpenLessonAction => 'Open lesson';
+
+  @override
+  String get studyHarmonyLockedLessonAction => 'Locked';
+
+  @override
+  String get studyHarmonyClearedTag => 'Cleared';
+
+  @override
+  String get studyHarmonyComingSoonTag => 'Coming soon';
+
+  @override
+  String get studyHarmonyPopTrackTitle => 'Pop Track';
+
+  @override
+  String get studyHarmonyPopTrackDescription =>
+      'A song-focused path is planned after the Core track is stable.';
+
+  @override
+  String get studyHarmonyJazzTrackTitle => 'Jazz Track';
+
+  @override
+  String get studyHarmonyJazzTrackDescription =>
+      'Jazz harmony content stays locked until the Core curriculum settles.';
+
+  @override
+  String get studyHarmonyClassicalTrackTitle => 'Classical Track';
+
+  @override
+  String get studyHarmonyClassicalTrackDescription =>
+      'Functional harmony in classical contexts will arrive in a later phase.';
+
+  @override
+  String get studyHarmonyObjectiveQuickDrill => 'Quick Drill';
+
+  @override
+  String get studyHarmonyObjectiveBossReview => 'Boss Review';
+
+  @override
+  String get studyHarmonyLessonNotesKeyboardTitle => 'White-Key Note Hunt';
+
+  @override
+  String get studyHarmonyLessonNotesKeyboardDescription =>
+      'Read note names and tap the matching white key.';
+
+  @override
+  String get studyHarmonyLessonNotesPreviewTitle => 'Name the Highlighted Note';
+
+  @override
+  String get studyHarmonyLessonNotesPreviewDescription =>
+      'Look at a highlighted key and choose the correct note name.';
+
+  @override
+  String get studyHarmonyLessonNotesAccidentalsTitle => 'Black Keys and Twins';
+
+  @override
+  String get studyHarmonyLessonNotesAccidentalsDescription =>
+      'Get a first look at sharp and flat spellings for the black keys.';
+
+  @override
+  String get studyHarmonyLessonNotesBossTitle => 'Boss: Fast Note Hunt';
+
+  @override
+  String get studyHarmonyLessonNotesBossDescription =>
+      'Mix note reading and keyboard finding into one short speed round.';
+
+  @override
+  String get studyHarmonyLessonTriadKeyboardTitle => 'Triads on the Keyboard';
+
+  @override
+  String get studyHarmonyLessonTriadKeyboardDescription =>
+      'Build common major, minor, and diminished triads directly on the keyboard.';
+
+  @override
+  String get studyHarmonyLessonSeventhKeyboardTitle =>
+      'Sevenths on the Keyboard';
+
+  @override
+  String get studyHarmonyLessonSeventhKeyboardDescription =>
+      'Add the seventh and spell a few common 7th chords on the keyboard.';
+
+  @override
+  String get studyHarmonyLessonChordNameTitle => 'Name the Highlighted Chord';
+
+  @override
+  String get studyHarmonyLessonChordNameDescription =>
+      'Read a highlighted chord shape and choose the correct chord name.';
+
+  @override
+  String get studyHarmonyLessonChordsBossTitle =>
+      'Boss: Triads and Sevenths Review';
+
+  @override
+  String get studyHarmonyLessonChordsBossDescription =>
+      'Switch between chord spelling and chord naming in one mixed review.';
+
+  @override
+  String get studyHarmonyLessonMajorScaleTitle => 'Build Major Scales';
+
+  @override
+  String get studyHarmonyLessonMajorScaleDescription =>
+      'Choose every tone that belongs to a simple major scale.';
+
+  @override
+  String get studyHarmonyLessonMinorScaleTitle => 'Build Minor Scales';
+
+  @override
+  String get studyHarmonyLessonMinorScaleDescription =>
+      'Build natural minor and harmonic minor scales from a few common keys.';
+
+  @override
+  String get studyHarmonyLessonKeyMembershipTitle => 'Key Membership';
+
+  @override
+  String get studyHarmonyLessonKeyMembershipDescription =>
+      'Find which tones belong inside a named key.';
+
+  @override
+  String get studyHarmonyLessonScalesBossTitle => 'Boss: Scale Repair';
+
+  @override
+  String get studyHarmonyLessonScalesBossDescription =>
+      'Mix scale building and key membership in a short repair round.';
+
+  @override
+  String get studyHarmonyLessonRomanToChordTitle => 'Roman to Chord';
+
+  @override
+  String get studyHarmonyLessonRomanToChordDescription =>
+      'Read a key and Roman numeral, then choose the matching chord.';
+
+  @override
+  String get studyHarmonyLessonChordToRomanTitle => 'Chord to Roman';
+
+  @override
+  String get studyHarmonyLessonChordToRomanDescription =>
+      'Read a chord inside a key and choose the matching Roman numeral.';
+
+  @override
+  String get studyHarmonyLessonDiatonicityTitle => 'Diatonic or Not';
+
+  @override
+  String get studyHarmonyLessonDiatonicityDescription =>
+      'Sort chords into diatonic and non-diatonic answers in simple keys.';
+
+  @override
+  String get studyHarmonyLessonFunctionTitle => 'Function Basics';
+
+  @override
+  String get studyHarmonyLessonFunctionDescription =>
+      'Classify easy chords as tonic, predominant, or dominant.';
+
+  @override
+  String get studyHarmonyLessonRomanBossTitle => 'Boss: Functional Basics Mix';
+
+  @override
+  String get studyHarmonyLessonRomanBossDescription =>
+      'Review Roman-to-chord, chord-to-Roman, diatonicity, and function together.';
+
+  @override
+  String studyHarmonyPromptFindNoteOnKeyboard(Object note) {
+    return 'Find $note on the keyboard';
+  }
+
+  @override
+  String get studyHarmonyPromptNameHighlightedNote =>
+      'Which note is highlighted?';
+
+  @override
+  String studyHarmonyPromptFindChordOnKeyboard(Object chord) {
+    return 'Build $chord on the keyboard';
+  }
+
+  @override
+  String get studyHarmonyPromptNameHighlightedChord =>
+      'Which chord is highlighted?';
+
+  @override
+  String studyHarmonyPromptBuildScale(Object scaleName) {
+    return 'Pick every note in $scaleName';
+  }
+
+  @override
+  String studyHarmonyPromptKeyMembership(Object keyName) {
+    return 'Pick the notes that belong to $keyName';
+  }
+
+  @override
+  String studyHarmonyPromptRomanToChord(Object keyName, Object roman) {
+    return 'In $keyName, which chord matches $roman?';
+  }
+
+  @override
+  String studyHarmonyPromptChordToRoman(Object keyName, Object chord) {
+    return 'In $keyName, what Roman numeral matches $chord?';
+  }
+
+  @override
+  String studyHarmonyPromptDiatonicity(Object keyName, Object chord) {
+    return 'In $keyName, is $chord diatonic?';
+  }
+
+  @override
+  String studyHarmonyPromptFunction(Object keyName, Object chord) {
+    return 'In $keyName, what function does $chord have?';
+  }
+
+  @override
+  String studyHarmonyScaleNameMajor(Object tonic) {
+    return '$tonic major';
+  }
+
+  @override
+  String studyHarmonyScaleNameNaturalMinor(Object tonic) {
+    return '$tonic natural minor';
+  }
+
+  @override
+  String studyHarmonyScaleNameHarmonicMinor(Object tonic) {
+    return '$tonic harmonic minor';
+  }
+
+  @override
+  String studyHarmonyKeyNameMajor(Object tonic) {
+    return '$tonic major';
+  }
+
+  @override
+  String studyHarmonyKeyNameMinor(Object tonic) {
+    return '$tonic minor';
+  }
+
+  @override
+  String get studyHarmonyChoiceDiatonic => 'Diatonic';
+
+  @override
+  String get studyHarmonyChoiceNonDiatonic => 'Non-diatonic';
+
+  @override
+  String get studyHarmonyChoiceTonic => 'Tonic';
+
+  @override
+  String get studyHarmonyChoicePredominant => 'Predominant';
+
+  @override
+  String get studyHarmonyChoiceDominant => 'Dominant';
 
   @override
   String get chordAnalyzerTitle => '和弦分析器';

@@ -69,6 +69,11 @@ void main() {
       analysisFamily: ChordFamily.major,
     ),
     _ShapeFixture(
+      suffix: 'maj',
+      displayQuality: ChordQuality.majorTriad,
+      analysisFamily: ChordFamily.major,
+    ),
+    _ShapeFixture(
       suffix: 'maj7',
       displayQuality: ChordQuality.major7,
       analysisFamily: ChordFamily.major,

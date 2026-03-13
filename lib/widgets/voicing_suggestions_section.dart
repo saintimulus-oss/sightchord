@@ -400,6 +400,14 @@ class _SuggestionCard extends StatelessWidget {
                   noteNames: suggestion.voicing.noteNames,
                   slotCount: noteSlotCount,
                 ),
+                const SizedBox(height: 6),
+                _ToneLabelStrip(
+                  key: ValueKey('voicing-tones-${suggestion.kind.name}'),
+                  kind: suggestion.kind,
+                  toneLabels: suggestion.voicing.toneLabels,
+                  tensions: suggestion.voicing.tensions,
+                  slotCount: noteSlotCount,
+                ),
                 const SizedBox(height: 8),
                 MiniKeyboard(
                   notes: suggestion.voicing.midiNotes,
@@ -508,6 +516,98 @@ class _NoteNameSlot extends StatelessWidget {
               color: isFilled
                   ? theme.colorScheme.onSurface
                   : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ToneLabelStrip extends StatelessWidget {
+  const _ToneLabelStrip({
+    super.key,
+    required this.kind,
+    required this.toneLabels,
+    required this.tensions,
+    required this.slotCount,
+  });
+
+  final VoicingSuggestionKind kind;
+  final List<String> toneLabels;
+  final Set<String> tensions;
+  final int slotCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 26,
+      child: Row(
+        children: [
+          for (var index = 0; index < slotCount; index += 1) ...[
+            Expanded(
+              child: _ToneLabelSlot(
+                key: ValueKey('voicing-tone-slot-${kind.name}-$index'),
+                label: index < toneLabels.length ? toneLabels[index] : null,
+                highlighted:
+                    index < toneLabels.length &&
+                    tensions.contains(toneLabels[index]),
+              ),
+            ),
+            if (index < slotCount - 1) const SizedBox(width: 6),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ToneLabelSlot extends StatelessWidget {
+  const _ToneLabelSlot({
+    super.key,
+    required this.label,
+    required this.highlighted,
+  });
+
+  final String? label;
+  final bool highlighted;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isFilled = label != null;
+    final backgroundColor = highlighted
+        ? theme.colorScheme.secondaryContainer
+        : isFilled
+        ? theme.colorScheme.surfaceContainer
+        : theme.colorScheme.surfaceContainerLowest;
+    final foregroundColor = highlighted
+        ? theme.colorScheme.onSecondaryContainer
+        : isFilled
+        ? theme.colorScheme.onSurfaceVariant
+        : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.55);
+    final borderColor = highlighted
+        ? theme.colorScheme.secondary
+        : theme.colorScheme.outlineVariant.withValues(
+            alpha: isFilled ? 1 : 0.55,
+          );
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: borderColor),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: Text(
+            label ?? '',
+            maxLines: 1,
+            overflow: TextOverflow.fade,
+            softWrap: false,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: foregroundColor,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),

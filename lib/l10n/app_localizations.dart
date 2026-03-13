@@ -1083,6 +1083,996 @@ abstract class AppLocalizations {
   /// **'Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.'**
   String get mainMenuAnalyzerDescription;
 
+  /// No description provided for @mainMenuStudyHarmonyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Study Harmony'**
+  String get mainMenuStudyHarmonyTitle;
+
+  /// No description provided for @mainMenuStudyHarmonyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Move through a real harmony study hub with continue, review, daily, and chapter-based lessons.'**
+  String get mainMenuStudyHarmonyDescription;
+
+  /// No description provided for @openStudyHarmony.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Study Harmony'**
+  String get openStudyHarmony;
+
+  /// No description provided for @studyHarmonyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Study Harmony'**
+  String get studyHarmonyTitle;
+
+  /// No description provided for @studyHarmonySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Work through a structured harmony hub with quick lesson entries and chapter progress.'**
+  String get studyHarmonySubtitle;
+
+  /// No description provided for @studyHarmonyPlaceholderTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Prototype system'**
+  String get studyHarmonyPlaceholderTag;
+
+  /// No description provided for @studyHarmonyPlaceholderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The prototype separates level data, prompt presentation, and answer input so future note, chord, scale, and reverse-identification drills can reuse the same flow.'**
+  String get studyHarmonyPlaceholderBody;
+
+  /// No description provided for @studyHarmonyTestLevelTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Test level'**
+  String get studyHarmonyTestLevelTag;
+
+  /// No description provided for @studyHarmonyTestLevelAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open test level'**
+  String get studyHarmonyTestLevelAction;
+
+  /// No description provided for @studyHarmonySubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get studyHarmonySubmit;
+
+  /// No description provided for @studyHarmonySelectedAnswers.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected answers'**
+  String get studyHarmonySelectedAnswers;
+
+  /// No description provided for @studyHarmonySelectionEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No answers selected yet.'**
+  String get studyHarmonySelectionEmpty;
+
+  /// No description provided for @studyHarmonyClearProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{current}/{total} correct'**
+  String studyHarmonyClearProgress(int current, int total);
+
+  /// No description provided for @studyHarmonyAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'Attempts'**
+  String get studyHarmonyAttempts;
+
+  /// No description provided for @studyHarmonyAccuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'Accuracy'**
+  String get studyHarmonyAccuracy;
+
+  /// No description provided for @studyHarmonyElapsedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get studyHarmonyElapsedTime;
+
+  /// No description provided for @studyHarmonyObjective.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get studyHarmonyObjective;
+
+  /// No description provided for @studyHarmonyPromptInstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the matching answer'**
+  String get studyHarmonyPromptInstruction;
+
+  /// No description provided for @studyHarmonyNeedSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at least one answer before submitting.'**
+  String get studyHarmonyNeedSelection;
+
+  /// No description provided for @studyHarmonyCorrectLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct'**
+  String get studyHarmonyCorrectLabel;
+
+  /// No description provided for @studyHarmonyIncorrectLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect'**
+  String get studyHarmonyIncorrectLabel;
+
+  /// No description provided for @studyHarmonyCorrectFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct. {answer} was the right answer.'**
+  String studyHarmonyCorrectFeedback(Object answer);
+
+  /// No description provided for @studyHarmonyIncorrectFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect. {answer} was the right answer and you lost one life.'**
+  String studyHarmonyIncorrectFeedback(Object answer);
+
+  /// No description provided for @studyHarmonyGameOverTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Game Over'**
+  String get studyHarmonyGameOverTitle;
+
+  /// No description provided for @studyHarmonyGameOverBody.
+  ///
+  /// In en, this message translates to:
+  /// **'All three lives are gone. Retry this level or go back to the Study Harmony hub.'**
+  String get studyHarmonyGameOverBody;
+
+  /// No description provided for @studyHarmonyLevelCompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Level Cleared'**
+  String get studyHarmonyLevelCompleteTitle;
+
+  /// No description provided for @studyHarmonyLevelCompleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You reached the lesson goal. Check your accuracy and clear time below.'**
+  String get studyHarmonyLevelCompleteBody;
+
+  /// No description provided for @studyHarmonyBackToHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Study Harmony'**
+  String get studyHarmonyBackToHub;
+
+  /// No description provided for @studyHarmonyRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get studyHarmonyRetry;
+
+  /// No description provided for @studyHarmonyHubHeroEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Study Hub'**
+  String get studyHarmonyHubHeroEyebrow;
+
+  /// No description provided for @studyHarmonyHubHeroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Continue to resume momentum, Review to revisit weak spots, and Daily to get one deterministic lesson from your unlocked path.'**
+  String get studyHarmonyHubHeroBody;
+
+  /// No description provided for @studyHarmonyTrackFilterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracks'**
+  String get studyHarmonyTrackFilterLabel;
+
+  /// No description provided for @studyHarmonyTrackCoreFilterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Core'**
+  String get studyHarmonyTrackCoreFilterLabel;
+
+  /// No description provided for @studyHarmonyTrackPopFilterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pop'**
+  String get studyHarmonyTrackPopFilterLabel;
+
+  /// No description provided for @studyHarmonyTrackJazzFilterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Jazz'**
+  String get studyHarmonyTrackJazzFilterLabel;
+
+  /// No description provided for @studyHarmonyTrackClassicalFilterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Classical'**
+  String get studyHarmonyTrackClassicalFilterLabel;
+
+  /// No description provided for @studyHarmonyHubLessonsProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{cleared}/{total} lessons cleared'**
+  String studyHarmonyHubLessonsProgress(int cleared, int total);
+
+  /// No description provided for @studyHarmonyHubChaptersProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{cleared}/{total} chapters completed'**
+  String studyHarmonyHubChaptersProgress(int cleared, int total);
+
+  /// No description provided for @studyHarmonyContinueCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get studyHarmonyContinueCardTitle;
+
+  /// No description provided for @studyHarmonyContinueResumeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume the lesson you touched most recently.'**
+  String get studyHarmonyContinueResumeHint;
+
+  /// No description provided for @studyHarmonyContinueFrontierHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump to the next lesson at your current frontier.'**
+  String get studyHarmonyContinueFrontierHint;
+
+  /// No description provided for @studyHarmonyContinueAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get studyHarmonyContinueAction;
+
+  /// No description provided for @studyHarmonyReviewCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get studyHarmonyReviewCardTitle;
+
+  /// No description provided for @studyHarmonyReviewQueueHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pulled from your current review queue placeholder.'**
+  String get studyHarmonyReviewQueueHint;
+
+  /// No description provided for @studyHarmonyReviewWeakHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Picked from the weakest result in your played lessons.'**
+  String get studyHarmonyReviewWeakHint;
+
+  /// No description provided for @studyHarmonyReviewFallbackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No review debt yet, so this falls back to your current frontier.'**
+  String get studyHarmonyReviewFallbackHint;
+
+  /// No description provided for @studyHarmonyReviewRetryNeededHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This lesson needs another pass after a miss or unfinished run.'**
+  String get studyHarmonyReviewRetryNeededHint;
+
+  /// No description provided for @studyHarmonyReviewAccuracyRefreshHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This lesson is queued for a quick accuracy refresh.'**
+  String get studyHarmonyReviewAccuracyRefreshHint;
+
+  /// No description provided for @studyHarmonyReviewAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get studyHarmonyReviewAction;
+
+  /// No description provided for @studyHarmonyDailyCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Challenge'**
+  String get studyHarmonyDailyCardTitle;
+
+  /// No description provided for @studyHarmonyDailyCardHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Open today\'s deterministic pick from your unlocked lessons.'**
+  String get studyHarmonyDailyCardHint;
+
+  /// No description provided for @studyHarmonyDailyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Play daily'**
+  String get studyHarmonyDailyAction;
+
+  /// No description provided for @studyHarmonyDailyDateBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Seed {dateKey}'**
+  String studyHarmonyDailyDateBadge(Object dateKey);
+
+  /// No description provided for @studyHarmonyReviewSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weak Spot Review'**
+  String get studyHarmonyReviewSessionTitle;
+
+  /// No description provided for @studyHarmonyReviewSessionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Mix a short review set around {chapterTitle} and your weakest recent skills.'**
+  String studyHarmonyReviewSessionDescription(Object chapterTitle);
+
+  /// No description provided for @studyHarmonyDailySessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Challenge'**
+  String get studyHarmonyDailySessionTitle;
+
+  /// No description provided for @studyHarmonyDailySessionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Play today\'s seeded mix built from {chapterTitle} and your current frontier.'**
+  String studyHarmonyDailySessionDescription(Object chapterTitle);
+
+  /// No description provided for @studyHarmonyModeLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson Mode'**
+  String get studyHarmonyModeLesson;
+
+  /// No description provided for @studyHarmonyModeReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review Mode'**
+  String get studyHarmonyModeReview;
+
+  /// No description provided for @studyHarmonyModeDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Mode'**
+  String get studyHarmonyModeDaily;
+
+  /// No description provided for @studyHarmonyModeLegacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Legacy Mode'**
+  String get studyHarmonyModeLegacy;
+
+  /// No description provided for @studyHarmonyResultSkillGainTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Skill gains'**
+  String get studyHarmonyResultSkillGainTitle;
+
+  /// No description provided for @studyHarmonyResultReviewFocusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review focus'**
+  String get studyHarmonyResultReviewFocusTitle;
+
+  /// No description provided for @studyHarmonyResultSkillGainLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{skill} {delta}'**
+  String studyHarmonyResultSkillGainLine(Object skill, Object delta);
+
+  /// No description provided for @studyHarmonyReviewReasonRetryNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Review reason: retry needed'**
+  String get studyHarmonyReviewReasonRetryNeeded;
+
+  /// No description provided for @studyHarmonyReviewReasonAccuracyRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Review reason: accuracy refresh'**
+  String get studyHarmonyReviewReasonAccuracyRefresh;
+
+  /// No description provided for @studyHarmonyReviewReasonLowMastery.
+  ///
+  /// In en, this message translates to:
+  /// **'Review reason: low mastery'**
+  String get studyHarmonyReviewReasonLowMastery;
+
+  /// No description provided for @studyHarmonyReviewReasonStaleSkill.
+  ///
+  /// In en, this message translates to:
+  /// **'Review reason: stale skill'**
+  String get studyHarmonyReviewReasonStaleSkill;
+
+  /// No description provided for @studyHarmonyReviewReasonWeakSpot.
+  ///
+  /// In en, this message translates to:
+  /// **'Review reason: weak spot'**
+  String get studyHarmonyReviewReasonWeakSpot;
+
+  /// No description provided for @studyHarmonyReviewReasonFrontierRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Review reason: frontier refresh'**
+  String get studyHarmonyReviewReasonFrontierRefresh;
+
+  /// No description provided for @studyHarmonySkillNoteRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Note reading'**
+  String get studyHarmonySkillNoteRead;
+
+  /// No description provided for @studyHarmonySkillNoteFindKeyboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Keyboard note finding'**
+  String get studyHarmonySkillNoteFindKeyboard;
+
+  /// No description provided for @studyHarmonySkillNoteAccidentals.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharps and flats'**
+  String get studyHarmonySkillNoteAccidentals;
+
+  /// No description provided for @studyHarmonySkillChordSymbolToKeys.
+  ///
+  /// In en, this message translates to:
+  /// **'Chord symbol to keys'**
+  String get studyHarmonySkillChordSymbolToKeys;
+
+  /// No description provided for @studyHarmonySkillChordNameFromTones.
+  ///
+  /// In en, this message translates to:
+  /// **'Chord naming'**
+  String get studyHarmonySkillChordNameFromTones;
+
+  /// No description provided for @studyHarmonySkillScaleBuild.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale building'**
+  String get studyHarmonySkillScaleBuild;
+
+  /// No description provided for @studyHarmonySkillRomanRealize.
+  ///
+  /// In en, this message translates to:
+  /// **'Roman numeral realization'**
+  String get studyHarmonySkillRomanRealize;
+
+  /// No description provided for @studyHarmonySkillRomanIdentify.
+  ///
+  /// In en, this message translates to:
+  /// **'Roman numeral identification'**
+  String get studyHarmonySkillRomanIdentify;
+
+  /// No description provided for @studyHarmonySkillHarmonyDiatonicity.
+  ///
+  /// In en, this message translates to:
+  /// **'Diatonicity'**
+  String get studyHarmonySkillHarmonyDiatonicity;
+
+  /// No description provided for @studyHarmonySkillHarmonyFunction.
+  ///
+  /// In en, this message translates to:
+  /// **'Function basics'**
+  String get studyHarmonySkillHarmonyFunction;
+
+  /// No description provided for @studyHarmonyHubChapterSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapters'**
+  String get studyHarmonyHubChapterSectionTitle;
+
+  /// No description provided for @studyHarmonyChapterProgressText.
+  ///
+  /// In en, this message translates to:
+  /// **'{cleared}/{total} lessons cleared'**
+  String studyHarmonyChapterProgressText(int cleared, int total);
+
+  /// No description provided for @studyHarmonyLessonsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} lessons'**
+  String studyHarmonyLessonsCount(int count);
+
+  /// No description provided for @studyHarmonyCompletedLessonsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} cleared'**
+  String studyHarmonyCompletedLessonsCount(int count);
+
+  /// No description provided for @studyHarmonyOpenChapterAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open chapter'**
+  String get studyHarmonyOpenChapterAction;
+
+  /// No description provided for @studyHarmonyLockedChapterTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked chapter'**
+  String get studyHarmonyLockedChapterTag;
+
+  /// No description provided for @studyHarmonyChapterNextUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Next up: {lessonTitle}'**
+  String studyHarmonyChapterNextUp(Object lessonTitle);
+
+  /// No description provided for @studyHarmonyChapterViewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{chapterTitle}'**
+  String studyHarmonyChapterViewTitle(Object chapterTitle);
+
+  /// No description provided for @studyHarmonyTrackPlaceholderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This track is still locked. Switch back to {coreTrack} to keep studying today.'**
+  String studyHarmonyTrackPlaceholderBody(Object coreTrack);
+
+  /// No description provided for @studyHarmonyCoreTrackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Core Track'**
+  String get studyHarmonyCoreTrackTitle;
+
+  /// No description provided for @studyHarmonyCoreTrackDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with notes and the keyboard, then build up through chords, scales, Roman numerals, and diatonic basics.'**
+  String get studyHarmonyCoreTrackDescription;
+
+  /// No description provided for @studyHarmonyChapterNotesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter 1: Notes & Keyboard'**
+  String get studyHarmonyChapterNotesTitle;
+
+  /// No description provided for @studyHarmonyChapterNotesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Map note names to the keyboard and get comfortable with white keys and simple accidentals.'**
+  String get studyHarmonyChapterNotesDescription;
+
+  /// No description provided for @studyHarmonyChapterChordsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter 2: Chord Basics'**
+  String get studyHarmonyChapterChordsTitle;
+
+  /// No description provided for @studyHarmonyChapterChordsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Spell basic triads and sevenths, then name common chord shapes from their tones.'**
+  String get studyHarmonyChapterChordsDescription;
+
+  /// No description provided for @studyHarmonyChapterScalesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter 3: Scales & Keys'**
+  String get studyHarmonyChapterScalesTitle;
+
+  /// No description provided for @studyHarmonyChapterScalesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Build major and minor scales, then spot which tones belong inside a key.'**
+  String get studyHarmonyChapterScalesDescription;
+
+  /// No description provided for @studyHarmonyChapterRomanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter 4: Roman Numerals & Diatonicity'**
+  String get studyHarmonyChapterRomanTitle;
+
+  /// No description provided for @studyHarmonyChapterRomanDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn simple Roman numerals into chords, identify them from chords, and sort diatonic basics by function.'**
+  String get studyHarmonyChapterRomanDescription;
+
+  /// No description provided for @studyHarmonyOpenLessonAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open lesson'**
+  String get studyHarmonyOpenLessonAction;
+
+  /// No description provided for @studyHarmonyLockedLessonAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get studyHarmonyLockedLessonAction;
+
+  /// No description provided for @studyHarmonyClearedTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleared'**
+  String get studyHarmonyClearedTag;
+
+  /// No description provided for @studyHarmonyComingSoonTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get studyHarmonyComingSoonTag;
+
+  /// No description provided for @studyHarmonyPopTrackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pop Track'**
+  String get studyHarmonyPopTrackTitle;
+
+  /// No description provided for @studyHarmonyPopTrackDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A song-focused path is planned after the Core track is stable.'**
+  String get studyHarmonyPopTrackDescription;
+
+  /// No description provided for @studyHarmonyJazzTrackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Jazz Track'**
+  String get studyHarmonyJazzTrackTitle;
+
+  /// No description provided for @studyHarmonyJazzTrackDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Jazz harmony content stays locked until the Core curriculum settles.'**
+  String get studyHarmonyJazzTrackDescription;
+
+  /// No description provided for @studyHarmonyClassicalTrackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Classical Track'**
+  String get studyHarmonyClassicalTrackTitle;
+
+  /// No description provided for @studyHarmonyClassicalTrackDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Functional harmony in classical contexts will arrive in a later phase.'**
+  String get studyHarmonyClassicalTrackDescription;
+
+  /// No description provided for @studyHarmonyObjectiveQuickDrill.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Drill'**
+  String get studyHarmonyObjectiveQuickDrill;
+
+  /// No description provided for @studyHarmonyObjectiveBossReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Boss Review'**
+  String get studyHarmonyObjectiveBossReview;
+
+  /// No description provided for @studyHarmonyLessonNotesKeyboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'White-Key Note Hunt'**
+  String get studyHarmonyLessonNotesKeyboardTitle;
+
+  /// No description provided for @studyHarmonyLessonNotesKeyboardDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Read note names and tap the matching white key.'**
+  String get studyHarmonyLessonNotesKeyboardDescription;
+
+  /// No description provided for @studyHarmonyLessonNotesPreviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Name the Highlighted Note'**
+  String get studyHarmonyLessonNotesPreviewTitle;
+
+  /// No description provided for @studyHarmonyLessonNotesPreviewDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Look at a highlighted key and choose the correct note name.'**
+  String get studyHarmonyLessonNotesPreviewDescription;
+
+  /// No description provided for @studyHarmonyLessonNotesAccidentalsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Black Keys and Twins'**
+  String get studyHarmonyLessonNotesAccidentalsTitle;
+
+  /// No description provided for @studyHarmonyLessonNotesAccidentalsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a first look at sharp and flat spellings for the black keys.'**
+  String get studyHarmonyLessonNotesAccidentalsDescription;
+
+  /// No description provided for @studyHarmonyLessonNotesBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Boss: Fast Note Hunt'**
+  String get studyHarmonyLessonNotesBossTitle;
+
+  /// No description provided for @studyHarmonyLessonNotesBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Mix note reading and keyboard finding into one short speed round.'**
+  String get studyHarmonyLessonNotesBossDescription;
+
+  /// No description provided for @studyHarmonyLessonTriadKeyboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Triads on the Keyboard'**
+  String get studyHarmonyLessonTriadKeyboardTitle;
+
+  /// No description provided for @studyHarmonyLessonTriadKeyboardDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Build common major, minor, and diminished triads directly on the keyboard.'**
+  String get studyHarmonyLessonTriadKeyboardDescription;
+
+  /// No description provided for @studyHarmonyLessonSeventhKeyboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sevenths on the Keyboard'**
+  String get studyHarmonyLessonSeventhKeyboardTitle;
+
+  /// No description provided for @studyHarmonyLessonSeventhKeyboardDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the seventh and spell a few common 7th chords on the keyboard.'**
+  String get studyHarmonyLessonSeventhKeyboardDescription;
+
+  /// No description provided for @studyHarmonyLessonChordNameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Name the Highlighted Chord'**
+  String get studyHarmonyLessonChordNameTitle;
+
+  /// No description provided for @studyHarmonyLessonChordNameDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Read a highlighted chord shape and choose the correct chord name.'**
+  String get studyHarmonyLessonChordNameDescription;
+
+  /// No description provided for @studyHarmonyLessonChordsBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Boss: Triads and Sevenths Review'**
+  String get studyHarmonyLessonChordsBossTitle;
+
+  /// No description provided for @studyHarmonyLessonChordsBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch between chord spelling and chord naming in one mixed review.'**
+  String get studyHarmonyLessonChordsBossDescription;
+
+  /// No description provided for @studyHarmonyLessonMajorScaleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Build Major Scales'**
+  String get studyHarmonyLessonMajorScaleTitle;
+
+  /// No description provided for @studyHarmonyLessonMajorScaleDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose every tone that belongs to a simple major scale.'**
+  String get studyHarmonyLessonMajorScaleDescription;
+
+  /// No description provided for @studyHarmonyLessonMinorScaleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Build Minor Scales'**
+  String get studyHarmonyLessonMinorScaleTitle;
+
+  /// No description provided for @studyHarmonyLessonMinorScaleDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Build natural minor and harmonic minor scales from a few common keys.'**
+  String get studyHarmonyLessonMinorScaleDescription;
+
+  /// No description provided for @studyHarmonyLessonKeyMembershipTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Key Membership'**
+  String get studyHarmonyLessonKeyMembershipTitle;
+
+  /// No description provided for @studyHarmonyLessonKeyMembershipDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Find which tones belong inside a named key.'**
+  String get studyHarmonyLessonKeyMembershipDescription;
+
+  /// No description provided for @studyHarmonyLessonScalesBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Boss: Scale Repair'**
+  String get studyHarmonyLessonScalesBossTitle;
+
+  /// No description provided for @studyHarmonyLessonScalesBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Mix scale building and key membership in a short repair round.'**
+  String get studyHarmonyLessonScalesBossDescription;
+
+  /// No description provided for @studyHarmonyLessonRomanToChordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Roman to Chord'**
+  String get studyHarmonyLessonRomanToChordTitle;
+
+  /// No description provided for @studyHarmonyLessonRomanToChordDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Read a key and Roman numeral, then choose the matching chord.'**
+  String get studyHarmonyLessonRomanToChordDescription;
+
+  /// No description provided for @studyHarmonyLessonChordToRomanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chord to Roman'**
+  String get studyHarmonyLessonChordToRomanTitle;
+
+  /// No description provided for @studyHarmonyLessonChordToRomanDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Read a chord inside a key and choose the matching Roman numeral.'**
+  String get studyHarmonyLessonChordToRomanDescription;
+
+  /// No description provided for @studyHarmonyLessonDiatonicityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Diatonic or Not'**
+  String get studyHarmonyLessonDiatonicityTitle;
+
+  /// No description provided for @studyHarmonyLessonDiatonicityDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort chords into diatonic and non-diatonic answers in simple keys.'**
+  String get studyHarmonyLessonDiatonicityDescription;
+
+  /// No description provided for @studyHarmonyLessonFunctionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Function Basics'**
+  String get studyHarmonyLessonFunctionTitle;
+
+  /// No description provided for @studyHarmonyLessonFunctionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Classify easy chords as tonic, predominant, or dominant.'**
+  String get studyHarmonyLessonFunctionDescription;
+
+  /// No description provided for @studyHarmonyLessonRomanBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Boss: Functional Basics Mix'**
+  String get studyHarmonyLessonRomanBossTitle;
+
+  /// No description provided for @studyHarmonyLessonRomanBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Review Roman-to-chord, chord-to-Roman, diatonicity, and function together.'**
+  String get studyHarmonyLessonRomanBossDescription;
+
+  /// No description provided for @studyHarmonyPromptFindNoteOnKeyboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Find {note} on the keyboard'**
+  String studyHarmonyPromptFindNoteOnKeyboard(Object note);
+
+  /// No description provided for @studyHarmonyPromptNameHighlightedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Which note is highlighted?'**
+  String get studyHarmonyPromptNameHighlightedNote;
+
+  /// No description provided for @studyHarmonyPromptFindChordOnKeyboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Build {chord} on the keyboard'**
+  String studyHarmonyPromptFindChordOnKeyboard(Object chord);
+
+  /// No description provided for @studyHarmonyPromptNameHighlightedChord.
+  ///
+  /// In en, this message translates to:
+  /// **'Which chord is highlighted?'**
+  String get studyHarmonyPromptNameHighlightedChord;
+
+  /// No description provided for @studyHarmonyPromptBuildScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick every note in {scaleName}'**
+  String studyHarmonyPromptBuildScale(Object scaleName);
+
+  /// No description provided for @studyHarmonyPromptKeyMembership.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the notes that belong to {keyName}'**
+  String studyHarmonyPromptKeyMembership(Object keyName);
+
+  /// No description provided for @studyHarmonyPromptRomanToChord.
+  ///
+  /// In en, this message translates to:
+  /// **'In {keyName}, which chord matches {roman}?'**
+  String studyHarmonyPromptRomanToChord(Object keyName, Object roman);
+
+  /// No description provided for @studyHarmonyPromptChordToRoman.
+  ///
+  /// In en, this message translates to:
+  /// **'In {keyName}, what Roman numeral matches {chord}?'**
+  String studyHarmonyPromptChordToRoman(Object keyName, Object chord);
+
+  /// No description provided for @studyHarmonyPromptDiatonicity.
+  ///
+  /// In en, this message translates to:
+  /// **'In {keyName}, is {chord} diatonic?'**
+  String studyHarmonyPromptDiatonicity(Object keyName, Object chord);
+
+  /// No description provided for @studyHarmonyPromptFunction.
+  ///
+  /// In en, this message translates to:
+  /// **'In {keyName}, what function does {chord} have?'**
+  String studyHarmonyPromptFunction(Object keyName, Object chord);
+
+  /// No description provided for @studyHarmonyScaleNameMajor.
+  ///
+  /// In en, this message translates to:
+  /// **'{tonic} major'**
+  String studyHarmonyScaleNameMajor(Object tonic);
+
+  /// No description provided for @studyHarmonyScaleNameNaturalMinor.
+  ///
+  /// In en, this message translates to:
+  /// **'{tonic} natural minor'**
+  String studyHarmonyScaleNameNaturalMinor(Object tonic);
+
+  /// No description provided for @studyHarmonyScaleNameHarmonicMinor.
+  ///
+  /// In en, this message translates to:
+  /// **'{tonic} harmonic minor'**
+  String studyHarmonyScaleNameHarmonicMinor(Object tonic);
+
+  /// No description provided for @studyHarmonyKeyNameMajor.
+  ///
+  /// In en, this message translates to:
+  /// **'{tonic} major'**
+  String studyHarmonyKeyNameMajor(Object tonic);
+
+  /// No description provided for @studyHarmonyKeyNameMinor.
+  ///
+  /// In en, this message translates to:
+  /// **'{tonic} minor'**
+  String studyHarmonyKeyNameMinor(Object tonic);
+
+  /// No description provided for @studyHarmonyChoiceDiatonic.
+  ///
+  /// In en, this message translates to:
+  /// **'Diatonic'**
+  String get studyHarmonyChoiceDiatonic;
+
+  /// No description provided for @studyHarmonyChoiceNonDiatonic.
+  ///
+  /// In en, this message translates to:
+  /// **'Non-diatonic'**
+  String get studyHarmonyChoiceNonDiatonic;
+
+  /// No description provided for @studyHarmonyChoiceTonic.
+  ///
+  /// In en, this message translates to:
+  /// **'Tonic'**
+  String get studyHarmonyChoiceTonic;
+
+  /// No description provided for @studyHarmonyChoicePredominant.
+  ///
+  /// In en, this message translates to:
+  /// **'Predominant'**
+  String get studyHarmonyChoicePredominant;
+
+  /// No description provided for @studyHarmonyChoiceDominant.
+  ///
+  /// In en, this message translates to:
+  /// **'Dominant'**
+  String get studyHarmonyChoiceDominant;
+
   /// No description provided for @chordAnalyzerTitle.
   ///
   /// In en, this message translates to:

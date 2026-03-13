@@ -177,10 +177,12 @@ SmartCandidateComparison compareVoiceLeading({
   required List<SmartRenderCandidate> candidates,
   GeneratedChord? previousChord,
   int seed = 0,
+  bool allowV7sus4 = true,
 }) {
   return SmartGeneratorHelper.compareVoiceLeadingCandidates(
     random: _FixedRandom(seed),
     previousChord: previousChord,
+    allowV7sus4: allowV7sus4,
     allowTensions: false,
     candidates: candidates,
   );
@@ -197,6 +199,7 @@ GeneratedChord realizeVoiceLed({
     seed: seed,
   ).selected.chord;
 }
+
 
 SmartDecisionTrace? findRealModulationTrace({
   required String currentKeyCenter,
@@ -560,6 +563,35 @@ void main() {
       expect(plan.debug.modulationKind, isNot(ModulationKind.real));
     },
   );
+  test('low-priority phrase position blocks fresh modulation attempts', () {
+    final plan = SmartGeneratorHelper.planNextStep(
+      random: _FixedRandom(0),
+      request: buildRequest(
+        stepIndex: 2,
+        activeKeys: const ['C', 'G', 'A'],
+        currentKeyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        currentRomanNumeralId: RomanNumeralId.iMaj69,
+        currentHarmonicFunction: HarmonicFunction.tonic,
+        modulationIntensity: ModulationIntensity.medium,
+        modalInterchangeEnabled: false,
+        phraseContext: const SmartPhraseContext(
+          phraseRole: PhraseRole.continuation,
+          sectionRole: SectionRole.aLike,
+          harmonicDensity: HarmonicDensity.oneChordPerBar,
+          barInPhrase: 1,
+          barsToBoundary: 6,
+          phraseLength: 8,
+        ),
+      ),
+    );
+
+    expect(
+      plan.debug.blockedReason,
+      SmartBlockedReason.phrasePositionLowPriority,
+    );
+    expect(plan.debug.modulationKind, isNot(ModulationKind.real));
+  });
+
   test('exhausted surprise budget blocks fresh modulation attempts', () {
     for (var step = 1; step <= 2; step += 1) {
       SmartDiagnosticsStore.record(
@@ -3320,6 +3352,40 @@ void main() {
     );
   });
 
+  test(
+    'sus override candidates downgrade to dominant7 when V7sus4 is disabled',
+    () {
+      const center = KeyCenter(tonicName: 'C', mode: KeyMode.major);
+      final comparison = compareVoiceLeading(
+        allowV7sus4: false,
+        candidates: const [
+          SmartRenderCandidate(
+            keyCenter: center,
+            romanNumeralId: RomanNumeralId.vDom7,
+            renderQualityOverride: ChordQuality.dominant13sus4,
+            dominantContext: DominantContext.susDominant,
+            dominantIntent: DominantIntent.susDelay,
+          ),
+        ],
+      );
+
+      expect(
+        comparison.selected.chord.symbolData.renderQuality,
+        ChordQuality.dominant7,
+      );
+      expect(
+        comparison.rankedCandidates.any(
+          (candidate) =>
+              candidate.chord.symbolData.renderQuality ==
+                  ChordQuality.dominant13sus4 ||
+              candidate.chord.symbolData.renderQuality ==
+                  ChordQuality.dominant7sus4,
+        ),
+        isFalse,
+      );
+    },
+  );
+
   test('quality-implied color tones influence voice-leading ranking', () {
     final previousChord = GeneratedChord(
       symbolData: const ChordSymbolData(
@@ -3502,3 +3568,4 @@ void main() {
     },
   );
 }
+

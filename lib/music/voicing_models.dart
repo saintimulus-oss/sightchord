@@ -80,6 +80,7 @@ class ChordVoicingInterpretation {
     required this.optionalTones,
     required this.avoidTones,
     required this.styleTags,
+    this.protectedTensionLabels = const {},
     this.bassAnchorLabel,
     this.bassAnchorSemitone,
     this.requiredAlteredToneCount = 0,
@@ -100,6 +101,7 @@ class ChordVoicingInterpretation {
   final List<VoicingTone> optionalTones;
   final List<VoicingTone> avoidTones;
   final Set<String> styleTags;
+  final Set<String> protectedTensionLabels;
   final String? bassAnchorLabel;
   final int? bassAnchorSemitone;
   final int requiredAlteredToneCount;
@@ -128,6 +130,7 @@ class ChordVoicingInterpretation {
     List<VoicingTone>? optionalTones,
     List<VoicingTone>? avoidTones,
     Set<String>? styleTags,
+    Set<String>? protectedTensionLabels,
     String? bassAnchorLabel,
     int? bassAnchorSemitone,
     int? requiredAlteredToneCount,
@@ -148,6 +151,8 @@ class ChordVoicingInterpretation {
       optionalTones: optionalTones ?? this.optionalTones,
       avoidTones: avoidTones ?? this.avoidTones,
       styleTags: styleTags ?? this.styleTags,
+      protectedTensionLabels:
+          protectedTensionLabels ?? this.protectedTensionLabels,
       bassAnchorLabel: bassAnchorLabel ?? this.bassAnchorLabel,
       bassAnchorSemitone: bassAnchorSemitone ?? this.bassAnchorSemitone,
       requiredAlteredToneCount:

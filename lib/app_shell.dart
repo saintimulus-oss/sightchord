@@ -4,12 +4,19 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
 import 'main_menu_page.dart';
 import 'settings/settings_controller.dart';
+import 'study_harmony/application/study_harmony_progress_controller.dart';
 
 class MyApp extends StatelessWidget {
-  MyApp({super.key, AppSettingsController? controller})
-    : controller = controller ?? AppSettingsController();
+  MyApp({
+    super.key,
+    AppSettingsController? controller,
+    StudyHarmonyProgressController? studyHarmonyProgressController,
+  }) : controller = controller ?? AppSettingsController(),
+       studyHarmonyProgressController =
+           studyHarmonyProgressController ?? StudyHarmonyProgressController();
 
   final AppSettingsController controller;
+  final StudyHarmonyProgressController studyHarmonyProgressController;
 
   static const List<Locale> supportedLocales =
       AppLocalizations.supportedLocales;
@@ -52,7 +59,10 @@ class MyApp extends StatelessWidget {
           themeMode: ThemeMode.system,
           theme: _buildTheme(Brightness.light),
           darkTheme: _buildTheme(Brightness.dark),
-          home: MainMenuPage(controller: controller),
+          home: MainMenuPage(
+            controller: controller,
+            studyHarmonyProgressController: studyHarmonyProgressController,
+          ),
         );
       },
     );

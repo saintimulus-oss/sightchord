@@ -454,6 +454,10 @@ class SmartStartRequest {
     required this.modulationIntensity,
     required this.jazzPreset,
     required this.sourceProfile,
+    this.allowV7sus4 = true,
+    this.allowTensions = true,
+    this.selectedTensionOptions,
+    this.inversionSettings = const InversionSettings(),
     required this.smartDiagnosticsEnabled,
   });
 
@@ -465,6 +469,10 @@ class SmartStartRequest {
   final ModulationIntensity modulationIntensity;
   final JazzPreset jazzPreset;
   final SourceProfile sourceProfile;
+  final bool allowV7sus4;
+  final bool allowTensions;
+  final Set<String>? selectedTensionOptions;
+  final InversionSettings inversionSettings;
   final bool smartDiagnosticsEnabled;
 }
 
@@ -483,6 +491,10 @@ class SmartStepRequest {
     required this.modulationIntensity,
     required this.jazzPreset,
     required this.sourceProfile,
+    this.allowV7sus4 = true,
+    this.allowTensions = true,
+    this.selectedTensionOptions,
+    this.inversionSettings = const InversionSettings(),
     required this.smartDiagnosticsEnabled,
     required this.previousRomanNumeralId,
     required this.previousHarmonicFunction,
@@ -507,6 +519,10 @@ class SmartStepRequest {
   final ModulationIntensity modulationIntensity;
   final JazzPreset jazzPreset;
   final SourceProfile sourceProfile;
+  final bool allowV7sus4;
+  final bool allowTensions;
+  final Set<String>? selectedTensionOptions;
+  final InversionSettings inversionSettings;
   final bool smartDiagnosticsEnabled;
   final RomanNumeralId? previousRomanNumeralId;
   final HarmonicFunction? previousHarmonicFunction;
