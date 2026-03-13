@@ -540,7 +540,7 @@ class _PromptCard extends StatelessWidget {
               key: const ValueKey('study-harmony-current-prompt'),
               style:
                   (task.prompt.showsPianoPreview ||
-                          task.prompt.showsProgressionPreview
+                              task.prompt.showsProgressionPreview
                           ? theme.textTheme.titleLarge
                           : theme.textTheme.displaySmall)
                       ?.copyWith(fontWeight: FontWeight.w800),
@@ -1001,8 +1001,7 @@ String _skillLabel(AppLocalizations l10n, StudyHarmonySkillTag skillId) {
     'harmony.function' => l10n.studyHarmonySkillHarmonyFunction,
     'progression.keyCenter' => l10n.studyHarmonySkillProgressionKeyCenter,
     'progression.function' => l10n.studyHarmonySkillProgressionFunction,
-    'progression.nonDiatonic' =>
-      l10n.studyHarmonySkillProgressionNonDiatonic,
+    'progression.nonDiatonic' => l10n.studyHarmonySkillProgressionNonDiatonic,
     'progression.fillBlank' => l10n.studyHarmonySkillProgressionFillBlank,
     _ => skillId,
   };

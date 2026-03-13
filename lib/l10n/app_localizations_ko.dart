@@ -798,6 +798,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonySkillHarmonyFunction => '기능 분류 기초';
 
   @override
+  String get studyHarmonySkillProgressionKeyCenter => '진행의 조성 찾기';
+
+  @override
+  String get studyHarmonySkillProgressionFunction => '진행 안에서 기능 읽기';
+
+  @override
+  String get studyHarmonySkillProgressionNonDiatonic => '비다이아토닉 코드 찾기';
+
+  @override
+  String get studyHarmonySkillProgressionFillBlank => '진행 빈칸 채우기';
+
+  @override
   String get studyHarmonyHubChapterSectionTitle => '챕터';
 
   @override
@@ -841,7 +853,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyCoreTrackDescription =>
-      'Start with notes and the keyboard, then build up through chords, scales, Roman numerals, and diatonic basics.';
+      '음과 건반에서 시작해 코드, 스케일, 로마숫자, 다이아토닉 기초를 거쳐 짧은 코드 진행 분석까지 올라가는 기본 경로입니다.';
 
   @override
   String get studyHarmonyChapterNotesTitle => 'Chapter 1: Notes & Keyboard';
@@ -871,6 +883,22 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get studyHarmonyChapterRomanDescription =>
       'Turn simple Roman numerals into chords, identify them from chords, and sort diatonic basics by function.';
+
+  @override
+  String get studyHarmonyChapterProgressionDetectiveTitle =>
+      'Chapter 5: Progression Detective I';
+
+  @override
+  String get studyHarmonyChapterProgressionDetectiveDescription =>
+      '짧은 기본 진행을 보고 조성을 맞히고, 기능을 읽고, 어울리지 않는 코드를 찾아봅니다.';
+
+  @override
+  String get studyHarmonyChapterMissingChordTitle =>
+      'Chapter 6: Missing Chord I';
+
+  @override
+  String get studyHarmonyChapterMissingChordDescription =>
+      '짧은 진행의 빈칸 하나를 채우면서 기능과 종지의 흐름을 읽는 감각을 익힙니다.';
 
   @override
   String get studyHarmonyOpenLessonAction => 'Open lesson';
@@ -1033,6 +1061,55 @@ class AppLocalizationsKo extends AppLocalizations {
       'Review Roman-to-chord, chord-to-Roman, diatonicity, and function together.';
 
   @override
+  String get studyHarmonyLessonProgressionKeyCenterTitle => '조성 찾기';
+
+  @override
+  String get studyHarmonyLessonProgressionKeyCenterDescription =>
+      '짧은 코드 진행을 보고 가장 자연스러운 key center를 고릅니다.';
+
+  @override
+  String get studyHarmonyLessonProgressionFunctionTitle => '맥락 속 기능 읽기';
+
+  @override
+  String get studyHarmonyLessonProgressionFunctionDescription =>
+      '하이라이트된 코드 하나를 보고 진행 안에서 어떤 기능을 하는지 고릅니다.';
+
+  @override
+  String get studyHarmonyLessonProgressionNonDiatonicTitle => '튀는 코드 찾기';
+
+  @override
+  String get studyHarmonyLessonProgressionNonDiatonicDescription =>
+      '주된 다이아토닉 읽기에서 벗어나는 코드를 하나 골라냅니다.';
+
+  @override
+  String get studyHarmonyLessonProgressionBossTitle => 'Boss: 혼합 분석';
+
+  @override
+  String get studyHarmonyLessonProgressionBossDescription =>
+      '조성, 기능, 비다이아토닉 판별을 짧은 분석 라운드로 함께 복습합니다.';
+
+  @override
+  String get studyHarmonyLessonMissingChordPatternTitle => '빈칸 코드 채우기';
+
+  @override
+  String get studyHarmonyLessonMissingChordPatternDescription =>
+      '짧은 4코드 진행의 빈칸에 가장 잘 맞는 코드를 골라 넣습니다.';
+
+  @override
+  String get studyHarmonyLessonMissingChordCadenceTitle => '종지 빈칸 채우기';
+
+  @override
+  String get studyHarmonyLessonMissingChordCadenceDescription =>
+      '구의 끝에서 어디로 끌리는지 보고 빈칸 코드를 고릅니다.';
+
+  @override
+  String get studyHarmonyLessonMissingChordBossTitle => 'Boss: 혼합 빈칸 채우기';
+
+  @override
+  String get studyHarmonyLessonMissingChordBossDescription =>
+      '기능과 흐름을 더 강하게 요구하는 빈칸 채우기 문제를 짧게 섞어 풉니다.';
+
+  @override
   String studyHarmonyPromptFindNoteOnKeyboard(Object note) {
     return 'Find $note on the keyboard';
   }
@@ -1081,6 +1158,60 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get studyHarmonyProgressionStripLabel => '진행';
+
+  @override
+  String get studyHarmonyPromptProgressionKeyCenter =>
+      '이 진행에 가장 잘 맞는 key center는 무엇인가요?';
+
+  @override
+  String studyHarmonyPromptProgressionFunction(Object chord) {
+    return '$chord는 여기서 어떤 기능을 하나요?';
+  }
+
+  @override
+  String get studyHarmonyPromptProgressionNonDiatonic =>
+      '이 진행에서 가장 비다이아토닉한 코드는 무엇인가요?';
+
+  @override
+  String get studyHarmonyPromptProgressionMissingChord =>
+      '빈칸에 가장 잘 들어갈 코드는 무엇인가요?';
+
+  @override
+  String studyHarmonyProgressionExplanationKeyCenter(Object keyLabel) {
+    return '분석기는 이 진행을 $keyLabel 중심으로 읽는 것이 가장 자연스럽다고 봅니다.';
+  }
+
+  @override
+  String studyHarmonyProgressionExplanationFunction(
+    Object chord,
+    Object functionLabel,
+  ) {
+    return '$chord는 이 문맥에서 $functionLabel 기능으로 읽는 것이 가장 자연스럽습니다.';
+  }
+
+  @override
+  String studyHarmonyProgressionExplanationNonDiatonic(
+    Object chord,
+    Object keyLabel,
+  ) {
+    return '$chord는 주된 $keyLabel 읽기에서 벗어나므로 비다이아토닉 후보로 가장 적절합니다.';
+  }
+
+  @override
+  String studyHarmonyProgressionExplanationMissingChord(
+    Object chord,
+    Object functionLabel,
+  ) {
+    return '$chord를 넣으면 이 진행의 $functionLabel 흐름이 가장 자연스럽게 복원됩니다.';
+  }
+
+  @override
+  String studyHarmonyProgressionChoiceSlot(int index, Object chord) {
+    return '$index. $chord';
+  }
+
+  @override
   String studyHarmonyScaleNameMajor(Object tonic) {
     return '$tonic major';
   }
@@ -1119,6 +1250,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyChoiceDominant => 'Dominant';
+
+  @override
+  String get studyHarmonyChoiceOther => 'Other';
 
   @override
   String get chordAnalyzerTitle => '코드 분석기';

@@ -43,13 +43,13 @@ void main() {
       );
 
       expect(task.prompt.progressionDisplay, isNotNull);
-      expect(task.prompt.progressionDisplay!.slots.length, inInclusiveRange(3, 5));
+      expect(
+        task.prompt.progressionDisplay!.slots.length,
+        inInclusiveRange(3, 5),
+      );
       expect(task.choiceOptions.length, greaterThanOrEqualTo(2));
       expect(task.answerSummaryLabel.trim(), isNotEmpty);
-      expect(
-        task.evaluator.supportedTaskKinds.contains(task.taskKind),
-        isTrue,
-      );
+      expect(task.evaluator.supportedTaskKinds.contains(task.taskKind), isTrue);
 
       final accepted = (task.evaluator as StudyHarmonyAcceptedAnswerSetProvider)
           .acceptedAnswerSets
@@ -63,34 +63,38 @@ void main() {
     }
   });
 
-  test('generator adapter discards low-confidence progressions and retries', () {
-    var invocationCount = 0;
-    final adapter = StudyHarmonyGeneratorAdapter(
-      maxAttempts: 2,
-      candidateFactory: ({
-        required Random random,
-        required int minLength,
-        required int maxLength,
-        required bool allowNonDiatonic,
-      }) {
-        invocationCount += 1;
-        if (invocationCount == 1) {
-          return const StudyHarmonyGeneratedProgressionCandidate(
-            input: 'Cmaj7 | Dbmaj7 | F#maj7 | Amaj7',
-            chordSymbols: ['Cmaj7', 'Dbmaj7', 'F#maj7', 'Amaj7'],
-          );
-        }
-        return const StudyHarmonyGeneratedProgressionCandidate(
-          input: 'Cmaj7 | Dm7 | G7 | Cmaj7',
-          chordSymbols: ['Cmaj7', 'Dm7', 'G7', 'Cmaj7'],
-        );
-      },
-    );
+  test(
+    'generator adapter discards low-confidence progressions and retries',
+    () {
+      var invocationCount = 0;
+      final adapter = StudyHarmonyGeneratorAdapter(
+        maxAttempts: 2,
+        candidateFactory:
+            ({
+              required Random random,
+              required int minLength,
+              required int maxLength,
+              required bool allowNonDiatonic,
+            }) {
+              invocationCount += 1;
+              if (invocationCount == 1) {
+                return const StudyHarmonyGeneratedProgressionCandidate(
+                  input: 'Cmaj7 | Dbmaj7 | F#maj7 | Amaj7',
+                  chordSymbols: ['Cmaj7', 'Dbmaj7', 'F#maj7', 'Amaj7'],
+                );
+              }
+              return const StudyHarmonyGeneratedProgressionCandidate(
+                input: 'Cmaj7 | Dm7 | G7 | Cmaj7',
+                chordSymbols: ['Cmaj7', 'Dm7', 'G7', 'Cmaj7'],
+              );
+            },
+      );
 
-    final progression = adapter.generateCommonProgression(random: Random(0));
+      final progression = adapter.generateCommonProgression(random: Random(0));
 
-    expect(invocationCount, 2);
-    expect(progression.attemptCount, 2);
-    expect(progression.input, 'Cmaj7 | Dm7 | G7 | Cmaj7');
-  });
+      expect(invocationCount, 2);
+      expect(progression.attemptCount, 2);
+      expect(progression.input, 'Cmaj7 | Dm7 | G7 | Cmaj7');
+    },
+  );
 }

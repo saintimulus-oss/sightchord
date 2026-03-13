@@ -1,7 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
-
 import '../../l10n/app_localizations.dart';
 import '../../music/chord_formatting.dart';
 import '../../music/chord_theory.dart';
@@ -15,8 +13,7 @@ class StudyHarmonyProgressionAdapter {
   StudyHarmonyProgressionAdapter({
     StudyHarmonyGeneratorAdapter? generatorAdapter,
     ProgressionExplainer? explainer,
-  }) : _generatorAdapter =
-           generatorAdapter ?? StudyHarmonyGeneratorAdapter(),
+  }) : _generatorAdapter = generatorAdapter ?? StudyHarmonyGeneratorAdapter(),
        _explainer = explainer ?? const ProgressionExplainer();
 
   final StudyHarmonyGeneratorAdapter _generatorAdapter;
@@ -27,22 +24,14 @@ class StudyHarmonyProgressionAdapter {
       MusicTheory.keyCenterFor(tonic),
   ];
 
-  static const Set<StudyHarmonySkillTag> _keyCenterSkills = <StudyHarmonySkillTag>{
-    'progression.keyCenter',
-  };
-  static const Set<StudyHarmonySkillTag> _functionSkills = <StudyHarmonySkillTag>{
-    'progression.function',
-    'harmony.function',
-  };
-  static const Set<StudyHarmonySkillTag>
-  _nonDiatonicSkills = <StudyHarmonySkillTag>{
-    'progression.nonDiatonic',
-    'harmony.diatonicity',
-  };
-  static const Set<StudyHarmonySkillTag> _fillBlankSkills = <StudyHarmonySkillTag>{
-    'progression.fillBlank',
-    'progression.function',
-  };
+  static const Set<StudyHarmonySkillTag> _keyCenterSkills =
+      <StudyHarmonySkillTag>{'progression.keyCenter'};
+  static const Set<StudyHarmonySkillTag> _functionSkills =
+      <StudyHarmonySkillTag>{'progression.function', 'harmony.function'};
+  static const Set<StudyHarmonySkillTag> _nonDiatonicSkills =
+      <StudyHarmonySkillTag>{'progression.nonDiatonic', 'harmony.diatonicity'};
+  static const Set<StudyHarmonySkillTag> _fillBlankSkills =
+      <StudyHarmonySkillTag>{'progression.fillBlank', 'progression.function'};
 
   StudyHarmonyTaskBlueprint buildKeyCenterBlueprint({
     required StudyHarmonyLessonId lessonId,
@@ -105,8 +94,8 @@ class StudyHarmonyProgressionAdapter {
               random: random,
               minLength: 3,
               maxLength: 4,
-              extraAcceptance: (progression) => progression.analysis.chordAnalyses
-                  .any(
+              extraAcceptance: (progression) =>
+                  progression.analysis.chordAnalyses.any(
                     (analysis) =>
                         analysis.harmonicFunction !=
                         ProgressionHarmonicFunction.other,
@@ -177,9 +166,14 @@ class StudyHarmonyProgressionAdapter {
             final targetIndex = progression.analysis.chordAnalyses.indexWhere(
               (analysis) => analysis.isNonDiatonic,
             );
-            final targetAnalysis = progression.analysis.chordAnalyses[targetIndex];
+            final targetAnalysis =
+                progression.analysis.chordAnalyses[targetIndex];
             final choices = [
-              for (var index = 0; index < progression.chordSymbols.length; index += 1)
+              for (
+                var index = 0;
+                index < progression.chordSymbols.length;
+                index += 1
+              )
                 l10n.studyHarmonyProgressionChoiceSlot(
                   index + 1,
                   progression.chordSymbols[index],
@@ -234,7 +228,8 @@ class StudyHarmonyProgressionAdapter {
             final hiddenIndex = cadenceFocus
                 ? _cadentialHiddenIndex(progression.analysis)
                 : _generalHiddenIndex(progression.analysis, random);
-            final hiddenAnalysis = progression.analysis.chordAnalyses[hiddenIndex];
+            final hiddenAnalysis =
+                progression.analysis.chordAnalyses[hiddenIndex];
             final choices = _missingChordChoices(
               progression: progression,
               hiddenIndex: hiddenIndex,
@@ -360,7 +355,8 @@ class StudyHarmonyProgressionAdapter {
   ) {
     final labels = <String>[
       _explainer.keyLabel(l10n, progression.analysis.primaryKey.keyCenter),
-      for (final candidate in progression.analysis.keyCandidates.skip(1).take(3))
+      for (final candidate
+          in progression.analysis.keyCandidates.skip(1).take(3))
         _explainer.keyLabel(l10n, candidate.keyCenter),
       for (final center in [
         ..._commonCoreCenters,
@@ -420,7 +416,9 @@ class StudyHarmonyProgressionAdapter {
       l10n,
       progression.analysis.primaryKey.keyCenter,
     );
-    final summary = _explainer.buildSummary(l10n, progression.analysis).join(' ');
+    final summary = _explainer
+        .buildSummary(l10n, progression.analysis)
+        .join(' ');
     return '${l10n.studyHarmonyProgressionExplanationKeyCenter(keyLabel)} '
         '$summary';
   }
@@ -434,11 +432,10 @@ class StudyHarmonyProgressionAdapter {
       l10n,
       targetAnalysis.harmonicFunction,
     );
-    final summary = _explainer.buildSummary(l10n, progression.analysis).join(' ');
-    return '${l10n.studyHarmonyProgressionExplanationFunction(
-      targetAnalysis.chord.sourceSymbol,
-      functionLabel,
-    )} $summary';
+    final summary = _explainer
+        .buildSummary(l10n, progression.analysis)
+        .join(' ');
+    return '${l10n.studyHarmonyProgressionExplanationFunction(targetAnalysis.chord.sourceSymbol, functionLabel)} $summary';
   }
 
   String _nonDiatonicExplanation(
@@ -457,11 +454,10 @@ class StudyHarmonyProgressionAdapter {
           candidate?.kind == ProgressionRemarkKind.possibleModalInterchange,
       orElse: () => null,
     );
-    final detail = remark == null ? '' : ' ${_explainer.remarkLabel(l10n, remark)}';
-    return '${l10n.studyHarmonyProgressionExplanationNonDiatonic(
-      targetAnalysis.chord.sourceSymbol,
-      keyLabel,
-    )}$detail';
+    final detail = remark == null
+        ? ''
+        : ' ${_explainer.remarkLabel(l10n, remark)}';
+    return '${l10n.studyHarmonyProgressionExplanationNonDiatonic(targetAnalysis.chord.sourceSymbol, keyLabel)}$detail';
   }
 
   String _missingChordExplanation(
@@ -473,11 +469,10 @@ class StudyHarmonyProgressionAdapter {
       l10n,
       targetAnalysis.harmonicFunction,
     );
-    final summary = _explainer.buildSummary(l10n, progression.analysis).join(' ');
-    return '${l10n.studyHarmonyProgressionExplanationMissingChord(
-      targetAnalysis.chord.sourceSymbol,
-      functionLabel,
-    )} $summary';
+    final summary = _explainer
+        .buildSummary(l10n, progression.analysis)
+        .join(' ');
+    return '${l10n.studyHarmonyProgressionExplanationMissingChord(targetAnalysis.chord.sourceSymbol, functionLabel)} $summary';
   }
 
   bool _hasCadentialWindow(ProgressionAnalysis analysis) {
@@ -488,14 +483,13 @@ class StudyHarmonyProgressionAdapter {
     if (last.harmonicFunction != ProgressionHarmonicFunction.tonic) {
       return false;
     }
-    return analysis.chordAnalyses
-        .take(analysis.chordAnalyses.length - 1)
-        .any((analysis) {
-          return analysis.harmonicFunction ==
-                  ProgressionHarmonicFunction.dominant ||
-              analysis.harmonicFunction ==
-                  ProgressionHarmonicFunction.predominant;
-        });
+    return analysis.chordAnalyses.take(analysis.chordAnalyses.length - 1).any((
+      analysis,
+    ) {
+      return analysis.harmonicFunction ==
+              ProgressionHarmonicFunction.dominant ||
+          analysis.harmonicFunction == ProgressionHarmonicFunction.predominant;
+    });
   }
 
   int _cadentialHiddenIndex(ProgressionAnalysis analysis) {

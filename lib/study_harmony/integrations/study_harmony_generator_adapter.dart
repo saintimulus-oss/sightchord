@@ -105,7 +105,10 @@ class StudyHarmonyGeneratorAdapter {
         maxLength: maxLength,
         allowNonDiatonic: allowNonDiatonic,
       );
-      final progression = _tryAnalyzeCandidate(candidate, attemptCount: attempt);
+      final progression = _tryAnalyzeCandidate(
+        candidate,
+        attemptCount: attempt,
+      );
       if (progression == null) {
         continue;
       }
@@ -202,7 +205,8 @@ class StudyHarmonyGeneratorAdapter {
     final generatedChords = progression.generatedChords;
     if (generatedChords.isNotEmpty) {
       if (generatedChords.any(
-        (chord) => !_allowedRenderQualities.contains(chord.symbolData.renderQuality),
+        (chord) =>
+            !_allowedRenderQualities.contains(chord.symbolData.renderQuality),
       )) {
         return false;
       }
@@ -250,9 +254,7 @@ class StudyHarmonyGeneratorAdapter {
         ? minLength
         : minLength + random.nextInt((maxLength - minLength) + 1);
     final request = SmartStartRequest(
-      activeKeys: [
-        for (final center in _commonCoreCenters) center.tonicName,
-      ],
+      activeKeys: [for (final center in _commonCoreCenters) center.tonicName],
       selectedKeyCenters: _commonCoreCenters,
       secondaryDominantEnabled: allowNonDiatonic,
       substituteDominantEnabled: false,

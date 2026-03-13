@@ -823,6 +823,20 @@ class AppLocalizationsJa extends AppLocalizations {
   String get studyHarmonySkillHarmonyFunction => 'Function basics';
 
   @override
+  String get studyHarmonySkillProgressionKeyCenter => 'Progression key center';
+
+  @override
+  String get studyHarmonySkillProgressionFunction =>
+      'Progression function reading';
+
+  @override
+  String get studyHarmonySkillProgressionNonDiatonic =>
+      'Progression non-diatonic detection';
+
+  @override
+  String get studyHarmonySkillProgressionFillBlank => 'Progression fill-in';
+
+  @override
   String get studyHarmonyHubChapterSectionTitle => 'Chapters';
 
   @override
@@ -896,6 +910,22 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get studyHarmonyChapterRomanDescription =>
       'Turn simple Roman numerals into chords, identify them from chords, and sort diatonic basics by function.';
+
+  @override
+  String get studyHarmonyChapterProgressionDetectiveTitle =>
+      'Chapter 5: Progression Detective I';
+
+  @override
+  String get studyHarmonyChapterProgressionDetectiveDescription =>
+      'Read short core progressions, find the likely key center, and spot the chord function or odd one out.';
+
+  @override
+  String get studyHarmonyChapterMissingChordTitle =>
+      'Chapter 6: Missing Chord I';
+
+  @override
+  String get studyHarmonyChapterMissingChordDescription =>
+      'Fill one blank inside a short progression and learn where cadence and function want to go next.';
 
   @override
   String get studyHarmonyOpenLessonAction => 'Open lesson';
@@ -1058,6 +1088,59 @@ class AppLocalizationsJa extends AppLocalizations {
       'Review Roman-to-chord, chord-to-Roman, diatonicity, and function together.';
 
   @override
+  String get studyHarmonyLessonProgressionKeyCenterTitle =>
+      'Find the Key Center';
+
+  @override
+  String get studyHarmonyLessonProgressionKeyCenterDescription =>
+      'Read a short progression and choose the key center that makes the clearest sense.';
+
+  @override
+  String get studyHarmonyLessonProgressionFunctionTitle =>
+      'Function in Context';
+
+  @override
+  String get studyHarmonyLessonProgressionFunctionDescription =>
+      'Focus on one highlighted chord and name its role inside a short progression.';
+
+  @override
+  String get studyHarmonyLessonProgressionNonDiatonicTitle =>
+      'Find the Outsider';
+
+  @override
+  String get studyHarmonyLessonProgressionNonDiatonicDescription =>
+      'Spot the one chord that falls outside the main diatonic reading.';
+
+  @override
+  String get studyHarmonyLessonProgressionBossTitle => 'Boss: Mixed Analysis';
+
+  @override
+  String get studyHarmonyLessonProgressionBossDescription =>
+      'Mix key-center reading, function spotting, and non-diatonic detection in one short detective round.';
+
+  @override
+  String get studyHarmonyLessonMissingChordPatternTitle =>
+      'Fill the Missing Chord';
+
+  @override
+  String get studyHarmonyLessonMissingChordPatternDescription =>
+      'Complete a short four-chord progression by choosing the chord that fits the local function best.';
+
+  @override
+  String get studyHarmonyLessonMissingChordCadenceTitle => 'Cadence Fill-In';
+
+  @override
+  String get studyHarmonyLessonMissingChordCadenceDescription =>
+      'Use the pull toward a cadence to choose the missing chord near the end of a phrase.';
+
+  @override
+  String get studyHarmonyLessonMissingChordBossTitle => 'Boss: Mixed Fill-In';
+
+  @override
+  String get studyHarmonyLessonMissingChordBossDescription =>
+      'Solve a short set of fill-in progression questions with a little more harmonic pressure.';
+
+  @override
   String studyHarmonyPromptFindNoteOnKeyboard(Object note) {
     return 'Find $note on the keyboard';
   }
@@ -1106,6 +1189,60 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get studyHarmonyProgressionStripLabel => 'Progression';
+
+  @override
+  String get studyHarmonyPromptProgressionKeyCenter =>
+      'Which key center best fits this progression?';
+
+  @override
+  String studyHarmonyPromptProgressionFunction(Object chord) {
+    return 'What function does $chord play here?';
+  }
+
+  @override
+  String get studyHarmonyPromptProgressionNonDiatonic =>
+      'Which chord feels least diatonic in this progression?';
+
+  @override
+  String get studyHarmonyPromptProgressionMissingChord =>
+      'Which chord best fills the blank?';
+
+  @override
+  String studyHarmonyProgressionExplanationKeyCenter(Object keyLabel) {
+    return 'The analyzer reads this progression most clearly in $keyLabel.';
+  }
+
+  @override
+  String studyHarmonyProgressionExplanationFunction(
+    Object chord,
+    Object functionLabel,
+  ) {
+    return '$chord behaves most like a $functionLabel chord in this context.';
+  }
+
+  @override
+  String studyHarmonyProgressionExplanationNonDiatonic(
+    Object chord,
+    Object keyLabel,
+  ) {
+    return '$chord stands out against the main $keyLabel reading, so it is the best non-diatonic pick.';
+  }
+
+  @override
+  String studyHarmonyProgressionExplanationMissingChord(
+    Object chord,
+    Object functionLabel,
+  ) {
+    return '$chord restores the expected $functionLabel pull in this progression.';
+  }
+
+  @override
+  String studyHarmonyProgressionChoiceSlot(int index, Object chord) {
+    return '$index. $chord';
+  }
+
+  @override
   String studyHarmonyScaleNameMajor(Object tonic) {
     return '$tonic major';
   }
@@ -1144,6 +1281,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get studyHarmonyChoiceDominant => 'Dominant';
+
+  @override
+  String get studyHarmonyChoiceOther => 'Other';
 
   @override
   String get chordAnalyzerTitle => 'コードアナライザー';

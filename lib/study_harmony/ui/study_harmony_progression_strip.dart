@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 import '../domain/study_harmony_session_models.dart';
 
 class StudyHarmonyProgressionStrip extends StatelessWidget {
-  const StudyHarmonyProgressionStrip({
-    super.key,
-    required this.progression,
-  });
+  const StudyHarmonyProgressionStrip({super.key, required this.progression});
 
   final StudyHarmonyProgressionDisplaySpec progression;
 

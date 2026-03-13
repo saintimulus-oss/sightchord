@@ -1563,6 +1563,30 @@ abstract class AppLocalizations {
   /// **'Function basics'**
   String get studyHarmonySkillHarmonyFunction;
 
+  /// No description provided for @studyHarmonySkillProgressionKeyCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Progression key center'**
+  String get studyHarmonySkillProgressionKeyCenter;
+
+  /// No description provided for @studyHarmonySkillProgressionFunction.
+  ///
+  /// In en, this message translates to:
+  /// **'Progression function reading'**
+  String get studyHarmonySkillProgressionFunction;
+
+  /// No description provided for @studyHarmonySkillProgressionNonDiatonic.
+  ///
+  /// In en, this message translates to:
+  /// **'Progression non-diatonic detection'**
+  String get studyHarmonySkillProgressionNonDiatonic;
+
+  /// No description provided for @studyHarmonySkillProgressionFillBlank.
+  ///
+  /// In en, this message translates to:
+  /// **'Progression fill-in'**
+  String get studyHarmonySkillProgressionFillBlank;
+
   /// No description provided for @studyHarmonyHubChapterSectionTitle.
   ///
   /// In en, this message translates to:
@@ -1626,7 +1650,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyHarmonyCoreTrackDescription.
   ///
   /// In en, this message translates to:
-  /// **'Start with notes and the keyboard, then build up through chords, scales, Roman numerals, and diatonic basics.'**
+  /// **'Start with notes and the keyboard, then build up through chords, scales, Roman numerals, diatonic basics, and short progression analysis.'**
   String get studyHarmonyCoreTrackDescription;
 
   /// No description provided for @studyHarmonyChapterNotesTitle.
@@ -1676,6 +1700,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Turn simple Roman numerals into chords, identify them from chords, and sort diatonic basics by function.'**
   String get studyHarmonyChapterRomanDescription;
+
+  /// No description provided for @studyHarmonyChapterProgressionDetectiveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter 5: Progression Detective I'**
+  String get studyHarmonyChapterProgressionDetectiveTitle;
+
+  /// No description provided for @studyHarmonyChapterProgressionDetectiveDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Read short core progressions, find the likely key center, and spot the chord function or odd one out.'**
+  String get studyHarmonyChapterProgressionDetectiveDescription;
+
+  /// No description provided for @studyHarmonyChapterMissingChordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter 6: Missing Chord I'**
+  String get studyHarmonyChapterMissingChordTitle;
+
+  /// No description provided for @studyHarmonyChapterMissingChordDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill one blank inside a short progression and learn where cadence and function want to go next.'**
+  String get studyHarmonyChapterMissingChordDescription;
 
   /// No description provided for @studyHarmonyOpenLessonAction.
   ///
@@ -1953,6 +2001,90 @@ abstract class AppLocalizations {
   /// **'Review Roman-to-chord, chord-to-Roman, diatonicity, and function together.'**
   String get studyHarmonyLessonRomanBossDescription;
 
+  /// No description provided for @studyHarmonyLessonProgressionKeyCenterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find the Key Center'**
+  String get studyHarmonyLessonProgressionKeyCenterTitle;
+
+  /// No description provided for @studyHarmonyLessonProgressionKeyCenterDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Read a short progression and choose the key center that makes the clearest sense.'**
+  String get studyHarmonyLessonProgressionKeyCenterDescription;
+
+  /// No description provided for @studyHarmonyLessonProgressionFunctionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Function in Context'**
+  String get studyHarmonyLessonProgressionFunctionTitle;
+
+  /// No description provided for @studyHarmonyLessonProgressionFunctionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus on one highlighted chord and name its role inside a short progression.'**
+  String get studyHarmonyLessonProgressionFunctionDescription;
+
+  /// No description provided for @studyHarmonyLessonProgressionNonDiatonicTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find the Outsider'**
+  String get studyHarmonyLessonProgressionNonDiatonicTitle;
+
+  /// No description provided for @studyHarmonyLessonProgressionNonDiatonicDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Spot the one chord that falls outside the main diatonic reading.'**
+  String get studyHarmonyLessonProgressionNonDiatonicDescription;
+
+  /// No description provided for @studyHarmonyLessonProgressionBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Boss: Mixed Analysis'**
+  String get studyHarmonyLessonProgressionBossTitle;
+
+  /// No description provided for @studyHarmonyLessonProgressionBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Mix key-center reading, function spotting, and non-diatonic detection in one short detective round.'**
+  String get studyHarmonyLessonProgressionBossDescription;
+
+  /// No description provided for @studyHarmonyLessonMissingChordPatternTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill the Missing Chord'**
+  String get studyHarmonyLessonMissingChordPatternTitle;
+
+  /// No description provided for @studyHarmonyLessonMissingChordPatternDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete a short four-chord progression by choosing the chord that fits the local function best.'**
+  String get studyHarmonyLessonMissingChordPatternDescription;
+
+  /// No description provided for @studyHarmonyLessonMissingChordCadenceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cadence Fill-In'**
+  String get studyHarmonyLessonMissingChordCadenceTitle;
+
+  /// No description provided for @studyHarmonyLessonMissingChordCadenceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the pull toward a cadence to choose the missing chord near the end of a phrase.'**
+  String get studyHarmonyLessonMissingChordCadenceDescription;
+
+  /// No description provided for @studyHarmonyLessonMissingChordBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Boss: Mixed Fill-In'**
+  String get studyHarmonyLessonMissingChordBossTitle;
+
+  /// No description provided for @studyHarmonyLessonMissingChordBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Solve a short set of fill-in progression questions with a little more harmonic pressure.'**
+  String get studyHarmonyLessonMissingChordBossDescription;
+
   /// No description provided for @studyHarmonyPromptFindNoteOnKeyboard.
   ///
   /// In en, this message translates to:
@@ -2013,6 +2145,75 @@ abstract class AppLocalizations {
   /// **'In {keyName}, what function does {chord} have?'**
   String studyHarmonyPromptFunction(Object keyName, Object chord);
 
+  /// No description provided for @studyHarmonyProgressionStripLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Progression'**
+  String get studyHarmonyProgressionStripLabel;
+
+  /// No description provided for @studyHarmonyPromptProgressionKeyCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Which key center best fits this progression?'**
+  String get studyHarmonyPromptProgressionKeyCenter;
+
+  /// No description provided for @studyHarmonyPromptProgressionFunction.
+  ///
+  /// In en, this message translates to:
+  /// **'What function does {chord} play here?'**
+  String studyHarmonyPromptProgressionFunction(Object chord);
+
+  /// No description provided for @studyHarmonyPromptProgressionNonDiatonic.
+  ///
+  /// In en, this message translates to:
+  /// **'Which chord feels least diatonic in this progression?'**
+  String get studyHarmonyPromptProgressionNonDiatonic;
+
+  /// No description provided for @studyHarmonyPromptProgressionMissingChord.
+  ///
+  /// In en, this message translates to:
+  /// **'Which chord best fills the blank?'**
+  String get studyHarmonyPromptProgressionMissingChord;
+
+  /// No description provided for @studyHarmonyProgressionExplanationKeyCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'The analyzer reads this progression most clearly in {keyLabel}.'**
+  String studyHarmonyProgressionExplanationKeyCenter(Object keyLabel);
+
+  /// No description provided for @studyHarmonyProgressionExplanationFunction.
+  ///
+  /// In en, this message translates to:
+  /// **'{chord} behaves most like a {functionLabel} chord in this context.'**
+  String studyHarmonyProgressionExplanationFunction(
+    Object chord,
+    Object functionLabel,
+  );
+
+  /// No description provided for @studyHarmonyProgressionExplanationNonDiatonic.
+  ///
+  /// In en, this message translates to:
+  /// **'{chord} stands out against the main {keyLabel} reading, so it is the best non-diatonic pick.'**
+  String studyHarmonyProgressionExplanationNonDiatonic(
+    Object chord,
+    Object keyLabel,
+  );
+
+  /// No description provided for @studyHarmonyProgressionExplanationMissingChord.
+  ///
+  /// In en, this message translates to:
+  /// **'{chord} restores the expected {functionLabel} pull in this progression.'**
+  String studyHarmonyProgressionExplanationMissingChord(
+    Object chord,
+    Object functionLabel,
+  );
+
+  /// No description provided for @studyHarmonyProgressionChoiceSlot.
+  ///
+  /// In en, this message translates to:
+  /// **'{index}. {chord}'**
+  String studyHarmonyProgressionChoiceSlot(int index, Object chord);
+
   /// No description provided for @studyHarmonyScaleNameMajor.
   ///
   /// In en, this message translates to:
@@ -2072,6 +2273,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dominant'**
   String get studyHarmonyChoiceDominant;
+
+  /// No description provided for @studyHarmonyChoiceOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get studyHarmonyChoiceOther;
 
   /// No description provided for @chordAnalyzerTitle.
   ///
