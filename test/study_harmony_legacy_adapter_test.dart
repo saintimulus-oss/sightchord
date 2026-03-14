@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sightchord/l10n/app_localizations_en.dart';
 import 'package:sightchord/study_harmony/content/legacy_adapter.dart';
 import 'package:sightchord/study_harmony/domain/study_harmony_session_models.dart';
 import 'package:sightchord/study_harmony/domain/study_harmony_task_evaluators.dart';
@@ -89,7 +90,9 @@ void main() {
     );
 
     const adapter = StudyHarmonyLegacyLessonAdapter();
-    final course = adapter.buildPrototypeCourse([legacyLevel]);
+    final course = adapter.buildPrototypeCourse([
+      legacyLevel,
+    ], AppLocalizationsEn());
 
     expect(course.id, StudyHarmonyLegacyLessonAdapter.prototypeCourseId);
     expect(course.chapters, hasLength(1));

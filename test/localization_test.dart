@@ -77,7 +77,7 @@ void main() {
     expect(ko.mainMenuGeneratorTitle, '\uCF54\uB4DC \uC0DD\uC131\uAE30');
     expect(ko.openAnalyzer, '\uBD84\uC11D\uAE30 \uC5F4\uAE30');
     expect(ko.chordAnalyzerTitle, '\uCF54\uB4DC \uBD84\uC11D\uAE30');
-    expect(ko.chordAnalyzerAnalyze, '\uBD84\uC11D');
+    expect(ko.chordAnalyzerAnalyze, '\uBD84\uC11D\uD558\uAE30');
     expect(
       ko.chordAnalyzerSummaryCenter('\uC7A5\uC870 C'),
       '\uC774 \uC9C4\uD589\uC758 \uC911\uC2EC \uC870\uC131\uC740 \uC7A5\uC870 C\uC77C \uAC00\uB2A5\uC131\uC774 \uAC00\uC7A5 \uB192\uC2B5\uB2C8\uB2E4.',

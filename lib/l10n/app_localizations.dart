@@ -4578,6 +4578,132 @@ abstract class AppLocalizations {
   /// **'Duet reward +{count} League XP'**
   String studyHarmonyResultDuetRewardLine(Object count);
 
+  /// Localized solfege syllable for Do in legacy prototype lessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Do'**
+  String get studyHarmonySolfegeDo;
+
+  /// Localized solfege syllable for Re in legacy prototype lessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Re'**
+  String get studyHarmonySolfegeRe;
+
+  /// Localized solfege syllable for Mi in legacy prototype lessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Mi'**
+  String get studyHarmonySolfegeMi;
+
+  /// Localized solfege syllable for Fa in legacy prototype lessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Fa'**
+  String get studyHarmonySolfegeFa;
+
+  /// Localized solfege syllable for Sol in legacy prototype lessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Sol'**
+  String get studyHarmonySolfegeSol;
+
+  /// Localized solfege syllable for La in legacy prototype lessons.
+  ///
+  /// In en, this message translates to:
+  /// **'La'**
+  String get studyHarmonySolfegeLa;
+
+  /// Localized solfege syllable for Ti or Si in legacy prototype lessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Ti'**
+  String get studyHarmonySolfegeTi;
+
+  /// Title for the legacy prototype course carried into Study Harmony.
+  ///
+  /// In en, this message translates to:
+  /// **'Study Harmony Prototype'**
+  String get studyHarmonyPrototypeCourseTitle;
+
+  /// Description for the legacy prototype course.
+  ///
+  /// In en, this message translates to:
+  /// **'Legacy prototype levels carried into the lesson system.'**
+  String get studyHarmonyPrototypeCourseDescription;
+
+  /// Title for the legacy prototype chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Prototype Lessons'**
+  String get studyHarmonyPrototypeChapterTitle;
+
+  /// Description for the legacy prototype chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Temporary lessons preserved while the expandable study system is introduced.'**
+  String get studyHarmonyPrototypeChapterDescription;
+
+  /// Objective label for the legacy prototype levels.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear by answering 10 prompts before you lose all 3 lives.'**
+  String get studyHarmonyPrototypeLevelObjective;
+
+  /// Title for the first legacy prototype level.
+  ///
+  /// In en, this message translates to:
+  /// **'Prototype Level 1 · Do / Mi / Sol'**
+  String get studyHarmonyPrototypeLevel1Title;
+
+  /// Description for the first legacy prototype level.
+  ///
+  /// In en, this message translates to:
+  /// **'A basic warm-up that asks you to distinguish only Do, Mi, and Sol.'**
+  String get studyHarmonyPrototypeLevel1Description;
+
+  /// Title for the second legacy prototype level.
+  ///
+  /// In en, this message translates to:
+  /// **'Prototype Level 2 · Do / Re / Mi / Sol / La'**
+  String get studyHarmonyPrototypeLevel2Title;
+
+  /// Description for the second legacy prototype level.
+  ///
+  /// In en, this message translates to:
+  /// **'A mid-stage note hunt that speeds up recognition for Do, Re, Mi, Sol, and La.'**
+  String get studyHarmonyPrototypeLevel2Description;
+
+  /// Title for the third legacy prototype level.
+  ///
+  /// In en, this message translates to:
+  /// **'Prototype Level 3 · Do / Re / Mi / Fa / Sol / La / Ti / Do'**
+  String get studyHarmonyPrototypeLevel3Title;
+
+  /// Description for the third legacy prototype level.
+  ///
+  /// In en, this message translates to:
+  /// **'An octave-complete test that runs across the full Do-Re-Mi-Fa-Sol-La-Ti-Do span.'**
+  String get studyHarmonyPrototypeLevel3Description;
+
+  /// Label for the low C prompt in legacy prototype lessons.
+  ///
+  /// In en, this message translates to:
+  /// **'{noteName} (low C)'**
+  String studyHarmonyPrototypeLowCLabel(String noteName);
+
+  /// Label for the high C prompt in legacy prototype lessons.
+  ///
+  /// In en, this message translates to:
+  /// **'{noteName} (high C)'**
+  String studyHarmonyPrototypeHighCLabel(String noteName);
+
+  /// Placeholder answer label for generated Study Harmony templates.
+  ///
+  /// In en, this message translates to:
+  /// **'Template'**
+  String get studyHarmonyTemplateChoiceLabel;
+
   /// No description provided for @studyHarmonyChapterBlueHourTitle.
   ///
   /// In en, this message translates to:

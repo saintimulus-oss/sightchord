@@ -42,6 +42,7 @@ class StudyHarmonyProgressionAdapter {
     return _generatedBlueprint(
       blueprintId: blueprintId,
       lessonId: lessonId,
+      l10n: l10n,
       taskKind: StudyHarmonyTaskKind.progressionKeyCenterChoice,
       skillTags: skillTags,
       instanceFactory:
@@ -86,6 +87,7 @@ class StudyHarmonyProgressionAdapter {
     return _generatedBlueprint(
       blueprintId: blueprintId,
       lessonId: lessonId,
+      l10n: l10n,
       taskKind: StudyHarmonyTaskKind.progressionFunctionChoice,
       skillTags: skillTags,
       instanceFactory:
@@ -152,6 +154,7 @@ class StudyHarmonyProgressionAdapter {
     return _generatedBlueprint(
       blueprintId: blueprintId,
       lessonId: lessonId,
+      l10n: l10n,
       taskKind: StudyHarmonyTaskKind.progressionNonDiatonicChoice,
       skillTags: skillTags,
       instanceFactory:
@@ -212,6 +215,7 @@ class StudyHarmonyProgressionAdapter {
     return _generatedBlueprint(
       blueprintId: blueprintId,
       lessonId: lessonId,
+      l10n: l10n,
       taskKind: StudyHarmonyTaskKind.progressionMissingChordChoice,
       skillTags: skillTags,
       instanceFactory:
@@ -260,6 +264,7 @@ class StudyHarmonyProgressionAdapter {
   StudyHarmonyTaskBlueprint _generatedBlueprint({
     required StudyHarmonyTaskBlueprintId blueprintId,
     required StudyHarmonyLessonId lessonId,
+    required AppLocalizations l10n,
     required StudyHarmonyTaskKind taskKind,
     required Set<StudyHarmonySkillTag> skillTags,
     required StudyHarmonyTaskInstanceFactory instanceFactory,
@@ -273,8 +278,11 @@ class StudyHarmonyProgressionAdapter {
         surface: StudyHarmonyPromptSurfaceKind.text,
         primaryLabel: blueprintId,
       ),
-      answerOptions: const <StudyHarmonyAnswerOption>[
-        StudyHarmonyAnswerChoice(id: 'template-choice', label: 'Template'),
+      answerOptions: [
+        StudyHarmonyAnswerChoice(
+          id: 'template-choice',
+          label: l10n.studyHarmonyTemplateChoiceLabel,
+        ),
       ],
       answerSummaryLabel: 'template-choice',
       answerSurface: StudyHarmonyAnswerSurfaceKind.choiceChips,

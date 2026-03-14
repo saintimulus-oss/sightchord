@@ -1,279 +1,407 @@
+import '../l10n/app_localizations.dart';
 import 'study_harmony_models.dart';
 
 const List<StudyHarmonyPianoKeyDefinition> studyHarmonyKeyboardKeys = [
   StudyHarmonyPianoKeyDefinition(
     id: 'c4',
     westernLabel: 'C',
-    solfegeLabel: '도',
+    solfegeLabel: 'Do',
     isBlack: false,
     whiteIndex: 0,
   ),
   StudyHarmonyPianoKeyDefinition(
     id: 'cSharp4',
     westernLabel: 'C#',
-    solfegeLabel: '도#',
+    solfegeLabel: 'Do#',
     isBlack: true,
     blackGapAfterWhiteIndex: 0,
   ),
   StudyHarmonyPianoKeyDefinition(
     id: 'd4',
     westernLabel: 'D',
-    solfegeLabel: '레',
+    solfegeLabel: 'Re',
     isBlack: false,
     whiteIndex: 1,
   ),
   StudyHarmonyPianoKeyDefinition(
     id: 'dSharp4',
     westernLabel: 'D#',
-    solfegeLabel: '레#',
+    solfegeLabel: 'Re#',
     isBlack: true,
     blackGapAfterWhiteIndex: 1,
   ),
   StudyHarmonyPianoKeyDefinition(
     id: 'e4',
     westernLabel: 'E',
-    solfegeLabel: '미',
+    solfegeLabel: 'Mi',
     isBlack: false,
     whiteIndex: 2,
   ),
   StudyHarmonyPianoKeyDefinition(
     id: 'f4',
     westernLabel: 'F',
-    solfegeLabel: '파',
+    solfegeLabel: 'Fa',
     isBlack: false,
     whiteIndex: 3,
   ),
   StudyHarmonyPianoKeyDefinition(
     id: 'fSharp4',
     westernLabel: 'F#',
-    solfegeLabel: '파#',
+    solfegeLabel: 'Fa#',
     isBlack: true,
     blackGapAfterWhiteIndex: 3,
   ),
   StudyHarmonyPianoKeyDefinition(
     id: 'g4',
     westernLabel: 'G',
-    solfegeLabel: '솔',
+    solfegeLabel: 'Sol',
     isBlack: false,
     whiteIndex: 4,
   ),
   StudyHarmonyPianoKeyDefinition(
     id: 'gSharp4',
     westernLabel: 'G#',
-    solfegeLabel: '솔#',
+    solfegeLabel: 'Sol#',
     isBlack: true,
     blackGapAfterWhiteIndex: 4,
   ),
   StudyHarmonyPianoKeyDefinition(
     id: 'a4',
     westernLabel: 'A',
-    solfegeLabel: '라',
+    solfegeLabel: 'La',
     isBlack: false,
     whiteIndex: 5,
   ),
   StudyHarmonyPianoKeyDefinition(
     id: 'aSharp4',
     westernLabel: 'A#',
-    solfegeLabel: '라#',
+    solfegeLabel: 'La#',
     isBlack: true,
     blackGapAfterWhiteIndex: 5,
   ),
   StudyHarmonyPianoKeyDefinition(
     id: 'b4',
     westernLabel: 'B',
-    solfegeLabel: '시',
+    solfegeLabel: 'Ti',
     isBlack: false,
     whiteIndex: 6,
   ),
   StudyHarmonyPianoKeyDefinition(
     id: 'c5',
     westernLabel: 'C',
-    solfegeLabel: '도',
+    solfegeLabel: 'Do',
     isBlack: false,
     whiteIndex: 7,
   ),
 ];
 
-const StudyHarmonyLevelDefinition studyHarmonyTemporaryLevel1 =
+List<StudyHarmonyPianoKeyDefinition> buildStudyHarmonyKeyboardKeys(
+  AppLocalizations l10n,
+) {
+  final doLabel = l10n.studyHarmonySolfegeDo;
+  final reLabel = l10n.studyHarmonySolfegeRe;
+  final miLabel = l10n.studyHarmonySolfegeMi;
+  final faLabel = l10n.studyHarmonySolfegeFa;
+  final solLabel = l10n.studyHarmonySolfegeSol;
+  final laLabel = l10n.studyHarmonySolfegeLa;
+  final tiLabel = l10n.studyHarmonySolfegeTi;
+
+  String sharp(String syllable) => '$syllable#';
+
+  return [
+    StudyHarmonyPianoKeyDefinition(
+      id: 'c4',
+      westernLabel: 'C',
+      solfegeLabel: doLabel,
+      isBlack: false,
+      whiteIndex: 0,
+    ),
+    StudyHarmonyPianoKeyDefinition(
+      id: 'cSharp4',
+      westernLabel: 'C#',
+      solfegeLabel: sharp(doLabel),
+      isBlack: true,
+      blackGapAfterWhiteIndex: 0,
+    ),
+    StudyHarmonyPianoKeyDefinition(
+      id: 'd4',
+      westernLabel: 'D',
+      solfegeLabel: reLabel,
+      isBlack: false,
+      whiteIndex: 1,
+    ),
+    StudyHarmonyPianoKeyDefinition(
+      id: 'dSharp4',
+      westernLabel: 'D#',
+      solfegeLabel: sharp(reLabel),
+      isBlack: true,
+      blackGapAfterWhiteIndex: 1,
+    ),
+    StudyHarmonyPianoKeyDefinition(
+      id: 'e4',
+      westernLabel: 'E',
+      solfegeLabel: miLabel,
+      isBlack: false,
+      whiteIndex: 2,
+    ),
+    StudyHarmonyPianoKeyDefinition(
+      id: 'f4',
+      westernLabel: 'F',
+      solfegeLabel: faLabel,
+      isBlack: false,
+      whiteIndex: 3,
+    ),
+    StudyHarmonyPianoKeyDefinition(
+      id: 'fSharp4',
+      westernLabel: 'F#',
+      solfegeLabel: sharp(faLabel),
+      isBlack: true,
+      blackGapAfterWhiteIndex: 3,
+    ),
+    StudyHarmonyPianoKeyDefinition(
+      id: 'g4',
+      westernLabel: 'G',
+      solfegeLabel: solLabel,
+      isBlack: false,
+      whiteIndex: 4,
+    ),
+    StudyHarmonyPianoKeyDefinition(
+      id: 'gSharp4',
+      westernLabel: 'G#',
+      solfegeLabel: sharp(solLabel),
+      isBlack: true,
+      blackGapAfterWhiteIndex: 4,
+    ),
+    StudyHarmonyPianoKeyDefinition(
+      id: 'a4',
+      westernLabel: 'A',
+      solfegeLabel: laLabel,
+      isBlack: false,
+      whiteIndex: 5,
+    ),
+    StudyHarmonyPianoKeyDefinition(
+      id: 'aSharp4',
+      westernLabel: 'A#',
+      solfegeLabel: sharp(laLabel),
+      isBlack: true,
+      blackGapAfterWhiteIndex: 5,
+    ),
+    StudyHarmonyPianoKeyDefinition(
+      id: 'b4',
+      westernLabel: 'B',
+      solfegeLabel: tiLabel,
+      isBlack: false,
+      whiteIndex: 6,
+    ),
+    StudyHarmonyPianoKeyDefinition(
+      id: 'c5',
+      westernLabel: 'C',
+      solfegeLabel: doLabel,
+      isBlack: false,
+      whiteIndex: 7,
+    ),
+  ];
+}
+
+List<StudyHarmonyLevelDefinition> buildStudyHarmonyLevels(
+  AppLocalizations l10n,
+) {
+  final keyboardKeys = buildStudyHarmonyKeyboardKeys(l10n);
+
+  String noteLabel(String solfege, String western) => '$solfege ($western)';
+
+  final doLabel = l10n.studyHarmonySolfegeDo;
+  final reLabel = l10n.studyHarmonySolfegeRe;
+  final miLabel = l10n.studyHarmonySolfegeMi;
+  final faLabel = l10n.studyHarmonySolfegeFa;
+  final solLabel = l10n.studyHarmonySolfegeSol;
+  final laLabel = l10n.studyHarmonySolfegeLa;
+  final tiLabel = l10n.studyHarmonySolfegeTi;
+
+  return [
     StudyHarmonyLevelDefinition(
       id: 'temporary-level-1',
-      title: '임시 레벨 1 · 도 / 미 / 솔',
-      description: '도, 미, 솔만 구분하는 가장 기본적인 테스트 레벨입니다.',
-      objective: '라이프 3개를 잃기 전에 10문제를 맞히면 클리어',
+      title: l10n.studyHarmonyPrototypeLevel1Title,
+      description: l10n.studyHarmonyPrototypeLevel1Description,
+      objective: l10n.studyHarmonyPrototypeLevelObjective,
       goalCorrectAnswers: 10,
       startingLives: 3,
       promptSurface: StudyHarmonyPromptSurface.text,
       answerSurface: StudyHarmonyAnswerSurface.pianoKeyboard,
       selectionMode: StudyHarmonySelectionMode.multiple,
-      pianoKeys: studyHarmonyKeyboardKeys,
+      pianoKeys: keyboardKeys,
       prompts: [
         StudyHarmonyPromptDefinition(
           id: 'do',
-          promptLabel: '도 (C)',
-          answerSummaryLabel: '도 (C)',
-          acceptedAnswerSets: [
+          promptLabel: noteLabel(doLabel, 'C'),
+          answerSummaryLabel: noteLabel(doLabel, 'C'),
+          acceptedAnswerSets: const [
             {'c4'},
             {'c5'},
           ],
         ),
         StudyHarmonyPromptDefinition(
           id: 'mi',
-          promptLabel: '미 (E)',
-          answerSummaryLabel: '미 (E)',
-          acceptedAnswerSets: [
+          promptLabel: noteLabel(miLabel, 'E'),
+          answerSummaryLabel: noteLabel(miLabel, 'E'),
+          acceptedAnswerSets: const [
             {'e4'},
           ],
         ),
         StudyHarmonyPromptDefinition(
           id: 'sol',
-          promptLabel: '솔 (G)',
-          answerSummaryLabel: '솔 (G)',
-          acceptedAnswerSets: [
+          promptLabel: noteLabel(solLabel, 'G'),
+          answerSummaryLabel: noteLabel(solLabel, 'G'),
+          acceptedAnswerSets: const [
             {'g4'},
           ],
         ),
       ],
-    );
-
-const StudyHarmonyLevelDefinition studyHarmonyTemporaryLevel2 =
+    ),
     StudyHarmonyLevelDefinition(
       id: 'temporary-level-2',
-      title: '임시 레벨 2 · 도 / 레 / 미 / 솔 / 라',
-      description: '도, 레, 미, 솔, 라를 빠르게 찾는 중간 단계 테스트 레벨입니다.',
-      objective: '라이프 3개를 잃기 전에 10문제를 맞히면 클리어',
+      title: l10n.studyHarmonyPrototypeLevel2Title,
+      description: l10n.studyHarmonyPrototypeLevel2Description,
+      objective: l10n.studyHarmonyPrototypeLevelObjective,
       goalCorrectAnswers: 10,
       startingLives: 3,
       promptSurface: StudyHarmonyPromptSurface.text,
       answerSurface: StudyHarmonyAnswerSurface.pianoKeyboard,
       selectionMode: StudyHarmonySelectionMode.multiple,
-      pianoKeys: studyHarmonyKeyboardKeys,
+      pianoKeys: keyboardKeys,
       prompts: [
         StudyHarmonyPromptDefinition(
           id: 'do',
-          promptLabel: '도 (C)',
-          answerSummaryLabel: '도 (C)',
-          acceptedAnswerSets: [
+          promptLabel: noteLabel(doLabel, 'C'),
+          answerSummaryLabel: noteLabel(doLabel, 'C'),
+          acceptedAnswerSets: const [
             {'c4'},
             {'c5'},
           ],
         ),
         StudyHarmonyPromptDefinition(
           id: 're',
-          promptLabel: '레 (D)',
-          answerSummaryLabel: '레 (D)',
-          acceptedAnswerSets: [
+          promptLabel: noteLabel(reLabel, 'D'),
+          answerSummaryLabel: noteLabel(reLabel, 'D'),
+          acceptedAnswerSets: const [
             {'d4'},
           ],
         ),
         StudyHarmonyPromptDefinition(
           id: 'mi',
-          promptLabel: '미 (E)',
-          answerSummaryLabel: '미 (E)',
-          acceptedAnswerSets: [
+          promptLabel: noteLabel(miLabel, 'E'),
+          answerSummaryLabel: noteLabel(miLabel, 'E'),
+          acceptedAnswerSets: const [
             {'e4'},
           ],
         ),
         StudyHarmonyPromptDefinition(
           id: 'sol',
-          promptLabel: '솔 (G)',
-          answerSummaryLabel: '솔 (G)',
-          acceptedAnswerSets: [
+          promptLabel: noteLabel(solLabel, 'G'),
+          answerSummaryLabel: noteLabel(solLabel, 'G'),
+          acceptedAnswerSets: const [
             {'g4'},
           ],
         ),
         StudyHarmonyPromptDefinition(
           id: 'la',
-          promptLabel: '라 (A)',
-          answerSummaryLabel: '라 (A)',
-          acceptedAnswerSets: [
+          promptLabel: noteLabel(laLabel, 'A'),
+          answerSummaryLabel: noteLabel(laLabel, 'A'),
+          acceptedAnswerSets: const [
             {'a4'},
           ],
         ),
       ],
-    );
-
-const StudyHarmonyLevelDefinition studyHarmonyTemporaryLevel3 =
+    ),
     StudyHarmonyLevelDefinition(
       id: 'temporary-level-3',
-      title: '임시 레벨 3 · 도 / 레 / 미 / 파 / 솔 / 라 / 시 / 도',
-      description: '도레미파솔라시도 전체를 다루는 옥타브 완성 테스트 레벨입니다.',
-      objective: '라이프 3개를 잃기 전에 10문제를 맞히면 클리어',
+      title: l10n.studyHarmonyPrototypeLevel3Title,
+      description: l10n.studyHarmonyPrototypeLevel3Description,
+      objective: l10n.studyHarmonyPrototypeLevelObjective,
       goalCorrectAnswers: 10,
       startingLives: 3,
       promptSurface: StudyHarmonyPromptSurface.text,
       answerSurface: StudyHarmonyAnswerSurface.pianoKeyboard,
       selectionMode: StudyHarmonySelectionMode.multiple,
-      pianoKeys: studyHarmonyKeyboardKeys,
+      pianoKeys: keyboardKeys,
       prompts: [
         StudyHarmonyPromptDefinition(
           id: 'do-low',
-          promptLabel: '도 (아래 C)',
-          answerSummaryLabel: '도 (아래 C)',
-          acceptedAnswerSets: [
+          promptLabel: l10n.studyHarmonyPrototypeLowCLabel(doLabel),
+          answerSummaryLabel: l10n.studyHarmonyPrototypeLowCLabel(doLabel),
+          acceptedAnswerSets: const [
             {'c4'},
           ],
         ),
         StudyHarmonyPromptDefinition(
           id: 're',
-          promptLabel: '레 (D)',
-          answerSummaryLabel: '레 (D)',
-          acceptedAnswerSets: [
+          promptLabel: noteLabel(reLabel, 'D'),
+          answerSummaryLabel: noteLabel(reLabel, 'D'),
+          acceptedAnswerSets: const [
             {'d4'},
           ],
         ),
         StudyHarmonyPromptDefinition(
           id: 'mi',
-          promptLabel: '미 (E)',
-          answerSummaryLabel: '미 (E)',
-          acceptedAnswerSets: [
+          promptLabel: noteLabel(miLabel, 'E'),
+          answerSummaryLabel: noteLabel(miLabel, 'E'),
+          acceptedAnswerSets: const [
             {'e4'},
           ],
         ),
         StudyHarmonyPromptDefinition(
           id: 'fa',
-          promptLabel: '파 (F)',
-          answerSummaryLabel: '파 (F)',
-          acceptedAnswerSets: [
+          promptLabel: noteLabel(faLabel, 'F'),
+          answerSummaryLabel: noteLabel(faLabel, 'F'),
+          acceptedAnswerSets: const [
             {'f4'},
           ],
         ),
         StudyHarmonyPromptDefinition(
           id: 'sol',
-          promptLabel: '솔 (G)',
-          answerSummaryLabel: '솔 (G)',
-          acceptedAnswerSets: [
+          promptLabel: noteLabel(solLabel, 'G'),
+          answerSummaryLabel: noteLabel(solLabel, 'G'),
+          acceptedAnswerSets: const [
             {'g4'},
           ],
         ),
         StudyHarmonyPromptDefinition(
           id: 'la',
-          promptLabel: '라 (A)',
-          answerSummaryLabel: '라 (A)',
-          acceptedAnswerSets: [
+          promptLabel: noteLabel(laLabel, 'A'),
+          answerSummaryLabel: noteLabel(laLabel, 'A'),
+          acceptedAnswerSets: const [
             {'a4'},
           ],
         ),
         StudyHarmonyPromptDefinition(
           id: 'si',
-          promptLabel: '시 (B)',
-          answerSummaryLabel: '시 (B)',
-          acceptedAnswerSets: [
+          promptLabel: noteLabel(tiLabel, 'B'),
+          answerSummaryLabel: noteLabel(tiLabel, 'B'),
+          acceptedAnswerSets: const [
             {'b4'},
           ],
         ),
         StudyHarmonyPromptDefinition(
           id: 'do-high',
-          promptLabel: '도 (위 C)',
-          answerSummaryLabel: '도 (위 C)',
-          acceptedAnswerSets: [
+          promptLabel: l10n.studyHarmonyPrototypeHighCLabel(doLabel),
+          answerSummaryLabel: l10n.studyHarmonyPrototypeHighCLabel(doLabel),
+          acceptedAnswerSets: const [
             {'c5'},
           ],
         ),
       ],
-    );
+    ),
+  ];
+}
 
-const List<StudyHarmonyLevelDefinition> studyHarmonyLevels = [
-  studyHarmonyTemporaryLevel1,
-  studyHarmonyTemporaryLevel2,
-  studyHarmonyTemporaryLevel3,
-];
+StudyHarmonyLevelDefinition? studyHarmonyLevelById(
+  Iterable<StudyHarmonyLevelDefinition> levels,
+  String levelId,
+) {
+  for (final level in levels) {
+    if (level.id == levelId) {
+      return level;
+    }
+  }
+  return null;
+}

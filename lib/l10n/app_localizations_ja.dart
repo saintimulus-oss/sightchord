@@ -9,271 +9,266 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
-  String get settings => 'Settings';
+  String get settings => '設定';
 
   @override
-  String get closeSettings => 'Close settings';
+  String get closeSettings => '設定を閉じる';
 
   @override
-  String get language => 'Language';
+  String get language => '言語';
 
   @override
-  String get systemDefaultLanguage => 'System default';
+  String get systemDefaultLanguage => 'システムのデフォルト';
 
   @override
-  String get metronome => 'Metronome';
+  String get metronome => 'メトロノーム';
 
   @override
-  String get enabled => 'Enabled';
+  String get enabled => '有効';
 
   @override
-  String get disabled => 'Disabled';
+  String get disabled => '無効';
 
   @override
-  String get metronomeHelp =>
-      'Turn the metronome on to hear a click on every beat while you practice.';
+  String get metronomeHelp => 'メトロノームをオンにすると、練習中にビートごとにクリック音が聞こえます。';
 
   @override
-  String get metronomeSound => 'Metronome Sound';
+  String get metronomeSound => 'メトロノーム音';
 
   @override
-  String get metronomeSoundClassic => 'Classic';
+  String get metronomeSoundClassic => 'クラシック';
 
   @override
-  String get metronomeSoundClickB => 'Click B';
+  String get metronomeSoundClickB => 'Bをクリック';
 
   @override
-  String get metronomeSoundClickC => 'Click C';
+  String get metronomeSoundClickC => 'Cをクリックします';
 
   @override
-  String get metronomeSoundClickD => 'Click D';
+  String get metronomeSoundClickD => 'Dをクリックします';
 
   @override
-  String get metronomeSoundClickE => 'Click E';
+  String get metronomeSoundClickE => 'Eをクリックします';
 
   @override
-  String get metronomeSoundClickF => 'Click F';
+  String get metronomeSoundClickF => 'Fをクリックします';
 
   @override
-  String get metronomeVolume => 'Metronome Volume';
+  String get metronomeVolume => 'メトロノームの音量';
 
   @override
-  String get keys => 'Keys';
+  String get keys => 'キー';
 
   @override
   String get noKeysSelected =>
-      'No keys selected. Leave all keys off to practice in free mode across every root.';
+      'キーが選択されていません。すべてのルートでフリー モードで練習するには、すべてのキーをオフのままにしてください。';
 
   @override
   String get keysSelectedHelp =>
-      'Selected keys are used for key-aware random mode and Smart Generator mode.';
+      '選択されたキーは、キー認識ランダム モードおよび Smart Generator モードに使用されます。';
 
   @override
-  String get smartGeneratorMode => 'Smart Generator Mode';
+  String get smartGeneratorMode => 'Smart Generator モード';
 
   @override
-  String get smartGeneratorHelp =>
-      'Prioritizes functional harmonic motion while preserving the enabled non-diatonic options.';
+  String get smartGeneratorHelp => '有効な ノンダイアトニック オプションを維持しながら、機能調和運動を優先します。';
 
   @override
-  String get advancedSmartGenerator => 'Advanced Smart Generator';
+  String get advancedSmartGenerator => '高度な Smart Generator';
 
   @override
-  String get modulationIntensity => 'Modulation Intensity';
+  String get modulationIntensity => '変調強度';
 
   @override
-  String get modulationIntensityOff => 'Off';
+  String get modulationIntensityOff => 'オフ';
 
   @override
-  String get modulationIntensityLow => 'Low';
+  String get modulationIntensityLow => '低い';
 
   @override
-  String get modulationIntensityMedium => 'Medium';
+  String get modulationIntensityMedium => '中くらい';
 
   @override
-  String get modulationIntensityHigh => 'High';
+  String get modulationIntensityHigh => '高い';
 
   @override
-  String get jazzPreset => 'Jazz Preset';
+  String get jazzPreset => 'ジャズプリセット';
 
   @override
-  String get jazzPresetStandardsCore => 'Standards Core';
+  String get jazzPresetStandardsCore => '標準コア';
 
   @override
-  String get jazzPresetModulationStudy => 'Modulation Study';
+  String get jazzPresetModulationStudy => '変調研究';
 
   @override
-  String get jazzPresetAdvanced => 'Advanced';
+  String get jazzPresetAdvanced => '高度な';
 
   @override
-  String get sourceProfile => 'Source Profile';
+  String get sourceProfile => 'ソースプロファイル';
 
   @override
-  String get sourceProfileFakebookStandard => 'Fakebook Standard';
+  String get sourceProfileFakebookStandard => 'フェイクブック標準';
 
   @override
-  String get sourceProfileRecordingInspired => 'Recording Inspired';
+  String get sourceProfileRecordingInspired => 'レコーディングにインスピレーションを得た';
 
   @override
-  String get smartDiagnostics => 'Smart Diagnostics';
+  String get smartDiagnostics => 'スマート診断';
 
   @override
   String get smartDiagnosticsHelp =>
-      'Logs Smart Generator decision traces for debugging.';
+      'デバッグのために Smart Generator 決定トレースをログに記録します。';
 
   @override
   String get keyModeRequiredForSmartGenerator =>
-      'Select at least one key to use Smart Generator mode.';
+      'Smart Generator モードを使用するには、少なくとも 1 つのキーを選択します。';
 
   @override
-  String get nonDiatonic => 'Non-Diatonic';
+  String get nonDiatonic => 'ノンダイアトニック';
 
   @override
-  String get nonDiatonicRequiresKeyMode =>
-      'Non-diatonic options are available in key mode only.';
+  String get nonDiatonicRequiresKeyMode => 'ダイアトニック 以外のオプションは、キー モードでのみ使用できます。';
 
   @override
-  String get secondaryDominant => 'Secondary Dominant';
+  String get secondaryDominant => 'セカンダリー・ドミナント';
 
   @override
-  String get substituteDominant => 'Substitute Dominant';
+  String get substituteDominant => '代理ドミナント';
 
   @override
-  String get modalInterchange => 'Modal Interchange';
+  String get modalInterchange => 'モーダル・インターチェンジ';
 
   @override
   String get modalInterchangeDisabledHelp =>
-      'Modal interchange only appears in key mode, so this option is disabled in free mode.';
+      'モーダル交換はキー モードでのみ表示されるため、このオプションはフリー モードでは無効になります。';
 
   @override
-  String get rendering => 'Rendering';
+  String get rendering => 'レンダリング';
 
   @override
-  String get keyCenterLabelStyle => 'Key Label Style';
+  String get keyCenterLabelStyle => 'キーラベルのスタイル';
 
   @override
   String get keyCenterLabelStyleHelp =>
-      'Choose between explicit mode names and classical uppercase/lowercase tonic labels.';
+      '明示的なモード名と古典的な大文​​字/小文字の主音ラベルのどちらかを選択します。';
 
   @override
-  String get chordSymbolStyle => 'Chord Symbol Style';
+  String get chordSymbolStyle => 'コード記号のスタイル';
 
   @override
-  String get chordSymbolStyleHelp =>
-      'Changes the display layer only. Harmonic logic stays canonical.';
+  String get chordSymbolStyleHelp => '表示レイヤーのみを変更します。調和ロジックは標準のままです。';
 
   @override
-  String get styleCompact => 'Compact';
+  String get styleCompact => 'コンパクト';
 
   @override
-  String get styleMajText => 'MajText';
+  String get styleMajText => 'マジテキスト';
 
   @override
-  String get styleDeltaJazz => 'DeltaJazz';
+  String get styleDeltaJazz => 'デルタジャズ';
 
   @override
-  String get keyCenterLabelStyleModeText => 'C major: / C minor:';
+  String get keyCenterLabelStyleModeText => 'ハ長調: / ハ短調:';
 
   @override
   String get keyCenterLabelStyleClassicalCase => 'C: / c:';
 
   @override
-  String get allowV7sus4 => 'Allow V7sus4 (V7, V7/x)';
+  String get allowV7sus4 => 'V7sus4 (V7、V7/x) を許可します。';
 
   @override
-  String get allowTensions => 'Allow Tensions';
+  String get allowTensions => '緊張を許容する';
 
   @override
-  String get tensionHelp => 'Roman numeral profile and selected chips only';
+  String get tensionHelp => 'ローマ数字 プロファイルと選択されたチップのみ';
 
   @override
-  String get inversions => 'Inversions';
+  String get inversions => '反転';
 
   @override
-  String get enableInversions => 'Enable Inversions';
+  String get enableInversions => '反転を有効にする';
 
   @override
-  String get inversionHelp =>
-      'Random slash-bass rendering after chord selection; it does not track the previous bass.';
+  String get inversionHelp => 'コード選択後のランダムなスラッシュベースのレンダリング。前のベースを追跡しません。';
 
   @override
-  String get firstInversion => '1st Inversion';
+  String get firstInversion => '1回目の反転';
 
   @override
-  String get secondInversion => '2nd Inversion';
+  String get secondInversion => '2回目の反転';
 
   @override
-  String get thirdInversion => '3rd Inversion';
+  String get thirdInversion => '3回目の転回';
 
   @override
-  String get keyPracticeOverview => 'Key Practice Overview';
+  String get keyPracticeOverview => '主要な実践の概要';
 
   @override
-  String get freePracticeOverview => 'Free Practice Overview';
+  String get freePracticeOverview => 'フリープラクティスの概要';
 
   @override
-  String get keyModeTag => 'Key Mode';
+  String get keyModeTag => 'キーモード';
 
   @override
-  String get freeModeTag => 'Free Mode';
+  String get freeModeTag => 'フリーモード';
 
   @override
-  String get allKeysTag => 'All Keys';
+  String get allKeysTag => 'すべてのキー';
 
   @override
-  String get metronomeOnTag => 'Metronome On';
+  String get metronomeOnTag => 'メトロノームオン';
 
   @override
-  String get metronomeOffTag => 'Metronome Off';
+  String get metronomeOffTag => 'メトロノームオフ';
 
   @override
-  String get pressNextChordToBegin => 'Press Next Chord to begin';
+  String get pressNextChordToBegin => '次のコードを押して開始します';
 
   @override
-  String get freeModeActive => 'Free mode active';
+  String get freeModeActive => 'フリーモード有効';
 
   @override
   String get freePracticeDescription =>
-      'Uses all 12 chromatic roots with random chord qualities for broad reading practice.';
+      '幅広い音読の練習のために、ランダムなコード品質を持つ 12 の半音階ルートすべてを使用します。';
 
   @override
   String get smartPracticeDescription =>
-      'Follows harmonic function flow in the selected keys while allowing tasteful smart-generator movement.';
+      '選択されたキーの 和声機能 フローに従い、スマートジェネレーターの上品な動きを可能にします。';
 
   @override
   String get keyPracticeDescription =>
-      'Uses the selected keys and enabled Roman numerals to generate diatonic practice material.';
+      '選択したキーと有効な ローマ数字 を使用して、ダイアトニック 演習資料を生成します。';
 
   @override
   String get keyboardShortcutHelp =>
-      'Space: next chord  Enter: start or stop autoplay  Up/Down: adjust BPM';
+      'スペース: 次のコード Enter: 自動再生の開始または停止 Up/Down: BPM の調整';
 
   @override
-  String get nextChord => 'Next Chord';
+  String get nextChord => '次のコード';
 
   @override
-  String get audioPlayChord => 'Play Chord';
+  String get audioPlayChord => 'プレイコード';
 
   @override
-  String get audioPlayArpeggio => 'Play Arpeggio';
+  String get audioPlayArpeggio => 'アルペジオを演奏する';
 
   @override
-  String get audioPlayProgression => 'Play Progression';
+  String get audioPlayProgression => 'プレイの進行';
 
   @override
-  String get audioPlayPrompt => 'Play Prompt';
+  String get audioPlayPrompt => 'プロンプトを再生';
 
   @override
-  String get startAutoplay => 'Start Autoplay';
+  String get startAutoplay => '自動再生の開始';
 
   @override
-  String get stopAutoplay => 'Stop Autoplay';
+  String get stopAutoplay => '自動再生を停止する';
 
   @override
-  String get decreaseBpm => 'Decrease BPM';
+  String get decreaseBpm => 'BPMを下げる';
 
   @override
-  String get increaseBpm => 'Increase BPM';
+  String get increaseBpm => 'BPMを上げる';
 
   @override
   String get bpmLabel => 'BPM';
@@ -289,10 +284,10 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get modeMajor => 'major';
+  String get modeMajor => '選考科目';
 
   @override
-  String get modeMinor => 'minor';
+  String get modeMinor => 'マイナー';
 
   @override
   String analysisLabelWithCenter(Object center, Object roman) {
@@ -300,572 +295,554 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get voicingSuggestionsTitle => 'Voicing Suggestions';
+  String get voicingSuggestionsTitle => 'ボイシング提案';
 
   @override
-  String get voicingSuggestionsSubtitle =>
-      'See concrete note choices for this chord.';
+  String get voicingSuggestionsSubtitle => 'このコードの具体的な音の選択を参照してください。';
 
   @override
-  String get voicingSuggestionsEnabled => 'Enable Voicing Suggestions';
+  String get voicingSuggestionsEnabled => '音声提案を有効にする';
 
   @override
   String get voicingSuggestionsHelp =>
-      'Shows three playable note-level voicing ideas for the current chord.';
+      '現在のコードの 3 つの再生可能なノートレベルの ボイシング アイデアを示します。';
 
   @override
-  String get voicingComplexity => 'Voicing Complexity';
+  String get voicingComplexity => '発声の複雑さ';
 
   @override
-  String get voicingComplexityHelp =>
-      'Controls how colorful the suggestions may become.';
+  String get voicingComplexityHelp => '提案がどの程度カラフルになるかを制御します。';
 
   @override
-  String get voicingComplexityBasic => 'Basic';
+  String get voicingComplexityBasic => '基本';
 
   @override
-  String get voicingComplexityStandard => 'Standard';
+  String get voicingComplexityStandard => '標準';
 
   @override
-  String get voicingComplexityModern => 'Modern';
+  String get voicingComplexityModern => 'モダンな';
 
   @override
-  String get voicingTopNotePreference => 'Top Note Preference';
+  String get voicingTopNotePreference => 'トップノートの好み';
 
   @override
   String get voicingTopNotePreferenceHelp =>
-      'Leans suggestions toward a chosen top line. Locked voicings win first, then repeated chords keep it steady.';
+      '選択した トップライン に基づいて提案を行います。ロックされた ボイシング が最初に勝ち、次にコードを繰り返すと安定した状態が維持されます。';
 
   @override
-  String get voicingTopNotePreferenceAuto => 'Auto';
+  String get voicingTopNotePreferenceAuto => '自動';
 
   @override
-  String get allowRootlessVoicings => 'Allow Rootless Voicings';
+  String get allowRootlessVoicings => 'ルートレスボイシングを許可する';
 
   @override
-  String get allowRootlessVoicingsHelp =>
-      'Lets suggestions omit the root when the guide tones stay clear.';
+  String get allowRootlessVoicingsHelp => 'ガイドトーン が明確な場合、提案でルートが省略されるようにします。';
 
   @override
-  String get maxVoicingNotes => 'Max Voicing Notes';
+  String get maxVoicingNotes => '最大ボイシングノート数';
 
   @override
-  String get lookAheadDepth => 'Look-Ahead Depth';
+  String get lookAheadDepth => '先読みの深さ';
 
   @override
-  String get lookAheadDepthHelp =>
-      'How many future chords the ranking may consider.';
+  String get lookAheadDepthHelp => 'ランキングで考慮される将来のコードの数。';
 
   @override
-  String get showVoicingReasons => 'Show Voicing Reasons';
+  String get showVoicingReasons => '音声の理由を表示';
 
   @override
-  String get showVoicingReasonsHelp =>
-      'Displays short explanation chips on each suggestion card.';
+  String get showVoicingReasonsHelp => '各提案カードに短い説明チップを表示します。';
 
   @override
-  String get voicingSuggestionNatural => 'Most Natural';
+  String get voicingSuggestionNatural => '最も自然な';
 
   @override
-  String get voicingSuggestionColorful => 'Most Colorful';
+  String get voicingSuggestionColorful => '最もカラフルな';
 
   @override
-  String get voicingSuggestionEasy => 'Easiest';
+  String get voicingSuggestionEasy => '最も簡単な';
 
   @override
-  String get voicingSuggestionNaturalSubtitle => 'Voice-leading first';
+  String get voicingSuggestionNaturalSubtitle => 'まずは音声主導';
 
   @override
-  String get voicingSuggestionColorfulSubtitle => 'Leans into color tones';
+  String get voicingSuggestionColorfulSubtitle => 'カラートーンにこだわる';
 
   @override
-  String get voicingSuggestionEasySubtitle => 'Compact hand shape';
+  String get voicingSuggestionEasySubtitle => 'コンパクトなハンド形状';
 
   @override
-  String get voicingSuggestionNaturalConnectedSubtitle =>
-      'Connection and resolution first';
+  String get voicingSuggestionNaturalConnectedSubtitle => 'まずは接続と解決';
 
   @override
-  String get voicingSuggestionNaturalStableSubtitle =>
-      'Same shape, steady comping';
+  String get voicingSuggestionNaturalStableSubtitle => '同じ形状、安定したコンピング';
 
   @override
-  String get voicingSuggestionTopLineSubtitle => 'Top line leads';
+  String get voicingSuggestionTopLineSubtitle => 'トップラインのリード';
 
   @override
-  String get voicingSuggestionColorfulAlteredSubtitle =>
-      'Altered tension up front';
+  String get voicingSuggestionColorfulAlteredSubtitle => '前線のテンションの変化';
 
   @override
-  String get voicingSuggestionColorfulQuartalSubtitle => 'Modern quartal color';
+  String get voicingSuggestionColorfulQuartalSubtitle => 'モダンなクアルタルカラー';
 
   @override
   String get voicingSuggestionColorfulTritoneSubtitle =>
-      'Tritone-sub edge with bright guide tones';
+      '明るい ガイドトーン を備えた Tritone-sub エッジ';
 
   @override
   String get voicingSuggestionColorfulUpperStructureSubtitle =>
-      'Guide tones with bright extensions';
+      '明るいエクステンションを備えたガイドトーン';
 
   @override
-  String get voicingSuggestionEasyAnchoredSubtitle =>
-      'Core tones, smaller reach';
+  String get voicingSuggestionEasyAnchoredSubtitle => 'コアトーン、より小さなリーチ';
 
   @override
-  String get voicingSuggestionEasyStableSubtitle =>
-      'Repeat-friendly hand shape';
+  String get voicingSuggestionEasyStableSubtitle => 'リピートしやすい手の形状';
 
   @override
-  String get voicingTopNoteLabel => 'Top';
+  String get voicingTopNoteLabel => 'トップ';
 
   @override
   String voicingTopNoteContextExplicit(Object note) {
-    return 'Top line target: $note';
+    return 'トップラインターゲット: $note';
   }
 
   @override
   String voicingTopNoteContextLocked(Object note) {
-    return 'Locked top line: $note';
+    return 'ロックされた トップライン: $note';
   }
 
   @override
   String voicingTopNoteContextCarry(Object note) {
-    return 'Repeated top line: $note';
+    return 'トップライン の繰り返し: $note';
   }
 
   @override
   String voicingTopNoteContextNearby(Object note) {
-    return 'Nearest top line to $note';
+    return '最寄りの トップライン から $note';
   }
 
   @override
   String voicingTopNoteContextFallback(Object note) {
-    return 'No exact top line for $note';
+    return '$note に正確な トップライン はありません';
   }
 
   @override
-  String get voicingFamilyShell => 'Shell';
+  String get voicingFamilyShell => 'シェル';
 
   @override
-  String get voicingFamilyRootlessA => 'Rootless A';
+  String get voicingFamilyRootlessA => '根無しA';
 
   @override
-  String get voicingFamilyRootlessB => 'Rootless B';
+  String get voicingFamilyRootlessB => '根無しB';
 
   @override
-  String get voicingFamilySpread => 'Spread';
+  String get voicingFamilySpread => '広める';
 
   @override
-  String get voicingFamilySus => 'Sus';
+  String get voicingFamilySus => 'サス';
 
   @override
-  String get voicingFamilyQuartal => 'Quartal';
+  String get voicingFamilyQuartal => 'クアルタル';
 
   @override
-  String get voicingFamilyAltered => 'Altered';
+  String get voicingFamilyAltered => '変更された';
 
   @override
-  String get voicingFamilyUpperStructure => 'Upper Structure';
+  String get voicingFamilyUpperStructure => '上部構造';
 
   @override
-  String get voicingLockSuggestion => 'Lock suggestion';
+  String get voicingLockSuggestion => 'ロックの提案';
 
   @override
-  String get voicingUnlockSuggestion => 'Unlock suggestion';
+  String get voicingUnlockSuggestion => '提案のロックを解除する';
 
   @override
-  String get voicingSelected => 'Selected';
+  String get voicingSelected => '選択済み';
 
   @override
-  String get voicingLocked => 'Locked';
+  String get voicingLocked => 'ロックされています';
 
   @override
-  String get voicingReasonEssentialCore => 'Essential tones covered';
+  String get voicingReasonEssentialCore => '必須のトーンをカバー';
 
   @override
-  String get voicingReasonGuideToneAnchor => '3rd/7th anchor';
+  String get voicingReasonGuideToneAnchor => '3番目/7番目のアンカー';
 
   @override
   String voicingReasonGuideResolution(int count) {
-    return '$count guide-tone resolves';
+    return '$count ガイドトーン解決';
   }
 
   @override
   String voicingReasonCommonToneRetention(int count) {
-    return '$count common tones kept';
+    return '$count 共通のトーンを維持';
   }
 
   @override
-  String get voicingReasonStableRepeat => 'Stable repeat';
+  String get voicingReasonStableRepeat => '安定したリピート';
 
   @override
-  String get voicingReasonTopLineTarget => 'Top line target';
+  String get voicingReasonTopLineTarget => 'トップライン目標';
 
   @override
-  String get voicingReasonLowMudAvoided => 'Low-register clarity';
+  String get voicingReasonLowMudAvoided => '低音域の明瞭さ';
 
   @override
-  String get voicingReasonCompactReach => 'Comfortable reach';
+  String get voicingReasonCompactReach => '快適なリーチ';
 
   @override
-  String get voicingReasonBassAnchor => 'Bass anchor respected';
+  String get voicingReasonBassAnchor => '尊敬されるバスアンカー';
 
   @override
-  String get voicingReasonNextChordReady => 'Next chord ready';
+  String get voicingReasonNextChordReady => '次のコードの準備ができました';
 
   @override
-  String get voicingReasonAlteredColor => 'Altered tensions';
+  String get voicingReasonAlteredColor => '変化した緊張';
 
   @override
-  String get voicingReasonRootlessClarity => 'Light rootless shape';
+  String get voicingReasonRootlessClarity => '軽い根なし形状';
 
   @override
-  String get voicingReasonSusRelease => 'Sus release set up';
+  String get voicingReasonSusRelease => 'サスリリースのセットアップ';
 
   @override
-  String get voicingReasonQuartalColor => 'Quartal color';
+  String get voicingReasonQuartalColor => '四分の一の色';
 
   @override
-  String get voicingReasonUpperStructureColor => 'Upper-structure color';
+  String get voicingReasonUpperStructureColor => '上部構造の色';
 
   @override
-  String get voicingReasonTritoneSubFlavor => 'Tritone-sub flavor';
+  String get voicingReasonTritoneSubFlavor => 'トリトーネサブフレーバー';
 
   @override
-  String get voicingReasonLockedContinuity => 'Locked continuity';
+  String get voicingReasonLockedContinuity => 'ロックされた連続性';
 
   @override
-  String get voicingReasonGentleMotion => 'Smooth hand move';
+  String get voicingReasonGentleMotion => 'スムーズな手の動き';
 
   @override
   String get mainMenuIntro =>
-      'Choose a practice generator or open the analyzer for a separate progression reading workflow.';
+      '練習用ジェネレーターを選択するか、アナライザーを開いて別の進行読み取りワークフローを実行します。';
 
   @override
-  String get mainMenuGeneratorTitle => 'Chord Generator';
+  String get mainMenuGeneratorTitle => 'コード生成';
 
   @override
   String get mainMenuGeneratorDescription =>
-      'Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.';
+      'キーを意識したランダム モード、スマート モーション、ボイシング の提案を使用して練習用コードを生成します。';
 
   @override
-  String get openGenerator => 'Open Generator';
+  String get openGenerator => 'オープンジェネレーター';
 
   @override
-  String get openAnalyzer => 'Open Analyzer';
+  String get openAnalyzer => 'アナライザーを開く';
 
   @override
-  String get mainMenuAnalyzerTitle => 'Chord Analyzer';
+  String get mainMenuAnalyzerTitle => 'コード解析';
 
   @override
   String get mainMenuAnalyzerDescription =>
-      'Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.';
+      'おそらく キーセンター、ローマ数字、および 和声機能 について書かれた進行状況を分析します。';
 
   @override
-  String get mainMenuStudyHarmonyTitle => 'Study Harmony';
+  String get mainMenuStudyHarmonyTitle => '和声学習';
 
   @override
   String get mainMenuStudyHarmonyDescription =>
-      'Move through a real harmony study hub with continue, review, daily, and chapter-based lessons.';
+      '継続、復習、毎日、および章ベースのレッスンを備えた本物のハーモニー学習ハブを学習します。';
 
   @override
-  String get openStudyHarmony => 'Open Study Harmony';
+  String get openStudyHarmony => '和声学習 を開く';
 
   @override
-  String get studyHarmonyTitle => 'Study Harmony';
+  String get studyHarmonyTitle => '和声学習';
 
   @override
   String get studyHarmonySubtitle =>
-      'Work through a structured harmony hub with quick lesson entries and chapter progress.';
+      '簡単なレッスンのエントリと章の進行により、構造化されたハーモニーハブを学習します。';
 
   @override
-  String get studyHarmonyPlaceholderTag => 'Study deck';
+  String get studyHarmonyPlaceholderTag => 'スタディデッキ';
 
   @override
   String get studyHarmonyPlaceholderBody =>
-      'Lesson data, prompts, and answer surfaces already share one reusable study flow for notes, chords, scales, and progression drills.';
+      'レッスン データ、プロンプト、解答面は、音符、コード、スケール、進行ドリルの 1 つの再利用可能な学習フローをすでに共有しています。';
 
   @override
-  String get studyHarmonyTestLevelTag => 'Practice drill';
+  String get studyHarmonyTestLevelTag => '練習ドリル';
 
   @override
-  String get studyHarmonyTestLevelAction => 'Open drill';
+  String get studyHarmonyTestLevelAction => 'オープンドリル';
 
   @override
-  String get studyHarmonySubmit => 'Submit';
+  String get studyHarmonySubmit => '提出する';
 
   @override
-  String get studyHarmonyNextPrompt => 'Next prompt';
+  String get studyHarmonyNextPrompt => '次のプロンプト';
 
   @override
-  String get studyHarmonySelectedAnswers => 'Selected answers';
+  String get studyHarmonySelectedAnswers => '選択された回答';
 
   @override
-  String get studyHarmonySelectionEmpty => 'No answers selected yet.';
+  String get studyHarmonySelectionEmpty => 'まだ回答が選択されていません。';
 
   @override
   String studyHarmonyClearProgress(int current, int total) {
-    return '$current/$total correct';
+    return '$current/$total 正解';
   }
 
   @override
-  String get studyHarmonyAttempts => 'Attempts';
+  String get studyHarmonyAttempts => '試み';
 
   @override
-  String get studyHarmonyAccuracy => 'Accuracy';
+  String get studyHarmonyAccuracy => '正確さ';
 
   @override
-  String get studyHarmonyElapsedTime => 'Time';
+  String get studyHarmonyElapsedTime => '時間';
 
   @override
-  String get studyHarmonyObjective => 'Goal';
+  String get studyHarmonyObjective => 'ゴール';
 
   @override
-  String get studyHarmonyPromptInstruction => 'Pick the matching answer';
+  String get studyHarmonyPromptInstruction => '一致する答えを選択してください';
 
   @override
-  String get studyHarmonyNeedSelection =>
-      'Choose at least one answer before submitting.';
+  String get studyHarmonyNeedSelection => '送信する前に少なくとも 1 つの回答を選択してください。';
 
   @override
-  String get studyHarmonyCorrectLabel => 'Correct';
+  String get studyHarmonyCorrectLabel => '正しい';
 
   @override
-  String get studyHarmonyIncorrectLabel => 'Incorrect';
+  String get studyHarmonyIncorrectLabel => '正しくない';
 
   @override
   String studyHarmonyCorrectFeedback(Object answer) {
-    return 'Correct. $answer was the right answer.';
+    return '正しい。 $answer が正解でした。';
   }
 
   @override
   String studyHarmonyIncorrectFeedback(Object answer) {
-    return 'Incorrect. $answer was the right answer and you lost one life.';
+    return '正しくない。 $answer は正解で、命を 1 つ失いました。';
   }
 
   @override
-  String get studyHarmonyGameOverTitle => 'Game Over';
+  String get studyHarmonyGameOverTitle => 'ゲームオーバー';
 
   @override
   String get studyHarmonyGameOverBody =>
-      'All three lives are gone. Retry this level or go back to the Study Harmony hub.';
+      '三人の命はすべて消え去った。このレベルを再試行するか、和声学習 ハブに戻ります。';
 
   @override
-  String get studyHarmonyLevelCompleteTitle => 'Level Cleared';
+  String get studyHarmonyLevelCompleteTitle => 'レベルクリア';
 
   @override
   String get studyHarmonyLevelCompleteBody =>
-      'You reached the lesson goal. Check your accuracy and clear time below.';
+      'レッスンの目標を達成しました。以下で正確さとクリアタイムを確認してください。';
 
   @override
-  String get studyHarmonyBackToHub => 'Back to Study Harmony';
+  String get studyHarmonyBackToHub => '和声学習 に戻る';
 
   @override
-  String get studyHarmonyRetry => 'Retry';
+  String get studyHarmonyRetry => 'リトライ';
 
   @override
-  String get studyHarmonyHubHeroEyebrow => 'Study Hub';
+  String get studyHarmonyHubHeroEyebrow => 'スタディハブ';
 
   @override
   String get studyHarmonyHubHeroBody =>
-      'Use Continue to resume momentum, Review to revisit weak spots, and Daily to get one deterministic lesson from your unlocked path.';
+      '継続を使用して勢いを回復し、レビューを使用して弱点を再確認し、毎日を使用してロックされていない道から 1 つの決定的な教訓を得ることができます。';
 
   @override
-  String get studyHarmonyTrackFilterLabel => 'Tracks';
+  String get studyHarmonyTrackFilterLabel => 'コース';
 
   @override
-  String get studyHarmonyTrackCoreFilterLabel => 'Core';
+  String get studyHarmonyTrackCoreFilterLabel => '基礎';
 
   @override
-  String get studyHarmonyTrackPopFilterLabel => 'Pop';
+  String get studyHarmonyTrackPopFilterLabel => 'ポップ';
 
   @override
-  String get studyHarmonyTrackJazzFilterLabel => 'Jazz';
+  String get studyHarmonyTrackJazzFilterLabel => 'ジャズ';
 
   @override
-  String get studyHarmonyTrackClassicalFilterLabel => 'Classical';
+  String get studyHarmonyTrackClassicalFilterLabel => 'クラシック';
 
   @override
   String studyHarmonyHubLessonsProgress(int cleared, int total) {
-    return '$cleared/$total lessons cleared';
+    return '$cleared/$total レッスンをクリアしました';
   }
 
   @override
   String studyHarmonyHubChaptersProgress(int cleared, int total) {
-    return '$cleared/$total chapters completed';
+    return '$cleared/$total 章を完了しました';
   }
 
   @override
   String studyHarmonyProgressStars(int stars) {
-    return '$stars stars';
+    return '$stars の星';
   }
 
   @override
   String studyHarmonyProgressSkillsMastered(int mastered, int total) {
-    return '$mastered/$total skills mastered';
+    return '$mastered/$total スキルを習得しました';
   }
 
   @override
   String studyHarmonyProgressReviewsReady(int count) {
-    return '$count reviews ready';
+    return '$count レビュー準備完了';
   }
 
   @override
   String studyHarmonyProgressStreak(int count) {
-    return 'Streak x$count';
+    return 'ストリーク x$count';
   }
 
   @override
   String studyHarmonyProgressRuns(int count) {
-    return '$count runs';
+    return '$count が実行される';
   }
 
   @override
   String studyHarmonyProgressBestRank(Object rank) {
-    return 'Best $rank';
+    return 'ベスト $rank';
   }
 
   @override
-  String get studyHarmonyBossTag => 'Boss';
+  String get studyHarmonyBossTag => 'ボス';
 
   @override
-  String get studyHarmonyContinueCardTitle => 'Continue';
+  String get studyHarmonyContinueCardTitle => '続きから';
 
   @override
-  String get studyHarmonyContinueResumeHint =>
-      'Resume the lesson you touched most recently.';
+  String get studyHarmonyContinueResumeHint => '最後に行ったレッスンを再開します。';
 
   @override
-  String get studyHarmonyContinueFrontierHint =>
-      'Jump to the next lesson at your current frontier.';
+  String get studyHarmonyContinueFrontierHint => 'いまのフロンティアにある次のレッスンへ進みます。';
 
   @override
   String studyHarmonyContinueLessonLabel(Object lessonTitle) {
-    return 'Continue: $lessonTitle';
+    return '続行: $lessonTitle';
   }
 
   @override
-  String get studyHarmonyContinueAction => 'Continue';
+  String get studyHarmonyContinueAction => '続ける';
 
   @override
-  String get studyHarmonyReviewCardTitle => 'Review';
+  String get studyHarmonyReviewCardTitle => '復習';
 
   @override
-  String get studyHarmonyReviewQueueHint =>
-      'Pulled from your current review queue placeholder.';
+  String get studyHarmonyReviewQueueHint => '現在の復習キューから選ばれます。';
 
   @override
-  String get studyHarmonyReviewWeakHint =>
-      'Picked from the weakest result in your played lessons.';
+  String get studyHarmonyReviewWeakHint => 'プレイ済みレッスンの中で最も弱かった結果から選ばれます。';
 
   @override
-  String get studyHarmonyReviewFallbackHint =>
-      'No review debt yet, so this falls back to your current frontier.';
+  String get studyHarmonyReviewFallbackHint => 'まだ復習のたまりはないため、現在のフロンティアに戻ります。';
 
   @override
-  String get studyHarmonyReviewRetryNeededHint =>
-      'This lesson needs another pass after a miss or unfinished run.';
+  String get studyHarmonyReviewRetryNeededHint => 'ミスや未完走のあとに、もう一度通したいレッスンです。';
 
   @override
   String get studyHarmonyReviewAccuracyRefreshHint =>
-      'This lesson is queued for a quick accuracy refresh.';
+      '精度を手早く整え直すために、このレッスンがキューに入っています。';
 
   @override
-  String get studyHarmonyReviewAction => 'Review';
+  String get studyHarmonyReviewAction => '復習する';
 
   @override
-  String get studyHarmonyDailyCardTitle => 'Daily Challenge';
+  String get studyHarmonyDailyCardTitle => 'デイリーチャレンジ';
 
   @override
-  String get studyHarmonyDailyCardHint =>
-      'Open today\'s deterministic pick from your unlocked lessons.';
+  String get studyHarmonyDailyCardHint => 'ロック解除されたレッスンから今日の決定的な選択を開きます。';
 
   @override
   String get studyHarmonyDailyCardHintCompleted =>
-      'Today\'s daily is cleared. Replay it if you want, or come back tomorrow to keep the streak going.';
+      '今日のデイリーはクリア済みです。必要なら再挑戦し、連続記録は明日につなげましょう。';
 
   @override
-  String get studyHarmonyDailyAction => 'Play daily';
+  String get studyHarmonyDailyAction => 'デイリーを開始';
 
   @override
   String studyHarmonyDailyDateBadge(Object dateKey) {
-    return 'Seed $dateKey';
+    return 'シード $dateKey';
   }
 
   @override
-  String get studyHarmonyDailyClearedTodayTag => 'Daily cleared today';
+  String get studyHarmonyDailyClearedTodayTag => '今日はデイリークリアしました';
 
   @override
-  String get studyHarmonyReviewSessionTitle => 'Weak Spot Review';
+  String get studyHarmonyReviewSessionTitle => '弱点レビュー';
 
   @override
   String studyHarmonyReviewSessionDescription(Object chapterTitle) {
-    return 'Mix a short review set around $chapterTitle and your weakest recent skills.';
+    return '$chapterTitle に関する短いレビューと、最近最も苦手なスキルを組み合わせてください。';
   }
 
   @override
-  String get studyHarmonyDailySessionTitle => 'Daily Challenge';
+  String get studyHarmonyDailySessionTitle => 'デイリーチャレンジ';
 
   @override
   String studyHarmonyDailySessionDescription(Object chapterTitle) {
-    return 'Play today\'s seeded mix built from $chapterTitle and your current frontier.';
+    return '$chapterTitle と現在のフロンティアから構築された今日のシード ミックスをプレイします。';
   }
 
   @override
-  String get studyHarmonyModeLesson => 'Lesson Mode';
+  String get studyHarmonyModeLesson => 'レッスンモード';
 
   @override
-  String get studyHarmonyModeReview => 'Review Mode';
+  String get studyHarmonyModeReview => 'レビューモード';
 
   @override
-  String get studyHarmonyModeDaily => 'Daily Mode';
+  String get studyHarmonyModeDaily => 'デイリーモード';
 
   @override
-  String get studyHarmonyModeLegacy => 'Practice Mode';
+  String get studyHarmonyModeLegacy => '練習モード';
 
   @override
   String get studyHarmonyShortcutHint =>
-      'Enter submits or moves on. R restarts. 1-9 chooses an answer. Tab and Shift+Tab move focus.';
+      '「送信」または「次へ」と入力します。 Rが再起動します。 1 ～ 9 で答えを選択します。 Tab キーと Shift+Tab キーでフォーカスを移動します。';
 
   @override
   String studyHarmonyLivesRemaining(int remaining, int total) {
-    return '$remaining of $total lives remaining';
+    return '$total 人中 $remaining 人の残りの命';
   }
 
   @override
-  String get studyHarmonyResultSkillGainTitle => 'Skill gains';
+  String get studyHarmonyResultSkillGainTitle => 'スキルの向上';
 
   @override
-  String get studyHarmonyResultReviewFocusTitle => 'Review focus';
+  String get studyHarmonyResultReviewFocusTitle => 'レビューの焦点';
 
   @override
-  String get studyHarmonyResultRewardTitle => 'Session reward';
+  String get studyHarmonyResultRewardTitle => 'セッション報酬';
 
   @override
-  String get studyHarmonyBonusGoalsTitle => 'Bonus goals';
+  String get studyHarmonyBonusGoalsTitle => 'ボーナスゴール';
 
   @override
   String studyHarmonyResultRankLine(Object rank) {
-    return 'Rank $rank';
+    return 'ランク$rank';
   }
 
   @override
   String studyHarmonyResultStarsLine(int stars) {
-    return '$stars stars';
+    return '$stars の星';
   }
 
   @override
   String studyHarmonyResultBestLine(Object rank, int stars) {
-    return 'Best $rank 쨌 $stars stars';
+    return '$rank · $stars のベストスター';
   }
 
   @override
   String studyHarmonyResultDailyStreakLine(int count) {
-    return 'Daily streak x$count';
+    return '毎日の連続記録 x$count';
   }
 
   @override
-  String get studyHarmonyResultNewBestTag => 'New personal best';
+  String get studyHarmonyResultNewBestTag => '自己ベストを更新';
 
   @override
   String studyHarmonyResultSkillGainLine(Object skill, Object delta) {
@@ -873,172 +850,165 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get studyHarmonyReviewReasonRetryNeeded =>
-      'Review reason: retry needed';
+  String get studyHarmonyReviewReasonRetryNeeded => 'レビュー理由: 再試行が必要です';
 
   @override
-  String get studyHarmonyReviewReasonAccuracyRefresh =>
-      'Review reason: accuracy refresh';
+  String get studyHarmonyReviewReasonAccuracyRefresh => 'レビュー理由: 精度の更新';
 
   @override
-  String get studyHarmonyReviewReasonLowMastery => 'Review reason: low mastery';
+  String get studyHarmonyReviewReasonLowMastery => 'レビュー理由: 習熟度が低い';
 
   @override
-  String get studyHarmonyReviewReasonStaleSkill => 'Review reason: stale skill';
+  String get studyHarmonyReviewReasonStaleSkill => 'レビュー理由: スキルが古い';
 
   @override
-  String get studyHarmonyReviewReasonWeakSpot => 'Review reason: weak spot';
+  String get studyHarmonyReviewReasonWeakSpot => 'レビュー理由：弱点';
 
   @override
-  String get studyHarmonyReviewReasonFrontierRefresh =>
-      'Review reason: frontier refresh';
+  String get studyHarmonyReviewReasonFrontierRefresh => 'レビュー理由：フロンティアリフレッシュ';
 
   @override
-  String get studyHarmonyQuestBoardTitle => 'Quest Board';
+  String get studyHarmonyQuestBoardTitle => 'クエストボード';
 
   @override
-  String get studyHarmonyQuestCompletedTag => 'Completed';
+  String get studyHarmonyQuestCompletedTag => '完了';
 
   @override
-  String get studyHarmonyQuestTodayTag => 'Today';
+  String get studyHarmonyQuestTodayTag => '今日';
 
   @override
   String studyHarmonyQuestProgressLabel(int current, int target) {
-    return '$current/$target complete';
+    return '$current/$target 完了';
   }
 
   @override
-  String get studyHarmonyQuestDailyTitle => 'Daily streak';
+  String get studyHarmonyQuestDailyTitle => '毎日の連続記録';
 
   @override
-  String get studyHarmonyQuestDailyBody =>
-      'Clear today\'s seeded mix to extend your streak.';
+  String get studyHarmonyQuestDailyBody => '今日のシードミックスをクリアして連続記録を伸ばしましょう。';
 
   @override
   String get studyHarmonyQuestDailyBodyCompleted =>
-      'Today\'s daily is already cleared. The streak is safe for now.';
+      '今日のデイリーはすでにクリアされています。ストリークは今のところ安全です。';
 
   @override
-  String get studyHarmonyQuestFrontierTitle => 'Frontier push';
+  String get studyHarmonyQuestFrontierTitle => 'フロンティアプッシュ';
 
   @override
   String studyHarmonyQuestFrontierBody(Object lessonTitle) {
-    return 'Clear $lessonTitle to move the path forward.';
+    return '$lessonTitle をクリアして学習ルートを前へ進めましょう。';
   }
 
   @override
   String get studyHarmonyQuestFrontierBodyCompleted =>
-      'Every currently unlocked lesson is cleared. Replay a boss or chase more stars.';
+      'いま解放されているレッスンはすべてクリア済みです。ボスをやり直すか、さらに星を取りに行きましょう。';
 
   @override
-  String get studyHarmonyQuestStarsTitle => 'Star hunt';
+  String get studyHarmonyQuestStarsTitle => 'スターハント';
 
   @override
   String studyHarmonyQuestStarsBody(Object chapterTitle) {
-    return 'Push extra stars inside $chapterTitle.';
+    return '余分な星を $chapterTitle 内に押し込みます。';
   }
 
   @override
-  String get studyHarmonyQuestStarsBodyFallback =>
-      'Push extra stars in your current chapter.';
+  String get studyHarmonyQuestStarsBodyFallback => '現在の章に追加のスターを押してください。';
 
   @override
   String studyHarmonyComboLabel(int count) {
-    return 'Combo x$count';
+    return 'コンボx$count';
   }
 
   @override
   String studyHarmonyBestComboLabel(int count) {
-    return 'Best combo x$count';
+    return 'ベストコンボ x$count';
   }
 
   @override
-  String get studyHarmonyBonusFullHearts => 'Keep all hearts';
+  String get studyHarmonyBonusFullHearts => 'すべての心を守ります';
 
   @override
   String studyHarmonyBonusAccuracyTarget(int percent) {
-    return 'Reach $percent% accuracy';
+    return '$percent% の精度に達する';
   }
 
   @override
   String studyHarmonyBonusComboTarget(int count) {
-    return 'Reach combo x$count';
+    return 'リーチコンボ x$count';
   }
 
   @override
-  String get studyHarmonyBonusSweepTag => 'Bonus sweep';
+  String get studyHarmonyBonusSweepTag => 'ボーナススイープ';
 
   @override
-  String get studyHarmonySkillNoteRead => 'Note reading';
+  String get studyHarmonySkillNoteRead => 'ノートの読み方';
 
   @override
-  String get studyHarmonySkillNoteFindKeyboard => 'Keyboard note finding';
+  String get studyHarmonySkillNoteFindKeyboard => 'キーボードノートの検索';
 
   @override
-  String get studyHarmonySkillNoteAccidentals => 'Sharps and flats';
+  String get studyHarmonySkillNoteAccidentals => 'シャープとフラット';
 
   @override
-  String get studyHarmonySkillChordSymbolToKeys => 'Chord symbol to keys';
+  String get studyHarmonySkillChordSymbolToKeys => 'キーへのコード記号';
 
   @override
-  String get studyHarmonySkillChordNameFromTones => 'Chord naming';
+  String get studyHarmonySkillChordNameFromTones => 'コードのネーミング';
 
   @override
-  String get studyHarmonySkillScaleBuild => 'Scale building';
+  String get studyHarmonySkillScaleBuild => 'スケールビルディング';
 
   @override
-  String get studyHarmonySkillRomanRealize => 'Roman numeral realization';
+  String get studyHarmonySkillRomanRealize => 'ローマ数字の実現';
 
   @override
-  String get studyHarmonySkillRomanIdentify => 'Roman numeral identification';
+  String get studyHarmonySkillRomanIdentify => 'ローマ数字 の識別';
 
   @override
-  String get studyHarmonySkillHarmonyDiatonicity => 'Diatonicity';
+  String get studyHarmonySkillHarmonyDiatonicity => 'ダイアトニシティ';
 
   @override
-  String get studyHarmonySkillHarmonyFunction => 'Function basics';
+  String get studyHarmonySkillHarmonyFunction => '関数の基本';
 
   @override
-  String get studyHarmonySkillProgressionKeyCenter => 'Progression key center';
+  String get studyHarmonySkillProgressionKeyCenter => '進行状況 キーセンター';
 
   @override
-  String get studyHarmonySkillProgressionFunction =>
-      'Progression function reading';
+  String get studyHarmonySkillProgressionFunction => '進行関数の読み取り';
 
   @override
-  String get studyHarmonySkillProgressionNonDiatonic =>
-      'Progression non-diatonic detection';
+  String get studyHarmonySkillProgressionNonDiatonic => '進行状況 ノンダイアトニック の検出';
 
   @override
-  String get studyHarmonySkillProgressionFillBlank => 'Progression fill-in';
+  String get studyHarmonySkillProgressionFillBlank => 'プログレッションフィルイン';
 
   @override
-  String get studyHarmonyHubChapterSectionTitle => 'Chapters';
+  String get studyHarmonyHubChapterSectionTitle => '章';
 
   @override
   String studyHarmonyChapterProgressText(int cleared, int total) {
-    return '$cleared/$total lessons cleared';
+    return '$cleared/$total レッスンをクリアしました';
   }
 
   @override
   String studyHarmonyLessonsCount(int count) {
-    return '$count lessons';
+    return '$count レッスン';
   }
 
   @override
   String studyHarmonyCompletedLessonsCount(int count) {
-    return '$count cleared';
+    return '$count クリア';
   }
 
   @override
-  String get studyHarmonyOpenChapterAction => 'Open chapter';
+  String get studyHarmonyOpenChapterAction => '章を開く';
 
   @override
-  String get studyHarmonyLockedChapterTag => 'Locked chapter';
+  String get studyHarmonyLockedChapterTag => 'ロックされた章';
 
   @override
   String studyHarmonyChapterNextUp(Object lessonTitle) {
-    return 'Next up: $lessonTitle';
+    return '次は $lessonTitle';
   }
 
   @override
@@ -1048,411 +1018,397 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String studyHarmonyTrackPlaceholderBody(Object coreTrack) {
-    return 'This track is still locked. Switch back to $coreTrack to keep studying today.';
+    return 'このトラックはまだロックされています。 $coreTrack に戻って今日も勉強を続けてください。';
   }
 
   @override
-  String get studyHarmonyCoreTrackTitle => 'Core Track';
+  String get studyHarmonyCoreTrackTitle => '基礎コース';
 
   @override
   String get studyHarmonyCoreTrackDescription =>
-      'Start with notes and the keyboard, then build up through chords, scales, Roman numerals, diatonic basics, and short progression analysis.';
+      '音符とキーボードから始めて、コード、スケール、ローマ数字、ダイアトニック の基本、短い進行分析を通じて構築していきます。';
 
   @override
-  String get studyHarmonyChapterNotesTitle => 'Chapter 1: Notes & Keyboard';
+  String get studyHarmonyChapterNotesTitle => '第 1 章: ノートとキーボード';
 
   @override
   String get studyHarmonyChapterNotesDescription =>
-      'Map note names to the keyboard and get comfortable with white keys and simple accidentals.';
+      '音名をキーボードにマッピングし、白鍵とシンプルな臨時記号に慣れてください。';
 
   @override
-  String get studyHarmonyChapterChordsTitle => 'Chapter 2: Chord Basics';
+  String get studyHarmonyChapterChordsTitle => '第 2 章: コードの基本';
 
   @override
   String get studyHarmonyChapterChordsDescription =>
-      'Spell basic triads and sevenths, then name common chord shapes from their tones.';
+      '基本的なトライアドとセブンスを綴り、その音色から一般的なコードの形に名前を付けます。';
 
   @override
-  String get studyHarmonyChapterScalesTitle => 'Chapter 3: Scales & Keys';
+  String get studyHarmonyChapterScalesTitle => '第 3 章: スケールとキー';
 
   @override
   String get studyHarmonyChapterScalesDescription =>
-      'Build major and minor scales, then spot which tones belong inside a key.';
+      '長音階と短音階を作成し、キー内にどの音が属するかを特定します。';
 
   @override
-  String get studyHarmonyChapterRomanTitle =>
-      'Chapter 4: Roman Numerals & Diatonicity';
+  String get studyHarmonyChapterRomanTitle => '第 4 章: ローマ数字とダイアトニシティ';
 
   @override
   String get studyHarmonyChapterRomanDescription =>
-      'Turn simple Roman numerals into chords, identify them from chords, and sort diatonic basics by function.';
+      '単純な ローマ数字 をコードに変換し、コードから識別し、ダイアトニック の基本を機能別に分類します。';
 
   @override
-  String get studyHarmonyChapterProgressionDetectiveTitle =>
-      'Chapter 5: Progression Detective I';
+  String get studyHarmonyChapterProgressionDetectiveTitle => '第5章 進行探偵I';
 
   @override
   String get studyHarmonyChapterProgressionDetectiveDescription =>
-      'Read short core progressions, find the likely key center, and spot the chord function or odd one out.';
+      '短いコア進行を読み、可能性の高い キーセンター を見つけて、コード関数または奇妙なコードを見つけます。';
 
   @override
-  String get studyHarmonyChapterMissingChordTitle =>
-      'Chapter 6: Missing Chord I';
+  String get studyHarmonyChapterMissingChordTitle => '第6章: ミッシングコード I';
 
   @override
   String get studyHarmonyChapterMissingChordDescription =>
-      'Fill one blank inside a short progression and learn where cadence and function want to go next.';
+      '短い進行内の空白を 1 つ埋めて、リズムと機能が次にどこに進むべきかを学びます。';
 
   @override
-  String get studyHarmonyOpenLessonAction => 'Open lesson';
+  String get studyHarmonyOpenLessonAction => 'レッスンを開く';
 
   @override
-  String get studyHarmonyLockedLessonAction => 'Locked';
+  String get studyHarmonyLockedLessonAction => '未開放';
 
   @override
-  String get studyHarmonyClearedTag => 'Cleared';
+  String get studyHarmonyClearedTag => 'クリア';
 
   @override
-  String get studyHarmonyComingSoonTag => 'Coming soon';
+  String get studyHarmonyComingSoonTag => '近日公開';
 
   @override
-  String get studyHarmonyPopTrackTitle => 'Pop Track';
+  String get studyHarmonyPopTrackTitle => 'ポップコース';
 
   @override
   String get studyHarmonyPopTrackDescription =>
-      'A song-focused path is planned after the Core track is stable.';
+      'コアトラックが安定した後に、歌に焦点を当てたパスが計画されています。';
 
   @override
-  String get studyHarmonyJazzTrackTitle => 'Jazz Track';
+  String get studyHarmonyJazzTrackTitle => 'ジャズコース';
 
   @override
   String get studyHarmonyJazzTrackDescription =>
-      'Jazz harmony content stays locked until the Core curriculum settles.';
+      'ジャズ ハーモニー コンテンツは、コア カリキュラムが定着するまでロックされたままになります。';
 
   @override
-  String get studyHarmonyClassicalTrackTitle => 'Classical Track';
+  String get studyHarmonyClassicalTrackTitle => 'クラシックコース';
 
   @override
   String get studyHarmonyClassicalTrackDescription =>
-      'Functional harmony in classical contexts will arrive in a later phase.';
+      '古典的な文脈における機能的調和は、後の段階で登場します。';
 
   @override
-  String get studyHarmonyObjectiveQuickDrill => 'Quick Drill';
+  String get studyHarmonyObjectiveQuickDrill => 'クイックドリル';
 
   @override
-  String get studyHarmonyObjectiveBossReview => 'Boss Review';
+  String get studyHarmonyObjectiveBossReview => 'ボス復習';
 
   @override
-  String get studyHarmonyLessonNotesKeyboardTitle => 'White-Key Note Hunt';
+  String get studyHarmonyLessonNotesKeyboardTitle => '白鍵ノートハント';
 
   @override
   String get studyHarmonyLessonNotesKeyboardDescription =>
-      'Read note names and tap the matching white key.';
+      '音名を読み、一致する白鍵をタップします。';
 
   @override
-  String get studyHarmonyLessonNotesPreviewTitle => 'Name the Highlighted Note';
+  String get studyHarmonyLessonNotesPreviewTitle => 'ハイライト表示されたメモに名前を付けます';
 
   @override
   String get studyHarmonyLessonNotesPreviewDescription =>
-      'Look at a highlighted key and choose the correct note name.';
+      'ハイライト表示されたキーを見て、正しい音名を選択してください。';
 
   @override
-  String get studyHarmonyLessonNotesAccidentalsTitle => 'Black Keys and Twins';
+  String get studyHarmonyLessonNotesAccidentalsTitle => '黒鍵と双子';
 
   @override
   String get studyHarmonyLessonNotesAccidentalsDescription =>
-      'Get a first look at sharp and flat spellings for the black keys.';
+      '黒鍵のシャープスペルとフラットスペルを初めて見てみましょう。';
 
   @override
-  String get studyHarmonyLessonNotesBossTitle => 'Boss: Fast Note Hunt';
+  String get studyHarmonyLessonNotesBossTitle => 'ボス: ファストノートハント';
 
   @override
   String get studyHarmonyLessonNotesBossDescription =>
-      'Mix note reading and keyboard finding into one short speed round.';
+      '音符の読み取りとキーボードの検索を 1 つの短いスピード ラウンドに混ぜ合わせます。';
 
   @override
-  String get studyHarmonyLessonTriadKeyboardTitle => 'Triads on the Keyboard';
+  String get studyHarmonyLessonTriadKeyboardTitle => 'キーボード上のトライアド';
 
   @override
   String get studyHarmonyLessonTriadKeyboardDescription =>
-      'Build common major, minor, and diminished triads directly on the keyboard.';
+      '一般的なメジャー、マイナー、ディミニッシュ トライアドをキーボード上で直接作成します。';
 
   @override
-  String get studyHarmonyLessonSeventhKeyboardTitle =>
-      'Sevenths on the Keyboard';
+  String get studyHarmonyLessonSeventhKeyboardTitle => 'キーボードのセブンス';
 
   @override
   String get studyHarmonyLessonSeventhKeyboardDescription =>
-      'Add the seventh and spell a few common 7th chords on the keyboard.';
+      'セブンスを追加し、キーボードで一般的なセブンスコードをいくつか綴ります。';
 
   @override
-  String get studyHarmonyLessonChordNameTitle => 'Name the Highlighted Chord';
+  String get studyHarmonyLessonChordNameTitle => 'ハイライト表示されたコードに名前を付けます';
 
   @override
   String get studyHarmonyLessonChordNameDescription =>
-      'Read a highlighted chord shape and choose the correct chord name.';
+      'ハイライト表示されたコードシェイプを読み取って、正しいコード名を選択します。';
 
   @override
-  String get studyHarmonyLessonChordsBossTitle =>
-      'Boss: Triads and Sevenths Review';
+  String get studyHarmonyLessonChordsBossTitle => 'Boss: トライアドとセブンス レビュー';
 
   @override
   String get studyHarmonyLessonChordsBossDescription =>
-      'Switch between chord spelling and chord naming in one mixed review.';
+      '1 つの混合レビューでコードのスペルとコードのネーミングを切り替えます。';
 
   @override
-  String get studyHarmonyLessonMajorScaleTitle => 'Build Major Scales';
+  String get studyHarmonyLessonMajorScaleTitle => 'メジャースケールを構築する';
 
   @override
   String get studyHarmonyLessonMajorScaleDescription =>
-      'Choose every tone that belongs to a simple major scale.';
+      '単純なメジャースケールに属するすべての音を選択します。';
 
   @override
-  String get studyHarmonyLessonMinorScaleTitle => 'Build Minor Scales';
+  String get studyHarmonyLessonMinorScaleTitle => 'マイナースケールを構築する';
 
   @override
   String get studyHarmonyLessonMinorScaleDescription =>
-      'Build natural minor and harmonic minor scales from a few common keys.';
+      'いくつかの共通のキーからナチュラルマイナースケールとハーモニックマイナースケールを構築します。';
 
   @override
-  String get studyHarmonyLessonKeyMembershipTitle => 'Key Membership';
+  String get studyHarmonyLessonKeyMembershipTitle => '主要メンバー';
 
   @override
   String get studyHarmonyLessonKeyMembershipDescription =>
-      'Find which tones belong inside a named key.';
+      '名前付きキー内にどのトーンが属するかを見つけます。';
 
   @override
-  String get studyHarmonyLessonScalesBossTitle => 'Boss: Scale Repair';
+  String get studyHarmonyLessonScalesBossTitle => 'ボス：鱗の修理';
 
   @override
   String get studyHarmonyLessonScalesBossDescription =>
-      'Mix scale building and key membership in a short repair round.';
+      '短期間の修理ラウンドで大規模な構築と主要なメンバーシップを組み合わせます。';
 
   @override
-  String get studyHarmonyLessonRomanToChordTitle => 'Roman to Chord';
+  String get studyHarmonyLessonRomanToChordTitle => 'ローマ字から和音へ';
 
   @override
   String get studyHarmonyLessonRomanToChordDescription =>
-      'Read a key and Roman numeral, then choose the matching chord.';
+      'キーと ローマ数字 を読み取り、一致するコードを選択します。';
 
   @override
-  String get studyHarmonyLessonChordToRomanTitle => 'Chord to Roman';
+  String get studyHarmonyLessonChordToRomanTitle => 'コードからローマ字へ';
 
   @override
   String get studyHarmonyLessonChordToRomanDescription =>
-      'Read a chord inside a key and choose the matching Roman numeral.';
+      'キー内のコードを読み取り、一致する ローマ数字 を選択します。';
 
   @override
-  String get studyHarmonyLessonDiatonicityTitle => 'Diatonic or Not';
+  String get studyHarmonyLessonDiatonicityTitle => 'ダイアトニックか否か';
 
   @override
   String get studyHarmonyLessonDiatonicityDescription =>
-      'Sort chords into diatonic and non-diatonic answers in simple keys.';
+      'コードを簡単なキーで ダイアトニック と ノンダイアトニック の答えに分類します。';
 
   @override
-  String get studyHarmonyLessonFunctionTitle => 'Function Basics';
+  String get studyHarmonyLessonFunctionTitle => '関数の基本';
 
   @override
   String get studyHarmonyLessonFunctionDescription =>
-      'Classify easy chords as tonic, predominant, or dominant.';
+      '簡単なコードをトニック、プレドミナント、またはドミナントに分類します。';
 
   @override
-  String get studyHarmonyLessonRomanBossTitle => 'Boss: Functional Basics Mix';
+  String get studyHarmonyLessonRomanBossTitle => 'ボス: ファンクショナルベーシックミックス';
 
   @override
   String get studyHarmonyLessonRomanBossDescription =>
-      'Review Roman-to-chord, chord-to-Roman, diatonicity, and function together.';
+      'ローマ字からコード、コードからローマ字、ダイアトニックity、および機能を一緒に確認してください。';
 
   @override
-  String get studyHarmonyLessonProgressionKeyCenterTitle =>
-      'Find the Key Center';
+  String get studyHarmonyLessonProgressionKeyCenterTitle => 'キーセンターを見つける';
 
   @override
   String get studyHarmonyLessonProgressionKeyCenterDescription =>
-      'Read a short progression and choose the key center that makes the clearest sense.';
+      '短い進行を読んで、最も明確に意味のある キーセンター を選択してください。';
 
   @override
-  String get studyHarmonyLessonProgressionFunctionTitle =>
-      'Function in Context';
+  String get studyHarmonyLessonProgressionFunctionTitle => 'コンテキスト内の関数';
 
   @override
   String get studyHarmonyLessonProgressionFunctionDescription =>
-      'Focus on one highlighted chord and name its role inside a short progression.';
+      '強調表示された 1 つのコードに焦点を当て、短い進行の中でのその役割に名前を付けます。';
 
   @override
-  String get studyHarmonyLessonProgressionNonDiatonicTitle =>
-      'Find the Outsider';
+  String get studyHarmonyLessonProgressionNonDiatonicTitle => 'アウトサイダーを探せ';
 
   @override
   String get studyHarmonyLessonProgressionNonDiatonicDescription =>
-      'Spot the one chord that falls outside the main diatonic reading.';
+      'メインの ダイアトニック 読み取り値の範囲外にある 1 つのコードを見つけます。';
 
   @override
-  String get studyHarmonyLessonProgressionBossTitle => 'Boss: Mixed Analysis';
+  String get studyHarmonyLessonProgressionBossTitle => 'ボス: 混合分析';
 
   @override
   String get studyHarmonyLessonProgressionBossDescription =>
-      'Mix key-center reading, function spotting, and non-diatonic detection in one short detective round.';
+      'キーセンターの読み取り、関数の検出、および ノンダイアトニック の検出を 1 つの短い検出ラウンドに組み合わせます。';
 
   @override
-  String get studyHarmonyLessonMissingChordPatternTitle =>
-      'Fill the Missing Chord';
+  String get studyHarmonyLessonMissingChordPatternTitle => '足りないコードを埋める';
 
   @override
   String get studyHarmonyLessonMissingChordPatternDescription =>
-      'Complete a short four-chord progression by choosing the chord that fits the local function best.';
+      'ローカル機能に最もよく適合するコードを選択して、短い 4 つのコード進行を完成させます。';
 
   @override
-  String get studyHarmonyLessonMissingChordCadenceTitle => 'Cadence Fill-In';
+  String get studyHarmonyLessonMissingChordCadenceTitle => 'ケイデンスフィルイン';
 
   @override
   String get studyHarmonyLessonMissingChordCadenceDescription =>
-      'Use the pull toward a cadence to choose the missing chord near the end of a phrase.';
+      'フレーズの終わり近くで欠落しているコードを選択するには、リズムに向かってプルを使用します。';
 
   @override
-  String get studyHarmonyLessonMissingChordBossTitle => 'Boss: Mixed Fill-In';
+  String get studyHarmonyLessonMissingChordBossTitle => 'ボス: ミックスフィルイン';
 
   @override
   String get studyHarmonyLessonMissingChordBossDescription =>
-      'Solve a short set of fill-in progression questions with a little more harmonic pressure.';
+      'もう少し調和的な圧力を加えて、穴埋め進行の問題の短いセットを解きます。';
 
   @override
-  String get studyHarmonyChapterCheckpointTitle => 'Checkpoint Gauntlet';
+  String get studyHarmonyChapterCheckpointTitle => 'チェックポイント ガントレット';
 
   @override
   String get studyHarmonyChapterCheckpointDescription =>
-      'Combine key-center, function, color, and fill-in drills in faster mixed review sets.';
+      'キーセンター、機能、色、および塗りつぶしのドリルを組み合わせて、より高速な混合レビュー セットを作成します。';
 
   @override
-  String get studyHarmonyLessonCheckpointCadenceRushTitle => 'Cadence Rush';
+  String get studyHarmonyLessonCheckpointCadenceRushTitle => 'ケイデンスラッシュ';
 
   @override
   String get studyHarmonyLessonCheckpointCadenceRushDescription =>
-      'Read the harmonic role quickly, then plug the missing cadential chord under light pressure.';
+      '和声の役割を素早く読み取り、欠けているカデンシャルコードを軽い圧力で埋め込みます。';
 
   @override
-  String get studyHarmonyLessonCheckpointColorKeyTitle => 'Color and Key Shift';
+  String get studyHarmonyLessonCheckpointColorKeyTitle => 'カラーとキーシフト';
 
   @override
   String get studyHarmonyLessonCheckpointColorKeyDescription =>
-      'Switch between center detection and non-diatonic color calls without losing the thread.';
+      'スレッドを失うことなく、中心検出と ノンダイアトニック カラー呼び出しを切り替えます。';
 
   @override
-  String get studyHarmonyLessonCheckpointBossTitle =>
-      'Boss: Checkpoint Gauntlet';
+  String get studyHarmonyLessonCheckpointBossTitle => 'ボス：チェックポイント・ガントレット';
 
   @override
   String get studyHarmonyLessonCheckpointBossDescription =>
-      'Clear one integrated checkpoint that mixes key-center, function, color, and cadence repair prompts.';
+      'キーセンター、機能、色、およびリズムの修復プロンプトを組み合わせた 1 つの統合チェックポイントをクリアします。';
 
   @override
-  String get studyHarmonyChapterCapstoneTitle => 'Capstone Trials';
+  String get studyHarmonyChapterCapstoneTitle => 'キャップストーントライアル';
 
   @override
   String get studyHarmonyChapterCapstoneDescription =>
-      'Finish the core path with tougher mixed progression rounds that ask for speed, color hearing, and clean resolution choices.';
+      'スピード、色の聴力、きれいな解像度の選択が求められる、より厳しい混合進行ラウンドでコア パスを終了します。';
 
   @override
-  String get studyHarmonyLessonCapstoneTurnaroundTitle => 'Turnaround Relay';
+  String get studyHarmonyLessonCapstoneTurnaroundTitle => 'ターンアラウンドリレー';
 
   @override
   String get studyHarmonyLessonCapstoneTurnaroundDescription =>
-      'Swap between function reading and missing-chord repair across compact turnarounds.';
+      'コンパクトなターンアラウンドで、関数の読み取りと欠落コードの修復を切り替えます。';
 
   @override
-  String get studyHarmonyLessonCapstoneBorrowedColorTitle =>
-      'Borrowed Color Calls';
+  String get studyHarmonyLessonCapstoneBorrowedColorTitle => '借用したカラーコール';
 
   @override
   String get studyHarmonyLessonCapstoneBorrowedColorDescription =>
-      'Catch modal color quickly, then confirm the key center before it slips away.';
+      'モーダルカラーを素早くキャッ​​チし、滑り落ちてしまう前に キーセンター を確認します。';
 
   @override
-  String get studyHarmonyLessonCapstoneResolutionTitle => 'Resolution Lab';
+  String get studyHarmonyLessonCapstoneResolutionTitle => '解像度ラボ';
 
   @override
   String get studyHarmonyLessonCapstoneResolutionDescription =>
-      'Track where each phrase wants to land and choose the chord that best resolves the motion.';
+      '各フレーズが着地したい場所を追跡し、モーションを最もよく解決するコードを選択します。';
 
   @override
-  String get studyHarmonyLessonCapstoneBossTitle =>
-      'Boss: Final Progression Exam';
+  String get studyHarmonyLessonCapstoneBossTitle => 'ボス：最終昇級試験';
 
   @override
   String get studyHarmonyLessonCapstoneBossDescription =>
-      'Pass one final mixed exam with center, function, color, and resolution all under pressure.';
+      'センター、機能、色、解像度のすべてがプレッシャーにさらされている最後の混合試験に合格します。';
 
   @override
   String studyHarmonyPromptFindNoteOnKeyboard(Object note) {
-    return 'Find $note on the keyboard';
+    return 'キーボードで $note を見つけます';
   }
 
   @override
-  String get studyHarmonyPromptNameHighlightedNote =>
-      'Which note is highlighted?';
+  String get studyHarmonyPromptNameHighlightedNote => 'どの音符が強調表示されていますか?';
 
   @override
   String studyHarmonyPromptFindChordOnKeyboard(Object chord) {
-    return 'Build $chord on the keyboard';
+    return 'キーボード上に $chord をビルドします';
   }
 
   @override
-  String get studyHarmonyPromptNameHighlightedChord =>
-      'Which chord is highlighted?';
+  String get studyHarmonyPromptNameHighlightedChord => 'どのコードが強調表示されますか?';
 
   @override
   String studyHarmonyPromptBuildScale(Object scaleName) {
-    return 'Pick every note in $scaleName';
+    return '$scaleName 内のすべての音符を選択します';
   }
 
   @override
   String studyHarmonyPromptKeyMembership(Object keyName) {
-    return 'Pick the notes that belong to $keyName';
+    return '$keyName に属するノートを選択します';
   }
 
   @override
   String studyHarmonyPromptRomanToChord(Object keyName, Object roman) {
-    return 'In $keyName, which chord matches $roman?';
+    return '$keyName で、$roman に一致するコードはどれですか?';
   }
 
   @override
   String studyHarmonyPromptChordToRoman(Object keyName, Object chord) {
-    return 'In $keyName, what Roman numeral matches $chord?';
+    return '$keyName で、ローマ数字 が $chord と一致するものはどれですか?';
   }
 
   @override
   String studyHarmonyPromptDiatonicity(Object keyName, Object chord) {
-    return 'In $keyName, is $chord diatonic?';
+    return '$keyName では、$chord ダイアトニック ですか?';
   }
 
   @override
   String studyHarmonyPromptFunction(Object keyName, Object chord) {
-    return 'In $keyName, what function does $chord have?';
+    return '$keyNameにおいて、$chordはどのような機能を持っていますか？';
   }
 
   @override
-  String get studyHarmonyProgressionStripLabel => 'Progression';
+  String get studyHarmonyProgressionStripLabel => '進行状況';
 
   @override
   String get studyHarmonyPromptProgressionKeyCenter =>
-      'Which key center best fits this progression?';
+      'この進行に最も適合する キーセンター はどれですか?';
 
   @override
   String studyHarmonyPromptProgressionFunction(Object chord) {
-    return 'What function does $chord play here?';
+    return '$chord はここでどのような機能を果たしますか?';
   }
 
   @override
   String get studyHarmonyPromptProgressionNonDiatonic =>
-      'Which chord feels least diatonic in this progression?';
+      'この進行の中で ダイアトニック が最も感じられないコードはどれですか?';
 
   @override
   String get studyHarmonyPromptProgressionMissingChord =>
-      'Which chord best fills the blank?';
+      'どのコードが空白を埋めるのに最も適していますか?';
 
   @override
   String studyHarmonyProgressionExplanationKeyCenter(Object keyLabel) {
-    return 'The analyzer reads this progression most clearly in $keyLabel.';
+    return 'アナライザーは、$keyLabel でこの進行を最も明確に読み取ります。';
   }
 
   @override
@@ -1460,7 +1416,7 @@ class AppLocalizationsJa extends AppLocalizations {
     Object chord,
     Object functionLabel,
   ) {
-    return '$chord behaves most like a $functionLabel chord in this context.';
+    return 'このコンテキストでは、$chord は $functionLabel コードと最もよく似た動作をします。';
   }
 
   @override
@@ -1468,7 +1424,7 @@ class AppLocalizationsJa extends AppLocalizations {
     Object chord,
     Object keyLabel,
   ) {
-    return '$chord stands out against the main $keyLabel reading, so it is the best non-diatonic pick.';
+    return '$chord はメインの $keyLabel 読み取り値に対して際立っているため、ノンダイアトニック の最良の選択です。';
   }
 
   @override
@@ -1476,220 +1432,216 @@ class AppLocalizationsJa extends AppLocalizations {
     Object chord,
     Object functionLabel,
   ) {
-    return '$chord restores the expected $functionLabel pull in this progression.';
+    return '$chord は、この進行で予想される $functionLabel プルを復元します。';
   }
 
   @override
   String studyHarmonyProgressionChoiceSlot(int index, Object chord) {
-    return '$index. $chord';
+    return '$index。 $chord';
   }
 
   @override
   String studyHarmonyScaleNameMajor(Object tonic) {
-    return '$tonic major';
+    return '$tonicメジャー';
   }
 
   @override
   String studyHarmonyScaleNameNaturalMinor(Object tonic) {
-    return '$tonic natural minor';
+    return '$tonic ナチュラルマイナー';
   }
 
   @override
   String studyHarmonyScaleNameHarmonicMinor(Object tonic) {
-    return '$tonic harmonic minor';
+    return '$tonicハーモニックマイナー';
   }
 
   @override
   String studyHarmonyKeyNameMajor(Object tonic) {
-    return '$tonic major';
+    return '$tonicメジャー';
   }
 
   @override
   String studyHarmonyKeyNameMinor(Object tonic) {
-    return '$tonic minor';
+    return '$tonic マイナー';
   }
 
   @override
-  String get studyHarmonyChoiceDiatonic => 'Diatonic';
+  String get studyHarmonyChoiceDiatonic => 'ダイアトニック';
 
   @override
-  String get studyHarmonyChoiceNonDiatonic => 'Non-diatonic';
+  String get studyHarmonyChoiceNonDiatonic => '非 ダイアトニック';
 
   @override
-  String get studyHarmonyChoiceTonic => 'Tonic';
+  String get studyHarmonyChoiceTonic => 'トニック';
 
   @override
-  String get studyHarmonyChoicePredominant => 'Predominant';
+  String get studyHarmonyChoicePredominant => '優勢';
 
   @override
-  String get studyHarmonyChoiceDominant => 'Dominant';
+  String get studyHarmonyChoiceDominant => '支配的な';
 
   @override
-  String get studyHarmonyChoiceOther => 'Other';
+  String get studyHarmonyChoiceOther => '他の';
 
   @override
-  String get chordAnalyzerTitle => 'Chord Analyzer';
+  String get chordAnalyzerTitle => 'コード解析';
 
   @override
-  String get chordAnalyzerSubtitle =>
-      'Paste a progression and get a conservative harmonic reading.';
+  String get chordAnalyzerSubtitle => '進行を貼り付けると、保守的な和声解釈を返します。';
 
   @override
-  String get chordAnalyzerInputLabel => 'Chord progression';
+  String get chordAnalyzerInputLabel => 'コード進行';
 
   @override
   String get chordAnalyzerInputHint => 'Dm7 G7 Cmaj7';
 
   @override
   String get chordAnalyzerInputHelper =>
-      'Separators outside parentheses can be spaces, |, or commas. Commas inside parentheses stay inside one chord. Lowercase roots, slash bass, sus/alt/add forms, and tensions such as C7(b9, #11) are supported. Touch devices can use the chord pad or switch to ABC input.';
+      '括弧の外では、区切りにスペース、|、カンマを使えます。括弧内のカンマは同じコード内のまま扱われます。小文字ルート、スラッシュベース、sus/alt/add 形式、C7(b9, #11) のようなテンション表記に対応しています。タッチ端末ではコードパッドを使うか、ABC 入力に切り替えられます。';
 
   @override
-  String get chordAnalyzerAnalyze => 'Analyze';
+  String get chordAnalyzerAnalyze => '解析する';
 
   @override
-  String get chordAnalyzerKeyboardTitle => 'Chord Pad';
+  String get chordAnalyzerKeyboardTitle => 'コードパッド';
 
   @override
   String get chordAnalyzerKeyboardTouchHint =>
-      'Tap tokens to build a progression. ABC input keeps the system keyboard available when you need free typing.';
+      'トークンをタップして進行を組み立てます。ABC 入力にすると、自由入力が必要なときもシステムキーボードを使えます。';
 
   @override
   String get chordAnalyzerKeyboardDesktopHint =>
-      'Type, paste, or tap tokens to insert them at the cursor.';
+      '入力、貼り付け、またはトークンのタップでカーソル位置に挿入できます。';
 
   @override
-  String get chordAnalyzerChordPad => 'Pad';
+  String get chordAnalyzerChordPad => 'パッド';
 
   @override
   String get chordAnalyzerRawInput => 'ABC';
 
   @override
-  String get chordAnalyzerPaste => 'Paste';
+  String get chordAnalyzerPaste => '貼り付け';
 
   @override
-  String get chordAnalyzerClear => 'Clear';
+  String get chordAnalyzerClear => 'クリア';
 
   @override
-  String get chordAnalyzerBackspace => 'Backspace';
+  String get chordAnalyzerBackspace => '削除';
 
   @override
-  String get chordAnalyzerSpace => 'Space';
+  String get chordAnalyzerSpace => 'スペース';
 
   @override
-  String get chordAnalyzerAnalyzing => 'Analyzing progression...';
+  String get chordAnalyzerAnalyzing => '進行を解析中...';
 
   @override
-  String get chordAnalyzerInitialTitle => 'Start with a progression';
+  String get chordAnalyzerInitialTitle => '進行から始める';
 
   @override
   String get chordAnalyzerInitialBody =>
-      'Enter a progression such as Dm7 G7 Cmaj7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, and a short summary.';
+      'Dm7 G7 Cmaj7 や Cmaj7 | Am7 D7 | Gmaj7 のような進行を入力すると、考えられるキー、ローマ数字、短い要約を確認できます。';
 
   @override
-  String get chordAnalyzerDetectedKeys => 'Detected Keys';
+  String get chordAnalyzerDetectedKeys => '検出されたキー';
 
   @override
-  String get chordAnalyzerPrimaryReading => 'Primary reading';
+  String get chordAnalyzerPrimaryReading => '主要な読み';
 
   @override
-  String get chordAnalyzerAlternativeReading => 'Alternative reading';
+  String get chordAnalyzerAlternativeReading => '代替の読み';
 
   @override
-  String get chordAnalyzerChordAnalysis => 'Chord-by-chord analysis';
+  String get chordAnalyzerChordAnalysis => 'コードごとの分析';
 
   @override
   String chordAnalyzerMeasureLabel(Object index) {
-    return 'Measure $index';
+    return '$index 小節目';
   }
 
   @override
-  String get chordAnalyzerProgressionSummary => 'Progression summary';
+  String get chordAnalyzerProgressionSummary => '進行の要約';
 
   @override
-  String get chordAnalyzerWarnings => 'Warnings and ambiguities';
+  String get chordAnalyzerWarnings => '注意点と曖昧さ';
 
   @override
-  String get chordAnalyzerNoInputError =>
-      'Enter a chord progression to analyze.';
+  String get chordAnalyzerNoInputError => '解析するコード進行を入力してください。';
 
   @override
-  String get chordAnalyzerNoRecognizedChordsError =>
-      'No recognizable chords were found in the progression.';
+  String get chordAnalyzerNoRecognizedChordsError => '進行内に認識できるコードが見つかりませんでした。';
 
   @override
   String chordAnalyzerPartialParseWarning(Object tokens) {
-    return 'Some symbols were skipped: $tokens';
+    return '一部の記号を読み飛ばしました: $tokens';
   }
 
   @override
   String chordAnalyzerKeyAmbiguityWarning(Object primary, Object alternative) {
-    return 'The key center is still somewhat ambiguous between $primary and $alternative.';
+    return 'キーセンターは $primary と $alternative の間で、まだやや曖昧です。';
   }
 
   @override
   String get chordAnalyzerUnresolvedWarning =>
-      'Some chords stay ambiguous, so this reading remains intentionally conservative.';
+      '一部のコードはなお曖昧なままなので、この読みは意図的に保守的にとどめています。';
 
   @override
-  String get chordAnalyzerFunctionTonic => 'Tonic';
+  String get chordAnalyzerFunctionTonic => 'トニック';
 
   @override
-  String get chordAnalyzerFunctionPredominant => 'Predominant';
+  String get chordAnalyzerFunctionPredominant => 'プレドミナント';
 
   @override
-  String get chordAnalyzerFunctionDominant => 'Dominant';
+  String get chordAnalyzerFunctionDominant => 'ドミナント';
 
   @override
-  String get chordAnalyzerFunctionOther => 'Other';
+  String get chordAnalyzerFunctionOther => 'その他';
 
   @override
   String chordAnalyzerRemarkSecondaryDominant(Object target) {
-    return 'Possible secondary dominant targeting $target.';
+    return '$target に向かう可能性のあるセカンダリー・ドミナントです。';
   }
 
   @override
   String chordAnalyzerRemarkTritoneSub(Object target) {
-    return 'Possible tritone substitute targeting $target.';
+    return '$target に向かう可能性のあるトライトーン・サブです。';
   }
 
   @override
   String get chordAnalyzerRemarkModalInterchange =>
-      'Possible modal interchange from the parallel minor.';
+      '平行短調からのモーダル・インターチェンジの可能性があります。';
 
   @override
-  String get chordAnalyzerRemarkAmbiguous =>
-      'This chord stays ambiguous in the current reading.';
+  String get chordAnalyzerRemarkAmbiguous => 'このコードは現在の読みでも曖昧さが残ります。';
 
   @override
   String get chordAnalyzerRemarkUnresolved =>
-      'This chord stays unresolved under the current conservative heuristics.';
+      'このコードは現在の保守的なヒューリスティクスでは未解決のままです。';
 
   @override
-  String get chordAnalyzerTagIiVI => 'ii-V-I cadence';
+  String get chordAnalyzerTagIiVI => 'ii-V-I ケーデンス';
 
   @override
-  String get chordAnalyzerTagTurnaround => 'Turnaround';
+  String get chordAnalyzerTagTurnaround => 'ターンアラウンド';
 
   @override
-  String get chordAnalyzerTagDominantResolution => 'Dominant resolution';
+  String get chordAnalyzerTagDominantResolution => 'ドミナント解決';
 
   @override
-  String get chordAnalyzerTagPlagalColor => 'Plagal/modal color';
+  String get chordAnalyzerTagPlagalColor => 'プラガル / モーダルな色彩';
 
   @override
   String chordAnalyzerSummaryCenter(Object key) {
-    return 'This progression most likely centers on $key.';
+    return 'この進行は $key を中心とみるのが最も自然そうです。';
   }
 
   @override
   String chordAnalyzerSummaryAlternative(Object key) {
-    return 'An alternative reading is $key.';
+    return '別の読みとしては $key が考えられます。';
   }
 
   @override
   String chordAnalyzerSummaryTag(Object tag) {
-    return 'It suggests a $tag.';
+    return '$tag の性格も示しています。';
   }
 
   @override
@@ -1700,105 +1652,103 @@ class AppLocalizationsJa extends AppLocalizations {
     Object throughFunction,
     Object target,
   ) {
-    return '$from and $through behave like $fromFunction and $throughFunction chords leading into $target.';
+    return '$from と $through は、$target に向かう $fromFunction と $throughFunction の和音のように振る舞います。';
   }
 
   @override
   String chordAnalyzerSummarySecondaryDominant(Object chord, Object target) {
-    return '$chord can be heard as a possible secondary dominant pointing toward $target.';
+    return '$chord は $target に向かう可能性のあるセカンダリー・ドミナントとして捉えることもできます。';
   }
 
   @override
   String chordAnalyzerSummaryTritoneSub(Object chord, Object target) {
-    return '$chord can be heard as a possible tritone substitute pointing toward $target.';
+    return '$chord は $target に向かう可能性のあるトライトーン・サブとして捉えることもできます。';
   }
 
   @override
   String chordAnalyzerSummaryModalInterchange(Object chord) {
-    return '$chord adds a possible modal interchange color.';
+    return '$chord はモーダル・インターチェンジ由来の色彩を加えている可能性があります。';
   }
 
   @override
   String get chordAnalyzerSummaryAmbiguous =>
-      'Some details remain ambiguous, so this reading stays intentionally conservative.';
+      '細部には曖昧さが残るため、この読みは意図的に保守的に保っています。';
 
   @override
-  String get chordAnalyzerExamplesTitle => 'Examples';
+  String get chordAnalyzerExamplesTitle => '例';
 
   @override
-  String get chordAnalyzerConfidenceLabel => 'Confidence';
+  String get chordAnalyzerConfidenceLabel => '確信度';
 
   @override
-  String get chordAnalyzerAmbiguityLabel => 'Ambiguity';
+  String get chordAnalyzerAmbiguityLabel => '曖昧さ';
 
   @override
-  String get chordAnalyzerWhyThisReading => 'Why this reading';
+  String get chordAnalyzerWhyThisReading => 'この読みになる理由';
 
   @override
-  String get chordAnalyzerCompetingReadings => 'Also plausible';
+  String get chordAnalyzerCompetingReadings => '他にもあり得る読み';
 
   @override
   String chordAnalyzerIgnoredModifiersWarning(Object details) {
-    return 'Ignored modifiers: $details';
+    return '無視された修飾子: $details';
   }
 
   @override
   String chordAnalyzerParserDiagnosticWarning(Object details) {
-    return 'Input warning: $details';
+    return '入力上の注意: $details';
   }
 
   @override
   String get chordAnalyzerDiagnosticUnbalancedParentheses =>
-      'Unbalanced parentheses left part of the symbol uncertain.';
+      '括弧の対応が崩れているため、記号の一部が不確かです。';
 
   @override
   String get chordAnalyzerDiagnosticUnexpectedCloseParenthesis =>
-      'An unexpected closing parenthesis was ignored.';
+      '予期しない閉じ括弧を無視しました。';
 
   @override
   String chordAnalyzerEvidenceExtensionColor(Object extension) {
-    return 'Explicit $extension color strengthens this reading.';
+    return '$extension の明示的な色彩がこの読みを補強します。';
   }
 
   @override
   String get chordAnalyzerEvidenceAlteredDominantColor =>
-      'Altered dominant color supports a dominant function.';
+      'オルタード・ドミナントの色彩がドミナント機能を支えています。';
 
   @override
   String chordAnalyzerEvidenceSlashBass(Object bass) {
-    return 'Slash bass $bass keeps the bass line or inversion meaningful.';
+    return 'スラッシュベース $bass はベースラインや転回の意味を保っています。';
   }
 
   @override
   String chordAnalyzerEvidenceResolution(Object target) {
-    return 'The next chord supports a resolution toward $target.';
+    return '次のコードが $target への解決を支えています。';
   }
 
   @override
-  String get chordAnalyzerEvidenceBorrowedColor =>
-      'This color can be heard as borrowed from the parallel mode.';
+  String get chordAnalyzerEvidenceBorrowedColor => 'この色彩は平行調から借用されたものとして聞けます。';
 
   @override
   String get chordAnalyzerEvidenceSuspensionColor =>
-      'Suspension color softens the dominant pull without erasing it.';
+      'サスペンションの色彩が、ドミナントの引力を消さずに和らげています。';
 
   @override
-  String get chordAnalyzerLowConfidenceTitle => 'Low-confidence reading';
+  String get chordAnalyzerLowConfidenceTitle => '低信頼の読み';
 
   @override
   String get chordAnalyzerLowConfidenceBody =>
-      'The key candidates are close together or some symbols were only partially recovered, so treat this as a cautious first pass.';
+      'キー候補どうしが近いか、一部の記号が部分的にしか復元できていないため、まずは慎重な一次読みとして扱ってください。';
 
   @override
-  String get chordAnalyzerEmptyMeasure =>
-      'This measure is empty and was preserved in the count.';
+  String get chordAnalyzerEmptyMeasure => 'この小節は空ですが、カウントには残しています。';
 
   @override
   String get chordAnalyzerNoAnalyzableChordsInMeasure =>
-      'No analyzable chord symbols were recovered in this measure.';
+      'この小節では解析可能なコード記号を復元できませんでした。';
 
   @override
-  String get chordAnalyzerParseIssuesTitle => 'Parse issues';
+  String get chordAnalyzerParseIssuesTitle => '解析上の問題';
 
   @override
   String chordAnalyzerParseIssueLine(Object token, Object reason) {
@@ -1806,989 +1756,1060 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get chordAnalyzerParseIssueEmpty => 'Empty token.';
+  String get chordAnalyzerParseIssueEmpty => '空のトークンです。';
 
   @override
-  String get chordAnalyzerParseIssueInvalidRoot =>
-      'The root could not be recognized.';
+  String get chordAnalyzerParseIssueInvalidRoot => 'ルートを認識できませんでした。';
 
   @override
   String chordAnalyzerParseIssueUnknownRoot(Object root) {
-    return '$root is not a supported root spelling.';
+    return '$root は対応していないルート表記です。';
   }
 
   @override
   String chordAnalyzerParseIssueInvalidBass(Object bass) {
-    return 'Slash bass $bass is not a supported bass spelling.';
+    return 'スラッシュベース $bass は対応していないベース表記です。';
   }
 
   @override
   String chordAnalyzerParseIssueUnsupportedSuffix(Object suffix) {
-    return 'Unsupported suffix or modifier: $suffix';
+    return '未対応のサフィックスまたは修飾子です: $suffix';
   }
 
   @override
-  String get studyHarmonyDailyReplayAction => 'Replay daily';
+  String get studyHarmonyDailyReplayAction => '毎日リプレイ';
 
   @override
-  String get studyHarmonyMilestoneCabinetTitle => 'Milestone Medals';
+  String get studyHarmonyMilestoneCabinetTitle => 'マイルストーンメダル';
 
   @override
-  String get studyHarmonyMilestoneLessonsTitle => 'Pathfinder Medal';
+  String get studyHarmonyMilestoneLessonsTitle => 'パスファインダーメダル';
 
   @override
   String studyHarmonyMilestoneLessonsBody(Object target) {
-    return 'Clear $target lessons in Core Foundations.';
+    return 'Core Foundations の $target レッスンをクリアします。';
   }
 
   @override
-  String get studyHarmonyMilestoneStarsTitle => 'Star Collector';
+  String get studyHarmonyMilestoneStarsTitle => 'スターコレクター';
 
   @override
   String studyHarmonyMilestoneStarsBody(Object target) {
-    return 'Collect $target stars across Study Harmony.';
+    return '和声学習 全体で $target 個のスターを集めます。';
   }
 
   @override
-  String get studyHarmonyMilestoneStreakTitle => 'Streak Legend';
+  String get studyHarmonyMilestoneStreakTitle => 'ストリークレジェンド';
 
   @override
   String studyHarmonyMilestoneStreakBody(Object target) {
-    return 'Reach a best daily streak of $target.';
+    return '毎日の最高連続記録 $target を達成しましょう。';
   }
 
   @override
-  String get studyHarmonyMilestoneMasteryTitle => 'Mastery Scholar';
+  String get studyHarmonyMilestoneMasteryTitle => '熟練学者';
 
   @override
   String studyHarmonyMilestoneMasteryBody(Object target) {
-    return 'Master $target skills.';
+    return '$target スキルをマスターしましょう。';
   }
 
   @override
   String studyHarmonyMilestoneEarnedLabel(Object earned, Object total) {
-    return '$earned/$total medals earned';
+    return '$earned/$total メダル獲得数';
   }
 
   @override
-  String get studyHarmonyMilestoneCompletedTag => 'Cabinet complete';
+  String get studyHarmonyMilestoneCompletedTag => 'キャビネット完成';
 
   @override
-  String get studyHarmonyMilestoneTierBronze => 'Bronze Medal';
+  String get studyHarmonyMilestoneTierBronze => '銅メダル';
 
   @override
-  String get studyHarmonyMilestoneTierSilver => 'Silver Medal';
+  String get studyHarmonyMilestoneTierSilver => '銀メダル';
 
   @override
-  String get studyHarmonyMilestoneTierGold => 'Gold Medal';
+  String get studyHarmonyMilestoneTierGold => '金メダル';
 
   @override
-  String get studyHarmonyMilestoneTierPlatinum => 'Platinum Medal';
+  String get studyHarmonyMilestoneTierPlatinum => 'プラチナメダル';
 
   @override
   String studyHarmonyMilestoneUnlockedLabel(Object title, Object tier) {
-    return '$tier $title';
+    return '$title $tier';
   }
 
   @override
-  String get studyHarmonyResultMilestonesTitle => 'New medals';
+  String get studyHarmonyResultMilestonesTitle => '新しいメダル';
 
   @override
-  String get studyHarmonyChapterRemixTitle => 'Remix Arena';
+  String get studyHarmonyChapterRemixTitle => 'リミックスアリーナ';
 
   @override
   String get studyHarmonyChapterRemixDescription =>
-      'Longer mixed sets that shuffle key center, function, and borrowed color without warning.';
+      '警告なしに キーセンター、関数、および借用した色をシャッフルする長い混合セット。';
 
   @override
-  String get studyHarmonyLessonRemixBridgeTitle => 'Bridge Builder';
+  String get studyHarmonyLessonRemixBridgeTitle => '橋を架ける人';
 
   @override
   String get studyHarmonyLessonRemixBridgeDescription =>
-      'Stitch function reads and missing-chord fills into one flowing chain.';
+      'ステッチ機能が読み取り、欠落しているコードを 1 つの流れるチェーンに埋め込みます。';
 
   @override
-  String get studyHarmonyLessonRemixPivotTitle => 'Color Pivot';
+  String get studyHarmonyLessonRemixPivotTitle => 'カラーピボット';
 
   @override
   String get studyHarmonyLessonRemixPivotDescription =>
-      'Track borrowed color and key-center pivots as the progression shifts underneath you.';
+      '進行状況が下で変化するにつれて、借用した色とキー中心のピボットを追跡します。';
 
   @override
-  String get studyHarmonyLessonRemixSprintTitle => 'Resolution Sprint';
+  String get studyHarmonyLessonRemixSprintTitle => '解像度スプリント';
 
   @override
   String get studyHarmonyLessonRemixSprintDescription =>
-      'Read function, cadence fill, and tonal gravity back-to-back at a quicker pace.';
+      '関数、ケイデンスフィル、トーングラビティを連続してより速いペースで読み取ります。';
 
   @override
-  String get studyHarmonyLessonRemixBossTitle => 'Remix Marathon';
+  String get studyHarmonyLessonRemixBossTitle => 'リミックスマラソン';
 
   @override
   String get studyHarmonyLessonRemixBossDescription =>
-      'A final mixed marathon that throws every progression-reading lens back into the set.';
+      '進行を読むあらゆるレンズをセットに戻す最後の混合マラソン。';
 
   @override
   String studyHarmonyProgressStreakSaver(Object count) {
-    return 'Savers x$count';
+    return 'ストリークセーバー x$count';
   }
 
   @override
   String studyHarmonyProgressLegendCrowns(Object count) {
-    return 'Legend crowns $count';
+    return 'レジェンドクラウン $count';
   }
 
   @override
-  String get studyHarmonyModeFocus => 'Focus Mode';
+  String get studyHarmonyModeFocus => 'フォーカスモード';
 
   @override
-  String get studyHarmonyModeLegend => 'Legend Trial';
+  String get studyHarmonyModeLegend => 'レジェンドトライアル';
 
   @override
-  String get studyHarmonyFocusCardTitle => 'Focus Sprint';
+  String get studyHarmonyFocusCardTitle => 'フォーカススプリント';
 
   @override
   String get studyHarmonyFocusCardHint =>
-      'Target the weakest overlap in your current path with fewer lives and tighter goals.';
+      '現在の進路でいちばん弱い重なりを、少ないライフと厳しめの目標で集中的に攻めます。';
 
   @override
-  String get studyHarmonyFocusFallbackHint =>
-      'Run a harder mixed drill to pressure-test your current weak spots.';
+  String get studyHarmonyFocusFallbackHint => 'いまの弱点に圧をかける、少し厳しめのミックスドリルです。';
 
   @override
-  String get studyHarmonyFocusAction => 'Start sprint';
+  String get studyHarmonyFocusAction => 'スプリント開始';
 
   @override
-  String get studyHarmonyFocusSessionTitle => 'Focus Sprint';
+  String get studyHarmonyFocusSessionTitle => 'フォーカススプリント';
 
   @override
   String studyHarmonyFocusSessionDescription(Object chapter) {
-    return 'A tighter mixed sprint built from the weakest spots around $chapter.';
+    return '$chapter 付近の最も弱いスポットから構築された、より緊密な混合スプリント。';
   }
 
   @override
   String studyHarmonyFocusMixLabel(Object count) {
-    return '$count lessons mixed';
+    return '$count レッスン混合';
   }
 
   @override
-  String get studyHarmonyFocusRewardLabel => 'Weekly saver reward';
+  String get studyHarmonyFocusRewardLabel => '週次報酬: ストリークセーバー';
 
   @override
-  String get studyHarmonyLegendCardTitle => 'Legend Trial';
+  String get studyHarmonyLegendCardTitle => 'レジェンドトライアル';
 
   @override
   String get studyHarmonyLegendCardHint =>
-      'Replay a silver-or-better chapter as a two-life mastery run to secure a legend crown.';
+      'シルバー以上のチャプターを 2 ライフのマスタリーランで再突破して、レジェンドクラウンを確保しましょう。';
 
   @override
   String get studyHarmonyLegendFallbackHint =>
-      'Finish a chapter and push it to about 2 stars per lesson to unlock a Legend Trial.';
+      'チャプターを 1 つ仕上げ、1 レッスンあたりおよそ 2 つ星まで伸ばすとレジェンド試練が開放されます。';
 
   @override
-  String get studyHarmonyLegendAction => 'Chase legend';
+  String get studyHarmonyLegendAction => 'レジェンド挑戦';
 
   @override
-  String get studyHarmonyLegendSessionTitle => 'Legend Trial';
+  String get studyHarmonyLegendSessionTitle => 'レジェンドトライアル';
 
   @override
   String studyHarmonyLegendSessionDescription(Object chapter) {
-    return 'A no-slack mastery replay of $chapter built to secure its legend crown.';
+    return '$chapter をもう一度きっちり通し、レジェンドクラウンを確保するための精熟リプレイです。';
   }
 
   @override
   String studyHarmonyLegendMixLabel(Object count) {
-    return '$count lessons chained';
+    return '$count レッスンの連鎖';
   }
 
   @override
-  String get studyHarmonyLegendRiskLabel => 'Legend crown at stake';
+  String get studyHarmonyLegendRiskLabel => 'レジェンドの栄冠がかかっている';
 
   @override
-  String get studyHarmonyWeeklyPlanTitle => 'Weekly Training Plan';
+  String get studyHarmonyWeeklyPlanTitle => '週間トレーニング計画';
 
   @override
-  String get studyHarmonyWeeklyRewardLabel => 'Reward: Streak Saver';
+  String get studyHarmonyWeeklyRewardLabel => '報酬: ストリークセーバー';
 
   @override
-  String get studyHarmonyWeeklyRewardReadyTag => 'Reward ready';
+  String get studyHarmonyWeeklyRewardReadyTag => '報酬の準備完了';
 
   @override
-  String get studyHarmonyWeeklyRewardClaimedTag => 'Reward claimed';
+  String get studyHarmonyWeeklyRewardClaimedTag => '報酬の請求';
 
   @override
-  String get studyHarmonyWeeklyGoalActiveDaysTitle =>
-      'Show up on multiple days';
+  String get studyHarmonyWeeklyGoalActiveDaysTitle => '複数の日に現れる';
 
   @override
   String studyHarmonyWeeklyGoalActiveDaysBody(Object target) {
-    return 'Be active on $target different days this week.';
+    return '今週は $target の異なる日にアクティブに過ごしましょう。';
   }
 
   @override
-  String get studyHarmonyWeeklyGoalDailyTitle => 'Keep the daily loop alive';
+  String get studyHarmonyWeeklyGoalDailyTitle => '毎日のループを維持する';
 
   @override
   String studyHarmonyWeeklyGoalDailyBody(Object target) {
-    return 'Clear the daily challenge $target times this week.';
+    return '今週はログ $target が毎日クリアされます。';
   }
 
   @override
-  String get studyHarmonyWeeklyGoalFocusTitle => 'Finish a Focus Sprint';
+  String get studyHarmonyWeeklyGoalFocusTitle => 'フォーカススプリントを完了する';
 
   @override
   String studyHarmonyWeeklyGoalFocusBody(Object target) {
-    return 'Complete $target Focus Sprint this week.';
+    return '今週は $target フォーカス スプリントを完了してください。';
   }
 
   @override
   String get studyHarmonyResultStreakSaverUsedLine =>
-      'Streak Saver used to protect yesterday.';
+      '昨日はストリークセーバーで連続記録を守りました。';
 
   @override
   String studyHarmonyResultStreakSaverEarnedLine(Object count) {
-    return 'New Streak Saver earned. Inventory: $count';
+    return '新しいストリークセーバーを獲得しました。在庫: $count';
   }
 
   @override
-  String get studyHarmonyResultFocusSprintLine => 'Focus Sprint cleared.';
+  String get studyHarmonyResultFocusSprintLine => 'フォーカススプリントをクリアしました。';
 
   @override
   String studyHarmonyResultLegendLine(Object chapter) {
-    return 'Legend crown secured for $chapter.';
+    return '$chapterのレジェンド王冠確保。';
   }
 
   @override
-  String get studyHarmonyChapterEncoreTitle => 'Encore Ladder';
+  String get studyHarmonyChapterEncoreTitle => 'アンコールラダー';
 
   @override
   String get studyHarmonyChapterEncoreDescription =>
-      'A short finishing ladder that compresses the whole progression toolkit into a final encore set.';
+      '進行ツールキット全体を最終的なアンコール セットに圧縮する短い仕上げのラダーです。';
 
   @override
-  String get studyHarmonyLessonEncorePulseTitle => 'Tonal Pulse';
+  String get studyHarmonyLessonEncorePulseTitle => 'トーナルパルス';
 
   @override
   String get studyHarmonyLessonEncorePulseDescription =>
-      'Lock in tonal center and function without any warm-up prompts.';
+      'ウォームアッププロンプトなしで音の中心を固定し、機能します。';
 
   @override
-  String get studyHarmonyLessonEncoreSwapTitle => 'Color Swap';
+  String get studyHarmonyLessonEncoreSwapTitle => 'カラースワップ';
 
   @override
   String get studyHarmonyLessonEncoreSwapDescription =>
-      'Alternate borrowed color calls with missing-chord restoration to keep the ear honest.';
+      '借用した色の呼び出しを交互に行い、失われたコードを復元して耳を正直に保ちます。';
 
   @override
-  String get studyHarmonyLessonEncoreBossTitle => 'Encore Finale';
+  String get studyHarmonyLessonEncoreBossTitle => 'アンコールフィナーレ';
 
   @override
   String get studyHarmonyLessonEncoreBossDescription =>
-      'One last compact boss round that checks every progression lens in quick succession.';
+      'すべてのプログレッション レンズを立て続けにチェックする最後のコンパクトなボス ラウンド。';
 
   @override
-  String get studyHarmonyChapterMasteryBronze => 'Bronze Clear';
+  String get studyHarmonyChapterMasteryBronze => 'ブロンズクリア';
 
   @override
-  String get studyHarmonyChapterMasterySilver => 'Silver Crown';
+  String get studyHarmonyChapterMasterySilver => 'シルバークラウン';
 
   @override
-  String get studyHarmonyChapterMasteryGold => 'Gold Crown';
+  String get studyHarmonyChapterMasteryGold => 'ゴールドクラウン';
 
   @override
-  String get studyHarmonyChapterMasteryLegendary => 'Legend Crown';
+  String get studyHarmonyChapterMasteryLegendary => 'レジェンドクラウン';
 
   @override
-  String get studyHarmonyModeBossRush => 'Boss Rush Mode';
+  String get studyHarmonyModeBossRush => 'ボスラッシュモード';
 
   @override
-  String get studyHarmonyBossRushCardTitle => 'Boss Rush';
+  String get studyHarmonyBossRushCardTitle => 'ボスラッシュ';
 
   @override
   String get studyHarmonyBossRushCardHint =>
-      'Chain together the unlocked boss lessons with fewer lives and a bigger score ceiling.';
+      '解放済みのボスレッスンを、少ないライフと高めのスコア条件で連続攻略します。';
 
   @override
   String get studyHarmonyBossRushFallbackHint =>
-      'Unlock at least two boss lessons to open a real mixed boss run.';
+      '本格的なボスラッシュを開くには、ボスレッスンを少なくとも 2 つ解放してください。';
 
   @override
-  String get studyHarmonyBossRushAction => 'Start rush';
+  String get studyHarmonyBossRushAction => 'ラッシュ開始';
 
   @override
-  String get studyHarmonyBossRushSessionTitle => 'Boss Rush';
+  String get studyHarmonyBossRushSessionTitle => 'ボスラッシュ';
 
   @override
   String studyHarmonyBossRushSessionDescription(Object chapter) {
-    return 'A high-pressure boss gauntlet built from the unlocked boss lessons around $chapter.';
+    return '$chapter 周辺で解放したボスレッスンを束ねた、高圧のボスガントレットです。';
   }
 
   @override
   String studyHarmonyBossRushMixLabel(Object count) {
-    return '$count boss lessons mixed';
+    return '$count ボスレッスン混合';
   }
 
   @override
-  String get studyHarmonyBossRushHighRiskLabel => '2 lives only';
+  String get studyHarmonyBossRushHighRiskLabel => '2ライフのみ';
 
   @override
-  String get studyHarmonyResultBossRushLine => 'Boss Rush cleared.';
+  String get studyHarmonyResultBossRushLine => 'ボスラッシュクリアしました。';
 
   @override
-  String get studyHarmonyChapterSpotlightTitle => 'Spotlight Showdown';
+  String get studyHarmonyChapterSpotlightTitle => 'スポットライト対決';
 
   @override
   String get studyHarmonyChapterSpotlightDescription =>
-      'A final spotlight set that isolates borrowed color, cadence pressure, and boss-level integration.';
+      '借用したカラー、ケイデンスプレッシャー、ボスレベルの統合を分離する最後のスポットライトセット。';
 
   @override
-  String get studyHarmonyLessonSpotlightLensTitle => 'Borrowed Lens';
+  String get studyHarmonyLessonSpotlightLensTitle => '借りたレンズ';
 
   @override
   String get studyHarmonyLessonSpotlightLensDescription =>
-      'Track key center while borrowed color keeps trying to pull your read sideways.';
+      '借用した色が読み取りを横に引っ張ろうとしている間、キーセンター を追跡します。';
 
   @override
-  String get studyHarmonyLessonSpotlightCadenceTitle => 'Cadence Swap';
+  String get studyHarmonyLessonSpotlightCadenceTitle => 'ケイデンススワップ';
 
   @override
   String get studyHarmonyLessonSpotlightCadenceDescription =>
-      'Switch between function reading and cadence restoration without losing the landing point.';
+      '着地点を失うことなく、関数の読み取りとケイデンスの復元を切り替えます。';
 
   @override
-  String get studyHarmonyLessonSpotlightBossTitle => 'Spotlight Showdown';
+  String get studyHarmonyLessonSpotlightBossTitle => 'スポットライト対決';
 
   @override
   String get studyHarmonyLessonSpotlightBossDescription =>
-      'A closing boss set that forces every progression lens to stay sharp under pressure.';
+      'あらゆる累進レンズを圧力下でも鮮明に保つクロージングボスセット。';
 
   @override
-  String get studyHarmonyChapterAfterHoursTitle => 'After Hours Lab';
+  String get studyHarmonyChapterAfterHoursTitle => '時間外ラボ';
 
   @override
   String get studyHarmonyChapterAfterHoursDescription =>
-      'A late-game lab that strips away warm-up clues and mixes borrowed color, cadence pressure, and center tracking.';
+      'ウォームアップの手がかりを取り除き、借用したカラー、ケイデンスプレッシャー、センタートラッキングを混ぜ合わせたゲーム終盤のラボ。';
 
   @override
-  String get studyHarmonyLessonAfterHoursShadowTitle => 'Modal Shadow';
+  String get studyHarmonyLessonAfterHoursShadowTitle => 'モーダルシャドウ';
 
   @override
   String get studyHarmonyLessonAfterHoursShadowDescription =>
-      'Keep hold of the key center while borrowed color keeps dragging the read into the dark.';
+      '借用した色が読み取り値を暗闇に引きずり続ける間、キーセンター を押し続けます。';
 
   @override
-  String get studyHarmonyLessonAfterHoursFeintTitle => 'Resolution Feint';
+  String get studyHarmonyLessonAfterHoursFeintTitle => '解像度フェイント';
 
   @override
   String get studyHarmonyLessonAfterHoursFeintDescription =>
-      'Catch function and cadence fakeouts before the phrase slips past its true landing spot.';
+      'フレーズが本来の着地点を通り過ぎる前に、ファンクションとケイデンスのフェイクアウトをキャッチします。';
 
   @override
-  String get studyHarmonyLessonAfterHoursCrossfadeTitle => 'Center Crossfade';
+  String get studyHarmonyLessonAfterHoursCrossfadeTitle => 'センタークロスフェード';
 
   @override
   String get studyHarmonyLessonAfterHoursCrossfadeDescription =>
-      'Blend center detection, function reading, and missing-chord repair without any extra scaffolding.';
+      '追加の足場を必要とせずに、ブレンドセンターの検出、関数の読み取り、欠落コードの修復を行います。';
 
   @override
-  String get studyHarmonyLessonAfterHoursBossTitle => 'Last Call Boss';
+  String get studyHarmonyLessonAfterHoursBossTitle => 'ラストコールボス';
 
   @override
   String get studyHarmonyLessonAfterHoursBossDescription =>
-      'A final late-night boss set that asks every progression lens to stay clear under pressure.';
+      'すべてのプログレッションレンズにプレッシャーの下でもクリアを保つよう要求する、深夜の最後のボスセット。';
 
   @override
   String studyHarmonyProgressRelayWins(Object count) {
-    return 'Relay wins $count';
+    return 'リレーが $count で勝利';
   }
 
   @override
-  String get studyHarmonyModeRelay => 'Arena Relay';
+  String get studyHarmonyModeRelay => 'アリーナリレー';
 
   @override
-  String get studyHarmonyRelayCardTitle => 'Arena Relay';
+  String get studyHarmonyRelayCardTitle => 'アリーナリレー';
 
   @override
   String get studyHarmonyRelayCardHint =>
-      'Interleave unlocked lessons from different chapters into one mixed run that tests fast switching as much as raw recall.';
+      '別々のチャプターで解放したレッスンを 1 本のインターリーブランに混ぜ、瞬時の切り替えと記憶の両方を試します。';
 
   @override
   String get studyHarmonyRelayFallbackHint =>
-      'Unlock at least two chapters to open Arena Relay.';
+      'アリーナリレー を開くには、少なくとも 2 つの章のロックを解除してください。';
 
   @override
-  String get studyHarmonyRelayAction => 'Start relay';
+  String get studyHarmonyRelayAction => 'リレー開始';
 
   @override
-  String get studyHarmonyRelaySessionTitle => 'Arena Relay';
+  String get studyHarmonyRelaySessionTitle => 'アリーナリレー';
 
   @override
   String studyHarmonyRelaySessionDescription(Object chapter) {
-    return 'An interleaved relay run mixing unlocked chapters around $chapter.';
+    return '$chapter 周辺のロック解除されたチャプターを混合したインターリーブリレー実行。';
   }
 
   @override
   String studyHarmonyRelayMixLabel(Object count) {
-    return '$count lessons relayed';
+    return '$count のレッスンが中継されました';
   }
 
   @override
   String studyHarmonyRelayChapterSpreadLabel(Object count) {
-    return '$count chapters mixed';
+    return '$count チャプターが混在';
   }
 
   @override
-  String get studyHarmonyRelayChainLabel => 'Interleaving under pressure';
+  String get studyHarmonyRelayChainLabel => '圧力下でのインターリーブ';
 
   @override
   String studyHarmonyResultRelayLine(Object count) {
-    return 'Relay wins $count';
+    return 'リレーが $count で勝利';
   }
 
   @override
-  String get studyHarmonyMilestoneRelayTitle => 'Relay Runner';
+  String get studyHarmonyMilestoneRelayTitle => 'リレーランナー';
 
   @override
   String studyHarmonyMilestoneRelayBody(Object target) {
-    return 'Clear $target Arena Relay runs.';
+    return '$target をクリア アリーナリレー が実行されます。';
   }
 
   @override
-  String get studyHarmonyChapterNeonTitle => 'Neon Detours';
+  String get studyHarmonyChapterNeonTitle => 'ネオンの迂回路';
 
   @override
   String get studyHarmonyChapterNeonDescription =>
-      'A late-game chapter that keeps bending the path with borrowed color, pivot pressure, and recovery reads.';
+      '借りた色、ピボットプレッシャー、リカバリーリードで道を曲げ続けるゲーム終盤の章。';
 
   @override
-  String get studyHarmonyLessonNeonDetourTitle => 'Modal Detour';
+  String get studyHarmonyLessonNeonDetourTitle => 'モーダル迂回路';
 
   @override
   String get studyHarmonyLessonNeonDetourDescription =>
-      'Track the true center even while borrowed color keeps shoving the phrase into a side street.';
+      '借用した色がフレーズを脇道に押し込み続けながらも、真の中心を追跡します。';
 
   @override
-  String get studyHarmonyLessonNeonPivotTitle => 'Pivot Pressure';
+  String get studyHarmonyLessonNeonPivotTitle => 'ピボット圧力';
 
   @override
   String get studyHarmonyLessonNeonPivotDescription =>
-      'Read center shifts and function pressure back to back before the harmonic lane changes again.';
+      '高調波レーンが再び変更される前に、センターシフトと機能圧力を連続して読み取ります。';
 
   @override
-  String get studyHarmonyLessonNeonLandingTitle => 'Borrowed Landing';
+  String get studyHarmonyLessonNeonLandingTitle => '借用着陸';
 
   @override
   String get studyHarmonyLessonNeonLandingDescription =>
-      'Repair the missing landing chord after a borrowed-color fakeout changes the expected resolution.';
+      '借用色のフェイクアウトにより予想される解像度が変化した後、欠落している着陸コードを修復します。';
 
   @override
-  String get studyHarmonyLessonNeonBossTitle => 'City Lights Boss';
+  String get studyHarmonyLessonNeonBossTitle => 'シティライツのボス';
 
   @override
   String get studyHarmonyLessonNeonBossDescription =>
-      'A closing neon boss that mixes pivot reads, borrowed color, and cadence recovery without a soft landing.';
+      'ピボットの読み取り、借用した色、リズムの回復をソフトランディングなしで組み合わせた、最後のネオンボス。';
 
   @override
   String studyHarmonyProgressLeague(Object tier) {
-    return '$tier league';
+    return '$tierリーグ';
   }
 
   @override
-  String get studyHarmonyLeagueCardTitle => 'Harmony League';
+  String get studyHarmonyLeagueCardTitle => 'ハーモニーリーグ';
 
   @override
   String studyHarmonyLeagueCardHint(Object tier, Object mode) {
-    return 'Push toward $tier league this week. The cleanest boost right now is $mode.';
+    return '今週は $tier リーグを目指しましょう。いま最も効率よく伸ばせるのは $mode です。';
   }
 
   @override
   String get studyHarmonyLeagueCardHintMax =>
-      'Diamond is secured for this week. Keep chaining high-pressure clears to hold the pace.';
+      '今週のダイヤは確保済みです。このまま高圧のクリアをつないでペースを守りましょう。';
 
   @override
   String get studyHarmonyLeagueFallbackHint =>
-      'Your league climb will light up once there is a recommended run to push this week.';
+      '今週プッシュすべき推奨ランがあると、リーグの上昇が点灯します。';
 
   @override
-  String get studyHarmonyLeagueAction => 'Climb league';
+  String get studyHarmonyLeagueAction => 'リーグ挑戦';
 
   @override
   String studyHarmonyLeagueScoreLabel(Object score) {
-    return '$score XP this week';
+    return '今週の $score XP';
   }
 
   @override
   String studyHarmonyLeagueProgressLabel(Object score, Object target) {
-    return '$score/$target XP this week';
+    return '今週の $score/$target XP';
   }
 
   @override
   String studyHarmonyLeagueNextTierLabel(Object tier) {
-    return 'Next: $tier';
+    return '次へ: $tier';
   }
 
   @override
   String studyHarmonyLeagueBoostLabel(Object mode) {
-    return 'Best boost: $mode';
+    return '最高のブースト: $mode';
   }
 
   @override
   String studyHarmonyResultLeagueXpLine(Object count) {
-    return 'League XP +$count';
+    return 'リーグ XP +$count';
   }
 
   @override
   String studyHarmonyResultLeaguePromotionLine(Object tier) {
-    return 'Promoted to $tier league';
+    return '$tierリーグに昇格';
   }
 
   @override
-  String get studyHarmonyLeagueTierRookie => 'Rookie';
+  String get studyHarmonyLeagueTierRookie => 'ルーキー';
 
   @override
-  String get studyHarmonyLeagueTierBronze => 'Bronze';
+  String get studyHarmonyLeagueTierBronze => 'ブロンズ';
 
   @override
-  String get studyHarmonyLeagueTierSilver => 'Silver';
+  String get studyHarmonyLeagueTierSilver => '銀';
 
   @override
-  String get studyHarmonyLeagueTierGold => 'Gold';
+  String get studyHarmonyLeagueTierGold => '金';
 
   @override
-  String get studyHarmonyLeagueTierDiamond => 'Diamond';
+  String get studyHarmonyLeagueTierDiamond => 'ダイヤモンド';
 
   @override
-  String get studyHarmonyChapterMidnightTitle => 'Midnight Switchboard';
+  String get studyHarmonyChapterMidnightTitle => '深夜の切替盤';
 
   @override
   String get studyHarmonyChapterMidnightDescription =>
-      'A final control-room chapter that forces fast reads across drifting centers, false cadences, and borrowed reroutes.';
+      '最後のコントロールルームの章では、センターの漂流、誤ったリズム、借用した再ルートを介して高速読み取りを強制します。';
 
   @override
-  String get studyHarmonyLessonMidnightDriftTitle => 'Signal Drift';
+  String get studyHarmonyLessonMidnightDriftTitle => 'シグナルの揺れ';
 
   @override
   String get studyHarmonyLessonMidnightDriftDescription =>
-      'Track the true tonal signal even while the surface keeps drifting into borrowed color.';
+      '表面が借用した色に漂い続けているときでも、真の音色信号を追跡します。';
 
   @override
-  String get studyHarmonyLessonMidnightLineTitle => 'False Line';
+  String get studyHarmonyLessonMidnightLineTitle => '見せかけの進行線';
 
   @override
   String get studyHarmonyLessonMidnightLineDescription =>
-      'Read function pressure through fake resolutions before the line folds back into place.';
+      '線が所定の位置に折り返される前に、偽の解像度を通じて関数の圧力を読み取ります。';
 
   @override
-  String get studyHarmonyLessonMidnightRerouteTitle => 'Borrowed Reroute';
+  String get studyHarmonyLessonMidnightRerouteTitle => '借用による迂回';
 
   @override
   String get studyHarmonyLessonMidnightRerouteDescription =>
-      'Recover the expected landing after borrowed color reroutes the phrase midstream.';
+      '借用した色によってフレーズの途中でルートが変更された後、予想される着地を回復します。';
 
   @override
-  String get studyHarmonyLessonMidnightBossTitle => 'Blackout Boss';
+  String get studyHarmonyLessonMidnightBossTitle => 'ブラックアウト・ボス';
 
   @override
   String get studyHarmonyLessonMidnightBossDescription =>
-      'A closing blackout set that mixes every late-game lens without giving you a safe reset.';
+      '安全なリセットを提供せずに、ゲーム終盤のあらゆるレンズを組み合わせたクロージング ブラックアウト セット。';
 
   @override
   String studyHarmonyProgressQuestChests(Object count) {
-    return 'Quest chests $count';
+    return 'クエストチェスト $count';
   }
 
   @override
   String studyHarmonyProgressLeagueBoost(Object count) {
-    return '2x league XP x$count';
+    return 'リーグ XP 2 倍 x$count';
   }
 
   @override
-  String get studyHarmonyQuestChestTitle => 'Quest Chest';
+  String get studyHarmonyQuestChestTitle => 'クエスト宝箱';
 
   @override
   String studyHarmonyQuestChestLockedHeadline(Object count) {
-    return '$count quests left';
+    return '$count クエストが残っています';
   }
 
   @override
-  String get studyHarmonyQuestChestReadyHeadline => 'Quest Chest ready';
+  String get studyHarmonyQuestChestReadyHeadline => 'クエスト宝箱 準備完了';
 
   @override
-  String get studyHarmonyQuestChestOpenedHeadline => 'Quest Chest opened';
+  String get studyHarmonyQuestChestOpenedHeadline => 'クエスト宝箱 がオープンしました';
 
   @override
-  String get studyHarmonyQuestChestBoostHeadline => '2x League XP live';
+  String get studyHarmonyQuestChestBoostHeadline => 'リーグ XP ライブ 2 倍';
 
   @override
   String studyHarmonyQuestChestRewardLabel(Object xp) {
-    return 'Reward: +$xp league XP';
+    return '報酬: +$xp リーグ XP';
   }
 
   @override
   String get studyHarmonyQuestChestLockedBody =>
-      'Finish today\'s quest trio to cash out a bonus chest and keep the weekly climb moving.';
+      '今日のクエスト 3 つを終えてボーナス宝箱を開け、今週の上昇をつなげましょう。';
 
   @override
   String get studyHarmonyQuestChestReadyBody =>
-      'All three quests are done. Clear one more run to cash out today\'s chest bonus.';
+      '今日のクエスト 3 つはすべて完了です。あと 1 ラン クリアすると宝箱ボーナスを受け取れます。';
 
   @override
   String get studyHarmonyQuestChestOpenedBody =>
-      'Today\'s trio is complete and the chest bonus has already been converted into league XP.';
+      '今日のトリオは完了し、チェストボーナスはすでにリーグ XP に変換されています。';
 
   @override
   String studyHarmonyQuestChestOpenedBoostBody(Object count) {
-    return 'Today\'s chest is open and 2x League XP is active for your next $count clears.';
+    return '今日の宝箱は開いていて、次の $count クリアはリーグ XP が 2 倍になります。';
   }
 
   @override
-  String get studyHarmonyQuestChestAction => 'Finish trio';
+  String get studyHarmonyQuestChestAction => 'フィニッシュ・トリオ';
 
   @override
   String studyHarmonyQuestChestBoostLabel(Object mode) {
-    return 'Best finish: $mode';
+    return 'おすすめの締め: $mode';
   }
 
   @override
   String studyHarmonyQuestChestBoostReadyLabel(Object count) {
-    return '2x XP x$count';
+    return 'XP 2倍 x$count';
   }
 
   @override
   String studyHarmonyQuestChestProgressLabel(Object count, Object target) {
-    return 'Daily quests $count/$target';
+    return 'デイリークエスト $count/$target';
   }
 
   @override
-  String get studyHarmonyResultQuestChestLine => 'Quest Chest opened.';
+  String get studyHarmonyResultQuestChestLine => 'クエスト宝箱 がオープンしました。';
 
   @override
   String studyHarmonyResultQuestChestXpLine(Object count) {
-    return 'Quest Chest bonus +$count League XP';
+    return 'クエスト宝箱 ボーナス +$count リーグ XP';
   }
 
   @override
   String studyHarmonyResultLeagueBoostReadyLine(Object count) {
-    return '2x League XP boost ready for the next $count clears';
+    return '次の $count クリアはリーグ XP 2 倍';
   }
 
   @override
   String studyHarmonyResultLeagueBoostAppliedLine(Object count) {
-    return 'Boost bonus +$count League XP';
+    return 'ブーストボーナス +$count リーグ XP';
   }
 
   @override
   String studyHarmonyResultLeagueBoostRemainingLine(Object count) {
-    return '2x boost clears left $count';
+    return '2倍ブーストで左$countをクリア';
   }
 
   @override
   String studyHarmonyLeagueBoostReadyLabel(Object count) {
-    return '2x XP x$count';
+    return 'XP 2倍 x$count';
   }
 
   @override
   String studyHarmonyLeagueCardHintBoosted(Object count, Object mode) {
-    return '2x League XP is live for $count clears. Spend it on $mode while the boost lasts.';
+    return '次の $count クリアはリーグ XP 2 倍です。ブースト中に $mode へ使いましょう。';
   }
 
   @override
-  String get studyHarmonyChapterSkylineTitle => 'Skyline Circuit';
+  String get studyHarmonyChapterSkylineTitle => 'スカイライン・サーキット';
 
   @override
   String get studyHarmonyChapterSkylineDescription =>
-      'A final skyline circuit that forces fast mixed reads across ghosted centers, borrowed gravity, and false homes.';
+      'ゴーストセンター、借用した重力、偽のホーム全体で高速混合読み取りを強制する最後のスカイライン回路。';
 
   @override
-  String get studyHarmonyLessonSkylinePulseTitle => 'Afterimage Pulse';
+  String get studyHarmonyLessonSkylinePulseTitle => '残像パルス';
 
   @override
   String get studyHarmonyLessonSkylinePulseDescription =>
-      'Catch center and function in the afterimage before the phrase locks into a new lane.';
+      'フレーズが新しいレーンに固定される前に、中心を捉えて残像の中で機能します。';
 
   @override
-  String get studyHarmonyLessonSkylineSwapTitle => 'Gravity Swap';
+  String get studyHarmonyLessonSkylineSwapTitle => '重力反転';
 
   @override
   String get studyHarmonyLessonSkylineSwapDescription =>
-      'Handle borrowed gravity and missing-chord repair while the progression keeps swapping its weight.';
+      '進行がその重みを交換し続ける間、借用した重力と欠落コードの修復を処理します。';
 
   @override
-  String get studyHarmonyLessonSkylineHomeTitle => 'False Home';
+  String get studyHarmonyLessonSkylineHomeTitle => '偽着地';
 
   @override
   String get studyHarmonyLessonSkylineHomeDescription =>
-      'Read through the false arrival and rebuild the true landing before the progression snaps shut.';
+      '進行が止まる前に、誤った到着を読み、真の着陸を再構築します。';
 
   @override
-  String get studyHarmonyLessonSkylineBossTitle => 'Final Signal Boss';
+  String get studyHarmonyLessonSkylineBossTitle => '最終シグナル・ボス';
 
   @override
   String get studyHarmonyLessonSkylineBossDescription =>
-      'A last skyline boss that chains every late-game progression lens into one closing signal test.';
+      'スカイラインの最後のボスは、ゲーム後半のすべての進行レンズを 1 つの終了信号テストに連鎖させます。';
 
   @override
-  String get studyHarmonyChapterAfterglowTitle => 'Afterglow Runway';
+  String get studyHarmonyChapterAfterglowTitle => '残光ランウェイ';
 
   @override
   String get studyHarmonyChapterAfterglowDescription =>
-      'A closing runway of split decisions, borrowed bait, and flickering centers that rewards clean late-game reads under pressure.';
+      'スプリットディシジョン、借用餌、明滅するセンターの終わりの滑走路は、プレッシャーの下でゲーム終盤のきれいな読みに報いる。';
 
   @override
-  String get studyHarmonyLessonAfterglowSplitTitle => 'Split Decision';
+  String get studyHarmonyLessonAfterglowSplitTitle => '分岐判断';
 
   @override
   String get studyHarmonyLessonAfterglowSplitDescription =>
-      'Choose the repair chord that keeps the function moving without letting the phrase drift off course.';
+      'フレーズがコースから外れることなく機能を維持できる修復コードを選択してください。';
 
   @override
-  String get studyHarmonyLessonAfterglowLureTitle => 'Borrowed Lure';
+  String get studyHarmonyLessonAfterglowLureTitle => '借用の誘い';
 
   @override
   String get studyHarmonyLessonAfterglowLureDescription =>
-      'Spot the borrowed color chord that looks like a pivot before the progression snaps back home.';
+      '進行が元に戻る前に、ピボットのように見える借用したカラー コードを見つけます。';
 
   @override
-  String get studyHarmonyLessonAfterglowFlickerTitle => 'Center Flicker';
+  String get studyHarmonyLessonAfterglowFlickerTitle => '中心の揺らぎ';
 
   @override
   String get studyHarmonyLessonAfterglowFlickerDescription =>
-      'Hold the tonal center while cadence cues blink and reroute in quick succession.';
+      'ケイデンスキューが点滅している間、音の中心を押したままにして、素早く連続してルートを変更します。';
 
   @override
-  String get studyHarmonyLessonAfterglowBossTitle => 'Redline Return Boss';
+  String get studyHarmonyLessonAfterglowBossTitle => 'レッドラインリターンボス';
 
   @override
   String get studyHarmonyLessonAfterglowBossDescription =>
-      'A final mixed test of key center, function, borrowed color, and missing-chord repair at full speed.';
+      'キーセンター、機能、借用色、欠落コード修復をフルスピードで組み合わせた最終混合テスト。';
 
   @override
   String studyHarmonyProgressTour(Object count, Object target) {
-    return 'Tour stamps $count/$target';
+    return 'ツアースタンプ $count/$target';
   }
 
   @override
-  String get studyHarmonyProgressTourClaimed => 'Monthly tour cleared';
+  String get studyHarmonyProgressTourClaimed => 'マンスリーツアーをクリアしました';
 
   @override
-  String get studyHarmonyTourTitle => 'Harmony Tour';
+  String get studyHarmonyTourTitle => 'ハーモニーツアー';
 
   @override
   String studyHarmonyTourProgressHeadline(Object count, Object target) {
-    return '$count/$target tour stamps';
+    return '$count/$target ツアースタンプ';
   }
 
   @override
-  String get studyHarmonyTourReadyHeadline => 'Tour finale ready';
+  String get studyHarmonyTourReadyHeadline => 'ツアーファイナル準備完了';
 
   @override
-  String get studyHarmonyTourClaimedHeadline => 'Monthly tour cleared';
+  String get studyHarmonyTourClaimedHeadline => 'マンスリーツアーをクリアしました';
 
   @override
   String studyHarmonyTourRewardLabel(Object xp, Object count) {
-    return 'Reward: +$xp league XP and $count Streak Saver';
+    return '報酬: リーグ XP +$xp とストリークセーバー $count';
   }
 
   @override
   String studyHarmonyTourActiveDaysBody(Object target) {
-    return 'Show up on $target different days this month to lock in the tour bonus.';
+    return '今月は $target 日以上プレイして、ツアーボーナスを確定させましょう。';
   }
 
   @override
   String studyHarmonyTourQuestChestBody(Object target) {
-    return 'Open $target Quest Chests this month to keep the tour stamp book moving.';
+    return '今月はクエスト宝箱を $target 個開けて、ツアーのスタンプ帳を前に進めましょう。';
   }
 
   @override
   String studyHarmonyTourSpotlightBody(Object target) {
-    return 'Clear $target spotlight runs this month. Boss Rush, Relay, Focus, Legend, and boss lessons all count.';
+    return '今月はスポットライトランを $target 回クリアしましょう。ボスラッシュ、アリーナリレー、フォーカススプリント、レジェンドトライアル、ボスレッスンはすべて対象です。';
   }
 
   @override
   String get studyHarmonyTourReadyBody =>
-      'Every monthly stamp is in. One more clear locks in the tour bonus.';
+      '今月のスタンプはすべてそろいました。あと 1 クリアでツアーボーナスが確定します。';
 
   @override
   String get studyHarmonyTourClaimedBody =>
-      'This month\'s tour is complete. Keep the rhythm sharp so next month\'s route starts hot.';
+      '今月のツアーは終了しました。来月のルートが熱く始まるように、リズムを鋭く保ちましょう。';
 
   @override
-  String get studyHarmonyTourAction => 'Advance tour';
+  String get studyHarmonyTourAction => '事前ツアー';
 
   @override
   String studyHarmonyTourActiveDaysLabel(Object count, Object target) {
-    return 'Active days $count/$target';
+    return '活動日 $count/$target';
   }
 
   @override
   String studyHarmonyTourQuestChestsLabel(Object count, Object target) {
-    return 'Quest Chests $count/$target';
+    return 'クエスト宝箱 $count/$target';
   }
 
   @override
   String studyHarmonyTourSpotlightLabel(Object count, Object target) {
-    return 'Spotlights $count/$target';
+    return 'スポットライト $count/$target';
   }
 
   @override
-  String get studyHarmonyResultTourCompleteLine => 'Harmony Tour complete';
+  String get studyHarmonyResultTourCompleteLine => 'ハーモニーツアー 完了';
 
   @override
   String studyHarmonyResultTourXpLine(Object count) {
-    return 'Tour bonus +$count League XP';
+    return 'ツアーボーナス +$count リーグ XP';
   }
 
   @override
   String studyHarmonyResultTourStreakSaverLine(Object count) {
-    return 'Streak Saver stock $count';
+    return 'ストリークセーバー在庫 $count';
   }
 
   @override
-  String get studyHarmonyChapterDaybreakTitle => 'Daybreak Frequency';
+  String get studyHarmonyChapterDaybreakTitle => '夜明けの周波数';
 
   @override
   String get studyHarmonyChapterDaybreakDescription =>
-      'A sunrise encore of ghost cadences, false dawn pivots, and borrowed blooms that forces clean late-game reads after a long run.';
+      'ゴーストのリズム、偽の夜明けのピボット、借用した花々からなる日の出のアンコールは、長いランの後にクリーンなゲーム後半の読みを強制します。';
 
   @override
-  String get studyHarmonyLessonDaybreakGhostTitle => 'Ghost Cadence';
+  String get studyHarmonyLessonDaybreakGhostTitle => '幻の終止';
 
   @override
   String get studyHarmonyLessonDaybreakGhostDescription =>
-      'Repair the cadence and function at the same time when the phrase pretends to close without actually landing.';
+      'フレーズが実際には着地せずに閉じているように見える場合、ケイデンスと機能を同時に修復します。';
 
   @override
-  String get studyHarmonyLessonDaybreakDawnTitle => 'False Dawn';
+  String get studyHarmonyLessonDaybreakDawnTitle => '見せかけの夜明け';
 
   @override
   String get studyHarmonyLessonDaybreakDawnDescription =>
-      'Catch the center shift hiding inside a too-early sunrise before the progression pulls away again.';
+      '進行が再び遠ざかる前に、早すぎる日の出の中に隠れているセンターシフトを捉えてください。';
 
   @override
-  String get studyHarmonyLessonDaybreakBloomTitle => 'Borrowed Bloom';
+  String get studyHarmonyLessonDaybreakBloomTitle => '借用の開花';
 
   @override
   String get studyHarmonyLessonDaybreakBloomDescription =>
-      'Track borrowed color and function together while the harmony opens into a brighter but unstable lane.';
+      '借用した色と機能を一緒に追跡しながら、ハーモニーはより明るく、しかし不安定なレーンへと広がります。';
 
   @override
-  String get studyHarmonyLessonDaybreakBossTitle => 'Sunrise Overdrive Boss';
+  String get studyHarmonyLessonDaybreakBossTitle => 'サンライズオーバードライブボス';
 
   @override
   String get studyHarmonyLessonDaybreakBossDescription =>
-      'A final dawn-speed boss that chains key center, function, non-diatonic color, and missing-chord repair into one last overdrive set.';
+      'キーセンター、機能、ノンダイアトニック カラー、ミッシングコード修復を最後の 1 つのオーバードライブ セットに連鎖させる、ドーン スピードの最後のボスです。';
 
   @override
   String studyHarmonyProgressDuetPact(Object count) {
-    return 'Duet streak $count';
+    return 'デュエット ストリーク $count';
   }
 
   @override
-  String get studyHarmonyDuetTitle => 'Duet Pact';
+  String get studyHarmonyDuetTitle => 'デュエット契約';
 
   @override
-  String get studyHarmonyDuetStartHeadline => 'Start today\'s duet';
+  String get studyHarmonyDuetStartHeadline => '今日のデュエットを始めます';
 
   @override
   String studyHarmonyDuetInProgressHeadline(Object count) {
-    return 'Duet streak $count';
+    return 'デュエット ストリーク $count';
   }
 
   @override
   String studyHarmonyDuetReadyHeadline(Object count) {
-    return 'Duet locked for day $count';
+    return '$count 日はデュエットがロックされました';
   }
 
   @override
   String studyHarmonyDuetRewardLabel(Object xp) {
-    return 'Reward: +$xp league XP at key streaks';
+    return '報酬: 節目のストリークでリーグ XP +$xp';
   }
 
   @override
   String get studyHarmonyDuetNeedDailyBody =>
-      'Clear today\'s Daily first, then land one spotlight run to keep the duet alive.';
+      'まず今日のデイリーを終えて、そのあとスポットライトランを 1 回クリアしてデュエットをつなぎましょう。';
 
   @override
   String get studyHarmonyDuetNeedSpotlightBody =>
-      'Daily is in. Finish one spotlight run like Focus, Relay, Boss Rush, Legend, or a boss lesson to seal the duet.';
+      'デイリーが始まります。フォーカス、リレー、ボス ラッシュ、レジェンド、またはボス レッスンなどのスポットライト ランを 1 つ完了して、デュエットを封印します。';
 
   @override
   String studyHarmonyDuetActiveBody(Object count) {
-    return 'Today\'s duet is sealed and the shared streak is now $count days long.';
+    return '今日のデュエットは成立済みで、共有ストリークは $count 日まで伸びています。';
   }
 
   @override
-  String get studyHarmonyDuetDailyDone => 'Daily in';
+  String get studyHarmonyDuetDailyDone => 'デイリーイン';
 
   @override
-  String get studyHarmonyDuetDailyMissing => 'Daily missing';
+  String get studyHarmonyDuetDailyMissing => '毎日行方不明';
 
   @override
-  String get studyHarmonyDuetSpotlightDone => 'Spotlight in';
+  String get studyHarmonyDuetSpotlightDone => 'スポットライトイン';
 
   @override
-  String get studyHarmonyDuetSpotlightMissing => 'Spotlight missing';
+  String get studyHarmonyDuetSpotlightMissing => 'スポットライトがありません';
 
   @override
   String studyHarmonyDuetDailyLabel(bool done) {
-    return 'Daily $done';
+    return '毎日$done';
   }
 
   @override
   String studyHarmonyDuetSpotlightLabel(bool done) {
-    return 'Spotlight $done';
+    return 'スポットライト $done';
   }
 
   @override
   String studyHarmonyDuetTargetLabel(Object count, Object target) {
-    return 'Streak $count/$target';
+    return 'ストリーク $count/$target';
   }
 
   @override
-  String get studyHarmonyDuetAction => 'Keep duet going';
+  String get studyHarmonyDuetAction => 'デュエットを続けてください';
 
   @override
   String studyHarmonyResultDuetLine(Object count) {
-    return 'Duet streak $count';
+    return 'デュエット ストリーク $count';
   }
 
   @override
   String studyHarmonyResultDuetRewardLine(Object count) {
-    return 'Duet reward +$count League XP';
+    return 'デュエット報酬 +$count リーグ XP';
   }
 
   @override
-  String get studyHarmonyChapterBlueHourTitle => 'Blue Hour Exchange';
+  String get studyHarmonySolfegeDo => 'ド';
+
+  @override
+  String get studyHarmonySolfegeRe => 'レ';
+
+  @override
+  String get studyHarmonySolfegeMi => 'ミ';
+
+  @override
+  String get studyHarmonySolfegeFa => 'ファ';
+
+  @override
+  String get studyHarmonySolfegeSol => 'ソ';
+
+  @override
+  String get studyHarmonySolfegeLa => 'ラ';
+
+  @override
+  String get studyHarmonySolfegeTi => 'シ';
+
+  @override
+  String get studyHarmonyPrototypeCourseTitle => '和声学習プロトタイプ';
+
+  @override
+  String get studyHarmonyPrototypeCourseDescription =>
+      'レッスン制に引き継いだ初期プロトタイプのレベルです。';
+
+  @override
+  String get studyHarmonyPrototypeChapterTitle => 'プロトタイプレッスン';
+
+  @override
+  String get studyHarmonyPrototypeChapterDescription =>
+      '拡張型の学習システムを導入する間、暫定的に残しているレッスンです。';
+
+  @override
+  String get studyHarmonyPrototypeLevelObjective => 'ライフを3つ失う前に10問正解でクリア';
+
+  @override
+  String get studyHarmonyPrototypeLevel1Title => 'プロトタイプレベル 1 ・ド / ミ / ソ';
+
+  @override
+  String get studyHarmonyPrototypeLevel1Description =>
+      'ド、ミ、ソだけを聞き分ける基礎ウォームアップです。';
+
+  @override
+  String get studyHarmonyPrototypeLevel2Title =>
+      'プロトタイプレベル 2 ・ド / レ / ミ / ソ / ラ';
+
+  @override
+  String get studyHarmonyPrototypeLevel2Description =>
+      'ド、レ、ミ、ソ、ラの認識を素早くする中級前のレベルです。';
+
+  @override
+  String get studyHarmonyPrototypeLevel3Title =>
+      'プロトタイプレベル 3 ・ド / レ / ミ / ファ / ソ / ラ / シ / ド';
+
+  @override
+  String get studyHarmonyPrototypeLevel3Description =>
+      'ドレミファソラシドをひと通り扱うオクターブ完成レベルです。';
+
+  @override
+  String studyHarmonyPrototypeLowCLabel(String noteName) {
+    return '$noteName（低い C）';
+  }
+
+  @override
+  String studyHarmonyPrototypeHighCLabel(String noteName) {
+    return '$noteName（高い C）';
+  }
+
+  @override
+  String get studyHarmonyTemplateChoiceLabel => 'テンプレート';
+
+  @override
+  String get studyHarmonyChapterBlueHourTitle => 'ブルーアワー交差';
 
   @override
   String get studyHarmonyChapterBlueHourDescription =>
-      'A twilight encore of crossing currents, haloed borrows, and dual horizons that keeps late-game reads unstable in the best way.';
+      '交差する流れ、後光の借景、そしてゲーム終盤の読みを最良の方法で不安定に保つ二重地平線の黄昏のアンコール。';
 
   @override
-  String get studyHarmonyLessonBlueHourCurrentTitle => 'Cross Current';
+  String get studyHarmonyLessonBlueHourCurrentTitle => '交差する流れ';
 
   @override
   String get studyHarmonyLessonBlueHourCurrentDescription =>
-      'Track key center and function while the progression starts pulling in two directions at once.';
+      'キーセンター を追跡し、進行が同時に 2 方向に引っ張り始める間機能します。';
 
   @override
-  String get studyHarmonyLessonBlueHourHaloTitle => 'Halo Borrow';
+  String get studyHarmonyLessonBlueHourHaloTitle => '光輪の借用';
 
   @override
   String get studyHarmonyLessonBlueHourHaloDescription =>
-      'Read the borrowed color and restore the missing chord before the phrase turns hazy.';
+      '借りた色を読み取って、フレーズが霞む前に失われたコードを復元します。';
 
   @override
-  String get studyHarmonyLessonBlueHourHorizonTitle => 'Dual Horizon';
+  String get studyHarmonyLessonBlueHourHorizonTitle => '二重の地平線';
 
   @override
   String get studyHarmonyLessonBlueHourHorizonDescription =>
-      'Hold the real arrival point while two possible horizons keep flashing in and out.';
+      '2 つの可能性のある地平線が点滅し続ける間、実際の到着点を保持します。';
 
   @override
-  String get studyHarmonyLessonBlueHourBossTitle => 'Twin Lanterns Boss';
+  String get studyHarmonyLessonBlueHourBossTitle => 'ツインランタンのボス';
 
   @override
   String get studyHarmonyLessonBlueHourBossDescription =>
-      'A final blue-hour boss that forces fast swaps across center, function, borrowed color, and missing-chord repair.';
+      'ブルーアワーの最後のボスは、センター、機能、借用カラー、欠落コードの修復全体で高速スワップを強制します。';
 }

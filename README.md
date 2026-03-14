@@ -2,7 +2,7 @@
 
 SightChord is a Flutter chord-practice app for improvisation, reading, and harmonic vocabulary work.
 
-Live demo: [saintimulus-oss.github.io/sightchord](https://saintimulus-oss.github.io/sightchord/)
+Live demo: [saintimulus-oss.github.io](https://saintimulus-oss.github.io/)
 
 ## Features
 
@@ -31,7 +31,7 @@ flutter pub get
 dart format .
 flutter analyze
 flutter test
-flutter build web --release --base-href /sightchord/
+flutter build web --release --base-href /
 ```
 
 For GitHub Pages project sites, the workflow auto-detects the repository name and sets the correct `base-href`. If the repository is a user or org Pages repository such as `owner.github.io`, it builds with `/`.
