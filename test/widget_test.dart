@@ -1255,7 +1255,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('\uCF54\uB4DC \uC9C4\uD589'), findsOneWidget);
-    expect(find.text('\uBD84\uC11D'), findsWidgets);
+    expect(find.text('\uBD84\uC11D\uD558\uAE30'), findsWidgets);
     expect(find.text('\uCF54\uB4DC \uD328\uB4DC'), findsOneWidget);
     expect(find.text('\uC608\uC2DC'), findsOneWidget);
   });

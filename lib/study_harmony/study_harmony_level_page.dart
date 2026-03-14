@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import 'application/study_harmony_progress_controller.dart';
 import 'content/legacy_adapter.dart';
 import 'study_harmony_catalog.dart';
@@ -21,10 +22,14 @@ class StudyHarmonyLevelPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final localizedLevels = buildStudyHarmonyLevels(l10n);
+    final localizedLevel =
+        studyHarmonyLevelById(localizedLevels, level.id) ?? level;
     return StudyHarmonySessionPage(
-      lesson: _legacyAdapter.adaptLevel(level),
+      lesson: _legacyAdapter.adaptLevel(localizedLevel),
       trackId: StudyHarmonyLegacyLessonAdapter.prototypeTrackId,
-      courseToSync: _legacyAdapter.buildPrototypeCourse(studyHarmonyLevels),
+      courseToSync: _legacyAdapter.buildPrototypeCourse(localizedLevels, l10n),
       progressController: progressController,
     );
   }

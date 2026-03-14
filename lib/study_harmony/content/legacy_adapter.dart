@@ -1,3 +1,4 @@
+import '../../l10n/app_localizations.dart';
 import '../domain/study_harmony_session_models.dart';
 import '../domain/study_harmony_task_evaluators.dart';
 import '../study_harmony_models.dart';
@@ -14,20 +15,20 @@ class StudyHarmonyLegacyLessonAdapter {
 
   StudyHarmonyCourseDefinition buildPrototypeCourse(
     Iterable<StudyHarmonyLevelDefinition> levels,
+    AppLocalizations l10n,
   ) {
     final lessons = [for (final level in levels) adaptLevel(level)];
     return StudyHarmonyCourseDefinition(
       id: prototypeCourseId,
       trackId: prototypeTrackId,
-      title: 'Study Harmony Prototype',
-      description: 'Legacy prototype levels carried into the lesson system.',
+      title: l10n.studyHarmonyPrototypeCourseTitle,
+      description: l10n.studyHarmonyPrototypeCourseDescription,
       chapters: [
         StudyHarmonyChapterDefinition(
           id: prototypeChapterId,
           courseId: prototypeCourseId,
-          title: 'Prototype Lessons',
-          description:
-              'Temporary lessons preserved while the expandable study system is introduced.',
+          title: l10n.studyHarmonyPrototypeChapterTitle,
+          description: l10n.studyHarmonyPrototypeChapterDescription,
           lessons: lessons,
           skillTags: {for (final lesson in lessons) ...lesson.skillTags},
         ),

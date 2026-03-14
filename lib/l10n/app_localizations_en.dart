@@ -2758,6 +2758,82 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get studyHarmonySolfegeDo => 'Do';
+
+  @override
+  String get studyHarmonySolfegeRe => 'Re';
+
+  @override
+  String get studyHarmonySolfegeMi => 'Mi';
+
+  @override
+  String get studyHarmonySolfegeFa => 'Fa';
+
+  @override
+  String get studyHarmonySolfegeSol => 'Sol';
+
+  @override
+  String get studyHarmonySolfegeLa => 'La';
+
+  @override
+  String get studyHarmonySolfegeTi => 'Ti';
+
+  @override
+  String get studyHarmonyPrototypeCourseTitle => 'Study Harmony Prototype';
+
+  @override
+  String get studyHarmonyPrototypeCourseDescription =>
+      'Legacy prototype levels carried into the lesson system.';
+
+  @override
+  String get studyHarmonyPrototypeChapterTitle => 'Prototype Lessons';
+
+  @override
+  String get studyHarmonyPrototypeChapterDescription =>
+      'Temporary lessons preserved while the expandable study system is introduced.';
+
+  @override
+  String get studyHarmonyPrototypeLevelObjective =>
+      'Clear by answering 10 prompts before you lose all 3 lives.';
+
+  @override
+  String get studyHarmonyPrototypeLevel1Title =>
+      'Prototype Level 1 · Do / Mi / Sol';
+
+  @override
+  String get studyHarmonyPrototypeLevel1Description =>
+      'A basic warm-up that asks you to distinguish only Do, Mi, and Sol.';
+
+  @override
+  String get studyHarmonyPrototypeLevel2Title =>
+      'Prototype Level 2 · Do / Re / Mi / Sol / La';
+
+  @override
+  String get studyHarmonyPrototypeLevel2Description =>
+      'A mid-stage note hunt that speeds up recognition for Do, Re, Mi, Sol, and La.';
+
+  @override
+  String get studyHarmonyPrototypeLevel3Title =>
+      'Prototype Level 3 · Do / Re / Mi / Fa / Sol / La / Ti / Do';
+
+  @override
+  String get studyHarmonyPrototypeLevel3Description =>
+      'An octave-complete test that runs across the full Do-Re-Mi-Fa-Sol-La-Ti-Do span.';
+
+  @override
+  String studyHarmonyPrototypeLowCLabel(String noteName) {
+    return '$noteName (low C)';
+  }
+
+  @override
+  String studyHarmonyPrototypeHighCLabel(String noteName) {
+    return '$noteName (high C)';
+  }
+
+  @override
+  String get studyHarmonyTemplateChoiceLabel => 'Template';
+
+  @override
   String get studyHarmonyChapterBlueHourTitle => 'Blue Hour Exchange';
 
   @override
