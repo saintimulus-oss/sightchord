@@ -123,6 +123,7 @@ class MiniKeyboard extends StatelessWidget {
                     bottom: 0,
                     width: key.width,
                     child: _WhiteKey(
+                      key: ValueKey('mini-key-white-${key.midi}'),
                       active: noteSet.contains(key.midi),
                       label: _octaveMarker(key.midi),
                     ),
@@ -133,7 +134,10 @@ class MiniKeyboard extends StatelessWidget {
                     top: 0,
                     width: key.width,
                     height: constraints.maxHeight * _blackKeyHeightFactor,
-                    child: _BlackKey(active: noteSet.contains(key.midi)),
+                    child: _BlackKey(
+                      key: ValueKey('mini-key-black-${key.midi}'),
+                      active: noteSet.contains(key.midi),
+                    ),
                   ),
                 for (final midi in noteSet)
                   if (midi >= resolvedRange.minMidi &&
@@ -149,13 +153,25 @@ class MiniKeyboard extends StatelessWidget {
                           .firstWhere((key) => key.midi == midi)
                           .width,
                       child: Center(
-                        child: Container(
-                          width: 6,
-                          height: 6,
+                        child: DecoratedBox(
                           decoration: BoxDecoration(
                             color: theme.colorScheme.primary,
-                            shape: BoxShape.circle,
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: theme.colorScheme.onPrimary,
+                              width: 0.9,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: 0.2,
+                                ),
+                                blurRadius: 5,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
                           ),
+                          child: const SizedBox(width: 14, height: 5),
                         ),
                       ),
                     ),
@@ -172,13 +188,25 @@ class MiniKeyboard extends StatelessWidget {
                           .firstWhere((key) => key.midi == midi)
                           .width,
                       child: Center(
-                        child: Container(
-                          width: 5,
-                          height: 5,
+                        child: DecoratedBox(
                           decoration: BoxDecoration(
                             color: theme.colorScheme.onPrimary,
-                            shape: BoxShape.circle,
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: theme.colorScheme.primaryContainer,
+                              width: 0.9,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: theme.colorScheme.shadow.withValues(
+                                  alpha: 0.18,
+                                ),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
                           ),
+                          child: const SizedBox(width: 10, height: 4),
                         ),
                       ),
                     ),
@@ -258,7 +286,7 @@ class MiniKeyboard extends StatelessWidget {
 }
 
 class _WhiteKey extends StatelessWidget {
-  const _WhiteKey({required this.active, required this.label});
+  const _WhiteKey({super.key, required this.active, required this.label});
 
   final bool active;
   final String? label;
@@ -266,54 +294,108 @@ class _WhiteKey extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final activeTopColor = Color.alphaBlend(
+      theme.colorScheme.primary.withValues(alpha: 0.14),
+      theme.colorScheme.primaryContainer,
+    );
+    final activeBottomColor = Color.alphaBlend(
+      theme.colorScheme.primary.withValues(alpha: 0.18),
+      theme.colorScheme.surface,
+    );
+    final borderColor = active
+        ? theme.colorScheme.primary.withValues(alpha: 0.82)
+        : theme.colorScheme.outlineVariant;
+    final labelColor = active
+        ? theme.colorScheme.onPrimaryContainer
+        : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.75);
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: active
-              ? [
-                  theme.colorScheme.primary.withValues(alpha: 0.2),
-                  theme.colorScheme.primary.withValues(alpha: 0.06),
-                ]
+              ? [activeTopColor, activeBottomColor]
               : [
                   theme.colorScheme.surface,
-                  theme.colorScheme.surfaceContainerLowest,
+                  theme.colorScheme.surfaceContainerLow,
                 ],
         ),
-        border: Border(
-          right: BorderSide(
-            color: theme.colorScheme.outlineVariant,
-            width: 0.7,
-          ),
-        ),
+        border: active
+            ? Border(
+                top: BorderSide(color: borderColor, width: 1.1),
+                right: BorderSide(color: borderColor, width: 0.9),
+                bottom: BorderSide(color: borderColor, width: 1.2),
+              )
+            : Border(
+                right: BorderSide(color: borderColor, width: 0.7),
+                bottom: BorderSide(
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.55,
+                  ),
+                  width: 0.55,
+                ),
+              ),
+        boxShadow: active
+            ? [
+                BoxShadow(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                  blurRadius: 5,
+                  offset: const Offset(0, 1),
+                ),
+              ]
+            : null,
       ),
-      child: Align(
-        alignment: Alignment.bottomCenter,
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 4),
-          child: Text(
-            label ?? '',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.75),
-              fontWeight: FontWeight.w700,
-              fontSize: 9,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (active)
+            Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(2, 2, 2, 0),
+                height: 3,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text(
+                label ?? '',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: labelColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 9,
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
 class _BlackKey extends StatelessWidget {
-  const _BlackKey({required this.active});
+  const _BlackKey({super.key, required this.active});
 
   final bool active;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final inactiveTopColor = Color.alphaBlend(
+      theme.colorScheme.surfaceTint.withValues(alpha: 0.14),
+      theme.colorScheme.inverseSurface,
+    );
+    final inactiveBottomColor = Color.alphaBlend(
+      Colors.black.withValues(alpha: 0.18),
+      theme.colorScheme.inverseSurface,
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 1.5),
       child: DecoratedBox(
@@ -325,17 +407,27 @@ class _BlackKey extends StatelessWidget {
             colors: active
                 ? [
                     theme.colorScheme.primary,
-                    theme.colorScheme.primary.withValues(alpha: 0.82),
+                    Color.alphaBlend(
+                      Colors.black.withValues(alpha: 0.12),
+                      theme.colorScheme.primary,
+                    ),
                   ]
-                : [
-                    theme.colorScheme.inverseSurface,
-                    theme.colorScheme.surfaceTint.withValues(alpha: 0.45),
-                  ],
+                : [inactiveTopColor, inactiveBottomColor],
+          ),
+          border: Border.all(
+            color: active
+                ? theme.colorScheme.primaryContainer
+                : theme.colorScheme.outline.withValues(alpha: 0.2),
+            width: active ? 1 : 0.7,
           ),
           boxShadow: [
             BoxShadow(
-              color: theme.colorScheme.shadow.withValues(alpha: 0.16),
-              blurRadius: 6,
+              color:
+                  (active
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.shadow)
+                      .withValues(alpha: active ? 0.26 : 0.16),
+              blurRadius: active ? 8 : 6,
               offset: const Offset(0, 2),
             ),
           ],
