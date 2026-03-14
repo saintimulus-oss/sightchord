@@ -418,6 +418,37 @@ class VoicingEngine {
     required PracticeSettings settings,
     required ChordVoicingInterpretation interpretation,
   }) {
+    final strictCandidates = _generateCandidatesForStrategy(
+      chord: chord,
+      settings: settings,
+      interpretation: interpretation,
+      preserveColorFirst: true,
+      retainProtectedTensions: true,
+    );
+    if (strictCandidates.isNotEmpty ||
+        interpretation.protectedTensionLabels.isEmpty) {
+      return strictCandidates;
+    }
+
+    // When a tight note budget makes every tension-preserving option invalid,
+    // fall back to guide-tone-first shells instead of hiding the whole section.
+    final fallbackCandidates = _generateCandidatesForStrategy(
+      chord: chord,
+      settings: settings,
+      interpretation: interpretation,
+      preserveColorFirst: false,
+      retainProtectedTensions: false,
+    );
+    return fallbackCandidates.isEmpty ? strictCandidates : fallbackCandidates;
+  }
+
+  static List<ConcreteVoicing> _generateCandidatesForStrategy({
+    required GeneratedChord chord,
+    required PracticeSettings settings,
+    required ChordVoicingInterpretation interpretation,
+    required bool preserveColorFirst,
+    required bool retainProtectedTensions,
+  }) {
     final maxNotes = settings.maxVoicingNotes.clamp(3, 5);
     final templates = _buildTemplates(
       chord: chord,
@@ -432,6 +463,8 @@ class VoicingEngine {
         template: template,
         interpretation: interpretation,
         maxNotes: maxNotes,
+        preserveColorFirst: preserveColorFirst,
+        retainProtectedTensions: retainProtectedTensions,
       );
       for (final labels in labelVariants) {
         if (labels.length < 3) {
@@ -2548,6 +2581,8 @@ class VoicingEngine {
     required _VoicingTemplate template,
     required ChordVoicingInterpretation interpretation,
     required int maxNotes,
+    required bool preserveColorFirst,
+    required bool retainProtectedTensions,
   }) {
     final essentialSet = interpretation.essentialLabels.toSet();
     final protectedTensionLabels = interpretation.protectedTensionLabels;
@@ -2605,6 +2640,8 @@ class VoicingEngine {
       bassAnchorLabel: interpretation.bassAnchorLabel,
       protectedTensionLabels: protectedTensionLabels,
       family: template.family,
+      preserveColorFirst: preserveColorFirst,
+      retainProtectedTensions: retainProtectedTensions,
     );
     final variants = <List<String>>[];
     final seen = <String>{};
@@ -2628,6 +2665,8 @@ class VoicingEngine {
         bassAnchorLabel: interpretation.bassAnchorLabel,
         protectedTensionLabels: protectedTensionLabels,
         family: template.family,
+        preserveColorFirst: preserveColorFirst,
+        retainProtectedTensions: retainProtectedTensions,
       );
       if (removable == null) {
         break;
@@ -2646,21 +2685,13 @@ class VoicingEngine {
     required String? bassAnchorLabel,
     required Set<String> protectedTensionLabels,
     required VoicingFamily family,
+    required bool preserveColorFirst,
+    required bool retainProtectedTensions,
   }) {
     final working = [...labels];
-    final removablePreference = [
-      '1',
-      '5',
-      '9',
-      '11',
-      '13',
-      '#11',
-      'b9',
-      '#9',
-      'b13',
-      '6',
-      '#5',
-    ];
+    final removablePreference = _removalPreference(
+      preserveColorFirst: preserveColorFirst,
+    );
     while (working.length > maxNotes) {
       var removed = false;
       for (final candidate in removablePreference) {
@@ -2672,6 +2703,7 @@ class VoicingEngine {
               bassAnchorLabel: bassAnchorLabel,
               protectedTensionLabels: protectedTensionLabels,
               family: family,
+              retainProtectedTensions: retainProtectedTensions,
             )) {
           working.remove(candidate);
           removed = true;
@@ -2687,6 +2719,7 @@ class VoicingEngine {
             bassAnchorLabel: bassAnchorLabel,
             protectedTensionLabels: protectedTensionLabels,
             family: family,
+            retainProtectedTensions: retainProtectedTensions,
           ),
           orElse: () => '',
         );
@@ -2705,8 +2738,146 @@ class VoicingEngine {
     required String? bassAnchorLabel,
     required Set<String> protectedTensionLabels,
     required VoicingFamily family,
+    required bool preserveColorFirst,
+    required bool retainProtectedTensions,
   }) {
-    final removablePreference = switch (family) {
+    final removablePreference = _variantRemovalPreference(
+      family: family,
+      preserveColorFirst: preserveColorFirst,
+    );
+    for (final candidate in removablePreference) {
+      if (labels.contains(candidate) &&
+          _canRemoveOptionalLabel(
+            label: candidate,
+            labels: labels,
+            essentialSet: essentialSet,
+            bassAnchorLabel: bassAnchorLabel,
+            protectedTensionLabels: protectedTensionLabels,
+            family: family,
+            retainProtectedTensions: retainProtectedTensions,
+          )) {
+        return candidate;
+      }
+    }
+    for (final label in labels.reversed) {
+      if (_canRemoveOptionalLabel(
+        label: label,
+        labels: labels,
+        essentialSet: essentialSet,
+        bassAnchorLabel: bassAnchorLabel,
+        protectedTensionLabels: protectedTensionLabels,
+        family: family,
+        retainProtectedTensions: retainProtectedTensions,
+      )) {
+        return label;
+      }
+    }
+    return null;
+  }
+
+  static bool _canRemoveOptionalLabel({
+    required String label,
+    required List<String> labels,
+    required Set<String> essentialSet,
+    required String? bassAnchorLabel,
+    required Set<String> protectedTensionLabels,
+    required VoicingFamily family,
+    required bool retainProtectedTensions,
+  }) {
+    if (essentialSet.contains(label) || label == bassAnchorLabel) {
+      return false;
+    }
+    if (!retainProtectedTensions) {
+      return true;
+    }
+    if (!_isProtectedFromEarlyRemoval(
+      label: label,
+      family: family,
+      protectedTensionLabels: protectedTensionLabels,
+    )) {
+      return true;
+    }
+    return !_hasRemovableUnprotectedLabel(
+      labels: labels,
+      essentialSet: essentialSet,
+      bassAnchorLabel: bassAnchorLabel,
+      protectedTensionLabels: protectedTensionLabels,
+      family: family,
+      exceptLabel: label,
+    );
+  }
+
+  static bool _hasRemovableUnprotectedLabel({
+    required List<String> labels,
+    required Set<String> essentialSet,
+    required String? bassAnchorLabel,
+    required Set<String> protectedTensionLabels,
+    required VoicingFamily family,
+    String? exceptLabel,
+  }) {
+    return labels.any(
+      (candidate) =>
+          candidate != exceptLabel &&
+          !essentialSet.contains(candidate) &&
+          candidate != bassAnchorLabel &&
+          !_isProtectedFromEarlyRemoval(
+            label: candidate,
+            family: family,
+            protectedTensionLabels: protectedTensionLabels,
+          ),
+    );
+  }
+
+  static List<String> _removalPreference({required bool preserveColorFirst}) {
+    return preserveColorFirst
+        ? const ['1', '5', '9', '11', '13', '#11', 'b9', '#9', 'b13', '6', '#5']
+        : const [
+            '13',
+            '9',
+            '11',
+            '#11',
+            'b9',
+            '#9',
+            'b13',
+            '6',
+            '#5',
+            '5',
+            '1',
+          ];
+  }
+
+  static List<String> _variantRemovalPreference({
+    required VoicingFamily family,
+    required bool preserveColorFirst,
+  }) {
+    if (!preserveColorFirst) {
+      return switch (family) {
+        VoicingFamily.quartal => const ['13', '9', '1', '5'],
+        VoicingFamily.upperStructure => const [
+          '13',
+          '9',
+          'b13',
+          'b9',
+          '#9',
+          '1',
+          '5',
+        ],
+        _ => const [
+          '13',
+          '9',
+          '11',
+          '#11',
+          'b9',
+          '#9',
+          'b13',
+          '6',
+          '#5',
+          '5',
+          '1',
+        ],
+      };
+    }
+    return switch (family) {
       VoicingFamily.shell => const [
         '13',
         '9',
@@ -2757,81 +2928,6 @@ class VoicingEngine {
         '#5',
       ],
     };
-    for (final candidate in removablePreference) {
-      if (labels.contains(candidate) &&
-          _canRemoveOptionalLabel(
-            label: candidate,
-            labels: labels,
-            essentialSet: essentialSet,
-            bassAnchorLabel: bassAnchorLabel,
-            protectedTensionLabels: protectedTensionLabels,
-            family: family,
-          )) {
-        return candidate;
-      }
-    }
-    for (final label in labels.reversed) {
-      if (_canRemoveOptionalLabel(
-        label: label,
-        labels: labels,
-        essentialSet: essentialSet,
-        bassAnchorLabel: bassAnchorLabel,
-        protectedTensionLabels: protectedTensionLabels,
-        family: family,
-      )) {
-        return label;
-      }
-    }
-    return null;
-  }
-
-  static bool _canRemoveOptionalLabel({
-    required String label,
-    required List<String> labels,
-    required Set<String> essentialSet,
-    required String? bassAnchorLabel,
-    required Set<String> protectedTensionLabels,
-    required VoicingFamily family,
-  }) {
-    if (essentialSet.contains(label) || label == bassAnchorLabel) {
-      return false;
-    }
-    if (!_isProtectedFromEarlyRemoval(
-      label: label,
-      family: family,
-      protectedTensionLabels: protectedTensionLabels,
-    )) {
-      return true;
-    }
-    return !_hasRemovableUnprotectedLabel(
-      labels: labels,
-      essentialSet: essentialSet,
-      bassAnchorLabel: bassAnchorLabel,
-      protectedTensionLabels: protectedTensionLabels,
-      family: family,
-      exceptLabel: label,
-    );
-  }
-
-  static bool _hasRemovableUnprotectedLabel({
-    required List<String> labels,
-    required Set<String> essentialSet,
-    required String? bassAnchorLabel,
-    required Set<String> protectedTensionLabels,
-    required VoicingFamily family,
-    String? exceptLabel,
-  }) {
-    return labels.any(
-      (candidate) =>
-          candidate != exceptLabel &&
-          !essentialSet.contains(candidate) &&
-          candidate != bassAnchorLabel &&
-          !_isProtectedFromEarlyRemoval(
-            label: candidate,
-            family: family,
-            protectedTensionLabels: protectedTensionLabels,
-          ),
-    );
   }
 
   static bool _isProtectedFromEarlyRemoval({

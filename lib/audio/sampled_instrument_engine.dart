@@ -11,6 +11,13 @@ import 'sampled_instrument_manifest.dart';
 typedef InstrumentWarningLogger =
     void Function(String message, {Object? error, StackTrace? stackTrace});
 
+String normalizeAssetPathForAudioPlayer(String assetPath) {
+  const assetsPrefix = 'assets/';
+  return assetPath.startsWith(assetsPrefix)
+      ? assetPath.substring(assetsPrefix.length)
+      : assetPath;
+}
+
 class SampledInstrumentAssetBundle {
   const SampledInstrumentAssetBundle({
     required this.id,
@@ -140,11 +147,12 @@ class SampledInstrumentEngine {
 
     final slot = await _acquireVoiceSlot();
     final noteId = _nextNoteId++;
-    final effectiveVolume = (manifest.defaults.baseVolume *
-            _masterVolume *
-            gain *
-            _velocityGain(velocity, manifest.defaults.velocityCurvePower))
-        .clamp(0.0, 1.0);
+    final effectiveVolume =
+        (manifest.defaults.baseVolume *
+                _masterVolume *
+                gain *
+                _velocityGain(velocity, manifest.defaults.velocityCurvePower))
+            .clamp(0.0, 1.0);
 
     final assetPath =
         '${bundle.assetRootPath}/${resolved.region.sampleAssetPath}'.replaceAll(
@@ -167,10 +175,7 @@ class SampledInstrumentEngine {
         midiNote: resolved.resolvedMidi,
         velocity: resolved.velocity,
       );
-      _activeNotes[noteId] = _ActiveVoiceLease(
-        note: note,
-        slot: slot,
-      );
+      _activeNotes[noteId] = _ActiveVoiceLease(note: note, slot: slot);
       return note;
     } catch (error, stackTrace) {
       _logWarning(
@@ -183,20 +188,16 @@ class SampledInstrumentEngine {
     }
   }
 
-  Future<void> noteOff(
-    ActiveInstrumentNote note, {
-    Duration? fadeOut,
-  }) async {
+  Future<void> noteOff(ActiveInstrumentNote note, {Duration? fadeOut}) async {
     final lease = _activeNotes.remove(note.id);
     if (lease == null) {
       return;
     }
 
     final manifest = _manifest;
-    final fadeDuration = fadeOut ??
-        Duration(
-          milliseconds: manifest?.defaults.releaseFadeOutMs ?? 90,
-        );
+    final fadeDuration =
+        fadeOut ??
+        Duration(milliseconds: manifest?.defaults.releaseFadeOutMs ?? 90);
     await _fadeOutAndRelease(lease.slot, fadeDuration);
   }
 
@@ -221,10 +222,7 @@ class SampledInstrumentEngine {
       }
     }
     await Future<void>.delayed(
-      hold ??
-          Duration(
-            milliseconds: manifest.defaults.defaultChordHoldMs,
-          ),
+      hold ?? Duration(milliseconds: manifest.defaults.defaultChordHoldMs),
     );
     for (final active in activeNotes) {
       await noteOff(active);
@@ -242,10 +240,10 @@ class SampledInstrumentEngine {
       return;
     }
     final activeNotes = <ActiveInstrumentNote>[];
-    final effectiveStep = step ??
-        Duration(milliseconds: manifest.defaults.defaultArpeggioStepMs);
-    final effectiveHold = hold ??
-        Duration(milliseconds: manifest.defaults.defaultArpeggioHoldMs);
+    final effectiveStep =
+        step ?? Duration(milliseconds: manifest.defaults.defaultArpeggioStepMs);
+    final effectiveHold =
+        hold ?? Duration(milliseconds: manifest.defaults.defaultArpeggioHoldMs);
 
     for (final note in notes) {
       final active = await noteOn(
@@ -315,7 +313,9 @@ class SampledInstrumentEngine {
 
   Future<void> _prepareInternal() async {
     try {
-      final manifestSource = await rootBundle.loadString(bundle.manifestAssetPath);
+      final manifestSource = await rootBundle.loadString(
+        bundle.manifestAssetPath,
+      );
       _manifest = SampledInstrumentManifest.fromJsonString(manifestSource);
       final prewarmCount = _manifest!.defaults.noteOnPrerollVoices;
       for (var index = 0; index < prewarmCount; index += 1) {
@@ -354,7 +354,9 @@ class SampledInstrumentEngine {
       return slot;
     }
 
-    _voicePool.sort((left, right) => left.lastStartedAt.compareTo(right.lastStartedAt));
+    _voicePool.sort(
+      (left, right) => left.lastStartedAt.compareTo(right.lastStartedAt),
+    );
     final stolen = _voicePool.first;
     final activeNoteId = stolen.activeNoteId;
     if (activeNoteId != null) {
@@ -445,7 +447,7 @@ class _AudioPlayerVoice implements SamplePlayerVoice {
     required double playbackRate,
   }) async {
     if (_currentAssetPath != assetPath) {
-      await _player.setSourceAsset(assetPath);
+      await _player.setSourceAsset(normalizeAssetPathForAudioPlayer(assetPath));
       _currentAssetPath = assetPath;
     }
     if ((_currentPlaybackRate - playbackRate).abs() > 0.0001) {
@@ -479,10 +481,7 @@ class _VoiceSlot {
 }
 
 class _ActiveVoiceLease {
-  const _ActiveVoiceLease({
-    required this.note,
-    required this.slot,
-  });
+  const _ActiveVoiceLease({required this.note, required this.slot});
 
   final ActiveInstrumentNote note;
   final _VoiceSlot slot;

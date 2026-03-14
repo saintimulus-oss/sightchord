@@ -358,6 +358,72 @@ void main() {
     },
   );
 
+  test(
+    'multi-tension chords still surface suggestions when max voicing notes is tight',
+    () {
+      final cMaj79and13 = _buildChord(
+        root: 'C',
+        quality: ChordQuality.major7,
+        repeatKey: 'cMaj79and13',
+        romanNumeralId: RomanNumeralId.iMaj7,
+        keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        harmonicFunction: HarmonicFunction.tonic,
+        tensions: const ['9', '13'],
+      );
+
+      final result = VoicingEngine.recommend(
+        context: VoicingContext(
+          currentChord: cMaj79and13,
+          settings: settings.copyWith(maxVoicingNotes: 3),
+        ),
+      );
+
+      expect(result.suggestions, isNotEmpty);
+      for (final suggestion in result.suggestions) {
+        expect(suggestion.voicing.noteCount, lessThanOrEqualTo(3));
+        expect(
+          suggestion.voicing.toneLabels.any(
+            (label) => label == '9' || label == '13',
+          ),
+          isTrue,
+        );
+      }
+    },
+  );
+
+  test(
+    'tight substitute dominant settings fall back to a playable shell instead of hiding suggestions',
+    () {
+      final eb7b9 = _buildChord(
+        root: 'Eb',
+        quality: ChordQuality.dominant7,
+        repeatKey: 'eb7b9-tight-shell',
+        romanNumeralId: RomanNumeralId.substituteOfII,
+        keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        harmonicFunction: HarmonicFunction.dominant,
+        tensions: const ['b9'],
+      );
+
+      final result = VoicingEngine.recommend(
+        context: VoicingContext(
+          currentChord: eb7b9,
+          settings: settings.copyWith(
+            allowRootlessVoicings: false,
+            maxVoicingNotes: 3,
+          ),
+        ),
+      );
+
+      expect(result.suggestions, isNotEmpty);
+      for (final suggestion in result.suggestions) {
+        expect(suggestion.voicing.noteCount, lessThanOrEqualTo(3));
+        expect(suggestion.voicing.containsRoot, isTrue);
+        expect(suggestion.voicing.containsThird, isTrue);
+        expect(suggestion.voicing.containsSeventh, isTrue);
+      }
+    },
+  );
+
   test('rootless candidates retain explicit sharp11 color', () {
     final cMajSharp11 = _buildChord(
       root: 'C',
