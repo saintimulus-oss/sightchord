@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/settings/practice_settings.dart';
@@ -25,6 +25,12 @@ void main() {
     final secondUpdate = controller.update(
       controller.settings.copyWith(
         activeKeys: const {'D'},
+        appThemeMode: AppThemeMode.dark,
+        guidedSetupCompleted: true,
+        settingsComplexityMode: SettingsComplexityMode.advanced,
+        preferredSuggestionKind: DefaultVoicingSuggestionKind.easy,
+        chordLanguageLevel: ChordLanguageLevel.safeExtensions,
+        romanPoolPreset: RomanPoolPreset.functionalJazz,
         allowTensions: false,
         sourceProfile: SourceProfile.recordingInspired,
         smartDiagnosticsEnabled: true,
@@ -42,6 +48,12 @@ void main() {
 
     final preferences = await SharedPreferences.getInstance();
     expect(preferences.getStringList('activeKeys'), ['D']);
+    expect(preferences.getString('appThemeMode'), 'dark');
+    expect(preferences.getBool('guidedSetupCompleted'), isTrue);
+    expect(preferences.getString('settingsComplexityMode'), 'advanced');
+    expect(preferences.getString('preferredSuggestionKind'), 'easy');
+    expect(preferences.getString('chordLanguageLevel'), 'safeExtensions');
+    expect(preferences.getString('romanPoolPreset'), 'functionalJazz');
     expect(preferences.getBool('allowTensions'), isFalse);
     expect(preferences.getString('modulationIntensity'), 'medium');
     expect(preferences.getString('jazzPreset'), 'modulationStudy');
@@ -85,6 +97,12 @@ void main() {
   test('loads new smart generation settings from storage', () async {
     SharedPreferences.setMockInitialValues({
       'language': 'zh',
+      'appThemeMode': 'light',
+      'guidedSetupCompleted': true,
+      'settingsComplexityMode': 'standard',
+      'preferredSuggestionKind': 'colorful',
+      'chordLanguageLevel': 'seventhChords',
+      'romanPoolPreset': 'coreDiatonic',
       'activeKeyCenters': ['A|minor', 'C|major'],
       'modulationIntensity': 'high',
       'jazzPreset': 'advanced',
@@ -104,6 +122,21 @@ void main() {
     await controller.load();
 
     expect(controller.settings.language, AppLanguage.zh);
+    expect(controller.settings.appThemeMode, AppThemeMode.light);
+    expect(controller.settings.guidedSetupCompleted, isTrue);
+    expect(
+      controller.settings.settingsComplexityMode,
+      SettingsComplexityMode.standard,
+    );
+    expect(
+      controller.settings.preferredSuggestionKind,
+      DefaultVoicingSuggestionKind.colorful,
+    );
+    expect(
+      controller.settings.chordLanguageLevel,
+      ChordLanguageLevel.seventhChords,
+    );
+    expect(controller.settings.romanPoolPreset, RomanPoolPreset.coreDiatonic);
     expect(
       controller.settings.activeKeyCenters,
       contains(const KeyCenter(tonicName: 'A', mode: KeyMode.minor)),
@@ -137,6 +170,7 @@ void main() {
     () async {
       SharedPreferences.setMockInitialValues({
         'language': 'invalid',
+        'appThemeMode': 'invalid',
         'modulationIntensity': 'invalid',
         'jazzPreset': 'broken',
         'sourceProfile': 'unknown',
@@ -154,6 +188,7 @@ void main() {
       await controller.load();
 
       expect(controller.settings.language, AppLanguage.system);
+      expect(controller.settings.appThemeMode, AppThemeMode.system);
       expect(
         controller.settings.modulationIntensity,
         ModulationIntensity.medium,
@@ -167,4 +202,3 @@ void main() {
     },
   );
 }
-

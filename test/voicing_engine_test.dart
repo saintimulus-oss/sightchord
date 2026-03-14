@@ -334,6 +334,63 @@ void main() {
     }
   });
 
+  test('guided easy preference moves the easy card to the front', () {
+    final cmaj7 = _buildChord(
+      root: 'C',
+      quality: ChordQuality.major7,
+      repeatKey: 'cmaj7EasyFirst',
+      romanNumeralId: RomanNumeralId.iMaj7,
+      keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+      harmonicFunction: HarmonicFunction.tonic,
+    );
+
+    final result = VoicingEngine.recommend(
+      context: VoicingContext(
+        currentChord: cmaj7,
+        settings: settings.copyWith(
+          settingsComplexityMode: SettingsComplexityMode.guided,
+          preferredSuggestionKind: DefaultVoicingSuggestionKind.easy,
+        ),
+      ),
+    );
+
+    expect(result.suggestions.first.kind, VoicingSuggestionKind.easy);
+  });
+
+  test('triads-only guardrails keep voicing candidates simple', () {
+    final g7alt = _buildChord(
+      root: 'G',
+      quality: ChordQuality.dominant7Alt,
+      repeatKey: 'g7altTriadsOnly',
+      romanNumeralId: RomanNumeralId.vDom7,
+      keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+      harmonicFunction: HarmonicFunction.dominant,
+      tensions: const ['b9', '#9'],
+      dominantContext: DominantContext.primaryMinor,
+      dominantIntent: DominantIntent.primaryAuthenticMinor,
+    );
+
+    final candidates = VoicingEngine.generateCandidates(
+      chord: g7alt,
+      settings: settings.copyWith(
+        chordLanguageLevel: ChordLanguageLevel.triadsOnly,
+        allowRootlessVoicings: true,
+        voicingComplexity: VoicingComplexity.modern,
+      ),
+    );
+
+    expect(candidates, isNotEmpty);
+    expect(
+      candidates.every(
+        (candidate) =>
+            candidate.family == VoicingFamily.shell ||
+            candidate.family == VoicingFamily.spread,
+      ),
+      isTrue,
+    );
+    expect(candidates.every((candidate) => candidate.containsRoot), isTrue);
+  });
+
   test(
     'explicit tensions stay present even when normally treated as avoids',
     () {

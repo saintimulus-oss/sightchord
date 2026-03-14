@@ -129,19 +129,35 @@ void main() {
 
   Future<void> pumpMainMenuWithSettings(
     WidgetTester tester,
-    PracticeSettings settings,
-  ) async {
+    PracticeSettings settings, {
+    bool completeGuidedSetup = true,
+  }) async {
+    final resolvedSettings = completeGuidedSetup
+        ? settings.copyWith(
+            guidedSetupCompleted: true,
+            settingsComplexityMode: SettingsComplexityMode.standard,
+          )
+        : settings;
     await tester.pumpWidget(
-      MyApp(controller: AppSettingsController(initialSettings: settings)),
+      MyApp(
+        controller: AppSettingsController(initialSettings: resolvedSettings),
+      ),
     );
     await tester.pumpAndSettle();
   }
 
   Future<AppSettingsController> pumpMainMenuWithController(
     WidgetTester tester,
-    PracticeSettings settings,
-  ) async {
-    final controller = AppSettingsController(initialSettings: settings);
+    PracticeSettings settings, {
+    bool completeGuidedSetup = true,
+  }) async {
+    final resolvedSettings = completeGuidedSetup
+        ? settings.copyWith(
+            guidedSetupCompleted: true,
+            settingsComplexityMode: SettingsComplexityMode.standard,
+          )
+        : settings;
+    final controller = AppSettingsController(initialSettings: resolvedSettings);
     await tester.pumpWidget(MyApp(controller: controller));
     await tester.pumpAndSettle();
     return controller;
@@ -162,6 +178,17 @@ void main() {
 
   Future<void> openGeneratorSettings(WidgetTester tester) async {
     await tester.tap(find.byIcon(Icons.settings));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> openChordQualitySettings(WidgetTester tester) async {
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('practice-chord-quality-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('practice-chord-quality-button')),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -187,17 +214,27 @@ void main() {
 
   Future<void> pumpAppWithSettings(
     WidgetTester tester,
-    PracticeSettings settings,
-  ) async {
-    await pumpMainMenuWithSettings(tester, settings);
+    PracticeSettings settings, {
+    bool completeGuidedSetup = true,
+  }) async {
+    await pumpMainMenuWithSettings(
+      tester,
+      settings,
+      completeGuidedSetup: completeGuidedSetup,
+    );
     await openChordGenerator(tester);
   }
 
   Future<AppSettingsController> pumpAppWithController(
     WidgetTester tester,
-    PracticeSettings settings,
-  ) async {
-    final controller = await pumpMainMenuWithController(tester, settings);
+    PracticeSettings settings, {
+    bool completeGuidedSetup = true,
+  }) async {
+    final controller = await pumpMainMenuWithController(
+      tester,
+      settings,
+      completeGuidedSetup: completeGuidedSetup,
+    );
     await openChordGenerator(tester);
     return controller;
   }
@@ -289,7 +326,84 @@ void main() {
     );
   });
 
-  testWidgets('main menu settings only allow changing language', (
+  testWidgets('new users see the setup assistant before any chord renders', (
+    WidgetTester tester,
+  ) async {
+    await pumpMainMenuWithSettings(
+      tester,
+      PracticeSettings(),
+      completeGuidedSetup: false,
+    );
+
+    await openChordGenerator(tester);
+
+    expect(find.byKey(const ValueKey('setup-assistant-sheet')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('practice-setup-placeholder')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('current-chord-text')), findsNothing);
+  });
+
+  testWidgets('skipping setup assistant applies the beginner-safe preset', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithController(
+      tester,
+      PracticeSettings(),
+      completeGuidedSetup: false,
+    );
+
+    await tester.tap(find.text('Skip'));
+    await tester.pumpAndSettle();
+
+    expect(controller.settings.guidedSetupCompleted, isTrue);
+    expect(
+      controller.settings.activeKeyCenters,
+      contains(const KeyCenter(tonicName: 'C', mode: KeyMode.major)),
+    );
+    expect(controller.settings.chordSymbolStyle, ChordSymbolStyle.majText);
+    expect(controller.settings.allowRootlessVoicings, isFalse);
+    expect(
+      controller.settings.settingsComplexityMode,
+      SettingsComplexityMode.guided,
+    );
+    expect(
+      controller.settings.preferredSuggestionKind,
+      DefaultVoicingSuggestionKind.easy,
+    );
+    expect(find.byKey(const ValueKey('current-chord-text')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('practice-setup-placeholder')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('settings drawer can reopen the setup assistant', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(tester, PracticeSettings());
+
+    await openGeneratorSettings(tester);
+
+    expect(
+      find.byKey(const ValueKey('rerun-setup-assistant-button')),
+      findsOneWidget,
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('rerun-setup-assistant-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('rerun-setup-assistant-button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('setup-assistant-sheet')), findsOneWidget);
+  });
+
+  testWidgets('main menu settings allow changing language and theme', (
     WidgetTester tester,
   ) async {
     final controller = await pumpMainMenuWithController(
@@ -304,10 +418,24 @@ void main() {
       findsOneWidget,
     );
     expect(
+      find.byKey(const ValueKey('main-theme-mode-selector')),
+      findsOneWidget,
+    );
+    expect(
       find.byKey(const ValueKey('metronome-sound-selector')),
       findsNothing,
     );
 
+    await tester.tap(find.byKey(const ValueKey('main-theme-mode-selector')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Dark').last);
+    await tester.pumpAndSettle();
+
+    expect(controller.settings.appThemeMode, AppThemeMode.dark);
+    expect(
+      tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
+      ThemeMode.dark,
+    );
     await tester.tap(find.byKey(const ValueKey('main-language-selector')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('\uD55C\uAD6D\uC5B4').last);
@@ -325,13 +453,21 @@ void main() {
     expect(find.text('Chordest'), findsOneWidget);
     expect(find.byKey(const ValueKey('current-chord-text')), findsOneWidget);
 
-    expect(find.byKey(const ValueKey('allow-v7sus4-chip')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('practice-chord-quality-button')),
+      findsOneWidget,
+    );
+    await openChordQualitySettings(tester);
     expect(
       tester
-          .widget<FilterChip>(find.byKey(const ValueKey('allow-v7sus4-chip')))
+          .widget<FilterChip>(
+            find.byKey(const ValueKey('chord-quality-chip-dominant7sus4')),
+          )
           .onSelected,
       isNull,
     );
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('allow-tensions-toggle')), findsOneWidget);
     expect(
       tester
@@ -344,7 +480,7 @@ void main() {
     expect(find.byKey(const ValueKey('modal-interchange-chip')), findsNothing);
   });
 
-  testWidgets('shows tension controls when key mode is active', (
+  testWidgets('shows chord type controls when key mode is active', (
     WidgetTester tester,
   ) async {
     await pumpAppWithSettings(
@@ -353,11 +489,60 @@ void main() {
     );
 
     expect(
+      find.byKey(const ValueKey('practice-chord-quality-button')),
+      findsOneWidget,
+    );
+    await openChordQualitySettings(tester);
+    expect(
       tester
-          .widget<FilterChip>(find.byKey(const ValueKey('allow-v7sus4-chip')))
+          .widget<FilterChip>(
+            find.byKey(const ValueKey('chord-quality-chip-dominant7sus4')),
+          )
           .onSelected,
       isNotNull,
     );
+    await tester.tap(find.byKey(const ValueKey('chord-quality-chip-major7')));
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('allow-tensions-toggle')), findsOneWidget);
+    expect(
+      tester
+          .widget<FilterChip>(
+            find.byKey(const ValueKey('allow-tensions-toggle')),
+          )
+          .onSelected,
+      isNotNull,
+    );
+  });
+
+  testWidgets('chord type sheet updates practice settings state', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithController(
+      tester,
+      PracticeSettings(activeKeys: const {'C'}),
+    );
+
+    await openChordQualitySettings(tester);
+    await tester.tap(find.byKey(const ValueKey('chord-quality-chip-major7')));
+    await tester.pumpAndSettle();
+
+    expect(
+      controller.settings.enabledChordQualities,
+      isNot(contains(ChordQuality.major7)),
+    );
+  });
+
+  testWidgets('shows tension controls when key mode is active', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(
+      tester,
+      PracticeSettings(activeKeys: const {'C'}),
+    );
+
     expect(find.byKey(const ValueKey('allow-tensions-toggle')), findsOneWidget);
     expect(
       tester
@@ -377,6 +562,9 @@ void main() {
   ) async {
     final controller = await pumpAppWithController(tester, PracticeSettings());
 
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('practice-key-selector-button')),
+    );
     await tester.tap(
       find.byKey(const ValueKey('practice-key-selector-button')),
     );
@@ -1067,7 +1255,7 @@ void main() {
         .data;
 
     await tester.sendKeyEvent(LogicalKeyboardKey.space);
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     final nextText = tester
         .widget<Text>(find.byKey(const ValueKey('current-chord-text')))
@@ -1076,6 +1264,63 @@ void main() {
     expect(nextText, isNotNull);
     expect(nextText, isNot(initialText));
     expect(nextText, isNotEmpty);
+  });
+
+  testWidgets('bpm input accepts three digits and hides the range helper', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithController(
+      tester,
+      PracticeSettings(language: AppLanguage.ko, bpm: 100),
+    );
+
+    await tester.enterText(find.byKey(const ValueKey('bpm-input')), '180');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(controller.settings.bpm, 180);
+    expect(find.text('\uD5C8\uC6A9 \uBC94\uC704: 20-300'), findsNothing);
+  });
+
+  testWidgets('vertical drag on bpm field adjusts the bpm', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithController(
+      tester,
+      PracticeSettings(bpm: 120),
+    );
+
+    await tester.ensureVisible(find.byKey(const ValueKey('bpm-drag-surface')));
+    await tester.pumpAndSettle();
+    await tester.drag(
+      find.byKey(const ValueKey('bpm-drag-surface')),
+      const Offset(0, -56),
+    );
+    await tester.pumpAndSettle();
+
+    expect(controller.settings.bpm, greaterThan(120));
+  });
+
+  testWidgets('holding the bpm increase button keeps increasing bpm', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithController(
+      tester,
+      PracticeSettings(bpm: 120),
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('bpm-increase-button')),
+    );
+    await tester.pumpAndSettle();
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byKey(const ValueKey('bpm-increase-button'))),
+    );
+    await tester.pump(const Duration(milliseconds: 520));
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    expect(controller.settings.bpm, greaterThan(125));
   });
 
   testWidgets('voicing suggestions section can be hidden from settings', (
@@ -1279,6 +1524,9 @@ void main() {
     expect(find.text('\uBA54\uD2B8\uB85C\uB188 \uC18C\uB9AC'), findsOneWidget);
     expect(find.text('\uC870\uC131 \uD45C\uAE30 \uBC29\uC2DD'), findsOneWidget);
 
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('metronome-sound-selector')),
+    );
     await tester.tap(find.byKey(const ValueKey('metronome-sound-selector')));
     await tester.pumpAndSettle();
 

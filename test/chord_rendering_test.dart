@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:chordest/music/chord_formatting.dart';
 import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/settings/inversion_settings.dart';
+import 'package:chordest/settings/practice_settings.dart';
 
 class _FixedRandom implements Random {
   _FixedRandom(this.value);
@@ -411,6 +412,43 @@ void main() {
       );
 
       expect(tensions, ['9', '#11']);
+    });
+
+    test('triads-only language simplifies dominant surfaces aggressively', () {
+      final selection = ChordRenderingHelper.buildRenderingSelection(
+        random: _FixedRandom(0),
+        root: 'G',
+        harmonicQuality: ChordQuality.dominant7,
+        renderQuality: ChordQuality.dominant7Alt,
+        romanNumeralId: RomanNumeralId.vDom7,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        sourceKind: ChordSourceKind.diatonic,
+        allowTensions: true,
+        selectedTensionOptions: {'b9', '#9', '13'},
+        suppressTensions: false,
+        inversionSettings: const InversionSettings(),
+        chordLanguageLevel: ChordLanguageLevel.triadsOnly,
+        dominantContext: DominantContext.primaryMinor,
+      );
+
+      expect(selection.symbolData.renderQuality, ChordQuality.majorTriad);
+      expect(selection.symbolData.tensions, isEmpty);
+      expect(selection.isRenderedNonDiatonic, isFalse);
+    });
+
+    test('safe-extensions language keeps only gentle extension options', () {
+      final prioritized = ChordRenderingHelper.prioritizedTensionOptionsFor(
+        romanNumeralId: RomanNumeralId.vDom7,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        allowTensions: true,
+        selectedTensionOptions: {'b9', '#11', '13', '9'},
+        suppressTensions: false,
+        renderQuality: ChordQuality.dominant7Sharp11,
+        chordLanguageLevel: ChordLanguageLevel.safeExtensions,
+        dominantIntent: DominantIntent.lydianDominant,
+      );
+
+      expect(prioritized, ['9', '13']);
     });
 
     test('does not mark IVmaj7 sharp eleven as rendered non-diatonic', () {

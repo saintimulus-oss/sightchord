@@ -10,6 +10,8 @@ class PracticeSettingsEffects {
   ) {
     return !_setEquals(previous.activeKeyCenters, next.activeKeyCenters) ||
         previous.smartGeneratorMode != next.smartGeneratorMode ||
+        previous.chordLanguageLevel != next.chordLanguageLevel ||
+        previous.romanPoolPreset != next.romanPoolPreset ||
         previous.secondaryDominantEnabled != next.secondaryDominantEnabled ||
         previous.substituteDominantEnabled != next.substituteDominantEnabled ||
         previous.modalInterchangeEnabled != next.modalInterchangeEnabled ||
@@ -18,6 +20,10 @@ class PracticeSettingsEffects {
         previous.sourceProfile != next.sourceProfile ||
         previous.allowV7sus4 != next.allowV7sus4 ||
         previous.allowTensions != next.allowTensions ||
+        !_setEquals(
+          previous.enabledChordQualities,
+          next.enabledChordQualities,
+        ) ||
         !_setEquals(
           previous.selectedTensionOptions,
           next.selectedTensionOptions,

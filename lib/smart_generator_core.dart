@@ -6,6 +6,7 @@ import 'dart:math';
 import 'music/chord_formatting.dart';
 import 'music/chord_theory.dart';
 import 'settings/inversion_settings.dart';
+import 'settings/practice_settings.dart';
 
 part 'smart_generator_diagnostics.dart';
 part 'music/smart_generator_legacy_priors.dart';
@@ -78,6 +79,32 @@ class SmartGeneratorHelper {
     );
   }
 
+  static List<RomanNumeralId> diatonicRomansForPool({
+    required KeyMode keyMode,
+    required RomanPoolPreset romanPoolPreset,
+  }) {
+    final romans = MusicTheory.diatonicRomansForMode(keyMode);
+    final filtered = [
+      for (final roman in romans)
+        if (_isRomanAllowedByPool(
+          romanNumeralId: roman,
+          romanPoolPreset: romanPoolPreset,
+        ))
+          roman,
+    ];
+    return filtered.isNotEmpty ? filtered : romans;
+  }
+
+  static bool allowsRomanForPool({
+    required RomanNumeralId romanNumeralId,
+    required RomanPoolPreset romanPoolPreset,
+  }) {
+    return _isRomanAllowedByPool(
+      romanNumeralId: romanNumeralId,
+      romanPoolPreset: romanPoolPreset,
+    );
+  }
+
   static List<String> findCompatibleModulationKeys({
     required Iterable<String> activeKeys,
     required String currentKey,
@@ -116,7 +143,9 @@ class SmartGeneratorHelper {
     required List<SmartRenderCandidate> candidates,
     GeneratedChord? previousChord,
     bool allowV7sus4 = true,
+    Set<ChordQuality>? allowedRenderQualities,
     bool allowTensions = true,
+    ChordLanguageLevel chordLanguageLevel = ChordLanguageLevel.fullExtensions,
     Set<String>? selectedTensionOptions,
     InversionSettings inversionSettings = const InversionSettings(),
     ChordSymbolStyle debugChordStyle = ChordSymbolStyle.majText,
@@ -150,7 +179,11 @@ class SmartGeneratorHelper {
         random: random,
         candidate: candidate,
         allowV7sus4: allowV7sus4,
+        allowedRenderQualities: allowedRenderQualities,
       );
+      if (optionQualities.isEmpty) {
+        continue;
+      }
       final defaultQuality = optionQualities.first;
       for (
         var optionIndex = 0;
@@ -179,6 +212,7 @@ class SmartGeneratorHelper {
           selectedTensionOptions: tensionOptions,
           suppressTensions: candidate.suppressTensions,
           inversionSettings: inversionSettings,
+          chordLanguageLevel: chordLanguageLevel,
           dominantContext: candidate.dominantContext,
           dominantIntent: candidate.dominantIntent,
         );
@@ -353,42 +387,115 @@ class SmartGeneratorHelper {
     required Random random,
     required SmartRenderCandidate candidate,
     required bool allowV7sus4,
+    Set<ChordQuality>? allowedRenderQualities,
   }) {
-    if (candidate.renderQualityOverride != null) {
-      final override = candidate.renderQualityOverride!;
-      if (!allowV7sus4 && _isSusDominantQuality(override)) {
-        return [
-          MusicTheory.resolveRenderQuality(
+    final resolvedPreferredQuality = candidate.renderQualityOverride != null
+        ? (!allowV7sus4 &&
+                  _isSusDominantQuality(candidate.renderQualityOverride!)
+              ? MusicTheory.resolveRenderQuality(
+                  romanNumeralId: candidate.romanNumeralId,
+                  plannedChordKind: candidate.plannedChordKind,
+                  allowV7sus4: false,
+                  randomRoll: random.nextInt(100),
+                  dominantContext: candidate.dominantContext,
+                  dominantIntent: candidate.dominantIntent,
+                )
+              : candidate.renderQualityOverride!)
+        : MusicTheory.resolveRenderQuality(
             romanNumeralId: candidate.romanNumeralId,
             plannedChordKind: candidate.plannedChordKind,
-            allowV7sus4: false,
+            allowV7sus4: allowV7sus4,
             randomRoll: random.nextInt(100),
             dominantContext: candidate.dominantContext,
             dominantIntent: candidate.dominantIntent,
-          ),
-        ];
-      }
-      return [override];
-    }
-    final defaultQuality = MusicTheory.resolveRenderQuality(
-      romanNumeralId: candidate.romanNumeralId,
-      plannedChordKind: candidate.plannedChordKind,
+          );
+    final options = _compatibleRenderQualitiesForCandidate(
+      candidate: candidate,
+      preferredQuality: resolvedPreferredQuality,
       allowV7sus4: allowV7sus4,
-      randomRoll: random.nextInt(100),
-      dominantContext: candidate.dominantContext,
-      dominantIntent: candidate.dominantIntent,
     );
-    final options = <ChordQuality>[defaultQuality];
-    if (candidate.plannedChordKind != PlannedChordKind.resolvedRoman) {
-      return options;
+    final filtered = <ChordQuality>[];
+    for (final option in options) {
+      if (!allowV7sus4 && _isSusDominantQuality(option)) {
+        continue;
+      }
+      if (allowedRenderQualities != null &&
+          !allowedRenderQualities.contains(option)) {
+        continue;
+      }
+      if (!filtered.contains(option)) {
+        filtered.add(option);
+      }
     }
-    final baseQuality = MusicTheory.specFor(candidate.romanNumeralId).quality;
-    if (baseQuality != ChordQuality.dominant7) {
-      return options;
+    return filtered;
+  }
+
+  static List<ChordQuality> _compatibleRenderQualitiesForCandidate({
+    required SmartRenderCandidate candidate,
+    required ChordQuality preferredQuality,
+    required bool allowV7sus4,
+  }) {
+    final options = <ChordQuality>[preferredQuality];
+    switch (preferredQuality) {
+      case ChordQuality.major7:
+        options.add(ChordQuality.majorTriad);
+        break;
+      case ChordQuality.major69:
+        options.addAll(const [
+          ChordQuality.six,
+          ChordQuality.major7,
+          ChordQuality.majorTriad,
+        ]);
+        break;
+      case ChordQuality.six:
+        options.addAll(const [ChordQuality.major7, ChordQuality.majorTriad]);
+        break;
+      case ChordQuality.minor7:
+        options.add(ChordQuality.minorTriad);
+        break;
+      case ChordQuality.minorMajor7:
+        options.addAll(const [ChordQuality.minor7, ChordQuality.minorTriad]);
+        break;
+      case ChordQuality.minor6:
+        options.addAll(const [ChordQuality.minor7, ChordQuality.minorTriad]);
+        break;
+      case ChordQuality.halfDiminished7:
+      case ChordQuality.diminished7:
+        options.add(ChordQuality.diminishedTriad);
+        break;
+      case ChordQuality.dominant7:
+      case ChordQuality.dominant7Alt:
+      case ChordQuality.dominant7Sharp11:
+      case ChordQuality.dominant13sus4:
+      case ChordQuality.dominant7sus4:
+        options.addAll(
+          _dominantRenderQualityAlternatives(
+            candidate: candidate,
+            allowV7sus4: allowV7sus4,
+          ),
+        );
+        options.addAll(const [
+          ChordQuality.majorTriad,
+          ChordQuality.augmentedTriad,
+        ]);
+        break;
+      case ChordQuality.majorTriad:
+      case ChordQuality.minorTriad:
+      case ChordQuality.diminishedTriad:
+      case ChordQuality.augmentedTriad:
+        break;
     }
+    return options;
+  }
+
+  static List<ChordQuality> _dominantRenderQualityAlternatives({
+    required SmartRenderCandidate candidate,
+    required bool allowV7sus4,
+  }) {
     final effectiveIntent =
         candidate.dominantIntent ??
         MusicTheory.dominantIntentForContext(candidate.dominantContext);
+    final options = <ChordQuality>[];
     if (effectiveIntent == DominantIntent.primaryAuthenticMinor ||
         effectiveIntent == DominantIntent.secondaryToMinor) {
       options.addAll(const [ChordQuality.dominant7Alt, ChordQuality.dominant7]);
@@ -400,6 +507,7 @@ class SmartGeneratorHelper {
         ChordQuality.dominant7,
       ]);
     } else if (effectiveIntent == DominantIntent.susDelay) {
+      options.add(ChordQuality.dominant7);
       if (allowV7sus4) {
         options.addAll(const [
           ChordQuality.dominant13sus4,
@@ -415,13 +523,7 @@ class SmartGeneratorHelper {
         ]);
       }
     }
-    final unique = <ChordQuality>[];
-    for (final option in options) {
-      if (!unique.contains(option)) {
-        unique.add(option);
-      }
-    }
-    return unique;
+    return options;
   }
 
   static SmartVoiceLeadingBreakdown _scoreVoiceLeading({
@@ -1732,6 +1834,8 @@ class SmartGeneratorHelper {
       sourceProfile: request.sourceProfile,
       allowV7sus4: request.allowV7sus4,
       allowTensions: request.allowTensions,
+      chordLanguageLevel: request.chordLanguageLevel,
+      romanPoolPreset: request.romanPoolPreset,
       selectedTensionOptions: request.selectedTensionOptions,
       inversionSettings: request.inversionSettings,
       smartDiagnosticsEnabled: request.smartDiagnosticsEnabled,
@@ -1862,6 +1966,7 @@ class SmartGeneratorHelper {
         familyPlan: selectedFamily,
         blockedReason: blockedReason,
         decision: 'seeded-family:${_familyTag(selectedFamily.family)}',
+        modulationCandidates: opportunity.candidates,
       );
     }
 
@@ -1964,6 +2069,8 @@ class SmartGeneratorHelper {
               sourceProfile: request.sourceProfile,
               allowV7sus4: request.allowV7sus4,
               allowTensions: request.allowTensions,
+              chordLanguageLevel: request.chordLanguageLevel,
+              romanPoolPreset: request.romanPoolPreset,
               selectedTensionOptions: request.selectedTensionOptions,
               inversionSettings: request.inversionSettings,
               smartDiagnosticsEnabled: request.smartDiagnosticsEnabled,
@@ -2005,6 +2112,7 @@ class SmartGeneratorHelper {
           previousChord: currentChord,
           allowV7sus4: request.allowV7sus4,
           allowTensions: request.allowTensions,
+          chordLanguageLevel: request.chordLanguageLevel,
           selectedTensionOptions: request.selectedTensionOptions,
           inversionSettings: request.inversionSettings,
           candidates: [
@@ -2037,6 +2145,7 @@ class SmartGeneratorHelper {
             previousChord: currentChord,
             allowV7sus4: request.allowV7sus4,
             allowTensions: request.allowTensions,
+            chordLanguageLevel: request.chordLanguageLevel,
             selectedTensionOptions: request.selectedTensionOptions,
             inversionSettings: request.inversionSettings,
             candidates: [
@@ -2086,6 +2195,7 @@ class SmartGeneratorHelper {
             previousChord: currentChord,
             allowV7sus4: request.allowV7sus4,
             allowTensions: request.allowTensions,
+            chordLanguageLevel: request.chordLanguageLevel,
             selectedTensionOptions: request.selectedTensionOptions,
             inversionSettings: request.inversionSettings,
             candidates: [
@@ -3375,6 +3485,7 @@ class SmartGeneratorHelper {
     required _FamilyPlan familyPlan,
     required SmartBlockedReason? blockedReason,
     required String decision,
+    List<KeyCenter> modulationCandidates = const [],
   }) {
     final queuedDecision = dequeuePlannedSmartChord(
       plannedQueue: familyPlan.queue,
@@ -3392,7 +3503,9 @@ class SmartGeneratorHelper {
       blockedReason: blockedReason,
       modalCandidates: familyPlan.modalCandidates,
       appliedCandidates: familyPlan.appliedCandidates,
-      modulationCandidates: familyPlan.modulationCandidates,
+      modulationCandidates: modulationCandidates.isNotEmpty
+          ? modulationCandidates
+          : familyPlan.modulationCandidates,
     );
   }
 
@@ -3507,8 +3620,9 @@ class SmartGeneratorHelper {
     required _ModulationOpportunity opportunity,
   }) {
     final phraseContext = _phraseContextForRequest(request);
-    final allowedRomans = MusicTheory.diatonicRomansForMode(
-      request.currentKeyCenter.mode,
+    final allowedRomans = diatonicRomansForPool(
+      keyMode: request.currentKeyCenter.mode,
+      romanPoolPreset: request.romanPoolPreset,
     );
     final destinationSelection = selectNextRoman(
       random: random,
@@ -3641,6 +3755,14 @@ class SmartGeneratorHelper {
         dominantContext: null,
       );
     }
+    if (!_allowsAppliedApproachForRomanPool(request.romanPoolPreset)) {
+      return SmartApproachDecision(
+        destinationRomanNumeralId: destinationRomanNumeralId,
+        selectedRomanNumeralId: destinationRomanNumeralId,
+        appliedType: null,
+        dominantContext: null,
+      );
+    }
 
     var substituteThreshold = request.activeKeys.length <= 1 ? 8 : 12;
     if (dominantOverflow > 0) {
@@ -3738,13 +3860,17 @@ class SmartGeneratorHelper {
         includeLeadingTonic: includeLeadingTonic,
       );
       if (built != null) {
-        plans.add(
-          _compactFamilyPlanForContext(
-            random: random,
-            request: request,
-            familyPlan: built,
-          ),
+        final compacted = _compactFamilyPlanForContext(
+          random: random,
+          request: request,
+          familyPlan: built,
         );
+        if (_familyPlanAllowedForRomanPool(
+          request: request,
+          familyPlan: compacted,
+        )) {
+          plans.add(compacted);
+        }
       }
     }
     return plans;
@@ -3795,6 +3921,111 @@ class SmartGeneratorHelper {
       remaining -= weight;
     }
     return familyPlans.last;
+  }
+
+  static bool _familyPlanAllowedForRomanPool({
+    required SmartStepRequest request,
+    required _FamilyPlan familyPlan,
+  }) {
+    if (!_allowsRealModulationForRomanPool(request.romanPoolPreset) &&
+        familyPlan.modulationCandidates.isNotEmpty) {
+      return false;
+    }
+
+    if (!_isRomanAllowedByPool(
+      romanNumeralId: familyPlan.destinationRomanNumeralId,
+      romanPoolPreset: request.romanPoolPreset,
+    )) {
+      return false;
+    }
+
+    for (final chord in familyPlan.queue) {
+      if (!_isRomanAllowedByPool(
+        romanNumeralId: chord.finalRomanNumeralId,
+        romanPoolPreset: request.romanPoolPreset,
+      )) {
+        return false;
+      }
+      if (!_allowsRealModulationForRomanPool(request.romanPoolPreset) &&
+          chord.modulationKind == ModulationKind.real) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  static bool _allowsAppliedApproachForRomanPool(
+    RomanPoolPreset romanPoolPreset,
+  ) {
+    return romanPoolPreset == RomanPoolPreset.functionalJazz ||
+        romanPoolPreset == RomanPoolPreset.expandedColor;
+  }
+
+  static bool _allowsRealModulationForRomanPool(
+    RomanPoolPreset romanPoolPreset,
+  ) {
+    return romanPoolPreset == RomanPoolPreset.expandedColor;
+  }
+
+  static bool _allowsSourceKindForRomanPool({
+    required ChordSourceKind sourceKind,
+    required RomanPoolPreset romanPoolPreset,
+  }) {
+    return switch (romanPoolPreset) {
+      RomanPoolPreset.corePrimary ||
+      RomanPoolPreset.coreDiatonic ||
+      RomanPoolPreset.fullDiatonic => sourceKind == ChordSourceKind.diatonic,
+      RomanPoolPreset.functionalJazz => sourceKind == ChordSourceKind.diatonic ||
+          sourceKind == ChordSourceKind.secondaryDominant ||
+          sourceKind == ChordSourceKind.substituteDominant ||
+          sourceKind == ChordSourceKind.tonicization,
+      RomanPoolPreset.expandedColor => true,
+    };
+  }
+
+  static bool _isRomanAllowedByPool({
+    required RomanNumeralId romanNumeralId,
+    required RomanPoolPreset romanPoolPreset,
+  }) {
+    final spec = MusicTheory.specFor(romanNumeralId);
+    if (!_allowsSourceKindForRomanPool(
+      sourceKind: spec.sourceKind,
+      romanPoolPreset: romanPoolPreset,
+    )) {
+      return false;
+    }
+
+    return switch (romanPoolPreset) {
+      RomanPoolPreset.expandedColor => true,
+      RomanPoolPreset.functionalJazz => true,
+      RomanPoolPreset.fullDiatonic => spec.sourceKind == ChordSourceKind.diatonic,
+      RomanPoolPreset.coreDiatonic => switch (romanNumeralId) {
+        RomanNumeralId.iMaj7 ||
+        RomanNumeralId.iMaj69 ||
+        RomanNumeralId.iiMin7 ||
+        RomanNumeralId.ivMaj7 ||
+        RomanNumeralId.vDom7 ||
+        RomanNumeralId.viMin7 ||
+        RomanNumeralId.iMinMaj7 ||
+        RomanNumeralId.iMin7 ||
+        RomanNumeralId.iMin6 ||
+        RomanNumeralId.iiHalfDiminishedMinor ||
+        RomanNumeralId.ivMin7Minor ||
+        RomanNumeralId.flatVIMaj7Minor => true,
+        _ => false,
+      },
+      RomanPoolPreset.corePrimary => switch (romanNumeralId) {
+        RomanNumeralId.iMaj7 ||
+        RomanNumeralId.iMaj69 ||
+        RomanNumeralId.ivMaj7 ||
+        RomanNumeralId.vDom7 ||
+        RomanNumeralId.iMinMaj7 ||
+        RomanNumeralId.iMin7 ||
+        RomanNumeralId.iMin6 ||
+        RomanNumeralId.ivMin7Minor => true,
+        _ => false,
+      },
+    };
   }
 
   static List<RomanNumeralId> prioritizedFallbackRomans({
@@ -4506,10 +4737,63 @@ class SmartGeneratorHelper {
       );
     }
 
+    _applyRomanPoolFamilyGuardrails(weights: weights, request: request);
+
     return [
       for (final entry in weights.entries)
         _WeightedFamily(family: entry.key, weight: entry.value),
     ];
+  }
+
+  static void _applyRomanPoolFamilyGuardrails({
+    required Map<SmartProgressionFamily, int> weights,
+    required SmartStepRequest request,
+  }) {
+    final allowedFamilies = switch (request.romanPoolPreset) {
+      RomanPoolPreset.corePrimary => const <SmartProgressionFamily>{
+        SmartProgressionFamily.coreIiVIMajor,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid,
+      },
+      RomanPoolPreset.coreDiatonic => const <SmartProgressionFamily>{
+        SmartProgressionFamily.coreIiVIMajor,
+        SmartProgressionFamily.turnaroundIViIiV,
+        SmartProgressionFamily.turnaroundIIIviIiV,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid,
+      },
+      RomanPoolPreset.fullDiatonic => const <SmartProgressionFamily>{
+        SmartProgressionFamily.coreIiVIMajor,
+        SmartProgressionFamily.turnaroundIViIiV,
+        SmartProgressionFamily.turnaroundIIIviIiV,
+        SmartProgressionFamily.relativeMinorReframe,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid,
+        SmartProgressionFamily.minorLineCliche,
+      },
+      RomanPoolPreset.functionalJazz => const <SmartProgressionFamily>{
+        SmartProgressionFamily.coreIiVIMajor,
+        SmartProgressionFamily.turnaroundIViIiV,
+        SmartProgressionFamily.turnaroundISharpIdimIiV,
+        SmartProgressionFamily.turnaroundIIIviIiV,
+        SmartProgressionFamily.relativeMinorReframe,
+        SmartProgressionFamily.dominantHeadedScopeChain,
+        SmartProgressionFamily.closingPlagalAuthenticHybrid,
+        SmartProgressionFamily.bridgeIVStabilizedByLocalIiVI,
+        SmartProgressionFamily.minorIiVAltI,
+        SmartProgressionFamily.minorLineCliche,
+        SmartProgressionFamily.appliedDominantWithRelatedIi,
+        SmartProgressionFamily.dominantChainBridgeStyle,
+        SmartProgressionFamily.passingDimToIi,
+      },
+      RomanPoolPreset.expandedColor => null,
+    };
+    if (allowedFamilies == null) {
+      return;
+    }
+
+    for (final family in weights.keys.toList(growable: false)) {
+      if (!allowedFamilies.contains(family)) {
+        weights[family] = 0;
+      }
+    }
   }
 
   static _FamilyPlan? _buildFamily({

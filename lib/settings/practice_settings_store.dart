@@ -12,6 +12,12 @@ class PracticeSettingsStore {
   }) : _preferencesLoader = preferencesLoader;
 
   static const String languageKey = 'language';
+  static const String appThemeModeKey = 'appThemeMode';
+  static const String guidedSetupCompletedKey = 'guidedSetupCompleted';
+  static const String settingsComplexityModeKey = 'settingsComplexityMode';
+  static const String preferredSuggestionKindKey = 'preferredSuggestionKind';
+  static const String chordLanguageLevelKey = 'chordLanguageLevel';
+  static const String romanPoolPresetKey = 'romanPoolPreset';
   static const String metronomeEnabledKey = 'metronomeEnabled';
   static const String metronomeVolumeKey = 'metronomeVolume';
   static const String metronomeSoundKey = 'metronomeSound';
@@ -29,6 +35,7 @@ class PracticeSettingsStore {
   static const String chordSymbolStyleKey = 'chordSymbolStyle';
   static const String allowV7sus4Key = 'allowV7sus4';
   static const String allowTensionsKey = 'allowTensions';
+  static const String enabledChordQualitiesKey = 'enabledChordQualities';
   static const String selectedTensionsKey = 'selectedTensions';
   static const String voicingSuggestionsEnabledKey =
       'voicingSuggestionsEnabled';
@@ -45,13 +52,64 @@ class PracticeSettingsStore {
   static const String secondInversionEnabledKey = 'secondInversionEnabled';
   static const String thirdInversionEnabledKey = 'thirdInversionEnabled';
 
+  static const List<String> _legacyStoredSettingsKeys = [
+    languageKey,
+    appThemeModeKey,
+    metronomeEnabledKey,
+    metronomeVolumeKey,
+    metronomeSoundKey,
+    activeKeysKey,
+    activeKeyCentersKey,
+    smartGeneratorModeKey,
+    secondaryDominantEnabledKey,
+    substituteDominantEnabledKey,
+    modalInterchangeEnabledKey,
+    modulationIntensityKey,
+    jazzPresetKey,
+    sourceProfileKey,
+    smartDiagnosticsEnabledKey,
+    chordSymbolStyleKey,
+    allowV7sus4Key,
+    allowTensionsKey,
+    enabledChordQualitiesKey,
+    selectedTensionsKey,
+    voicingSuggestionsEnabledKey,
+    voicingComplexityKey,
+    voicingTopNotePreferenceKey,
+    allowRootlessVoicingsKey,
+    maxVoicingNotesKey,
+    lookAheadDepthKey,
+    showVoicingReasonsKey,
+    bpmKey,
+    keyCenterLabelStyleKey,
+    inversionsEnabledKey,
+    firstInversionEnabledKey,
+    secondInversionEnabledKey,
+    thirdInversionEnabledKey,
+  ];
+
   final SharedPreferencesLoader _preferencesLoader;
 
   Future<PracticeSettings> load({
     required PracticeSettings fallbackSettings,
   }) async {
     final preferences = await _preferencesLoader();
+    final inferredExistingUser = _hasStoredLegacyPracticeSettings(preferences);
     final storedLanguage = preferences.getString(languageKey);
+    final storedAppThemeMode = preferences.getString(appThemeModeKey);
+    final storedGuidedSetupCompleted = preferences.getBool(
+      guidedSetupCompletedKey,
+    );
+    final storedSettingsComplexityMode = preferences.getString(
+      settingsComplexityModeKey,
+    );
+    final storedPreferredSuggestionKind = preferences.getString(
+      preferredSuggestionKindKey,
+    );
+    final storedChordLanguageLevel = preferences.getString(
+      chordLanguageLevelKey,
+    );
+    final storedRomanPoolPreset = preferences.getString(romanPoolPresetKey);
     final storedMetronomeSound = preferences.getString(metronomeSoundKey);
     final storedActiveKeyCenters = preferences.getStringList(
       activeKeyCentersKey,
@@ -63,13 +121,46 @@ class PracticeSettingsStore {
     final storedSelectedTensions = preferences.getStringList(
       selectedTensionsKey,
     );
+    final storedEnabledChordQualities = preferences.getStringList(
+      enabledChordQualitiesKey,
+    );
     final storedTopNotePreference = preferences.getString(
       voicingTopNotePreferenceKey,
     );
+    final resolvedAllowV7sus4 =
+        preferences.getBool(allowV7sus4Key) ?? fallbackSettings.allowV7sus4;
+    final resolvedGuidedSetupCompleted =
+        storedGuidedSetupCompleted ??
+        (inferredExistingUser || fallbackSettings.guidedSetupCompleted);
+    final resolvedSettingsComplexityMode = storedSettingsComplexityMode == null
+        ? inferredExistingUser && !fallbackSettings.guidedSetupCompleted
+              ? SettingsComplexityMode.standard
+              : fallbackSettings.settingsComplexityMode
+        : SettingsComplexityModeX.fromStorageKey(storedSettingsComplexityMode);
+    final resolvedPreferredSuggestionKind =
+        storedPreferredSuggestionKind == null
+        ? fallbackSettings.preferredSuggestionKind
+        : DefaultVoicingSuggestionKindX.fromStorageKey(
+            storedPreferredSuggestionKind,
+          );
+    final resolvedChordLanguageLevel = storedChordLanguageLevel == null
+        ? fallbackSettings.chordLanguageLevel
+        : ChordLanguageLevelX.fromStorageKey(storedChordLanguageLevel);
+    final resolvedRomanPoolPreset = storedRomanPoolPreset == null
+        ? fallbackSettings.romanPoolPreset
+        : RomanPoolPresetX.fromStorageKey(storedRomanPoolPreset);
     return PracticeSettings(
       language: storedLanguage == null
           ? fallbackSettings.language
           : AppLanguageX.fromStorageKey(storedLanguage),
+      appThemeMode: storedAppThemeMode == null
+          ? fallbackSettings.appThemeMode
+          : AppThemeModeX.fromStorageKey(storedAppThemeMode),
+      guidedSetupCompleted: resolvedGuidedSetupCompleted,
+      settingsComplexityMode: resolvedSettingsComplexityMode,
+      preferredSuggestionKind: resolvedPreferredSuggestionKind,
+      chordLanguageLevel: resolvedChordLanguageLevel,
+      romanPoolPreset: resolvedRomanPoolPreset,
       metronomeEnabled:
           preferences.getBool(metronomeEnabledKey) ??
           fallbackSettings.metronomeEnabled,
@@ -120,11 +211,18 @@ class PracticeSettingsStore {
         (style) => style.name == preferences.getString(chordSymbolStyleKey),
         orElse: () => fallbackSettings.chordSymbolStyle,
       ),
-      allowV7sus4:
-          preferences.getBool(allowV7sus4Key) ?? fallbackSettings.allowV7sus4,
+      allowV7sus4: resolvedAllowV7sus4,
       allowTensions:
           preferences.getBool(allowTensionsKey) ??
           fallbackSettings.allowTensions,
+      enabledChordQualities:
+          _sanitizeStoredChordQualities(
+            storedEnabledChordQualities,
+            allowV7sus4: resolvedAllowV7sus4,
+          ) ??
+          MusicTheory.defaultGeneratorChordQualities(
+            allowV7sus4: resolvedAllowV7sus4,
+          ),
       selectedTensionOptions:
           _sanitizeStoredTensionOptions(
             storedSelectedTensions,
@@ -178,6 +276,30 @@ class PracticeSettingsStore {
   Future<void> save(PracticeSettings settings) async {
     final preferences = await _preferencesLoader();
     await preferences.setString(languageKey, settings.language.storageKey);
+    await preferences.setString(
+      appThemeModeKey,
+      settings.appThemeMode.storageKey,
+    );
+    await preferences.setBool(
+      guidedSetupCompletedKey,
+      settings.guidedSetupCompleted,
+    );
+    await preferences.setString(
+      settingsComplexityModeKey,
+      settings.settingsComplexityMode.storageKey,
+    );
+    await preferences.setString(
+      preferredSuggestionKindKey,
+      settings.preferredSuggestionKind.storageKey,
+    );
+    await preferences.setString(
+      chordLanguageLevelKey,
+      settings.chordLanguageLevel.storageKey,
+    );
+    await preferences.setString(
+      romanPoolPresetKey,
+      settings.romanPoolPreset.storageKey,
+    );
     await preferences.setBool(metronomeEnabledKey, settings.metronomeEnabled);
     await preferences.setDouble(metronomeVolumeKey, settings.metronomeVolume);
     await preferences.setString(
@@ -221,6 +343,10 @@ class PracticeSettingsStore {
     );
     await preferences.setBool(allowV7sus4Key, settings.allowV7sus4);
     await preferences.setBool(allowTensionsKey, settings.allowTensions);
+    await preferences.setStringList(
+      enabledChordQualitiesKey,
+      _sortedChordQualities(settings.enabledChordQualities),
+    );
     await preferences.setStringList(
       selectedTensionsKey,
       _sortedTensionOptions(settings.selectedTensionOptions),
@@ -284,6 +410,34 @@ class PracticeSettingsStore {
     return fallbackSettings.selectedTensionOptions;
   }
 
+  Set<ChordQuality>? _sanitizeStoredChordQualities(
+    List<String>? storedOptions, {
+    required bool allowV7sus4,
+  }) {
+    if (storedOptions == null) {
+      return null;
+    }
+    final mapped = storedOptions
+        .map(
+          (value) =>
+              ChordQuality.values.where((quality) => quality.name == value),
+        )
+        .where((matches) => matches.isNotEmpty)
+        .map((matches) => matches.first)
+        .toSet();
+    final ordered = _sortedChordQualities(mapped);
+    if (ordered.isNotEmpty) {
+      return ordered
+          .map(
+            (value) => ChordQuality.values.firstWhere(
+              (quality) => quality.name == value,
+            ),
+          )
+          .toSet();
+    }
+    return MusicTheory.defaultGeneratorChordQualities(allowV7sus4: allowV7sus4);
+  }
+
   List<String> _sortedActiveKeys(PracticeSettings settings) {
     final ordered = settings.activeKeys.toList(growable: false);
     ordered.sort((left, right) => _keyOrder(left).compareTo(_keyOrder(right)));
@@ -307,6 +461,22 @@ class PracticeSettingsStore {
       for (final tension in ChordRenderingHelper.supportedTensionOptions)
         if (selectedTensions.contains(tension)) tension,
     ];
+  }
+
+  List<String> _sortedChordQualities(Set<ChordQuality> selectedQualities) {
+    return [
+      for (final quality in MusicTheory.supportedGeneratorChordQualities)
+        if (selectedQualities.contains(quality)) quality.name,
+    ];
+  }
+
+  bool _hasStoredLegacyPracticeSettings(SharedPreferences preferences) {
+    for (final key in _legacyStoredSettingsKeys) {
+      if (preferences.containsKey(key)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   int _keyOrder(String key) {

@@ -10,6 +10,7 @@ class HarmonyPreviewResolver {
 
   static const Map<String, int> _toneSemitones = <String, int>{
     '1': 0,
+    '2': 2,
     'b9': 1,
     '9': 2,
     '#9': 3,
@@ -62,14 +63,14 @@ class HarmonyPreviewResolver {
   }
 
   static HarmonyChordClip fromParsedChord(ParsedChord chord, {String? label}) {
-    return fromChordSymbolData(
-      ChordSymbolData(
-        root: chord.root,
-        harmonicQuality: chord.displayQuality,
-        renderQuality: chord.displayQuality,
-        tensions: chord.tensions,
-        bass: chord.bass,
-      ),
+    final rootSemitone = MusicTheory.noteToSemitone[chord.root];
+    if (rootSemitone == null) {
+      return const HarmonyChordClip(notes: <HarmonyPreviewNote>[]);
+    }
+    return _buildClip(
+      rootSemitone: rootSemitone,
+      bass: chord.bass,
+      toneLabels: _orderedToneLabelsForParsedChord(chord),
       label: label ?? chord.sourceSymbol,
     );
   }
@@ -82,39 +83,12 @@ class HarmonyPreviewResolver {
     if (rootSemitone == null) {
       return const HarmonyChordClip(notes: <HarmonyPreviewNote>[]);
     }
-
-    final toneLabels = _orderedToneLabels(symbolData);
-    final notes = <HarmonyPreviewNote>[];
-
-    final bass = symbolData.bass;
-    if (bass case final bassName?) {
-      final bassSemitone = MusicTheory.noteToSemitone[bassName];
-      if (bassSemitone != null) {
-        final bassMidi = _nearestMidiForPitchClass(
-          pitchClass: bassSemitone,
-          targetMidi: 41,
-          minPitch: 36,
-          maxPitch: 52,
-        );
-        if (bassMidi != null) {
-          notes.add(
-            HarmonyPreviewNote(
-              midiNote: bassMidi,
-              gain: 0.98,
-              toneLabel: 'bass',
-            ),
-          );
-        }
-      }
-    }
-
-    final realizedUpperNotes = _realizeUpperVoicing(
+    return _buildClip(
       rootSemitone: rootSemitone,
-      toneLabels: toneLabels,
+      bass: symbolData.bass,
+      toneLabels: _orderedToneLabelsForSymbolData(symbolData),
+      label: label,
     );
-    notes.addAll(realizedUpperNotes);
-
-    return HarmonyChordClip(notes: notes, label: label);
   }
 
   static List<HarmonyChordClip> progressionFromAnalysis(
@@ -181,32 +155,176 @@ class HarmonyPreviewResolver {
     );
   }
 
-  static List<String> _orderedToneLabels(ChordSymbolData symbolData) {
+  static HarmonyChordClip _buildClip({
+    required int rootSemitone,
+    required List<String> toneLabels,
+    String? bass,
+    String? label,
+  }) {
+    final notes = <HarmonyPreviewNote>[];
+    if (bass case final bassName?) {
+      final bassSemitone = MusicTheory.noteToSemitone[bassName];
+      if (bassSemitone != null) {
+        final bassMidi = _nearestMidiForPitchClass(
+          pitchClass: bassSemitone,
+          targetMidi: 41,
+          minPitch: 36,
+          maxPitch: 52,
+        );
+        if (bassMidi != null) {
+          notes.add(
+            HarmonyPreviewNote(
+              midiNote: bassMidi,
+              gain: 0.98,
+              toneLabel: 'bass',
+            ),
+          );
+        }
+      }
+    }
+
+    notes.addAll(
+      _realizeUpperVoicing(rootSemitone: rootSemitone, toneLabels: toneLabels),
+    );
+    return HarmonyChordClip(notes: notes, label: label);
+  }
+
+  static List<String> _orderedToneLabelsForSymbolData(
+    ChordSymbolData symbolData,
+  ) {
     final labels = <String>[
       ...?_baseToneLabelsByQuality[symbolData.renderQuality],
     ];
     for (final tension in symbolData.tensions) {
-      if (_toneSemitones.containsKey(tension) && !labels.contains(tension)) {
-        labels.add(tension);
+      _appendToneLabel(labels, tension);
+    }
+    return _limitToneLabels(labels, maxToneCount: 5);
+  }
+
+  static List<String> _orderedToneLabelsForParsedChord(ParsedChord chord) {
+    final labels = <String>[...?_baseToneLabelsByQuality[chord.displayQuality]];
+
+    _applySuspensions(labels, chord.suspensions);
+    for (final addedTone in chord.addedTones) {
+      _appendToneLabel(labels, addedTone);
+    }
+    for (final tension in chord.tensions) {
+      _appendToneLabel(labels, tension);
+    }
+    for (final alteration in chord.alterations) {
+      if (alteration == 'alt') {
+        for (final defaultTone in _defaultAltToneLabels) {
+          _appendToneLabel(labels, defaultTone);
+        }
+        continue;
+      }
+      _appendToneLabel(labels, alteration);
+    }
+    _applyOmissions(labels, chord.omittedTones);
+    return _limitToneLabels(labels, maxToneCount: 7, dropFifthFirst: false);
+  }
+
+  static void _applySuspensions(List<String> labels, List<String> suspensions) {
+    if (suspensions.isEmpty) {
+      return;
+    }
+    labels.removeWhere((label) => label == '3' || label == 'b3');
+    for (final suspension in suspensions) {
+      final normalized = switch (suspension.trim()) {
+        '2' => '2',
+        '4' => '4',
+        _ => null,
+      };
+      if (normalized != null && !labels.contains(normalized)) {
+        labels.add(normalized);
       }
     }
+  }
 
-    if (labels.length > 4) {
+  static void _applyOmissions(List<String> labels, List<String> omittedTones) {
+    for (final omission in omittedTones) {
+      switch (omission.trim()) {
+        case '1':
+          labels.removeWhere((label) => label == '1');
+        case '3':
+          labels.removeWhere((label) => label == '3' || label == 'b3');
+        case '5':
+          labels.removeWhere(
+            (label) => label == '5' || label == 'b5' || label == '#5',
+          );
+        case '7':
+          labels.removeWhere(
+            (label) => label == '7' || label == 'b7' || label == '6',
+          );
+        case '9':
+          labels.removeWhere(
+            (label) =>
+                label == '2' || label == '9' || label == 'b9' || label == '#9',
+          );
+        case '11':
+          labels.removeWhere((label) => label == '11' || label == '#11');
+        case '13':
+          labels.removeWhere(
+            (label) => label == '6' || label == '13' || label == 'b13',
+          );
+      }
+    }
+  }
+
+  static void _appendToneLabel(List<String> labels, String rawToneLabel) {
+    final toneLabel = _normalizeToneLabel(rawToneLabel);
+    if (toneLabel == null) {
+      return;
+    }
+    final conflicts = _toneConflicts[toneLabel];
+    if (conflicts != null) {
       labels.removeWhere(
+        (existingLabel) =>
+            existingLabel != toneLabel && conflicts.contains(existingLabel),
+      );
+    }
+    if (!labels.contains(toneLabel)) {
+      labels.add(toneLabel);
+    }
+  }
+
+  static String? _normalizeToneLabel(String rawToneLabel) {
+    final trimmed = rawToneLabel.trim();
+    if (trimmed.isEmpty || trimmed == 'alt') {
+      return null;
+    }
+    return switch (trimmed) {
+      'b2' => 'b9',
+      '2' => '2',
+      '#2' => '#9',
+      '#4' => '#11',
+      _ when _toneSemitones.containsKey(trimmed) => trimmed,
+      _ => null,
+    };
+  }
+
+  static List<String> _limitToneLabels(
+    List<String> labels, {
+    required int maxToneCount,
+    bool dropFifthFirst = true,
+  }) {
+    final limited = labels.toList(growable: true);
+    if (dropFifthFirst && limited.length > maxToneCount) {
+      limited.removeWhere(
         (label) => label == '5' || label == 'b5' || label == '#5',
       );
     }
-    if (labels.length > 5) {
-      return labels.take(5).toList(growable: false);
+    if (limited.length <= maxToneCount) {
+      return limited;
     }
-    return labels;
+    return limited.take(maxToneCount).toList(growable: false);
   }
 
   static List<HarmonyPreviewNote> _realizeUpperVoicing({
     required int rootSemitone,
     required List<String> toneLabels,
   }) {
-    const targets = <int>[48, 55, 60, 65, 70];
+    const targets = <int>[48, 52, 55, 60, 64, 67, 71, 74];
     final notes = <HarmonyPreviewNote>[];
     var minPitch = 43;
     for (var index = 0; index < toneLabels.length; index += 1) {
@@ -241,7 +359,7 @@ class HarmonyPreviewResolver {
 
   static int _minimumGap(String toneLabel) {
     if (toneLabel == '1') {
-      return 5;
+      return 4;
     }
     if (_tensionLabels.contains(toneLabel)) {
       return 2;
@@ -297,6 +415,7 @@ class HarmonyPreviewResolver {
   }
 
   static const Set<String> _tensionLabels = <String>{
+    '2',
     'b9',
     '9',
     '#9',
@@ -326,4 +445,21 @@ class HarmonyPreviewResolver {
         ChordQuality.dominant13sus4: <String>['1', '4', 'b7', '13'],
         ChordQuality.dominant7sus4: <String>['1', '4', 'b7', '5'],
       };
+
+  static const Map<String, Set<String>> _toneConflicts = <String, Set<String>>{
+    '2': <String>{'2', '9', 'b9', '#9'},
+    'b9': <String>{'2', '9', 'b9', '#9'},
+    '9': <String>{'2', '9', 'b9', '#9'},
+    '#9': <String>{'2', '9', 'b9', '#9'},
+    '11': <String>{'11', '#11'},
+    '#11': <String>{'11', '#11'},
+    '5': <String>{'5', 'b5', '#5'},
+    'b5': <String>{'5', 'b5', '#5'},
+    '#5': <String>{'5', 'b5', '#5'},
+    '6': <String>{'6', '13', 'b13'},
+    '13': <String>{'6', '13', 'b13'},
+    'b13': <String>{'6', '13', 'b13'},
+  };
+
+  static const List<String> _defaultAltToneLabels = <String>['b9', '#5'];
 }

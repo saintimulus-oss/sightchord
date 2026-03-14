@@ -21,6 +21,320 @@ class AppLocalizationsKo extends AppLocalizations {
   String get systemDefaultLanguage => '시스템 기본값';
 
   @override
+  String get themeMode => '테마';
+
+  @override
+  String get themeModeSystem => '시스템 설정';
+
+  @override
+  String get themeModeLight => '라이트 모드';
+
+  @override
+  String get themeModeDark => '다크 모드';
+
+  @override
+  String get setupAssistantTitle => '설정 도우미';
+
+  @override
+  String get setupAssistantSubtitle =>
+      '몇 가지 간단한 선택으로 첫 연습을 덜 부담스럽게 만들어요. 나중에 언제든 다시 실행할 수 있어요.';
+
+  @override
+  String get setupAssistantCurrentMode => '현재 모드';
+
+  @override
+  String get setupAssistantModeGuided => '가이드 모드';
+
+  @override
+  String get setupAssistantModeStandard => '표준 모드';
+
+  @override
+  String get setupAssistantModeAdvanced => '고급 모드';
+
+  @override
+  String get setupAssistantRunAgain => '설정 도우미 다시 실행';
+
+  @override
+  String get setupAssistantCardBody =>
+      '지금은 더 편안한 시작 프로필을 쓰고, 익숙해지면 고급 옵션을 열어 보세요.';
+
+  @override
+  String get setupAssistantPreparingTitle => '부담 없이 시작할게요';
+
+  @override
+  String get setupAssistantPreparingBody =>
+      '코드가 보이기 전에 몇 번의 탭으로 편안한 시작점을 먼저 맞춰둘게요.';
+
+  @override
+  String setupAssistantProgress(int current, int total) {
+    return '$total단계 중 $current단계';
+  }
+
+  @override
+  String get setupAssistantSkip => '건너뛰기';
+
+  @override
+  String get setupAssistantBack => '이전';
+
+  @override
+  String get setupAssistantNext => '다음';
+
+  @override
+  String get setupAssistantApply => '적용';
+
+  @override
+  String get setupAssistantGoalQuestionTitle => '이 생성기를 먼저 어디에 쓰고 싶나요?';
+
+  @override
+  String get setupAssistantGoalQuestionBody =>
+      '가장 가까운 느낌을 고르세요. 나중에 언제든 바꿀 수 있어요.';
+
+  @override
+  String get setupAssistantGoalEarTitle => '코드를 듣고 익히기';
+
+  @override
+  String get setupAssistantGoalEarBody => '짧고 부담 없는 프롬프트로 듣기와 구분 연습을 해요.';
+
+  @override
+  String get setupAssistantGoalKeyboardTitle => '건반 손 연습';
+
+  @override
+  String get setupAssistantGoalKeyboardBody => '손에 먼저 잘 들어오는 쉬운 모양과 표기로 시작해요.';
+
+  @override
+  String get setupAssistantGoalSongTitle => '곡 아이디어';
+
+  @override
+  String get setupAssistantGoalSongBody => '너무 복잡하지 않게 음악적인 재료를 바로 꺼낼 수 있게 해요.';
+
+  @override
+  String get setupAssistantGoalHarmonyTitle => '화성 공부';
+
+  @override
+  String get setupAssistantGoalHarmonyBody =>
+      '처음엔 명확하게, 나중에는 더 깊게 확장할 수 있게 해요.';
+
+  @override
+  String get setupAssistantLiteracyQuestionTitle => '지금 나에게 가장 가까운 문장은?';
+
+  @override
+  String get setupAssistantLiteracyQuestionBody => '잘하고 싶은 답보다 지금 편한 답을 골라주세요.';
+
+  @override
+  String get setupAssistantLiteracyAbsoluteTitle => 'C, Cm, C7, Cmaj7도 아직 헷갈린다';
+
+  @override
+  String get setupAssistantLiteracyAbsoluteBody => '표기와 진행을 최대한 읽기 쉽게 맞춰 드려요.';
+
+  @override
+  String get setupAssistantLiteracyBasicTitle => 'maj7 / m7 / 7 정도는 읽을 수 있다';
+
+  @override
+  String get setupAssistantLiteracyBasicBody => '안전하게 가되 범위를 조금 넓혀요.';
+
+  @override
+  String get setupAssistantLiteracyFunctionalTitle =>
+      'ii-V-I와 다이어토닉 흐름은 어느 정도 따라간다';
+
+  @override
+  String get setupAssistantLiteracyFunctionalBody => '명확한 화성에 약간의 움직임을 더해요.';
+
+  @override
+  String get setupAssistantLiteracyAdvancedTitle => '컬러풀한 리하모니와 익스텐션도 익숙하다';
+
+  @override
+  String get setupAssistantLiteracyAdvancedBody => '파워 유저용 범위를 더 많이 열어 둬요.';
+
+  @override
+  String get setupAssistantHandQuestionTitle => '건반에서 손은 어느 정도 편한가요?';
+
+  @override
+  String get setupAssistantHandQuestionBody => '무리 없는 보이싱 범위를 맞추는 데 쓸게요.';
+
+  @override
+  String get setupAssistantHandThreeTitle => '3음 정도가 편하다';
+
+  @override
+  String get setupAssistantHandThreeBody => '손 모양을 최대한 작게 유지해요.';
+
+  @override
+  String get setupAssistantHandFourTitle => '4음까지는 괜찮다';
+
+  @override
+  String get setupAssistantHandFourBody => '조금 더 넓은 모양도 허용해요.';
+
+  @override
+  String get setupAssistantHandJazzTitle => '재즈스러운 모양도 편하다';
+
+  @override
+  String get setupAssistantHandJazzBody => '나중에 더 큰 보이싱으로 넓혀 갈 수 있어요.';
+
+  @override
+  String get setupAssistantColorQuestionTitle => '처음엔 어느 정도 컬러감이 좋을까요?';
+
+  @override
+  String get setupAssistantColorQuestionBody => '헷갈리면 더 단순한 쪽이 좋아요.';
+
+  @override
+  String get setupAssistantColorSafeTitle => '안전하고 익숙하게';
+
+  @override
+  String get setupAssistantColorSafeBody => '읽기 쉬운 기본 화성에 가깝게 유지해요.';
+
+  @override
+  String get setupAssistantColorJazzyTitle => '조금 재즈스럽게';
+
+  @override
+  String get setupAssistantColorJazzyBody => '너무 과하지 않게 색을 조금 더해요.';
+
+  @override
+  String get setupAssistantColorColorfulTitle => '꽤 컬러풀하게';
+
+  @override
+  String get setupAssistantColorColorfulBody => '현대적인 색감을 더 많이 열어 둬요.';
+
+  @override
+  String get setupAssistantSymbolQuestionTitle => '어떤 코드 표기가 가장 읽기 편한가요?';
+
+  @override
+  String get setupAssistantSymbolQuestionBody => '보이는 표기만 바뀌고 화성 로직은 그대로예요.';
+
+  @override
+  String get setupAssistantSymbolMajTextBody => '가장 또렷하고 초보자에게 친절해요.';
+
+  @override
+  String get setupAssistantSymbolCompactBody => '짧은 표기가 이미 익숙하면 좋아요.';
+
+  @override
+  String get setupAssistantSymbolDeltaBody => '재즈 표기에 눈이 익었다면 좋아요.';
+
+  @override
+  String get setupAssistantKeyQuestionTitle => '어느 조부터 시작할까요?';
+
+  @override
+  String get setupAssistantKeyQuestionBody =>
+      '기본 추천은 C major이고, 나중에 언제든 바꿀 수 있어요.';
+
+  @override
+  String get setupAssistantKeyCMajorBody => '가장 무난한 초보 시작점이에요.';
+
+  @override
+  String get setupAssistantKeyGMajorBody => '샵이 하나 있는 밝은 장조예요.';
+
+  @override
+  String get setupAssistantKeyFMajorBody => '플랫이 하나 있는 편안한 장조예요.';
+
+  @override
+  String get setupAssistantPreviewTitle => '이 설정이면 이렇게 시작해요';
+
+  @override
+  String get setupAssistantPreviewBody =>
+      '대충 이런 느낌으로 생성됩니다. 시작 전에 더 쉽게 하거나 조금 더 재즈하게 바꿀 수 있어요.';
+
+  @override
+  String get setupAssistantPreviewListen => '샘플 들어보기';
+
+  @override
+  String get setupAssistantPreviewPlaying => '샘플 재생 중...';
+
+  @override
+  String get setupAssistantStartNow => '이대로 시작';
+
+  @override
+  String get setupAssistantAdjustEasier => '더 쉽게';
+
+  @override
+  String get setupAssistantAdjustJazzier => '조금 더 재즈하게';
+
+  @override
+  String get setupAssistantPreviewKeyLabel => '시작 조';
+
+  @override
+  String get setupAssistantPreviewNotationLabel => '표기';
+
+  @override
+  String get setupAssistantPreviewDifficultyLabel => '느낌';
+
+  @override
+  String get setupAssistantPreviewProgressionLabel => '샘플 진행';
+
+  @override
+  String get setupAssistantPreviewProgressionBody => '지금 설정으로 만든 짧은 4코드 예시입니다.';
+
+  @override
+  String get setupAssistantPreviewSummaryAbsolute => '초보 친화 시작';
+
+  @override
+  String get setupAssistantPreviewSummaryBasic => '읽기 편한 7화음 시작';
+
+  @override
+  String get setupAssistantPreviewSummaryFunctional => '기능 화성 중심 시작';
+
+  @override
+  String get setupAssistantPreviewSummaryAdvanced => '컬러가 있는 재즈 시작';
+
+  @override
+  String get setupAssistantPreviewBodyTriads =>
+      '익숙한 트라이어드와 안전한 진행 위주로 시작해서 손과 눈에 부담을 줄입니다.';
+
+  @override
+  String get setupAssistantPreviewBodySevenths =>
+      'maj7, m7, 7 정도는 보이되 전체 흐름은 차분하고 읽기 쉽게 유지합니다.';
+
+  @override
+  String get setupAssistantPreviewBodySafeExtensions =>
+      '조금 더 색채는 생기지만 9, 11, 13 정도의 안전한 확장 안에서 머뭅니다.';
+
+  @override
+  String get setupAssistantPreviewBodyFullExtensions =>
+      '더 풍부한 색채와 움직임을 허용해 재즈스러운 진행이 자연스럽게 나올 수 있습니다.';
+
+  @override
+  String get setupAssistantNotationMajText => 'Cmaj7 표기';
+
+  @override
+  String get setupAssistantNotationCompact => 'CM7 표기';
+
+  @override
+  String get setupAssistantNotationDelta => 'CΔ7 표기';
+
+  @override
+  String get setupAssistantDifficultyTriads => '단순한 트라이어드와 핵심 진행';
+
+  @override
+  String get setupAssistantDifficultySevenths => 'maj7 / m7 / 7 중심';
+
+  @override
+  String get setupAssistantDifficultySafeExtensions => '9 / 11 / 13 정도의 안전한 컬러';
+
+  @override
+  String get setupAssistantDifficultyFullExtensions => '넓은 컬러와 더 자유로운 진행';
+
+  @override
+  String get setupAssistantStudyHarmonyTitle => '기초 화성도 같이 시작할까요?';
+
+  @override
+  String get setupAssistantStudyHarmonyBody =>
+      'Study Harmony에서 기본기를 같이 익히면 생성기를 더 덜 막막하게 시작할 수 있어요.';
+
+  @override
+  String get setupAssistantStudyHarmonyCta => 'Study Harmony 시작';
+
+  @override
+  String get setupAssistantGuidedSettingsTitle => '초보 친화 세팅 사용 중';
+
+  @override
+  String get setupAssistantGuidedSettingsBody =>
+      '자주 쓰는 핵심만 여기 두고, 나머지 고급 옵션은 필요할 때 열 수 있게 정리했습니다.';
+
+  @override
+  String get setupAssistantAdvancedSectionTitle => '고급 설정 열기';
+
+  @override
+  String get setupAssistantAdvancedSectionBody =>
+      '모든 생성 옵션을 보고 싶다면 전체 설정 페이지를 열어보세요.';
+
+  @override
   String get metronome => '메트로놈';
 
   @override
@@ -176,6 +490,35 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get allowTensions => '텐션 허용';
+
+  @override
+  String get chordTypeFilters => '코드 종류';
+
+  @override
+  String get chordTypeFiltersHelp => '생성기에 표시할 코드 종류를 선택하세요.';
+
+  @override
+  String chordTypeFiltersSelection(int selected, int total) {
+    return '$selected / $total 활성화';
+  }
+
+  @override
+  String get chordTypeGroupTriads => '트라이어드';
+
+  @override
+  String get chordTypeGroupSevenths => '세븐스';
+
+  @override
+  String get chordTypeGroupSixthsAndAddedTone => '식스/부가음';
+
+  @override
+  String get chordTypeGroupDominantVariants => '도미넌트 변형';
+
+  @override
+  String get chordTypeRequiresKeyMode => 'V7sus4는 키를 하나 이상 선택했을 때만 사용할 수 있습니다.';
+
+  @override
+  String get chordTypeKeepOneEnabled => '최소 한 가지 코드 종류는 켜 두어야 합니다.';
 
   @override
   String get tensionHelp => '로마 숫자 프로필과 선택한 칩만 사용';

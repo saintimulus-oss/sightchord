@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import '../settings/practice_settings.dart';
 import '../settings/inversion_settings.dart';
 import 'chord_theory.dart';
 
@@ -126,6 +127,7 @@ class ChordRenderingHelper {
   ];
 
   static const Set<String> alteredTensions = {'#11', 'b9', '#9', 'b13'};
+  static const Set<String> safeExtensionTensions = {'9', '11', '13'};
   static const Map<String, int> _tensionPitchClassOffsets = {
     'b9': 1,
     '9': 2,
@@ -288,6 +290,69 @@ class ChordRenderingHelper {
 
   static String renderedSymbol(GeneratedChord chord, ChordSymbolStyle style) {
     return ChordSymbolFormatter.format(chord.symbolData, style);
+  }
+
+  static ChordQuality simplifyRenderQualityForLanguage({
+    required ChordQuality renderQuality,
+    required ChordLanguageLevel chordLanguageLevel,
+  }) {
+    return switch (chordLanguageLevel) {
+      ChordLanguageLevel.fullExtensions => renderQuality,
+      ChordLanguageLevel.safeExtensions => switch (renderQuality) {
+        ChordQuality.minorMajor7 => ChordQuality.minor7,
+        ChordQuality.diminished7 => ChordQuality.diminishedTriad,
+        ChordQuality.dominant7Alt ||
+        ChordQuality.dominant7Sharp11 ||
+        ChordQuality.dominant13sus4 ||
+        ChordQuality.dominant7sus4 => ChordQuality.dominant7,
+        _ => renderQuality,
+      },
+      ChordLanguageLevel.seventhChords => switch (renderQuality) {
+        ChordQuality.six ||
+        ChordQuality.major69 => ChordQuality.major7,
+        ChordQuality.minor6 ||
+        ChordQuality.minorMajor7 => ChordQuality.minor7,
+        ChordQuality.diminished7 => ChordQuality.diminishedTriad,
+        ChordQuality.dominant7Alt ||
+        ChordQuality.dominant7Sharp11 ||
+        ChordQuality.dominant13sus4 ||
+        ChordQuality.dominant7sus4 => ChordQuality.dominant7,
+        _ => renderQuality,
+      },
+      ChordLanguageLevel.triadsOnly => switch (renderQuality) {
+        ChordQuality.major7 ||
+        ChordQuality.six ||
+        ChordQuality.major69 => ChordQuality.majorTriad,
+        ChordQuality.minor7 ||
+        ChordQuality.minor6 ||
+        ChordQuality.minorMajor7 => ChordQuality.minorTriad,
+        ChordQuality.dominant7 ||
+        ChordQuality.dominant7Alt ||
+        ChordQuality.dominant7Sharp11 ||
+        ChordQuality.dominant13sus4 ||
+        ChordQuality.dominant7sus4 => ChordQuality.majorTriad,
+        ChordQuality.halfDiminished7 ||
+        ChordQuality.diminished7 => ChordQuality.diminishedTriad,
+        _ => renderQuality,
+      },
+    };
+  }
+
+  static ChordSymbolData simplifySymbolDataForLanguage({
+    required ChordSymbolData symbolData,
+    required ChordLanguageLevel chordLanguageLevel,
+  }) {
+    final renderQuality = simplifyRenderQualityForLanguage(
+      renderQuality: symbolData.renderQuality,
+      chordLanguageLevel: chordLanguageLevel,
+    );
+    return symbolData.copyWith(
+      renderQuality: renderQuality,
+      tensions: _filteredExplicitTensionsForLanguage(
+        tensions: symbolData.tensions,
+        chordLanguageLevel: chordLanguageLevel,
+      ),
+    );
   }
 
   static Set<int> targetPitchClassesForChord(GeneratedChord chord) {
@@ -453,12 +518,18 @@ class ChordRenderingHelper {
     required bool allowTensions,
     required Set<String> selectedTensionOptions,
     required bool suppressTensions,
+    ChordLanguageLevel chordLanguageLevel = ChordLanguageLevel.fullExtensions,
     ChordQuality? renderQuality,
     DominantContext? dominantContext,
     DominantIntent? dominantIntent,
   }) {
+    final filteredTensionOptions = _filteredTensionOptionsForLanguage(
+      selectedTensionOptions,
+      chordLanguageLevel: chordLanguageLevel,
+    );
     if (!allowTensions ||
         suppressTensions ||
+        filteredTensionOptions.isEmpty ||
         plannedChordKind != PlannedChordKind.resolvedRoman ||
         romanNumeralId == null) {
       return const [];
@@ -482,7 +553,7 @@ class ChordRenderingHelper {
     final profile = _tensionProfiles[profileKey] ?? const <_WeightedTension>[];
     final available = [
       for (final tension in profile)
-        if (selectedTensionOptions.contains(tension.value)) tension,
+        if (filteredTensionOptions.contains(tension.value)) tension,
     ];
     if (available.isEmpty) {
       return const [];
@@ -491,7 +562,7 @@ class ChordRenderingHelper {
     final pairCandidates = [
       for (final pair
           in _safeTensionPairs[profileKey] ?? const <List<String>>[])
-        if (pair.every(selectedTensionOptions.contains)) pair,
+        if (pair.every(filteredTensionOptions.contains)) pair,
     ];
     if (pairCandidates.isNotEmpty && random.nextInt(100) < 22) {
       return pairCandidates[random.nextInt(pairCandidates.length)];
@@ -518,11 +589,17 @@ class ChordRenderingHelper {
     required Set<String> selectedTensionOptions,
     required bool suppressTensions,
     required ChordQuality renderQuality,
+    ChordLanguageLevel chordLanguageLevel = ChordLanguageLevel.fullExtensions,
     DominantContext? dominantContext,
     DominantIntent? dominantIntent,
   }) {
+    final filteredTensionOptions = _filteredTensionOptionsForLanguage(
+      selectedTensionOptions,
+      chordLanguageLevel: chordLanguageLevel,
+    );
     if (!allowTensions ||
         suppressTensions ||
+        filteredTensionOptions.isEmpty ||
         plannedChordKind != PlannedChordKind.resolvedRoman ||
         romanNumeralId == null) {
       return const [];
@@ -546,7 +623,7 @@ class ChordRenderingHelper {
     final available = [
       for (final tension
           in _tensionProfiles[profileKey] ?? const <_WeightedTension>[])
-        if (selectedTensionOptions.contains(tension.value)) tension,
+        if (filteredTensionOptions.contains(tension.value)) tension,
     ];
     available.sort((left, right) => right.weight.compareTo(left.weight));
     return [for (final tension in available) tension.value];
@@ -747,9 +824,14 @@ class ChordRenderingHelper {
     required Set<String> selectedTensionOptions,
     required bool suppressTensions,
     required InversionSettings inversionSettings,
+    ChordLanguageLevel chordLanguageLevel = ChordLanguageLevel.fullExtensions,
     DominantContext? dominantContext,
     DominantIntent? dominantIntent,
   }) {
+    final effectiveRenderQuality = simplifyRenderQualityForLanguage(
+      renderQuality: renderQuality,
+      chordLanguageLevel: chordLanguageLevel,
+    );
     final tensions = selectTensions(
       random: random,
       romanNumeralId: romanNumeralId,
@@ -757,14 +839,15 @@ class ChordRenderingHelper {
       allowTensions: allowTensions,
       selectedTensionOptions: selectedTensionOptions,
       suppressTensions: suppressTensions,
-      renderQuality: renderQuality,
+      chordLanguageLevel: chordLanguageLevel,
+      renderQuality: effectiveRenderQuality,
       dominantContext: dominantContext,
       dominantIntent: dominantIntent,
     );
     final baseData = ChordSymbolData(
       root: root,
       harmonicQuality: harmonicQuality,
-      renderQuality: renderQuality,
+      renderQuality: effectiveRenderQuality,
       tensions: tensions,
     );
     final inverted = maybeApplyInversion(
@@ -778,12 +861,44 @@ class ChordRenderingHelper {
         romanNumeralId: romanNumeralId,
         plannedChordKind: plannedChordKind,
         sourceKind: sourceKind,
-        renderQuality: renderQuality,
+        renderQuality: effectiveRenderQuality,
         tensions: tensions,
         dominantContext: dominantContext,
         dominantIntent: dominantIntent,
       ),
     );
+  }
+
+  static Set<String> _filteredTensionOptionsForLanguage(
+    Set<String> selectedTensionOptions, {
+    required ChordLanguageLevel chordLanguageLevel,
+  }) {
+    return switch (chordLanguageLevel) {
+      ChordLanguageLevel.triadsOnly || ChordLanguageLevel.seventhChords =>
+        const <String>{},
+      ChordLanguageLevel.safeExtensions => {
+        for (final tension in selectedTensionOptions)
+          if (safeExtensionTensions.contains(tension)) tension,
+      },
+      ChordLanguageLevel.fullExtensions => selectedTensionOptions,
+    };
+  }
+
+  static List<String> _filteredExplicitTensionsForLanguage({
+    required List<String> tensions,
+    required ChordLanguageLevel chordLanguageLevel,
+  }) {
+    if (chordLanguageLevel == ChordLanguageLevel.triadsOnly ||
+        chordLanguageLevel == ChordLanguageLevel.seventhChords) {
+      return const [];
+    }
+    final allowed = chordLanguageLevel == ChordLanguageLevel.safeExtensions
+        ? safeExtensionTensions
+        : tensions.toSet();
+    return [
+      for (final tension in tensions)
+        if (allowed.contains(tension)) tension,
+    ];
   }
 
   static Iterable<int> _basePitchClassOffsetsForRenderQuality(

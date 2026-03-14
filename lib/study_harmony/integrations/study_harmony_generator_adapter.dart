@@ -7,6 +7,7 @@ import '../../music/chord_theory.dart';
 import '../../music/progression_analysis_models.dart';
 import '../../music/progression_analyzer.dart';
 import '../../settings/inversion_settings.dart';
+import '../../settings/practice_settings.dart';
 import '../../smart_generator.dart';
 
 typedef StudyHarmonyProgressionCandidateFactory =
@@ -264,6 +265,10 @@ class StudyHarmonyGeneratorAdapter {
       sourceProfile: SourceProfile.fakebookStandard,
       allowV7sus4: false,
       allowTensions: false,
+      chordLanguageLevel: ChordLanguageLevel.seventhChords,
+      romanPoolPreset: allowNonDiatonic
+          ? RomanPoolPreset.functionalJazz
+          : RomanPoolPreset.coreDiatonic,
       selectedTensionOptions: const <String>{},
       inversionSettings: const InversionSettings(),
       smartDiagnosticsEnabled: false,
@@ -304,6 +309,8 @@ class StudyHarmonyGeneratorAdapter {
                 sourceProfile: request.sourceProfile,
                 allowV7sus4: request.allowV7sus4,
                 allowTensions: request.allowTensions,
+                chordLanguageLevel: request.chordLanguageLevel,
+                romanPoolPreset: request.romanPoolPreset,
                 selectedTensionOptions: request.selectedTensionOptions,
                 inversionSettings: request.inversionSettings,
                 smartDiagnosticsEnabled: request.smartDiagnosticsEnabled,
@@ -324,6 +331,7 @@ class StudyHarmonyGeneratorAdapter {
         random: random,
         plan: plan,
         previousChord: currentChord,
+        chordLanguageLevel: request.chordLanguageLevel,
       );
       generatedChords.add(nextChord);
       previousChord = currentChord;
@@ -345,12 +353,14 @@ class StudyHarmonyGeneratorAdapter {
     required Random random,
     required SmartStepPlan plan,
     required GeneratedChord? previousChord,
+    required ChordLanguageLevel chordLanguageLevel,
   }) {
     final comparison = SmartGeneratorHelper.compareVoiceLeadingCandidates(
       random: random,
       previousChord: previousChord,
       allowV7sus4: false,
       allowTensions: false,
+      chordLanguageLevel: chordLanguageLevel,
       selectedTensionOptions: const <String>{},
       inversionSettings: const InversionSettings(),
       debugChordStyle: ChordSymbolStyle.majText,
