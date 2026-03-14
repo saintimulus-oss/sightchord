@@ -19,6 +19,7 @@ import 'music/voicing_models.dart';
 import 'music/voicing_session_state.dart';
 import 'settings/practice_settings.dart';
 import 'settings/practice_settings_effects.dart';
+import 'settings/practice_advanced_settings_page.dart';
 import 'settings/practice_settings_drawer.dart';
 import 'settings/settings_controller.dart';
 import 'smart_generator.dart';

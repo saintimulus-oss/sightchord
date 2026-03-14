@@ -48,4 +48,28 @@ extension _PracticeHomePageLabels on _MyHomePageState {
     };
     return trailingColon ? '$label:' : label;
   }
+
+  String _selectedKeySummary(AppLocalizations l10n) {
+    final labels = [
+      for (final center in _orderedKeyCenters)
+        _keyCenterLabel(l10n, center, trailingColon: false),
+    ];
+    if (labels.isEmpty) {
+      return l10n.allKeysTag;
+    }
+    if (labels.length <= 2) {
+      return labels.join('  ·  ');
+    }
+    return '${labels.take(2).join('  ·  ')} +${labels.length - 2}';
+  }
+
+  List<String> _selectedKeyPreviewLabels(
+    AppLocalizations l10n, {
+    int limit = 6,
+  }) {
+    return [
+      for (final center in _orderedKeyCenters.take(limit))
+        _keyCenterLabel(l10n, center, trailingColon: false),
+    ];
+  }
 }

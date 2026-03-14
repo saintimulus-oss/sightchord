@@ -5,9 +5,330 @@ extension _PracticeHomePageUi on _MyHomePageState {
     return PracticeSettingsDrawer(
       settings: _settings,
       onClose: () => Navigator.of(context).maybePop(),
+      onOpenAdvancedSettings: _openAdvancedSettings,
       onApplySettings: (nextSettings, {bool reseed = false}) {
         _applySettings(nextSettings, reseed: reseed);
       },
+    );
+  }
+
+  bool get _hasEnabledNonDiatonicOptions =>
+      _settings.secondaryDominantEnabled ||
+      _settings.substituteDominantEnabled ||
+      _settings.modalInterchangeEnabled;
+
+  Future<void> _openAdvancedSettings() async {
+    if (!mounted) {
+      return;
+    }
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => PracticeAdvancedSettingsPage(
+          settings: _settings,
+          onApplySettings: (nextSettings, {bool reseed = false}) {
+            _applySettings(nextSettings, reseed: reseed);
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openKeyCenterPicker() async {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    var modalSettings = _settings;
+
+    String compactLabel(KeyCenter center) {
+      return center.mode == KeyMode.major
+          ? MusicTheory.displayRootForKey(center.tonicName)
+          : MusicTheory.classicalDisplayRootForKey(center.tonicName);
+    }
+
+    void applyKeyCenters(
+      StateSetter setModalState,
+      Set<KeyCenter> nextCenters,
+    ) {
+      final nextSettings = modalSettings.copyWith(
+        activeKeyCenters: nextCenters,
+      );
+      setModalState(() {
+        modalSettings = nextSettings;
+      });
+      _applySettings(nextSettings, reseed: true);
+    }
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            Widget buildModeSection(KeyMode mode) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    mode == KeyMode.major ? l10n.modeMajor : l10n.modeMinor,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final center in MusicTheory.orderedKeyCentersForMode(
+                        mode,
+                      ))
+                        FilterChip(
+                          key: ValueKey(
+                            'practice-key-center-${center.tonicName}-${center.mode.name}',
+                          ),
+                          label: Text(compactLabel(center)),
+                          selected: modalSettings.activeKeyCenters.contains(
+                            center,
+                          ),
+                          showCheckmark: false,
+                          onSelected: (selected) {
+                            final nextCenters = <KeyCenter>{
+                              ...modalSettings.activeKeyCenters,
+                            };
+                            if (selected) {
+                              nextCenters.add(center);
+                            } else {
+                              nextCenters.remove(center);
+                            }
+                            applyKeyCenters(setModalState, nextCenters);
+                          },
+                        ),
+                    ],
+                  ),
+                ],
+              );
+            }
+
+            return SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                child: Column(
+                  key: const ValueKey('practice-key-center-sheet'),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.keys,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      modalSettings.usesKeyMode
+                          ? l10n.keysSelectedHelp
+                          : l10n.noKeysSelected,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: modalSettings.activeKeyCenters.isEmpty
+                              ? null
+                              : () => applyKeyCenters(
+                                  setModalState,
+                                  const <KeyCenter>{},
+                                ),
+                          icon: const Icon(Icons.clear_all_rounded),
+                          label: Text(l10n.freeModeTag),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    buildModeSection(KeyMode.major),
+                    const SizedBox(height: 18),
+                    buildModeSection(KeyMode.minor),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _toggleQuickSmartGenerator(bool selected) {
+    if (!_usesKeyMode) {
+      return;
+    }
+    _applySettings(
+      _settings.copyWith(smartGeneratorMode: selected),
+      reseed: true,
+    );
+  }
+
+  void _toggleQuickNonDiatonic(bool selected) {
+    if (!_usesKeyMode) {
+      return;
+    }
+    _applySettings(
+      _settings.copyWith(
+        secondaryDominantEnabled: selected,
+        substituteDominantEnabled: selected,
+        modalInterchangeEnabled: selected,
+      ),
+      reseed: true,
+    );
+  }
+
+  void _toggleQuickV7sus4(bool selected) {
+    if (!_usesKeyMode) {
+      return;
+    }
+    _applySettings(_settings.copyWith(allowV7sus4: selected), reseed: true);
+  }
+
+  void _toggleQuickTensions(bool selected) {
+    if (!_usesKeyMode) {
+      return;
+    }
+    _applySettings(_settings.copyWith(allowTensions: selected), reseed: true);
+  }
+
+  void _toggleQuickVoicingSuggestions(bool selected) {
+    _applySettings(_settings.copyWith(voicingSuggestionsEnabled: selected));
+  }
+
+  void _toggleQuickInversions(bool selected) {
+    _applySettings(
+      _settings.copyWith(
+        inversionSettings: _settings.inversionSettings.copyWith(
+          enabled: selected,
+        ),
+      ),
+      reseed: true,
+    );
+  }
+
+  Widget _buildGeneratorQuickSettingsPanel(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final previewLabels = _selectedKeyPreviewLabels(l10n);
+
+    return DecoratedBox(
+      key: const ValueKey('practice-quick-settings-panel'),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.settings,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                key: const ValueKey('practice-key-selector-button'),
+                onPressed: _openKeyCenterPicker,
+                icon: const Icon(Icons.library_music_rounded),
+                label: Text(
+                  '${l10n.keys}: ${_selectedKeySummary(l10n)}',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              _usesKeyMode ? l10n.keysSelectedHelp : l10n.noKeysSelected,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            if (previewLabels.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final label in previewLabels) Chip(label: Text(label)),
+                  if (_orderedKeyCenters.length > previewLabels.length)
+                    Chip(
+                      label: Text(
+                        '+${_orderedKeyCenters.length - previewLabels.length}',
+                      ),
+                    ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                _GeneratorQuickSettingChip(
+                  chipKey: const ValueKey('smart-generator-mode-toggle'),
+                  label: l10n.smartGeneratorMode,
+                  selected: _settings.smartGeneratorMode,
+                  onSelected: _usesKeyMode ? _toggleQuickSmartGenerator : null,
+                ),
+                _GeneratorQuickSettingChip(
+                  chipKey: const ValueKey('non-diatonic-toggle'),
+                  label: l10n.nonDiatonic,
+                  selected: _hasEnabledNonDiatonicOptions,
+                  onSelected: _usesKeyMode ? _toggleQuickNonDiatonic : null,
+                ),
+                _GeneratorQuickSettingChip(
+                  chipKey: const ValueKey('allow-v7sus4-chip'),
+                  label: l10n.allowV7sus4,
+                  selected: _settings.allowV7sus4,
+                  onSelected: _usesKeyMode ? _toggleQuickV7sus4 : null,
+                ),
+                _GeneratorQuickSettingChip(
+                  chipKey: const ValueKey('allow-tensions-toggle'),
+                  label: l10n.allowTensions,
+                  selected: _settings.allowTensions,
+                  onSelected: _usesKeyMode ? _toggleQuickTensions : null,
+                ),
+                _GeneratorQuickSettingChip(
+                  chipKey: const ValueKey('voicing-suggestions-toggle'),
+                  label: l10n.voicingSuggestionsTitle,
+                  selected: _settings.voicingSuggestionsEnabled,
+                  onSelected: _toggleQuickVoicingSuggestions,
+                ),
+                _GeneratorQuickSettingChip(
+                  chipKey: const ValueKey('enable-inversions-toggle'),
+                  label: l10n.inversions,
+                  selected: _settings.inversionSettings.enabled,
+                  onSelected: _toggleQuickInversions,
+                ),
+              ],
+            ),
+            if (!_usesKeyMode) ...[
+              const SizedBox(height: 10),
+              Text(
+                l10n.keyModeRequiredForSmartGenerator,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 
@@ -177,6 +498,8 @@ extension _PracticeHomePageUi on _MyHomePageState {
                                   ],
                                 ),
                               ),
+                              const SizedBox(height: 18),
+                              _buildGeneratorQuickSettingsPanel(context),
                               if (_settings.voicingSuggestionsEnabled &&
                                   _voicingRecommendations != null &&
                                   _voicingRecommendations!
@@ -414,6 +737,45 @@ class _BpmControlCluster extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _GeneratorQuickSettingChip extends StatelessWidget {
+  const _GeneratorQuickSettingChip({
+    required this.chipKey,
+    required this.label,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final Key chipKey;
+  final String label;
+  final bool selected;
+  final ValueChanged<bool>? onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return FilterChip(
+      key: chipKey,
+      label: Text(label),
+      selected: selected,
+      showCheckmark: false,
+      backgroundColor: theme.colorScheme.surfaceContainerLow,
+      selectedColor: theme.colorScheme.primaryContainer,
+      side: BorderSide(
+        color: selected
+            ? theme.colorScheme.primary.withValues(alpha: 0.18)
+            : theme.colorScheme.outlineVariant,
+      ),
+      labelStyle: theme.textTheme.labelLarge?.copyWith(
+        color: selected
+            ? theme.colorScheme.primary
+            : theme.colorScheme.onSurface,
+        fontWeight: FontWeight.w700,
+      ),
+      onSelected: onSelected,
     );
   }
 }
