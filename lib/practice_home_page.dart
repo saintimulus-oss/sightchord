@@ -403,8 +403,6 @@ class _MyHomePageState extends State<MyHomePage> {
     _recomputeVoicingSuggestions();
   }
 
-  bool get _canRestorePreviousChord => _practiceHistory.isNotEmpty;
-
   void _recordPracticeHistory() {
     if (_practiceHistory.length == _practiceHistoryLimit) {
       _practiceHistory.removeAt(0);
@@ -795,16 +793,16 @@ class _MyHomePageState extends State<MyHomePage> {
   Map<RomanNumeralId, int> _randomKeyModeRomanWeightsFor(KeyMode mode) {
     final baseWeights = mode == KeyMode.minor
         ? const {
-        RomanNumeralId.iMinMaj7: 16,
-        RomanNumeralId.iMin7: 14,
-        RomanNumeralId.iMin6: 12,
-        RomanNumeralId.iiHalfDiminishedMinor: 12,
-        RomanNumeralId.flatIIIMaj7Minor: 10,
-        RomanNumeralId.ivMin7Minor: 12,
-        RomanNumeralId.vDom7: 16,
-        RomanNumeralId.flatVIMaj7Minor: 10,
-        RomanNumeralId.flatVIIDom7Minor: 10,
-      }
+            RomanNumeralId.iMinMaj7: 16,
+            RomanNumeralId.iMin7: 14,
+            RomanNumeralId.iMin6: 12,
+            RomanNumeralId.iiHalfDiminishedMinor: 12,
+            RomanNumeralId.flatIIIMaj7Minor: 10,
+            RomanNumeralId.ivMin7Minor: 12,
+            RomanNumeralId.vDom7: 16,
+            RomanNumeralId.flatVIMaj7Minor: 10,
+            RomanNumeralId.flatVIIDom7Minor: 10,
+          }
         : <RomanNumeralId, int>{
             RomanNumeralId.iMaj7: 18,
             RomanNumeralId.iiMin7: 16,

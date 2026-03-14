@@ -730,7 +730,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
                                   currentLabel: currentDisplay,
                                   nextLabel: nextDisplay,
                                   statusLabel: _currentStatusLabel(l10n),
-                                  canGoBack: _canRestorePreviousChord,
+                                  availableBackSteps: _practiceHistory.length,
                                   onAdvance: _performManualAdvanceChord,
                                   onGoBack: _restorePreviousChord,
                                   controls: Row(
@@ -931,7 +931,14 @@ class _BpmControlClusterState extends State<_BpmControlCluster> {
     _stopContinuousAdjust();
     widget.onAdjust(delta);
     _repeatDelayTimer = Timer(_repeatDelay, () {
+      if (!mounted) {
+        return;
+      }
       _repeatTimer = Timer.periodic(_repeatInterval, (_) {
+        if (!mounted) {
+          _stopContinuousAdjust();
+          return;
+        }
         widget.onAdjust(delta);
       });
     });
@@ -1160,7 +1167,7 @@ class _ChordSwipeSurface extends StatefulWidget {
     required this.currentLabel,
     required this.nextLabel,
     required this.statusLabel,
-    required this.canGoBack,
+    required this.availableBackSteps,
     required this.onAdvance,
     required this.onGoBack,
     required this.controls,
@@ -1170,7 +1177,7 @@ class _ChordSwipeSurface extends StatefulWidget {
   final String currentLabel;
   final String nextLabel;
   final String statusLabel;
-  final bool canGoBack;
+  final int availableBackSteps;
   final VoidCallback onAdvance;
   final VoidCallback onGoBack;
   final Widget controls;
@@ -1180,23 +1187,36 @@ class _ChordSwipeSurface extends StatefulWidget {
 }
 
 class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
-    with SingleTickerProviderStateMixin {
-  static const Duration _settleDuration = Duration(milliseconds: 240);
-  static const Duration _snapBackDuration = Duration(milliseconds: 180);
+    with TickerProviderStateMixin {
+  static const Duration _swipeDuration = Duration(milliseconds: 260);
+  static const Duration _momentumSwipeDuration = Duration(milliseconds: 210);
+  static const Duration _snapBackDuration = Duration(milliseconds: 190);
+  static const Duration _edgeRevealDuration = Duration(milliseconds: 170);
 
-  late final AnimationController _controller;
-  Animation<double>? _offsetAnimation;
-  VoidCallback? _completionCallback;
-  _ChordSwipeTransition? _pendingTransition;
+  late final AnimationController _swipeController;
+  late final AnimationController _edgeRevealController;
+  Animation<double>? _swipeOffsetAnimation;
+  VoidCallback? _sequenceCallback;
+  _ChordSwipeTransition? _activeTransition;
+  _ChordSwipeTransition? _edgeRevealTransition;
+  _ChordSwipeTransition? _sequenceDirection;
+  var _remainingSequenceSteps = 0;
+  var _sequenceUsesMomentum = false;
   double _dragOffset = 0;
   double _surfaceWidth = 0;
   late String _displayPreviousLabel;
   late String _displayCurrentLabel;
   late String _displayNextLabel;
 
-  double get _effectiveOffset => _offsetAnimation?.value ?? _dragOffset;
+  bool get _canGoBack => widget.availableBackSteps > 0;
+  double get _effectiveOffset => _swipeOffsetAnimation?.value ?? _dragOffset;
+  double get _edgeRevealProgress =>
+      _edgeRevealController.isAnimating ? _edgeRevealController.value : 1;
   bool get isTransitioning =>
-      _controller.isAnimating || _pendingTransition != null;
+      _swipeController.isAnimating ||
+      _edgeRevealController.isAnimating ||
+      _activeTransition != null ||
+      _remainingSequenceSteps > 0;
 
   @override
   void initState() {
@@ -1204,37 +1224,47 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
     _displayPreviousLabel = widget.previousLabel;
     _displayCurrentLabel = widget.currentLabel;
     _displayNextLabel = widget.nextLabel;
-    _controller = AnimationController(vsync: this, duration: _settleDuration)
-      ..addListener(() => setState(() {}))
-      ..addStatusListener((status) {
-        if (status != AnimationStatus.completed) {
-          return;
-        }
-        final callback = _completionCallback;
-        final settledOffset = _offsetAnimation?.value ?? _dragOffset;
-        _completionCallback = null;
-        _offsetAnimation = null;
-        _dragOffset = settledOffset;
-        if (callback == null) {
-          _dragOffset = 0;
-          setState(() {});
-          return;
-        }
-        setState(() {});
-        callback();
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted || _pendingTransition == null) {
-            return;
-          }
-          setState(() {
-            _pendingTransition = null;
-            _dragOffset = 0;
-            _displayPreviousLabel = widget.previousLabel;
-            _displayCurrentLabel = widget.currentLabel;
-            _displayNextLabel = widget.nextLabel;
+    _swipeController =
+        AnimationController(vsync: this, duration: _swipeDuration)
+          ..addListener(() => setState(() {}))
+          ..addStatusListener((status) {
+            if (status != AnimationStatus.completed) {
+              return;
+            }
+            final callback = _sequenceCallback;
+            final settledOffset = _swipeOffsetAnimation?.value ?? _dragOffset;
+            _swipeOffsetAnimation = null;
+            _dragOffset = settledOffset;
+            if (callback == null) {
+              _dragOffset = 0;
+              _activeTransition = null;
+              setState(() {});
+              return;
+            }
+            setState(() {});
+            callback();
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) {
+                return;
+              }
+              _syncLabelsAfterCommittedTransition();
+            });
           });
-        });
-      });
+    _edgeRevealController =
+        AnimationController(vsync: this, duration: _edgeRevealDuration)
+          ..addListener(() => setState(() {}))
+          ..addStatusListener((status) {
+            if (status != AnimationStatus.completed) {
+              return;
+            }
+            if (!mounted) {
+              return;
+            }
+            setState(() {
+              _edgeRevealTransition = null;
+            });
+            _startNextQueuedStepIfNeeded();
+          });
   }
 
   @override
@@ -1247,10 +1277,19 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
     if (!labelsChanged) {
       return;
     }
-    _controller.stop();
-    _offsetAnimation = null;
+    if (_activeTransition != null) {
+      return;
+    }
+    _swipeController.stop();
+    _edgeRevealController.stop();
+    _swipeOffsetAnimation = null;
     setState(() {
-      _pendingTransition = null;
+      _activeTransition = null;
+      _edgeRevealTransition = null;
+      _sequenceDirection = null;
+      _sequenceCallback = null;
+      _remainingSequenceSteps = 0;
+      _sequenceUsesMomentum = false;
       _dragOffset = 0;
       _displayPreviousLabel = widget.previousLabel;
       _displayCurrentLabel = widget.currentLabel;
@@ -1260,53 +1299,115 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
 
   @override
   void dispose() {
-    _controller.dispose();
+    _swipeController.dispose();
+    _edgeRevealController.dispose();
     super.dispose();
   }
 
-  void _animateTo(
+  void _animateSwipeTo(
     double target, {
-    VoidCallback? onCompleted,
-    Duration duration = _settleDuration,
-    Curve curve = Curves.easeInOutCubicEmphasized,
+    VoidCallback? onCommitted,
+    Duration duration = _swipeDuration,
+    Curve curve = Curves.easeOutCubic,
   }) {
-    _controller.stop();
-    _controller.duration = duration;
-    _completionCallback = onCompleted;
-    _offsetAnimation = Tween<double>(
+    _swipeController.stop();
+    _swipeController.duration = duration;
+    _sequenceCallback = onCommitted;
+    _swipeOffsetAnimation = Tween<double>(
       begin: _effectiveOffset,
       end: target,
-    ).animate(CurvedAnimation(parent: _controller, curve: curve));
-    _controller.forward(from: 0);
+    ).animate(CurvedAnimation(parent: _swipeController, curve: curve));
+    _swipeController.forward(from: 0);
   }
 
-  void animateAdvance({VoidCallback? onCompleted}) {
+  void _queueSequence(
+    _ChordSwipeTransition direction, {
+    required int steps,
+    required VoidCallback callback,
+    bool usesMomentum = false,
+  }) {
+    if (steps <= 0 || isTransitioning) {
+      return;
+    }
+    _sequenceDirection = direction;
+    _sequenceCallback = callback;
+    _remainingSequenceSteps = steps;
+    _sequenceUsesMomentum = usesMomentum;
+    _startNextQueuedStepIfNeeded();
+  }
+
+  void _startNextQueuedStepIfNeeded() {
+    if (!mounted ||
+        _remainingSequenceSteps <= 0 ||
+        _sequenceDirection == null ||
+        _activeTransition != null ||
+        _swipeController.isAnimating ||
+        _edgeRevealController.isAnimating) {
+      return;
+    }
+    final width = _surfaceWidth > 0 ? _surfaceWidth : 260.0;
+    final direction = _sequenceDirection!;
+    _remainingSequenceSteps -= 1;
+    _activeTransition = direction;
+    _animateSwipeTo(
+      direction == _ChordSwipeTransition.advance ? -width : width,
+      onCommitted: _sequenceCallback,
+      duration: _sequenceUsesMomentum ? _momentumSwipeDuration : _swipeDuration,
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _syncLabelsAfterCommittedTransition() {
+    final revealTransition = _activeTransition;
+    setState(() {
+      _activeTransition = null;
+      _dragOffset = 0;
+      _displayPreviousLabel = widget.previousLabel;
+      _displayCurrentLabel = widget.currentLabel;
+      _displayNextLabel = widget.nextLabel;
+      _edgeRevealTransition = revealTransition;
+    });
+    if (revealTransition == null) {
+      _startNextQueuedStepIfNeeded();
+      return;
+    }
+    _edgeRevealController.forward(from: 0);
+  }
+
+  void animateAdvance({VoidCallback? onCompleted, int steps = 1}) {
     final completion = onCompleted ?? widget.onAdvance;
     if (_surfaceWidth <= 0) {
-      completion();
+      for (var index = 0; index < steps; index += 1) {
+        completion();
+      }
       return;
     }
-    if (isTransitioning) {
-      return;
-    }
-    _pendingTransition = _ChordSwipeTransition.advance;
-    _animateTo(-_surfaceWidth, onCompleted: completion);
+    _queueSequence(
+      _ChordSwipeTransition.advance,
+      steps: steps,
+      callback: completion,
+      usesMomentum: steps > 1,
+    );
   }
 
-  void animateGoBack({VoidCallback? onCompleted}) {
-    if (!widget.canGoBack) {
+  void animateGoBack({VoidCallback? onCompleted, int steps = 1}) {
+    if (!_canGoBack) {
       return;
     }
     final completion = onCompleted ?? widget.onGoBack;
     if (_surfaceWidth <= 0) {
-      completion();
+      final safeSteps = steps.clamp(0, widget.availableBackSteps);
+      for (var index = 0; index < safeSteps; index += 1) {
+        completion();
+      }
       return;
     }
-    if (isTransitioning) {
-      return;
-    }
-    _pendingTransition = _ChordSwipeTransition.goBack;
-    _animateTo(_surfaceWidth, onCompleted: completion);
+    _queueSequence(
+      _ChordSwipeTransition.goBack,
+      steps: steps.clamp(0, widget.availableBackSteps),
+      callback: completion,
+      usesMomentum: steps > 1,
+    );
   }
 
   void _handleDragUpdate(DragUpdateDetails details) {
@@ -1315,27 +1416,54 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
     }
     final maxOffset = _surfaceWidth > 0 ? _surfaceWidth : 260.0;
     setState(() {
-      _dragOffset = (_dragOffset + (details.delta.dx * 0.94)).clamp(
+      _dragOffset = (_dragOffset + details.delta.dx).clamp(
         -maxOffset,
         maxOffset,
       );
     });
   }
 
+  int _stepCountForFling(double velocity) {
+    final magnitude = velocity.abs();
+    var steps = 1;
+    if (magnitude >= 2400) {
+      steps += 1;
+    }
+    if (magnitude >= 4200) {
+      steps += 1;
+    }
+    if (magnitude >= 6000) {
+      steps += 1;
+    }
+    return steps;
+  }
+
   void _handleDragEnd(DragEndDetails details, double width) {
+    if (isTransitioning) {
+      return;
+    }
     final velocity = details.primaryVelocity ?? 0;
     final threshold = width * 0.16;
     final targetOffset = _effectiveOffset;
 
     if (targetOffset <= -threshold || velocity <= -720) {
-      animateAdvance();
+      animateAdvance(steps: _stepCountForFling(velocity));
       return;
     }
-    if ((targetOffset >= threshold || velocity >= 720) && widget.canGoBack) {
-      animateGoBack();
+    if ((targetOffset >= threshold || velocity >= 720) && _canGoBack) {
+      animateGoBack(
+        steps: _stepCountForFling(velocity).clamp(1, widget.availableBackSteps),
+      );
       return;
     }
-    _animateTo(0, duration: _snapBackDuration, curve: Curves.easeOutCubic);
+    _animateSwipeTo(0, duration: _snapBackDuration, curve: Curves.easeOutCubic);
+  }
+
+  void _handleDragCancel() {
+    if (_swipeController.isAnimating || _effectiveOffset.abs() < 0.001) {
+      return;
+    }
+    _animateSwipeTo(0, duration: _snapBackDuration, curve: Curves.easeOutCubic);
   }
 
   @override
@@ -1357,14 +1485,9 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
           return GestureDetector(
             key: const ValueKey('chord-swipe-surface'),
             behavior: HitTestBehavior.opaque,
-            onTap: widget.onAdvance,
             onHorizontalDragUpdate: _handleDragUpdate,
             onHorizontalDragEnd: (details) => _handleDragEnd(details, width),
-            onHorizontalDragCancel: () => _animateTo(
-              0,
-              duration: _snapBackDuration,
-              curve: Curves.easeOutCubic,
-            ),
+            onHorizontalDragCancel: _handleDragCancel,
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface.withValues(alpha: 0.94),
@@ -1448,6 +1571,16 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
                                   currentLabel: _displayCurrentLabel,
                                   nextLabel: _displayNextLabel,
                                   progress: progress,
+                                  edgeRevealTransition: _edgeRevealTransition,
+                                  edgeRevealProgress: _edgeRevealProgress,
+                                  onPreviousTap: _canGoBack && !isTransitioning
+                                      ? animateGoBack
+                                      : null,
+                                  onNextTap:
+                                      !isTransitioning &&
+                                          _displayNextLabel.isNotEmpty
+                                      ? animateAdvance
+                                      : null,
                                 ),
                               ],
                             ),
@@ -1484,105 +1617,220 @@ class _ChordTokenLayout {
   final double opacity;
 }
 
+class _ChordTokenSpec {
+  const _ChordTokenSpec({
+    required this.label,
+    required this.role,
+    required this.layout,
+  });
+
+  final String label;
+  final _ChordTokenRole role;
+  final _ChordTokenLayout layout;
+}
+
 class _ChordMotionStage extends StatelessWidget {
   const _ChordMotionStage({
     required this.previousLabel,
     required this.currentLabel,
     required this.nextLabel,
     required this.progress,
+    required this.edgeRevealTransition,
+    required this.edgeRevealProgress,
+    required this.onPreviousTap,
+    required this.onNextTap,
   });
 
-  static const double _leftAnchor = -0.84;
-  static const double _rightAnchor = 0.84;
-  static const double _offLeftAnchor = -1.2;
-  static const double _offRightAnchor = 1.2;
+  static const double _leftAnchor = -0.76;
+  static const double _rightAnchor = 0.76;
+  static const double _offLeftAnchor = -1.22;
+  static const double _offRightAnchor = 1.22;
+  static const double _sideProminence = 0.26;
+  static const double _restSideOpacity = 0.68;
 
   final String previousLabel;
   final String currentLabel;
   final String nextLabel;
   final double progress;
+  final _ChordSwipeTransition? edgeRevealTransition;
+  final double edgeRevealProgress;
+  final VoidCallback? onPreviousTap;
+  final VoidCallback? onNextTap;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
+        final specs =
+            <_ChordTokenSpec>[
+              _ChordTokenSpec(
+                label: previousLabel,
+                role: _ChordTokenRole.previous,
+                layout: _layoutForRole(_ChordTokenRole.previous),
+              ),
+              _ChordTokenSpec(
+                label: currentLabel,
+                role: _ChordTokenRole.current,
+                layout: _layoutForRole(_ChordTokenRole.current),
+              ),
+              _ChordTokenSpec(
+                label: nextLabel,
+                role: _ChordTokenRole.next,
+                layout: _layoutForRole(_ChordTokenRole.next),
+              ),
+            ]..sort(
+              (left, right) =>
+                  left.layout.prominence.compareTo(right.layout.prominence),
+            );
         return Stack(
           fit: StackFit.expand,
           children: [
-            _buildToken(
-              context,
-              label: previousLabel,
-              role: _ChordTokenRole.previous,
-              layout: _layoutForRole(_ChordTokenRole.previous),
-              width: width,
-            ),
-            _buildToken(
-              context,
-              label: currentLabel,
-              role: _ChordTokenRole.current,
-              layout: _layoutForRole(_ChordTokenRole.current),
-              width: width,
-            ),
-            _buildToken(
-              context,
-              label: nextLabel,
-              role: _ChordTokenRole.next,
-              layout: _layoutForRole(_ChordTokenRole.next),
-              width: width,
-            ),
+            for (final spec in specs)
+              _buildToken(
+                context,
+                label: spec.label,
+                role: spec.role,
+                layout: spec.layout,
+                width: width,
+              ),
           ],
         );
       },
     );
   }
 
+  _ChordTokenLayout _restLayoutForRole(_ChordTokenRole role) {
+    return switch (role) {
+      _ChordTokenRole.previous => const _ChordTokenLayout(
+        alignmentX: _leftAnchor,
+        prominence: _sideProminence,
+        opacity: _restSideOpacity,
+      ),
+      _ChordTokenRole.current => const _ChordTokenLayout(
+        alignmentX: 0,
+        prominence: 1,
+        opacity: 1,
+      ),
+      _ChordTokenRole.next => const _ChordTokenLayout(
+        alignmentX: _rightAnchor,
+        prominence: _sideProminence,
+        opacity: _restSideOpacity,
+      ),
+    };
+  }
+
+  _ChordTokenLayout _lerpLayout(
+    _ChordTokenLayout start,
+    _ChordTokenLayout end,
+    double t,
+  ) {
+    return _ChordTokenLayout(
+      alignmentX: _lerpDouble(start.alignmentX, end.alignmentX, t),
+      prominence: _lerpDouble(start.prominence, end.prominence, t),
+      opacity: _lerpDouble(start.opacity, end.opacity, t),
+    );
+  }
+
+  _ChordTokenLayout _applyEdgeReveal(
+    _ChordTokenRole role,
+    _ChordTokenLayout layout,
+  ) {
+    if (edgeRevealTransition == null || edgeRevealProgress >= 1) {
+      return layout;
+    }
+    final t = Curves.easeOutCubic.transform(edgeRevealProgress.clamp(0.0, 1.0));
+    switch (edgeRevealTransition!) {
+      case _ChordSwipeTransition.advance:
+        if (role != _ChordTokenRole.next) {
+          return layout;
+        }
+        return _lerpLayout(
+          const _ChordTokenLayout(
+            alignmentX: _offRightAnchor,
+            prominence: 0.08,
+            opacity: 0,
+          ),
+          _restLayoutForRole(_ChordTokenRole.next),
+          t,
+        );
+      case _ChordSwipeTransition.goBack:
+        if (role != _ChordTokenRole.previous) {
+          return layout;
+        }
+        return _lerpLayout(
+          const _ChordTokenLayout(
+            alignmentX: _offLeftAnchor,
+            prominence: 0.08,
+            opacity: 0,
+          ),
+          _restLayoutForRole(_ChordTokenRole.previous),
+          t,
+        );
+    }
+  }
+
   _ChordTokenLayout _layoutForRole(_ChordTokenRole role) {
+    final settled = _restLayoutForRole(role);
+    if (progress.abs() < 0.0001) {
+      return _applyEdgeReveal(role, settled);
+    }
+    final t = Curves.easeOutCubic.transform(progress.abs().clamp(0.0, 1.0));
     switch (role) {
       case _ChordTokenRole.previous:
         if (progress >= 0) {
-          final t = Curves.easeOutCubic.transform(progress);
-          return _ChordTokenLayout(
-            alignmentX: _lerpDouble(_leftAnchor, 0, t),
-            prominence: t,
-            opacity: 1,
+          return _lerpLayout(
+            settled,
+            const _ChordTokenLayout(alignmentX: 0, prominence: 1, opacity: 1),
+            t,
           );
         }
-        final t = Curves.easeOutCubic.transform(-progress);
-        return _ChordTokenLayout(
-          alignmentX: _lerpDouble(_leftAnchor, _offLeftAnchor, t),
-          prominence: 0,
-          opacity: _lerpDouble(1, 0.22, t),
+        return _lerpLayout(
+          settled,
+          const _ChordTokenLayout(
+            alignmentX: _offLeftAnchor,
+            prominence: 0.08,
+            opacity: 0,
+          ),
+          t,
         );
       case _ChordTokenRole.current:
         if (progress >= 0) {
-          final t = Curves.easeOutCubic.transform(progress);
-          return _ChordTokenLayout(
-            alignmentX: _lerpDouble(0, _rightAnchor, t),
-            prominence: 1 - t,
-            opacity: 1,
+          return _lerpLayout(
+            _restLayoutForRole(_ChordTokenRole.current),
+            const _ChordTokenLayout(
+              alignmentX: _rightAnchor,
+              prominence: _sideProminence,
+              opacity: 0.78,
+            ),
+            t,
           );
         }
-        final t = Curves.easeOutCubic.transform(-progress);
-        return _ChordTokenLayout(
-          alignmentX: _lerpDouble(0, _leftAnchor, t),
-          prominence: 1 - t,
-          opacity: 1,
+        return _lerpLayout(
+          _restLayoutForRole(_ChordTokenRole.current),
+          const _ChordTokenLayout(
+            alignmentX: _leftAnchor,
+            prominence: _sideProminence,
+            opacity: 0.78,
+          ),
+          t,
         );
       case _ChordTokenRole.next:
         if (progress <= 0) {
-          final t = Curves.easeOutCubic.transform(-progress);
-          return _ChordTokenLayout(
-            alignmentX: _lerpDouble(_rightAnchor, 0, t),
-            prominence: t,
-            opacity: 1,
+          return _lerpLayout(
+            settled,
+            const _ChordTokenLayout(alignmentX: 0, prominence: 1, opacity: 1),
+            t,
           );
         }
-        final t = Curves.easeOutCubic.transform(progress);
-        return _ChordTokenLayout(
-          alignmentX: _lerpDouble(_rightAnchor, _offRightAnchor, t),
-          prominence: 0,
-          opacity: _lerpDouble(1, 0.22, t),
+        return _lerpLayout(
+          settled,
+          const _ChordTokenLayout(
+            alignmentX: _offRightAnchor,
+            prominence: 0.08,
+            opacity: 0,
+          ),
+          t,
         );
     }
   }
@@ -1600,7 +1848,23 @@ class _ChordMotionStage extends StatelessWidget {
     );
     final currentColor = theme.colorScheme.onSurface;
     final emphasis = layout.prominence.clamp(0.0, 1.0);
-    final boxWidth = width * _lerpDouble(0.16, 0.62, emphasis);
+    final boxWidth = width * _lerpDouble(0.18, 0.62, emphasis);
+    final verticalOffset = _lerpDouble(10, 0, emphasis);
+    final onTap = switch (role) {
+      _ChordTokenRole.previous => onPreviousTap,
+      _ChordTokenRole.next => onNextTap,
+      _ChordTokenRole.current => null,
+    };
+    final tokenKey = switch (role) {
+      _ChordTokenRole.previous => const ValueKey('previous-chord-token'),
+      _ChordTokenRole.next => const ValueKey('next-chord-token'),
+      _ChordTokenRole.current => null,
+    };
+    final textKey = switch (role) {
+      _ChordTokenRole.previous => const ValueKey('previous-chord-text'),
+      _ChordTokenRole.next => const ValueKey('next-chord-text'),
+      _ChordTokenRole.current => const ValueKey('current-chord-text'),
+    };
     final textStyle = TextStyle.lerp(
       theme.textTheme.titleLarge?.copyWith(
         fontWeight: FontWeight.w700,
@@ -1615,23 +1879,42 @@ class _ChordMotionStage extends StatelessWidget {
       emphasis,
     )?.copyWith(color: Color.lerp(sideColor, currentColor, emphasis));
 
-    return IgnorePointer(
-      child: Align(
-        alignment: Alignment(layout.alignmentX, 0),
-        child: Opacity(
-          opacity: label.isEmpty ? 0 : layout.opacity,
+    return Align(
+      alignment: Alignment(layout.alignmentX, 0),
+      child: Opacity(
+        opacity: label.isEmpty ? 0 : layout.opacity,
+        child: Transform.translate(
+          offset: Offset(0, verticalOffset),
           child: SizedBox(
             width: boxWidth,
             child: FittedBox(
               fit: BoxFit.scaleDown,
-              child: Text(
-                key: role == _ChordTokenRole.current
-                    ? const ValueKey('current-chord-text')
-                    : null,
-                label,
-                maxLines: 1,
-                textAlign: TextAlign.center,
-                style: textStyle,
+              child: MouseRegion(
+                cursor: onTap == null || label.isEmpty
+                    ? SystemMouseCursors.basic
+                    : SystemMouseCursors.click,
+                child: GestureDetector(
+                  key: tokenKey,
+                  behavior: HitTestBehavior.opaque,
+                  onTap: label.isEmpty || onTap == null
+                      ? null
+                      : () {
+                          onTap();
+                        },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    child: Text(
+                      key: textKey,
+                      label,
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      style: textStyle,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
