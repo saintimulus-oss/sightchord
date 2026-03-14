@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/study_harmony/domain/study_harmony_progress_models.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/study_harmony/domain/study_harmony_progress_models.dart';
 
 void main() {
   test(
@@ -91,3 +91,4 @@ void main() {
     },
   );
 }
+

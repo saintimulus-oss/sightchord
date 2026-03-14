@@ -1,8 +1,8 @@
-# SightChord Architecture Overview
+# Chordest Architecture Overview
 
 ## Current Status
 
-SightChord is a cross-platform Flutter app focused on chord drilling, harmonic vocabulary, and progression analysis.
+Chordest is a cross-platform Flutter app focused on chord drilling, harmonic vocabulary, and progression analysis.
 
 The repository now separates generated output from source code more clearly and exposes the main oversized features through narrower entry points:
 

@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/music/chord_theory.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/music/chord_theory.dart';
 
 void main() {
   group('relationBetweenCenters', () {
@@ -60,3 +60,4 @@ void main() {
     );
   });
 }
+

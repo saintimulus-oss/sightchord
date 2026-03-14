@@ -421,7 +421,7 @@ class SampledInstrumentEngine {
   }) {
     developer.log(
       message,
-      name: 'sightchord.audio',
+      name: 'chordest.audio',
       error: error,
       stackTrace: stackTrace,
     );

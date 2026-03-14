@@ -1068,7 +1068,7 @@ abstract class AppLocalizations {
   /// No description provided for @mainMenuIntro.
   ///
   /// In en, this message translates to:
-  /// **'Choose a practice generator or open the analyzer for a separate progression reading workflow.'**
+  /// **'Practice chords, analyze progressions, and study harmony in one place.'**
   String get mainMenuIntro;
 
   /// No description provided for @mainMenuGeneratorTitle.
@@ -1080,19 +1080,19 @@ abstract class AppLocalizations {
   /// No description provided for @mainMenuGeneratorDescription.
   ///
   /// In en, this message translates to:
-  /// **'Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.'**
+  /// **'Generate focused chord prompts with smart motion and voicing support.'**
   String get mainMenuGeneratorDescription;
 
   /// No description provided for @openGenerator.
   ///
   /// In en, this message translates to:
-  /// **'Open Generator'**
+  /// **'Start Practice'**
   String get openGenerator;
 
   /// No description provided for @openAnalyzer.
   ///
   /// In en, this message translates to:
-  /// **'Open Analyzer'**
+  /// **'Analyze Progression'**
   String get openAnalyzer;
 
   /// No description provided for @mainMenuAnalyzerTitle.
@@ -1104,7 +1104,7 @@ abstract class AppLocalizations {
   /// No description provided for @mainMenuAnalyzerDescription.
   ///
   /// In en, this message translates to:
-  /// **'Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.'**
+  /// **'Read a progression for likely keys, Roman numerals, and harmonic function.'**
   String get mainMenuAnalyzerDescription;
 
   /// No description provided for @mainMenuStudyHarmonyTitle.
@@ -1116,13 +1116,13 @@ abstract class AppLocalizations {
   /// No description provided for @mainMenuStudyHarmonyDescription.
   ///
   /// In en, this message translates to:
-  /// **'Move through a real harmony study hub with continue, review, daily, and chapter-based lessons.'**
+  /// **'Continue lessons, review chapters, and build practical harmony fluency.'**
   String get mainMenuStudyHarmonyDescription;
 
   /// No description provided for @openStudyHarmony.
   ///
   /// In en, this message translates to:
-  /// **'Open Study Harmony'**
+  /// **'Start Study Harmony'**
   String get openStudyHarmony;
 
   /// No description provided for @studyHarmonyTitle.

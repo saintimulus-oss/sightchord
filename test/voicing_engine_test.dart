@@ -1,8 +1,8 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/music/chord_theory.dart';
-import 'package:sightchord/music/voicing_engine.dart';
-import 'package:sightchord/music/voicing_models.dart';
-import 'package:sightchord/settings/practice_settings.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/music/voicing_engine.dart';
+import 'package:chordest/music/voicing_models.dart';
+import 'package:chordest/settings/practice_settings.dart';
 
 GeneratedChord _buildChord({
   required String root,
@@ -1461,3 +1461,4 @@ void main() {
     );
   });
 }
+

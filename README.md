@@ -1,6 +1,6 @@
-# SightChord
+# Chordest
 
-SightChord is a Flutter chord-practice app for improvisation, reading, and harmonic vocabulary work.
+Chordest is a Flutter chord-practice app for improvisation, reading, and harmonic vocabulary work.
 
 Live demo: [saintimulus-oss.github.io](https://saintimulus-oss.github.io/)
 

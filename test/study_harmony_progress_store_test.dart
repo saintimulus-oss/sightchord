@@ -1,7 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sightchord/study_harmony/data/study_harmony_progress_store.dart';
-import 'package:sightchord/study_harmony/domain/study_harmony_progress_models.dart';
+import 'package:chordest/study_harmony/data/study_harmony_progress_store.dart';
+import 'package:chordest/study_harmony/domain/study_harmony_progress_models.dart';
 
 void main() {
   setUp(() {
@@ -38,3 +38,4 @@ void main() {
     },
   );
 }
+

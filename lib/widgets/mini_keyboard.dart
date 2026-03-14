@@ -109,11 +109,13 @@ class MiniKeyboard extends StatelessWidget {
                 DecoratedBox(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: theme.colorScheme.outlineVariant,
-                      width: 0.8,
+                      color: theme.colorScheme.outline,
+                      width: 0.9,
                     ),
                     borderRadius: BorderRadius.circular(10),
-                    color: theme.colorScheme.surfaceContainerLowest,
+                    color: theme.brightness == Brightness.dark
+                        ? const Color(0xFF111318)
+                        : const Color(0xFFFFFFFF),
                   ),
                 ),
                 for (final key in renderedKeys.where((key) => !key.isBlack))
@@ -159,15 +161,15 @@ class MiniKeyboard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(999),
                             border: Border.all(
                               color: theme.colorScheme.onPrimary,
-                              width: 0.9,
+                              width: 1,
                             ),
                             boxShadow: [
                               BoxShadow(
                                 color: theme.colorScheme.primary.withValues(
-                                  alpha: 0.2,
+                                  alpha: 0.32,
                                 ),
-                                blurRadius: 5,
-                                offset: const Offset(0, 1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
@@ -194,15 +196,15 @@ class MiniKeyboard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(999),
                             border: Border.all(
                               color: theme.colorScheme.primaryContainer,
-                              width: 0.9,
+                              width: 1,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: theme.colorScheme.shadow.withValues(
-                                  alpha: 0.18,
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: 0.22,
                                 ),
-                                blurRadius: 4,
-                                offset: const Offset(0, 1),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
@@ -295,12 +297,14 @@ class _WhiteKey extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final activeTopColor = Color.alphaBlend(
-      theme.colorScheme.primary.withValues(alpha: 0.14),
+      theme.colorScheme.primary.withValues(alpha: 0.24),
       theme.colorScheme.primaryContainer,
     );
     final activeBottomColor = Color.alphaBlend(
       theme.colorScheme.primary.withValues(alpha: 0.18),
-      theme.colorScheme.surface,
+      theme.brightness == Brightness.dark
+          ? const Color(0xFF2D3040)
+          : const Color(0xFFF4F1FF),
     );
     final borderColor = active
         ? theme.colorScheme.primary.withValues(alpha: 0.82)
@@ -316,8 +320,12 @@ class _WhiteKey extends StatelessWidget {
           colors: active
               ? [activeTopColor, activeBottomColor]
               : [
-                  theme.colorScheme.surface,
-                  theme.colorScheme.surfaceContainerLow,
+                  theme.brightness == Brightness.dark
+                      ? const Color(0xFFF6F7FB)
+                      : const Color(0xFFFFFFFF),
+                  theme.brightness == Brightness.dark
+                      ? const Color(0xFFDDE1EB)
+                      : const Color(0xFFF1F3F8),
                 ],
         ),
         border: active
@@ -330,7 +338,7 @@ class _WhiteKey extends StatelessWidget {
                 right: BorderSide(color: borderColor, width: 0.7),
                 bottom: BorderSide(
                   color: theme.colorScheme.outlineVariant.withValues(
-                    alpha: 0.55,
+                    alpha: 0.72,
                   ),
                   width: 0.55,
                 ),
@@ -338,9 +346,9 @@ class _WhiteKey extends StatelessWidget {
         boxShadow: active
             ? [
                 BoxShadow(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.12),
-                  blurRadius: 5,
-                  offset: const Offset(0, 1),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.18),
+                  blurRadius: 9,
+                  offset: const Offset(0, 2),
                 ),
               ]
             : null,
@@ -388,14 +396,12 @@ class _BlackKey extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final inactiveTopColor = Color.alphaBlend(
-      theme.colorScheme.surfaceTint.withValues(alpha: 0.14),
-      theme.colorScheme.inverseSurface,
-    );
-    final inactiveBottomColor = Color.alphaBlend(
-      Colors.black.withValues(alpha: 0.18),
-      theme.colorScheme.inverseSurface,
-    );
+    final inactiveTopColor = theme.brightness == Brightness.dark
+        ? const Color(0xFF4B5160)
+        : const Color(0xFF404552);
+    final inactiveBottomColor = theme.brightness == Brightness.dark
+        ? const Color(0xFF15181F)
+        : const Color(0xFF1A1D25);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 1.5),
       child: DecoratedBox(
@@ -408,7 +414,7 @@ class _BlackKey extends StatelessWidget {
                 ? [
                     theme.colorScheme.primary,
                     Color.alphaBlend(
-                      Colors.black.withValues(alpha: 0.12),
+                      Colors.black.withValues(alpha: 0.2),
                       theme.colorScheme.primary,
                     ),
                   ]
@@ -426,8 +432,8 @@ class _BlackKey extends StatelessWidget {
                   (active
                           ? theme.colorScheme.primary
                           : theme.colorScheme.shadow)
-                      .withValues(alpha: active ? 0.26 : 0.16),
-              blurRadius: active ? 8 : 6,
+                      .withValues(alpha: active ? 0.34 : 0.22),
+              blurRadius: active ? 10 : 7,
               offset: const Offset(0, 2),
             ),
           ],

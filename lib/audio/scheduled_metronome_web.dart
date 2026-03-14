@@ -155,7 +155,7 @@ class _ScheduledWebClick {
     } catch (error, stackTrace) {
       developer.log(
         'Stopping a scheduled web metronome click failed.',
-        name: 'sightchord.audio.web',
+        name: 'chordest.audio.web',
         error: error,
         stackTrace: stackTrace,
       );
@@ -168,7 +168,7 @@ class _ScheduledWebClick {
     } catch (error, stackTrace) {
       developer.log(
         'Disconnecting a scheduled web metronome source failed.',
-        name: 'sightchord.audio.web',
+        name: 'chordest.audio.web',
         error: error,
         stackTrace: stackTrace,
       );
@@ -178,7 +178,7 @@ class _ScheduledWebClick {
     } catch (error, stackTrace) {
       developer.log(
         'Disconnecting a scheduled web metronome gain node failed.',
-        name: 'sightchord.audio.web',
+        name: 'chordest.audio.web',
         error: error,
         stackTrace: stackTrace,
       );

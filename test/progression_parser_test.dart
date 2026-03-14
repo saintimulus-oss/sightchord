@@ -1,6 +1,6 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/music/chord_theory.dart';
-import 'package:sightchord/music/progression_parser.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/music/progression_parser.dart';
 
 void main() {
   const parser = ProgressionParser();
@@ -84,3 +84,4 @@ void main() {
     expect(result.measures[3].validChords.single.sourceSymbol, 'G');
   });
 }
+

@@ -1,6 +1,6 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/settings/practice_settings.dart';
-import 'package:sightchord/settings/practice_settings_dispatcher.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/settings/practice_settings.dart';
+import 'package:chordest/settings/practice_settings_dispatcher.dart';
 
 void main() {
   test('dispatcher applies transformed settings without reseed by default', () {
@@ -40,3 +40,4 @@ void main() {
     expect(didReseed, isTrue);
   });
 }
+

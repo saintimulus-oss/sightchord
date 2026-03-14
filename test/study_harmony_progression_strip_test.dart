@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/study_harmony/domain/study_harmony_session_models.dart';
-import 'package:sightchord/study_harmony/ui/study_harmony_progression_strip.dart';
+import 'package:chordest/study_harmony/domain/study_harmony_session_models.dart';
+import 'package:chordest/study_harmony/ui/study_harmony_progression_strip.dart';
 
 void main() {
   testWidgets('progression strip renders highlighted and hidden slots', (
@@ -50,3 +50,4 @@ void main() {
     expect(find.text('____'), findsOneWidget);
   });
 }
+

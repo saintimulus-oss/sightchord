@@ -1,11 +1,11 @@
-// ignore_for_file: avoid_print
+﻿// ignore_for_file: avoid_print
 
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:sightchord/music/chord_theory.dart';
-import 'package:sightchord/smart_generator.dart';
+import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/smart_generator.dart';
 
 const _defaultSeeds = <int>[101, 211, 307, 401, 509];
 const _defaultSteps = 2400;
@@ -932,3 +932,4 @@ List<Map<String, Object?>> _entriesToJson(List<MapEntry<String, int>> entries) {
     for (final entry in entries) {'key': entry.key, 'count': entry.value},
   ];
 }
+

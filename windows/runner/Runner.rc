@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "SightChord" "\0"
-            VALUE "FileDescription", "SightChord" "\0"
+            VALUE "CompanyName", "Chordest" "\0"
+            VALUE "FileDescription", "Chordest" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "SightChord" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 SightChord. All rights reserved." "\0"
-            VALUE "OriginalFilename", "sightchord.exe" "\0"
-            VALUE "ProductName", "SightChord" "\0"
+            VALUE "InternalName", "Chordest" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Chordest. All rights reserved." "\0"
+            VALUE "OriginalFilename", "chordest.exe" "\0"
+            VALUE "ProductName", "Chordest" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

@@ -1,10 +1,10 @@
-import 'dart:math';
+﻿import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/l10n/app_localizations_en.dart';
-import 'package:sightchord/study_harmony/domain/study_harmony_session_models.dart';
-import 'package:sightchord/study_harmony/integrations/study_harmony_generator_adapter.dart';
-import 'package:sightchord/study_harmony/integrations/study_harmony_progression_adapter.dart';
+import 'package:chordest/l10n/app_localizations_en.dart';
+import 'package:chordest/study_harmony/domain/study_harmony_session_models.dart';
+import 'package:chordest/study_harmony/integrations/study_harmony_generator_adapter.dart';
+import 'package:chordest/study_harmony/integrations/study_harmony_progression_adapter.dart';
 
 void main() {
   final l10n = AppLocalizationsEn();
@@ -98,3 +98,4 @@ void main() {
     },
   );
 }
+

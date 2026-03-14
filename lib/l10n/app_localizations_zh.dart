@@ -512,35 +512,34 @@ class AppLocalizationsZh extends AppLocalizations {
   String get voicingReasonGentleMotion => '手部動作流暢';
 
   @override
-  String get mainMenuIntro => '選擇練習產生器或開啟分析器以進行單獨的進度閱讀工作流程。';
+  String get mainMenuIntro => '在同一個地方開始和弦練習、進行分析與和聲學習。';
 
   @override
   String get mainMenuGeneratorTitle => '和弦產生器';
 
   @override
-  String get mainMenuGeneratorDescription => '使用按鍵感知隨機模式、智慧動作和 和聲配置 建議產生練習和弦。';
+  String get mainMenuGeneratorDescription => '用智慧走向與和弦配置提示快速建立練習題。';
 
   @override
-  String get openGenerator => '打開生成器';
+  String get openGenerator => '開始練習';
 
   @override
-  String get openAnalyzer => '打開分析器';
+  String get openAnalyzer => '分析進行';
 
   @override
   String get mainMenuAnalyzerTitle => '和弦分析器';
 
   @override
-  String get mainMenuAnalyzerDescription => '分析可能的 調性中心、羅馬數字 和 和聲功能 的書面進展。';
+  String get mainMenuAnalyzerDescription => '讀取進行並快速查看調性、羅馬數字與和聲功能。';
 
   @override
   String get mainMenuStudyHarmonyTitle => '和聲學習';
 
   @override
-  String get mainMenuStudyHarmonyDescription =>
-      '透過繼續、複習、每日和基於章節的課程，體驗真正的和諧學習中心。';
+  String get mainMenuStudyHarmonyDescription => '延續課程、複習章節，培養實戰和聲感。';
 
   @override
-  String get openStudyHarmony => '開啟和聲學習';
+  String get openStudyHarmony => '開始和聲學習';
 
   @override
   String get studyHarmonyTitle => '和聲學習';
@@ -3262,35 +3261,34 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get voicingReasonGentleMotion => '手部动作流畅';
 
   @override
-  String get mainMenuIntro => '选择练习产生器或开启分析器以进行单独的进度阅读工作流程。';
+  String get mainMenuIntro => '在同一个地方开始和弦练习、进行分析与和声学习。';
 
   @override
   String get mainMenuGeneratorTitle => '和弦生成器';
 
   @override
-  String get mainMenuGeneratorDescription => '使用按键感知随机模式、智慧动作和 和声配置 建议产生练习和弦。';
+  String get mainMenuGeneratorDescription => '用智能走向和和弦配置提示快速生成练习题。';
 
   @override
-  String get openGenerator => '打开生成器';
+  String get openGenerator => '开始练习';
 
   @override
-  String get openAnalyzer => '打开分析器';
+  String get openAnalyzer => '分析进行';
 
   @override
   String get mainMenuAnalyzerTitle => '和弦分析器';
 
   @override
-  String get mainMenuAnalyzerDescription => '分析可能的 调性中心、罗马数字 和 和声功能 的书面进展。';
+  String get mainMenuAnalyzerDescription => '读取进行并快速查看调性、罗马数字与和声功能。';
 
   @override
   String get mainMenuStudyHarmonyTitle => '和声学习';
 
   @override
-  String get mainMenuStudyHarmonyDescription =>
-      '透过继续、复习、每日和基于章节的课程，体验真正的和谐学习中心。';
+  String get mainMenuStudyHarmonyDescription => '继续课程、复习章节，培养实战和声感。';
 
   @override
-  String get openStudyHarmony => '开启和声学习';
+  String get openStudyHarmony => '开始和声学习';
 
   @override
   String get studyHarmonyTitle => '和声学习';

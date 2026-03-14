@@ -1,7 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/music/chord_theory.dart';
-import 'package:sightchord/music/practice_chord_queue_state.dart';
-import 'package:sightchord/smart_generator.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/music/practice_chord_queue_state.dart';
+import 'package:chordest/smart_generator.dart';
 
 void main() {
   test('ensureNextChord seeds the queue only once', () {
@@ -66,3 +66,4 @@ GeneratedChord _buildChord(String key) {
     harmonicComparisonKey: key,
   );
 }
+

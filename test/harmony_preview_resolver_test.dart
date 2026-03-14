@@ -1,9 +1,9 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/audio/harmony_preview_resolver.dart';
-import 'package:sightchord/music/chord_theory.dart';
-import 'package:sightchord/music/progression_analysis_models.dart';
-import 'package:sightchord/study_harmony/domain/study_harmony_session_models.dart';
-import 'package:sightchord/study_harmony/domain/study_harmony_task_evaluators.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/audio/harmony_preview_resolver.dart';
+import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/music/progression_analysis_models.dart';
+import 'package:chordest/study_harmony/domain/study_harmony_session_models.dart';
+import 'package:chordest/study_harmony/domain/study_harmony_task_evaluators.dart';
 
 void main() {
   test('maps study keyboard ids to midi notes', () {
@@ -84,3 +84,4 @@ void main() {
     ]);
   });
 }
+

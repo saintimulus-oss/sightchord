@@ -1,8 +1,8 @@
-import 'dart:math';
+﻿import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/study_harmony/study_harmony_engine.dart';
-import 'package:sightchord/study_harmony/study_harmony_models.dart';
+import 'package:chordest/study_harmony/study_harmony_engine.dart';
+import 'package:chordest/study_harmony/study_harmony_models.dart';
 
 const StudyHarmonyLevelDefinition _engineTestLevel =
     StudyHarmonyLevelDefinition(
@@ -189,3 +189,4 @@ void main() {
     expect(engine.selectedAnswerIds, isEmpty);
   });
 }
+

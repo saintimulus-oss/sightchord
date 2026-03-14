@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/l10n/app_localizations.dart';
-import 'package:sightchord/l10n/app_localizations_en.dart';
-import 'package:sightchord/l10n/app_localizations_es.dart';
-import 'package:sightchord/l10n/app_localizations_ja.dart';
-import 'package:sightchord/l10n/app_localizations_ko.dart';
-import 'package:sightchord/l10n/app_localizations_zh.dart';
-import 'package:sightchord/settings/practice_settings.dart';
+import 'package:chordest/l10n/app_localizations.dart';
+import 'package:chordest/l10n/app_localizations_en.dart';
+import 'package:chordest/l10n/app_localizations_es.dart';
+import 'package:chordest/l10n/app_localizations_ja.dart';
+import 'package:chordest/l10n/app_localizations_ko.dart';
+import 'package:chordest/l10n/app_localizations_zh.dart';
+import 'package:chordest/settings/practice_settings.dart';
 
 Map<String, dynamic> _readArb(String name) {
   final file = File('lib/l10n/$name');
@@ -75,7 +75,7 @@ void main() {
       '\uC120\uD0DD\uD55C \uD0A4\uB294 \uD0A4 \uC778\uC2DD \uB79C\uB364 \uBAA8\uB4DC\uC640 Smart Generator \uBAA8\uB4DC\uC5D0\uC11C \uC0AC\uC6A9\uB429\uB2C8\uB2E4.',
     );
     expect(ko.mainMenuGeneratorTitle, '\uCF54\uB4DC \uC0DD\uC131\uAE30');
-    expect(ko.openAnalyzer, '\uBD84\uC11D\uAE30 \uC5F4\uAE30');
+    expect(ko.openAnalyzer, '\uC9C4\uD589 \uBD84\uC11D \uC2DC\uC791');
     expect(ko.chordAnalyzerTitle, '\uCF54\uB4DC \uBD84\uC11D\uAE30');
     expect(ko.chordAnalyzerAnalyze, '\uBD84\uC11D\uD558\uAE30');
     expect(
