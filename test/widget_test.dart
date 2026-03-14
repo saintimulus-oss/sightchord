@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sightchord/app.dart';
-import 'package:sightchord/l10n/app_localizations.dart';
-import 'package:sightchord/music/chord_theory.dart';
-import 'package:sightchord/music/voicing_models.dart';
-import 'package:sightchord/settings/practice_settings.dart';
-import 'package:sightchord/settings/settings_controller.dart';
-import 'package:sightchord/widgets/mini_keyboard.dart';
-import 'package:sightchord/widgets/voicing_suggestions_section.dart';
+import 'package:chordest/app.dart';
+import 'package:chordest/l10n/app_localizations.dart';
+import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/music/voicing_models.dart';
+import 'package:chordest/settings/practice_settings.dart';
+import 'package:chordest/settings/settings_controller.dart';
+import 'package:chordest/widgets/mini_keyboard.dart';
+import 'package:chordest/widgets/voicing_suggestions_section.dart';
 
 GeneratedChord buildTestChord({
   required String root,
@@ -189,6 +189,19 @@ void main() {
     await pumpAppWithSettings(tester, PracticeSettings());
   }
 
+  Future<void> advanceChord(WidgetTester tester) async {
+    await tester.tap(find.byKey(const ValueKey('chord-swipe-surface')));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> expandVoicingCard(WidgetTester tester, String kind) async {
+    final card = find.byKey(ValueKey('voicing-suggestion-card-$kind'));
+    await tester.ensureVisible(card);
+    await tester.pumpAndSettle();
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+  }
+
   String voicingNotesFor(WidgetTester tester, String kind) {
     final textWidgets = tester
         .widgetList<Text>(
@@ -292,7 +305,7 @@ void main() {
   ) async {
     await pumpApp(tester);
 
-    expect(find.text('SightChord'), findsOneWidget);
+    expect(find.text('Chordest'), findsOneWidget);
     expect(find.byKey(const ValueKey('current-chord-text')), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.settings));
@@ -346,8 +359,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Next Chord'));
-    await tester.pumpAndSettle();
+    await advanceChord(tester);
 
     final status = tester
         .widget<Text>(find.byKey(const ValueKey('current-status-label')))
@@ -368,8 +380,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Next Chord'));
-    await tester.pumpAndSettle();
+    await advanceChord(tester);
 
     expect(
       tester
@@ -603,14 +614,20 @@ void main() {
       find.byKey(const ValueKey('voicing-note-slot-easy-4')),
       findsOneWidget,
     );
+    expect(voicingNotesFor(tester, 'easy'), 'E B E');
+    expect(voicingNotesFor(tester, 'colorful'), 'B F# B E G');
+
+    await expandVoicingCard(tester, 'colorful');
+
     expect(
       find.byKey(const ValueKey('voicing-tone-slot-colorful-4')),
       findsOneWidget,
     );
-    expect(voicingNotesFor(tester, 'easy'), 'E B E');
-    expect(voicingNotesFor(tester, 'colorful'), 'B F# B E G');
-    expect(voicingToneLabelsFor(tester, 'easy'), '13 3 13');
     expect(voicingToneLabelsFor(tester, 'colorful'), '3 7 3 13 #9');
+
+    await expandVoicingCard(tester, 'easy');
+
+    expect(voicingToneLabelsFor(tester, 'easy'), '13 3 13');
   });
 
   testWidgets(
@@ -710,6 +727,8 @@ void main() {
         recommendations: recommendations,
         selectedSignature: colorfulVoicing.signature,
       );
+
+      await expandVoicingCard(tester, 'colorful');
 
       expect(find.text('Top line target: E'), findsOneWidget);
       expect(
@@ -812,6 +831,8 @@ void main() {
 
       await pumpVoicingSection(tester, recommendations: recommendations);
 
+      await expandVoicingCard(tester, 'natural');
+
       expect(find.text('No exact top line for Db'), findsOneWidget);
       expect(find.text('Top E'), findsWidgets);
       expect(tester.takeException(), isNull);
@@ -906,6 +927,8 @@ void main() {
 
     await pumpVoicingSection(tester, recommendations: recommendations);
 
+    await expandVoicingCard(tester, 'colorful');
+
     expect(find.text('Modern quartal color'), findsOneWidget);
     expect(find.text('Quartal color'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -984,9 +1007,14 @@ void main() {
 
     await pumpVoicingSection(tester, recommendations: recommendations);
 
+    await expandVoicingCard(tester, 'natural');
+
     expect(find.text('Same shape, steady comping'), findsOneWidget);
-    expect(find.text('Repeat-friendly hand shape'), findsOneWidget);
     expect(find.text('Stable repeat'), findsWidgets);
+
+    await expandVoicingCard(tester, 'easy');
+
+    expect(find.text('Repeat-friendly hand shape'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -1019,8 +1047,7 @@ void main() {
       PracticeSettings(voicingSuggestionsEnabled: false),
     );
 
-    await tester.tap(find.text('Next Chord'));
-    await tester.pumpAndSettle();
+    await advanceChord(tester);
 
     expect(
       find.byKey(const ValueKey('voicing-suggestions-section')),
@@ -1040,8 +1067,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Next Chord'));
-    await tester.pumpAndSettle();
+    await advanceChord(tester);
 
     expect(
       find.byKey(const ValueKey('voicing-suggestions-section')),
@@ -1073,8 +1099,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Next Chord'));
-    await tester.pumpAndSettle();
+    await advanceChord(tester);
 
     await tester.ensureVisible(
       find.byKey(const ValueKey('voicing-lock-natural')),
@@ -1082,6 +1107,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('voicing-lock-natural')));
     await tester.pumpAndSettle();
+
+    await expandVoicingCard(tester, 'natural');
 
     expect(find.byIcon(Icons.lock), findsWidgets);
     expect(
@@ -1103,8 +1130,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Next Chord'));
-    await tester.pumpAndSettle();
+    await advanceChord(tester);
 
     await tester.ensureVisible(
       find.byKey(const ValueKey('voicing-lock-natural')),
@@ -1143,8 +1169,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Next Chord'));
-    await tester.pumpAndSettle();
+    await advanceChord(tester);
 
     final beforeToggle = voicingNotesFor(tester, 'natural');
 
@@ -1189,8 +1214,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Next Chord'));
-    await tester.pumpAndSettle();
+    await advanceChord(tester);
 
     expect(
       find.byKey(const ValueKey('voicing-suggestions-section')),
@@ -1244,9 +1268,10 @@ void main() {
     );
 
     expect(find.text('\uCF54\uB4DC \uC0DD\uC131\uAE30'), findsOneWidget);
-    expect(find.text('\uC0DD\uC131\uAE30 \uC5F4\uAE30'), findsOneWidget);
     expect(find.text('\uCF54\uB4DC \uBD84\uC11D\uAE30'), findsOneWidget);
-    expect(find.text('\uBD84\uC11D\uAE30 \uC5F4\uAE30'), findsOneWidget);
+    expect(find.text('\uD654\uC131 \uD559\uC2B5'), findsOneWidget);
+    expect(find.text('\uC0DD\uC131\uAE30 \uC5F4\uAE30'), findsNothing);
+    expect(find.text('\uBD84\uC11D\uAE30 \uC5F4\uAE30'), findsNothing);
     expect(find.text('Open Generator'), findsNothing);
     expect(find.text('Open Analyzer'), findsNothing);
 

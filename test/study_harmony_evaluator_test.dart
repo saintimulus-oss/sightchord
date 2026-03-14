@@ -1,6 +1,6 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/study_harmony/domain/study_harmony_session_models.dart';
-import 'package:sightchord/study_harmony/domain/study_harmony_task_evaluators.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/study_harmony/domain/study_harmony_session_models.dart';
+import 'package:chordest/study_harmony/domain/study_harmony_task_evaluators.dart';
 
 void main() {
   test(
@@ -403,3 +403,4 @@ StudyHarmonyTaskInstance _buildTask({
   );
   return blueprint.createInstance(sequenceNumber: 0);
 }
+

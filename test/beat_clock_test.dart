@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/audio/beat_clock.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/audio/beat_clock.dart';
 
 void main() {
   group('BeatClock', () {
@@ -67,3 +67,4 @@ void main() {
     });
   });
 }
+

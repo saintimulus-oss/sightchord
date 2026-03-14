@@ -1,6 +1,6 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/settings/practice_settings.dart';
-import 'package:sightchord/settings/practice_settings_effects.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/settings/practice_settings.dart';
+import 'package:chordest/settings/practice_settings_effects.dart';
 
 void main() {
   test('queue-affecting smart settings changes trigger look-ahead refresh', () {
@@ -55,3 +55,4 @@ void main() {
     );
   });
 }
+

@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sightchord/app.dart';
-import 'package:sightchord/l10n/app_localizations.dart';
-import 'package:sightchord/l10n/app_localizations_en.dart';
-import 'package:sightchord/settings/practice_settings.dart';
-import 'package:sightchord/settings/settings_controller.dart';
-import 'package:sightchord/study_harmony/application/study_harmony_progress_controller.dart';
-import 'package:sightchord/study_harmony/content/core_curriculum_catalog.dart';
-import 'package:sightchord/study_harmony/domain/study_harmony_progress_models.dart';
-import 'package:sightchord/study_harmony/domain/study_harmony_session_models.dart';
-import 'package:sightchord/study_harmony/domain/study_harmony_task_evaluators.dart';
-import 'package:sightchord/study_harmony_page.dart';
-import 'package:sightchord/study_harmony/study_harmony_level_page.dart';
-import 'package:sightchord/study_harmony/study_harmony_models.dart';
-import 'package:sightchord/study_harmony/study_harmony_session_page.dart';
+import 'package:chordest/app.dart';
+import 'package:chordest/l10n/app_localizations.dart';
+import 'package:chordest/l10n/app_localizations_en.dart';
+import 'package:chordest/settings/practice_settings.dart';
+import 'package:chordest/settings/settings_controller.dart';
+import 'package:chordest/study_harmony/application/study_harmony_progress_controller.dart';
+import 'package:chordest/study_harmony/content/core_curriculum_catalog.dart';
+import 'package:chordest/study_harmony/domain/study_harmony_progress_models.dart';
+import 'package:chordest/study_harmony/domain/study_harmony_session_models.dart';
+import 'package:chordest/study_harmony/domain/study_harmony_task_evaluators.dart';
+import 'package:chordest/study_harmony_page.dart';
+import 'package:chordest/study_harmony/study_harmony_level_page.dart';
+import 'package:chordest/study_harmony/study_harmony_models.dart';
+import 'package:chordest/study_harmony/study_harmony_session_page.dart';
 
 StudyHarmonyLessonDefinition _buildShortcutLesson() {
   const lessonId = 'shortcut-lesson';
@@ -193,13 +193,16 @@ void main() {
       await pumpApp(tester, progressSnapshot: snapshot);
 
       expect(
-        find.byKey(const ValueKey('main-open-study-harmony-button-supporting')),
+        find.byKey(const ValueKey('main-open-study-harmony-button')),
         findsOneWidget,
       );
-      expect(find.text('Continue: Name the Highlighted Note'), findsOneWidget);
-      expect(find.text('Chapter 1: Notes & Keyboard'), findsOneWidget);
-      expect(find.text('1/69 lessons cleared'), findsOneWidget);
-      expect(find.text('3 stars'), findsOneWidget);
+      expect(
+        find.textContaining('Continue: Name the Highlighted Note'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('1/69 lessons cleared'), findsOneWidget);
+      expect(find.text('Chapter 1: Notes & Keyboard'), findsNothing);
+      expect(find.text('3 stars'), findsNothing);
     },
   );
 

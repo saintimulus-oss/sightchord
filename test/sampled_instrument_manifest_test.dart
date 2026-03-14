@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/audio/sampled_instrument_manifest.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/audio/sampled_instrument_manifest.dart';
 
 void main() {
   Map<String, Object?> buildManifestJson({required bool clampOutOfRangeNotes}) {
@@ -107,3 +107,4 @@ void main() {
     });
   });
 }
+

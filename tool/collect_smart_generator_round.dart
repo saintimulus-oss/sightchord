@@ -1,12 +1,12 @@
-// ignore_for_file: avoid_print
+﻿// ignore_for_file: avoid_print
 
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:sightchord/music/chord_theory.dart';
-import 'package:sightchord/settings/inversion_settings.dart';
-import 'package:sightchord/smart_generator.dart';
+import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/settings/inversion_settings.dart';
+import 'package:chordest/smart_generator.dart';
 
 const int _defaultRound = 1;
 const int _defaultStepsPerCell = 64;
@@ -1144,3 +1144,4 @@ Map<String, Object?> _bucketsToJson(Map<String, _AggregateBucket> buckets) {
   final keys = buckets.keys.toList()..sort();
   return {for (final key in keys) key: buckets[key]!.toJson()};
 }
+

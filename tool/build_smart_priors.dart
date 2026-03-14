@@ -1,8 +1,8 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:io';
 
-import 'package:sightchord/music/chord_theory.dart';
-import 'package:sightchord/smart_generator.dart';
+import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/smart_generator.dart';
 
 void main() {
   final familyBaseRows = _parseCsv(
@@ -589,3 +589,4 @@ class _BlendProfileEntry {
   final bool useStructuralLeadSheetPriors;
   final bool useRecordingSurfaceOverlay;
 }
+

@@ -544,37 +544,37 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get mainMenuIntro =>
-      'Elija un generador de práctica o abra el analizador para un flujo de trabajo de lectura de progresión independiente.';
+      'Practica acordes, analiza progresiones y estudia armonía desde un solo lugar.';
 
   @override
   String get mainMenuGeneratorTitle => 'Generador de acordes';
 
   @override
   String get mainMenuGeneratorDescription =>
-      'Genere acordes de práctica con modo aleatorio con reconocimiento de clave, movimiento inteligente y sugerencias voicing.';
+      'Genera acordes de práctica con movimiento inteligente y ayuda de voicings.';
 
   @override
-  String get openGenerator => 'Generador abierto';
+  String get openGenerator => 'Empezar práctica';
 
   @override
-  String get openAnalyzer => 'Analizador abierto';
+  String get openAnalyzer => 'Analizar progresión';
 
   @override
   String get mainMenuAnalyzerTitle => 'Analizador de acordes';
 
   @override
   String get mainMenuAnalyzerDescription =>
-      'Analice una progresión escrita para posibles centro tonal, número romano y función armónica.';
+      'Lee una progresión y revisa tonalidades, números romanos y función armónica.';
 
   @override
   String get mainMenuStudyHarmonyTitle => 'Estudio de armonía';
 
   @override
   String get mainMenuStudyHarmonyDescription =>
-      'Muévase a través de un centro de estudio de armonía real con lecciones continuas, de repaso, diarias y basadas en capítulos.';
+      'Retoma lecciones, repasa capítulos y fortalece tu armonía práctica.';
 
   @override
-  String get openStudyHarmony => 'Abrir Estudio de armonía';
+  String get openStudyHarmony => 'Empezar armonía';
 
   @override
   String get studyHarmonyTitle => 'Estudio de armonía';

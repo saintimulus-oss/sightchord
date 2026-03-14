@@ -1,8 +1,8 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sightchord/music/chord_theory.dart';
-import 'package:sightchord/settings/practice_settings.dart';
-import 'package:sightchord/settings/practice_settings_store.dart';
+import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/settings/practice_settings.dart';
+import 'package:chordest/settings/practice_settings_store.dart';
 
 void main() {
   setUp(() {
@@ -97,3 +97,4 @@ void main() {
     },
   );
 }
+

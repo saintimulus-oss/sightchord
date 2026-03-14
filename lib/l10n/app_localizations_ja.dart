@@ -523,38 +523,34 @@ class AppLocalizationsJa extends AppLocalizations {
   String get voicingReasonGentleMotion => 'スムーズな手の動き';
 
   @override
-  String get mainMenuIntro =>
-      '練習用ジェネレーターを選択するか、アナライザーを開いて別の進行読み取りワークフローを実行します。';
+  String get mainMenuIntro => 'コード練習、進行分析、和声学習をひとつの場所から始めましょう。';
 
   @override
   String get mainMenuGeneratorTitle => 'コード生成';
 
   @override
-  String get mainMenuGeneratorDescription =>
-      'キーを意識したランダム モード、スマート モーション、ボイシング の提案を使用して練習用コードを生成します。';
+  String get mainMenuGeneratorDescription => 'スマートな進行とボイシング補助で練習用コードをすぐ作れます。';
 
   @override
-  String get openGenerator => 'オープンジェネレーター';
+  String get openGenerator => '練習を始める';
 
   @override
-  String get openAnalyzer => 'アナライザーを開く';
+  String get openAnalyzer => '進行を分析';
 
   @override
   String get mainMenuAnalyzerTitle => 'コード解析';
 
   @override
-  String get mainMenuAnalyzerDescription =>
-      'おそらく キーセンター、ローマ数字、および 和声機能 について書かれた進行状況を分析します。';
+  String get mainMenuAnalyzerDescription => '進行を読み取り、調性・ローマ数字・機能をすばやく確認できます。';
 
   @override
   String get mainMenuStudyHarmonyTitle => '和声学習';
 
   @override
-  String get mainMenuStudyHarmonyDescription =>
-      '継続、復習、毎日、および章ベースのレッスンを備えた本物のハーモニー学習ハブを学習します。';
+  String get mainMenuStudyHarmonyDescription => 'レッスンを続け、章を復習し、実践的な和声感覚を育てます。';
 
   @override
-  String get openStudyHarmony => '和声学習 を開く';
+  String get openStudyHarmony => '和声学習を始める';
 
   @override
   String get studyHarmonyTitle => '和声学習';

@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sightchord/app.dart';
-import 'package:sightchord/chord_analyzer_page.dart';
-import 'package:sightchord/l10n/app_localizations.dart';
-import 'package:sightchord/settings/practice_settings.dart';
-import 'package:sightchord/settings/settings_controller.dart';
+import 'package:chordest/app.dart';
+import 'package:chordest/chord_analyzer_page.dart';
+import 'package:chordest/l10n/app_localizations.dart';
+import 'package:chordest/settings/practice_settings.dart';
+import 'package:chordest/settings/settings_controller.dart';
 
 void main() {
   setUp(() {
@@ -423,3 +423,4 @@ void main() {
     },
   );
 }
+

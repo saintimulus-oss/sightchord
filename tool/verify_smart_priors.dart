@@ -1,11 +1,11 @@
-// ignore_for_file: avoid_print
+﻿// ignore_for_file: avoid_print
 
 import 'dart:io';
 import 'dart:math';
 
-import 'package:sightchord/music/chord_theory.dart';
-import 'package:sightchord/settings/inversion_settings.dart';
-import 'package:sightchord/smart_generator.dart';
+import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/settings/inversion_settings.dart';
+import 'package:chordest/smart_generator.dart';
 
 const _auditSeeds = <int>[101, 211, 307, 401, 509];
 const _stepsPerRun = 2400;
@@ -1007,3 +1007,4 @@ void _requireQaNotFail(
     throw StateError('QA check ${check.id} failed: ${check.detail}');
   }
 }
+

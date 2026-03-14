@@ -1,8 +1,8 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/study_harmony/application/study_harmony_progress_controller.dart';
-import 'package:sightchord/study_harmony/data/study_harmony_progress_store.dart';
-import 'package:sightchord/study_harmony/domain/study_harmony_progress_models.dart';
-import 'package:sightchord/study_harmony/domain/study_harmony_session_models.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/study_harmony/application/study_harmony_progress_controller.dart';
+import 'package:chordest/study_harmony/data/study_harmony_progress_store.dart';
+import 'package:chordest/study_harmony/domain/study_harmony_progress_models.dart';
+import 'package:chordest/study_harmony/domain/study_harmony_session_models.dart';
 
 void main() {
   test(
@@ -364,3 +364,4 @@ class _MemoryProgressStore implements StudyHarmonyProgressStore {
     savedSnapshots.add(snapshot);
   }
 }
+

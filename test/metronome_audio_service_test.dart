@@ -1,9 +1,9 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/audio/metronome_audio_service.dart';
-import 'package:sightchord/audio/scheduled_metronome_interface.dart';
-import 'package:sightchord/settings/practice_settings.dart';
+import 'package:chordest/audio/metronome_audio_service.dart';
+import 'package:chordest/audio/scheduled_metronome_interface.dart';
+import 'package:chordest/settings/practice_settings.dart';
 
 class _FakeScheduledMetronome implements ScheduledMetronome {
   _FakeScheduledMetronome({
@@ -152,3 +152,4 @@ void main() {
     expect(prepared, isFalse);
   });
 }
+

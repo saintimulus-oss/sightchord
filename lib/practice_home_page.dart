@@ -23,7 +23,6 @@ import 'settings/practice_settings_drawer.dart';
 import 'settings/settings_controller.dart';
 import 'smart_generator.dart';
 import 'widgets/beat_indicator_row.dart';
-import 'widgets/practice_overview_card.dart';
 import 'widgets/voicing_suggestions_section.dart';
 
 part 'practice_home_page_labels.dart';
@@ -37,6 +36,18 @@ class _WeightedGeneratedChordCandidate {
 
   final GeneratedChord chord;
   final int weight;
+}
+
+class _PracticeHistoryEntry {
+  const _PracticeHistoryEntry({
+    required this.queueState,
+    required this.voicingState,
+    required this.currentBeat,
+  });
+
+  final PracticeChordQueueState queueState;
+  final VoicingSessionState voicingState;
+  final int? currentBeat;
 }
 
 class MyHomePage extends StatefulWidget {
@@ -53,6 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
   static const int _minBpm = PracticeSettings.minBpm;
   static const int _maxBpm = PracticeSettings.maxBpm;
   static const int _beatsPerBar = 4;
+  static const int _practiceHistoryLimit = 24;
   static const Duration _scheduledMetronomeLookAhead = Duration(
     milliseconds: 120,
   );
@@ -77,6 +89,8 @@ class _MyHomePageState extends State<MyHomePage> {
   HarmonyAudioService? _harmonyAudio;
   PracticeChordQueueState _queueState = const PracticeChordQueueState();
   VoicingSessionState _voicingState = const VoicingSessionState();
+  final List<_PracticeHistoryEntry> _practiceHistory =
+      <_PracticeHistoryEntry>[];
 
   PracticeSettings get _settings => widget.controller.settings;
   GeneratedChord? get _previousChord => _queueState.previousChord;
@@ -189,6 +203,7 @@ class _MyHomePageState extends State<MyHomePage> {
         );
     unawaited(_persistSettingsUpdate(nextSettings));
     setState(() {
+      _practiceHistory.clear();
       if (syncBpmText) {
         _bpmController.text = '${nextSettings.bpm}';
       }
@@ -218,7 +233,7 @@ class _MyHomePageState extends State<MyHomePage> {
         FlutterErrorDetails(
           exception: error,
           stack: stackTrace,
-          library: 'sightchord',
+          library: 'chordest',
           context: ErrorDescription('while saving practice settings'),
         ),
       );
@@ -246,10 +261,38 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _reseedChordQueue() {
+    _practiceHistory.clear();
     _queueState = _queueState.reset();
     _voicingState = _voicingState.reset();
     _ensureChordQueueInitialized();
     _recomputeVoicingSuggestions();
+  }
+
+  bool get _canRestorePreviousChord => _practiceHistory.isNotEmpty;
+
+  void _recordPracticeHistory() {
+    if (_practiceHistory.length == _practiceHistoryLimit) {
+      _practiceHistory.removeAt(0);
+    }
+    _practiceHistory.add(
+      _PracticeHistoryEntry(
+        queueState: _queueState,
+        voicingState: _voicingState,
+        currentBeat: _currentBeat,
+      ),
+    );
+  }
+
+  void _restorePreviousChord() {
+    if (!mounted || _practiceHistory.isEmpty) {
+      return;
+    }
+    final snapshot = _practiceHistory.removeLast();
+    setState(() {
+      _queueState = snapshot.queueState;
+      _voicingState = snapshot.voicingState;
+      _currentBeat = snapshot.currentBeat;
+    });
   }
 
   ChordExclusionContext _buildExclusionContext({
@@ -381,7 +424,7 @@ class _MyHomePageState extends State<MyHomePage> {
           '${context.diagnosticSummary} '
           '${bestSuggestion.voicing.noteNames.join('-')} '
           '${bestSuggestion.breakdown.describe()}',
-          name: 'sightchord.voicing',
+          name: 'chordest.voicing',
         );
         _voicingState = _voicingState.markDiagnosticLogged(diagnosticKey);
       }
@@ -597,10 +640,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (smartDebug is SmartDecisionTrace) {
       SmartDiagnosticsStore.record(smartDebug);
       if (_settings.smartDiagnosticsEnabled) {
-        developer.log(
-          smartDebug.describe(),
-          name: 'sightchord.smart_generator',
-        );
+        developer.log(smartDebug.describe(), name: 'chordest.smart_generator');
       }
     }
     return chord;
@@ -1037,6 +1077,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!mounted) {
       return;
     }
+    _recordPracticeHistory();
     setState(() {
       _promoteChordQueue();
       _currentBeat = ((_currentBeat ?? -1) + 1) % _beatsPerBar;
@@ -1061,6 +1102,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
+    _recordPracticeHistory();
     setState(() {
       _promoteChordQueue();
     });
@@ -1261,7 +1303,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }) {
     developer.log(
       message,
-      name: 'sightchord.audio',
+      name: 'chordest.audio',
       error: error,
       stackTrace: stackTrace,
     );

@@ -539,37 +539,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mainMenuIntro =>
-      'Choose a practice generator or open the analyzer for a separate progression reading workflow.';
+      'Practice chords, analyze progressions, and study harmony in one place.';
 
   @override
   String get mainMenuGeneratorTitle => 'Chord Generator';
 
   @override
   String get mainMenuGeneratorDescription =>
-      'Generate practice chords with key-aware random mode, smart motion, and voicing suggestions.';
+      'Generate focused chord prompts with smart motion and voicing support.';
 
   @override
-  String get openGenerator => 'Open Generator';
+  String get openGenerator => 'Start Practice';
 
   @override
-  String get openAnalyzer => 'Open Analyzer';
+  String get openAnalyzer => 'Analyze Progression';
 
   @override
   String get mainMenuAnalyzerTitle => 'Chord Analyzer';
 
   @override
   String get mainMenuAnalyzerDescription =>
-      'Analyze a written progression for likely key centers, Roman numerals, and harmonic functions.';
+      'Read a progression for likely keys, Roman numerals, and harmonic function.';
 
   @override
   String get mainMenuStudyHarmonyTitle => 'Study Harmony';
 
   @override
   String get mainMenuStudyHarmonyDescription =>
-      'Move through a real harmony study hub with continue, review, daily, and chapter-based lessons.';
+      'Continue lessons, review chapters, and build practical harmony fluency.';
 
   @override
-  String get openStudyHarmony => 'Open Study Harmony';
+  String get openStudyHarmony => 'Start Study Harmony';
 
   @override
   String get studyHarmonyTitle => 'Study Harmony';

@@ -1,11 +1,11 @@
-import 'dart:math';
+﻿import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/l10n/app_localizations_en.dart';
-import 'package:sightchord/study_harmony/application/study_harmony_session_controller.dart';
-import 'package:sightchord/study_harmony/content/core_curriculum_catalog.dart';
-import 'package:sightchord/study_harmony/domain/study_harmony_session_models.dart';
-import 'package:sightchord/study_harmony/study_harmony_catalog.dart';
+import 'package:chordest/l10n/app_localizations_en.dart';
+import 'package:chordest/study_harmony/application/study_harmony_session_controller.dart';
+import 'package:chordest/study_harmony/content/core_curriculum_catalog.dart';
+import 'package:chordest/study_harmony/domain/study_harmony_session_models.dart';
+import 'package:chordest/study_harmony/study_harmony_catalog.dart';
 
 void main() {
   StudyHarmonyCourseDefinition buildCourse() =>
@@ -127,3 +127,4 @@ void _playToCompletion(StudyHarmonySessionController controller) {
 
   expect(safety, lessThan(200));
 }
+

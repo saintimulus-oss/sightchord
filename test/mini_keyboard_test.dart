@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/widgets/mini_keyboard.dart';
+import 'package:chordest/widgets/mini_keyboard.dart';
 
 void main() {
   testWidgets('mini keyboard shows octave markers for C keys in range', (
@@ -132,4 +132,5 @@ void main() {
     );
   });
 }
+
 

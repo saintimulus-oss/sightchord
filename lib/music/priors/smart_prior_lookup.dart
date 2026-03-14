@@ -22,7 +22,7 @@ class SmartPriorLookup {
     if (!_reportedGeneratedFallbacks.add(key)) {
       return;
     }
-    developer.log(message, name: 'sightchord.smart_priors');
+    developer.log(message, name: 'chordest.smart_priors');
   }
 
   static int familyBaseWeight({

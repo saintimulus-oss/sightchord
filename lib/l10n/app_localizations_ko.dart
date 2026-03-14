@@ -519,37 +519,36 @@ class AppLocalizationsKo extends AppLocalizations {
   String get voicingReasonGentleMotion => '부드러운 손 이동';
 
   @override
-  String get mainMenuIntro => '연습 생성기를 선택하거나, 별도의 진행 읽기 흐름을 위해 분석기를 열어 보세요.';
+  String get mainMenuIntro => '코드 연습, 진행 분석, 화성 학습을 한 화면에서 시작하세요.';
 
   @override
   String get mainMenuGeneratorTitle => '코드 생성기';
 
   @override
-  String get mainMenuGeneratorDescription =>
-      '키 인식 랜덤 모드, 스마트 진행, 보이싱 제안으로 연습용 코드를 생성합니다.';
+  String get mainMenuGeneratorDescription => '스마트 진행과 보이싱 힌트로 연습용 코드를 바로 만듭니다.';
 
   @override
-  String get openGenerator => '생성기 열기';
+  String get openGenerator => '코드 연습 시작';
 
   @override
-  String get openAnalyzer => '분석기 열기';
+  String get openAnalyzer => '진행 분석 시작';
 
   @override
   String get mainMenuAnalyzerTitle => '코드 분석기';
 
   @override
   String get mainMenuAnalyzerDescription =>
-      '입력한 코드 진행에서 가능한 조성, 로마 숫자, 화성 기능을 보수적으로 분석합니다.';
+      '진행을 읽고 조성, 로마 숫자, 화성 기능을 빠르게 확인합니다.';
 
   @override
   String get mainMenuStudyHarmonyTitle => '화성 학습';
 
   @override
   String get mainMenuStudyHarmonyDescription =>
-      '계속하기, 복습, 데일리, 챕터 수업이 있는 실제 화성 학습 허브로 이동합니다.';
+      '레슨을 이어서 풀고, 챕터를 복습하며, 실전 화성 감각을 쌓습니다.';
 
   @override
-  String get openStudyHarmony => 'Study Harmony 열기';
+  String get openStudyHarmony => '화성 학습 시작';
 
   @override
   String get studyHarmonyTitle => '화성 학습';

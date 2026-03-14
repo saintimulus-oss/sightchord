@@ -1,7 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/music/chord_theory.dart';
-import 'package:sightchord/music/progression_analysis_models.dart';
-import 'package:sightchord/music/progression_analyzer.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/music/progression_analysis_models.dart';
+import 'package:chordest/music/progression_analyzer.dart';
 
 void main() {
   const analyzer = ProgressionAnalyzer();
@@ -257,3 +257,4 @@ void main() {
     expect(firstMeasure.parseIssues.single.errorDetail, 'H');
   });
 }
+

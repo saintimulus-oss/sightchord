@@ -34,7 +34,7 @@ class MainMenuPage extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) =>
-            MyHomePage(title: 'SightChord', controller: controller),
+            MyHomePage(title: 'Chordest', controller: controller),
       ),
     );
   }
@@ -60,212 +60,259 @@ class MainMenuPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isWide = MediaQuery.sizeOf(context).width >= 720;
 
     return Scaffold(
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.primaryContainer.withValues(alpha: 0.55),
-              theme.scaffoldBackgroundColor,
-            ],
+      body: Stack(
+        children: [
+          Positioned(
+            top: -160,
+            left: -120,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      colorScheme.primary.withValues(alpha: 0.18),
+                      colorScheme.primary.withValues(alpha: 0),
+                    ],
+                  ),
+                ),
+                child: const SizedBox(width: 380, height: 380),
+              ),
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 520),
-                child: Card(
-                  elevation: 0,
-                  color: colorScheme.surface.withValues(alpha: 0.9),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(28, 32, 28, 28),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary.withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.music_note_rounded,
-                            size: 34,
-                            color: colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          'SightChord',
-                          style: theme.textTheme.displaySmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          l10n.mainMenuIntro,
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(height: 28),
-                        _MainEntryCard(
-                          icon: Icons.auto_awesome,
-                          title: l10n.mainMenuGeneratorTitle,
-                          description: l10n.mainMenuGeneratorDescription,
-                          buttonLabel: l10n.openGenerator,
-                          buttonKey: const ValueKey(
-                            'main-open-generator-button',
-                          ),
-                          onPressed: () => _openCodeGenerator(context),
-                        ),
-                        const SizedBox(height: 12),
-                        _MainEntryCard(
-                          icon: Icons.insights_rounded,
-                          title: l10n.mainMenuAnalyzerTitle,
-                          description: l10n.mainMenuAnalyzerDescription,
-                          buttonLabel: l10n.openAnalyzer,
-                          buttonKey: const ValueKey(
-                            'main-open-analyzer-button',
-                          ),
-                          onPressed: () => _openChordAnalyzer(context),
-                        ),
-                        const SizedBox(height: 12),
-                        AnimatedBuilder(
-                          animation: studyHarmonyProgressController,
-                          builder: (context, _) {
-                            final course = buildStudyHarmonyCoreCourse(l10n);
-                            final summary = _buildStudyHarmonyMenuSummary(
-                              l10n: l10n,
-                              course: course,
-                              progressController:
-                                  studyHarmonyProgressController,
-                            );
-
-                            return _MainEntryCard(
-                              icon: Icons.school_rounded,
-                              title: l10n.mainMenuStudyHarmonyTitle,
-                              description: l10n.mainMenuStudyHarmonyDescription,
-                              supportingText: summary.resumeLabel,
-                              badges: summary.badges,
-                              buttonLabel: l10n.openStudyHarmony,
-                              buttonKey: const ValueKey(
-                                'main-open-study-harmony-button',
-                              ),
-                              onPressed: () => _openStudyHarmony(context),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
+          Positioned(
+            right: -140,
+            bottom: -180,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      colorScheme.primaryContainer.withValues(alpha: 0.6),
+                      colorScheme.primaryContainer.withValues(alpha: 0),
+                    ],
+                  ),
+                ),
+                child: const SizedBox(width: 420, height: 420),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(24, isWide ? 28 : 20, 24, 28),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 720),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: IconButton.filledTonal(
                           key: const ValueKey('main-open-settings-button'),
                           onPressed: () => _openLanguageSettings(context),
                           icon: const Icon(Icons.language_rounded),
-                          label: Text(l10n.settings),
+                          tooltip: l10n.settings,
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 18),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          'CHORDEST',
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.1,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Text(
+                        'Chordest',
+                        style: theme.textTheme.displayMedium?.copyWith(
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 560),
+                        child: Text(
+                          l10n.mainMenuIntro,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            height: 1.45,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      _MainActionButton(
+                        icon: Icons.auto_awesome_rounded,
+                        title: l10n.mainMenuGeneratorTitle,
+                        subtitle: l10n.mainMenuGeneratorDescription,
+                        isPrimary: true,
+                        buttonKey: const ValueKey('main-open-generator-button'),
+                        onPressed: () => _openCodeGenerator(context),
+                      ),
+                      const SizedBox(height: 14),
+                      _MainActionButton(
+                        icon: Icons.insights_rounded,
+                        title: l10n.mainMenuAnalyzerTitle,
+                        subtitle: l10n.mainMenuAnalyzerDescription,
+                        buttonKey: const ValueKey('main-open-analyzer-button'),
+                        onPressed: () => _openChordAnalyzer(context),
+                      ),
+                      const SizedBox(height: 14),
+                      AnimatedBuilder(
+                        animation: studyHarmonyProgressController,
+                        builder: (context, _) {
+                          final course = buildStudyHarmonyCoreCourse(l10n);
+                          final summary = _buildStudyHarmonyMenuSummary(
+                            l10n: l10n,
+                            course: course,
+                            progressController: studyHarmonyProgressController,
+                          );
+
+                          return _MainActionButton(
+                            icon: Icons.school_rounded,
+                            title: l10n.mainMenuStudyHarmonyTitle,
+                            subtitle:
+                                '${summary.resumeLabel} · ${summary.progressLabel}',
+                            buttonKey: const ValueKey(
+                              'main-open-study-harmony-button',
+                            ),
+                            onPressed: () => _openStudyHarmony(context),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
-class _MainEntryCard extends StatelessWidget {
-  const _MainEntryCard({
+class _MainActionButton extends StatelessWidget {
+  const _MainActionButton({
     required this.icon,
     required this.title,
-    required this.description,
-    this.supportingText,
-    this.badges = const <String>[],
-    required this.buttonLabel,
+    required this.subtitle,
     required this.buttonKey,
+    this.isPrimary = false,
     required this.onPressed,
   });
 
   final IconData icon;
   final String title;
-  final String description;
-  final String? supportingText;
-  final List<String> badges;
-  final String buttonLabel;
+  final String subtitle;
   final ValueKey<String> buttonKey;
+  final bool isPrimary;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final backgroundColor = isPrimary
+        ? colorScheme.primary
+        : colorScheme.surfaceContainerLow.withValues(alpha: 0.9);
+    final foregroundColor = isPrimary
+        ? colorScheme.onPrimary
+        : colorScheme.onSurface;
+    final subtitleColor = isPrimary
+        ? colorScheme.onPrimary.withValues(alpha: 0.78)
+        : colorScheme.onSurfaceVariant;
+    final arrowColor = isPrimary
+        ? colorScheme.onPrimary
+        : colorScheme.onSurfaceVariant;
 
-    return MergeSemantics(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.44),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: colorScheme.outlineVariant),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, color: colorScheme.primary),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        key: buttonKey,
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(30),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(30),
+            border: isPrimary
+                ? null
+                : Border.all(color: colorScheme.outlineVariant),
+            boxShadow: [
+              if (isPrimary)
+                BoxShadow(
+                  color: colorScheme.primary.withValues(alpha: 0.2),
+                  blurRadius: 28,
+                  offset: const Offset(0, 14),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                description,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              if (supportingText case final text?) ...[
-                const SizedBox(height: 12),
-                Text(
-                  text,
-                  key: ValueKey('${buttonKey.value}-supporting'),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.onSurface,
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: isPrimary
+                        ? Colors.white.withValues(alpha: 0.14)
+                        : colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: isPrimary
+                        ? colorScheme.onPrimary
+                        : colorScheme.primary,
                   ),
                 ),
-              ],
-              if (badges.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final badge in badges) Chip(label: Text(badge)),
-                  ],
+                const SizedBox(width: 18),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: foregroundColor,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        subtitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: subtitleColor,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 12),
+                Icon(Icons.arrow_forward_rounded, color: arrowColor),
               ],
-              const SizedBox(height: 14),
-              FilledButton.icon(
-                key: buttonKey,
-                onPressed: onPressed,
-                icon: Icon(icon),
-                label: Text(buttonLabel),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -276,11 +323,11 @@ class _MainEntryCard extends StatelessWidget {
 class _StudyHarmonyMenuSummary {
   const _StudyHarmonyMenuSummary({
     required this.resumeLabel,
-    required this.badges,
+    required this.progressLabel,
   });
 
   final String resumeLabel;
-  final List<String> badges;
+  final String progressLabel;
 }
 
 _StudyHarmonyMenuSummary _buildStudyHarmonyMenuSummary({
@@ -299,21 +346,6 @@ _StudyHarmonyMenuSummary _buildStudyHarmonyMenuSummary({
     0,
     (sum, chapter) => sum + chapter.lessons.length,
   );
-  final chapterTitle =
-      continueRecommendation?.chapter.title ?? course.chapters.first.title;
-  final stars = progressController.starsEarnedForCourse(course);
-  final leagueProgress = progressController.currentLeagueProgress();
-  final legendCrowns = progressController.legendaryChapterCountForCourse(
-    course,
-  );
-  final relayWins = progressController.relayWinCount();
-  final questChests = progressController.questChestCount();
-  final leagueXpBoost = progressController.currentLeagueXpBoost();
-  final monthlyTour = progressController.monthlyTourProgressForCourse(course);
-  final duetPact = progressController.duetPactProgress();
-  final masteredSkills = progressController.masteredSkillCountForCourse(course);
-  final dailyStreak = progressController.currentDailyChallengeStreak();
-  final streakSavers = progressController.currentStreakSaverCount();
 
   return _StudyHarmonyMenuSummary(
     resumeLabel: continueRecommendation == null
@@ -321,45 +353,11 @@ _StudyHarmonyMenuSummary _buildStudyHarmonyMenuSummary({
         : l10n.studyHarmonyContinueLessonLabel(
             continueRecommendation.lesson.title,
           ),
-    badges: [
-      chapterTitle,
-      l10n.studyHarmonyHubLessonsProgress(clearedLessons, totalLessons),
-      l10n.studyHarmonyProgressStars(stars),
-      if (leagueProgress.score > 0)
-        l10n.studyHarmonyProgressLeague(
-          _leagueTierLabel(l10n, leagueProgress.tier),
-        ),
-      monthlyTour.rewardClaimed
-          ? l10n.studyHarmonyProgressTourClaimed
-          : l10n.studyHarmonyProgressTour(
-              monthlyTour.completedGoalCount,
-              monthlyTour.totalGoalCount,
-            ),
-      if (duetPact.bestStreak > 0)
-        l10n.studyHarmonyProgressDuetPact(duetPact.bestStreak),
-      if (leagueXpBoost.active)
-        l10n.studyHarmonyProgressLeagueBoost(leagueXpBoost.chargeCount),
-      if (legendCrowns > 0) l10n.studyHarmonyProgressLegendCrowns(legendCrowns),
-      if (relayWins > 0) l10n.studyHarmonyProgressRelayWins(relayWins),
-      if (questChests > 0) l10n.studyHarmonyProgressQuestChests(questChests),
-      if (dailyStreak > 0) l10n.studyHarmonyProgressStreak(dailyStreak),
-      if (streakSavers > 0) l10n.studyHarmonyProgressStreakSaver(streakSavers),
-      l10n.studyHarmonyProgressSkillsMastered(
-        masteredSkills,
-        course.skillTags.length,
-      ),
-    ],
+    progressLabel: l10n.studyHarmonyHubLessonsProgress(
+      clearedLessons,
+      totalLessons,
+    ),
   );
-}
-
-String _leagueTierLabel(AppLocalizations l10n, StudyHarmonyLeagueTier tier) {
-  return switch (tier) {
-    StudyHarmonyLeagueTier.rookie => l10n.studyHarmonyLeagueTierRookie,
-    StudyHarmonyLeagueTier.bronze => l10n.studyHarmonyLeagueTierBronze,
-    StudyHarmonyLeagueTier.silver => l10n.studyHarmonyLeagueTierSilver,
-    StudyHarmonyLeagueTier.gold => l10n.studyHarmonyLeagueTierGold,
-    StudyHarmonyLeagueTier.diamond => l10n.studyHarmonyLeagueTierDiamond,
-  };
 }
 
 String _languageLabel(AppLocalizations l10n, AppLanguage language) {

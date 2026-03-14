@@ -2,7 +2,7 @@
 
 ## Overview
 
-SightChord now uses an optimized Salamander Grand Piano subset for harmony-study
+Chordest now uses an optimized Salamander Grand Piano subset for harmony-study
 playback. The shared audio layer lives under `lib/audio/` and is designed to
 serve the generator, analyzer, and Study Harmony flows without coupling audio
 logic to specific widgets.

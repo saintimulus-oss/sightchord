@@ -1,7 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/music/chord_theory.dart';
-import 'package:sightchord/music/voicing_models.dart';
-import 'package:sightchord/music/voicing_session_state.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/music/voicing_models.dart';
+import 'package:chordest/music/voicing_session_state.dart';
 
 void main() {
   test('applyRecommendations preserves matching locked voicings', () {
@@ -119,3 +119,4 @@ GeneratedChord _buildChord() {
     harmonicFunction: HarmonicFunction.tonic,
   );
 }
+

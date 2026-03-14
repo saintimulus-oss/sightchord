@@ -1,8 +1,8 @@
-import 'dart:math';
+﻿import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sightchord/music/chord_theory.dart';
-import 'package:sightchord/smart_generator.dart';
+import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/smart_generator.dart';
 
 class _FixedRandom implements Random {
   _FixedRandom(this.value);
@@ -3593,3 +3593,4 @@ void main() {
     },
   );
 }
+

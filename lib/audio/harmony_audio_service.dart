@@ -208,7 +208,7 @@ class HarmonyAudioService {
     _audioDisabled = true;
     developer.log(
       'Harmony audio disabled after $reason failed for ${_instrument.id}.',
-      name: 'sightchord.audio',
+      name: 'chordest.audio',
       error: error,
       stackTrace: stackTrace,
     );

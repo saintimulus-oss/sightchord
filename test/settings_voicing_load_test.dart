@@ -1,7 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sightchord/settings/practice_settings.dart';
-import 'package:sightchord/settings/settings_controller.dart';
+import 'package:chordest/settings/practice_settings.dart';
+import 'package:chordest/settings/settings_controller.dart';
 
 void main() {
   test(
@@ -50,3 +50,4 @@ void main() {
     expect(controller.settings.bpm, PracticeSettings.minBpm);
   });
 }
+
