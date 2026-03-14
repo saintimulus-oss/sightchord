@@ -43,11 +43,15 @@ class VoicingSessionState {
   }
 
   VoicingSessionState applyRecommendations(
-    VoicingRecommendationSet nextRecommendations,
-  ) {
+    VoicingRecommendationSet nextRecommendations, {
+    VoicingSuggestionKind preferredKind = VoicingSuggestionKind.natural,
+  }) {
     final relocked = _matchVoicingBySignature(
       lockedCurrentVoicing,
       nextRecommendations,
+    );
+    final preferredSuggestion = nextRecommendations.suggestionFor(
+      preferredKind,
     );
     return copyWith(
       recommendations: nextRecommendations,
@@ -55,6 +59,7 @@ class VoicingSessionState {
       selectedVoicing:
           relocked ??
           _matchVoicingBySignature(selectedVoicing, nextRecommendations) ??
+          preferredSuggestion?.voicing ??
           (nextRecommendations.suggestions.isNotEmpty
               ? nextRecommendations.suggestions.first.voicing
               : null),

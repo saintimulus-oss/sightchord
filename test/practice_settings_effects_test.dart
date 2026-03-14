@@ -1,6 +1,7 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/settings/practice_settings.dart';
 import 'package:chordest/settings/practice_settings_effects.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('queue-affecting smart settings changes trigger look-ahead refresh', () {
@@ -39,6 +40,51 @@ void main() {
     );
   });
 
+  test(
+    'changing chord quality filters refreshes the smart chord look-ahead',
+    () {
+      final previous = PracticeSettings(
+        voicingSuggestionsEnabled: true,
+        lookAheadDepth: 2,
+      );
+      final next = previous.copyWith(
+        enabledChordQualities: {...previous.enabledChordQualities}
+          ..remove(ChordQuality.major7),
+      );
+
+      expect(
+        PracticeSettingsEffects.queueAffectingChanged(previous, next),
+        isTrue,
+      );
+      expect(
+        PracticeSettingsEffects.shouldForceLookAheadRefresh(previous, next),
+        isTrue,
+      );
+    },
+  );
+
+  test('changing language guardrails refreshes the smart chord look-ahead', () {
+    final previous = PracticeSettings(
+      voicingSuggestionsEnabled: true,
+      lookAheadDepth: 2,
+      chordLanguageLevel: ChordLanguageLevel.fullExtensions,
+      romanPoolPreset: RomanPoolPreset.expandedColor,
+    );
+    final next = previous.copyWith(
+      chordLanguageLevel: ChordLanguageLevel.seventhChords,
+      romanPoolPreset: RomanPoolPreset.coreDiatonic,
+    );
+
+    expect(
+      PracticeSettingsEffects.queueAffectingChanged(previous, next),
+      isTrue,
+    );
+    expect(
+      PracticeSettingsEffects.shouldForceLookAheadRefresh(previous, next),
+      isTrue,
+    );
+  });
+
   test('look-ahead refresh is disabled when suggestions cannot use it', () {
     final previous = PracticeSettings(
       voicingSuggestionsEnabled: true,
@@ -55,4 +101,3 @@ void main() {
     );
   });
 }
-

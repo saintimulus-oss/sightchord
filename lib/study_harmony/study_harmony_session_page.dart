@@ -178,9 +178,14 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
       velocity: previewNote.velocity,
       gain: previewNote.gain,
     );
-    if (active != null) {
-      _activePreviewNotes[answerId] = active;
+    if (active == null) {
+      return;
     }
+    if (!mounted) {
+      await harmonyAudio.noteOff(active);
+      return;
+    }
+    _activePreviewNotes[answerId] = active;
   }
 
   Future<void> _previewKeyUp(StudyHarmonyAnswerOptionId answerId) async {

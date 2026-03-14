@@ -22,19 +22,22 @@ class MainMenuPage extends StatelessWidget {
   final AppSettingsController controller;
   final StudyHarmonyProgressController studyHarmonyProgressController;
 
-  Future<void> _openLanguageSettings(BuildContext context) {
+  Future<void> _openMainSettings(BuildContext context) {
     return showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      builder: (context) => _MainLanguageSettingsSheet(controller: controller),
+      builder: (context) => _MainSettingsSheet(controller: controller),
     );
   }
 
   void _openCodeGenerator(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) =>
-            MyHomePage(title: 'Chordest', controller: controller),
+        builder: (context) => MyHomePage(
+          title: 'Chordest',
+          controller: controller,
+          onOpenStudyHarmony: () => _openStudyHarmony(context),
+        ),
       ),
     );
   }
@@ -114,8 +117,8 @@ class MainMenuPage extends StatelessWidget {
                         alignment: Alignment.topRight,
                         child: IconButton.filledTonal(
                           key: const ValueKey('main-open-settings-button'),
-                          onPressed: () => _openLanguageSettings(context),
-                          icon: const Icon(Icons.language_rounded),
+                          onPressed: () => _openMainSettings(context),
+                          icon: const Icon(Icons.settings_rounded),
                           tooltip: l10n.settings,
                         ),
                       ),
@@ -367,8 +370,16 @@ String _languageLabel(AppLocalizations l10n, AppLanguage language) {
   };
 }
 
-class _MainLanguageSettingsSheet extends StatelessWidget {
-  const _MainLanguageSettingsSheet({required this.controller});
+String _themeModeLabel(AppLocalizations l10n, AppThemeMode mode) {
+  return switch (mode) {
+    AppThemeMode.system => l10n.themeModeSystem,
+    AppThemeMode.light => l10n.themeModeLight,
+    AppThemeMode.dark => l10n.themeModeDark,
+  };
+}
+
+class _MainSettingsSheet extends StatelessWidget {
+  const _MainSettingsSheet({required this.controller});
 
   final AppSettingsController controller;
 
@@ -397,7 +408,7 @@ class _MainLanguageSettingsSheet extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        l10n.language,
+                        l10n.settings,
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -433,6 +444,33 @@ class _MainLanguageSettingsSheet extends StatelessWidget {
                     unawaited(
                       controller.mutate(
                         (current) => current.copyWith(language: value),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 14),
+                DropdownButtonFormField<AppThemeMode>(
+                  key: const ValueKey('main-theme-mode-selector'),
+                  initialValue: settings.appThemeMode,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: l10n.themeMode,
+                  ),
+                  items: AppThemeMode.values
+                      .map(
+                        (mode) => DropdownMenuItem<AppThemeMode>(
+                          value: mode,
+                          child: Text(_themeModeLabel(l10n, mode)),
+                        ),
+                      )
+                      .toList(growable: false),
+                  onChanged: (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    unawaited(
+                      controller.mutate(
+                        (current) => current.copyWith(appThemeMode: value),
                       ),
                     );
                   },

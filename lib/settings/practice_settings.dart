@@ -6,7 +6,28 @@ import 'inversion_settings.dart';
 
 enum AppLanguage { system, en, es, zh, zhHans, ja, ko }
 
+enum AppThemeMode { system, light, dark }
+
 enum MetronomeSound { tick, tickB, tickC, tickD, tickE, tickF }
+
+enum SettingsComplexityMode { guided, standard, advanced }
+
+enum DefaultVoicingSuggestionKind { natural, colorful, easy }
+
+enum ChordLanguageLevel {
+  triadsOnly,
+  seventhChords,
+  safeExtensions,
+  fullExtensions,
+}
+
+enum RomanPoolPreset {
+  corePrimary,
+  coreDiatonic,
+  fullDiatonic,
+  functionalJazz,
+  expandedColor,
+}
 
 enum VoicingComplexity { basic, standard, modern }
 
@@ -78,6 +99,37 @@ extension AppLanguageX on AppLanguage {
   }
 }
 
+extension AppThemeModeX on AppThemeMode {
+  ThemeMode get materialThemeMode {
+    switch (this) {
+      case AppThemeMode.system:
+        return ThemeMode.system;
+      case AppThemeMode.light:
+        return ThemeMode.light;
+      case AppThemeMode.dark:
+        return ThemeMode.dark;
+    }
+  }
+
+  String get storageKey {
+    switch (this) {
+      case AppThemeMode.system:
+        return 'system';
+      case AppThemeMode.light:
+        return 'light';
+      case AppThemeMode.dark:
+        return 'dark';
+    }
+  }
+
+  static AppThemeMode fromStorageKey(String? value) {
+    return AppThemeMode.values.firstWhere(
+      (mode) => mode.storageKey == value,
+      orElse: () => AppThemeMode.system,
+    );
+  }
+}
+
 extension MetronomeSoundX on MetronomeSound {
   String get storageKey {
     switch (this) {
@@ -134,6 +186,50 @@ extension MetronomeSoundX on MetronomeSound {
     return MetronomeSound.values.firstWhere(
       (sound) => sound.storageKey == value,
       orElse: () => MetronomeSound.tick,
+    );
+  }
+}
+
+extension SettingsComplexityModeX on SettingsComplexityMode {
+  String get storageKey => name;
+
+  static SettingsComplexityMode fromStorageKey(String? value) {
+    return SettingsComplexityMode.values.firstWhere(
+      (mode) => mode.storageKey == value,
+      orElse: () => SettingsComplexityMode.guided,
+    );
+  }
+}
+
+extension DefaultVoicingSuggestionKindX on DefaultVoicingSuggestionKind {
+  String get storageKey => name;
+
+  static DefaultVoicingSuggestionKind fromStorageKey(String? value) {
+    return DefaultVoicingSuggestionKind.values.firstWhere(
+      (kind) => kind.storageKey == value,
+      orElse: () => DefaultVoicingSuggestionKind.natural,
+    );
+  }
+}
+
+extension ChordLanguageLevelX on ChordLanguageLevel {
+  String get storageKey => name;
+
+  static ChordLanguageLevel fromStorageKey(String? value) {
+    return ChordLanguageLevel.values.firstWhere(
+      (level) => level.storageKey == value,
+      orElse: () => ChordLanguageLevel.fullExtensions,
+    );
+  }
+}
+
+extension RomanPoolPresetX on RomanPoolPreset {
+  String get storageKey => name;
+
+  static RomanPoolPreset fromStorageKey(String? value) {
+    return RomanPoolPreset.values.firstWhere(
+      (preset) => preset.storageKey == value,
+      orElse: () => RomanPoolPreset.expandedColor,
     );
   }
 }
@@ -209,6 +305,12 @@ class PracticeSettings {
 
   PracticeSettings({
     this.language = AppLanguage.system,
+    this.appThemeMode = AppThemeMode.system,
+    this.guidedSetupCompleted = false,
+    this.settingsComplexityMode = SettingsComplexityMode.guided,
+    this.preferredSuggestionKind = DefaultVoicingSuggestionKind.natural,
+    this.chordLanguageLevel = ChordLanguageLevel.fullExtensions,
+    this.romanPoolPreset = RomanPoolPreset.expandedColor,
     this.metronomeEnabled = true,
     double metronomeVolume = 1,
     this.metronomeSound = MetronomeSound.tick,
@@ -225,6 +327,7 @@ class PracticeSettings {
     this.chordSymbolStyle = ChordSymbolStyle.compact,
     this.allowV7sus4 = false,
     this.allowTensions = false,
+    Set<ChordQuality>? enabledChordQualities,
     Set<String>? selectedTensionOptions,
     InversionSettings? inversionSettings,
     this.voicingSuggestionsEnabled = true,
@@ -251,12 +354,24 @@ class PracticeSettings {
          selectedTensionOptions ??
              const <String>{'9', '11', '13', '#11', 'b9', '#9', 'b13'},
        ),
+       enabledChordQualities = Set.unmodifiable(
+         _sanitizeEnabledChordQualities(
+           enabledChordQualities,
+           allowV7sus4: allowV7sus4,
+         ),
+       ),
        inversionSettings = inversionSettings ?? const InversionSettings(),
        maxVoicingNotes = maxVoicingNotes.clamp(3, 5),
        lookAheadDepth = lookAheadDepth.clamp(0, 2),
        bpm = bpm.clamp(minBpm, maxBpm).toInt();
 
   final AppLanguage language;
+  final AppThemeMode appThemeMode;
+  final bool guidedSetupCompleted;
+  final SettingsComplexityMode settingsComplexityMode;
+  final DefaultVoicingSuggestionKind preferredSuggestionKind;
+  final ChordLanguageLevel chordLanguageLevel;
+  final RomanPoolPreset romanPoolPreset;
   final bool metronomeEnabled;
   final double metronomeVolume;
   final MetronomeSound metronomeSound;
@@ -272,6 +387,7 @@ class PracticeSettings {
   final ChordSymbolStyle chordSymbolStyle;
   final bool allowV7sus4;
   final bool allowTensions;
+  final Set<ChordQuality> enabledChordQualities;
   final Set<String> selectedTensionOptions;
   final InversionSettings inversionSettings;
   final bool voicingSuggestionsEnabled;
@@ -285,12 +401,19 @@ class PracticeSettings {
   final KeyCenterLabelStyle keyCenterLabelStyle;
 
   Locale? get locale => language.locale;
+  ThemeMode get themeMode => appThemeMode.materialThemeMode;
   bool get usesKeyMode => activeKeyCenters.isNotEmpty;
   Set<String> get activeKeys =>
       Set.unmodifiable(activeKeyCenters.map((center) => center.tonicName));
 
   PracticeSettings copyWith({
     AppLanguage? language,
+    AppThemeMode? appThemeMode,
+    bool? guidedSetupCompleted,
+    SettingsComplexityMode? settingsComplexityMode,
+    DefaultVoicingSuggestionKind? preferredSuggestionKind,
+    ChordLanguageLevel? chordLanguageLevel,
+    RomanPoolPreset? romanPoolPreset,
     bool? metronomeEnabled,
     double? metronomeVolume,
     MetronomeSound? metronomeSound,
@@ -307,6 +430,7 @@ class PracticeSettings {
     ChordSymbolStyle? chordSymbolStyle,
     bool? allowV7sus4,
     bool? allowTensions,
+    Set<ChordQuality>? enabledChordQualities,
     Set<String>? selectedTensionOptions,
     InversionSettings? inversionSettings,
     bool? voicingSuggestionsEnabled,
@@ -321,6 +445,14 @@ class PracticeSettings {
   }) {
     return PracticeSettings(
       language: language ?? this.language,
+      appThemeMode: appThemeMode ?? this.appThemeMode,
+      guidedSetupCompleted: guidedSetupCompleted ?? this.guidedSetupCompleted,
+      settingsComplexityMode:
+          settingsComplexityMode ?? this.settingsComplexityMode,
+      preferredSuggestionKind:
+          preferredSuggestionKind ?? this.preferredSuggestionKind,
+      chordLanguageLevel: chordLanguageLevel ?? this.chordLanguageLevel,
+      romanPoolPreset: romanPoolPreset ?? this.romanPoolPreset,
       metronomeEnabled: metronomeEnabled ?? this.metronomeEnabled,
       metronomeVolume: metronomeVolume ?? this.metronomeVolume,
       metronomeSound: metronomeSound ?? this.metronomeSound,
@@ -344,6 +476,8 @@ class PracticeSettings {
       chordSymbolStyle: chordSymbolStyle ?? this.chordSymbolStyle,
       allowV7sus4: allowV7sus4 ?? this.allowV7sus4,
       allowTensions: allowTensions ?? this.allowTensions,
+      enabledChordQualities:
+          enabledChordQualities ?? this.enabledChordQualities,
       selectedTensionOptions:
           selectedTensionOptions ?? this.selectedTensionOptions,
       inversionSettings: inversionSettings ?? this.inversionSettings,
@@ -360,5 +494,22 @@ class PracticeSettings {
       bpm: bpm ?? this.bpm,
       keyCenterLabelStyle: keyCenterLabelStyle ?? this.keyCenterLabelStyle,
     );
+  }
+
+  static Set<ChordQuality> _sanitizeEnabledChordQualities(
+    Set<ChordQuality>? enabledChordQualities, {
+    required bool allowV7sus4,
+  }) {
+    final source =
+        enabledChordQualities ??
+        MusicTheory.defaultGeneratorChordQualities(allowV7sus4: allowV7sus4);
+    final ordered = <ChordQuality>{
+      for (final quality in MusicTheory.supportedGeneratorChordQualities)
+        if (source.contains(quality)) quality,
+    };
+    if (ordered.isNotEmpty) {
+      return ordered;
+    }
+    return MusicTheory.defaultGeneratorChordQualities(allowV7sus4: allowV7sus4);
   }
 }

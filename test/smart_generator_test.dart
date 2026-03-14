@@ -1,4 +1,4 @@
-﻿import 'dart:math';
+import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:chordest/music/chord_theory.dart';
@@ -735,6 +735,50 @@ void main() {
     expect(summary.modalBranchCount, greaterThan(0));
   });
 
+
+  test(
+    'modal branch selection reports modalBranchChosen when modulation candidates exist',
+    () {
+      SmartStepPlan? selectedPlan;
+      for (var seed = 0; seed < 4096; seed += 1) {
+        final plan = SmartGeneratorHelper.planNextStep(
+          random: _FixedRandom(seed),
+          request: buildRequest(
+            stepIndex: 10,
+            activeKeys: const ['C', 'G', 'A'],
+            currentKeyCenter: const KeyCenter(
+              tonicName: 'C',
+              mode: KeyMode.major,
+            ),
+            currentRomanNumeralId: RomanNumeralId.iMaj69,
+            currentHarmonicFunction: HarmonicFunction.tonic,
+            jazzPreset: JazzPreset.modulationStudy,
+            modulationIntensity: ModulationIntensity.high,
+            modalInterchangeEnabled: true,
+            phraseContext: const SmartPhraseContext(
+              phraseRole: PhraseRole.preCadence,
+              sectionRole: SectionRole.aLike,
+              harmonicDensity: HarmonicDensity.oneChordPerBar,
+              barInPhrase: 6,
+              barsToBoundary: 2,
+              phraseLength: 8,
+            ),
+          ),
+        );
+        if (plan.patternTag == 'backdoor_ivm_bVII_I') {
+          selectedPlan = plan;
+          break;
+        }
+      }
+
+      expect(selectedPlan, isNotNull);
+      expect(
+        selectedPlan!.debug.blockedReason,
+        SmartBlockedReason.modalBranchChosen,
+      );
+      expect(selectedPlan.debug.modulationCandidateKeys, isNotEmpty);
+    },
+  );
   test('excluded fallback leaves a trace blocked reason', () {
     final plan = SmartGeneratorHelper.planInitialStep(
       random: _SequenceRandom(const [0, 0, 0, 0]),

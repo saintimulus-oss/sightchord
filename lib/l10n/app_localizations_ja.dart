@@ -21,6 +21,352 @@ class AppLocalizationsJa extends AppLocalizations {
   String get systemDefaultLanguage => 'システムのデフォルト';
 
   @override
+  String get themeMode => 'テーマ';
+
+  @override
+  String get themeModeSystem => 'システム設定';
+
+  @override
+  String get themeModeLight => 'ライト';
+
+  @override
+  String get themeModeDark => 'ダーク';
+
+  @override
+  String get setupAssistantTitle => 'Setup Assistant';
+
+  @override
+  String get setupAssistantSubtitle =>
+      'A few quick choices will make your first practice session feel calmer. You can rerun this anytime.';
+
+  @override
+  String get setupAssistantCurrentMode => 'Current setup';
+
+  @override
+  String get setupAssistantModeGuided => 'Guided mode';
+
+  @override
+  String get setupAssistantModeStandard => 'Standard mode';
+
+  @override
+  String get setupAssistantModeAdvanced => 'Advanced mode';
+
+  @override
+  String get setupAssistantRunAgain => 'Run setup assistant again';
+
+  @override
+  String get setupAssistantCardBody =>
+      'Use a gentler profile now, then open advanced controls whenever you want more room.';
+
+  @override
+  String get setupAssistantPreparingTitle => 'We\'ll start gently';
+
+  @override
+  String get setupAssistantPreparingBody =>
+      'Before the generator shows any chords, we\'ll set up a comfortable starting point in a few taps.';
+
+  @override
+  String setupAssistantProgress(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get setupAssistantSkip => 'Skip';
+
+  @override
+  String get setupAssistantBack => 'Back';
+
+  @override
+  String get setupAssistantNext => 'Next';
+
+  @override
+  String get setupAssistantApply => 'Apply';
+
+  @override
+  String get setupAssistantGoalQuestionTitle =>
+      'What would you like this generator to help with first?';
+
+  @override
+  String get setupAssistantGoalQuestionBody =>
+      'Pick the one that sounds closest. Nothing here is permanent.';
+
+  @override
+  String get setupAssistantGoalEarTitle => 'Hear and recognize chords';
+
+  @override
+  String get setupAssistantGoalEarBody =>
+      'Short, friendly prompts for listening and recognition.';
+
+  @override
+  String get setupAssistantGoalKeyboardTitle => 'Keyboard hand practice';
+
+  @override
+  String get setupAssistantGoalKeyboardBody =>
+      'Simple shapes and readable symbols for your hands first.';
+
+  @override
+  String get setupAssistantGoalSongTitle => 'Song ideas';
+
+  @override
+  String get setupAssistantGoalSongBody =>
+      'Keep the generator musical without dumping you into chaos.';
+
+  @override
+  String get setupAssistantGoalHarmonyTitle => 'Harmony study';
+
+  @override
+  String get setupAssistantGoalHarmonyBody =>
+      'Start clear, then leave room to grow into deeper harmony.';
+
+  @override
+  String get setupAssistantLiteracyQuestionTitle =>
+      'Which sentence feels closest right now?';
+
+  @override
+  String get setupAssistantLiteracyQuestionBody =>
+      'Choose the most comfortable answer, not the most ambitious one.';
+
+  @override
+  String get setupAssistantLiteracyAbsoluteTitle =>
+      'C, Cm, C7, and Cmaj7 still blur together';
+
+  @override
+  String get setupAssistantLiteracyAbsoluteBody =>
+      'Keep things extra readable and familiar.';
+
+  @override
+  String get setupAssistantLiteracyBasicTitle => 'I can read maj7 / m7 / 7';
+
+  @override
+  String get setupAssistantLiteracyBasicBody =>
+      'Stay safe, but allow a little more range.';
+
+  @override
+  String get setupAssistantLiteracyFunctionalTitle =>
+      'I mostly follow ii-V-I and diatonic function';
+
+  @override
+  String get setupAssistantLiteracyFunctionalBody =>
+      'Keep the harmony clear with a bit more motion.';
+
+  @override
+  String get setupAssistantLiteracyAdvancedTitle =>
+      'Colorful reharmonization and extensions already feel familiar';
+
+  @override
+  String get setupAssistantLiteracyAdvancedBody =>
+      'Leave more of the power-user range available.';
+
+  @override
+  String get setupAssistantHandQuestionTitle =>
+      'How comfortable do your hands feel on keys?';
+
+  @override
+  String get setupAssistantHandQuestionBody =>
+      'We\'ll use this to keep voicings playable.';
+
+  @override
+  String get setupAssistantHandThreeTitle => 'Three-note shapes feel best';
+
+  @override
+  String get setupAssistantHandThreeBody => 'Keep the hand shape compact.';
+
+  @override
+  String get setupAssistantHandFourTitle => 'Four notes are okay';
+
+  @override
+  String get setupAssistantHandFourBody => 'Allow a little more spread.';
+
+  @override
+  String get setupAssistantHandJazzTitle => 'Jazzier shapes feel comfortable';
+
+  @override
+  String get setupAssistantHandJazzBody =>
+      'Open the door to larger voicings later.';
+
+  @override
+  String get setupAssistantColorQuestionTitle =>
+      'How colorful should the sound feel at first?';
+
+  @override
+  String get setupAssistantColorQuestionBody => 'When in doubt, start simpler.';
+
+  @override
+  String get setupAssistantColorSafeTitle => 'Safe and familiar';
+
+  @override
+  String get setupAssistantColorSafeBody =>
+      'Stay close to classic, readable harmony.';
+
+  @override
+  String get setupAssistantColorJazzyTitle => 'A little jazzy';
+
+  @override
+  String get setupAssistantColorJazzyBody =>
+      'Add a touch of color without getting wild.';
+
+  @override
+  String get setupAssistantColorColorfulTitle => 'Quite colorful';
+
+  @override
+  String get setupAssistantColorColorfulBody =>
+      'Leave more room for modern color.';
+
+  @override
+  String get setupAssistantSymbolQuestionTitle =>
+      'Which chord spelling feels easiest to read?';
+
+  @override
+  String get setupAssistantSymbolQuestionBody =>
+      'This only changes how the chord is shown.';
+
+  @override
+  String get setupAssistantSymbolMajTextBody => 'Clear and beginner-friendly.';
+
+  @override
+  String get setupAssistantSymbolCompactBody =>
+      'Shorter if you already like compact symbols.';
+
+  @override
+  String get setupAssistantSymbolDeltaBody =>
+      'Jazz-style if that is what your eyes expect.';
+
+  @override
+  String get setupAssistantKeyQuestionTitle => 'Which key should we start in?';
+
+  @override
+  String get setupAssistantKeyQuestionBody =>
+      'C major is the easiest default, but you can change it later.';
+
+  @override
+  String get setupAssistantKeyCMajorBody => 'Best beginner starting point.';
+
+  @override
+  String get setupAssistantKeyGMajorBody =>
+      'A bright major key with one sharp.';
+
+  @override
+  String get setupAssistantKeyFMajorBody => 'A warm major key with one flat.';
+
+  @override
+  String get setupAssistantPreviewTitle => 'Try your first result';
+
+  @override
+  String get setupAssistantPreviewBody =>
+      'This is about what the generator will feel like. You can make it simpler or a little jazzier before you start.';
+
+  @override
+  String get setupAssistantPreviewListen => 'Hear this sample';
+
+  @override
+  String get setupAssistantPreviewPlaying => 'Playing sample...';
+
+  @override
+  String get setupAssistantStartNow => 'Start with this';
+
+  @override
+  String get setupAssistantAdjustEasier => 'Make it easier';
+
+  @override
+  String get setupAssistantAdjustJazzier => 'A little more jazzy';
+
+  @override
+  String get setupAssistantPreviewKeyLabel => 'Key';
+
+  @override
+  String get setupAssistantPreviewNotationLabel => 'Notation';
+
+  @override
+  String get setupAssistantPreviewDifficultyLabel => 'Feel';
+
+  @override
+  String get setupAssistantPreviewProgressionLabel => 'Sample progression';
+
+  @override
+  String get setupAssistantPreviewProgressionBody =>
+      'A short four-chord sample built from your setup.';
+
+  @override
+  String get setupAssistantPreviewSummaryAbsolute => 'Beginner-friendly start';
+
+  @override
+  String get setupAssistantPreviewSummaryBasic =>
+      'Readable seventh-chord start';
+
+  @override
+  String get setupAssistantPreviewSummaryFunctional =>
+      'Functional harmony start';
+
+  @override
+  String get setupAssistantPreviewSummaryAdvanced => 'Colorful jazz start';
+
+  @override
+  String get setupAssistantPreviewBodyTriads =>
+      'Mostly familiar triads in a safe key, with compact voicings and no spicy surprises.';
+
+  @override
+  String get setupAssistantPreviewBodySevenths =>
+      'maj7, m7, and 7 show up clearly, while the progression still stays calm and readable.';
+
+  @override
+  String get setupAssistantPreviewBodySafeExtensions =>
+      'A little extra color can appear, but it stays within safe, familiar extensions.';
+
+  @override
+  String get setupAssistantPreviewBodyFullExtensions =>
+      'The preview leaves more room for modern color, richer movement, and denser harmony.';
+
+  @override
+  String get setupAssistantNotationMajText => 'Cmaj7 style';
+
+  @override
+  String get setupAssistantNotationCompact => 'CM7 style';
+
+  @override
+  String get setupAssistantNotationDelta => 'CΔ7 style';
+
+  @override
+  String get setupAssistantDifficultyTriads =>
+      'Simple triads and core movement';
+
+  @override
+  String get setupAssistantDifficultySevenths => 'maj7 / m7 / 7 centered';
+
+  @override
+  String get setupAssistantDifficultySafeExtensions =>
+      'Safe color with 9 / 11 / 13';
+
+  @override
+  String get setupAssistantDifficultyFullExtensions =>
+      'Full color and wider motion';
+
+  @override
+  String get setupAssistantStudyHarmonyTitle =>
+      'Want a gentler theory path too?';
+
+  @override
+  String get setupAssistantStudyHarmonyBody =>
+      'Study Harmony can walk you through the basics while this generator stays in a safe lane.';
+
+  @override
+  String get setupAssistantStudyHarmonyCta => 'Start Study Harmony';
+
+  @override
+  String get setupAssistantGuidedSettingsTitle =>
+      'Beginner-friendly setup is on';
+
+  @override
+  String get setupAssistantGuidedSettingsBody =>
+      'Core controls stay close by here. Everything else is still available when you want it.';
+
+  @override
+  String get setupAssistantAdvancedSectionTitle => 'More controls';
+
+  @override
+  String get setupAssistantAdvancedSectionBody =>
+      'Open the full settings page if you want every generator option.';
+
+  @override
   String get metronome => 'メトロノーム';
 
   @override
@@ -178,6 +524,35 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get allowTensions => '緊張を許容する';
+
+  @override
+  String get chordTypeFilters => 'コード種類';
+
+  @override
+  String get chordTypeFiltersHelp => 'ジェネレーターに表示するコード種類を選択します。';
+
+  @override
+  String chordTypeFiltersSelection(int selected, int total) {
+    return '$selected / $total 有効';
+  }
+
+  @override
+  String get chordTypeGroupTriads => 'トライアド';
+
+  @override
+  String get chordTypeGroupSevenths => 'セブンス';
+
+  @override
+  String get chordTypeGroupSixthsAndAddedTone => '6th と付加音';
+
+  @override
+  String get chordTypeGroupDominantVariants => 'ドミナント・バリエーション';
+
+  @override
+  String get chordTypeRequiresKeyMode => 'V7sus4 はキーを 1 つ以上選択したときのみ利用できます。';
+
+  @override
+  String get chordTypeKeepOneEnabled => '少なくとも 1 つのコード種類を有効にしてください。';
 
   @override
   String get tensionHelp => 'ローマ数字 プロファイルと選択されたチップのみ';

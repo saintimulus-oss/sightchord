@@ -20,6 +20,8 @@ import 'music/voicing_session_state.dart';
 import 'settings/practice_settings.dart';
 import 'settings/practice_settings_effects.dart';
 import 'settings/practice_advanced_settings_page.dart';
+import 'settings/practice_setup_assistant.dart';
+import 'settings/practice_settings_factory.dart';
 import 'settings/practice_settings_drawer.dart';
 import 'settings/settings_controller.dart';
 import 'smart_generator.dart';
@@ -52,10 +54,16 @@ class _PracticeHistoryEntry {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title, required this.controller});
+  const MyHomePage({
+    super.key,
+    required this.title,
+    required this.controller,
+    this.onOpenStudyHarmony,
+  });
 
   final String title;
   final AppSettingsController controller;
+  final VoidCallback? onOpenStudyHarmony;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -76,6 +84,8 @@ class _MyHomePageState extends State<MyHomePage> {
   final Random _random = Random();
   late final MetronomeAudioService _metronomeAudio;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<_ChordSwipeSurfaceState> _chordSwipeSurfaceKey =
+      GlobalKey<_ChordSwipeSurfaceState>();
   late final TextEditingController _bpmController;
 
   Timer? _autoTimer;
@@ -85,6 +95,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int? _currentBeat;
   int _nextScheduledMetronomeSequence = 0;
   bool _autoRunning = false;
+  bool _practiceSessionInitialized = false;
+  bool _setupAssistantScheduled = false;
   double? _scheduledMetronomeBaseTimeSeconds;
   bool _requestedHarmonyAudioWarmUp = false;
   HarmonyAudioService? _harmonyAudio;
@@ -108,6 +120,9 @@ class _MyHomePageState extends State<MyHomePage> {
       _voicingState.continuityReferenceVoicing;
   String? get _lastLoggedVoicingDiagnosticKey =>
       _voicingState.lastLoggedDiagnosticKey;
+  bool get _usesGuidedSettingsMode =>
+      _settings.settingsComplexityMode == SettingsComplexityMode.guided;
+  bool get _isSetupAssistantRequired => !_settings.guidedSetupCompleted;
 
   @override
   void initState() {
@@ -115,8 +130,56 @@ class _MyHomePageState extends State<MyHomePage> {
     _metronomeAudio = MetronomeAudioService(logWarning: _logAudioWarning);
     _bpmController = TextEditingController(text: '${_settings.bpm}');
     unawaited(_initAudio());
+    if (_isSetupAssistantRequired) {
+      _scheduleFirstRunSetupAssistant();
+    } else {
+      _initializePracticeSession();
+    }
+  }
+
+  void _initializePracticeSession() {
+    _practiceSessionInitialized = true;
     _ensureChordQueueInitialized();
     _recomputeVoicingSuggestions();
+  }
+
+  void _scheduleFirstRunSetupAssistant() {
+    if (_setupAssistantScheduled) {
+      return;
+    }
+    _setupAssistantScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_runSetupAssistant(mandatory: true));
+    });
+  }
+
+  Future<void> _runSetupAssistant({required bool mandatory}) async {
+    if (!mounted) {
+      return;
+    }
+    if (_autoRunning) {
+      _stopAutoPlay();
+    }
+    final nextSettings = await showPracticeSetupAssistant(
+      context: context,
+      currentSettings: _settings,
+      mandatory: mandatory,
+      onOpenStudyHarmony: widget.onOpenStudyHarmony,
+    );
+    if (!mounted) {
+      return;
+    }
+    final resolvedSettings =
+        nextSettings ??
+        (mandatory
+            ? PracticeSettingsFactory.beginnerSafePreset(
+                baseSettings: _settings,
+              )
+            : null);
+    if (resolvedSettings == null) {
+      return;
+    }
+    _applySettings(resolvedSettings, reseed: true, syncBpmText: true);
   }
 
   @override
@@ -186,6 +249,76 @@ class _MyHomePageState extends State<MyHomePage> {
       for (final center in MusicTheory.orderedKeyCentersForMode(mode))
         if (_settings.activeKeyCenters.contains(center)) center,
   ];
+
+  bool get _allowsSusDominantQualities =>
+      _settings.allowV7sus4 &&
+      _settings.enabledChordQualities.any(
+        MusicTheory.susDominantQualities.contains,
+      );
+
+  Set<ChordQuality> get _activeChordQualities {
+    final enabled = <ChordQuality>{
+      for (final quality in MusicTheory.supportedGeneratorChordQualities)
+        if (_settings.enabledChordQualities.contains(quality) &&
+            (_usesKeyMode ||
+                !MusicTheory.isKeyModeOnlyGeneratorQuality(quality)) &&
+            (!_isSusDominantQuality(quality) || _allowsSusDominantQualities))
+          quality,
+    };
+    if (enabled.isNotEmpty) {
+      return enabled;
+    }
+    return {
+      for (final quality in MusicTheory.defaultGeneratorChordQualities(
+        allowV7sus4: _allowsSusDominantQualities,
+      ))
+        if (_usesKeyMode || !MusicTheory.isKeyModeOnlyGeneratorQuality(quality))
+          quality,
+    };
+  }
+
+  bool _isSusDominantQuality(ChordQuality quality) {
+    return MusicTheory.susDominantQualities.contains(quality);
+  }
+
+  String _tonicRootForKeyCenter(KeyCenter keyCenter) {
+    final tonicRoman = keyCenter.mode == KeyMode.major
+        ? RomanNumeralId.iMaj7
+        : RomanNumeralId.iMin7;
+    return MusicTheory.resolveChordRootForCenter(keyCenter, tonicRoman);
+  }
+
+  GeneratedChord _fallbackGeneratedChord({KeyCenter? keyCenter}) {
+    final quality = _activeChordQualities.first;
+    final root = keyCenter == null
+        ? MusicTheory.freeModeRoots.first
+        : _tonicRootForKeyCenter(keyCenter);
+    final safeQuality = quality == ChordQuality.dominant7sus4
+        ? ChordQuality.dominant7
+        : quality;
+    return _buildFreeGeneratedChord(root, safeQuality);
+  }
+
+  GeneratedChord _fallbackKeyModeChord(List<KeyCenter> keyCenters) {
+    for (final keyCenter in keyCenters) {
+      for (final roman in SmartGeneratorHelper.diatonicRomansForPool(
+        keyMode: keyCenter.mode,
+        romanPoolPreset: _settings.romanPoolPreset,
+      )) {
+        final chord = _buildGeneratedChord(
+          keyCenter.tonicName,
+          roman,
+          keyCenter: keyCenter,
+        );
+        if (chord != null) {
+          return chord;
+        }
+      }
+    }
+    return _fallbackGeneratedChord(
+      keyCenter: keyCenters.isEmpty ? null : keyCenters.first,
+    );
+  }
 
   void _applySettings(
     PracticeSettings nextSettings, {
@@ -262,6 +395,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _reseedChordQueue() {
+    _practiceSessionInitialized = true;
     _practiceHistory.clear();
     _queueState = _queueState.reset();
     _voicingState = _voicingState.reset();
@@ -380,6 +514,13 @@ class _MyHomePageState extends State<MyHomePage> {
     return _voicingState.authoritativeSelectedVoicing;
   }
 
+  VoicingSuggestionKind get _preferredVoicingSuggestionKind =>
+      switch (_settings.preferredSuggestionKind) {
+        DefaultVoicingSuggestionKind.natural => VoicingSuggestionKind.natural,
+        DefaultVoicingSuggestionKind.colorful => VoicingSuggestionKind.colorful,
+        DefaultVoicingSuggestionKind.easy => VoicingSuggestionKind.easy,
+      };
+
   void _promoteChordQueue() {
     _voicingState = _voicingState.promoteChordQueue();
     final nextCurrentChord =
@@ -412,7 +553,10 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     final recommendations = VoicingEngine.recommend(context: context);
-    _voicingState = _voicingState.applyRecommendations(recommendations);
+    _voicingState = _voicingState.applyRecommendations(
+      recommendations,
+      preferredKind: _preferredVoicingSuggestionKind,
+    );
 
     if (_settings.smartDiagnosticsEnabled &&
         recommendations.suggestions.isNotEmpty) {
@@ -471,13 +615,11 @@ class _MyHomePageState extends State<MyHomePage> {
     GeneratedChord? current,
   }) {
     if (!_usesKeyMode) {
+      final qualities = _activeChordQualities.toList(growable: false);
       while (true) {
         final root = MusicTheory
             .freeModeRoots[_random.nextInt(MusicTheory.freeModeRoots.length)];
-        final quality =
-            MusicTheory.freeModeQualities[_random.nextInt(
-              MusicTheory.freeModeQualities.length,
-            )];
+        final quality = qualities[_random.nextInt(qualities.length)];
         final generatedChord = _buildFreeGeneratedChord(root, quality);
         if (!_isExcludedCandidate(generatedChord, exclusionContext)) {
           return generatedChord;
@@ -487,10 +629,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final keyCenters = _orderedKeyCenters;
     if (keyCenters.isEmpty) {
-      return _buildGeneratedChord(
-        MusicTheory.keyOptions.first,
-        RomanNumeralId.iMaj7,
-      );
+      return _fallbackGeneratedChord();
     }
     if (_settings.smartGeneratorMode) {
       return _generateSmartChord(
@@ -526,6 +665,7 @@ class _MyHomePageState extends State<MyHomePage> {
       selectedTensionOptions: _settings.selectedTensionOptions,
       suppressTensions: false,
       inversionSettings: _settings.inversionSettings,
+      chordLanguageLevel: _settings.chordLanguageLevel,
     );
     final repeatGuardKey = ChordRenderingHelper.buildRepeatGuardKey(
       keyName: null,
@@ -555,7 +695,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  GeneratedChord _buildGeneratedChord(
+  GeneratedChord? _buildGeneratedChord(
     String key,
     RomanNumeralId romanNumeralId, {
     KeyCenter? keyCenter,
@@ -579,8 +719,10 @@ class _MyHomePageState extends State<MyHomePage> {
     final comparison = SmartGeneratorHelper.compareVoiceLeadingCandidates(
       random: _random,
       previousChord: previousChord,
-      allowV7sus4: _settings.allowV7sus4,
+      allowV7sus4: _allowsSusDominantQualities,
+      allowedRenderQualities: _activeChordQualities,
       allowTensions: _settings.allowTensions,
+      chordLanguageLevel: _settings.chordLanguageLevel,
       selectedTensionOptions: _settings.selectedTensionOptions,
       inversionSettings: _settings.inversionSettings,
       debugChordStyle: _settings.chordSymbolStyle,
@@ -601,6 +743,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ],
     );
+    if (comparison.rankedCandidates.isEmpty) {
+      return null;
+    }
     for (final candidate in comparison.rankedCandidates) {
       if (!_isExcludedCandidate(candidate.chord, exclusionContext)) {
         return candidate.chord;
@@ -648,8 +793,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Map<RomanNumeralId, int> _randomKeyModeRomanWeightsFor(KeyMode mode) {
-    if (mode == KeyMode.minor) {
-      return const {
+    final baseWeights = mode == KeyMode.minor
+        ? const {
         RomanNumeralId.iMinMaj7: 16,
         RomanNumeralId.iMin7: 14,
         RomanNumeralId.iMin6: 12,
@@ -659,19 +804,18 @@ class _MyHomePageState extends State<MyHomePage> {
         RomanNumeralId.vDom7: 16,
         RomanNumeralId.flatVIMaj7Minor: 10,
         RomanNumeralId.flatVIIDom7Minor: 10,
-      };
-    }
-
-    final weights = <RomanNumeralId, int>{
-      RomanNumeralId.iMaj7: 18,
-      RomanNumeralId.iiMin7: 16,
-      RomanNumeralId.iiiMin7: 10,
-      RomanNumeralId.ivMaj7: 14,
-      RomanNumeralId.vDom7: 18,
-      RomanNumeralId.viMin7: 14,
-      RomanNumeralId.viiHalfDiminished7: 10,
-    };
-    if (_settings.modalInterchangeEnabled) {
+      }
+        : <RomanNumeralId, int>{
+            RomanNumeralId.iMaj7: 18,
+            RomanNumeralId.iiMin7: 16,
+            RomanNumeralId.iiiMin7: 10,
+            RomanNumeralId.ivMaj7: 14,
+            RomanNumeralId.vDom7: 18,
+            RomanNumeralId.viMin7: 14,
+            RomanNumeralId.viiHalfDiminished7: 10,
+          };
+    final weights = <RomanNumeralId, int>{...baseWeights};
+    if (mode == KeyMode.major && _settings.modalInterchangeEnabled) {
       weights.addAll(const {
         RomanNumeralId.borrowedIvMin7: 4,
         RomanNumeralId.borrowedFlatVII7: 3,
@@ -681,7 +825,7 @@ class _MyHomePageState extends State<MyHomePage> {
         RomanNumeralId.borrowedFlatIIMaj7: 1,
       });
     }
-    if (_settings.secondaryDominantEnabled) {
+    if (mode == KeyMode.major && _settings.secondaryDominantEnabled) {
       weights.addAll(const {
         RomanNumeralId.secondaryOfII: 5,
         RomanNumeralId.secondaryOfIII: 5,
@@ -690,7 +834,7 @@ class _MyHomePageState extends State<MyHomePage> {
         RomanNumeralId.secondaryOfVI: 5,
       });
     }
-    if (_settings.substituteDominantEnabled) {
+    if (mode == KeyMode.major && _settings.substituteDominantEnabled) {
       weights.addAll(const {
         RomanNumeralId.substituteOfII: 2,
         RomanNumeralId.substituteOfIII: 2,
@@ -699,11 +843,23 @@ class _MyHomePageState extends State<MyHomePage> {
         RomanNumeralId.substituteOfVI: 2,
       });
     }
-    return weights;
+    final filtered = <RomanNumeralId, int>{
+      for (final entry in weights.entries)
+        if (SmartGeneratorHelper.allowsRomanForPool(
+          romanNumeralId: entry.key,
+          romanPoolPreset: _settings.romanPoolPreset,
+        ))
+          entry.key: entry.value,
+    };
+    return filtered.isNotEmpty ? filtered : _diatonicRomanWeightsFor(mode);
   }
 
   Map<RomanNumeralId, int> _diatonicRomanWeightsFor(KeyMode mode) => {
-    for (final roman in MusicTheory.diatonicRomansForMode(mode)) roman: 1,
+    for (final roman in SmartGeneratorHelper.diatonicRomansForPool(
+      keyMode: mode,
+      romanPoolPreset: _settings.romanPoolPreset,
+    ))
+      roman: 1,
   };
 
   List<_WeightedGeneratedChordCandidate> _buildWeightedKeyModeCandidates({
@@ -724,6 +880,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 entry.key,
                 keyCenter: keyCenter,
               );
+              if (chord == null) {
+                return null;
+              }
               if (_isExcludedCandidate(chord, exclusionContext)) {
                 return null;
               }
@@ -763,14 +922,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (candidates.isNotEmpty) {
       return _pickWeightedChord(candidates);
     }
-    final fallbackCenter = keyCenters.first;
-    return _buildGeneratedChord(
-      fallbackCenter.tonicName,
-      fallbackCenter.mode == KeyMode.major
-          ? RomanNumeralId.iMaj7
-          : RomanNumeralId.iMin7,
-      keyCenter: fallbackCenter,
-    );
+    return _fallbackKeyModeChord(keyCenters);
   }
 
   GeneratedChord _generateRandomDiatonicChord({
@@ -801,15 +953,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return fallbackCandidates[_random.nextInt(fallbackCandidates.length)]
           .chord;
     }
-
-    final fallbackCenter = keyCenters.first;
-    return _buildGeneratedChord(
-      fallbackCenter.tonicName,
-      fallbackCenter.mode == KeyMode.major
-          ? RomanNumeralId.iMaj7
-          : RomanNumeralId.iMin7,
-      keyCenter: fallbackCenter,
-    );
+    return _fallbackKeyModeChord(preferredCenters);
   }
 
   GeneratedChord? _buildFamilyAwareFallbackChord({
@@ -825,8 +969,10 @@ class _MyHomePageState extends State<MyHomePage> {
     final comparison = SmartGeneratorHelper.compareVoiceLeadingCandidates(
       random: _random,
       previousChord: previousChord,
-      allowV7sus4: _settings.allowV7sus4,
+      allowV7sus4: _allowsSusDominantQualities,
+      allowedRenderQualities: _activeChordQualities,
       allowTensions: _settings.allowTensions,
+      chordLanguageLevel: _settings.chordLanguageLevel,
       selectedTensionOptions: _settings.selectedTensionOptions,
       inversionSettings: _settings.inversionSettings,
       debugChordStyle: _settings.chordSymbolStyle,
@@ -862,6 +1008,9 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
       ],
     );
+    if (comparison.rankedCandidates.isEmpty) {
+      return null;
+    }
     for (final candidate in comparison.rankedCandidates) {
       if (!_isExcludedCandidate(candidate.chord, exclusionContext)) {
         return candidate.chord;
@@ -892,8 +1041,10 @@ class _MyHomePageState extends State<MyHomePage> {
           modulationIntensity: _settings.modulationIntensity,
           jazzPreset: _settings.jazzPreset,
           sourceProfile: _settings.sourceProfile,
-          allowV7sus4: _settings.allowV7sus4,
+          allowV7sus4: _allowsSusDominantQualities,
           allowTensions: _settings.allowTensions,
+          chordLanguageLevel: _settings.chordLanguageLevel,
+          romanPoolPreset: _settings.romanPoolPreset,
           selectedTensionOptions: _settings.selectedTensionOptions,
           inversionSettings: _settings.inversionSettings,
           smartDiagnosticsEnabled: _settings.smartDiagnosticsEnabled,
@@ -917,7 +1068,8 @@ class _MyHomePageState extends State<MyHomePage> {
         smartDebug: initialPlan.debug,
         exclusionContext: exclusionContext,
       );
-      if (!_isExcludedCandidate(seededChord, exclusionContext)) {
+      if (seededChord != null &&
+          !_isExcludedCandidate(seededChord, exclusionContext)) {
         return _emitSmartDebug(seededChord);
       }
       final initialFallback = _buildFamilyAwareFallbackChord(
@@ -969,8 +1121,10 @@ class _MyHomePageState extends State<MyHomePage> {
         modulationIntensity: _settings.modulationIntensity,
         jazzPreset: _settings.jazzPreset,
         sourceProfile: _settings.sourceProfile,
-        allowV7sus4: _settings.allowV7sus4,
+        allowV7sus4: _allowsSusDominantQualities,
         allowTensions: _settings.allowTensions,
+        chordLanguageLevel: _settings.chordLanguageLevel,
+        romanPoolPreset: _settings.romanPoolPreset,
         selectedTensionOptions: _settings.selectedTensionOptions,
         inversionSettings: _settings.inversionSettings,
         smartDiagnosticsEnabled: _settings.smartDiagnosticsEnabled,
@@ -1006,7 +1160,8 @@ class _MyHomePageState extends State<MyHomePage> {
       exclusionContext: exclusionContext,
       previousChord: current,
     );
-    if (!_isExcludedCandidate(generatedChord, exclusionContext)) {
+    if (generatedChord != null &&
+        !_isExcludedCandidate(generatedChord, exclusionContext)) {
       return _emitSmartDebug(generatedChord);
     }
 
@@ -1070,12 +1225,23 @@ class _MyHomePageState extends State<MyHomePage> {
     unawaited(_metronomeAudio.playNow(volume: _settings.metronomeVolume));
   }
 
-  void _advanceChordUnawaited() {
-    _advanceChord();
+  void _requestAdvanceChord() {
+    if (!_practiceSessionInitialized) {
+      return;
+    }
+    final swipeSurfaceState = _chordSwipeSurfaceKey.currentState;
+    if (swipeSurfaceState == null) {
+      _performManualAdvanceChord();
+      return;
+    }
+    if (swipeSurfaceState.isTransitioning) {
+      return;
+    }
+    swipeSurfaceState.animateAdvance();
   }
 
-  void _advanceChord() {
-    if (!mounted) {
+  void _performManualAdvanceChord() {
+    if (!mounted || !_practiceSessionInitialized) {
       return;
     }
     _recordPracticeHistory();
@@ -1086,8 +1252,18 @@ class _MyHomePageState extends State<MyHomePage> {
     _playMetronomeIfNeeded();
   }
 
+  void _performAutoAdvanceChord() {
+    if (!mounted || !_practiceSessionInitialized) {
+      return;
+    }
+    _recordPracticeHistory();
+    setState(() {
+      _promoteChordQueue();
+    });
+  }
+
   void _handleAutoTick() {
-    if (!mounted) {
+    if (!mounted || !_practiceSessionInitialized) {
       return;
     }
     var shouldAdvanceChord = false;
@@ -1103,10 +1279,12 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-    _recordPracticeHistory();
-    setState(() {
-      _promoteChordQueue();
-    });
+    final swipeSurfaceState = _chordSwipeSurfaceKey.currentState;
+    if (swipeSurfaceState == null || swipeSurfaceState.isTransitioning) {
+      _performAutoAdvanceChord();
+      return;
+    }
+    swipeSurfaceState.animateAdvance(onCompleted: _performAutoAdvanceChord);
   }
 
   void _runDueAutoTicks() {
@@ -1255,6 +1433,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _startAutoPlay() {
+    if (!_practiceSessionInitialized) {
+      return;
+    }
     setState(() {
       _autoRunning = true;
       _currentBeat = null;
@@ -1270,6 +1451,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _toggleAutoPlay() {
+    if (!_practiceSessionInitialized && !_autoRunning) {
+      return;
+    }
     if (_autoRunning) {
       _stopAutoPlay();
       return;

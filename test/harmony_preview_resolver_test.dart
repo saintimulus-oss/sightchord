@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:chordest/audio/harmony_preview_resolver.dart';
 import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/music/progression_analysis_models.dart';
@@ -35,6 +35,98 @@ void main() {
     expect(
       clip.notes.map((note) => note.toneLabel),
       containsAll(<String>['3', '7', '9']),
+    );
+  });
+
+  test('keeps added tones when rendering parsed chord previews', () {
+    final clip = HarmonyPreviewResolver.fromParsedChord(
+      const ParsedChord(
+        sourceSymbol: 'Cadd9',
+        root: 'C',
+        rootSemitone: 0,
+        displayQuality: ChordQuality.majorTriad,
+        analysisFamily: ChordFamily.major,
+        measureIndex: 0,
+        positionInMeasure: 0,
+        addedTones: <String>['9'],
+      ),
+    );
+
+    expect(clip.notes.map((note) => note.toneLabel), contains('9'));
+  });
+
+  test('applies suspensions and omissions to parsed chord previews', () {
+    final suspended = HarmonyPreviewResolver.fromParsedChord(
+      const ParsedChord(
+        sourceSymbol: 'Csus4',
+        root: 'C',
+        rootSemitone: 0,
+        displayQuality: ChordQuality.majorTriad,
+        analysisFamily: ChordFamily.major,
+        measureIndex: 0,
+        positionInMeasure: 0,
+        suspensions: <String>['4'],
+      ),
+    );
+    final omitted = HarmonyPreviewResolver.fromParsedChord(
+      const ParsedChord(
+        sourceSymbol: 'Cmaj7omit5',
+        root: 'C',
+        rootSemitone: 0,
+        displayQuality: ChordQuality.major7,
+        analysisFamily: ChordFamily.major,
+        measureIndex: 0,
+        positionInMeasure: 0,
+        omittedTones: <String>['5'],
+      ),
+    );
+
+    expect(suspended.notes.map((note) => note.toneLabel), contains('4'));
+    expect(suspended.notes.map((note) => note.toneLabel), isNot(contains('3')));
+    expect(omitted.notes.map((note) => note.toneLabel), isNot(contains('5')));
+  });
+
+  test(
+    'preserves explicit altered extensions in rich parsed chord previews',
+    () {
+      final clip = HarmonyPreviewResolver.fromParsedChord(
+        const ParsedChord(
+          sourceSymbol: 'G7(b9,#11,b13)',
+          root: 'G',
+          rootSemitone: 7,
+          displayQuality: ChordQuality.dominant7Sharp11,
+          analysisFamily: ChordFamily.dominant,
+          measureIndex: 0,
+          positionInMeasure: 0,
+          tensions: <String>['b9', '#11', 'b13'],
+          alterations: <String>['b9', '#11', 'b13'],
+        ),
+      );
+
+      expect(
+        clip.notes.map((note) => note.toneLabel),
+        containsAll(<String>['b9', '#11', 'b13']),
+      );
+    },
+  );
+
+  test('gives alt chords representative altered colors in previews', () {
+    final clip = HarmonyPreviewResolver.fromParsedChord(
+      const ParsedChord(
+        sourceSymbol: 'G7alt',
+        root: 'G',
+        rootSemitone: 7,
+        displayQuality: ChordQuality.dominant7Alt,
+        analysisFamily: ChordFamily.dominant,
+        measureIndex: 0,
+        positionInMeasure: 0,
+        alterations: <String>['alt'],
+      ),
+    );
+
+    expect(
+      clip.notes.map((note) => note.toneLabel),
+      containsAll(<String>['b9', '#5']),
     );
   });
 
@@ -84,4 +176,3 @@ void main() {
     ]);
   });
 }
-

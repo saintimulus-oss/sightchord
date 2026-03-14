@@ -456,6 +456,8 @@ class SmartStartRequest {
     required this.sourceProfile,
     this.allowV7sus4 = true,
     this.allowTensions = true,
+    this.chordLanguageLevel = ChordLanguageLevel.fullExtensions,
+    this.romanPoolPreset = RomanPoolPreset.expandedColor,
     this.selectedTensionOptions,
     this.inversionSettings = const InversionSettings(),
     required this.smartDiagnosticsEnabled,
@@ -471,6 +473,8 @@ class SmartStartRequest {
   final SourceProfile sourceProfile;
   final bool allowV7sus4;
   final bool allowTensions;
+  final ChordLanguageLevel chordLanguageLevel;
+  final RomanPoolPreset romanPoolPreset;
   final Set<String>? selectedTensionOptions;
   final InversionSettings inversionSettings;
   final bool smartDiagnosticsEnabled;
@@ -493,6 +497,8 @@ class SmartStepRequest {
     required this.sourceProfile,
     this.allowV7sus4 = true,
     this.allowTensions = true,
+    this.chordLanguageLevel = ChordLanguageLevel.fullExtensions,
+    this.romanPoolPreset = RomanPoolPreset.expandedColor,
     this.selectedTensionOptions,
     this.inversionSettings = const InversionSettings(),
     required this.smartDiagnosticsEnabled,
@@ -521,6 +527,8 @@ class SmartStepRequest {
   final SourceProfile sourceProfile;
   final bool allowV7sus4;
   final bool allowTensions;
+  final ChordLanguageLevel chordLanguageLevel;
+  final RomanPoolPreset romanPoolPreset;
   final Set<String>? selectedTensionOptions;
   final InversionSettings inversionSettings;
   final bool smartDiagnosticsEnabled;

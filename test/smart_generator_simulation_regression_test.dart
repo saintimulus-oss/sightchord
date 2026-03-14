@@ -3,11 +3,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/settings/inversion_settings.dart';
+import 'package:chordest/settings/practice_settings.dart';
 import 'package:chordest/smart_generator.dart';
 
 SmartStartRequest _buildStartRequest({
   bool allowV7sus4 = true,
   InversionSettings inversionSettings = const InversionSettings(),
+  ChordLanguageLevel chordLanguageLevel = ChordLanguageLevel.fullExtensions,
+  RomanPoolPreset romanPoolPreset = RomanPoolPreset.expandedColor,
 }) {
   return SmartStartRequest(
     activeKeys: const ['C'],
@@ -20,6 +23,8 @@ SmartStartRequest _buildStartRequest({
     sourceProfile: SourceProfile.fakebookStandard,
     allowV7sus4: allowV7sus4,
     allowTensions: false,
+    chordLanguageLevel: chordLanguageLevel,
+    romanPoolPreset: romanPoolPreset,
     inversionSettings: inversionSettings,
     smartDiagnosticsEnabled: true,
   );
@@ -107,5 +112,44 @@ void main() {
       expect(susCheck.detail, contains('no sus opportunities'));
     },
   );
+
+  test('beginner guardrails keep simulation triadic and core-functional', () {
+    final summary = SmartGeneratorHelper.simulateSteps(
+      random: Random(1000020),
+      steps: 64,
+      request: _buildStartRequest(
+        allowV7sus4: true,
+        chordLanguageLevel: ChordLanguageLevel.triadsOnly,
+        romanPoolPreset: RomanPoolPreset.corePrimary,
+      ),
+    );
+
+    expect(
+      summary.traces.every(
+        (trace) =>
+            trace.finalRenderQuality == null ||
+            trace.finalRenderQuality == ChordQuality.majorTriad ||
+            trace.finalRenderQuality == ChordQuality.minorTriad ||
+            trace.finalRenderQuality == ChordQuality.diminishedTriad ||
+            trace.finalRenderQuality == ChordQuality.augmentedTriad,
+      ),
+      isTrue,
+    );
+    expect(
+      summary.traces.every((trace) => trace.finalTensions.isEmpty),
+      isTrue,
+    );
+    expect(
+      summary.traces.every(
+        (trace) =>
+            trace.finalRomanNumeralId == null ||
+            trace.finalRomanNumeralId == RomanNumeralId.iMaj7 ||
+            trace.finalRomanNumeralId == RomanNumeralId.iMaj69 ||
+            trace.finalRomanNumeralId == RomanNumeralId.ivMaj7 ||
+            trace.finalRomanNumeralId == RomanNumeralId.vDom7,
+      ),
+      isTrue,
+    );
+  });
 }
 

@@ -129,6 +129,600 @@ abstract class AppLocalizations {
   /// **'System default'**
   String get systemDefaultLanguage;
 
+  /// No description provided for @themeMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get themeMode;
+
+  /// No description provided for @themeModeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeModeSystem;
+
+  /// No description provided for @themeModeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeModeLight;
+
+  /// No description provided for @themeModeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeModeDark;
+
+  /// No description provided for @setupAssistantTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup Assistant'**
+  String get setupAssistantTitle;
+
+  /// No description provided for @setupAssistantSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A few quick choices will make your first practice session feel calmer. You can rerun this anytime.'**
+  String get setupAssistantSubtitle;
+
+  /// No description provided for @setupAssistantCurrentMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Current setup'**
+  String get setupAssistantCurrentMode;
+
+  /// No description provided for @setupAssistantModeGuided.
+  ///
+  /// In en, this message translates to:
+  /// **'Guided mode'**
+  String get setupAssistantModeGuided;
+
+  /// No description provided for @setupAssistantModeStandard.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard mode'**
+  String get setupAssistantModeStandard;
+
+  /// No description provided for @setupAssistantModeAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced mode'**
+  String get setupAssistantModeAdvanced;
+
+  /// No description provided for @setupAssistantRunAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Run setup assistant again'**
+  String get setupAssistantRunAgain;
+
+  /// No description provided for @setupAssistantCardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a gentler profile now, then open advanced controls whenever you want more room.'**
+  String get setupAssistantCardBody;
+
+  /// No description provided for @setupAssistantPreparingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll start gently'**
+  String get setupAssistantPreparingTitle;
+
+  /// No description provided for @setupAssistantPreparingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Before the generator shows any chords, we\'ll set up a comfortable starting point in a few taps.'**
+  String get setupAssistantPreparingBody;
+
+  /// No description provided for @setupAssistantProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
+  String setupAssistantProgress(int current, int total);
+
+  /// No description provided for @setupAssistantSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get setupAssistantSkip;
+
+  /// No description provided for @setupAssistantBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get setupAssistantBack;
+
+  /// No description provided for @setupAssistantNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get setupAssistantNext;
+
+  /// No description provided for @setupAssistantApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get setupAssistantApply;
+
+  /// No description provided for @setupAssistantGoalQuestionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like this generator to help with first?'**
+  String get setupAssistantGoalQuestionTitle;
+
+  /// No description provided for @setupAssistantGoalQuestionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the one that sounds closest. Nothing here is permanent.'**
+  String get setupAssistantGoalQuestionBody;
+
+  /// No description provided for @setupAssistantGoalEarTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear and recognize chords'**
+  String get setupAssistantGoalEarTitle;
+
+  /// No description provided for @setupAssistantGoalEarBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Short, friendly prompts for listening and recognition.'**
+  String get setupAssistantGoalEarBody;
+
+  /// No description provided for @setupAssistantGoalKeyboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keyboard hand practice'**
+  String get setupAssistantGoalKeyboardTitle;
+
+  /// No description provided for @setupAssistantGoalKeyboardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Simple shapes and readable symbols for your hands first.'**
+  String get setupAssistantGoalKeyboardBody;
+
+  /// No description provided for @setupAssistantGoalSongTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Song ideas'**
+  String get setupAssistantGoalSongTitle;
+
+  /// No description provided for @setupAssistantGoalSongBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the generator musical without dumping you into chaos.'**
+  String get setupAssistantGoalSongBody;
+
+  /// No description provided for @setupAssistantGoalHarmonyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Harmony study'**
+  String get setupAssistantGoalHarmonyTitle;
+
+  /// No description provided for @setupAssistantGoalHarmonyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Start clear, then leave room to grow into deeper harmony.'**
+  String get setupAssistantGoalHarmonyBody;
+
+  /// No description provided for @setupAssistantLiteracyQuestionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Which sentence feels closest right now?'**
+  String get setupAssistantLiteracyQuestionTitle;
+
+  /// No description provided for @setupAssistantLiteracyQuestionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the most comfortable answer, not the most ambitious one.'**
+  String get setupAssistantLiteracyQuestionBody;
+
+  /// No description provided for @setupAssistantLiteracyAbsoluteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'C, Cm, C7, and Cmaj7 still blur together'**
+  String get setupAssistantLiteracyAbsoluteTitle;
+
+  /// No description provided for @setupAssistantLiteracyAbsoluteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep things extra readable and familiar.'**
+  String get setupAssistantLiteracyAbsoluteBody;
+
+  /// No description provided for @setupAssistantLiteracyBasicTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'I can read maj7 / m7 / 7'**
+  String get setupAssistantLiteracyBasicTitle;
+
+  /// No description provided for @setupAssistantLiteracyBasicBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay safe, but allow a little more range.'**
+  String get setupAssistantLiteracyBasicBody;
+
+  /// No description provided for @setupAssistantLiteracyFunctionalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'I mostly follow ii-V-I and diatonic function'**
+  String get setupAssistantLiteracyFunctionalTitle;
+
+  /// No description provided for @setupAssistantLiteracyFunctionalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the harmony clear with a bit more motion.'**
+  String get setupAssistantLiteracyFunctionalBody;
+
+  /// No description provided for @setupAssistantLiteracyAdvancedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Colorful reharmonization and extensions already feel familiar'**
+  String get setupAssistantLiteracyAdvancedTitle;
+
+  /// No description provided for @setupAssistantLiteracyAdvancedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave more of the power-user range available.'**
+  String get setupAssistantLiteracyAdvancedBody;
+
+  /// No description provided for @setupAssistantHandQuestionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How comfortable do your hands feel on keys?'**
+  String get setupAssistantHandQuestionTitle;
+
+  /// No description provided for @setupAssistantHandQuestionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll use this to keep voicings playable.'**
+  String get setupAssistantHandQuestionBody;
+
+  /// No description provided for @setupAssistantHandThreeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Three-note shapes feel best'**
+  String get setupAssistantHandThreeTitle;
+
+  /// No description provided for @setupAssistantHandThreeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the hand shape compact.'**
+  String get setupAssistantHandThreeBody;
+
+  /// No description provided for @setupAssistantHandFourTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Four notes are okay'**
+  String get setupAssistantHandFourTitle;
+
+  /// No description provided for @setupAssistantHandFourBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow a little more spread.'**
+  String get setupAssistantHandFourBody;
+
+  /// No description provided for @setupAssistantHandJazzTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Jazzier shapes feel comfortable'**
+  String get setupAssistantHandJazzTitle;
+
+  /// No description provided for @setupAssistantHandJazzBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the door to larger voicings later.'**
+  String get setupAssistantHandJazzBody;
+
+  /// No description provided for @setupAssistantColorQuestionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How colorful should the sound feel at first?'**
+  String get setupAssistantColorQuestionTitle;
+
+  /// No description provided for @setupAssistantColorQuestionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When in doubt, start simpler.'**
+  String get setupAssistantColorQuestionBody;
+
+  /// No description provided for @setupAssistantColorSafeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Safe and familiar'**
+  String get setupAssistantColorSafeTitle;
+
+  /// No description provided for @setupAssistantColorSafeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay close to classic, readable harmony.'**
+  String get setupAssistantColorSafeBody;
+
+  /// No description provided for @setupAssistantColorJazzyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A little jazzy'**
+  String get setupAssistantColorJazzyTitle;
+
+  /// No description provided for @setupAssistantColorJazzyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a touch of color without getting wild.'**
+  String get setupAssistantColorJazzyBody;
+
+  /// No description provided for @setupAssistantColorColorfulTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quite colorful'**
+  String get setupAssistantColorColorfulTitle;
+
+  /// No description provided for @setupAssistantColorColorfulBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave more room for modern color.'**
+  String get setupAssistantColorColorfulBody;
+
+  /// No description provided for @setupAssistantSymbolQuestionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Which chord spelling feels easiest to read?'**
+  String get setupAssistantSymbolQuestionTitle;
+
+  /// No description provided for @setupAssistantSymbolQuestionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This only changes how the chord is shown.'**
+  String get setupAssistantSymbolQuestionBody;
+
+  /// No description provided for @setupAssistantSymbolMajTextBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear and beginner-friendly.'**
+  String get setupAssistantSymbolMajTextBody;
+
+  /// No description provided for @setupAssistantSymbolCompactBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Shorter if you already like compact symbols.'**
+  String get setupAssistantSymbolCompactBody;
+
+  /// No description provided for @setupAssistantSymbolDeltaBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Jazz-style if that is what your eyes expect.'**
+  String get setupAssistantSymbolDeltaBody;
+
+  /// No description provided for @setupAssistantKeyQuestionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Which key should we start in?'**
+  String get setupAssistantKeyQuestionTitle;
+
+  /// No description provided for @setupAssistantKeyQuestionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'C major is the easiest default, but you can change it later.'**
+  String get setupAssistantKeyQuestionBody;
+
+  /// No description provided for @setupAssistantKeyCMajorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Best beginner starting point.'**
+  String get setupAssistantKeyCMajorBody;
+
+  /// No description provided for @setupAssistantKeyGMajorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A bright major key with one sharp.'**
+  String get setupAssistantKeyGMajorBody;
+
+  /// No description provided for @setupAssistantKeyFMajorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A warm major key with one flat.'**
+  String get setupAssistantKeyFMajorBody;
+
+  /// No description provided for @setupAssistantPreviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Try your first result'**
+  String get setupAssistantPreviewTitle;
+
+  /// No description provided for @setupAssistantPreviewBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This is about what the generator will feel like. You can make it simpler or a little jazzier before you start.'**
+  String get setupAssistantPreviewBody;
+
+  /// No description provided for @setupAssistantPreviewListen.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear this sample'**
+  String get setupAssistantPreviewListen;
+
+  /// No description provided for @setupAssistantPreviewPlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing sample...'**
+  String get setupAssistantPreviewPlaying;
+
+  /// No description provided for @setupAssistantStartNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with this'**
+  String get setupAssistantStartNow;
+
+  /// No description provided for @setupAssistantAdjustEasier.
+  ///
+  /// In en, this message translates to:
+  /// **'Make it easier'**
+  String get setupAssistantAdjustEasier;
+
+  /// No description provided for @setupAssistantAdjustJazzier.
+  ///
+  /// In en, this message translates to:
+  /// **'A little more jazzy'**
+  String get setupAssistantAdjustJazzier;
+
+  /// No description provided for @setupAssistantPreviewKeyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Key'**
+  String get setupAssistantPreviewKeyLabel;
+
+  /// No description provided for @setupAssistantPreviewNotationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notation'**
+  String get setupAssistantPreviewNotationLabel;
+
+  /// No description provided for @setupAssistantPreviewDifficultyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Feel'**
+  String get setupAssistantPreviewDifficultyLabel;
+
+  /// No description provided for @setupAssistantPreviewProgressionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample progression'**
+  String get setupAssistantPreviewProgressionLabel;
+
+  /// No description provided for @setupAssistantPreviewProgressionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A short four-chord sample built from your setup.'**
+  String get setupAssistantPreviewProgressionBody;
+
+  /// No description provided for @setupAssistantPreviewSummaryAbsolute.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner-friendly start'**
+  String get setupAssistantPreviewSummaryAbsolute;
+
+  /// No description provided for @setupAssistantPreviewSummaryBasic.
+  ///
+  /// In en, this message translates to:
+  /// **'Readable seventh-chord start'**
+  String get setupAssistantPreviewSummaryBasic;
+
+  /// No description provided for @setupAssistantPreviewSummaryFunctional.
+  ///
+  /// In en, this message translates to:
+  /// **'Functional harmony start'**
+  String get setupAssistantPreviewSummaryFunctional;
+
+  /// No description provided for @setupAssistantPreviewSummaryAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Colorful jazz start'**
+  String get setupAssistantPreviewSummaryAdvanced;
+
+  /// No description provided for @setupAssistantPreviewBodyTriads.
+  ///
+  /// In en, this message translates to:
+  /// **'Mostly familiar triads in a safe key, with compact voicings and no spicy surprises.'**
+  String get setupAssistantPreviewBodyTriads;
+
+  /// No description provided for @setupAssistantPreviewBodySevenths.
+  ///
+  /// In en, this message translates to:
+  /// **'maj7, m7, and 7 show up clearly, while the progression still stays calm and readable.'**
+  String get setupAssistantPreviewBodySevenths;
+
+  /// No description provided for @setupAssistantPreviewBodySafeExtensions.
+  ///
+  /// In en, this message translates to:
+  /// **'A little extra color can appear, but it stays within safe, familiar extensions.'**
+  String get setupAssistantPreviewBodySafeExtensions;
+
+  /// No description provided for @setupAssistantPreviewBodyFullExtensions.
+  ///
+  /// In en, this message translates to:
+  /// **'The preview leaves more room for modern color, richer movement, and denser harmony.'**
+  String get setupAssistantPreviewBodyFullExtensions;
+
+  /// No description provided for @setupAssistantNotationMajText.
+  ///
+  /// In en, this message translates to:
+  /// **'Cmaj7 style'**
+  String get setupAssistantNotationMajText;
+
+  /// No description provided for @setupAssistantNotationCompact.
+  ///
+  /// In en, this message translates to:
+  /// **'CM7 style'**
+  String get setupAssistantNotationCompact;
+
+  /// No description provided for @setupAssistantNotationDelta.
+  ///
+  /// In en, this message translates to:
+  /// **'CΔ7 style'**
+  String get setupAssistantNotationDelta;
+
+  /// No description provided for @setupAssistantDifficultyTriads.
+  ///
+  /// In en, this message translates to:
+  /// **'Simple triads and core movement'**
+  String get setupAssistantDifficultyTriads;
+
+  /// No description provided for @setupAssistantDifficultySevenths.
+  ///
+  /// In en, this message translates to:
+  /// **'maj7 / m7 / 7 centered'**
+  String get setupAssistantDifficultySevenths;
+
+  /// No description provided for @setupAssistantDifficultySafeExtensions.
+  ///
+  /// In en, this message translates to:
+  /// **'Safe color with 9 / 11 / 13'**
+  String get setupAssistantDifficultySafeExtensions;
+
+  /// No description provided for @setupAssistantDifficultyFullExtensions.
+  ///
+  /// In en, this message translates to:
+  /// **'Full color and wider motion'**
+  String get setupAssistantDifficultyFullExtensions;
+
+  /// No description provided for @setupAssistantStudyHarmonyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Want a gentler theory path too?'**
+  String get setupAssistantStudyHarmonyTitle;
+
+  /// No description provided for @setupAssistantStudyHarmonyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Study Harmony can walk you through the basics while this generator stays in a safe lane.'**
+  String get setupAssistantStudyHarmonyBody;
+
+  /// No description provided for @setupAssistantStudyHarmonyCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Study Harmony'**
+  String get setupAssistantStudyHarmonyCta;
+
+  /// No description provided for @setupAssistantGuidedSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner-friendly setup is on'**
+  String get setupAssistantGuidedSettingsTitle;
+
+  /// No description provided for @setupAssistantGuidedSettingsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Core controls stay close by here. Everything else is still available when you want it.'**
+  String get setupAssistantGuidedSettingsBody;
+
+  /// No description provided for @setupAssistantAdvancedSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'More controls'**
+  String get setupAssistantAdvancedSectionTitle;
+
+  /// No description provided for @setupAssistantAdvancedSectionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the full settings page if you want every generator option.'**
+  String get setupAssistantAdvancedSectionBody;
+
   /// No description provided for @metronome.
   ///
   /// In en, this message translates to:
@@ -434,6 +1028,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Allow Tensions'**
   String get allowTensions;
+
+  /// No description provided for @chordTypeFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Chord Types'**
+  String get chordTypeFilters;
+
+  /// No description provided for @chordTypeFiltersHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which chord types can appear in the generator.'**
+  String get chordTypeFiltersHelp;
+
+  /// No description provided for @chordTypeFiltersSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'{selected} / {total} enabled'**
+  String chordTypeFiltersSelection(int selected, int total);
+
+  /// No description provided for @chordTypeGroupTriads.
+  ///
+  /// In en, this message translates to:
+  /// **'Triads'**
+  String get chordTypeGroupTriads;
+
+  /// No description provided for @chordTypeGroupSevenths.
+  ///
+  /// In en, this message translates to:
+  /// **'Sevenths'**
+  String get chordTypeGroupSevenths;
+
+  /// No description provided for @chordTypeGroupSixthsAndAddedTone.
+  ///
+  /// In en, this message translates to:
+  /// **'Sixths & Added Tone'**
+  String get chordTypeGroupSixthsAndAddedTone;
+
+  /// No description provided for @chordTypeGroupDominantVariants.
+  ///
+  /// In en, this message translates to:
+  /// **'Dominant Variants'**
+  String get chordTypeGroupDominantVariants;
+
+  /// No description provided for @chordTypeRequiresKeyMode.
+  ///
+  /// In en, this message translates to:
+  /// **'V7sus4 is available only when at least one key is selected.'**
+  String get chordTypeRequiresKeyMode;
+
+  /// No description provided for @chordTypeKeepOneEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep at least one chord type enabled.'**
+  String get chordTypeKeepOneEnabled;
 
   /// No description provided for @tensionHelp.
   ///

@@ -44,6 +44,35 @@ void main() {
       expect(promoted.lastLoggedDiagnosticKey, isNull);
     },
   );
+
+  test('applyRecommendations prefers the requested suggestion kind', () {
+    final natural = _buildVoicing('natural');
+    final colorful = _buildVoicing('colorful');
+    final easy = _buildVoicing('easy');
+    final recommendations = _buildRecommendations([natural, colorful, easy]);
+
+    final updated = const VoicingSessionState().applyRecommendations(
+      recommendations,
+      preferredKind: VoicingSuggestionKind.easy,
+    );
+
+    expect(updated.selectedVoicing?.signature, easy.signature);
+  });
+
+  test('applyRecommendations keeps a matching prior selection', () {
+    final natural = _buildVoicing('natural');
+    final colorful = _buildVoicing('colorful');
+    final easy = _buildVoicing('easy');
+    final recommendations = _buildRecommendations([natural, colorful, easy]);
+    final state = VoicingSessionState(selectedVoicing: colorful);
+
+    final updated = state.applyRecommendations(
+      recommendations,
+      preferredKind: VoicingSuggestionKind.easy,
+    );
+
+    expect(updated.selectedVoicing?.signature, colorful.signature);
+  });
 }
 
 ConcreteVoicing _buildVoicing(String signature) {

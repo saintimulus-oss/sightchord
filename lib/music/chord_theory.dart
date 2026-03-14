@@ -26,6 +26,13 @@ enum ChordQuality {
   dominant7sus4,
 }
 
+enum GeneratorChordQualityGroup {
+  triads,
+  sevenths,
+  sixthsAndAddedTone,
+  dominantVariants,
+}
+
 enum ChordFamily {
   major,
   minor,
@@ -593,6 +600,90 @@ class MusicTheory {
     ChordQuality.diminishedTriad,
     ChordQuality.augmentedTriad,
   ];
+
+  static const List<ChordQuality> supportedGeneratorChordQualities = [
+    ChordQuality.majorTriad,
+    ChordQuality.minorTriad,
+    ChordQuality.diminishedTriad,
+    ChordQuality.augmentedTriad,
+    ChordQuality.dominant7,
+    ChordQuality.major7,
+    ChordQuality.minor7,
+    ChordQuality.minorMajor7,
+    ChordQuality.halfDiminished7,
+    ChordQuality.diminished7,
+    ChordQuality.six,
+    ChordQuality.minor6,
+    ChordQuality.major69,
+    ChordQuality.dominant7Alt,
+    ChordQuality.dominant7Sharp11,
+    ChordQuality.dominant13sus4,
+    ChordQuality.dominant7sus4,
+  ];
+
+  static const Set<ChordQuality> susDominantQualities = {
+    ChordQuality.dominant13sus4,
+    ChordQuality.dominant7sus4,
+  };
+
+  static Set<ChordQuality> defaultGeneratorChordQualities({
+    required bool allowV7sus4,
+  }) {
+    return {
+      for (final quality in supportedGeneratorChordQualities)
+        if (allowV7sus4 || !susDominantQualities.contains(quality)) quality,
+    };
+  }
+
+  static GeneratorChordQualityGroup generatorGroupForQuality(
+    ChordQuality quality,
+  ) {
+    return switch (quality) {
+      ChordQuality.majorTriad ||
+      ChordQuality.minorTriad ||
+      ChordQuality.diminishedTriad ||
+      ChordQuality.augmentedTriad => GeneratorChordQualityGroup.triads,
+      ChordQuality.dominant7 ||
+      ChordQuality.major7 ||
+      ChordQuality.minor7 ||
+      ChordQuality.minorMajor7 ||
+      ChordQuality.halfDiminished7 ||
+      ChordQuality.diminished7 => GeneratorChordQualityGroup.sevenths,
+      ChordQuality.six ||
+      ChordQuality.minor6 ||
+      ChordQuality.major69 => GeneratorChordQualityGroup.sixthsAndAddedTone,
+      ChordQuality.dominant7Alt ||
+      ChordQuality.dominant7Sharp11 ||
+      ChordQuality.dominant13sus4 ||
+      ChordQuality.dominant7sus4 => GeneratorChordQualityGroup.dominantVariants,
+    };
+  }
+
+  static bool isKeyModeOnlyGeneratorQuality(ChordQuality quality) {
+    return quality == ChordQuality.dominant7sus4;
+  }
+
+  static String generatorQualityLabel(ChordQuality quality) {
+    return switch (quality) {
+      ChordQuality.majorTriad => 'M',
+      ChordQuality.minorTriad => 'm',
+      ChordQuality.diminishedTriad => 'dim',
+      ChordQuality.augmentedTriad => 'aug',
+      ChordQuality.dominant7 => '7',
+      ChordQuality.major7 => 'maj7',
+      ChordQuality.minor7 => 'm7',
+      ChordQuality.minorMajor7 => 'mMaj7',
+      ChordQuality.halfDiminished7 => 'm7b5',
+      ChordQuality.diminished7 => 'dim7',
+      ChordQuality.six => '6',
+      ChordQuality.minor6 => 'm6',
+      ChordQuality.major69 => '6/9',
+      ChordQuality.dominant7Alt => '7alt',
+      ChordQuality.dominant7Sharp11 => '7(#11)',
+      ChordQuality.dominant13sus4 => '13sus4',
+      ChordQuality.dominant7sus4 => 'V7sus4',
+    };
+  }
 
   static const List<RomanNumeralId> majorDiatonicRomans = [
     RomanNumeralId.iMaj7,

@@ -142,9 +142,12 @@ class VoicingEngine {
       return left.voicing.signature.compareTo(right.voicing.signature);
     });
 
-    final suggestions = _buildSuggestions(
-      rankedCandidates: ranked,
-      progressionContext: progressionContext,
+    final suggestions = _orderSuggestionsForPreference(
+      suggestions: _buildSuggestions(
+        rankedCandidates: ranked,
+        progressionContext: progressionContext,
+      ),
+      settings: context.settings,
     );
 
     return VoicingRecommendationSet(
@@ -183,7 +186,10 @@ class VoicingEngine {
     required GeneratedChord chord,
     required PracticeSettings settings,
   }) {
-    final symbol = chord.symbolData;
+    final symbol = ChordRenderingHelper.simplifySymbolDataForLanguage(
+      symbolData: chord.symbolData,
+      chordLanguageLevel: settings.chordLanguageLevel,
+    );
     final rootSemitone = MusicTheory.noteToSemitone[symbol.root] ?? 0;
     final preferFlat =
         symbol.root.contains('b') ||
@@ -199,6 +205,7 @@ class VoicingEngine {
           selectedTensionOptions: settings.selectedTensionOptions,
           suppressTensions: false,
           renderQuality: symbol.renderQuality,
+          chordLanguageLevel: settings.chordLanguageLevel,
           dominantContext: chord.dominantContext,
           dominantIntent: chord.dominantIntent,
         );
@@ -1361,6 +1368,33 @@ class VoicingEngine {
     ];
   }
 
+  static List<VoicingSuggestion> _orderSuggestionsForPreference({
+    required List<VoicingSuggestion> suggestions,
+    required PracticeSettings settings,
+  }) {
+    final preferredKind = switch (settings.preferredSuggestionKind) {
+      DefaultVoicingSuggestionKind.natural => VoicingSuggestionKind.natural,
+      DefaultVoicingSuggestionKind.colorful => VoicingSuggestionKind.colorful,
+      DefaultVoicingSuggestionKind.easy => VoicingSuggestionKind.easy,
+    };
+    if (preferredKind == VoicingSuggestionKind.natural) {
+      return suggestions;
+    }
+
+    final orderedKinds = [
+      preferredKind,
+      VoicingSuggestionKind.natural,
+      for (final kind in VoicingSuggestionKind.values)
+        if (kind != preferredKind && kind != VoicingSuggestionKind.natural)
+          kind,
+    ];
+    return [
+      for (final kind in orderedKinds)
+        for (final suggestion in suggestions)
+          if (suggestion.kind == kind) suggestion,
+    ];
+  }
+
   static VoicingSuggestion _pickSuggestion({
     required List<RankedVoicingCandidate> rankedCandidates,
     required VoicingSuggestionKind kind,
@@ -2179,6 +2213,12 @@ class VoicingEngine {
     final templates = <_VoicingTemplate>[];
 
     void addTemplate(_VoicingTemplate template) {
+      if (!_isFamilyAllowedForSettings(
+        family: template.family,
+        settings: settings,
+      )) {
+        return;
+      }
       if ((template.family == VoicingFamily.rootlessA ||
               template.family == VoicingFamily.rootlessB) &&
           !settings.allowRootlessVoicings) {
@@ -2575,6 +2615,21 @@ class VoicingEngine {
       ),
     );
     return templates;
+  }
+
+  static bool _isFamilyAllowedForSettings({
+    required VoicingFamily family,
+    required PracticeSettings settings,
+  }) {
+    return switch (settings.chordLanguageLevel) {
+      ChordLanguageLevel.triadsOnly ||
+      ChordLanguageLevel.seventhChords => family == VoicingFamily.shell ||
+          family == VoicingFamily.spread,
+      ChordLanguageLevel.safeExtensions => family != VoicingFamily.quartal &&
+          family != VoicingFamily.altered &&
+          family != VoicingFamily.upperStructure,
+      ChordLanguageLevel.fullExtensions => true,
+    };
   }
 
   static List<List<String>> _buildTemplateLabelVariants({

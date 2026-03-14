@@ -231,7 +231,7 @@ class _MyAppState extends State<MyApp> {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            themeMode: ThemeMode.system,
+            themeMode: widget.controller.settings.themeMode,
             theme: _buildTheme(Brightness.light),
             darkTheme: _buildTheme(Brightness.dark),
             home: MainMenuPage(
