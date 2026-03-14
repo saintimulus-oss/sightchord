@@ -694,6 +694,32 @@ void main() {
       expect(plan.debug.modulationKind, isNot(ModulationKind.real));
     },
   );
+  test('no compatible key surfaces explicit modulation blocked reason', () {
+    final plan = SmartGeneratorHelper.planNextStep(
+      random: _FixedRandom(0),
+      request: buildRequest(
+        stepIndex: 12,
+        activeKeys: const ['C', 'D'],
+        currentKeyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        currentRomanNumeralId: RomanNumeralId.iMaj69,
+        currentHarmonicFunction: HarmonicFunction.tonic,
+        jazzPreset: JazzPreset.standardsCore,
+        modulationIntensity: ModulationIntensity.high,
+        phraseContext: const SmartPhraseContext(
+          phraseRole: PhraseRole.preCadence,
+          sectionRole: SectionRole.aLike,
+          harmonicDensity: HarmonicDensity.oneChordPerBar,
+          barInPhrase: 6,
+          barsToBoundary: 2,
+          phraseLength: 8,
+        ),
+      ),
+    );
+
+    expect(plan.debug.blockedReason, SmartBlockedReason.noCompatibleKey);
+    expect(plan.debug.modulationKind, isNot(ModulationKind.real));
+  });
+
   test('modal interchange does not fully choke modulation paths', () {
     final summary = SmartGeneratorHelper.simulateSteps(
       random: Random(3),

@@ -16,6 +16,22 @@ enum StudyHarmonyRecommendationSource {
   dailySeed,
 }
 
+enum StudyHarmonyQuestKind { dailyStreak, frontierLesson, chapterStars }
+
+enum StudyHarmonyMilestoneKind {
+  lessonPath,
+  starCollector,
+  streakLegend,
+  masteryScholar,
+  relayRunner,
+}
+
+enum StudyHarmonyWeeklyGoalKind { activeDays, dailyClears, focusSprint }
+
+enum StudyHarmonyMonthlyGoalKind { activeDays, questChests, spotlightClears }
+
+enum StudyHarmonyLeagueTier { rookie, bronze, silver, gold, diamond }
+
 @immutable
 class StudyHarmonySkillGainSummary {
   const StudyHarmonySkillGainSummary({
@@ -37,17 +53,83 @@ class StudyHarmonySkillGainSummary {
 class StudyHarmonySessionProgressEffect {
   const StudyHarmonySessionProgressEffect({
     required this.mode,
+    required this.sessionStars,
+    required this.sessionRank,
     this.skillGains = const <StudyHarmonySkillGainSummary>[],
     this.focusSkillTags = const <StudyHarmonySkillTag>{},
     this.reviewReason,
     this.dailyDateKey,
+    this.bestStars,
+    this.bestRank,
+    this.personalBestImproved = false,
+    this.countsTowardLessonProgress = false,
+    this.dailyChallengeCompleted = false,
+    this.focusSprintCompleted = false,
+    this.dailyStreakCount,
+    this.bestDailyStreakCount,
+    this.newlyUnlockedMilestoneIds = const <String>[],
+    this.weeklyRewardUnlocked = false,
+    this.streakSaverUsed = false,
+    this.streakSaverCount = 0,
+    this.relayWinCount,
+    this.weeklyLeagueScore = 0,
+    this.weeklyLeagueScoreDelta = 0,
+    this.weeklyLeagueTier = StudyHarmonyLeagueTier.rookie,
+    this.promotedLeagueTier,
+    this.dailyQuestChestOpened = false,
+    this.questChestCount = 0,
+    this.questChestLeagueXpBonus = 0,
+    this.leagueXpBoostUnlocked = false,
+    this.leagueXpBoostChargeCount = 0,
+    this.leagueXpBoostAppliedBonus = 0,
+    this.monthlyTourRewardUnlocked = false,
+    this.monthlyTourLeagueXpBonus = 0,
+    this.monthlyTourStreakSaverCount = 0,
+    this.duetPactActiveToday = false,
+    this.duetPactCurrentStreak = 0,
+    this.duetPactBestStreak = 0,
+    this.duetPactRewardUnlocked = false,
+    this.duetPactLeagueXpBonus = 0,
   });
 
   final StudyHarmonySessionMode mode;
+  final int sessionStars;
+  final String sessionRank;
   final List<StudyHarmonySkillGainSummary> skillGains;
   final Set<StudyHarmonySkillTag> focusSkillTags;
   final String? reviewReason;
   final String? dailyDateKey;
+  final int? bestStars;
+  final String? bestRank;
+  final bool personalBestImproved;
+  final bool countsTowardLessonProgress;
+  final bool dailyChallengeCompleted;
+  final bool focusSprintCompleted;
+  final int? dailyStreakCount;
+  final int? bestDailyStreakCount;
+  final List<String> newlyUnlockedMilestoneIds;
+  final bool weeklyRewardUnlocked;
+  final bool streakSaverUsed;
+  final int streakSaverCount;
+  final int? relayWinCount;
+  final int weeklyLeagueScore;
+  final int weeklyLeagueScoreDelta;
+  final StudyHarmonyLeagueTier weeklyLeagueTier;
+  final StudyHarmonyLeagueTier? promotedLeagueTier;
+  final bool dailyQuestChestOpened;
+  final int questChestCount;
+  final int questChestLeagueXpBonus;
+  final bool leagueXpBoostUnlocked;
+  final int leagueXpBoostChargeCount;
+  final int leagueXpBoostAppliedBonus;
+  final bool monthlyTourRewardUnlocked;
+  final int monthlyTourLeagueXpBonus;
+  final int monthlyTourStreakSaverCount;
+  final bool duetPactActiveToday;
+  final int duetPactCurrentStreak;
+  final int duetPactBestStreak;
+  final bool duetPactRewardUnlocked;
+  final int duetPactLeagueXpBonus;
 }
 
 @immutable
@@ -88,6 +170,8 @@ class StudyHarmonyChapterProgressSummaryView {
     required this.chapter,
     required this.lessonCount,
     required this.clearedLessonCount,
+    required this.starCount,
+    required this.masteryTier,
     required this.unlocked,
     this.nextLesson,
   });
@@ -95,6 +179,8 @@ class StudyHarmonyChapterProgressSummaryView {
   final StudyHarmonyChapterDefinition chapter;
   final int lessonCount;
   final int clearedLessonCount;
+  final int starCount;
+  final StudyHarmonyChapterMasteryTier masteryTier;
   final bool unlocked;
   final StudyHarmonyLessonDefinition? nextLesson;
 
@@ -102,6 +188,240 @@ class StudyHarmonyChapterProgressSummaryView {
 
   double get progressFraction =>
       lessonCount == 0 ? 0 : clearedLessonCount / lessonCount;
+}
+
+@immutable
+class StudyHarmonyQuestProgressView {
+  const StudyHarmonyQuestProgressView({
+    required this.kind,
+    required this.current,
+    required this.target,
+    this.lesson,
+    this.chapter,
+    this.completedToday = false,
+    this.countsTowardChest = false,
+  });
+
+  final StudyHarmonyQuestKind kind;
+  final int current;
+  final int target;
+  final StudyHarmonyLessonDefinition? lesson;
+  final StudyHarmonyChapterDefinition? chapter;
+  final bool completedToday;
+  final bool countsTowardChest;
+
+  bool get completed => current >= target;
+
+  double get progressFraction =>
+      target <= 0 ? 0 : (current.clamp(0, target) / target).toDouble();
+}
+
+@immutable
+class StudyHarmonyMilestoneProgressView {
+  const StudyHarmonyMilestoneProgressView({
+    required this.id,
+    required this.kind,
+    required this.current,
+    required this.target,
+    required this.earnedCount,
+    required this.totalTiers,
+  });
+
+  final String id;
+  final StudyHarmonyMilestoneKind kind;
+  final int current;
+  final int target;
+  final int earnedCount;
+  final int totalTiers;
+
+  bool get completedAll => earnedCount >= totalTiers;
+
+  double get progressFraction {
+    if (completedAll) {
+      return 1;
+    }
+    return target <= 0 ? 0 : (current.clamp(0, target) / target).toDouble();
+  }
+}
+
+@immutable
+class StudyHarmonyQuestChestProgressView {
+  const StudyHarmonyQuestChestProgressView({
+    required this.dateKey,
+    required this.completedQuestCount,
+    required this.totalQuestCount,
+    required this.rewardLeagueXp,
+    required this.openedCount,
+    this.openedToday = false,
+  });
+
+  final String dateKey;
+  final int completedQuestCount;
+  final int totalQuestCount;
+  final int rewardLeagueXp;
+  final int openedCount;
+  final bool openedToday;
+
+  bool get ready => !openedToday && completedQuestCount >= totalQuestCount;
+
+  int get remainingQuestCount => max(0, totalQuestCount - completedQuestCount);
+
+  double get progressFraction {
+    if (totalQuestCount <= 0) {
+      return 0;
+    }
+    return (completedQuestCount.clamp(0, totalQuestCount) / totalQuestCount)
+        .toDouble();
+  }
+}
+
+@immutable
+class StudyHarmonyLeagueXpBoostProgressView {
+  const StudyHarmonyLeagueXpBoostProgressView({
+    required this.chargeCount,
+    required this.multiplier,
+    this.dateKey,
+  });
+
+  final int chargeCount;
+  final int multiplier;
+  final String? dateKey;
+
+  bool get active => chargeCount > 0;
+
+  int bonusForBase(int baseXp) {
+    if (baseXp <= 0 || multiplier <= 1) {
+      return 0;
+    }
+    return baseXp * (multiplier - 1);
+  }
+}
+
+@immutable
+class StudyHarmonyWeeklyGoalProgressView {
+  const StudyHarmonyWeeklyGoalProgressView({
+    required this.kind,
+    required this.current,
+    required this.target,
+    required this.weekKey,
+    this.rewardClaimed = false,
+  });
+
+  final StudyHarmonyWeeklyGoalKind kind;
+  final int current;
+  final int target;
+  final String weekKey;
+  final bool rewardClaimed;
+
+  bool get completed => current >= target;
+  bool get rewardReady => completed && !rewardClaimed;
+
+  double get progressFraction =>
+      target <= 0 ? 0 : (current.clamp(0, target) / target).toDouble();
+}
+
+@immutable
+class StudyHarmonyMonthlyGoalProgressView {
+  const StudyHarmonyMonthlyGoalProgressView({
+    required this.kind,
+    required this.current,
+    required this.target,
+    required this.monthKey,
+  });
+
+  final StudyHarmonyMonthlyGoalKind kind;
+  final int current;
+  final int target;
+  final String monthKey;
+
+  bool get completed => current >= target;
+
+  double get progressFraction =>
+      target <= 0 ? 0 : (current.clamp(0, target) / target).toDouble();
+}
+
+@immutable
+class StudyHarmonyMonthlyTourProgressView {
+  const StudyHarmonyMonthlyTourProgressView({
+    required this.monthKey,
+    required this.goals,
+    required this.rewardClaimed,
+    required this.rewardLeagueXp,
+    required this.rewardStreakSavers,
+  });
+
+  final String monthKey;
+  final List<StudyHarmonyMonthlyGoalProgressView> goals;
+  final bool rewardClaimed;
+  final int rewardLeagueXp;
+  final int rewardStreakSavers;
+
+  int get completedGoalCount => goals.where((goal) => goal.completed).length;
+
+  int get totalGoalCount => goals.length;
+
+  bool get completed => completedGoalCount >= totalGoalCount;
+
+  bool get rewardReady => completed && !rewardClaimed;
+
+  double get progressFraction {
+    if (goals.isEmpty) {
+      return 0;
+    }
+    return completedGoalCount / goals.length;
+  }
+}
+
+@immutable
+class StudyHarmonyDuetPactProgressView {
+  const StudyHarmonyDuetPactProgressView({
+    required this.currentStreak,
+    required this.bestStreak,
+    required this.activeToday,
+    required this.nextTarget,
+    required this.rewardLeagueXp,
+  });
+
+  final int currentStreak;
+  final int bestStreak;
+  final bool activeToday;
+  final int nextTarget;
+  final int rewardLeagueXp;
+
+  double get progressFraction =>
+      nextTarget <= 0 ? 1 : (currentStreak.clamp(0, nextTarget) / nextTarget);
+}
+
+@immutable
+class StudyHarmonyLeagueProgressView {
+  const StudyHarmonyLeagueProgressView({
+    required this.weekKey,
+    required this.score,
+    required this.tier,
+    required this.currentTierFloor,
+    this.nextTier,
+    this.nextTarget,
+  });
+
+  final String weekKey;
+  final int score;
+  final StudyHarmonyLeagueTier tier;
+  final int currentTierFloor;
+  final StudyHarmonyLeagueTier? nextTier;
+  final int? nextTarget;
+
+  bool get maxTier => nextTier == null || nextTarget == null;
+
+  double get progressFraction {
+    if (maxTier) {
+      return 1;
+    }
+    final span = nextTarget! - currentTierFloor;
+    if (span <= 0) {
+      return 1;
+    }
+    return ((score - currentTierFloor).clamp(0, span) / span).toDouble();
+  }
 }
 
 class StudyHarmonyProgressController extends ChangeNotifier {
@@ -130,13 +450,19 @@ class StudyHarmonyProgressController extends ChangeNotifier {
   StudyHarmonyTrackId? get lastPlayedTrackId => _snapshot.lastPlayedTrackId;
 
   Future<void> load() async {
-    _snapshot = await _store.load(fallbackSnapshot: _snapshot);
+    final loaded = await _store.load(fallbackSnapshot: _snapshot);
+    _snapshot = _normalizedSnapshot(loaded);
     notifyListeners();
+    if (loaded.encode() != _snapshot.encode()) {
+      await _store.save(_snapshot);
+    }
   }
 
   Future<void> syncCourse(StudyHarmonyCourseDefinition course) async {
     _coursesById[course.id] = course;
-    final normalized = _applyUnlockRules(_snapshot, course);
+    final normalized = _normalizedSnapshot(
+      _applyUnlockRules(_snapshot, course),
+    );
     await _updateSnapshotIfChanged(normalized);
   }
 
@@ -166,7 +492,10 @@ class StudyHarmonyProgressController extends ChangeNotifier {
       lastPlayedLessonId: effectiveLessonId,
       unlockedChapterIds: {..._snapshot.unlockedChapterIds, lesson.chapterId},
       unlockedLessonIds: {..._snapshot.unlockedLessonIds, effectiveLessonId},
-      dailyChallengeSeedMetadata: _mergeDailyMetadataFromLesson(lesson),
+      dailyChallengeSeedMetadata: _mergeDailyMetadataFromLesson(
+        lesson,
+        trackId: trackId,
+      ),
     );
     await _updateSnapshotIfChanged(_applyUnlockRulesToRegisteredCourses(next));
   }
@@ -206,8 +535,29 @@ class StudyHarmonyProgressController extends ChangeNotifier {
     required Duration elapsed,
     required StudyHarmonySessionPerformance performance,
   }) async {
-    final now = _nowProvider().toUtc();
+    final nowLocal = _nowProvider();
+    final now = nowLocal.toUtc();
+    final activityDateKey = _dailyDateKey(nowLocal);
+    final course = _courseForTrack(trackId);
+    final unlockedMilestonesBefore = course == null
+        ? const <String>{}
+        : _earnedMilestoneIdsForCourse(course, snapshot: _snapshot);
+    final chapterStarsSatisfiedBefore = course == null
+        ? false
+        : _questBoardForCourse(
+            course,
+            snapshot: _snapshot,
+            referenceDate: nowLocal,
+          ).any(
+            (quest) =>
+                quest.kind == StudyHarmonyQuestKind.chapterStars &&
+                quest.countsTowardChest,
+          );
     final effectiveLessonId = _effectiveAnchorLessonId(lesson);
+    final frontierLessonBefore = course == null
+        ? null
+        : _frontierLessonForCourse(course);
+    final previousLessonResult = _snapshot.lessonResults[effectiveLessonId];
     final effectivePerformance = performance.isEmpty
         ? _defaultSessionPerformance(
             lesson: lesson,
@@ -233,6 +583,56 @@ class StudyHarmonyProgressController extends ChangeNotifier {
         skillId:
             _snapshot.skillMasteryPlaceholders[skillId]?.masteryScore ?? 0.45,
     };
+    final activeLeagueXpBoostBefore = _leagueXpBoostForSnapshot(
+      _snapshot,
+      referenceDate: nowLocal,
+    );
+    final weekKey = _weekKey(nowLocal);
+    final monthKey = _monthKey(nowLocal);
+    final sessionStars = _starsForResult(cleared: cleared, accuracy: accuracy);
+    final sessionRank = _rankForResult(cleared: cleared, accuracy: accuracy);
+    final previousWeeklyLeagueScore =
+        _snapshot.weeklyLeagueScores[weekKey] ?? 0;
+    final previousWeeklyLeagueTier = _leagueTierForScore(
+      previousWeeklyLeagueScore,
+    );
+    final weeklyLeagueScoreDelta = _leagueScoreDelta(
+      sessionMode: lesson.sessionMode,
+      cleared: cleared,
+      sessionStars: sessionStars,
+      accuracy: accuracy,
+    );
+    var nextWeeklyLeagueScores = Map<String, int>.from(
+      _snapshot.weeklyLeagueScores,
+    );
+    var nextMonthlySpotlightClearCounts = Map<String, int>.from(
+      _snapshot.monthlySpotlightClearCounts,
+    );
+    var nextActiveLeagueXpBoostCharges = activeLeagueXpBoostBefore.chargeCount;
+    var nextActiveLeagueXpBoostDateKey = activeLeagueXpBoostBefore.active
+        ? activeLeagueXpBoostBefore.dateKey
+        : null;
+    var leagueXpBoostUnlocked = false;
+    var leagueXpBoostAppliedBonus = 0;
+    if (weeklyLeagueScoreDelta > 0) {
+      var totalLeagueXpDelta = weeklyLeagueScoreDelta;
+      if (cleared && nextActiveLeagueXpBoostCharges > 0) {
+        leagueXpBoostAppliedBonus = activeLeagueXpBoostBefore.bonusForBase(
+          weeklyLeagueScoreDelta,
+        );
+        totalLeagueXpDelta += leagueXpBoostAppliedBonus;
+        nextActiveLeagueXpBoostCharges -= 1;
+        if (nextActiveLeagueXpBoostCharges <= 0) {
+          nextActiveLeagueXpBoostDateKey = null;
+        }
+      }
+      nextWeeklyLeagueScores[weekKey] =
+          previousWeeklyLeagueScore + totalLeagueXpDelta;
+    }
+    if (cleared && _countsTowardMonthlySpotlight(lesson)) {
+      nextMonthlySpotlightClearCounts[monthKey] =
+          (nextMonthlySpotlightClearCounts[monthKey] ?? 0) + 1;
+    }
 
     final nextLessonResults =
         Map<StudyHarmonyLessonId, StudyHarmonyLessonProgressSummary>.from(
@@ -259,6 +659,103 @@ class StudyHarmonyProgressController extends ChangeNotifier {
       sessionLesson: lesson,
       updatedAt: now,
     );
+    var nextCompletedDailyKeys = _snapshot.completedDailyChallengeDateKeys;
+    var nextProtectedDailyKeys = _snapshot.protectedDailyChallengeDateKeys;
+    var nextActivityDateKeys = _mergedCompletedDailyChallengeDateKeys(
+      existing: _snapshot.activityDateKeys,
+      dateKey: activityDateKey,
+    );
+    var nextCompletedFocusKeys = _snapshot.completedFocusChallengeDateKeys;
+    var nextCompletedSpotlightKeys =
+        _snapshot.completedSpotlightChallengeDateKeys;
+    var nextCompletedFrontierQuestKeys =
+        _snapshot.completedFrontierQuestDateKeys;
+    var nextAwardedWeeklyPlanWeekKeys = _snapshot.awardedWeeklyPlanWeekKeys;
+    var nextAwardedDailyQuestChestKeys =
+        _snapshot.awardedDailyQuestChestDateKeys;
+    var nextLegendaryChapterIds = _snapshot.legendaryChapterIds;
+    var nextRelayWinCount = _snapshot.relayWinCount;
+    var nextBestDailyStreak = _snapshot.bestDailyChallengeStreak;
+    var nextBestDuetPactStreak = _snapshot.bestDuetPactStreak;
+    var nextStreakSaverCount = _snapshot.streakSaverCount;
+    var nextQuestChestCount = _snapshot.questChestCount;
+    var dailyChallengeCompleted = false;
+    var focusSprintCompleted = false;
+    var weeklyRewardUnlocked = false;
+    var streakSaverUsed = false;
+    var dailyQuestChestOpened = false;
+    var questChestLeagueXpBonus = 0;
+    var monthlyTourRewardUnlocked = false;
+    var monthlyTourLeagueXpBonus = 0;
+    var duetPactRewardUnlocked = false;
+    var duetPactLeagueXpBonus = 0;
+    int? dailyStreakCount;
+    final dailyDateKey = lesson.sessionMetadata.dailyDateKey;
+    if (lesson.sessionMode == StudyHarmonySessionMode.daily &&
+        cleared &&
+        dailyDateKey != null) {
+      dailyChallengeCompleted = true;
+      final streakDateKeysBefore = _allStreakDateKeys(
+        completedDailyDateKeys: nextCompletedDailyKeys,
+        protectedDailyDateKeys: nextProtectedDailyKeys,
+      );
+      if (!streakDateKeysBefore.contains(dailyDateKey)) {
+        final saverResult = _tryUseStreakSaverForDateKey(
+          completedDailyDateKeys: nextCompletedDailyKeys,
+          protectedDailyDateKeys: nextProtectedDailyKeys,
+          dateKey: dailyDateKey,
+          streakSaverCount: nextStreakSaverCount,
+        );
+        nextProtectedDailyKeys = saverResult.protectedDailyDateKeys;
+        nextStreakSaverCount = saverResult.remainingStreakSavers;
+        streakSaverUsed = saverResult.used;
+      }
+      nextCompletedDailyKeys = _mergedCompletedDailyChallengeDateKeys(
+        existing: nextCompletedDailyKeys,
+        dateKey: dailyDateKey,
+      );
+      dailyStreakCount = _streakEndingAt(
+        _allStreakDateKeys(
+          completedDailyDateKeys: nextCompletedDailyKeys,
+          protectedDailyDateKeys: nextProtectedDailyKeys,
+        ),
+        dailyDateKey,
+      );
+      nextBestDailyStreak = max(nextBestDailyStreak, dailyStreakCount);
+    }
+    if (lesson.sessionMode == StudyHarmonySessionMode.focus && cleared) {
+      focusSprintCompleted = true;
+      nextCompletedFocusKeys = _mergedCompletedDailyChallengeDateKeys(
+        existing: nextCompletedFocusKeys,
+        dateKey: activityDateKey,
+      );
+    }
+    if (cleared && _countsTowardMonthlySpotlight(lesson)) {
+      nextCompletedSpotlightKeys = _mergedCompletedDailyChallengeDateKeys(
+        existing: nextCompletedSpotlightKeys,
+        dateKey: activityDateKey,
+      );
+    }
+    nextBestDuetPactStreak = max(
+      nextBestDuetPactStreak,
+      _longestDailyStreakForDateKeys(
+        nextCompletedDailyKeys.intersection(nextCompletedSpotlightKeys),
+      ),
+    );
+    if (lesson.sessionMetadata.countsTowardLessonProgress &&
+        cleared &&
+        frontierLessonBefore?.id == effectiveLessonId) {
+      nextCompletedFrontierQuestKeys = _mergedCompletedDailyChallengeDateKeys(
+        existing: nextCompletedFrontierQuestKeys,
+        dateKey: activityDateKey,
+      );
+    }
+    if (lesson.sessionMode == StudyHarmonySessionMode.relay && cleared) {
+      nextRelayWinCount += 1;
+    }
+    if (lesson.sessionMode == StudyHarmonySessionMode.legend && cleared) {
+      nextLegendaryChapterIds = {...nextLegendaryChapterIds, chapterId};
+    }
 
     var next = _snapshot.copyWith(
       lastPlayedTrackId: trackId,
@@ -269,10 +766,98 @@ class StudyHarmonyProgressController extends ChangeNotifier {
       lessonResults: nextLessonResults,
       skillMasteryPlaceholders: nextSkillMastery,
       reviewQueuePlaceholders: nextReviewQueue,
-      dailyChallengeSeedMetadata: _mergeDailyMetadataFromLesson(lesson),
+      dailyChallengeSeedMetadata: _mergeDailyMetadataFromLesson(
+        lesson,
+        trackId: trackId,
+      ),
+      completedDailyChallengeDateKeys: nextCompletedDailyKeys,
+      protectedDailyChallengeDateKeys: nextProtectedDailyKeys,
+      activityDateKeys: nextActivityDateKeys,
+      completedFocusChallengeDateKeys: nextCompletedFocusKeys,
+      completedSpotlightChallengeDateKeys: nextCompletedSpotlightKeys,
+      completedFrontierQuestDateKeys: nextCompletedFrontierQuestKeys,
+      awardedWeeklyPlanWeekKeys: nextAwardedWeeklyPlanWeekKeys,
+      awardedDailyQuestChestDateKeys: nextAwardedDailyQuestChestKeys,
+      weeklyLeagueScores: nextWeeklyLeagueScores,
+      monthlySpotlightClearCounts: nextMonthlySpotlightClearCounts,
+      legendaryChapterIds: nextLegendaryChapterIds,
+      relayWinCount: nextRelayWinCount,
+      bestDailyChallengeStreak: nextBestDailyStreak,
+      bestDuetPactStreak: nextBestDuetPactStreak,
+      streakSaverCount: nextStreakSaverCount,
+      questChestCount: nextQuestChestCount,
+      activeLeagueXpBoostDateKey: nextActiveLeagueXpBoostDateKey,
+      activeLeagueXpBoostCharges: nextActiveLeagueXpBoostCharges,
+      clearActiveLeagueXpBoostDateKey: nextActiveLeagueXpBoostDateKey == null,
     );
-    next = _applyUnlockRulesToRegisteredCourses(next);
+    if (course != null) {
+      final rewardResult = _applyWeeklyPlanReward(
+        course,
+        snapshot: next,
+        referenceDate: nowLocal,
+      );
+      next = rewardResult.snapshot;
+      weeklyRewardUnlocked = rewardResult.rewardUnlocked;
+      final questChestResult = _applyDailyQuestChestReward(
+        course,
+        snapshot: next,
+        referenceDate: nowLocal,
+        chapterStarsSatisfiedBefore: chapterStarsSatisfiedBefore,
+      );
+      next = questChestResult.snapshot;
+      dailyQuestChestOpened = questChestResult.chestOpened;
+      questChestLeagueXpBonus = questChestResult.leagueXpBonus;
+      leagueXpBoostUnlocked = questChestResult.leagueXpBoostUnlocked;
+      final monthlyTourResult = _applyMonthlyTourReward(
+        course,
+        snapshot: next,
+        referenceDate: nowLocal,
+      );
+      next = monthlyTourResult.snapshot;
+      monthlyTourRewardUnlocked = monthlyTourResult.rewardUnlocked;
+      monthlyTourLeagueXpBonus = monthlyTourResult.leagueXpBonus;
+      final duetPactResult = _applyDuetPactReward(
+        snapshot: next,
+        referenceDate: nowLocal,
+      );
+      next = duetPactResult.snapshot;
+      duetPactRewardUnlocked = duetPactResult.rewardUnlocked;
+      duetPactLeagueXpBonus = duetPactResult.leagueXpBonus;
+    }
+    next = _normalizedSnapshot(_applyUnlockRulesToRegisteredCourses(next));
     await _updateSnapshotIfChanged(next);
+    final unlockedMilestonesAfter = course == null
+        ? const <String>{}
+        : _earnedMilestoneIdsForCourse(course, snapshot: next);
+    final nextWeeklyLeagueScore = next.weeklyLeagueScores[weekKey] ?? 0;
+    final nextWeeklyLeagueTier = _leagueTierForScore(nextWeeklyLeagueScore);
+    final activeLeagueXpBoostAfter = _leagueXpBoostForSnapshot(
+      next,
+      referenceDate: nowLocal,
+    );
+    final duetPactAfter = _duetPactProgressForSnapshot(
+      next,
+      referenceDate: nowLocal,
+    );
+    final promotedLeagueTier =
+        nextWeeklyLeagueTier.index > previousWeeklyLeagueTier.index
+        ? nextWeeklyLeagueTier
+        : null;
+    final countsTowardLessonProgress =
+        lesson.sessionMetadata.countsTowardLessonProgress;
+    final nextLessonResult = countsTowardLessonProgress
+        ? next.lessonResults[effectiveLessonId]
+        : null;
+    final previousBestStars = previousLessonResult?.bestStars ?? 0;
+    final previousBestRank = previousLessonResult?.bestRank ?? 'C';
+    final nextBestStars = nextLessonResult?.bestStars;
+    final nextBestRank = nextLessonResult?.bestRank;
+    final personalBestImproved =
+        countsTowardLessonProgress &&
+        ((nextBestStars ?? 0) > previousBestStars ||
+            (nextBestRank != null &&
+                _betterRank(previousBestRank, nextBestRank) !=
+                    previousBestRank));
 
     final skillGains =
         skillSummaries.keys
@@ -296,25 +881,67 @@ class StudyHarmonyProgressController extends ChangeNotifier {
 
     return StudyHarmonySessionProgressEffect(
       mode: lesson.sessionMode,
+      sessionStars: sessionStars,
+      sessionRank: sessionRank,
       skillGains: skillGains,
       focusSkillTags: lesson.sessionMetadata.focusSkillTags.isEmpty
           ? skillSummaries.keys.toSet()
           : lesson.sessionMetadata.focusSkillTags,
       reviewReason: lesson.sessionMetadata.reviewReason,
       dailyDateKey: lesson.sessionMetadata.dailyDateKey,
+      bestStars: nextBestStars,
+      bestRank: nextBestRank,
+      personalBestImproved: personalBestImproved,
+      countsTowardLessonProgress: countsTowardLessonProgress,
+      dailyChallengeCompleted: dailyChallengeCompleted,
+      focusSprintCompleted: focusSprintCompleted,
+      dailyStreakCount: dailyStreakCount,
+      bestDailyStreakCount: dailyChallengeCompleted
+          ? nextBestDailyStreak
+          : null,
+      newlyUnlockedMilestoneIds:
+          unlockedMilestonesAfter
+              .difference(unlockedMilestonesBefore)
+              .toList(growable: false)
+            ..sort(),
+      weeklyRewardUnlocked: weeklyRewardUnlocked,
+      streakSaverUsed: streakSaverUsed,
+      streakSaverCount: next.streakSaverCount,
+      relayWinCount:
+          lesson.sessionMode == StudyHarmonySessionMode.relay && cleared
+          ? next.relayWinCount
+          : null,
+      weeklyLeagueScore: nextWeeklyLeagueScore,
+      weeklyLeagueScoreDelta: weeklyLeagueScoreDelta,
+      weeklyLeagueTier: nextWeeklyLeagueTier,
+      promotedLeagueTier: promotedLeagueTier,
+      dailyQuestChestOpened: dailyQuestChestOpened,
+      questChestCount: next.questChestCount,
+      questChestLeagueXpBonus: questChestLeagueXpBonus,
+      leagueXpBoostUnlocked: leagueXpBoostUnlocked,
+      leagueXpBoostChargeCount: activeLeagueXpBoostAfter.chargeCount,
+      leagueXpBoostAppliedBonus: leagueXpBoostAppliedBonus,
+      monthlyTourRewardUnlocked: monthlyTourRewardUnlocked,
+      monthlyTourLeagueXpBonus: monthlyTourLeagueXpBonus,
+      monthlyTourStreakSaverCount: next.streakSaverCount,
+      duetPactActiveToday: duetPactAfter.activeToday,
+      duetPactCurrentStreak: duetPactAfter.currentStreak,
+      duetPactBestStreak: duetPactAfter.bestStreak,
+      duetPactRewardUnlocked: duetPactRewardUnlocked,
+      duetPactLeagueXpBonus: duetPactLeagueXpBonus,
     );
   }
 
   bool isLessonUnlocked(StudyHarmonyLessonId lessonId) {
-    return _snapshot.unlockedLessonIds.contains(lessonId);
+    return _isLessonUnlocked(_snapshot, lessonId);
   }
 
   bool isChapterUnlocked(StudyHarmonyChapterId chapterId) {
-    return _snapshot.unlockedChapterIds.contains(chapterId);
+    return _isChapterUnlocked(_snapshot, chapterId);
   }
 
   bool isLessonCleared(StudyHarmonyLessonId lessonId) {
-    return _snapshot.lessonResults[lessonId]?.isCleared ?? false;
+    return _isLessonCleared(_snapshot, lessonId);
   }
 
   StudyHarmonyLessonProgressSummary? lessonResultFor(
@@ -329,30 +956,373 @@ class StudyHarmonyProgressController extends ChangeNotifier {
     return _snapshot.skillMasteryPlaceholders[skillId];
   }
 
+  bool _isLessonUnlocked(
+    StudyHarmonyProgressSnapshot snapshot,
+    StudyHarmonyLessonId lessonId,
+  ) {
+    return snapshot.unlockedLessonIds.contains(lessonId);
+  }
+
+  bool _isChapterUnlocked(
+    StudyHarmonyProgressSnapshot snapshot,
+    StudyHarmonyChapterId chapterId,
+  ) {
+    return snapshot.unlockedChapterIds.contains(chapterId);
+  }
+
+  bool _isLessonCleared(
+    StudyHarmonyProgressSnapshot snapshot,
+    StudyHarmonyLessonId lessonId,
+  ) {
+    return snapshot.lessonResults[lessonId]?.isCleared ?? false;
+  }
+
   StudyHarmonyChapterProgressSummaryView chapterProgressFor(
     StudyHarmonyChapterDefinition chapter,
   ) {
+    return _chapterProgressFor(chapter, snapshot: _snapshot);
+  }
+
+  StudyHarmonyChapterProgressSummaryView _chapterProgressFor(
+    StudyHarmonyChapterDefinition chapter, {
+    required StudyHarmonyProgressSnapshot snapshot,
+  }) {
     final clearedLessonCount = chapter.lessons
-        .where((lesson) => isLessonCleared(lesson.id))
+        .where((lesson) => _isLessonCleared(snapshot, lesson.id))
         .length;
+    final lessonCount = chapter.lessons.length;
+    final starCount = _starsEarnedForChapter(chapter, snapshot: snapshot);
     final unlocked =
-        isChapterUnlocked(chapter.id) ||
-        chapter.lessons.any((lesson) => isLessonUnlocked(lesson.id));
-    final nextLesson = chapter.lessons.firstWhere(
-      (lesson) => isLessonUnlocked(lesson.id) && !isLessonCleared(lesson.id),
-      orElse: () => chapter.lessons.firstWhere(
-        (lesson) => isLessonUnlocked(lesson.id),
-        orElse: () => chapter.lessons.first,
-      ),
-    );
+        _isChapterUnlocked(snapshot, chapter.id) ||
+        chapter.lessons.any((lesson) => _isLessonUnlocked(snapshot, lesson.id));
+    final isCompleted = lessonCount > 0 && clearedLessonCount >= lessonCount;
+    final nextLesson = !unlocked || isCompleted
+        ? null
+        : chapter.lessons.firstWhere(
+            (lesson) =>
+                _isLessonUnlocked(snapshot, lesson.id) &&
+                !_isLessonCleared(snapshot, lesson.id),
+            orElse: () => chapter.lessons.firstWhere(
+              (lesson) => _isLessonUnlocked(snapshot, lesson.id),
+              orElse: () => chapter.lessons.first,
+            ),
+          );
 
     return StudyHarmonyChapterProgressSummaryView(
       chapter: chapter,
-      lessonCount: chapter.lessons.length,
+      lessonCount: lessonCount,
       clearedLessonCount: clearedLessonCount,
+      starCount: starCount,
+      masteryTier: _chapterMasteryTierFor(chapter, snapshot: snapshot),
       unlocked: unlocked,
-      nextLesson: unlocked ? nextLesson : null,
+      nextLesson: nextLesson,
     );
+  }
+
+  int starsEarnedForCourse(StudyHarmonyCourseDefinition course) {
+    return _starsEarnedForCourse(course, snapshot: _snapshot);
+  }
+
+  int starsEarnedForChapter(StudyHarmonyChapterDefinition chapter) {
+    return _starsEarnedForChapter(chapter, snapshot: _snapshot);
+  }
+
+  bool isChapterLegendary(StudyHarmonyChapterId chapterId) {
+    return _snapshot.legendaryChapterIds.contains(chapterId);
+  }
+
+  StudyHarmonyChapterMasteryTier chapterMasteryTierFor(
+    StudyHarmonyChapterDefinition chapter,
+  ) {
+    return _chapterMasteryTierFor(chapter, snapshot: _snapshot);
+  }
+
+  int legendaryChapterCountForCourse(StudyHarmonyCourseDefinition course) {
+    return course.chapters
+        .where((chapter) => _snapshot.legendaryChapterIds.contains(chapter.id))
+        .length;
+  }
+
+  int relayWinCount() {
+    return _snapshot.relayWinCount;
+  }
+
+  int questChestCount() {
+    return _snapshot.questChestCount;
+  }
+
+  StudyHarmonyLeagueXpBoostProgressView currentLeagueXpBoost() {
+    return _leagueXpBoostForSnapshot(_snapshot, referenceDate: _nowProvider());
+  }
+
+  StudyHarmonyLeagueProgressView currentLeagueProgress() {
+    final weekKey = _weekKey(_nowProvider());
+    final score = _snapshot.weeklyLeagueScores[weekKey] ?? 0;
+    return _leagueProgressForScore(weekKey: weekKey, score: score);
+  }
+
+  bool isQuestChestOpenedToday() {
+    return _snapshot.awardedDailyQuestChestDateKeys.contains(
+      _dailyDateKey(_nowProvider()),
+    );
+  }
+
+  int masteredSkillCountForCourse(
+    StudyHarmonyCourseDefinition course, {
+    double masteryThreshold = 0.75,
+  }) {
+    return _masteredSkillCountForCourse(
+      course,
+      snapshot: _snapshot,
+      masteryThreshold: masteryThreshold,
+    );
+  }
+
+  int dueReviewCountForCourse(StudyHarmonyCourseDefinition course) {
+    final lessonIds = {for (final lesson in _orderedLessons(course)) lesson.id};
+    final now = _nowProvider();
+    return _snapshot.reviewQueuePlaceholders.where((entry) {
+      return lessonIds.contains(entry.lessonId) && _isEntryDue(entry, now);
+    }).length;
+  }
+
+  int currentDailyChallengeStreak() {
+    return _currentDailyStreakForDateKeys(
+      _allStreakDateKeys(
+        completedDailyDateKeys: _snapshot.completedDailyChallengeDateKeys,
+        protectedDailyDateKeys: _snapshot.protectedDailyChallengeDateKeys,
+      ),
+      _nowProvider(),
+    );
+  }
+
+  int bestDailyChallengeStreak() {
+    return _bestDailyChallengeStreakForSnapshot(_snapshot);
+  }
+
+  int currentStreakSaverCount() {
+    return _snapshot.streakSaverCount;
+  }
+
+  bool isDailyChallengeCompletedToday() {
+    return _snapshot.completedDailyChallengeDateKeys.contains(
+      _dailyDateKey(_nowProvider()),
+    );
+  }
+
+  List<StudyHarmonyWeeklyGoalProgressView> weeklyPlanForCourse(
+    StudyHarmonyCourseDefinition course,
+  ) {
+    return _weeklyPlanForCourse(
+      course,
+      snapshot: _snapshot,
+      referenceDate: _nowProvider(),
+    );
+  }
+
+  StudyHarmonyMonthlyTourProgressView monthlyTourProgressForCourse(
+    StudyHarmonyCourseDefinition course,
+  ) {
+    return _monthlyTourForCourse(
+      course,
+      snapshot: _snapshot,
+      referenceDate: _nowProvider(),
+    );
+  }
+
+  StudyHarmonyDuetPactProgressView duetPactProgress() {
+    return _duetPactProgressForSnapshot(
+      _snapshot,
+      referenceDate: _nowProvider(),
+    );
+  }
+
+  List<StudyHarmonyQuestProgressView> questBoardForCourse(
+    StudyHarmonyCourseDefinition course,
+  ) {
+    return _questBoardForCourse(
+      course,
+      snapshot: _snapshot,
+      referenceDate: _nowProvider(),
+    );
+  }
+
+  StudyHarmonyQuestChestProgressView questChestStatusForCourse(
+    StudyHarmonyCourseDefinition course,
+  ) {
+    return _questChestStatusForCourse(
+      course,
+      snapshot: _snapshot,
+      referenceDate: _nowProvider(),
+    );
+  }
+
+  StudyHarmonyLessonRecommendation? questChestRecommendationForCourse(
+    StudyHarmonyCourseDefinition course,
+  ) {
+    final questBoard = questBoardForCourse(course);
+    final chestStatus = questChestStatusForCourse(course);
+    if (chestStatus.openedToday) {
+      return continueRecommendationForCourse(course);
+    }
+
+    final dailyQuest = questBoard.firstWhere(
+      (quest) => quest.kind == StudyHarmonyQuestKind.dailyStreak,
+    );
+    if (!dailyQuest.countsTowardChest) {
+      return dailyChallengeRecommendationForCourse(course);
+    }
+
+    final frontierQuest = questBoard.firstWhere(
+      (quest) => quest.kind == StudyHarmonyQuestKind.frontierLesson,
+    );
+    if (!frontierQuest.countsTowardChest) {
+      return continueRecommendationForCourse(course);
+    }
+
+    final starsQuest = questBoard.firstWhere(
+      (quest) => quest.kind == StudyHarmonyQuestKind.chapterStars,
+    );
+    if (!starsQuest.countsTowardChest) {
+      final chapterLesson = _chapterStarQuestRecommendation(course, starsQuest);
+      return chapterLesson ?? continueRecommendationForCourse(course);
+    }
+
+    return continueRecommendationForCourse(course);
+  }
+
+  StudyHarmonyLessonRecommendation? leagueBoostRecommendationForCourse(
+    StudyHarmonyCourseDefinition course,
+  ) {
+    final chestStatus = questChestStatusForCourse(course);
+    final activeLeagueXpBoost = currentLeagueXpBoost();
+    final questFinishRecommendation = questChestRecommendationForCourse(course);
+    final continueRecommendation = continueRecommendationForCourse(course);
+    final dailyRecommendation = dailyChallengeRecommendationForCourse(course);
+    final reviewRecommendation = reviewRecommendationForCourse(course);
+    final focusRecommendation = focusSprintRecommendationForCourse(course);
+    final relayRecommendation = relayRecommendationForCourse(course);
+    final bossRushRecommendation = bossRushRecommendationForCourse(course);
+    final legendRecommendation = legendTrialRecommendationForCourse(course);
+    final progress = currentLeagueProgress();
+    final gapToNextTier = progress.nextTarget == null
+        ? 0
+        : progress.nextTarget! - progress.score;
+
+    if (activeLeagueXpBoost.active) {
+      return legendRecommendation ??
+          bossRushRecommendation ??
+          relayRecommendation ??
+          focusRecommendation ??
+          reviewRecommendation ??
+          dailyRecommendation ??
+          continueRecommendation;
+    }
+    if (!chestStatus.openedToday && questFinishRecommendation != null) {
+      return questFinishRecommendation;
+    }
+    if (progress.score == 0) {
+      return dailyRecommendation ??
+          continueRecommendation ??
+          reviewRecommendation ??
+          focusRecommendation ??
+          relayRecommendation ??
+          bossRushRecommendation ??
+          legendRecommendation;
+    }
+    if (gapToNextTier > 0 && gapToNextTier <= 28) {
+      return legendRecommendation ??
+          bossRushRecommendation ??
+          relayRecommendation ??
+          focusRecommendation ??
+          reviewRecommendation ??
+          dailyRecommendation ??
+          continueRecommendation;
+    }
+    if (progress.tier.index <= StudyHarmonyLeagueTier.bronze.index) {
+      return continueRecommendation ??
+          dailyRecommendation ??
+          focusRecommendation ??
+          reviewRecommendation ??
+          relayRecommendation ??
+          bossRushRecommendation ??
+          legendRecommendation;
+    }
+    return focusRecommendation ??
+        relayRecommendation ??
+        bossRushRecommendation ??
+        legendRecommendation ??
+        reviewRecommendation ??
+        dailyRecommendation ??
+        continueRecommendation;
+  }
+
+  StudyHarmonyLessonRecommendation? monthlyTourRecommendationForCourse(
+    StudyHarmonyCourseDefinition course,
+  ) {
+    final monthlyTour = monthlyTourProgressForCourse(course);
+    if (monthlyTour.rewardReady) {
+      return leagueBoostRecommendationForCourse(course) ??
+          bossRushRecommendationForCourse(course) ??
+          legendTrialRecommendationForCourse(course) ??
+          continueRecommendationForCourse(course);
+    }
+    if (monthlyTour.rewardClaimed) {
+      return leagueBoostRecommendationForCourse(course) ??
+          continueRecommendationForCourse(course) ??
+          reviewRecommendationForCourse(course);
+    }
+
+    final spotlightGoal = monthlyTour.goals.firstWhere(
+      (goal) => goal.kind == StudyHarmonyMonthlyGoalKind.spotlightClears,
+    );
+    if (!spotlightGoal.completed) {
+      return bossRushRecommendationForCourse(course) ??
+          legendTrialRecommendationForCourse(course) ??
+          relayRecommendationForCourse(course) ??
+          focusSprintRecommendationForCourse(course) ??
+          continueRecommendationForCourse(course);
+    }
+
+    final questChestGoal = monthlyTour.goals.firstWhere(
+      (goal) => goal.kind == StudyHarmonyMonthlyGoalKind.questChests,
+    );
+    if (!questChestGoal.completed) {
+      return questChestRecommendationForCourse(course) ??
+          dailyChallengeRecommendationForCourse(course) ??
+          continueRecommendationForCourse(course);
+    }
+
+    return dailyChallengeRecommendationForCourse(course) ??
+        continueRecommendationForCourse(course) ??
+        reviewRecommendationForCourse(course);
+  }
+
+  StudyHarmonyLessonRecommendation? duetPactRecommendationForCourse(
+    StudyHarmonyCourseDefinition course,
+  ) {
+    final duetPact = duetPactProgress();
+    if (!isDailyChallengeCompletedToday()) {
+      return dailyChallengeRecommendationForCourse(course) ??
+          continueRecommendationForCourse(course);
+    }
+    if (!duetPact.activeToday) {
+      return bossRushRecommendationForCourse(course) ??
+          relayRecommendationForCourse(course) ??
+          focusSprintRecommendationForCourse(course) ??
+          legendTrialRecommendationForCourse(course) ??
+          reviewRecommendationForCourse(course) ??
+          continueRecommendationForCourse(course);
+    }
+    return leagueBoostRecommendationForCourse(course) ??
+        continueRecommendationForCourse(course) ??
+        reviewRecommendationForCourse(course);
+  }
+
+  List<StudyHarmonyMilestoneProgressView> milestoneBoardForCourse(
+    StudyHarmonyCourseDefinition course,
+  ) {
+    return _milestoneBoardForCourse(course, snapshot: _snapshot);
   }
 
   StudyHarmonyLessonRecommendation? continueRecommendationForCourse(
@@ -361,8 +1331,14 @@ class StudyHarmonyProgressController extends ChangeNotifier {
     final lastPlayedLesson = lastPlayedTrackId == course.trackId
         ? _lessonForId(course, lastPlayedLessonId)
         : null;
-    if (lastPlayedLesson != null &&
-        _isLessonAccessible(course, lastPlayedLesson)) {
+    final frontierLesson = _frontierLessonForCourse(course);
+    final shouldResumeLastPlayed =
+        lastPlayedLesson != null &&
+        _isLessonAccessible(course, lastPlayedLesson) &&
+        (!isLessonCleared(lastPlayedLesson.id) ||
+            frontierLesson == null ||
+            frontierLesson.id == lastPlayedLesson.id);
+    if (shouldResumeLastPlayed) {
       return _recommendationForLesson(
         course: course,
         lesson: lastPlayedLesson,
@@ -371,13 +1347,12 @@ class StudyHarmonyProgressController extends ChangeNotifier {
       );
     }
 
-    final frontierLesson =
-        _frontierLessonForCourse(course) ?? _fallbackLesson(course);
+    final frontierLessonToOpen = frontierLesson ?? _fallbackLesson(course);
     return _recommendationForLesson(
       course: course,
-      lesson: frontierLesson,
+      lesson: frontierLessonToOpen,
       source: StudyHarmonyRecommendationSource.frontier,
-      focusSkillTags: frontierLesson.skillTags,
+      focusSkillTags: frontierLessonToOpen.skillTags,
     );
   }
 
@@ -428,6 +1403,279 @@ class StudyHarmonyProgressController extends ChangeNotifier {
       focusSkillTags: _focusSkillTagsForLessons(sourceLessons),
       reviewEntry: strongest.entry,
       reviewReason: strongest.reason,
+    );
+  }
+
+  StudyHarmonyLessonRecommendation? focusSprintRecommendationForCourse(
+    StudyHarmonyCourseDefinition course,
+  ) {
+    final rankedCandidates = _rankReviewCandidates(course);
+    final frontierLesson =
+        _frontierLessonForCourse(course) ??
+        continueRecommendationForCourse(course)?.lesson;
+    final sourceLessons = <StudyHarmonyLessonDefinition>[];
+    void addLesson(StudyHarmonyLessonDefinition? lesson) {
+      if (lesson == null || !_isLessonAccessible(course, lesson)) {
+        return;
+      }
+      if (sourceLessons.any((candidate) => candidate.id == lesson.id)) {
+        return;
+      }
+      sourceLessons.add(lesson);
+    }
+
+    addLesson(frontierLesson);
+    for (final candidate in rankedCandidates) {
+      addLesson(candidate.lesson);
+      if (sourceLessons.length >= 4) {
+        break;
+      }
+    }
+
+    if (sourceLessons.length < 3 && frontierLesson != null) {
+      final sameChapterLessons = _orderedLessons(course)
+          .where(
+            (lesson) =>
+                lesson.chapterId == frontierLesson.chapterId &&
+                lesson.id != frontierLesson.id,
+          )
+          .toList(growable: false);
+      for (final lesson in sameChapterLessons) {
+        addLesson(lesson);
+        if (sourceLessons.length >= 3) {
+          break;
+        }
+      }
+    }
+
+    if (sourceLessons.isEmpty) {
+      addLesson(_fallbackLesson(course));
+    }
+    if (sourceLessons.isEmpty) {
+      return null;
+    }
+
+    final anchorLesson = rankedCandidates.isNotEmpty
+        ? rankedCandidates.first.lesson
+        : sourceLessons.first;
+
+    return _recommendationForLesson(
+      course: course,
+      lesson: anchorLesson,
+      source: rankedCandidates.isNotEmpty
+          ? StudyHarmonyRecommendationSource.weakSpot
+          : StudyHarmonyRecommendationSource.frontier,
+      sessionMode: StudyHarmonySessionMode.focus,
+      sourceLessons: sourceLessons,
+      focusSkillTags: _focusSkillTagsForLessons(sourceLessons),
+      reviewReason: rankedCandidates.isNotEmpty
+          ? rankedCandidates.first.reason
+          : 'focus-sprint',
+    );
+  }
+
+  StudyHarmonyLessonRecommendation? relayRecommendationForCourse(
+    StudyHarmonyCourseDefinition course,
+  ) {
+    final accessibleLessons = _orderedLessons(course)
+        .where((lesson) => _isLessonAccessible(course, lesson))
+        .toList(growable: false);
+    final accessibleChapterIds = {
+      for (final lesson in accessibleLessons) lesson.chapterId,
+    };
+    if (accessibleLessons.length < 3 || accessibleChapterIds.length < 2) {
+      return null;
+    }
+
+    final frontierLesson =
+        _frontierLessonForCourse(course) ?? accessibleLessons.first;
+    final rankedCandidates = _rankReviewCandidates(course);
+    final accessibleBossLessons = accessibleLessons
+        .where(_isBossLessonDefinition)
+        .toList(growable: false);
+    final selected = <StudyHarmonyLessonDefinition>[];
+
+    void addLesson(StudyHarmonyLessonDefinition? lesson) {
+      if (lesson == null || !_isLessonAccessible(course, lesson)) {
+        return;
+      }
+      if (selected.any((candidate) => candidate.id == lesson.id)) {
+        return;
+      }
+      selected.add(lesson);
+    }
+
+    addLesson(frontierLesson);
+
+    for (final candidate in rankedCandidates) {
+      if (candidate.lesson.chapterId != frontierLesson.chapterId) {
+        addLesson(candidate.lesson);
+        break;
+      }
+    }
+    if (selected.length < 2 && rankedCandidates.isNotEmpty) {
+      addLesson(rankedCandidates.first.lesson);
+    }
+
+    for (final lesson in accessibleBossLessons) {
+      if (selected.every(
+        (candidate) => candidate.chapterId != lesson.chapterId,
+      )) {
+        addLesson(lesson);
+        if (selected.length >= 3) {
+          break;
+        }
+      }
+    }
+
+    final representedChapters = <StudyHarmonyChapterId>{
+      for (final lesson in selected) lesson.chapterId,
+    };
+    if (representedChapters.length < 3) {
+      for (final lesson in accessibleLessons.reversed) {
+        if (representedChapters.contains(lesson.chapterId)) {
+          continue;
+        }
+        addLesson(lesson);
+        representedChapters.add(lesson.chapterId);
+        if (selected.length >= 4 || representedChapters.length >= 3) {
+          break;
+        }
+      }
+    }
+
+    if (selected.length < 4) {
+      for (final candidate in rankedCandidates) {
+        addLesson(candidate.lesson);
+        if (selected.length >= 4) {
+          break;
+        }
+      }
+    }
+
+    if (selected.length < 4) {
+      for (final lesson in accessibleLessons) {
+        addLesson(lesson);
+        if (selected.length >= 4) {
+          break;
+        }
+      }
+    }
+
+    final chapterSpread = {for (final lesson in selected) lesson.chapterId};
+    if (selected.length < 3 || chapterSpread.length < 2) {
+      return null;
+    }
+
+    final anchorLesson = selected.firstWhere(
+      (lesson) => lesson.chapterId == frontierLesson.chapterId,
+      orElse: () => frontierLesson,
+    );
+    return _recommendationForLesson(
+      course: course,
+      lesson: anchorLesson,
+      source: rankedCandidates.isNotEmpty
+          ? StudyHarmonyRecommendationSource.weakSpot
+          : StudyHarmonyRecommendationSource.frontier,
+      sessionMode: StudyHarmonySessionMode.relay,
+      sourceLessons: selected,
+      focusSkillTags: _focusSkillTagsForLessons(selected),
+      reviewReason: 'arena-relay',
+    );
+  }
+
+  StudyHarmonyLessonRecommendation? legendTrialRecommendationForCourse(
+    StudyHarmonyCourseDefinition course,
+  ) {
+    StudyHarmonyChapterDefinition? candidateChapter;
+    for (final chapter in course.chapters) {
+      if (_chapterMasteryTierFor(chapter, snapshot: _snapshot).index <
+          StudyHarmonyChapterMasteryTier.silver.index) {
+        continue;
+      }
+      if (_snapshot.legendaryChapterIds.contains(chapter.id)) {
+        continue;
+      }
+      candidateChapter = chapter;
+      break;
+    }
+    if (candidateChapter == null) {
+      return null;
+    }
+
+    final sourceLessons = candidateChapter.lessons;
+    final anchorLesson = sourceLessons.lastWhere(
+      _isBossLessonDefinition,
+      orElse: () => sourceLessons.last,
+    );
+    return _recommendationForLesson(
+      course: course,
+      lesson: anchorLesson,
+      source: StudyHarmonyRecommendationSource.frontier,
+      sessionMode: StudyHarmonySessionMode.legend,
+      sourceLessons: sourceLessons,
+      focusSkillTags: _focusSkillTagsForLessons(sourceLessons),
+      reviewReason: 'legend-trial',
+    );
+  }
+
+  StudyHarmonyLessonRecommendation? bossRushRecommendationForCourse(
+    StudyHarmonyCourseDefinition course,
+  ) {
+    final accessibleBossLessons = _orderedLessons(course)
+        .where(
+          (lesson) =>
+              _isLessonAccessible(course, lesson) &&
+              _isBossLessonDefinition(lesson),
+        )
+        .toList(growable: false);
+    if (accessibleBossLessons.length < 2) {
+      return null;
+    }
+
+    final rankedCandidates = _rankReviewCandidates(course);
+    final prioritizedBossLessons = <StudyHarmonyLessonDefinition>[
+      for (final candidate in rankedCandidates)
+        if (_isBossLessonDefinition(candidate.lesson) &&
+            accessibleBossLessons.any(
+              (lesson) => lesson.id == candidate.lesson.id,
+            ))
+          candidate.lesson,
+      for (final lesson in accessibleBossLessons)
+        if (!rankedCandidates.any(
+          (candidate) => candidate.lesson.id == lesson.id,
+        ))
+          lesson,
+    ];
+
+    final sourceLessons = <StudyHarmonyLessonDefinition>[];
+    for (final lesson in prioritizedBossLessons) {
+      if (sourceLessons.any((candidate) => candidate.id == lesson.id)) {
+        continue;
+      }
+      sourceLessons.add(lesson);
+      if (sourceLessons.length >= 3) {
+        break;
+      }
+    }
+
+    final anchorLesson = sourceLessons.isEmpty
+        ? accessibleBossLessons.first
+        : sourceLessons.first;
+    return _recommendationForLesson(
+      course: course,
+      lesson: anchorLesson,
+      source: StudyHarmonyRecommendationSource.weakSpot,
+      sessionMode: StudyHarmonySessionMode.bossRush,
+      sourceLessons: sourceLessons.isEmpty
+          ? <StudyHarmonyLessonDefinition>[anchorLesson]
+          : sourceLessons,
+      focusSkillTags: _focusSkillTagsForLessons(
+        sourceLessons.isEmpty
+            ? <StudyHarmonyLessonDefinition>[anchorLesson]
+            : sourceLessons,
+      ),
+      reviewReason: 'boss-rush',
     );
   }
 
@@ -517,6 +1765,7 @@ class StudyHarmonyProgressController extends ChangeNotifier {
   Future<void> _updateSnapshotIfChanged(
     StudyHarmonyProgressSnapshot nextSnapshot,
   ) async {
+    nextSnapshot = _normalizedSnapshot(nextSnapshot);
     if (_snapshot.encode() == nextSnapshot.encode()) {
       return;
     }
@@ -840,19 +2089,763 @@ class StudyHarmonyProgressController extends ChangeNotifier {
   }
 
   StudyHarmonyLessonDefinition? _frontierLessonForCourse(
-    StudyHarmonyCourseDefinition course,
-  ) {
+    StudyHarmonyCourseDefinition course, {
+    StudyHarmonyProgressSnapshot? snapshot,
+  }) {
+    final effectiveSnapshot = snapshot ?? _snapshot;
     for (final lesson in _orderedLessons(course)) {
-      if (_isLessonAccessible(course, lesson) && !isLessonCleared(lesson.id)) {
+      if (_isLessonAccessible(course, lesson, snapshot: effectiveSnapshot) &&
+          !_isLessonCleared(effectiveSnapshot, lesson.id)) {
         return lesson;
       }
     }
     return null;
   }
 
+  StudyHarmonyCourseDefinition? _courseForTrack(StudyHarmonyTrackId trackId) {
+    for (final course in _coursesById.values) {
+      if (course.trackId == trackId) {
+        return course;
+      }
+    }
+    return null;
+  }
+
+  StudyHarmonyChapterDefinition _starQuestChapterForCourse(
+    StudyHarmonyCourseDefinition course, {
+    StudyHarmonyProgressSnapshot? snapshot,
+  }) {
+    final effectiveSnapshot = snapshot ?? _snapshot;
+    for (final chapter in course.chapters) {
+      final summary = _chapterProgressFor(chapter, snapshot: effectiveSnapshot);
+      if (summary.unlocked && !summary.isCompleted) {
+        return chapter;
+      }
+    }
+    for (final chapter in course.chapters.reversed) {
+      if (_chapterProgressFor(chapter, snapshot: effectiveSnapshot).unlocked) {
+        return chapter;
+      }
+    }
+    return course.chapters.first;
+  }
+
+  List<StudyHarmonyQuestProgressView> _questBoardForCourse(
+    StudyHarmonyCourseDefinition course, {
+    required StudyHarmonyProgressSnapshot snapshot,
+    required DateTime referenceDate,
+  }) {
+    final dateKey = _dailyDateKey(referenceDate);
+    final currentStreak = _currentDailyStreakForDateKeys(
+      _allStreakDateKeys(
+        completedDailyDateKeys: snapshot.completedDailyChallengeDateKeys,
+        protectedDailyDateKeys: snapshot.protectedDailyChallengeDateKeys,
+      ),
+      referenceDate,
+    );
+    final dailyCompletedToday = snapshot.completedDailyChallengeDateKeys
+        .contains(dateKey);
+    final frontierCompletedToday = snapshot.completedFrontierQuestDateKeys
+        .contains(dateKey);
+    final starQuestChapter = _starQuestChapterForCourse(
+      course,
+      snapshot: snapshot,
+    );
+    final starQuestTarget = _starQuestTargetForChapter(starQuestChapter);
+    final starQuestCurrent = _starsEarnedForChapter(
+      starQuestChapter,
+      snapshot: snapshot,
+    );
+    final frontierLesson = _frontierLessonForCourse(course, snapshot: snapshot);
+    final frontierChapter = frontierLesson == null
+        ? null
+        : _chapterForLesson(course, frontierLesson);
+
+    return <StudyHarmonyQuestProgressView>[
+      StudyHarmonyQuestProgressView(
+        kind: StudyHarmonyQuestKind.dailyStreak,
+        current: currentStreak,
+        target: _dailyStreakTarget(currentStreak),
+        completedToday: dailyCompletedToday,
+        countsTowardChest: dailyCompletedToday,
+      ),
+      StudyHarmonyQuestProgressView(
+        kind: StudyHarmonyQuestKind.frontierLesson,
+        current: frontierCompletedToday ? 1 : 0,
+        target: 1,
+        lesson: frontierLesson,
+        chapter: frontierChapter,
+        completedToday: frontierCompletedToday,
+        countsTowardChest: frontierCompletedToday,
+      ),
+      StudyHarmonyQuestProgressView(
+        kind: StudyHarmonyQuestKind.chapterStars,
+        current: starQuestCurrent,
+        target: starQuestTarget,
+        chapter: starQuestChapter,
+        countsTowardChest: starQuestCurrent >= starQuestTarget,
+      ),
+    ];
+  }
+
+  StudyHarmonyQuestChestProgressView _questChestStatusForCourse(
+    StudyHarmonyCourseDefinition course, {
+    required StudyHarmonyProgressSnapshot snapshot,
+    required DateTime referenceDate,
+  }) {
+    final quests = _questBoardForCourse(
+      course,
+      snapshot: snapshot,
+      referenceDate: referenceDate,
+    );
+    final dateKey = _dailyDateKey(referenceDate);
+    return StudyHarmonyQuestChestProgressView(
+      dateKey: dateKey,
+      completedQuestCount: quests
+          .where((quest) => quest.countsTowardChest)
+          .length,
+      totalQuestCount: quests.length,
+      rewardLeagueXp: _dailyQuestChestLeagueXpReward,
+      openedCount: snapshot.questChestCount,
+      openedToday: snapshot.awardedDailyQuestChestDateKeys.contains(dateKey),
+    );
+  }
+
+  StudyHarmonyLeagueXpBoostProgressView _leagueXpBoostForSnapshot(
+    StudyHarmonyProgressSnapshot snapshot, {
+    required DateTime referenceDate,
+  }) {
+    final active = max(0, snapshot.activeLeagueXpBoostCharges);
+    return StudyHarmonyLeagueXpBoostProgressView(
+      chargeCount: active,
+      multiplier: _leagueXpBoostMultiplier,
+      dateKey: active > 0
+          ? snapshot.activeLeagueXpBoostDateKey ?? _dailyDateKey(referenceDate)
+          : null,
+    );
+  }
+
+  bool _countsTowardMonthlySpotlight(StudyHarmonyLessonDefinition lesson) {
+    if (_isBossLessonDefinition(lesson)) {
+      return true;
+    }
+    return switch (lesson.sessionMode) {
+      StudyHarmonySessionMode.focus ||
+      StudyHarmonySessionMode.relay ||
+      StudyHarmonySessionMode.bossRush ||
+      StudyHarmonySessionMode.legend => true,
+      _ => false,
+    };
+  }
+
+  StudyHarmonyLessonRecommendation? _chapterStarQuestRecommendation(
+    StudyHarmonyCourseDefinition course,
+    StudyHarmonyQuestProgressView quest,
+  ) {
+    final targetChapter = quest.chapter;
+    if (targetChapter == null) {
+      return null;
+    }
+    for (final lesson in targetChapter.lessons) {
+      if (!_isLessonAccessible(course, lesson)) {
+        continue;
+      }
+      final result = lessonResultFor(lesson.id);
+      if (!(result?.isCleared ?? false) || (result?.bestStars ?? 0) < 2) {
+        return _recommendationForLesson(
+          course: course,
+          lesson: lesson,
+          source: StudyHarmonyRecommendationSource.frontier,
+          focusSkillTags: lesson.skillTags,
+        );
+      }
+    }
+    return null;
+  }
+
+  int _starQuestTargetForChapter(StudyHarmonyChapterDefinition chapter) {
+    return max(4, chapter.lessons.length * 2);
+  }
+
+  int _silverStarTargetForChapter(StudyHarmonyChapterDefinition chapter) {
+    return chapter.lessons.length * 2;
+  }
+
+  int _goldStarTargetForChapter(StudyHarmonyChapterDefinition chapter) {
+    return chapter.lessons.length * 3;
+  }
+
+  static const int _dailyQuestChestLeagueXpReward = 12;
+  static const int _leagueXpBoostMultiplier = 2;
+  static const int _questChestLeagueXpBoostChargeCount = 2;
+  static const int _monthlyTourLeagueXpReward = 18;
+  static const int _monthlyTourStreakSaverReward = 1;
+  static const int _monthlyTourStreakSaverCap = 3;
+  static const int _duetPactLeagueXpReward = 10;
+  static const List<int> _duetPactRewardThresholds = <int>[3, 7, 14];
+
+  int _dailyStreakTarget(int currentStreak) {
+    if (currentStreak >= 7) {
+      return currentStreak + 1;
+    }
+    if (currentStreak >= 3) {
+      return 7;
+    }
+    return 3;
+  }
+
+  int _leagueScoreDelta({
+    required StudyHarmonySessionMode sessionMode,
+    required bool cleared,
+    required int sessionStars,
+    required double accuracy,
+  }) {
+    final base = switch (sessionMode) {
+      StudyHarmonySessionMode.lesson => 10,
+      StudyHarmonySessionMode.review => 8,
+      StudyHarmonySessionMode.daily => 14,
+      StudyHarmonySessionMode.focus => 16,
+      StudyHarmonySessionMode.relay => 18,
+      StudyHarmonySessionMode.bossRush => 20,
+      StudyHarmonySessionMode.legend => 24,
+      StudyHarmonySessionMode.legacyLevel => 6,
+    };
+    final starBonus = sessionStars * 3;
+    final accuracyBonus = accuracy >= 0.95
+        ? 4
+        : accuracy >= 0.85
+        ? 2
+        : 0;
+    if (cleared) {
+      return base + starBonus + accuracyBonus;
+    }
+    return max(4, (base / 3).round());
+  }
+
+  StudyHarmonyLeagueProgressView _leagueProgressForScore({
+    required String weekKey,
+    required int score,
+  }) {
+    final tier = _leagueTierForScore(score);
+    final nextTier = _nextLeagueTier(tier);
+    return StudyHarmonyLeagueProgressView(
+      weekKey: weekKey,
+      score: score,
+      tier: tier,
+      currentTierFloor: _leagueFloorForTier(tier),
+      nextTier: nextTier,
+      nextTarget: nextTier == null ? null : _leagueFloorForTier(nextTier),
+    );
+  }
+
+  StudyHarmonyLeagueTier _leagueTierForScore(int score) {
+    if (score >= _leagueFloorForTier(StudyHarmonyLeagueTier.diamond)) {
+      return StudyHarmonyLeagueTier.diamond;
+    }
+    if (score >= _leagueFloorForTier(StudyHarmonyLeagueTier.gold)) {
+      return StudyHarmonyLeagueTier.gold;
+    }
+    if (score >= _leagueFloorForTier(StudyHarmonyLeagueTier.silver)) {
+      return StudyHarmonyLeagueTier.silver;
+    }
+    if (score >= _leagueFloorForTier(StudyHarmonyLeagueTier.bronze)) {
+      return StudyHarmonyLeagueTier.bronze;
+    }
+    return StudyHarmonyLeagueTier.rookie;
+  }
+
+  int _leagueFloorForTier(StudyHarmonyLeagueTier tier) {
+    return switch (tier) {
+      StudyHarmonyLeagueTier.rookie => 0,
+      StudyHarmonyLeagueTier.bronze => 40,
+      StudyHarmonyLeagueTier.silver => 100,
+      StudyHarmonyLeagueTier.gold => 180,
+      StudyHarmonyLeagueTier.diamond => 300,
+    };
+  }
+
+  StudyHarmonyLeagueTier? _nextLeagueTier(StudyHarmonyLeagueTier tier) {
+    return switch (tier) {
+      StudyHarmonyLeagueTier.rookie => StudyHarmonyLeagueTier.bronze,
+      StudyHarmonyLeagueTier.bronze => StudyHarmonyLeagueTier.silver,
+      StudyHarmonyLeagueTier.silver => StudyHarmonyLeagueTier.gold,
+      StudyHarmonyLeagueTier.gold => StudyHarmonyLeagueTier.diamond,
+      StudyHarmonyLeagueTier.diamond => null,
+    };
+  }
+
+  int _starsEarnedForCourse(
+    StudyHarmonyCourseDefinition course, {
+    required StudyHarmonyProgressSnapshot snapshot,
+  }) {
+    return _orderedLessons(course).fold<int>(
+      0,
+      (sum, lesson) =>
+          sum + (snapshot.lessonResults[lesson.id]?.bestStars ?? 0),
+    );
+  }
+
+  int _starsEarnedForChapter(
+    StudyHarmonyChapterDefinition chapter, {
+    required StudyHarmonyProgressSnapshot snapshot,
+  }) {
+    return chapter.lessons.fold<int>(
+      0,
+      (sum, lesson) =>
+          sum + (snapshot.lessonResults[lesson.id]?.bestStars ?? 0),
+    );
+  }
+
+  int _masteredSkillCountForCourse(
+    StudyHarmonyCourseDefinition course, {
+    required StudyHarmonyProgressSnapshot snapshot,
+    required double masteryThreshold,
+  }) {
+    return course.skillTags.where((skillId) {
+      final mastery = snapshot.skillMasteryPlaceholders[skillId];
+      return mastery != null && mastery.masteryScore >= masteryThreshold;
+    }).length;
+  }
+
+  int _clearedLessonCountForCourse(
+    StudyHarmonyCourseDefinition course, {
+    required StudyHarmonyProgressSnapshot snapshot,
+  }) {
+    return _orderedLessons(course)
+        .where(
+          (lesson) => snapshot.lessonResults[lesson.id]?.isCleared ?? false,
+        )
+        .length;
+  }
+
+  StudyHarmonyChapterMasteryTier _chapterMasteryTierFor(
+    StudyHarmonyChapterDefinition chapter, {
+    required StudyHarmonyProgressSnapshot snapshot,
+  }) {
+    final clearedLessonCount = chapter.lessons
+        .where(
+          (lesson) => snapshot.lessonResults[lesson.id]?.isCleared ?? false,
+        )
+        .length;
+    final lessonCount = chapter.lessons.length;
+    if (lessonCount == 0 || clearedLessonCount < lessonCount) {
+      return StudyHarmonyChapterMasteryTier.none;
+    }
+    if (snapshot.legendaryChapterIds.contains(chapter.id)) {
+      return StudyHarmonyChapterMasteryTier.legendary;
+    }
+
+    final stars = _starsEarnedForChapter(chapter, snapshot: snapshot);
+    if (stars >= _goldStarTargetForChapter(chapter)) {
+      return StudyHarmonyChapterMasteryTier.gold;
+    }
+    if (stars >= _silverStarTargetForChapter(chapter)) {
+      return StudyHarmonyChapterMasteryTier.silver;
+    }
+    return StudyHarmonyChapterMasteryTier.bronze;
+  }
+
+  List<StudyHarmonyMilestoneProgressView> _milestoneBoardForCourse(
+    StudyHarmonyCourseDefinition course, {
+    required StudyHarmonyProgressSnapshot snapshot,
+  }) {
+    final lessonTargets = <int>[5, 10, 20, _orderedLessons(course).length];
+    final starTargets = <int>[
+      12,
+      24,
+      48,
+      max(60, _orderedLessons(course).length * 2),
+    ];
+    final streakTargets = <int>[3, 5, 7, 14];
+    final masteryTargets = <int>[
+      3,
+      6,
+      9,
+      max(12, min(15, course.skillTags.length)),
+    ];
+    final relayTargets = <int>[1, 3, 5, 8];
+
+    return <StudyHarmonyMilestoneProgressView>[
+      _milestoneProgress(
+        kind: StudyHarmonyMilestoneKind.lessonPath,
+        current: _clearedLessonCountForCourse(course, snapshot: snapshot),
+        targets: lessonTargets,
+      ),
+      _milestoneProgress(
+        kind: StudyHarmonyMilestoneKind.starCollector,
+        current: _starsEarnedForCourse(course, snapshot: snapshot),
+        targets: starTargets,
+      ),
+      _milestoneProgress(
+        kind: StudyHarmonyMilestoneKind.streakLegend,
+        current: _bestDailyChallengeStreakForSnapshot(snapshot),
+        targets: streakTargets,
+      ),
+      _milestoneProgress(
+        kind: StudyHarmonyMilestoneKind.masteryScholar,
+        current: _masteredSkillCountForCourse(
+          course,
+          snapshot: snapshot,
+          masteryThreshold: 0.75,
+        ),
+        targets: masteryTargets,
+      ),
+      _milestoneProgress(
+        kind: StudyHarmonyMilestoneKind.relayRunner,
+        current: snapshot.relayWinCount,
+        targets: relayTargets,
+      ),
+    ];
+  }
+
+  List<StudyHarmonyWeeklyGoalProgressView> _weeklyPlanForCourse(
+    StudyHarmonyCourseDefinition course, {
+    required StudyHarmonyProgressSnapshot snapshot,
+    required DateTime referenceDate,
+  }) {
+    final weekKey = _weekKey(referenceDate);
+    const activeDayTarget = 3;
+    const dailyTarget = 2;
+
+    return <StudyHarmonyWeeklyGoalProgressView>[
+      StudyHarmonyWeeklyGoalProgressView(
+        kind: StudyHarmonyWeeklyGoalKind.activeDays,
+        current: _dateKeyCountForWeek(
+          snapshot.activityDateKeys,
+          referenceDate: referenceDate,
+        ),
+        target: activeDayTarget,
+        weekKey: weekKey,
+        rewardClaimed: snapshot.awardedWeeklyPlanWeekKeys.contains(weekKey),
+      ),
+      StudyHarmonyWeeklyGoalProgressView(
+        kind: StudyHarmonyWeeklyGoalKind.dailyClears,
+        current: _dateKeyCountForWeek(
+          snapshot.completedDailyChallengeDateKeys,
+          referenceDate: referenceDate,
+        ),
+        target: dailyTarget,
+        weekKey: weekKey,
+        rewardClaimed: snapshot.awardedWeeklyPlanWeekKeys.contains(weekKey),
+      ),
+      StudyHarmonyWeeklyGoalProgressView(
+        kind: StudyHarmonyWeeklyGoalKind.focusSprint,
+        current: _dateKeyCountForWeek(
+          snapshot.completedFocusChallengeDateKeys,
+          referenceDate: referenceDate,
+        ),
+        target: 1,
+        weekKey: weekKey,
+        rewardClaimed: snapshot.awardedWeeklyPlanWeekKeys.contains(weekKey),
+      ),
+    ];
+  }
+
+  _WeeklyPlanRewardResult _applyWeeklyPlanReward(
+    StudyHarmonyCourseDefinition course, {
+    required StudyHarmonyProgressSnapshot snapshot,
+    required DateTime referenceDate,
+  }) {
+    final weekKey = _weekKey(referenceDate);
+    if (snapshot.awardedWeeklyPlanWeekKeys.contains(weekKey)) {
+      return _WeeklyPlanRewardResult(snapshot: snapshot, rewardUnlocked: false);
+    }
+
+    final weeklyPlan = _weeklyPlanForCourse(
+      course,
+      snapshot: snapshot,
+      referenceDate: referenceDate,
+    );
+    final completed = weeklyPlan.every((goal) => goal.completed);
+    if (!completed) {
+      return _WeeklyPlanRewardResult(snapshot: snapshot, rewardUnlocked: false);
+    }
+
+    final rewardUnlocked = snapshot.streakSaverCount < 2;
+
+    return _WeeklyPlanRewardResult(
+      snapshot: snapshot.copyWith(
+        awardedWeeklyPlanWeekKeys: {
+          ...snapshot.awardedWeeklyPlanWeekKeys,
+          weekKey,
+        },
+        streakSaverCount: min(snapshot.streakSaverCount + 1, 2),
+      ),
+      rewardUnlocked: rewardUnlocked,
+    );
+  }
+
+  StudyHarmonyMonthlyTourProgressView _monthlyTourForCourse(
+    StudyHarmonyCourseDefinition course, {
+    required StudyHarmonyProgressSnapshot snapshot,
+    required DateTime referenceDate,
+  }) {
+    final _ = course;
+    final monthKey = _monthKey(referenceDate);
+    const activeDayTarget = 8;
+    const questChestTarget = 4;
+    const spotlightTarget = 4;
+
+    final goals = <StudyHarmonyMonthlyGoalProgressView>[
+      StudyHarmonyMonthlyGoalProgressView(
+        kind: StudyHarmonyMonthlyGoalKind.activeDays,
+        current: _dateKeyCountForMonth(
+          snapshot.activityDateKeys,
+          referenceDate: referenceDate,
+        ),
+        target: activeDayTarget,
+        monthKey: monthKey,
+      ),
+      StudyHarmonyMonthlyGoalProgressView(
+        kind: StudyHarmonyMonthlyGoalKind.questChests,
+        current: _dateKeyCountForMonth(
+          snapshot.awardedDailyQuestChestDateKeys,
+          referenceDate: referenceDate,
+        ),
+        target: questChestTarget,
+        monthKey: monthKey,
+      ),
+      StudyHarmonyMonthlyGoalProgressView(
+        kind: StudyHarmonyMonthlyGoalKind.spotlightClears,
+        current: max(0, snapshot.monthlySpotlightClearCounts[monthKey] ?? 0),
+        target: spotlightTarget,
+        monthKey: monthKey,
+      ),
+    ];
+
+    return StudyHarmonyMonthlyTourProgressView(
+      monthKey: monthKey,
+      goals: goals,
+      rewardClaimed: snapshot.awardedMonthlyTourMonthKeys.contains(monthKey),
+      rewardLeagueXp: _monthlyTourLeagueXpReward,
+      rewardStreakSavers: _monthlyTourStreakSaverReward,
+    );
+  }
+
+  _MonthlyTourRewardResult _applyMonthlyTourReward(
+    StudyHarmonyCourseDefinition course, {
+    required StudyHarmonyProgressSnapshot snapshot,
+    required DateTime referenceDate,
+  }) {
+    final monthKey = _monthKey(referenceDate);
+    if (snapshot.awardedMonthlyTourMonthKeys.contains(monthKey)) {
+      return _MonthlyTourRewardResult(
+        rewardUnlocked: false,
+        leagueXpBonus: 0,
+        snapshot: snapshot,
+      );
+    }
+
+    final monthlyTour = _monthlyTourForCourse(
+      course,
+      snapshot: snapshot,
+      referenceDate: referenceDate,
+    );
+    if (!monthlyTour.completed) {
+      return _MonthlyTourRewardResult(
+        rewardUnlocked: false,
+        leagueXpBonus: 0,
+        snapshot: snapshot,
+      );
+    }
+
+    final weekKey = _weekKey(referenceDate);
+    final nextWeeklyLeagueScores = Map<String, int>.from(
+      snapshot.weeklyLeagueScores,
+    );
+    nextWeeklyLeagueScores[weekKey] =
+        (nextWeeklyLeagueScores[weekKey] ?? 0) + _monthlyTourLeagueXpReward;
+
+    final nextSnapshot = snapshot.copyWith(
+      awardedMonthlyTourMonthKeys: {
+        ...snapshot.awardedMonthlyTourMonthKeys,
+        monthKey,
+      },
+      weeklyLeagueScores: nextWeeklyLeagueScores,
+      streakSaverCount: min(
+        snapshot.streakSaverCount + _monthlyTourStreakSaverReward,
+        _monthlyTourStreakSaverCap,
+      ),
+    );
+    return _MonthlyTourRewardResult(
+      snapshot: nextSnapshot,
+      rewardUnlocked: true,
+      leagueXpBonus: _monthlyTourLeagueXpReward,
+    );
+  }
+
+  StudyHarmonyDuetPactProgressView _duetPactProgressForSnapshot(
+    StudyHarmonyProgressSnapshot snapshot, {
+    required DateTime referenceDate,
+  }) {
+    final duetDateKeys = _duetPactDateKeys(snapshot);
+    final currentStreak = _currentDailyStreakForDateKeys(
+      duetDateKeys,
+      referenceDate,
+    );
+    final bestStreak = max(
+      snapshot.bestDuetPactStreak,
+      _longestDailyStreakForDateKeys(duetDateKeys),
+    );
+    final todayKey = _dailyDateKey(referenceDate);
+    final nextTarget = _duetPactRewardThresholds.firstWhere(
+      (target) => bestStreak < target,
+      orElse: () => _duetPactRewardThresholds.last,
+    );
+    return StudyHarmonyDuetPactProgressView(
+      currentStreak: currentStreak,
+      bestStreak: bestStreak,
+      activeToday: duetDateKeys.contains(todayKey),
+      nextTarget: nextTarget,
+      rewardLeagueXp: _duetPactLeagueXpReward,
+    );
+  }
+
+  _DuetPactRewardResult _applyDuetPactReward({
+    required StudyHarmonyProgressSnapshot snapshot,
+    required DateTime referenceDate,
+  }) {
+    final beforeBest = _bestDuetPactStreakForSnapshot(_snapshot);
+    final afterBest = _bestDuetPactStreakForSnapshot(snapshot);
+    final unlockedThreshold = _duetPactRewardThresholds.firstWhere(
+      (target) => beforeBest < target && afterBest >= target,
+      orElse: () => 0,
+    );
+    if (unlockedThreshold <= 0) {
+      return _DuetPactRewardResult(
+        snapshot: snapshot,
+        rewardUnlocked: false,
+        leagueXpBonus: 0,
+      );
+    }
+
+    final weekKey = _weekKey(referenceDate);
+    final nextWeeklyLeagueScores = Map<String, int>.from(
+      snapshot.weeklyLeagueScores,
+    );
+    nextWeeklyLeagueScores[weekKey] =
+        (nextWeeklyLeagueScores[weekKey] ?? 0) + _duetPactLeagueXpReward;
+    return _DuetPactRewardResult(
+      snapshot: snapshot.copyWith(weeklyLeagueScores: nextWeeklyLeagueScores),
+      rewardUnlocked: true,
+      leagueXpBonus: _duetPactLeagueXpReward,
+    );
+  }
+
+  _DailyQuestChestRewardResult _applyDailyQuestChestReward(
+    StudyHarmonyCourseDefinition course, {
+    required StudyHarmonyProgressSnapshot snapshot,
+    required DateTime referenceDate,
+    required bool chapterStarsSatisfiedBefore,
+  }) {
+    final questBoard = _questBoardForCourse(
+      course,
+      snapshot: snapshot,
+      referenceDate: referenceDate,
+    );
+    final completedQuestCount = questBoard.where((quest) {
+      if (quest.kind == StudyHarmonyQuestKind.chapterStars) {
+        return quest.countsTowardChest || chapterStarsSatisfiedBefore;
+      }
+      return quest.countsTowardChest;
+    }).length;
+    final dateKey = _dailyDateKey(referenceDate);
+    final alreadyOpened = snapshot.awardedDailyQuestChestDateKeys.contains(
+      dateKey,
+    );
+    if (alreadyOpened || completedQuestCount < questBoard.length) {
+      return _DailyQuestChestRewardResult(
+        snapshot: snapshot,
+        chestOpened: false,
+        leagueXpBonus: 0,
+        leagueXpBoostUnlocked: false,
+      );
+    }
+
+    final weekKey = _weekKey(referenceDate);
+    final nextWeeklyLeagueScores = Map<String, int>.from(
+      snapshot.weeklyLeagueScores,
+    );
+    nextWeeklyLeagueScores[weekKey] =
+        (nextWeeklyLeagueScores[weekKey] ?? 0) + _dailyQuestChestLeagueXpReward;
+    final activeLeagueXpBoost = _leagueXpBoostForSnapshot(
+      snapshot,
+      referenceDate: referenceDate,
+    );
+    final nextLeagueXpBoostCharges = max(
+      activeLeagueXpBoost.chargeCount,
+      _questChestLeagueXpBoostChargeCount,
+    );
+
+    return _DailyQuestChestRewardResult(
+      snapshot: snapshot.copyWith(
+        awardedDailyQuestChestDateKeys: {
+          ...snapshot.awardedDailyQuestChestDateKeys,
+          dateKey,
+        },
+        weeklyLeagueScores: nextWeeklyLeagueScores,
+        questChestCount: snapshot.questChestCount + 1,
+        activeLeagueXpBoostDateKey: dateKey,
+        activeLeagueXpBoostCharges: nextLeagueXpBoostCharges,
+      ),
+      chestOpened: true,
+      leagueXpBonus: _dailyQuestChestLeagueXpReward,
+      leagueXpBoostUnlocked: true,
+    );
+  }
+
+  Set<String> _earnedMilestoneIdsForCourse(
+    StudyHarmonyCourseDefinition course, {
+    required StudyHarmonyProgressSnapshot snapshot,
+  }) {
+    return {
+      for (final milestone in _milestoneBoardForCourse(
+        course,
+        snapshot: snapshot,
+      ))
+        ..._earnedMilestoneIdsForProgress(milestone),
+    };
+  }
+
+  Set<String> _earnedMilestoneIdsForProgress(
+    StudyHarmonyMilestoneProgressView milestone,
+  ) {
+    return {
+      for (var tier = 1; tier <= milestone.earnedCount; tier += 1)
+        '${milestone.kind.name}-$tier',
+    };
+  }
+
+  StudyHarmonyMilestoneProgressView _milestoneProgress({
+    required StudyHarmonyMilestoneKind kind,
+    required int current,
+    required List<int> targets,
+  }) {
+    final normalizedTargets = {...targets}.toList(growable: false)..sort();
+    final earnedCount = normalizedTargets
+        .where((target) => current >= target)
+        .length;
+    final nextTarget = normalizedTargets.firstWhere(
+      (target) => current < target,
+      orElse: () => normalizedTargets.last,
+    );
+    return StudyHarmonyMilestoneProgressView(
+      id: kind.name,
+      kind: kind,
+      current: current,
+      target: nextTarget,
+      earnedCount: earnedCount,
+      totalTiers: normalizedTargets.length,
+    );
+  }
+
   List<StudyHarmonyLessonDefinition> _orderedLessons(
     StudyHarmonyCourseDefinition course,
   ) => [for (final chapter in course.chapters) ...chapter.lessons];
+
+  bool _isBossLessonDefinition(StudyHarmonyLessonDefinition lesson) {
+    return lesson.goalCorrectAnswers >= 9 || lesson.startingLives >= 4;
+  }
 
   StudyHarmonyLessonDefinition _fallbackLesson(
     StudyHarmonyCourseDefinition course,
@@ -903,13 +2896,16 @@ class StudyHarmonyProgressController extends ChangeNotifier {
 
   bool _isLessonAccessible(
     StudyHarmonyCourseDefinition course,
-    StudyHarmonyLessonDefinition lesson,
-  ) {
+    StudyHarmonyLessonDefinition lesson, {
+    StudyHarmonyProgressSnapshot? snapshot,
+  }) {
+    final effectiveSnapshot = snapshot ?? _snapshot;
     final firstLessonId =
         course.chapters.isNotEmpty && course.chapters.first.lessons.isNotEmpty
         ? course.chapters.first.lessons.first.id
         : null;
-    return isLessonUnlocked(lesson.id) || lesson.id == firstLessonId;
+    return _isLessonUnlocked(effectiveSnapshot, lesson.id) ||
+        lesson.id == firstLessonId;
   }
 
   List<_ReviewCandidate> _rankReviewCandidates(
@@ -1260,8 +3256,9 @@ class StudyHarmonyProgressController extends ChangeNotifier {
   }
 
   StudyHarmonyDailyChallengeSeedMetadata? _mergeDailyMetadataFromLesson(
-    StudyHarmonyLessonDefinition lesson,
-  ) {
+    StudyHarmonyLessonDefinition lesson, {
+    required StudyHarmonyTrackId trackId,
+  }) {
     if (lesson.sessionMode != StudyHarmonySessionMode.daily) {
       return _snapshot.dailyChallengeSeedMetadata;
     }
@@ -1280,11 +3277,453 @@ class StudyHarmonyProgressController extends ChangeNotifier {
       version: existing?.version ?? 1,
       dateKey: dateKey,
       seedValue: seedValue,
-      trackId: existing?.trackId,
+      trackId: trackId,
       chapterId: lesson.chapterId,
       lessonId: _effectiveAnchorLessonId(lesson),
       sourceLessonIds: sourceLessonIds,
     );
+  }
+
+  Set<String> _mergedCompletedDailyChallengeDateKeys({
+    required Set<String> existing,
+    required String dateKey,
+  }) {
+    final ordered = [...existing, dateKey]..sort();
+    return ordered.toSet();
+  }
+
+  Set<String> _allStreakDateKeys({
+    required Set<String> completedDailyDateKeys,
+    required Set<String> protectedDailyDateKeys,
+  }) {
+    return {...completedDailyDateKeys, ...protectedDailyDateKeys};
+  }
+
+  StudyHarmonyProgressSnapshot _normalizedSnapshot(
+    StudyHarmonyProgressSnapshot snapshot,
+  ) {
+    var normalized =
+        snapshot.serializationVersion ==
+            StudyHarmonyProgressSnapshot.currentSerializationVersion
+        ? snapshot
+        : snapshot.copyWith(
+            serializationVersion:
+                StudyHarmonyProgressSnapshot.currentSerializationVersion,
+          );
+    final normalizedBestStreak = _bestDailyChallengeStreakForSnapshot(snapshot);
+    final normalizedRelayWinCount = max(0, normalized.relayWinCount);
+    final normalizedQuestChestCount = max(0, normalized.questChestCount);
+    final normalizedActiveLeagueXpBoostCharges = max(
+      0,
+      normalized.activeLeagueXpBoostCharges,
+    );
+    final normalizedActiveLeagueXpBoostDateKey =
+        normalizedActiveLeagueXpBoostCharges > 0
+        ? normalized.activeLeagueXpBoostDateKey ?? _dailyDateKey(_nowProvider())
+        : null;
+    final normalizedCompletedFrontierQuestKeys = _trimDateKeys(
+      normalized.completedFrontierQuestDateKeys,
+      referenceDate: _nowProvider(),
+    );
+    final normalizedCompletedSpotlightKeys = _trimDateKeys(
+      normalized.completedSpotlightChallengeDateKeys,
+      referenceDate: _nowProvider(),
+    );
+    final normalizedBestDuetPactStreak = max(
+      normalized.bestDuetPactStreak,
+      _longestDailyStreakForDateKeys(
+        normalized.completedDailyChallengeDateKeys.intersection(
+          normalizedCompletedSpotlightKeys,
+        ),
+      ),
+    );
+    final normalizedAwardedDailyQuestChestKeys = _trimDateKeys(
+      normalized.awardedDailyQuestChestDateKeys,
+      referenceDate: _nowProvider(),
+    );
+    final normalizedAwardedMonthlyTourMonthKeys = _trimMonthKeys(
+      normalized.awardedMonthlyTourMonthKeys,
+      referenceDate: _nowProvider(),
+    );
+    final normalizedWeeklyLeagueScores = _trimWeeklyLeagueScores(
+      normalized.weeklyLeagueScores,
+      referenceDate: _nowProvider(),
+    );
+    final normalizedMonthlySpotlightClearCounts = _trimMonthlyCounts(
+      normalized.monthlySpotlightClearCounts,
+      referenceDate: _nowProvider(),
+    );
+    if (normalizedBestStreak == normalized.bestDailyChallengeStreak &&
+        normalizedBestDuetPactStreak == normalized.bestDuetPactStreak &&
+        normalizedRelayWinCount == normalized.relayWinCount &&
+        normalizedQuestChestCount == normalized.questChestCount &&
+        normalizedActiveLeagueXpBoostCharges ==
+            normalized.activeLeagueXpBoostCharges &&
+        normalizedActiveLeagueXpBoostDateKey ==
+            normalized.activeLeagueXpBoostDateKey &&
+        setEquals(
+          normalizedCompletedFrontierQuestKeys,
+          normalized.completedFrontierQuestDateKeys,
+        ) &&
+        setEquals(
+          normalizedCompletedSpotlightKeys,
+          normalized.completedSpotlightChallengeDateKeys,
+        ) &&
+        setEquals(
+          normalizedAwardedDailyQuestChestKeys,
+          normalized.awardedDailyQuestChestDateKeys,
+        ) &&
+        setEquals(
+          normalizedAwardedMonthlyTourMonthKeys,
+          normalized.awardedMonthlyTourMonthKeys,
+        ) &&
+        mapEquals(
+          normalizedWeeklyLeagueScores,
+          normalized.weeklyLeagueScores,
+        ) &&
+        mapEquals(
+          normalizedMonthlySpotlightClearCounts,
+          normalized.monthlySpotlightClearCounts,
+        )) {
+      return normalized;
+    }
+    return normalized.copyWith(
+      bestDailyChallengeStreak: normalizedBestStreak,
+      bestDuetPactStreak: normalizedBestDuetPactStreak,
+      relayWinCount: normalizedRelayWinCount,
+      completedFrontierQuestDateKeys: normalizedCompletedFrontierQuestKeys,
+      completedSpotlightChallengeDateKeys: normalizedCompletedSpotlightKeys,
+      awardedDailyQuestChestDateKeys: normalizedAwardedDailyQuestChestKeys,
+      awardedMonthlyTourMonthKeys: normalizedAwardedMonthlyTourMonthKeys,
+      weeklyLeagueScores: normalizedWeeklyLeagueScores,
+      monthlySpotlightClearCounts: normalizedMonthlySpotlightClearCounts,
+      questChestCount: normalizedQuestChestCount,
+      activeLeagueXpBoostDateKey: normalizedActiveLeagueXpBoostDateKey,
+      activeLeagueXpBoostCharges: normalizedActiveLeagueXpBoostCharges,
+      clearActiveLeagueXpBoostDateKey:
+          normalizedActiveLeagueXpBoostDateKey == null,
+    );
+  }
+
+  Set<String> _trimDateKeys(
+    Set<String> dateKeys, {
+    required DateTime referenceDate,
+  }) {
+    if (dateKeys.isEmpty) {
+      return dateKeys;
+    }
+    final oldestDateToKeep = _dateOnly(
+      referenceDate,
+    ).subtract(const Duration(days: 90));
+    return {
+      for (final dateKey in dateKeys)
+        if (_dateFromKey(dateKey) case final date?
+            when !date.isBefore(oldestDateToKeep))
+          dateKey,
+    };
+  }
+
+  Map<String, int> _trimWeeklyLeagueScores(
+    Map<String, int> weeklyLeagueScores, {
+    required DateTime referenceDate,
+  }) {
+    if (weeklyLeagueScores.isEmpty) {
+      return weeklyLeagueScores;
+    }
+    final oldestWeekToKeep = _startOfWeek(
+      referenceDate,
+    ).subtract(const Duration(days: 77));
+    final trimmed = <String, int>{};
+    for (final entry in weeklyLeagueScores.entries) {
+      final weekDate = _dateFromKey(entry.key);
+      if (weekDate == null ||
+          weekDate.isBefore(oldestWeekToKeep) ||
+          entry.value <= 0) {
+        continue;
+      }
+      trimmed[entry.key] = entry.value;
+    }
+    return trimmed;
+  }
+
+  Set<String> _trimMonthKeys(
+    Set<String> monthKeys, {
+    required DateTime referenceDate,
+  }) {
+    if (monthKeys.isEmpty) {
+      return monthKeys;
+    }
+    final oldestMonthToKeep = DateTime(
+      referenceDate.year,
+      referenceDate.month - 5,
+    );
+    return {
+      for (final monthKey in monthKeys)
+        if (_monthDateFromKey(monthKey) case final monthDate?
+            when !monthDate.isBefore(oldestMonthToKeep))
+          monthKey,
+    };
+  }
+
+  Map<String, int> _trimMonthlyCounts(
+    Map<String, int> monthlyCounts, {
+    required DateTime referenceDate,
+  }) {
+    if (monthlyCounts.isEmpty) {
+      return monthlyCounts;
+    }
+    final oldestMonthToKeep = DateTime(
+      referenceDate.year,
+      referenceDate.month - 5,
+    );
+    final trimmed = <String, int>{};
+    for (final entry in monthlyCounts.entries) {
+      final monthDate = _monthDateFromKey(entry.key);
+      if (monthDate == null ||
+          monthDate.isBefore(oldestMonthToKeep) ||
+          entry.value <= 0) {
+        continue;
+      }
+      trimmed[entry.key] = entry.value;
+    }
+    return trimmed;
+  }
+
+  Set<String> _duetPactDateKeys(StudyHarmonyProgressSnapshot snapshot) {
+    return snapshot.completedDailyChallengeDateKeys.intersection(
+      snapshot.completedSpotlightChallengeDateKeys,
+    );
+  }
+
+  int _bestDuetPactStreakForSnapshot(StudyHarmonyProgressSnapshot snapshot) {
+    return max(
+      snapshot.bestDuetPactStreak,
+      _longestDailyStreakForDateKeys(_duetPactDateKeys(snapshot)),
+    );
+  }
+
+  int _currentDailyStreakForDateKeys(Set<String> dateKeys, DateTime now) {
+    if (dateKeys.isEmpty) {
+      return 0;
+    }
+    var anchor = _dateOnly(now);
+    if (!dateKeys.contains(_dateKeyFromDate(anchor))) {
+      anchor = anchor.subtract(const Duration(days: 1));
+      if (!dateKeys.contains(_dateKeyFromDate(anchor))) {
+        return 0;
+      }
+    }
+    return _streakEndingAt(dateKeys, _dateKeyFromDate(anchor));
+  }
+
+  int _bestDailyChallengeStreakForSnapshot(
+    StudyHarmonyProgressSnapshot snapshot,
+  ) {
+    return max(
+      snapshot.bestDailyChallengeStreak,
+      _longestDailyStreakForDateKeys(
+        _allStreakDateKeys(
+          completedDailyDateKeys: snapshot.completedDailyChallengeDateKeys,
+          protectedDailyDateKeys: snapshot.protectedDailyChallengeDateKeys,
+        ),
+      ),
+    );
+  }
+
+  int _longestDailyStreakForDateKeys(Set<String> dateKeys) {
+    if (dateKeys.isEmpty) {
+      return 0;
+    }
+    final orderedDates =
+        dateKeys
+            .map(_dateFromKey)
+            .whereType<DateTime>()
+            .map(_dateOnly)
+            .toList(growable: false)
+          ..sort();
+    if (orderedDates.isEmpty) {
+      return 0;
+    }
+
+    var longest = 1;
+    var current = 1;
+    for (var index = 1; index < orderedDates.length; index += 1) {
+      final difference = orderedDates[index]
+          .difference(orderedDates[index - 1])
+          .inDays;
+      if (difference == 0) {
+        continue;
+      }
+      if (difference == 1) {
+        current += 1;
+      } else {
+        current = 1;
+      }
+      if (current > longest) {
+        longest = current;
+      }
+    }
+    return longest;
+  }
+
+  int _streakEndingAt(Set<String> dateKeys, String dateKey) {
+    final anchor = _dateFromKey(dateKey);
+    if (anchor == null) {
+      return 0;
+    }
+    var streak = 0;
+    var cursor = anchor;
+    while (dateKeys.contains(_dateKeyFromDate(cursor))) {
+      streak += 1;
+      cursor = cursor.subtract(const Duration(days: 1));
+    }
+    return streak;
+  }
+
+  _StreakSaverUseResult _tryUseStreakSaverForDateKey({
+    required Set<String> completedDailyDateKeys,
+    required Set<String> protectedDailyDateKeys,
+    required String dateKey,
+    required int streakSaverCount,
+  }) {
+    if (streakSaverCount <= 0) {
+      return _StreakSaverUseResult(
+        protectedDailyDateKeys: protectedDailyDateKeys,
+        remainingStreakSavers: streakSaverCount,
+        used: false,
+      );
+    }
+
+    final anchorDate = _dateFromKey(dateKey);
+    if (anchorDate == null) {
+      return _StreakSaverUseResult(
+        protectedDailyDateKeys: protectedDailyDateKeys,
+        remainingStreakSavers: streakSaverCount,
+        used: false,
+      );
+    }
+
+    final missingDay = anchorDate.subtract(const Duration(days: 1));
+    final missingDayKey = _dateKeyFromDate(missingDay);
+    final streakDateKeys = _allStreakDateKeys(
+      completedDailyDateKeys: completedDailyDateKeys,
+      protectedDailyDateKeys: protectedDailyDateKeys,
+    );
+    if (streakDateKeys.contains(missingDayKey)) {
+      return _StreakSaverUseResult(
+        protectedDailyDateKeys: protectedDailyDateKeys,
+        remainingStreakSavers: streakSaverCount,
+        used: false,
+      );
+    }
+
+    final preGapDay = missingDay.subtract(const Duration(days: 1));
+    final preGapDayKey = _dateKeyFromDate(preGapDay);
+    if (!streakDateKeys.contains(preGapDayKey)) {
+      return _StreakSaverUseResult(
+        protectedDailyDateKeys: protectedDailyDateKeys,
+        remainingStreakSavers: streakSaverCount,
+        used: false,
+      );
+    }
+
+    return _StreakSaverUseResult(
+      protectedDailyDateKeys: _mergedCompletedDailyChallengeDateKeys(
+        existing: protectedDailyDateKeys,
+        dateKey: missingDayKey,
+      ),
+      remainingStreakSavers: max(0, streakSaverCount - 1),
+      used: true,
+    );
+  }
+
+  DateTime _dateOnly(DateTime value) {
+    return DateTime(value.year, value.month, value.day);
+  }
+
+  DateTime _startOfWeek(DateTime value) {
+    final date = _dateOnly(value);
+    final weekdayOffset = date.weekday - DateTime.monday;
+    return date.subtract(Duration(days: weekdayOffset));
+  }
+
+  DateTime? _dateFromKey(String dateKey) {
+    final parts = dateKey.split('-');
+    if (parts.length != 3) {
+      return null;
+    }
+    final year = int.tryParse(parts[0]);
+    final month = int.tryParse(parts[1]);
+    final day = int.tryParse(parts[2]);
+    if (year == null || month == null || day == null) {
+      return null;
+    }
+    return DateTime(year, month, day);
+  }
+
+  String _dateKeyFromDate(DateTime value) {
+    final date = _dateOnly(value);
+    final year = date.year.toString().padLeft(4, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '$year-$month-$day';
+  }
+
+  String _weekKey(DateTime value) {
+    return _dateKeyFromDate(_startOfWeek(value));
+  }
+
+  String _monthKey(DateTime value) {
+    final date = _dateOnly(value);
+    final year = date.year.toString().padLeft(4, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    return '$year-$month';
+  }
+
+  DateTime? _monthDateFromKey(String monthKey) {
+    final parts = monthKey.split('-');
+    if (parts.length != 2) {
+      return null;
+    }
+    final year = int.tryParse(parts[0]);
+    final month = int.tryParse(parts[1]);
+    if (year == null || month == null) {
+      return null;
+    }
+    return DateTime(year, month);
+  }
+
+  int _dateKeyCountForWeek(
+    Set<String> dateKeys, {
+    required DateTime referenceDate,
+  }) {
+    final weekStart = _startOfWeek(referenceDate);
+    final weekEnd = weekStart.add(const Duration(days: 6));
+    return dateKeys
+        .map(_dateFromKey)
+        .whereType<DateTime>()
+        .map(_dateOnly)
+        .where((date) => !date.isBefore(weekStart) && !date.isAfter(weekEnd))
+        .toSet()
+        .length;
+  }
+
+  int _dateKeyCountForMonth(
+    Set<String> dateKeys, {
+    required DateTime referenceDate,
+  }) {
+    final referenceMonth = DateTime(referenceDate.year, referenceDate.month);
+    return dateKeys
+        .map(_dateFromKey)
+        .whereType<DateTime>()
+        .map((date) => DateTime(date.year, date.month, date.day))
+        .where(
+          (date) =>
+              date.year == referenceMonth.year &&
+              date.month == referenceMonth.month,
+        )
+        .toSet()
+        .length;
   }
 
   double _masteryDelta({
@@ -1335,10 +3774,7 @@ class StudyHarmonyProgressController extends ChangeNotifier {
   }
 
   String _dailyDateKey(DateTime now) {
-    final year = now.year.toString().padLeft(4, '0');
-    final month = now.month.toString().padLeft(2, '0');
-    final day = now.day.toString().padLeft(2, '0');
-    return '$year-$month-$day';
+    return _dateKeyFromDate(now);
   }
 }
 
@@ -1355,6 +3791,71 @@ class _ReviewCandidate {
   final double score;
   final String reason;
   final StudyHarmonyReviewQueuePlaceholderEntry? entry;
+}
+
+@immutable
+class _StreakSaverUseResult {
+  const _StreakSaverUseResult({
+    required this.protectedDailyDateKeys,
+    required this.remainingStreakSavers,
+    required this.used,
+  });
+
+  final Set<String> protectedDailyDateKeys;
+  final int remainingStreakSavers;
+  final bool used;
+}
+
+@immutable
+class _WeeklyPlanRewardResult {
+  const _WeeklyPlanRewardResult({
+    required this.snapshot,
+    required this.rewardUnlocked,
+  });
+
+  final StudyHarmonyProgressSnapshot snapshot;
+  final bool rewardUnlocked;
+}
+
+@immutable
+class _MonthlyTourRewardResult {
+  const _MonthlyTourRewardResult({
+    required this.snapshot,
+    required this.rewardUnlocked,
+    required this.leagueXpBonus,
+  });
+
+  final StudyHarmonyProgressSnapshot snapshot;
+  final bool rewardUnlocked;
+  final int leagueXpBonus;
+}
+
+@immutable
+class _DuetPactRewardResult {
+  const _DuetPactRewardResult({
+    required this.snapshot,
+    required this.rewardUnlocked,
+    required this.leagueXpBonus,
+  });
+
+  final StudyHarmonyProgressSnapshot snapshot;
+  final bool rewardUnlocked;
+  final int leagueXpBonus;
+}
+
+@immutable
+class _DailyQuestChestRewardResult {
+  const _DailyQuestChestRewardResult({
+    required this.snapshot,
+    required this.chestOpened,
+    required this.leagueXpBonus,
+    required this.leagueXpBoostUnlocked,
+  });
+
+  final StudyHarmonyProgressSnapshot snapshot;
+  final bool chestOpened;
+  final int leagueXpBonus;
+  final bool leagueXpBoostUnlocked;
 }
 
 double _averageDoubles(Iterable<double> values) {

@@ -6,7 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'audio/beat_clock.dart';
+import 'audio/harmony_audio_models.dart';
+import 'audio/harmony_audio_service.dart';
 import 'audio/metronome_audio_service.dart';
+import 'audio/sightchord_audio_scope.dart';
 import 'l10n/app_localizations.dart';
 import 'music/chord_formatting.dart';
 import 'music/chord_theory.dart';
@@ -70,6 +73,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int _nextScheduledMetronomeSequence = 0;
   bool _autoRunning = false;
   double? _scheduledMetronomeBaseTimeSeconds;
+  bool _requestedHarmonyAudioWarmUp = false;
+  HarmonyAudioService? _harmonyAudio;
   PracticeChordQueueState _queueState = const PracticeChordQueueState();
   VoicingSessionState _voicingState = const VoicingSessionState();
 
@@ -97,6 +102,21 @@ class _MyHomePageState extends State<MyHomePage> {
     unawaited(_initAudio());
     _ensureChordQueueInitialized();
     _recomputeVoicingSuggestions();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_requestedHarmonyAudioWarmUp) {
+      return;
+    }
+    final harmonyAudio = SightChordAudioScope.maybeOf(context);
+    _harmonyAudio = harmonyAudio;
+    if (harmonyAudio == null) {
+      return;
+    }
+    _requestedHarmonyAudioWarmUp = true;
+    unawaited(harmonyAudio.warmUp());
   }
 
   Future<void> _initAudio() async {
@@ -203,6 +223,21 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
     }
+  }
+
+  Future<void> _playCurrentChordPreview({
+    required HarmonyPlaybackPattern pattern,
+  }) async {
+    final currentChord = _currentChord;
+    final harmonyAudio = _harmonyAudio;
+    if (currentChord == null || harmonyAudio == null) {
+      return;
+    }
+    await harmonyAudio.playGeneratedChord(
+      currentChord,
+      voicing: _authoritativeSelectedVoicing(),
+      pattern: pattern,
+    );
   }
 
   void _ensureChordQueueInitialized() {

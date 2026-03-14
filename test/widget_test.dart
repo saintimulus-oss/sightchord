@@ -249,6 +249,14 @@ void main() {
     await openChordGenerator(tester);
 
     expect(find.byKey(const ValueKey('current-chord-text')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('practice-play-chord-button')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('practice-play-arpeggio-button')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('main menu settings only allow changing language', (

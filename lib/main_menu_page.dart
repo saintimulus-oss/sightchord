@@ -301,6 +301,19 @@ _StudyHarmonyMenuSummary _buildStudyHarmonyMenuSummary({
   );
   final chapterTitle =
       continueRecommendation?.chapter.title ?? course.chapters.first.title;
+  final stars = progressController.starsEarnedForCourse(course);
+  final leagueProgress = progressController.currentLeagueProgress();
+  final legendCrowns = progressController.legendaryChapterCountForCourse(
+    course,
+  );
+  final relayWins = progressController.relayWinCount();
+  final questChests = progressController.questChestCount();
+  final leagueXpBoost = progressController.currentLeagueXpBoost();
+  final monthlyTour = progressController.monthlyTourProgressForCourse(course);
+  final duetPact = progressController.duetPactProgress();
+  final masteredSkills = progressController.masteredSkillCountForCourse(course);
+  final dailyStreak = progressController.currentDailyChallengeStreak();
+  final streakSavers = progressController.currentStreakSaverCount();
 
   return _StudyHarmonyMenuSummary(
     resumeLabel: continueRecommendation == null
@@ -311,8 +324,42 @@ _StudyHarmonyMenuSummary _buildStudyHarmonyMenuSummary({
     badges: [
       chapterTitle,
       l10n.studyHarmonyHubLessonsProgress(clearedLessons, totalLessons),
+      l10n.studyHarmonyProgressStars(stars),
+      if (leagueProgress.score > 0)
+        l10n.studyHarmonyProgressLeague(
+          _leagueTierLabel(l10n, leagueProgress.tier),
+        ),
+      monthlyTour.rewardClaimed
+          ? l10n.studyHarmonyProgressTourClaimed
+          : l10n.studyHarmonyProgressTour(
+              monthlyTour.completedGoalCount,
+              monthlyTour.totalGoalCount,
+            ),
+      if (duetPact.bestStreak > 0)
+        l10n.studyHarmonyProgressDuetPact(duetPact.bestStreak),
+      if (leagueXpBoost.active)
+        l10n.studyHarmonyProgressLeagueBoost(leagueXpBoost.chargeCount),
+      if (legendCrowns > 0) l10n.studyHarmonyProgressLegendCrowns(legendCrowns),
+      if (relayWins > 0) l10n.studyHarmonyProgressRelayWins(relayWins),
+      if (questChests > 0) l10n.studyHarmonyProgressQuestChests(questChests),
+      if (dailyStreak > 0) l10n.studyHarmonyProgressStreak(dailyStreak),
+      if (streakSavers > 0) l10n.studyHarmonyProgressStreakSaver(streakSavers),
+      l10n.studyHarmonyProgressSkillsMastered(
+        masteredSkills,
+        course.skillTags.length,
+      ),
     ],
   );
+}
+
+String _leagueTierLabel(AppLocalizations l10n, StudyHarmonyLeagueTier tier) {
+  return switch (tier) {
+    StudyHarmonyLeagueTier.rookie => l10n.studyHarmonyLeagueTierRookie,
+    StudyHarmonyLeagueTier.bronze => l10n.studyHarmonyLeagueTierBronze,
+    StudyHarmonyLeagueTier.silver => l10n.studyHarmonyLeagueTierSilver,
+    StudyHarmonyLeagueTier.gold => l10n.studyHarmonyLeagueTierGold,
+    StudyHarmonyLeagueTier.diamond => l10n.studyHarmonyLeagueTierDiamond,
+  };
 }
 
 String _languageLabel(AppLocalizations l10n, AppLanguage language) {

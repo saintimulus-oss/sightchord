@@ -140,6 +140,10 @@ class StudyHarmonySessionController extends ChangeNotifier {
         final nextLivesRemaining = evaluation.isCorrect
             ? _state.livesRemaining
             : max(0, _state.livesRemaining - 1);
+        final nextCurrentCombo = evaluation.isCorrect
+            ? _state.currentCombo + 1
+            : 0;
+        final nextBestCombo = max(_state.bestCombo, nextCurrentCombo);
         final nextPhase = _phaseAfterSubmission(
           isCorrect: evaluation.isCorrect,
           correctAnswers: nextCorrectAnswers,
@@ -151,6 +155,8 @@ class StudyHarmonySessionController extends ChangeNotifier {
           lastEvaluation: evaluation,
           correctAnswers: nextCorrectAnswers,
           attempts: _state.attempts + 1,
+          currentCombo: nextCurrentCombo,
+          bestCombo: nextBestCombo,
           livesRemaining: nextLivesRemaining,
           phase: nextPhase,
           elapsed: _stopwatch.elapsed,
@@ -188,6 +194,8 @@ class StudyHarmonySessionController extends ChangeNotifier {
       currentTask: _pickNextTask(),
       correctAnswers: 0,
       attempts: 0,
+      currentCombo: 0,
+      bestCombo: 0,
       livesRemaining: _lesson.startingLives,
       elapsed: Duration.zero,
       performance: const StudyHarmonySessionPerformance(),
@@ -294,6 +302,9 @@ class StudyHarmonySessionController extends ChangeNotifier {
     StudyHarmonyTaskBlueprintId? previousBlueprintId,
   }) {
     final tasks = _lesson.tasks;
+    if (tasks.isEmpty) {
+      throw StateError('Lesson ${_lesson.id} has no tasks.');
+    }
     if (tasks.length == 1) {
       return tasks.single.createInstance(
         sequenceNumber: _nextTaskSequenceNumber++,
@@ -319,3 +330,4 @@ class StudyHarmonySessionController extends ChangeNotifier {
     );
   }
 }
+

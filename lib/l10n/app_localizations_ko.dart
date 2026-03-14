@@ -245,6 +245,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get nextChord => '다음 코드';
 
   @override
+  String get audioPlayChord => '코드 재생';
+
+  @override
+  String get audioPlayArpeggio => '아르페지오 재생';
+
+  @override
+  String get audioPlayProgression => '진행 재생';
+
+  @override
+  String get audioPlayPrompt => '문제 재생';
+
+  @override
   String get startAutoplay => '자동 재생 시작';
 
   @override
@@ -663,6 +675,39 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String studyHarmonyProgressStars(int stars) {
+    return '별 $stars개';
+  }
+
+  @override
+  String studyHarmonyProgressSkillsMastered(int mastered, int total) {
+    return '$mastered/$total 스킬 숙련';
+  }
+
+  @override
+  String studyHarmonyProgressReviewsReady(int count) {
+    return '복습 $count개 대기';
+  }
+
+  @override
+  String studyHarmonyProgressStreak(int count) {
+    return '연속 기록 x$count';
+  }
+
+  @override
+  String studyHarmonyProgressRuns(int count) {
+    return '$count회 플레이';
+  }
+
+  @override
+  String studyHarmonyProgressBestRank(Object rank) {
+    return '최고 $rank';
+  }
+
+  @override
+  String get studyHarmonyBossTag => '보스';
+
+  @override
   String get studyHarmonyContinueCardTitle => '계속하기';
 
   @override
@@ -683,8 +728,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyReviewCardTitle => '복습하기';
 
   @override
-  String get studyHarmonyReviewQueueHint =>
-      '현재 review queue placeholder 기준으로 가져왔습니다.';
+  String get studyHarmonyReviewQueueHint => '현재 복습 대기열 기준으로 가져왔습니다.';
 
   @override
   String get studyHarmonyReviewWeakHint => '플레이한 수업 중 가장 약한 결과를 기준으로 골랐습니다.';
@@ -710,12 +754,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyDailyCardHint => '현재 열린 경로에서 오늘의 고정 수업을 엽니다.';
 
   @override
+  String get studyHarmonyDailyCardHintCompleted =>
+      '오늘의 데일리는 이미 클리어했습니다. 원하면 다시 돌고, 연속 기록은 내일 이어 가세요.';
+
+  @override
   String get studyHarmonyDailyAction => '데일리 시작';
 
   @override
   String studyHarmonyDailyDateBadge(Object dateKey) {
     return '시드 $dateKey';
   }
+
+  @override
+  String get studyHarmonyDailyClearedTodayTag => '오늘의 데일리 클리어';
 
   @override
   String get studyHarmonyReviewSessionTitle => '약점 복습';
@@ -761,6 +812,35 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyResultReviewFocusTitle => '복습 포인트';
 
   @override
+  String get studyHarmonyResultRewardTitle => '세션 보상';
+
+  @override
+  String get studyHarmonyBonusGoalsTitle => '보너스 목표';
+
+  @override
+  String studyHarmonyResultRankLine(Object rank) {
+    return '랭크 $rank';
+  }
+
+  @override
+  String studyHarmonyResultStarsLine(int stars) {
+    return '별 $stars개';
+  }
+
+  @override
+  String studyHarmonyResultBestLine(Object rank, int stars) {
+    return '최고 $rank · 별 $stars개';
+  }
+
+  @override
+  String studyHarmonyResultDailyStreakLine(int count) {
+    return '데일리 연속 x$count';
+  }
+
+  @override
+  String get studyHarmonyResultNewBestTag => '개인 최고 기록';
+
+  @override
   String studyHarmonyResultSkillGainLine(Object skill, Object delta) {
     return '$skill $delta';
   }
@@ -782,6 +862,79 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyReviewReasonFrontierRefresh => '복습 이유: 현재 진행선 정리';
+
+  @override
+  String get studyHarmonyQuestBoardTitle => '퀘스트 보드';
+
+  @override
+  String get studyHarmonyQuestCompletedTag => '완료';
+
+  @override
+  String get studyHarmonyQuestTodayTag => '오늘';
+
+  @override
+  String studyHarmonyQuestProgressLabel(int current, int target) {
+    return '$current/$target 진행';
+  }
+
+  @override
+  String get studyHarmonyQuestDailyTitle => '데일리 연속';
+
+  @override
+  String get studyHarmonyQuestDailyBody => '오늘의 시드 세트를 클리어해서 연속 기록을 이어 가세요.';
+
+  @override
+  String get studyHarmonyQuestDailyBodyCompleted =>
+      '오늘의 데일리는 이미 끝났습니다. 지금은 연속 기록이 유지되고 있습니다.';
+
+  @override
+  String get studyHarmonyQuestFrontierTitle => '프론티어 돌파';
+
+  @override
+  String studyHarmonyQuestFrontierBody(Object lessonTitle) {
+    return '$lessonTitle을(를) 클리어해서 경로를 한 칸 밀어 보세요.';
+  }
+
+  @override
+  String get studyHarmonyQuestFrontierBodyCompleted =>
+      '현재 열려 있는 수업은 모두 클리어했습니다. 보스를 다시 돌거나 별을 더 모아 보세요.';
+
+  @override
+  String get studyHarmonyQuestStarsTitle => '별 수집';
+
+  @override
+  String studyHarmonyQuestStarsBody(Object chapterTitle) {
+    return '$chapterTitle에서 추가 별을 모아 보세요.';
+  }
+
+  @override
+  String get studyHarmonyQuestStarsBodyFallback => '현재 챕터에서 별을 더 모아 보세요.';
+
+  @override
+  String studyHarmonyComboLabel(int count) {
+    return '콤보 x$count';
+  }
+
+  @override
+  String studyHarmonyBestComboLabel(int count) {
+    return '최고 콤보 x$count';
+  }
+
+  @override
+  String get studyHarmonyBonusFullHearts => '하트 전부 유지';
+
+  @override
+  String studyHarmonyBonusAccuracyTarget(int percent) {
+    return '정확도 $percent% 달성';
+  }
+
+  @override
+  String studyHarmonyBonusComboTarget(int count) {
+    return '콤보 x$count 달성';
+  }
+
+  @override
+  String get studyHarmonyBonusSweepTag => '보너스 올클리어';
 
   @override
   String get studyHarmonySkillNoteRead => '음이름 읽기';
@@ -1124,6 +1277,69 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get studyHarmonyLessonMissingChordBossDescription =>
       '기능과 흐름을 더 강하게 요구하는 빈칸 채우기 문제를 짧게 섞어 풉니다.';
+
+  @override
+  String get studyHarmonyChapterCheckpointTitle => '체크포인트 건틀렛';
+
+  @override
+  String get studyHarmonyChapterCheckpointDescription =>
+      '조성 중심, 기능, 컬러, 빈칸 채우기를 더 빠른 혼합 복습 세트로 묶어 봅니다.';
+
+  @override
+  String get studyHarmonyLessonCheckpointCadenceRushTitle => '케이던스 러시';
+
+  @override
+  String get studyHarmonyLessonCheckpointCadenceRushDescription =>
+      '화성 기능을 빠르게 읽고, 이어서 빠진 케이던스 코드를 가벼운 압박 속에서 채워 넣으세요.';
+
+  @override
+  String get studyHarmonyLessonCheckpointColorKeyTitle => '컬러와 조성 전환';
+
+  @override
+  String get studyHarmonyLessonCheckpointColorKeyDescription =>
+      '조성 판별과 비다이어토닉 컬러 판별을 번갈아 처리하면서도 흐름을 놓치지 마세요.';
+
+  @override
+  String get studyHarmonyLessonCheckpointBossTitle => '보스: 체크포인트 건틀렛';
+
+  @override
+  String get studyHarmonyLessonCheckpointBossDescription =>
+      '조성 중심, 기능, 컬러, 케이던스 복원을 한 번에 섞은 통합 체크포인트를 클리어하세요.';
+
+  @override
+  String get studyHarmonyChapterCapstoneTitle => '캡스톤 트라이얼';
+
+  @override
+  String get studyHarmonyChapterCapstoneDescription =>
+      '속도, 컬러 감지, 해소 감각까지 묻는 더 빡빡한 혼합 진행 문제로 코어 트랙을 마무리합니다.';
+
+  @override
+  String get studyHarmonyLessonCapstoneTurnaroundTitle => '턴어라운드 릴레이';
+
+  @override
+  String get studyHarmonyLessonCapstoneTurnaroundDescription =>
+      '짧은 턴어라운드 안에서 기능 읽기와 빠진 코드 복원을 번갈아 이어 갑니다.';
+
+  @override
+  String get studyHarmonyLessonCapstoneBorrowedColorTitle => '차용 컬러 콜';
+
+  @override
+  String get studyHarmonyLessonCapstoneBorrowedColorDescription =>
+      '모달 컬러를 재빨리 포착하고, 흐트러지기 전에 조성 중심까지 확인하세요.';
+
+  @override
+  String get studyHarmonyLessonCapstoneResolutionTitle => '리졸루션 랩';
+
+  @override
+  String get studyHarmonyLessonCapstoneResolutionDescription =>
+      '프레이즈가 어디로 해소되려는지 따라가며 가장 설득력 있는 코드를 고르세요.';
+
+  @override
+  String get studyHarmonyLessonCapstoneBossTitle => '보스: 최종 진행 시험';
+
+  @override
+  String get studyHarmonyLessonCapstoneBossDescription =>
+      '조성 중심, 기능, 컬러, 해소를 모두 압박감 있게 섞은 최종 혼합 시험을 통과하세요.';
 
   @override
   String studyHarmonyPromptFindNoteOnKeyboard(Object note) {
@@ -1565,4 +1781,967 @@ class AppLocalizationsKo extends AppLocalizations {
   String chordAnalyzerParseIssueUnsupportedSuffix(Object suffix) {
     return '지원하지 않는 suffix 또는 modifier입니다: $suffix';
   }
+
+  @override
+  String get studyHarmonyDailyReplayAction => '오늘의 도전 다시 하기';
+
+  @override
+  String get studyHarmonyMilestoneCabinetTitle => '마일스톤 메달';
+
+  @override
+  String get studyHarmonyMilestoneLessonsTitle => '개척자 메달';
+
+  @override
+  String studyHarmonyMilestoneLessonsBody(Object target) {
+    return '코어 기초에서 레슨 $target개를 클리어하세요.';
+  }
+
+  @override
+  String get studyHarmonyMilestoneStarsTitle => '별 수집가';
+
+  @override
+  String studyHarmonyMilestoneStarsBody(Object target) {
+    return 'Study Harmony 전반에서 별 $target개를 모으세요.';
+  }
+
+  @override
+  String get studyHarmonyMilestoneStreakTitle => '연속 도전 전설';
+
+  @override
+  String studyHarmonyMilestoneStreakBody(Object target) {
+    return '최고 일일 연속 기록 $target일을 달성하세요.';
+  }
+
+  @override
+  String get studyHarmonyMilestoneMasteryTitle => '숙련 학자';
+
+  @override
+  String studyHarmonyMilestoneMasteryBody(Object target) {
+    return '스킬 $target개를 숙련 상태로 만드세요.';
+  }
+
+  @override
+  String studyHarmonyMilestoneEarnedLabel(Object earned, Object total) {
+    return '$earned/$total 메달 획득';
+  }
+
+  @override
+  String get studyHarmonyMilestoneCompletedTag => '메달장 완성';
+
+  @override
+  String get studyHarmonyMilestoneTierBronze => '브론즈 메달';
+
+  @override
+  String get studyHarmonyMilestoneTierSilver => '실버 메달';
+
+  @override
+  String get studyHarmonyMilestoneTierGold => '골드 메달';
+
+  @override
+  String get studyHarmonyMilestoneTierPlatinum => '플래티넘 메달';
+
+  @override
+  String studyHarmonyMilestoneUnlockedLabel(Object title, Object tier) {
+    return '$tier · $title';
+  }
+
+  @override
+  String get studyHarmonyResultMilestonesTitle => '새 메달';
+
+  @override
+  String get studyHarmonyChapterRemixTitle => '리믹스 아레나';
+
+  @override
+  String get studyHarmonyChapterRemixDescription =>
+      '키 센터, 기능, 차용 색채를 예고 없이 섞어 읽는 후반부 종합 구간입니다.';
+
+  @override
+  String get studyHarmonyLessonRemixBridgeTitle => '브리지 빌더';
+
+  @override
+  String get studyHarmonyLessonRemixBridgeDescription =>
+      '기능 읽기와 빈칸 채우기를 한 흐름의 진행으로 이어 붙입니다.';
+
+  @override
+  String get studyHarmonyLessonRemixPivotTitle => '컬러 피벗';
+
+  @override
+  String get studyHarmonyLessonRemixPivotDescription =>
+      '진행이 흔들릴 때 차용 화음과 키 중심 전환 지점을 포착합니다.';
+
+  @override
+  String get studyHarmonyLessonRemixSprintTitle => '리졸루션 스프린트';
+
+  @override
+  String get studyHarmonyLessonRemixSprintDescription =>
+      '기능, cadence fill, 조성 중력을 더 빠르게 연달아 읽어냅니다.';
+
+  @override
+  String get studyHarmonyLessonRemixBossTitle => '리믹스 마라톤';
+
+  @override
+  String get studyHarmonyLessonRemixBossDescription =>
+      '지금까지의 진행 읽기 관점을 모두 다시 섞어 던지는 후반부 최종 마라톤입니다.';
+
+  @override
+  String studyHarmonyProgressStreakSaver(Object count) {
+    return '세이버 x$count';
+  }
+
+  @override
+  String studyHarmonyProgressLegendCrowns(Object count) {
+    return '레전드 크라운 $count개';
+  }
+
+  @override
+  String get studyHarmonyModeFocus => '포커스 모드';
+
+  @override
+  String get studyHarmonyModeLegend => '레전드 트라이얼';
+
+  @override
+  String get studyHarmonyFocusCardTitle => '포커스 스프린트';
+
+  @override
+  String get studyHarmonyFocusCardHint =>
+      '현재 약한 지점이 겹치는 구간을 적은 목숨과 더 빡빡한 목표로 집중 공략합니다.';
+
+  @override
+  String get studyHarmonyFocusFallbackHint => '현재 약점을 짧고 강하게 압축한 혼합 드릴입니다.';
+
+  @override
+  String get studyHarmonyFocusAction => '스프린트 시작';
+
+  @override
+  String get studyHarmonyFocusSessionTitle => '포커스 스프린트';
+
+  @override
+  String studyHarmonyFocusSessionDescription(Object chapter) {
+    return '$chapter 주변의 약한 지점을 압축한 고난도 혼합 스프린트입니다.';
+  }
+
+  @override
+  String studyHarmonyFocusMixLabel(Object count) {
+    return '레슨 $count개 혼합';
+  }
+
+  @override
+  String get studyHarmonyFocusRewardLabel => '주간 세이버 보상';
+
+  @override
+  String get studyHarmonyLegendCardTitle => '레전드 트라이얼';
+
+  @override
+  String get studyHarmonyLegendCardHint =>
+      '실버 이상 챕터를 목숨 2개짜리 마스터리 런으로 다시 돌파해 레전드 크라운을 확보하세요.';
+
+  @override
+  String get studyHarmonyLegendFallbackHint =>
+      '챕터를 클리어하고 레슨당 평균 2별 정도까지 올리면 레전드 트라이얼이 열립니다.';
+
+  @override
+  String get studyHarmonyLegendAction => '레전드 도전';
+
+  @override
+  String get studyHarmonyLegendSessionTitle => '레전드 트라이얼';
+
+  @override
+  String studyHarmonyLegendSessionDescription(Object chapter) {
+    return '$chapter를 레전드 크라운용 무실수 마스터리 런으로 다시 압축한 세션입니다.';
+  }
+
+  @override
+  String studyHarmonyLegendMixLabel(Object count) {
+    return '레슨 $count개 연속';
+  }
+
+  @override
+  String get studyHarmonyLegendRiskLabel => '레전드 크라운 도전';
+
+  @override
+  String get studyHarmonyWeeklyPlanTitle => '주간 트레이닝 플랜';
+
+  @override
+  String get studyHarmonyWeeklyRewardLabel => '보상: Streak Saver';
+
+  @override
+  String get studyHarmonyWeeklyRewardReadyTag => '보상 획득 가능';
+
+  @override
+  String get studyHarmonyWeeklyRewardClaimedTag => '보상 수령 완료';
+
+  @override
+  String get studyHarmonyWeeklyGoalActiveDaysTitle => '여러 날에 다시 오기';
+
+  @override
+  String studyHarmonyWeeklyGoalActiveDaysBody(Object target) {
+    return '이번 주에 서로 다른 날 $target일 활동하세요.';
+  }
+
+  @override
+  String get studyHarmonyWeeklyGoalDailyTitle => '일일 루프 유지';
+
+  @override
+  String studyHarmonyWeeklyGoalDailyBody(Object target) {
+    return '이번 주에 일일 도전을 $target회 클리어하세요.';
+  }
+
+  @override
+  String get studyHarmonyWeeklyGoalFocusTitle => '포커스 스프린트 완료';
+
+  @override
+  String studyHarmonyWeeklyGoalFocusBody(Object target) {
+    return '이번 주에 포커스 스프린트를 $target회 완료하세요.';
+  }
+
+  @override
+  String get studyHarmonyResultStreakSaverUsedLine =>
+      '어제의 공백을 보호하기 위해 Streak Saver를 사용했습니다.';
+
+  @override
+  String studyHarmonyResultStreakSaverEarnedLine(Object count) {
+    return '새 Streak Saver를 획득했습니다. 현재 보유: $count';
+  }
+
+  @override
+  String get studyHarmonyResultFocusSprintLine => '포커스 스프린트를 클리어했습니다.';
+
+  @override
+  String studyHarmonyResultLegendLine(Object chapter) {
+    return '$chapter 레전드 크라운을 확보했습니다.';
+  }
+
+  @override
+  String get studyHarmonyChapterEncoreTitle => '앙코르 래더';
+
+  @override
+  String get studyHarmonyChapterEncoreDescription =>
+      '지금까지의 진행 읽기 도구를 짧고 진하게 압축한 마지막 앙코르 구간입니다.';
+
+  @override
+  String get studyHarmonyLessonEncorePulseTitle => '토널 펄스';
+
+  @override
+  String get studyHarmonyLessonEncorePulseDescription =>
+      '워밍업 없이 바로 키 중심과 기능을 고정해서 읽어냅니다.';
+
+  @override
+  String get studyHarmonyLessonEncoreSwapTitle => '컬러 스왑';
+
+  @override
+  String get studyHarmonyLessonEncoreSwapDescription =>
+      '차용 색채 판별과 missing chord 복원을 번갈아 처리하며 감각을 흔듭니다.';
+
+  @override
+  String get studyHarmonyLessonEncoreBossTitle => '앙코르 피날레';
+
+  @override
+  String get studyHarmonyLessonEncoreBossDescription =>
+      '진행 읽기 전 관점을 짧고 촘촘하게 다시 묻는 마지막 보스 라운드입니다.';
+
+  @override
+  String get studyHarmonyChapterMasteryBronze => '브론즈 클리어';
+
+  @override
+  String get studyHarmonyChapterMasterySilver => '실버 크라운';
+
+  @override
+  String get studyHarmonyChapterMasteryGold => '골드 크라운';
+
+  @override
+  String get studyHarmonyChapterMasteryLegendary => '레전드 크라운';
+
+  @override
+  String get studyHarmonyModeBossRush => '보스 러시 모드';
+
+  @override
+  String get studyHarmonyBossRushCardTitle => '보스 러시';
+
+  @override
+  String get studyHarmonyBossRushCardHint =>
+      '해금한 보스 레슨들을 더 적은 목숨으로 연속 돌파하는 고위험 혼합 러시입니다.';
+
+  @override
+  String get studyHarmonyBossRushFallbackHint =>
+      '보스 레슨 두 개 이상을 열면 더 긴장감 있는 러시 모드가 열립니다.';
+
+  @override
+  String get studyHarmonyBossRushAction => '러시 시작';
+
+  @override
+  String get studyHarmonyBossRushSessionTitle => '보스 러시';
+
+  @override
+  String studyHarmonyBossRushSessionDescription(Object chapter) {
+    return '$chapter 주변에서 해금한 보스 레슨들로 구성한 고압 러시 세션입니다.';
+  }
+
+  @override
+  String studyHarmonyBossRushMixLabel(Object count) {
+    return '보스 레슨 $count개 혼합';
+  }
+
+  @override
+  String get studyHarmonyBossRushHighRiskLabel => '목숨 2개 한정';
+
+  @override
+  String get studyHarmonyResultBossRushLine => '보스 러시를 클리어했습니다.';
+
+  @override
+  String get studyHarmonyChapterSpotlightTitle => '스포트라이트 쇼다운';
+
+  @override
+  String get studyHarmonyChapterSpotlightDescription =>
+      '차용 색채, cadence 압박, 통합형 보스 판별을 정면으로 다루는 최종 스포트라이트 구간입니다.';
+
+  @override
+  String get studyHarmonyLessonSpotlightLensTitle => '차용 렌즈';
+
+  @override
+  String get studyHarmonyLessonSpotlightLensDescription =>
+      '차용 화음이 시선을 흔들어도 키 중심을 놓치지 않고 추적합니다.';
+
+  @override
+  String get studyHarmonyLessonSpotlightCadenceTitle => '케이던스 스왑';
+
+  @override
+  String get studyHarmonyLessonSpotlightCadenceDescription =>
+      '기능 읽기와 cadence 복원을 번갈아 처리하면서도 해결 지점을 유지합니다.';
+
+  @override
+  String get studyHarmonyLessonSpotlightBossTitle => '스포트라이트 쇼다운';
+
+  @override
+  String get studyHarmonyLessonSpotlightBossDescription =>
+      '진행 읽기 전 관점을 압박 속에서도 끝까지 유지해야 하는 최종 보스 세트입니다.';
+
+  @override
+  String get studyHarmonyChapterAfterHoursTitle => '애프터 아워 랩';
+
+  @override
+  String get studyHarmonyChapterAfterHoursDescription =>
+      '워밍업 힌트를 줄이고 차용 색채, cadence 압박, 키 중심 추적을 거칠게 다시 섞는 후반부 실험 구간입니다.';
+
+  @override
+  String get studyHarmonyLessonAfterHoursShadowTitle => '모달 섀도우';
+
+  @override
+  String get studyHarmonyLessonAfterHoursShadowDescription =>
+      '차용 색채가 읽기를 어둡게 흔들어도 키 중심을 놓치지 않고 붙잡습니다.';
+
+  @override
+  String get studyHarmonyLessonAfterHoursFeintTitle => '리졸루션 페인트';
+
+  @override
+  String get studyHarmonyLessonAfterHoursFeintDescription =>
+      '기능과 cadence 페이크를 읽어내며 진짜 해결 지점을 끝까지 추적합니다.';
+
+  @override
+  String get studyHarmonyLessonAfterHoursCrossfadeTitle => '센터 크로스페이드';
+
+  @override
+  String get studyHarmonyLessonAfterHoursCrossfadeDescription =>
+      '키 중심 판별, 기능 읽기, missing chord 복원을 추가 힌트 없이 한 흐름으로 묶습니다.';
+
+  @override
+  String get studyHarmonyLessonAfterHoursBossTitle => '라스트 콜 보스';
+
+  @override
+  String get studyHarmonyLessonAfterHoursBossDescription =>
+      '늦은 후반부 압박 속에서도 진행 읽기 전 관점을 또렷하게 유지해야 하는 마지막 심화 보스입니다.';
+
+  @override
+  String studyHarmonyProgressRelayWins(Object count) {
+    return '릴레이 승리 $count회';
+  }
+
+  @override
+  String get studyHarmonyModeRelay => '아레나 릴레이';
+
+  @override
+  String get studyHarmonyRelayCardTitle => '아레나 릴레이';
+
+  @override
+  String get studyHarmonyRelayCardHint =>
+      '서로 다른 챕터의 해금 레슨을 한 세션에 섞어 푸는 인터리빙 런입니다. 전환 적응력까지 같이 점검합니다.';
+
+  @override
+  String get studyHarmonyRelayFallbackHint =>
+      '서로 다른 챕터가 두 개 이상 열리면 아레나 릴레이가 열립니다.';
+
+  @override
+  String get studyHarmonyRelayAction => '릴레이 시작';
+
+  @override
+  String get studyHarmonyRelaySessionTitle => '아레나 릴레이';
+
+  @override
+  String studyHarmonyRelaySessionDescription(Object chapter) {
+    return '$chapter 주변의 해금 챕터들을 섞어 진행하는 인터리빙 릴레이 세션입니다.';
+  }
+
+  @override
+  String studyHarmonyRelayMixLabel(Object count) {
+    return '레슨 $count개 릴레이';
+  }
+
+  @override
+  String studyHarmonyRelayChapterSpreadLabel(Object count) {
+    return '챕터 $count개 혼합';
+  }
+
+  @override
+  String get studyHarmonyRelayChainLabel => '챕터 전환 적응';
+
+  @override
+  String studyHarmonyResultRelayLine(Object count) {
+    return '아레나 릴레이 승리 $count회';
+  }
+
+  @override
+  String get studyHarmonyMilestoneRelayTitle => '릴레이 러너';
+
+  @override
+  String studyHarmonyMilestoneRelayBody(Object target) {
+    return '아레나 릴레이를 $target회 클리어하세요.';
+  }
+
+  @override
+  String get studyHarmonyChapterNeonTitle => '네온 디투어';
+
+  @override
+  String get studyHarmonyChapterNeonDescription =>
+      '차용 색채, 중심 전환, 착지 복원을 번갈아 흔들며 읽기 정확도를 끝까지 시험하는 후반부 종합 챕터입니다.';
+
+  @override
+  String get studyHarmonyLessonNeonDetourTitle => '모달 디투어';
+
+  @override
+  String get studyHarmonyLessonNeonDetourDescription =>
+      '차용 색채가 진행을 옆길로 끌어도 실제 키 중심을 끝까지 추적합니다.';
+
+  @override
+  String get studyHarmonyLessonNeonPivotTitle => '피벗 프레셔';
+
+  @override
+  String get studyHarmonyLessonNeonPivotDescription =>
+      '조성 중심 전환과 기능 압박을 연속으로 읽으며 다음 전환을 대비합니다.';
+
+  @override
+  String get studyHarmonyLessonNeonLandingTitle => '차용 랜딩';
+
+  @override
+  String get studyHarmonyLessonNeonLandingDescription =>
+      '차용 색채 페이크 이후 비어 있는 착지 화음을 복원하며 진짜 해결 지점을 되찾습니다.';
+
+  @override
+  String get studyHarmonyLessonNeonBossTitle => '시티 라이트 보스';
+
+  @override
+  String get studyHarmonyLessonNeonBossDescription =>
+      '피벗 읽기, 차용 색채, cadence 복원을 한 번에 섞어 부드러운 착지 없이 밀어붙이는 네온 보스입니다.';
+
+  @override
+  String studyHarmonyProgressLeague(Object tier) {
+    return '$tier 리그';
+  }
+
+  @override
+  String get studyHarmonyLeagueCardTitle => '하모니 리그';
+
+  @override
+  String studyHarmonyLeagueCardHint(Object tier, Object mode) {
+    return '이번 주 $tier 리그까지 밀어 올리세요. 지금 가장 효율적인 부스트는 $mode입니다.';
+  }
+
+  @override
+  String get studyHarmonyLeagueCardHintMax =>
+      '이번 주 다이아 리그에 안착했습니다. 고난도 클리어를 이어서 페이스를 유지하세요.';
+
+  @override
+  String get studyHarmonyLeagueFallbackHint =>
+      '이번 주 밀어 올릴 추천 런이 생기면 리그 카드가 더 또렷하게 활성화됩니다.';
+
+  @override
+  String get studyHarmonyLeagueAction => '리그 올리기';
+
+  @override
+  String studyHarmonyLeagueScoreLabel(Object score) {
+    return '이번 주 XP $score';
+  }
+
+  @override
+  String studyHarmonyLeagueProgressLabel(Object score, Object target) {
+    return '이번 주 XP $score/$target';
+  }
+
+  @override
+  String studyHarmonyLeagueNextTierLabel(Object tier) {
+    return '다음: $tier';
+  }
+
+  @override
+  String studyHarmonyLeagueBoostLabel(Object mode) {
+    return '추천 부스트: $mode';
+  }
+
+  @override
+  String studyHarmonyResultLeagueXpLine(Object count) {
+    return '리그 XP +$count';
+  }
+
+  @override
+  String studyHarmonyResultLeaguePromotionLine(Object tier) {
+    return '$tier 리그로 승급했습니다';
+  }
+
+  @override
+  String get studyHarmonyLeagueTierRookie => '루키';
+
+  @override
+  String get studyHarmonyLeagueTierBronze => '브론즈';
+
+  @override
+  String get studyHarmonyLeagueTierSilver => '실버';
+
+  @override
+  String get studyHarmonyLeagueTierGold => '골드';
+
+  @override
+  String get studyHarmonyLeagueTierDiamond => '다이아';
+
+  @override
+  String get studyHarmonyChapterMidnightTitle => '미드나이트 스위치보드';
+
+  @override
+  String get studyHarmonyChapterMidnightDescription =>
+      '흔들리는 중심, 가짜 해결, 차용 우회를 빠르게 읽어내야 하는 마지막 관제실형 챕터입니다.';
+
+  @override
+  String get studyHarmonyLessonMidnightDriftTitle => '시그널 드리프트';
+
+  @override
+  String get studyHarmonyLessonMidnightDriftDescription =>
+      '표면이 차용 색채로 흔들려도 실제 조성 신호를 끝까지 붙잡습니다.';
+
+  @override
+  String get studyHarmonyLessonMidnightLineTitle => '폴스 라인';
+
+  @override
+  String get studyHarmonyLessonMidnightLineDescription =>
+      '가짜 해결을 지나 기능 압박의 진짜 흐름을 읽어냅니다.';
+
+  @override
+  String get studyHarmonyLessonMidnightRerouteTitle => '차용 리라우트';
+
+  @override
+  String get studyHarmonyLessonMidnightRerouteDescription =>
+      '차용 색채로 우회된 진행 속에서 원래의 착지 지점을 다시 복원합니다.';
+
+  @override
+  String get studyHarmonyLessonMidnightBossTitle => '블랙아웃 보스';
+
+  @override
+  String get studyHarmonyLessonMidnightBossDescription =>
+      '후반부 모든 읽기 렌즈를 안전장치 없이 섞어 붙이는 최종 보스 세트입니다.';
+
+  @override
+  String studyHarmonyProgressQuestChests(Object count) {
+    return '퀘스트 상자 $count개';
+  }
+
+  @override
+  String studyHarmonyProgressLeagueBoost(Object count) {
+    return '2배 리그 XP x$count';
+  }
+
+  @override
+  String get studyHarmonyQuestChestTitle => '퀘스트 체스트';
+
+  @override
+  String studyHarmonyQuestChestLockedHeadline(Object count) {
+    return '남은 퀘스트 $count개';
+  }
+
+  @override
+  String get studyHarmonyQuestChestReadyHeadline => '퀘스트 체스트 준비 완료';
+
+  @override
+  String get studyHarmonyQuestChestOpenedHeadline => '오늘의 체스트 오픈 완료';
+
+  @override
+  String get studyHarmonyQuestChestBoostHeadline => '2배 리그 XP 활성화';
+
+  @override
+  String studyHarmonyQuestChestRewardLabel(Object xp) {
+    return '보상: 리그 XP +$xp';
+  }
+
+  @override
+  String get studyHarmonyQuestChestLockedBody =>
+      '오늘의 퀘스트 3종을 마치면 보너스 체스트가 열리고 주간 리그 XP를 추가로 받습니다.';
+
+  @override
+  String get studyHarmonyQuestChestReadyBody =>
+      '오늘의 퀘스트 3종이 모두 끝났습니다. 아무 런이나 하나 더 클리어하면 체스트 보상이 리그 XP로 반영됩니다.';
+
+  @override
+  String get studyHarmonyQuestChestOpenedBody =>
+      '오늘의 퀘스트 3종을 모두 끝내서 체스트 보상이 이미 리그 XP로 반영됐습니다.';
+
+  @override
+  String studyHarmonyQuestChestOpenedBoostBody(Object count) {
+    return '오늘의 체스트를 열었고 다음 $count번 클리어에는 2배 리그 XP가 적용됩니다.';
+  }
+
+  @override
+  String get studyHarmonyQuestChestAction => '퀘스트 마무리';
+
+  @override
+  String studyHarmonyQuestChestBoostLabel(Object mode) {
+    return '가장 빠른 마무리: $mode';
+  }
+
+  @override
+  String studyHarmonyQuestChestBoostReadyLabel(Object count) {
+    return '2배 XP x$count';
+  }
+
+  @override
+  String studyHarmonyQuestChestProgressLabel(Object count, Object target) {
+    return '일일 퀘스트 $count/$target';
+  }
+
+  @override
+  String get studyHarmonyResultQuestChestLine => '퀘스트 체스트를 열었습니다.';
+
+  @override
+  String studyHarmonyResultQuestChestXpLine(Object count) {
+    return '퀘스트 체스트 보너스 리그 XP +$count';
+  }
+
+  @override
+  String studyHarmonyResultLeagueBoostReadyLine(Object count) {
+    return '다음 $count번 클리어에 2배 리그 XP가 준비됐습니다.';
+  }
+
+  @override
+  String studyHarmonyResultLeagueBoostAppliedLine(Object count) {
+    return '부스트 보너스 리그 XP +$count';
+  }
+
+  @override
+  String studyHarmonyResultLeagueBoostRemainingLine(Object count) {
+    return '남은 2배 부스트 클리어 $count회';
+  }
+
+  @override
+  String studyHarmonyLeagueBoostReadyLabel(Object count) {
+    return '2배 XP x$count';
+  }
+
+  @override
+  String studyHarmonyLeagueCardHintBoosted(Object count, Object mode) {
+    return '다음 $count번 클리어에는 2배 리그 XP가 적용됩니다. 부스트가 살아 있을 때 $mode로 밀어붙이세요.';
+  }
+
+  @override
+  String get studyHarmonyChapterSkylineTitle => '스카이라인 서킷';
+
+  @override
+  String get studyHarmonyChapterSkylineDescription =>
+      '흔들리는 중심, 차용 중력, 가짜 귀착을 빠르게 섞어 읽어야 하는 최종 스카이라인 챕터입니다.';
+
+  @override
+  String get studyHarmonyLessonSkylinePulseTitle => '애프터이미지 펄스';
+
+  @override
+  String get studyHarmonyLessonSkylinePulseDescription =>
+      '진행이 새 레인으로 잠기기 전에 잔상 속 키 중심과 기능을 먼저 붙잡습니다.';
+
+  @override
+  String get studyHarmonyLessonSkylineSwapTitle => '그래비티 스왑';
+
+  @override
+  String get studyHarmonyLessonSkylineSwapDescription =>
+      '차용 중력과 missing chord 복원을 동시에 처리하며 진행의 무게 이동을 따라갑니다.';
+
+  @override
+  String get studyHarmonyLessonSkylineHomeTitle => '폴스 홈';
+
+  @override
+  String get studyHarmonyLessonSkylineHomeDescription =>
+      '가짜 귀착을 통과한 뒤 진짜 착지 지점을 다시 복원해 진행을 끝까지 읽어냅니다.';
+
+  @override
+  String get studyHarmonyLessonSkylineBossTitle => '파이널 시그널 보스';
+
+  @override
+  String get studyHarmonyLessonSkylineBossDescription =>
+      '후반부 진행 읽기 렌즈를 모두 한 번에 묶어 마지막 신호 테스트로 밀어붙이는 최종 보스입니다.';
+
+  @override
+  String get studyHarmonyChapterAfterglowTitle => '애프터글로우 런웨이';
+
+  @override
+  String get studyHarmonyChapterAfterglowDescription =>
+      '갈라지는 해결, 차용 미끼, 흔들리는 중심을 끝까지 정확히 읽어야 하는 종반 압축 챕터입니다.';
+
+  @override
+  String get studyHarmonyLessonAfterglowSplitTitle => '스플릿 디시전';
+
+  @override
+  String get studyHarmonyLessonAfterglowSplitDescription =>
+      '기능 흐름을 잃지 않으면서 진행을 바로 세우는 복원 화음을 빠르게 고릅니다.';
+
+  @override
+  String get studyHarmonyLessonAfterglowLureTitle => '보로우드 루어';
+
+  @override
+  String get studyHarmonyLessonAfterglowLureDescription =>
+      '전조처럼 보이는 차용 색채를 구분하고 진행이 진짜로 돌아오는 지점을 읽습니다.';
+
+  @override
+  String get studyHarmonyLessonAfterglowFlickerTitle => '센터 플리커';
+
+  @override
+  String get studyHarmonyLessonAfterglowFlickerDescription =>
+      '카덴스 단서가 빠르게 흔들리는 동안에도 키 중심을 끝까지 유지합니다.';
+
+  @override
+  String get studyHarmonyLessonAfterglowBossTitle => '레드라인 리턴 보스';
+
+  @override
+  String get studyHarmonyLessonAfterglowBossDescription =>
+      '키 중심, 기능, 차용 색채, missing chord 복원을 최고 속도로 한 번에 묶는 종반 보스입니다.';
+
+  @override
+  String studyHarmonyProgressTour(Object count, Object target) {
+    return '투어 스탬프 $count/$target';
+  }
+
+  @override
+  String get studyHarmonyProgressTourClaimed => '이번 달 투어 완료';
+
+  @override
+  String get studyHarmonyTourTitle => 'Harmony Tour';
+
+  @override
+  String studyHarmonyTourProgressHeadline(Object count, Object target) {
+    return '투어 스탬프 $count/$target';
+  }
+
+  @override
+  String get studyHarmonyTourReadyHeadline => '투어 보상 준비 완료';
+
+  @override
+  String get studyHarmonyTourClaimedHeadline => '이번 달 투어 클리어';
+
+  @override
+  String studyHarmonyTourRewardLabel(Object xp, Object count) {
+    return '보상: 리그 XP +$xp, Streak Saver +$count';
+  }
+
+  @override
+  String studyHarmonyTourActiveDaysBody(Object target) {
+    return '이번 달 $target일 이상 플레이해 투어 보너스를 잠가보세요.';
+  }
+
+  @override
+  String studyHarmonyTourQuestChestBody(Object target) {
+    return '이번 달 Quest Chest를 $target번 열어 투어 스탬프를 채워보세요.';
+  }
+
+  @override
+  String studyHarmonyTourSpotlightBody(Object target) {
+    return '이번 달 spotlight 클리어를 $target번 달성하세요. Boss Rush, Relay, Focus, Legend, 보스 레슨이 모두 카운트됩니다.';
+  }
+
+  @override
+  String get studyHarmonyTourReadyBody =>
+      '이번 달 스탬프를 모두 채웠습니다. 다음 클리어에서 투어 보상이 바로 지급됩니다.';
+
+  @override
+  String get studyHarmonyTourClaimedBody =>
+      '이번 달 투어를 완주했습니다. 다음 달 루프가 열릴 때까지 고난도 감각을 유지해 보세요.';
+
+  @override
+  String get studyHarmonyTourAction => '투어 진행';
+
+  @override
+  String studyHarmonyTourActiveDaysLabel(Object count, Object target) {
+    return '활동 일수 $count/$target';
+  }
+
+  @override
+  String studyHarmonyTourQuestChestsLabel(Object count, Object target) {
+    return 'Quest Chest $count/$target';
+  }
+
+  @override
+  String studyHarmonyTourSpotlightLabel(Object count, Object target) {
+    return 'Spotlight $count/$target';
+  }
+
+  @override
+  String get studyHarmonyResultTourCompleteLine => 'Harmony Tour 완료';
+
+  @override
+  String studyHarmonyResultTourXpLine(Object count) {
+    return '투어 보너스 +$count 리그 XP';
+  }
+
+  @override
+  String studyHarmonyResultTourStreakSaverLine(Object count) {
+    return 'Streak Saver 보유 $count';
+  }
+
+  @override
+  String get studyHarmonyChapterDaybreakTitle => '새벽 주파수';
+
+  @override
+  String get studyHarmonyChapterDaybreakDescription =>
+      '유령 종지, 가짜 새벽, 차용된 개화를 섞어 긴 종반 러닝 뒤에도 선명한 판별을 유지하게 만드는 최종 확장 챕터입니다.';
+
+  @override
+  String get studyHarmonyLessonDaybreakGhostTitle => '유령 종지';
+
+  @override
+  String get studyHarmonyLessonDaybreakGhostDescription =>
+      '끝난 것처럼 들리지만 닫히지 않는 구간에서 기능과 missing chord 복원을 동시에 읽어냅니다.';
+
+  @override
+  String get studyHarmonyLessonDaybreakDawnTitle => '가짜 새벽';
+
+  @override
+  String get studyHarmonyLessonDaybreakDawnDescription =>
+      '너무 일찍 밝아지는 듯한 순간에 숨어 있는 중심 흔들림과 비다이아토닉 신호를 구분합니다.';
+
+  @override
+  String get studyHarmonyLessonDaybreakBloomTitle => '차용된 개화';
+
+  @override
+  String get studyHarmonyLessonDaybreakBloomDescription =>
+      '화성이 더 밝아지는 순간에도 차용 색채와 기능선을 함께 붙잡아 진행의 흐름을 지켜냅니다.';
+
+  @override
+  String get studyHarmonyLessonDaybreakBossTitle => '선라이즈 오버드라이브 보스';
+
+  @override
+  String get studyHarmonyLessonDaybreakBossDescription =>
+      '키 중심, 기능, 비다이아토닉 색채, missing chord 복원을 새벽 속도로 한 번에 엮는 최종 오버드라이브 보스입니다.';
+
+  @override
+  String studyHarmonyProgressDuetPact(Object count) {
+    return '듀엣 연속 x$count';
+  }
+
+  @override
+  String get studyHarmonyDuetTitle => '듀엣 약속';
+
+  @override
+  String get studyHarmonyDuetStartHeadline => '오늘의 듀엣 시작';
+
+  @override
+  String studyHarmonyDuetInProgressHeadline(Object count) {
+    return '듀엣 연속 x$count';
+  }
+
+  @override
+  String studyHarmonyDuetReadyHeadline(Object count) {
+    return '$count일 연속 듀엣 완료';
+  }
+
+  @override
+  String studyHarmonyDuetRewardLabel(Object xp) {
+    return '보상: 핵심 구간마다 리그 XP +$xp';
+  }
+
+  @override
+  String get studyHarmonyDuetNeedDailyBody =>
+      '먼저 오늘의 Daily를 끝내고, 이어서 spotlight 런 1회를 클리어해 듀엣을 이어가세요.';
+
+  @override
+  String get studyHarmonyDuetNeedSpotlightBody =>
+      'Daily는 끝났습니다. Focus, Relay, Boss Rush, Legend, 보스 레슨 중 하나를 클리어하면 오늘 듀엣이 잠깁니다.';
+
+  @override
+  String studyHarmonyDuetActiveBody(Object count) {
+    return '오늘 Daily와 Spotlight를 모두 마쳐 듀엣이 잠겼습니다. 현재 공유 연속은 $count일입니다.';
+  }
+
+  @override
+  String get studyHarmonyDuetDailyDone => 'Daily 완료';
+
+  @override
+  String get studyHarmonyDuetDailyMissing => 'Daily 필요';
+
+  @override
+  String get studyHarmonyDuetSpotlightDone => 'Spotlight 완료';
+
+  @override
+  String get studyHarmonyDuetSpotlightMissing => 'Spotlight 필요';
+
+  @override
+  String studyHarmonyDuetDailyLabel(bool done) {
+    return 'Daily $done';
+  }
+
+  @override
+  String studyHarmonyDuetSpotlightLabel(bool done) {
+    return 'Spotlight $done';
+  }
+
+  @override
+  String studyHarmonyDuetTargetLabel(Object count, Object target) {
+    return '연속 $count/$target';
+  }
+
+  @override
+  String get studyHarmonyDuetAction => '듀엣 이어가기';
+
+  @override
+  String studyHarmonyResultDuetLine(Object count) {
+    return '듀엣 연속 x$count';
+  }
+
+  @override
+  String studyHarmonyResultDuetRewardLine(Object count) {
+    return '듀엣 보상 +$count 리그 XP';
+  }
+
+  @override
+  String get studyHarmonyChapterBlueHourTitle => '블루 아워 익스체인지';
+
+  @override
+  String get studyHarmonyChapterBlueHourDescription =>
+      '교차 흐름, 후광처럼 스치는 차용, 이중 지평선을 섞어 종반부 판별을 끝까지 흔드는 황혼 확장 챕터입니다.';
+
+  @override
+  String get studyHarmonyLessonBlueHourCurrentTitle => '크로스 커런트';
+
+  @override
+  String get studyHarmonyLessonBlueHourCurrentDescription =>
+      '진행이 두 방향으로 당겨질 때도 키 중심과 기능을 동시에 붙잡습니다.';
+
+  @override
+  String get studyHarmonyLessonBlueHourHaloTitle => '헤일로 보로우';
+
+  @override
+  String get studyHarmonyLessonBlueHourHaloDescription =>
+      '안개처럼 번지는 차용 색채 속에서 빠진 화음을 복원해 문장을 다시 세웁니다.';
+
+  @override
+  String get studyHarmonyLessonBlueHourHorizonTitle => '듀얼 호라이즌';
+
+  @override
+  String get studyHarmonyLessonBlueHourHorizonDescription =>
+      '두 개의 도착점이 번갈아 보이는 상황에서도 진짜 귀착 지점을 끝까지 유지합니다.';
+
+  @override
+  String get studyHarmonyLessonBlueHourBossTitle => '트윈 랜턴즈 보스';
+
+  @override
+  String get studyHarmonyLessonBlueHourBossDescription =>
+      '키 중심, 기능, 차용 색채, missing chord 복원을 황혼 속도로 교차시키는 최종 블루 아워 보스입니다.';
 }

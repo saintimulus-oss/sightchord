@@ -71,6 +71,7 @@ flutter:
     - assets/tickD.mp3
     - assets/tickE.mp3
     - assets/tickF.mp3
+    - assets/piano/salamander_essential/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -76,6 +76,10 @@
     "keyPracticeDescription":  "Uses the selected keys and enabled Roman numerals to generate diatonic practice material.",
     "keyboardShortcutHelp":  "Space: next chord  Enter: start or stop autoplay  Up/Down: adjust BPM",
     "nextChord":  "Next Chord",
+    "audioPlayChord":  "Play Chord",
+    "audioPlayArpeggio":  "Play Arpeggio",
+    "audioPlayProgression":  "Play Progression",
+    "audioPlayPrompt":  "Play Prompt",
     "startAutoplay":  "Start Autoplay",
     "stopAutoplay":  "Stop Autoplay",
     "decreaseBpm":  "Decrease BPM",
@@ -322,6 +326,58 @@
                                                                            }
                                                              }
                                         },
+    "studyHarmonyProgressStars":  "{stars} stars",
+    "@studyHarmonyProgressStars":  {
+                                      "placeholders":  {
+                                                           "stars":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                       }
+                                  },
+    "studyHarmonyProgressSkillsMastered":  "{mastered}/{total} skills mastered",
+    "@studyHarmonyProgressSkillsMastered":  {
+                                               "placeholders":  {
+                                                                    "mastered":  {
+                                                                                     "type":  "int"
+                                                                                 },
+                                                                    "total":  {
+                                                                                  "type":  "int"
+                                                                              }
+                                                                }
+                                           },
+    "studyHarmonyProgressReviewsReady":  "{count} reviews ready",
+    "@studyHarmonyProgressReviewsReady":  {
+                                               "placeholders":  {
+                                                                    "count":  {
+                                                                                  "type":  "int"
+                                                                              }
+                                                                }
+                                           },
+    "studyHarmonyProgressStreak":  "Streak x{count}",
+    "@studyHarmonyProgressStreak":  {
+                                       "placeholders":  {
+                                                            "count":  {
+                                                                          "type":  "int"
+                                                                      }
+                                                        }
+                                   },
+    "studyHarmonyProgressRuns":  "{count} runs",
+    "@studyHarmonyProgressRuns":  {
+                                     "placeholders":  {
+                                                          "count":  {
+                                                                        "type":  "int"
+                                                                    }
+                                                      }
+                                 },
+    "studyHarmonyProgressBestRank":  "Best {rank}",
+    "@studyHarmonyProgressBestRank":  {
+                                         "placeholders":  {
+                                                              "rank":  {
+
+                                                                       }
+                                                          }
+                                     },
+    "studyHarmonyBossTag":  "Boss",
     "studyHarmonyContinueCardTitle":  "Continue",
     "studyHarmonyContinueResumeHint":  "Resume the lesson you touched most recently.",
     "studyHarmonyContinueFrontierHint":  "Jump to the next lesson at your current frontier.",
@@ -343,6 +399,7 @@
     "studyHarmonyReviewAction":  "Review",
     "studyHarmonyDailyCardTitle":  "Daily Challenge",
     "studyHarmonyDailyCardHint":  "Open today's deterministic pick from your unlocked lessons.",
+    "studyHarmonyDailyCardHintCompleted":  "Today's daily is cleared. Replay it if you want, or come back tomorrow to keep the streak going.",
     "studyHarmonyDailyAction":  "Play daily",
     "studyHarmonyDailyDateBadge":  "Seed {dateKey}",
     "@studyHarmonyDailyDateBadge":  {
@@ -352,6 +409,7 @@
                                                                          }
                                                         }
                                    },
+    "studyHarmonyDailyClearedTodayTag":  "Daily cleared today",
     "studyHarmonyReviewSessionTitle":  "Weak Spot Review",
     "studyHarmonyReviewSessionDescription":  "Mix a short review set around {chapterTitle} and your weakest recent skills.",
     "@studyHarmonyReviewSessionDescription":  {
@@ -388,6 +446,44 @@
                                     },
     "studyHarmonyResultSkillGainTitle":  "Skill gains",
     "studyHarmonyResultReviewFocusTitle":  "Review focus",
+    "studyHarmonyResultRewardTitle":  "Session reward",
+    "studyHarmonyBonusGoalsTitle":  "Bonus goals",
+    "studyHarmonyResultRankLine":  "Rank {rank}",
+    "@studyHarmonyResultRankLine":  {
+                                       "placeholders":  {
+                                                            "rank":  {
+
+                                                                     }
+                                                        }
+                                   },
+    "studyHarmonyResultStarsLine":  "{stars} stars",
+    "@studyHarmonyResultStarsLine":  {
+                                        "placeholders":  {
+                                                             "stars":  {
+                                                                           "type":  "int"
+                                                                       }
+                                                         }
+                                    },
+    "studyHarmonyResultBestLine":  "Best {rank} · {stars} stars",
+    "@studyHarmonyResultBestLine":  {
+                                      "placeholders":  {
+                                                           "rank":  {
+
+                                                                    },
+                                                           "stars":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                       }
+                                  },
+    "studyHarmonyResultDailyStreakLine":  "Daily streak x{count}",
+    "@studyHarmonyResultDailyStreakLine":  {
+                                             "placeholders":  {
+                                                                  "count":  {
+                                                                                "type":  "int"
+                                                                            }
+                                                              }
+                                         },
+    "studyHarmonyResultNewBestTag":  "New personal best",
     "studyHarmonyResultSkillGainLine":  "{skill} {delta}",
     "@studyHarmonyResultSkillGainLine":  {
                                              "placeholders":  {
@@ -405,6 +501,77 @@
     "studyHarmonyReviewReasonStaleSkill":  "Review reason: stale skill",
     "studyHarmonyReviewReasonWeakSpot":  "Review reason: weak spot",
     "studyHarmonyReviewReasonFrontierRefresh":  "Review reason: frontier refresh",
+    "studyHarmonyQuestBoardTitle":  "Quest Board",
+    "studyHarmonyQuestCompletedTag":  "Completed",
+    "studyHarmonyQuestTodayTag":  "Today",
+    "studyHarmonyQuestProgressLabel":  "{current}/{target} complete",
+    "@studyHarmonyQuestProgressLabel":  {
+                                          "placeholders":  {
+                                                               "current":  {
+                                                                               "type":  "int"
+                                                                           },
+                                                               "target":  {
+                                                                              "type":  "int"
+                                                                          }
+                                                           }
+                                      },
+    "studyHarmonyQuestDailyTitle":  "Daily streak",
+    "studyHarmonyQuestDailyBody":  "Clear today's seeded mix to extend your streak.",
+    "studyHarmonyQuestDailyBodyCompleted":  "Today's daily is already cleared. The streak is safe for now.",
+    "studyHarmonyQuestFrontierTitle":  "Frontier push",
+    "studyHarmonyQuestFrontierBody":  "Clear {lessonTitle} to move the path forward.",
+    "@studyHarmonyQuestFrontierBody":  {
+                                         "placeholders":  {
+                                                              "lessonTitle":  {
+
+                                                                               }
+                                                          }
+                                     },
+    "studyHarmonyQuestFrontierBodyCompleted":  "Every currently unlocked lesson is cleared. Replay a boss or chase more stars.",
+    "studyHarmonyQuestStarsTitle":  "Star hunt",
+    "studyHarmonyQuestStarsBody":  "Push extra stars inside {chapterTitle}.",
+    "@studyHarmonyQuestStarsBody":  {
+                                      "placeholders":  {
+                                                           "chapterTitle":  {
+
+                                                                                }
+                                                       }
+                                  },
+    "studyHarmonyQuestStarsBodyFallback":  "Push extra stars in your current chapter.",
+    "studyHarmonyComboLabel":  "Combo x{count}",
+    "@studyHarmonyComboLabel":  {
+                                  "placeholders":  {
+                                                       "count":  {
+                                                                     "type":  "int"
+                                                                 }
+                                                   }
+                              },
+    "studyHarmonyBestComboLabel":  "Best combo x{count}",
+    "@studyHarmonyBestComboLabel":  {
+                                      "placeholders":  {
+                                                           "count":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                       }
+                                  },
+    "studyHarmonyBonusFullHearts":  "Keep all hearts",
+    "studyHarmonyBonusAccuracyTarget":  "Reach {percent}% accuracy",
+    "@studyHarmonyBonusAccuracyTarget":  {
+                                           "placeholders":  {
+                                                                "percent":  {
+                                                                                "type":  "int"
+                                                                            }
+                                                            }
+                                       },
+    "studyHarmonyBonusComboTarget":  "Reach combo x{count}",
+    "@studyHarmonyBonusComboTarget":  {
+                                        "placeholders":  {
+                                                             "count":  {
+                                                                           "type":  "int"
+                                                                       }
+                                                         }
+                                    },
+    "studyHarmonyBonusSweepTag":  "Bonus sweep",
     "studyHarmonySkillNoteRead":  "Note reading",
     "studyHarmonySkillNoteFindKeyboard":  "Keyboard note finding",
     "studyHarmonySkillNoteAccidentals":  "Sharps and flats",
@@ -547,6 +714,24 @@
     "studyHarmonyLessonMissingChordCadenceDescription":  "Use the pull toward a cadence to choose the missing chord near the end of a phrase.",
     "studyHarmonyLessonMissingChordBossTitle":  "Boss: Mixed Fill-In",
     "studyHarmonyLessonMissingChordBossDescription":  "Solve a short set of fill-in progression questions with a little more harmonic pressure.",
+    "studyHarmonyChapterCheckpointTitle":  "Checkpoint Gauntlet",
+    "studyHarmonyChapterCheckpointDescription":  "Combine key-center, function, color, and fill-in drills in faster mixed review sets.",
+    "studyHarmonyLessonCheckpointCadenceRushTitle":  "Cadence Rush",
+    "studyHarmonyLessonCheckpointCadenceRushDescription":  "Read the harmonic role quickly, then plug the missing cadential chord under light pressure.",
+    "studyHarmonyLessonCheckpointColorKeyTitle":  "Color and Key Shift",
+    "studyHarmonyLessonCheckpointColorKeyDescription":  "Switch between center detection and non-diatonic color calls without losing the thread.",
+    "studyHarmonyLessonCheckpointBossTitle":  "Boss: Checkpoint Gauntlet",
+    "studyHarmonyLessonCheckpointBossDescription":  "Clear one integrated checkpoint that mixes key-center, function, color, and cadence repair prompts.",
+    "studyHarmonyChapterCapstoneTitle":  "Capstone Trials",
+    "studyHarmonyChapterCapstoneDescription":  "Finish the core path with tougher mixed progression rounds that ask for speed, color hearing, and clean resolution choices.",
+    "studyHarmonyLessonCapstoneTurnaroundTitle":  "Turnaround Relay",
+    "studyHarmonyLessonCapstoneTurnaroundDescription":  "Swap between function reading and missing-chord repair across compact turnarounds.",
+    "studyHarmonyLessonCapstoneBorrowedColorTitle":  "Borrowed Color Calls",
+    "studyHarmonyLessonCapstoneBorrowedColorDescription":  "Catch modal color quickly, then confirm the key center before it slips away.",
+    "studyHarmonyLessonCapstoneResolutionTitle":  "Resolution Lab",
+    "studyHarmonyLessonCapstoneResolutionDescription":  "Track where each phrase wants to land and choose the chord that best resolves the motion.",
+    "studyHarmonyLessonCapstoneBossTitle":  "Boss: Final Progression Exam",
+    "studyHarmonyLessonCapstoneBossDescription":  "Pass one final mixed exam with center, function, color, and resolution all under pressure.",
     "studyHarmonyPromptFindNoteOnKeyboard":  "Find {note} on the keyboard",
     "@studyHarmonyPromptFindNoteOnKeyboard":  {
                                                   "placeholders":  {
@@ -982,5 +1167,617 @@
 
                                                                                       }
                                                                        }
-                                                  }
+                                                  },
+    "studyHarmonyDailyReplayAction": "Replay daily",
+    "studyHarmonyMilestoneCabinetTitle": "Milestone Medals",
+    "studyHarmonyMilestoneLessonsTitle": "Pathfinder Medal",
+    "studyHarmonyMilestoneLessonsBody": "Clear {target} lessons in Core Foundations.",
+    "@studyHarmonyMilestoneLessonsBody": {
+        "placeholders": {
+            "target": {}
+        }
+    },
+    "studyHarmonyMilestoneStarsTitle": "Star Collector",
+    "studyHarmonyMilestoneStarsBody": "Collect {target} stars across Study Harmony.",
+    "@studyHarmonyMilestoneStarsBody": {
+        "placeholders": {
+            "target": {}
+        }
+    },
+    "studyHarmonyMilestoneStreakTitle": "Streak Legend",
+    "studyHarmonyMilestoneStreakBody": "Reach a best daily streak of {target}.",
+    "@studyHarmonyMilestoneStreakBody": {
+        "placeholders": {
+            "target": {}
+        }
+    },
+    "studyHarmonyMilestoneMasteryTitle": "Mastery Scholar",
+    "studyHarmonyMilestoneMasteryBody": "Master {target} skills.",
+    "@studyHarmonyMilestoneMasteryBody": {
+        "placeholders": {
+            "target": {}
+        }
+    },
+    "studyHarmonyMilestoneEarnedLabel": "{earned}/{total} medals earned",
+    "@studyHarmonyMilestoneEarnedLabel": {
+        "placeholders": {
+            "earned": {},
+            "total": {}
+        }
+    },
+    "studyHarmonyMilestoneCompletedTag": "Cabinet complete",
+    "studyHarmonyMilestoneTierBronze": "Bronze Medal",
+    "studyHarmonyMilestoneTierSilver": "Silver Medal",
+    "studyHarmonyMilestoneTierGold": "Gold Medal",
+    "studyHarmonyMilestoneTierPlatinum": "Platinum Medal",
+    "studyHarmonyMilestoneUnlockedLabel": "{tier} {title}",
+    "@studyHarmonyMilestoneUnlockedLabel": {
+        "placeholders": {
+            "title": {},
+            "tier": {}
+        }
+    },
+    "studyHarmonyResultMilestonesTitle": "New medals",
+    "studyHarmonyChapterRemixTitle": "Remix Arena",
+    "studyHarmonyChapterRemixDescription": "Longer mixed sets that shuffle key center, function, and borrowed color without warning.",
+    "studyHarmonyLessonRemixBridgeTitle": "Bridge Builder",
+    "studyHarmonyLessonRemixBridgeDescription": "Stitch function reads and missing-chord fills into one flowing chain.",
+    "studyHarmonyLessonRemixPivotTitle": "Color Pivot",
+    "studyHarmonyLessonRemixPivotDescription": "Track borrowed color and key-center pivots as the progression shifts underneath you.",
+    "studyHarmonyLessonRemixSprintTitle": "Resolution Sprint",
+    "studyHarmonyLessonRemixSprintDescription": "Read function, cadence fill, and tonal gravity back-to-back at a quicker pace.",
+    "studyHarmonyLessonRemixBossTitle": "Remix Marathon",
+    "studyHarmonyLessonRemixBossDescription": "A final mixed marathon that throws every progression-reading lens back into the set."
+    ,
+    "studyHarmonyProgressStreakSaver": "Savers x{count}",
+    "@studyHarmonyProgressStreakSaver": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyProgressLegendCrowns": "Legend crowns {count}",
+    "@studyHarmonyProgressLegendCrowns": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyModeFocus": "Focus Mode",
+    "studyHarmonyModeLegend": "Legend Trial",
+    "studyHarmonyFocusCardTitle": "Focus Sprint",
+    "studyHarmonyFocusCardHint": "Target the weakest overlap in your current path with fewer lives and tighter goals.",
+    "studyHarmonyFocusFallbackHint": "Run a harder mixed drill to pressure-test your current weak spots.",
+    "studyHarmonyFocusAction": "Start sprint",
+    "studyHarmonyFocusSessionTitle": "Focus Sprint",
+    "studyHarmonyFocusSessionDescription": "A tighter mixed sprint built from the weakest spots around {chapter}.",
+    "@studyHarmonyFocusSessionDescription": {
+        "placeholders": {
+            "chapter": {}
+        }
+    },
+    "studyHarmonyFocusMixLabel": "{count} lessons mixed",
+    "@studyHarmonyFocusMixLabel": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyFocusRewardLabel": "Weekly saver reward",
+    "studyHarmonyLegendCardTitle": "Legend Trial",
+    "studyHarmonyLegendCardHint": "Replay a silver-or-better chapter as a two-life mastery run to secure a legend crown.",
+    "studyHarmonyLegendFallbackHint": "Finish a chapter and push it to about 2 stars per lesson to unlock a Legend Trial.",
+    "studyHarmonyLegendAction": "Chase legend",
+    "studyHarmonyLegendSessionTitle": "Legend Trial",
+    "studyHarmonyLegendSessionDescription": "A no-slack mastery replay of {chapter} built to secure its legend crown.",
+    "@studyHarmonyLegendSessionDescription": {
+        "placeholders": {
+            "chapter": {}
+        }
+    },
+    "studyHarmonyLegendMixLabel": "{count} lessons chained",
+    "@studyHarmonyLegendMixLabel": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyLegendRiskLabel": "Legend crown at stake",
+    "studyHarmonyWeeklyPlanTitle": "Weekly Training Plan",
+    "studyHarmonyWeeklyRewardLabel": "Reward: Streak Saver",
+    "studyHarmonyWeeklyRewardReadyTag": "Reward ready",
+    "studyHarmonyWeeklyRewardClaimedTag": "Reward claimed",
+    "studyHarmonyWeeklyGoalActiveDaysTitle": "Show up on multiple days",
+    "studyHarmonyWeeklyGoalActiveDaysBody": "Be active on {target} different days this week.",
+    "@studyHarmonyWeeklyGoalActiveDaysBody": {
+        "placeholders": {
+            "target": {}
+        }
+    },
+    "studyHarmonyWeeklyGoalDailyTitle": "Keep the daily loop alive",
+    "studyHarmonyWeeklyGoalDailyBody": "Log {target} daily clears this week.",
+    "@studyHarmonyWeeklyGoalDailyBody": {
+        "placeholders": {
+            "target": {}
+        }
+    },
+    "studyHarmonyWeeklyGoalFocusTitle": "Finish a Focus Sprint",
+    "studyHarmonyWeeklyGoalFocusBody": "Complete {target} Focus Sprints this week.",
+    "@studyHarmonyWeeklyGoalFocusBody": {
+        "placeholders": {
+            "target": {}
+        }
+    },
+    "studyHarmonyResultStreakSaverUsedLine": "Streak Saver used to protect yesterday.",
+    "studyHarmonyResultStreakSaverEarnedLine": "New Streak Saver earned. Inventory: {count}",
+    "@studyHarmonyResultStreakSaverEarnedLine": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyResultFocusSprintLine": "Focus Sprint cleared.",
+    "studyHarmonyResultLegendLine": "Legend crown secured for {chapter}.",
+    "@studyHarmonyResultLegendLine": {
+        "placeholders": {
+            "chapter": {}
+        }
+    },
+    "studyHarmonyChapterEncoreTitle": "Encore Ladder",
+    "studyHarmonyChapterEncoreDescription": "A short finishing ladder that compresses the whole progression toolkit into a final encore set.",
+    "studyHarmonyLessonEncorePulseTitle": "Tonal Pulse",
+    "studyHarmonyLessonEncorePulseDescription": "Lock in tonal center and function without any warm-up prompts.",
+    "studyHarmonyLessonEncoreSwapTitle": "Color Swap",
+    "studyHarmonyLessonEncoreSwapDescription": "Alternate borrowed color calls with missing-chord restoration to keep the ear honest.",
+    "studyHarmonyLessonEncoreBossTitle": "Encore Finale",
+    "studyHarmonyLessonEncoreBossDescription": "One last compact boss round that checks every progression lens in quick succession.",
+    "studyHarmonyChapterMasteryBronze": "Bronze Clear",
+    "studyHarmonyChapterMasterySilver": "Silver Crown",
+    "studyHarmonyChapterMasteryGold": "Gold Crown",
+    "studyHarmonyChapterMasteryLegendary": "Legend Crown",
+    "studyHarmonyModeBossRush": "Boss Rush Mode",
+    "studyHarmonyBossRushCardTitle": "Boss Rush",
+    "studyHarmonyBossRushCardHint": "Chain together the unlocked boss lessons with fewer lives and a bigger score ceiling.",
+    "studyHarmonyBossRushFallbackHint": "Unlock at least two boss lessons to open a real mixed boss run.",
+    "studyHarmonyBossRushAction": "Start rush",
+    "studyHarmonyBossRushSessionTitle": "Boss Rush",
+    "studyHarmonyBossRushSessionDescription": "A high-pressure boss gauntlet built from the unlocked boss lessons around {chapter}.",
+    "@studyHarmonyBossRushSessionDescription": {
+        "placeholders": {
+            "chapter": {}
+        }
+    },
+    "studyHarmonyBossRushMixLabel": "{count} boss lessons mixed",
+    "@studyHarmonyBossRushMixLabel": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyBossRushHighRiskLabel": "2 lives only",
+    "studyHarmonyResultBossRushLine": "Boss Rush cleared.",
+    "studyHarmonyChapterSpotlightTitle": "Spotlight Showdown",
+    "studyHarmonyChapterSpotlightDescription": "A final spotlight set that isolates borrowed color, cadence pressure, and boss-level integration.",
+    "studyHarmonyLessonSpotlightLensTitle": "Borrowed Lens",
+    "studyHarmonyLessonSpotlightLensDescription": "Track key center while borrowed color keeps trying to pull your read sideways.",
+    "studyHarmonyLessonSpotlightCadenceTitle": "Cadence Swap",
+    "studyHarmonyLessonSpotlightCadenceDescription": "Switch between function reading and cadence restoration without losing the landing point.",
+    "studyHarmonyLessonSpotlightBossTitle": "Spotlight Showdown",
+    "studyHarmonyLessonSpotlightBossDescription": "A closing boss set that forces every progression lens to stay sharp under pressure.",
+    "studyHarmonyChapterAfterHoursTitle": "After Hours Lab",
+    "studyHarmonyChapterAfterHoursDescription": "A late-game lab that strips away warm-up clues and mixes borrowed color, cadence pressure, and center tracking.",
+    "studyHarmonyLessonAfterHoursShadowTitle": "Modal Shadow",
+    "studyHarmonyLessonAfterHoursShadowDescription": "Keep hold of the key center while borrowed color keeps dragging the read into the dark.",
+    "studyHarmonyLessonAfterHoursFeintTitle": "Resolution Feint",
+    "studyHarmonyLessonAfterHoursFeintDescription": "Catch function and cadence fakeouts before the phrase slips past its true landing spot.",
+    "studyHarmonyLessonAfterHoursCrossfadeTitle": "Center Crossfade",
+    "studyHarmonyLessonAfterHoursCrossfadeDescription": "Blend center detection, function reading, and missing-chord repair without any extra scaffolding.",
+    "studyHarmonyLessonAfterHoursBossTitle": "Last Call Boss",
+    "studyHarmonyLessonAfterHoursBossDescription": "A final late-night boss set that asks every progression lens to stay clear under pressure.",
+    "studyHarmonyProgressRelayWins": "Relay wins {count}",
+    "@studyHarmonyProgressRelayWins": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyModeRelay": "Arena Relay",
+    "studyHarmonyRelayCardTitle": "Arena Relay",
+    "studyHarmonyRelayCardHint": "Interleave unlocked lessons from different chapters into one mixed run that tests fast switching as much as raw recall.",
+    "studyHarmonyRelayFallbackHint": "Unlock at least two chapters to open Arena Relay.",
+    "studyHarmonyRelayAction": "Start relay",
+    "studyHarmonyRelaySessionTitle": "Arena Relay",
+    "studyHarmonyRelaySessionDescription": "An interleaved relay run mixing unlocked chapters around {chapter}.",
+    "@studyHarmonyRelaySessionDescription": {
+        "placeholders": {
+            "chapter": {}
+        }
+    },
+    "studyHarmonyRelayMixLabel": "{count} lessons relayed",
+    "@studyHarmonyRelayMixLabel": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyRelayChapterSpreadLabel": "{count} chapters mixed",
+    "@studyHarmonyRelayChapterSpreadLabel": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyRelayChainLabel": "Interleaving under pressure",
+    "studyHarmonyResultRelayLine": "Relay wins {count}",
+    "@studyHarmonyResultRelayLine": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyMilestoneRelayTitle": "Relay Runner",
+    "studyHarmonyMilestoneRelayBody": "Clear {target} Arena Relay runs.",
+    "@studyHarmonyMilestoneRelayBody": {
+        "placeholders": {
+            "target": {}
+        }
+    },
+    "studyHarmonyChapterNeonTitle": "Neon Detours",
+    "studyHarmonyChapterNeonDescription": "A late-game chapter that keeps bending the path with borrowed color, pivot pressure, and recovery reads.",
+    "studyHarmonyLessonNeonDetourTitle": "Modal Detour",
+    "studyHarmonyLessonNeonDetourDescription": "Track the true center even while borrowed color keeps shoving the phrase into a side street.",
+    "studyHarmonyLessonNeonPivotTitle": "Pivot Pressure",
+    "studyHarmonyLessonNeonPivotDescription": "Read center shifts and function pressure back to back before the harmonic lane changes again.",
+    "studyHarmonyLessonNeonLandingTitle": "Borrowed Landing",
+    "studyHarmonyLessonNeonLandingDescription": "Repair the missing landing chord after a borrowed-color fakeout changes the expected resolution.",
+    "studyHarmonyLessonNeonBossTitle": "City Lights Boss",
+    "studyHarmonyLessonNeonBossDescription": "A closing neon boss that mixes pivot reads, borrowed color, and cadence recovery without a soft landing.",
+    "studyHarmonyProgressLeague": "{tier} league",
+    "@studyHarmonyProgressLeague": {
+        "placeholders": {
+            "tier": {}
+        }
+    },
+    "studyHarmonyLeagueCardTitle": "Harmony League",
+    "studyHarmonyLeagueCardHint": "Push toward {tier} league this week. The cleanest boost right now is {mode}.",
+    "@studyHarmonyLeagueCardHint": {
+        "placeholders": {
+            "tier": {},
+            "mode": {}
+        }
+    },
+    "studyHarmonyLeagueCardHintMax": "Diamond is secured for this week. Keep chaining high-pressure clears to hold the pace.",
+    "studyHarmonyLeagueFallbackHint": "Your league climb will light up once there is a recommended run to push this week.",
+    "studyHarmonyLeagueAction": "Climb league",
+    "studyHarmonyLeagueScoreLabel": "{score} XP this week",
+    "@studyHarmonyLeagueScoreLabel": {
+        "placeholders": {
+            "score": {}
+        }
+    },
+    "studyHarmonyLeagueProgressLabel": "{score}/{target} XP this week",
+    "@studyHarmonyLeagueProgressLabel": {
+        "placeholders": {
+            "score": {},
+            "target": {}
+        }
+    },
+    "studyHarmonyLeagueNextTierLabel": "Next: {tier}",
+    "@studyHarmonyLeagueNextTierLabel": {
+        "placeholders": {
+            "tier": {}
+        }
+    },
+    "studyHarmonyLeagueBoostLabel": "Best boost: {mode}",
+    "@studyHarmonyLeagueBoostLabel": {
+        "placeholders": {
+            "mode": {}
+        }
+    },
+    "studyHarmonyResultLeagueXpLine": "League XP +{count}",
+    "@studyHarmonyResultLeagueXpLine": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyResultLeaguePromotionLine": "Promoted to {tier} league",
+    "@studyHarmonyResultLeaguePromotionLine": {
+        "placeholders": {
+            "tier": {}
+        }
+    },
+    "studyHarmonyLeagueTierRookie": "Rookie",
+    "studyHarmonyLeagueTierBronze": "Bronze",
+    "studyHarmonyLeagueTierSilver": "Silver",
+    "studyHarmonyLeagueTierGold": "Gold",
+    "studyHarmonyLeagueTierDiamond": "Diamond",
+    "studyHarmonyChapterMidnightTitle": "Midnight Switchboard",
+    "studyHarmonyChapterMidnightDescription": "A final control-room chapter that forces fast reads across drifting centers, false cadences, and borrowed reroutes.",
+    "studyHarmonyLessonMidnightDriftTitle": "Signal Drift",
+    "studyHarmonyLessonMidnightDriftDescription": "Track the true tonal signal even while the surface keeps drifting into borrowed color.",
+    "studyHarmonyLessonMidnightLineTitle": "False Line",
+    "studyHarmonyLessonMidnightLineDescription": "Read function pressure through fake resolutions before the line folds back into place.",
+    "studyHarmonyLessonMidnightRerouteTitle": "Borrowed Reroute",
+    "studyHarmonyLessonMidnightRerouteDescription": "Recover the expected landing after borrowed color reroutes the phrase midstream.",
+    "studyHarmonyLessonMidnightBossTitle": "Blackout Boss",
+    "studyHarmonyLessonMidnightBossDescription": "A closing blackout set that mixes every late-game lens without giving you a safe reset.",
+    "studyHarmonyProgressQuestChests": "Quest chests {count}",
+    "@studyHarmonyProgressQuestChests": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyProgressLeagueBoost": "2x league XP x{count}",
+    "@studyHarmonyProgressLeagueBoost": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyQuestChestTitle": "Quest Chest",
+    "studyHarmonyQuestChestLockedHeadline": "{count} quests left",
+    "@studyHarmonyQuestChestLockedHeadline": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyQuestChestReadyHeadline": "Quest Chest ready",
+    "studyHarmonyQuestChestOpenedHeadline": "Quest Chest opened",
+    "studyHarmonyQuestChestBoostHeadline": "2x League XP live",
+    "studyHarmonyQuestChestRewardLabel": "Reward: +{xp} league XP",
+    "@studyHarmonyQuestChestRewardLabel": {
+        "placeholders": {
+            "xp": {}
+        }
+    },
+    "studyHarmonyQuestChestLockedBody": "Finish today's quest trio to cash out a bonus chest and keep the weekly climb moving.",
+    "studyHarmonyQuestChestReadyBody": "All three quests are done. Clear one more run to cash out today's chest bonus.",
+    "studyHarmonyQuestChestOpenedBody": "Today's trio is complete and the chest bonus has already been converted into league XP.",
+    "studyHarmonyQuestChestOpenedBoostBody": "Today's chest is open and 2x League XP is active for your next {count} clears.",
+    "@studyHarmonyQuestChestOpenedBoostBody": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyQuestChestAction": "Finish trio",
+    "studyHarmonyQuestChestBoostLabel": "Best finish: {mode}",
+    "@studyHarmonyQuestChestBoostLabel": {
+        "placeholders": {
+            "mode": {}
+        }
+    },
+    "studyHarmonyQuestChestBoostReadyLabel": "2x XP x{count}",
+    "@studyHarmonyQuestChestBoostReadyLabel": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyQuestChestProgressLabel": "Daily quests {count}/{target}",
+    "@studyHarmonyQuestChestProgressLabel": {
+        "placeholders": {
+            "count": {},
+            "target": {}
+        }
+    },
+    "studyHarmonyResultQuestChestLine": "Quest Chest opened.",
+    "studyHarmonyResultQuestChestXpLine": "Quest Chest bonus +{count} League XP",
+    "@studyHarmonyResultQuestChestXpLine": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyResultLeagueBoostReadyLine": "2x League XP boost ready for the next {count} clears",
+    "@studyHarmonyResultLeagueBoostReadyLine": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyResultLeagueBoostAppliedLine": "Boost bonus +{count} League XP",
+    "@studyHarmonyResultLeagueBoostAppliedLine": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyResultLeagueBoostRemainingLine": "2x boost clears left {count}",
+    "@studyHarmonyResultLeagueBoostRemainingLine": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyLeagueBoostReadyLabel": "2x XP x{count}",
+    "@studyHarmonyLeagueBoostReadyLabel": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyLeagueCardHintBoosted": "2x League XP is live for {count} clears. Spend it on {mode} while the boost lasts.",
+    "@studyHarmonyLeagueCardHintBoosted": {
+        "placeholders": {
+            "count": {},
+            "mode": {}
+        }
+    },
+    "studyHarmonyChapterSkylineTitle": "Skyline Circuit",
+    "studyHarmonyChapterSkylineDescription": "A final skyline circuit that forces fast mixed reads across ghosted centers, borrowed gravity, and false homes.",
+    "studyHarmonyLessonSkylinePulseTitle": "Afterimage Pulse",
+    "studyHarmonyLessonSkylinePulseDescription": "Catch center and function in the afterimage before the phrase locks into a new lane.",
+    "studyHarmonyLessonSkylineSwapTitle": "Gravity Swap",
+    "studyHarmonyLessonSkylineSwapDescription": "Handle borrowed gravity and missing-chord repair while the progression keeps swapping its weight.",
+    "studyHarmonyLessonSkylineHomeTitle": "False Home",
+    "studyHarmonyLessonSkylineHomeDescription": "Read through the false arrival and rebuild the true landing before the progression snaps shut.",
+    "studyHarmonyLessonSkylineBossTitle": "Final Signal Boss",
+    "studyHarmonyLessonSkylineBossDescription": "A last skyline boss that chains every late-game progression lens into one closing signal test.",
+    "studyHarmonyChapterAfterglowTitle": "Afterglow Runway",
+    "studyHarmonyChapterAfterglowDescription": "A closing runway of split decisions, borrowed bait, and flickering centers that rewards clean late-game reads under pressure.",
+    "studyHarmonyLessonAfterglowSplitTitle": "Split Decision",
+    "studyHarmonyLessonAfterglowSplitDescription": "Choose the repair chord that keeps the function moving without letting the phrase drift off course.",
+    "studyHarmonyLessonAfterglowLureTitle": "Borrowed Lure",
+    "studyHarmonyLessonAfterglowLureDescription": "Spot the borrowed color chord that looks like a pivot before the progression snaps back home.",
+    "studyHarmonyLessonAfterglowFlickerTitle": "Center Flicker",
+    "studyHarmonyLessonAfterglowFlickerDescription": "Hold the tonal center while cadence cues blink and reroute in quick succession.",
+    "studyHarmonyLessonAfterglowBossTitle": "Redline Return Boss",
+    "studyHarmonyLessonAfterglowBossDescription": "A final mixed test of key center, function, borrowed color, and missing-chord repair at full speed.",
+    "studyHarmonyProgressTour": "Tour stamps {count}/{target}",
+    "@studyHarmonyProgressTour": {
+        "placeholders": {
+            "count": {},
+            "target": {}
+        }
+    },
+    "studyHarmonyProgressTourClaimed": "Monthly tour cleared",
+    "studyHarmonyTourTitle": "Harmony Tour",
+    "studyHarmonyTourProgressHeadline": "{count}/{target} tour stamps",
+    "@studyHarmonyTourProgressHeadline": {
+        "placeholders": {
+            "count": {},
+            "target": {}
+        }
+    },
+    "studyHarmonyTourReadyHeadline": "Tour finale ready",
+    "studyHarmonyTourClaimedHeadline": "Monthly tour cleared",
+    "studyHarmonyTourRewardLabel": "Reward: +{xp} league XP and {count} Streak Saver",
+    "@studyHarmonyTourRewardLabel": {
+        "placeholders": {
+            "xp": {},
+            "count": {}
+        }
+    },
+    "studyHarmonyTourActiveDaysBody": "Show up on {target} different days this month to lock in the tour bonus.",
+    "@studyHarmonyTourActiveDaysBody": {
+        "placeholders": {
+            "target": {}
+        }
+    },
+    "studyHarmonyTourQuestChestBody": "Open {target} Quest Chests this month to keep the tour stamp book moving.",
+    "@studyHarmonyTourQuestChestBody": {
+        "placeholders": {
+            "target": {}
+        }
+    },
+    "studyHarmonyTourSpotlightBody": "Clear {target} spotlight runs this month. Boss Rush, Relay, Focus, Legend, and boss lessons all count.",
+    "@studyHarmonyTourSpotlightBody": {
+        "placeholders": {
+            "target": {}
+        }
+    },
+    "studyHarmonyTourReadyBody": "Every monthly stamp is in. One more clear locks in the tour bonus.",
+    "studyHarmonyTourClaimedBody": "This month's tour is complete. Keep the rhythm sharp so next month's route starts hot.",
+    "studyHarmonyTourAction": "Advance tour",
+    "studyHarmonyTourActiveDaysLabel": "Active days {count}/{target}",
+    "@studyHarmonyTourActiveDaysLabel": {
+        "placeholders": {
+            "count": {},
+            "target": {}
+        }
+    },
+    "studyHarmonyTourQuestChestsLabel": "Quest Chests {count}/{target}",
+    "@studyHarmonyTourQuestChestsLabel": {
+        "placeholders": {
+            "count": {},
+            "target": {}
+        }
+    },
+    "studyHarmonyTourSpotlightLabel": "Spotlights {count}/{target}",
+    "@studyHarmonyTourSpotlightLabel": {
+        "placeholders": {
+            "count": {},
+            "target": {}
+        }
+    },
+    "studyHarmonyResultTourCompleteLine": "Harmony Tour complete",
+    "studyHarmonyResultTourXpLine": "Tour bonus +{count} League XP",
+    "@studyHarmonyResultTourXpLine": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyResultTourStreakSaverLine": "Streak Saver stock {count}",
+    "@studyHarmonyResultTourStreakSaverLine": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyChapterDaybreakTitle": "Daybreak Frequency",
+    "studyHarmonyChapterDaybreakDescription": "A sunrise encore of ghost cadences, false dawn pivots, and borrowed blooms that forces clean late-game reads after a long run.",
+    "studyHarmonyLessonDaybreakGhostTitle": "Ghost Cadence",
+    "studyHarmonyLessonDaybreakGhostDescription": "Repair the cadence and function at the same time when the phrase pretends to close without actually landing.",
+    "studyHarmonyLessonDaybreakDawnTitle": "False Dawn",
+    "studyHarmonyLessonDaybreakDawnDescription": "Catch the center shift hiding inside a too-early sunrise before the progression pulls away again.",
+    "studyHarmonyLessonDaybreakBloomTitle": "Borrowed Bloom",
+    "studyHarmonyLessonDaybreakBloomDescription": "Track borrowed color and function together while the harmony opens into a brighter but unstable lane.",
+    "studyHarmonyLessonDaybreakBossTitle": "Sunrise Overdrive Boss",
+    "studyHarmonyLessonDaybreakBossDescription": "A final dawn-speed boss that chains key center, function, non-diatonic color, and missing-chord repair into one last overdrive set.",
+    "studyHarmonyProgressDuetPact": "Duet streak {count}",
+    "@studyHarmonyProgressDuetPact": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyDuetTitle": "Duet Pact",
+    "studyHarmonyDuetStartHeadline": "Start today's duet",
+    "studyHarmonyDuetInProgressHeadline": "Duet streak {count}",
+    "@studyHarmonyDuetInProgressHeadline": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyDuetReadyHeadline": "Duet locked for day {count}",
+    "@studyHarmonyDuetReadyHeadline": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyDuetRewardLabel": "Reward: +{xp} league XP at key streaks",
+    "@studyHarmonyDuetRewardLabel": {
+        "placeholders": {
+            "xp": {}
+        }
+    },
+    "studyHarmonyDuetNeedDailyBody": "Clear today's Daily first, then land one spotlight run to keep the duet alive.",
+    "studyHarmonyDuetNeedSpotlightBody": "Daily is in. Finish one spotlight run like Focus, Relay, Boss Rush, Legend, or a boss lesson to seal the duet.",
+    "studyHarmonyDuetActiveBody": "Today's duet is sealed and the shared streak is now {count} days long.",
+    "@studyHarmonyDuetActiveBody": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyDuetDailyDone": "Daily in",
+    "studyHarmonyDuetDailyMissing": "Daily missing",
+    "studyHarmonyDuetSpotlightDone": "Spotlight in",
+    "studyHarmonyDuetSpotlightMissing": "Spotlight missing",
+    "studyHarmonyDuetDailyLabel": "Daily {done}",
+    "@studyHarmonyDuetDailyLabel": {
+        "placeholders": {
+            "done": {
+                "type": "bool"
+            }
+        }
+    },
+    "studyHarmonyDuetSpotlightLabel": "Spotlight {done}",
+    "@studyHarmonyDuetSpotlightLabel": {
+        "placeholders": {
+            "done": {
+                "type": "bool"
+            }
+        }
+    },
+    "studyHarmonyDuetTargetLabel": "Streak {count}/{target}",
+    "@studyHarmonyDuetTargetLabel": {
+        "placeholders": {
+            "count": {},
+            "target": {}
+        }
+    },
+    "studyHarmonyDuetAction": "Keep duet going",
+    "studyHarmonyResultDuetLine": "Duet streak {count}",
+    "@studyHarmonyResultDuetLine": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyResultDuetRewardLine": "Duet reward +{count} League XP",
+    "@studyHarmonyResultDuetRewardLine": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "studyHarmonyChapterBlueHourTitle": "Blue Hour Exchange",
+    "studyHarmonyChapterBlueHourDescription": "A twilight encore of crossing currents, haloed borrows, and dual horizons that keeps late-game reads unstable in the best way.",
+    "studyHarmonyLessonBlueHourCurrentTitle": "Cross Current",
+    "studyHarmonyLessonBlueHourCurrentDescription": "Track key center and function while the progression starts pulling in two directions at once.",
+    "studyHarmonyLessonBlueHourHaloTitle": "Halo Borrow",
+    "studyHarmonyLessonBlueHourHaloDescription": "Read the borrowed color and restore the missing chord before the phrase turns hazy.",
+    "studyHarmonyLessonBlueHourHorizonTitle": "Dual Horizon",
+    "studyHarmonyLessonBlueHourHorizonDescription": "Hold the real arrival point while two possible horizons keep flashing in and out.",
+    "studyHarmonyLessonBlueHourBossTitle": "Twin Lanterns Boss",
+    "studyHarmonyLessonBlueHourBossDescription": "A final blue-hour boss that forces fast swaps across center, function, borrowed color, and missing-chord repair."
 }

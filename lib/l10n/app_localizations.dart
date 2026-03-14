@@ -561,6 +561,30 @@ abstract class AppLocalizations {
   /// **'Next Chord'**
   String get nextChord;
 
+  /// No description provided for @audioPlayChord.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Chord'**
+  String get audioPlayChord;
+
+  /// No description provided for @audioPlayArpeggio.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Arpeggio'**
+  String get audioPlayArpeggio;
+
+  /// No description provided for @audioPlayProgression.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Progression'**
+  String get audioPlayProgression;
+
+  /// No description provided for @audioPlayPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Prompt'**
+  String get audioPlayPrompt;
+
   /// No description provided for @startAutoplay.
   ///
   /// In en, this message translates to:
@@ -1317,6 +1341,48 @@ abstract class AppLocalizations {
   /// **'{cleared}/{total} chapters completed'**
   String studyHarmonyHubChaptersProgress(int cleared, int total);
 
+  /// No description provided for @studyHarmonyProgressStars.
+  ///
+  /// In en, this message translates to:
+  /// **'{stars} stars'**
+  String studyHarmonyProgressStars(int stars);
+
+  /// No description provided for @studyHarmonyProgressSkillsMastered.
+  ///
+  /// In en, this message translates to:
+  /// **'{mastered}/{total} skills mastered'**
+  String studyHarmonyProgressSkillsMastered(int mastered, int total);
+
+  /// No description provided for @studyHarmonyProgressReviewsReady.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reviews ready'**
+  String studyHarmonyProgressReviewsReady(int count);
+
+  /// No description provided for @studyHarmonyProgressStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak x{count}'**
+  String studyHarmonyProgressStreak(int count);
+
+  /// No description provided for @studyHarmonyProgressRuns.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} runs'**
+  String studyHarmonyProgressRuns(int count);
+
+  /// No description provided for @studyHarmonyProgressBestRank.
+  ///
+  /// In en, this message translates to:
+  /// **'Best {rank}'**
+  String studyHarmonyProgressBestRank(Object rank);
+
+  /// No description provided for @studyHarmonyBossTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Boss'**
+  String get studyHarmonyBossTag;
+
   /// No description provided for @studyHarmonyContinueCardTitle.
   ///
   /// In en, this message translates to:
@@ -1401,6 +1467,12 @@ abstract class AppLocalizations {
   /// **'Open today\'s deterministic pick from your unlocked lessons.'**
   String get studyHarmonyDailyCardHint;
 
+  /// No description provided for @studyHarmonyDailyCardHintCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s daily is cleared. Replay it if you want, or come back tomorrow to keep the streak going.'**
+  String get studyHarmonyDailyCardHintCompleted;
+
   /// No description provided for @studyHarmonyDailyAction.
   ///
   /// In en, this message translates to:
@@ -1412,6 +1484,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Seed {dateKey}'**
   String studyHarmonyDailyDateBadge(Object dateKey);
+
+  /// No description provided for @studyHarmonyDailyClearedTodayTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily cleared today'**
+  String get studyHarmonyDailyClearedTodayTag;
 
   /// No description provided for @studyHarmonyReviewSessionTitle.
   ///
@@ -1485,6 +1563,48 @@ abstract class AppLocalizations {
   /// **'Review focus'**
   String get studyHarmonyResultReviewFocusTitle;
 
+  /// No description provided for @studyHarmonyResultRewardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Session reward'**
+  String get studyHarmonyResultRewardTitle;
+
+  /// No description provided for @studyHarmonyBonusGoalsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bonus goals'**
+  String get studyHarmonyBonusGoalsTitle;
+
+  /// No description provided for @studyHarmonyResultRankLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank {rank}'**
+  String studyHarmonyResultRankLine(Object rank);
+
+  /// No description provided for @studyHarmonyResultStarsLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{stars} stars'**
+  String studyHarmonyResultStarsLine(int stars);
+
+  /// No description provided for @studyHarmonyResultBestLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Best {rank} · {stars} stars'**
+  String studyHarmonyResultBestLine(Object rank, int stars);
+
+  /// No description provided for @studyHarmonyResultDailyStreakLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily streak x{count}'**
+  String studyHarmonyResultDailyStreakLine(int count);
+
+  /// No description provided for @studyHarmonyResultNewBestTag.
+  ///
+  /// In en, this message translates to:
+  /// **'New personal best'**
+  String get studyHarmonyResultNewBestTag;
+
   /// No description provided for @studyHarmonyResultSkillGainLine.
   ///
   /// In en, this message translates to:
@@ -1526,6 +1646,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Review reason: frontier refresh'**
   String get studyHarmonyReviewReasonFrontierRefresh;
+
+  /// No description provided for @studyHarmonyQuestBoardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quest Board'**
+  String get studyHarmonyQuestBoardTitle;
+
+  /// No description provided for @studyHarmonyQuestCompletedTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get studyHarmonyQuestCompletedTag;
+
+  /// No description provided for @studyHarmonyQuestTodayTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get studyHarmonyQuestTodayTag;
+
+  /// No description provided for @studyHarmonyQuestProgressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{current}/{target} complete'**
+  String studyHarmonyQuestProgressLabel(int current, int target);
+
+  /// No description provided for @studyHarmonyQuestDailyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily streak'**
+  String get studyHarmonyQuestDailyTitle;
+
+  /// No description provided for @studyHarmonyQuestDailyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear today\'s seeded mix to extend your streak.'**
+  String get studyHarmonyQuestDailyBody;
+
+  /// No description provided for @studyHarmonyQuestDailyBodyCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s daily is already cleared. The streak is safe for now.'**
+  String get studyHarmonyQuestDailyBodyCompleted;
+
+  /// No description provided for @studyHarmonyQuestFrontierTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Frontier push'**
+  String get studyHarmonyQuestFrontierTitle;
+
+  /// No description provided for @studyHarmonyQuestFrontierBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear {lessonTitle} to move the path forward.'**
+  String studyHarmonyQuestFrontierBody(Object lessonTitle);
+
+  /// No description provided for @studyHarmonyQuestFrontierBodyCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Every currently unlocked lesson is cleared. Replay a boss or chase more stars.'**
+  String get studyHarmonyQuestFrontierBodyCompleted;
+
+  /// No description provided for @studyHarmonyQuestStarsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Star hunt'**
+  String get studyHarmonyQuestStarsTitle;
+
+  /// No description provided for @studyHarmonyQuestStarsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Push extra stars inside {chapterTitle}.'**
+  String studyHarmonyQuestStarsBody(Object chapterTitle);
+
+  /// No description provided for @studyHarmonyQuestStarsBodyFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Push extra stars in your current chapter.'**
+  String get studyHarmonyQuestStarsBodyFallback;
+
+  /// No description provided for @studyHarmonyComboLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Combo x{count}'**
+  String studyHarmonyComboLabel(int count);
+
+  /// No description provided for @studyHarmonyBestComboLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Best combo x{count}'**
+  String studyHarmonyBestComboLabel(int count);
+
+  /// No description provided for @studyHarmonyBonusFullHearts.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep all hearts'**
+  String get studyHarmonyBonusFullHearts;
+
+  /// No description provided for @studyHarmonyBonusAccuracyTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach {percent}% accuracy'**
+  String studyHarmonyBonusAccuracyTarget(int percent);
+
+  /// No description provided for @studyHarmonyBonusComboTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach combo x{count}'**
+  String studyHarmonyBonusComboTarget(int count);
+
+  /// No description provided for @studyHarmonyBonusSweepTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Bonus sweep'**
+  String get studyHarmonyBonusSweepTag;
 
   /// No description provided for @studyHarmonySkillNoteRead.
   ///
@@ -2108,6 +2342,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Solve a short set of fill-in progression questions with a little more harmonic pressure.'**
   String get studyHarmonyLessonMissingChordBossDescription;
+
+  /// No description provided for @studyHarmonyChapterCheckpointTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkpoint Gauntlet'**
+  String get studyHarmonyChapterCheckpointTitle;
+
+  /// No description provided for @studyHarmonyChapterCheckpointDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Combine key-center, function, color, and fill-in drills in faster mixed review sets.'**
+  String get studyHarmonyChapterCheckpointDescription;
+
+  /// No description provided for @studyHarmonyLessonCheckpointCadenceRushTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cadence Rush'**
+  String get studyHarmonyLessonCheckpointCadenceRushTitle;
+
+  /// No description provided for @studyHarmonyLessonCheckpointCadenceRushDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the harmonic role quickly, then plug the missing cadential chord under light pressure.'**
+  String get studyHarmonyLessonCheckpointCadenceRushDescription;
+
+  /// No description provided for @studyHarmonyLessonCheckpointColorKeyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Color and Key Shift'**
+  String get studyHarmonyLessonCheckpointColorKeyTitle;
+
+  /// No description provided for @studyHarmonyLessonCheckpointColorKeyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch between center detection and non-diatonic color calls without losing the thread.'**
+  String get studyHarmonyLessonCheckpointColorKeyDescription;
+
+  /// No description provided for @studyHarmonyLessonCheckpointBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Boss: Checkpoint Gauntlet'**
+  String get studyHarmonyLessonCheckpointBossTitle;
+
+  /// No description provided for @studyHarmonyLessonCheckpointBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear one integrated checkpoint that mixes key-center, function, color, and cadence repair prompts.'**
+  String get studyHarmonyLessonCheckpointBossDescription;
+
+  /// No description provided for @studyHarmonyChapterCapstoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Capstone Trials'**
+  String get studyHarmonyChapterCapstoneTitle;
+
+  /// No description provided for @studyHarmonyChapterCapstoneDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the core path with tougher mixed progression rounds that ask for speed, color hearing, and clean resolution choices.'**
+  String get studyHarmonyChapterCapstoneDescription;
+
+  /// No description provided for @studyHarmonyLessonCapstoneTurnaroundTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Turnaround Relay'**
+  String get studyHarmonyLessonCapstoneTurnaroundTitle;
+
+  /// No description provided for @studyHarmonyLessonCapstoneTurnaroundDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap between function reading and missing-chord repair across compact turnarounds.'**
+  String get studyHarmonyLessonCapstoneTurnaroundDescription;
+
+  /// No description provided for @studyHarmonyLessonCapstoneBorrowedColorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowed Color Calls'**
+  String get studyHarmonyLessonCapstoneBorrowedColorTitle;
+
+  /// No description provided for @studyHarmonyLessonCapstoneBorrowedColorDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Catch modal color quickly, then confirm the key center before it slips away.'**
+  String get studyHarmonyLessonCapstoneBorrowedColorDescription;
+
+  /// No description provided for @studyHarmonyLessonCapstoneResolutionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolution Lab'**
+  String get studyHarmonyLessonCapstoneResolutionTitle;
+
+  /// No description provided for @studyHarmonyLessonCapstoneResolutionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Track where each phrase wants to land and choose the chord that best resolves the motion.'**
+  String get studyHarmonyLessonCapstoneResolutionDescription;
+
+  /// No description provided for @studyHarmonyLessonCapstoneBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Boss: Final Progression Exam'**
+  String get studyHarmonyLessonCapstoneBossTitle;
+
+  /// No description provided for @studyHarmonyLessonCapstoneBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Pass one final mixed exam with center, function, color, and resolution all under pressure.'**
+  String get studyHarmonyLessonCapstoneBossDescription;
 
   /// No description provided for @studyHarmonyPromptFindNoteOnKeyboard.
   ///
@@ -2771,6 +3113,1530 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unsupported suffix or modifier: {suffix}'**
   String chordAnalyzerParseIssueUnsupportedSuffix(Object suffix);
+
+  /// No description provided for @studyHarmonyDailyReplayAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Replay daily'**
+  String get studyHarmonyDailyReplayAction;
+
+  /// No description provided for @studyHarmonyMilestoneCabinetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestone Medals'**
+  String get studyHarmonyMilestoneCabinetTitle;
+
+  /// No description provided for @studyHarmonyMilestoneLessonsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pathfinder Medal'**
+  String get studyHarmonyMilestoneLessonsTitle;
+
+  /// No description provided for @studyHarmonyMilestoneLessonsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear {target} lessons in Core Foundations.'**
+  String studyHarmonyMilestoneLessonsBody(Object target);
+
+  /// No description provided for @studyHarmonyMilestoneStarsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Star Collector'**
+  String get studyHarmonyMilestoneStarsTitle;
+
+  /// No description provided for @studyHarmonyMilestoneStarsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Collect {target} stars across Study Harmony.'**
+  String studyHarmonyMilestoneStarsBody(Object target);
+
+  /// No description provided for @studyHarmonyMilestoneStreakTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak Legend'**
+  String get studyHarmonyMilestoneStreakTitle;
+
+  /// No description provided for @studyHarmonyMilestoneStreakBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach a best daily streak of {target}.'**
+  String studyHarmonyMilestoneStreakBody(Object target);
+
+  /// No description provided for @studyHarmonyMilestoneMasteryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mastery Scholar'**
+  String get studyHarmonyMilestoneMasteryTitle;
+
+  /// No description provided for @studyHarmonyMilestoneMasteryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Master {target} skills.'**
+  String studyHarmonyMilestoneMasteryBody(Object target);
+
+  /// No description provided for @studyHarmonyMilestoneEarnedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{earned}/{total} medals earned'**
+  String studyHarmonyMilestoneEarnedLabel(Object earned, Object total);
+
+  /// No description provided for @studyHarmonyMilestoneCompletedTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Cabinet complete'**
+  String get studyHarmonyMilestoneCompletedTag;
+
+  /// No description provided for @studyHarmonyMilestoneTierBronze.
+  ///
+  /// In en, this message translates to:
+  /// **'Bronze Medal'**
+  String get studyHarmonyMilestoneTierBronze;
+
+  /// No description provided for @studyHarmonyMilestoneTierSilver.
+  ///
+  /// In en, this message translates to:
+  /// **'Silver Medal'**
+  String get studyHarmonyMilestoneTierSilver;
+
+  /// No description provided for @studyHarmonyMilestoneTierGold.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold Medal'**
+  String get studyHarmonyMilestoneTierGold;
+
+  /// No description provided for @studyHarmonyMilestoneTierPlatinum.
+  ///
+  /// In en, this message translates to:
+  /// **'Platinum Medal'**
+  String get studyHarmonyMilestoneTierPlatinum;
+
+  /// No description provided for @studyHarmonyMilestoneUnlockedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{tier} {title}'**
+  String studyHarmonyMilestoneUnlockedLabel(Object title, Object tier);
+
+  /// No description provided for @studyHarmonyResultMilestonesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New medals'**
+  String get studyHarmonyResultMilestonesTitle;
+
+  /// No description provided for @studyHarmonyChapterRemixTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remix Arena'**
+  String get studyHarmonyChapterRemixTitle;
+
+  /// No description provided for @studyHarmonyChapterRemixDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Longer mixed sets that shuffle key center, function, and borrowed color without warning.'**
+  String get studyHarmonyChapterRemixDescription;
+
+  /// No description provided for @studyHarmonyLessonRemixBridgeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bridge Builder'**
+  String get studyHarmonyLessonRemixBridgeTitle;
+
+  /// No description provided for @studyHarmonyLessonRemixBridgeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Stitch function reads and missing-chord fills into one flowing chain.'**
+  String get studyHarmonyLessonRemixBridgeDescription;
+
+  /// No description provided for @studyHarmonyLessonRemixPivotTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Color Pivot'**
+  String get studyHarmonyLessonRemixPivotTitle;
+
+  /// No description provided for @studyHarmonyLessonRemixPivotDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Track borrowed color and key-center pivots as the progression shifts underneath you.'**
+  String get studyHarmonyLessonRemixPivotDescription;
+
+  /// No description provided for @studyHarmonyLessonRemixSprintTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolution Sprint'**
+  String get studyHarmonyLessonRemixSprintTitle;
+
+  /// No description provided for @studyHarmonyLessonRemixSprintDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Read function, cadence fill, and tonal gravity back-to-back at a quicker pace.'**
+  String get studyHarmonyLessonRemixSprintDescription;
+
+  /// No description provided for @studyHarmonyLessonRemixBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remix Marathon'**
+  String get studyHarmonyLessonRemixBossTitle;
+
+  /// No description provided for @studyHarmonyLessonRemixBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A final mixed marathon that throws every progression-reading lens back into the set.'**
+  String get studyHarmonyLessonRemixBossDescription;
+
+  /// No description provided for @studyHarmonyProgressStreakSaver.
+  ///
+  /// In en, this message translates to:
+  /// **'Savers x{count}'**
+  String studyHarmonyProgressStreakSaver(Object count);
+
+  /// No description provided for @studyHarmonyProgressLegendCrowns.
+  ///
+  /// In en, this message translates to:
+  /// **'Legend crowns {count}'**
+  String studyHarmonyProgressLegendCrowns(Object count);
+
+  /// No description provided for @studyHarmonyModeFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus Mode'**
+  String get studyHarmonyModeFocus;
+
+  /// No description provided for @studyHarmonyModeLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Legend Trial'**
+  String get studyHarmonyModeLegend;
+
+  /// No description provided for @studyHarmonyFocusCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus Sprint'**
+  String get studyHarmonyFocusCardTitle;
+
+  /// No description provided for @studyHarmonyFocusCardHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Target the weakest overlap in your current path with fewer lives and tighter goals.'**
+  String get studyHarmonyFocusCardHint;
+
+  /// No description provided for @studyHarmonyFocusFallbackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Run a harder mixed drill to pressure-test your current weak spots.'**
+  String get studyHarmonyFocusFallbackHint;
+
+  /// No description provided for @studyHarmonyFocusAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start sprint'**
+  String get studyHarmonyFocusAction;
+
+  /// No description provided for @studyHarmonyFocusSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus Sprint'**
+  String get studyHarmonyFocusSessionTitle;
+
+  /// No description provided for @studyHarmonyFocusSessionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A tighter mixed sprint built from the weakest spots around {chapter}.'**
+  String studyHarmonyFocusSessionDescription(Object chapter);
+
+  /// No description provided for @studyHarmonyFocusMixLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} lessons mixed'**
+  String studyHarmonyFocusMixLabel(Object count);
+
+  /// No description provided for @studyHarmonyFocusRewardLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly saver reward'**
+  String get studyHarmonyFocusRewardLabel;
+
+  /// No description provided for @studyHarmonyLegendCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Legend Trial'**
+  String get studyHarmonyLegendCardTitle;
+
+  /// No description provided for @studyHarmonyLegendCardHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Replay a silver-or-better chapter as a two-life mastery run to secure a legend crown.'**
+  String get studyHarmonyLegendCardHint;
+
+  /// No description provided for @studyHarmonyLegendFallbackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish a chapter and push it to about 2 stars per lesson to unlock a Legend Trial.'**
+  String get studyHarmonyLegendFallbackHint;
+
+  /// No description provided for @studyHarmonyLegendAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Chase legend'**
+  String get studyHarmonyLegendAction;
+
+  /// No description provided for @studyHarmonyLegendSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Legend Trial'**
+  String get studyHarmonyLegendSessionTitle;
+
+  /// No description provided for @studyHarmonyLegendSessionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A no-slack mastery replay of {chapter} built to secure its legend crown.'**
+  String studyHarmonyLegendSessionDescription(Object chapter);
+
+  /// No description provided for @studyHarmonyLegendMixLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} lessons chained'**
+  String studyHarmonyLegendMixLabel(Object count);
+
+  /// No description provided for @studyHarmonyLegendRiskLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Legend crown at stake'**
+  String get studyHarmonyLegendRiskLabel;
+
+  /// No description provided for @studyHarmonyWeeklyPlanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Training Plan'**
+  String get studyHarmonyWeeklyPlanTitle;
+
+  /// No description provided for @studyHarmonyWeeklyRewardLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward: Streak Saver'**
+  String get studyHarmonyWeeklyRewardLabel;
+
+  /// No description provided for @studyHarmonyWeeklyRewardReadyTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward ready'**
+  String get studyHarmonyWeeklyRewardReadyTag;
+
+  /// No description provided for @studyHarmonyWeeklyRewardClaimedTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward claimed'**
+  String get studyHarmonyWeeklyRewardClaimedTag;
+
+  /// No description provided for @studyHarmonyWeeklyGoalActiveDaysTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show up on multiple days'**
+  String get studyHarmonyWeeklyGoalActiveDaysTitle;
+
+  /// No description provided for @studyHarmonyWeeklyGoalActiveDaysBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Be active on {target} different days this week.'**
+  String studyHarmonyWeeklyGoalActiveDaysBody(Object target);
+
+  /// No description provided for @studyHarmonyWeeklyGoalDailyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the daily loop alive'**
+  String get studyHarmonyWeeklyGoalDailyTitle;
+
+  /// No description provided for @studyHarmonyWeeklyGoalDailyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Log {target} daily clears this week.'**
+  String studyHarmonyWeeklyGoalDailyBody(Object target);
+
+  /// No description provided for @studyHarmonyWeeklyGoalFocusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish a Focus Sprint'**
+  String get studyHarmonyWeeklyGoalFocusTitle;
+
+  /// No description provided for @studyHarmonyWeeklyGoalFocusBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete {target} Focus Sprints this week.'**
+  String studyHarmonyWeeklyGoalFocusBody(Object target);
+
+  /// No description provided for @studyHarmonyResultStreakSaverUsedLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak Saver used to protect yesterday.'**
+  String get studyHarmonyResultStreakSaverUsedLine;
+
+  /// No description provided for @studyHarmonyResultStreakSaverEarnedLine.
+  ///
+  /// In en, this message translates to:
+  /// **'New Streak Saver earned. Inventory: {count}'**
+  String studyHarmonyResultStreakSaverEarnedLine(Object count);
+
+  /// No description provided for @studyHarmonyResultFocusSprintLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus Sprint cleared.'**
+  String get studyHarmonyResultFocusSprintLine;
+
+  /// No description provided for @studyHarmonyResultLegendLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Legend crown secured for {chapter}.'**
+  String studyHarmonyResultLegendLine(Object chapter);
+
+  /// No description provided for @studyHarmonyChapterEncoreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Encore Ladder'**
+  String get studyHarmonyChapterEncoreTitle;
+
+  /// No description provided for @studyHarmonyChapterEncoreDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A short finishing ladder that compresses the whole progression toolkit into a final encore set.'**
+  String get studyHarmonyChapterEncoreDescription;
+
+  /// No description provided for @studyHarmonyLessonEncorePulseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tonal Pulse'**
+  String get studyHarmonyLessonEncorePulseTitle;
+
+  /// No description provided for @studyHarmonyLessonEncorePulseDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock in tonal center and function without any warm-up prompts.'**
+  String get studyHarmonyLessonEncorePulseDescription;
+
+  /// No description provided for @studyHarmonyLessonEncoreSwapTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Color Swap'**
+  String get studyHarmonyLessonEncoreSwapTitle;
+
+  /// No description provided for @studyHarmonyLessonEncoreSwapDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Alternate borrowed color calls with missing-chord restoration to keep the ear honest.'**
+  String get studyHarmonyLessonEncoreSwapDescription;
+
+  /// No description provided for @studyHarmonyLessonEncoreBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Encore Finale'**
+  String get studyHarmonyLessonEncoreBossTitle;
+
+  /// No description provided for @studyHarmonyLessonEncoreBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'One last compact boss round that checks every progression lens in quick succession.'**
+  String get studyHarmonyLessonEncoreBossDescription;
+
+  /// No description provided for @studyHarmonyChapterMasteryBronze.
+  ///
+  /// In en, this message translates to:
+  /// **'Bronze Clear'**
+  String get studyHarmonyChapterMasteryBronze;
+
+  /// No description provided for @studyHarmonyChapterMasterySilver.
+  ///
+  /// In en, this message translates to:
+  /// **'Silver Crown'**
+  String get studyHarmonyChapterMasterySilver;
+
+  /// No description provided for @studyHarmonyChapterMasteryGold.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold Crown'**
+  String get studyHarmonyChapterMasteryGold;
+
+  /// No description provided for @studyHarmonyChapterMasteryLegendary.
+  ///
+  /// In en, this message translates to:
+  /// **'Legend Crown'**
+  String get studyHarmonyChapterMasteryLegendary;
+
+  /// No description provided for @studyHarmonyModeBossRush.
+  ///
+  /// In en, this message translates to:
+  /// **'Boss Rush Mode'**
+  String get studyHarmonyModeBossRush;
+
+  /// No description provided for @studyHarmonyBossRushCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Boss Rush'**
+  String get studyHarmonyBossRushCardTitle;
+
+  /// No description provided for @studyHarmonyBossRushCardHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Chain together the unlocked boss lessons with fewer lives and a bigger score ceiling.'**
+  String get studyHarmonyBossRushCardHint;
+
+  /// No description provided for @studyHarmonyBossRushFallbackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock at least two boss lessons to open a real mixed boss run.'**
+  String get studyHarmonyBossRushFallbackHint;
+
+  /// No description provided for @studyHarmonyBossRushAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start rush'**
+  String get studyHarmonyBossRushAction;
+
+  /// No description provided for @studyHarmonyBossRushSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Boss Rush'**
+  String get studyHarmonyBossRushSessionTitle;
+
+  /// No description provided for @studyHarmonyBossRushSessionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A high-pressure boss gauntlet built from the unlocked boss lessons around {chapter}.'**
+  String studyHarmonyBossRushSessionDescription(Object chapter);
+
+  /// No description provided for @studyHarmonyBossRushMixLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} boss lessons mixed'**
+  String studyHarmonyBossRushMixLabel(Object count);
+
+  /// No description provided for @studyHarmonyBossRushHighRiskLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'2 lives only'**
+  String get studyHarmonyBossRushHighRiskLabel;
+
+  /// No description provided for @studyHarmonyResultBossRushLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Boss Rush cleared.'**
+  String get studyHarmonyResultBossRushLine;
+
+  /// No description provided for @studyHarmonyChapterSpotlightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Spotlight Showdown'**
+  String get studyHarmonyChapterSpotlightTitle;
+
+  /// No description provided for @studyHarmonyChapterSpotlightDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A final spotlight set that isolates borrowed color, cadence pressure, and boss-level integration.'**
+  String get studyHarmonyChapterSpotlightDescription;
+
+  /// No description provided for @studyHarmonyLessonSpotlightLensTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowed Lens'**
+  String get studyHarmonyLessonSpotlightLensTitle;
+
+  /// No description provided for @studyHarmonyLessonSpotlightLensDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Track key center while borrowed color keeps trying to pull your read sideways.'**
+  String get studyHarmonyLessonSpotlightLensDescription;
+
+  /// No description provided for @studyHarmonyLessonSpotlightCadenceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cadence Swap'**
+  String get studyHarmonyLessonSpotlightCadenceTitle;
+
+  /// No description provided for @studyHarmonyLessonSpotlightCadenceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch between function reading and cadence restoration without losing the landing point.'**
+  String get studyHarmonyLessonSpotlightCadenceDescription;
+
+  /// No description provided for @studyHarmonyLessonSpotlightBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Spotlight Showdown'**
+  String get studyHarmonyLessonSpotlightBossTitle;
+
+  /// No description provided for @studyHarmonyLessonSpotlightBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A closing boss set that forces every progression lens to stay sharp under pressure.'**
+  String get studyHarmonyLessonSpotlightBossDescription;
+
+  /// No description provided for @studyHarmonyChapterAfterHoursTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'After Hours Lab'**
+  String get studyHarmonyChapterAfterHoursTitle;
+
+  /// No description provided for @studyHarmonyChapterAfterHoursDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A late-game lab that strips away warm-up clues and mixes borrowed color, cadence pressure, and center tracking.'**
+  String get studyHarmonyChapterAfterHoursDescription;
+
+  /// No description provided for @studyHarmonyLessonAfterHoursShadowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Modal Shadow'**
+  String get studyHarmonyLessonAfterHoursShadowTitle;
+
+  /// No description provided for @studyHarmonyLessonAfterHoursShadowDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep hold of the key center while borrowed color keeps dragging the read into the dark.'**
+  String get studyHarmonyLessonAfterHoursShadowDescription;
+
+  /// No description provided for @studyHarmonyLessonAfterHoursFeintTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolution Feint'**
+  String get studyHarmonyLessonAfterHoursFeintTitle;
+
+  /// No description provided for @studyHarmonyLessonAfterHoursFeintDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Catch function and cadence fakeouts before the phrase slips past its true landing spot.'**
+  String get studyHarmonyLessonAfterHoursFeintDescription;
+
+  /// No description provided for @studyHarmonyLessonAfterHoursCrossfadeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Center Crossfade'**
+  String get studyHarmonyLessonAfterHoursCrossfadeTitle;
+
+  /// No description provided for @studyHarmonyLessonAfterHoursCrossfadeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Blend center detection, function reading, and missing-chord repair without any extra scaffolding.'**
+  String get studyHarmonyLessonAfterHoursCrossfadeDescription;
+
+  /// No description provided for @studyHarmonyLessonAfterHoursBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Call Boss'**
+  String get studyHarmonyLessonAfterHoursBossTitle;
+
+  /// No description provided for @studyHarmonyLessonAfterHoursBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A final late-night boss set that asks every progression lens to stay clear under pressure.'**
+  String get studyHarmonyLessonAfterHoursBossDescription;
+
+  /// No description provided for @studyHarmonyProgressRelayWins.
+  ///
+  /// In en, this message translates to:
+  /// **'Relay wins {count}'**
+  String studyHarmonyProgressRelayWins(Object count);
+
+  /// No description provided for @studyHarmonyModeRelay.
+  ///
+  /// In en, this message translates to:
+  /// **'Arena Relay'**
+  String get studyHarmonyModeRelay;
+
+  /// No description provided for @studyHarmonyRelayCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Arena Relay'**
+  String get studyHarmonyRelayCardTitle;
+
+  /// No description provided for @studyHarmonyRelayCardHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Interleave unlocked lessons from different chapters into one mixed run that tests fast switching as much as raw recall.'**
+  String get studyHarmonyRelayCardHint;
+
+  /// No description provided for @studyHarmonyRelayFallbackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock at least two chapters to open Arena Relay.'**
+  String get studyHarmonyRelayFallbackHint;
+
+  /// No description provided for @studyHarmonyRelayAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start relay'**
+  String get studyHarmonyRelayAction;
+
+  /// No description provided for @studyHarmonyRelaySessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Arena Relay'**
+  String get studyHarmonyRelaySessionTitle;
+
+  /// No description provided for @studyHarmonyRelaySessionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'An interleaved relay run mixing unlocked chapters around {chapter}.'**
+  String studyHarmonyRelaySessionDescription(Object chapter);
+
+  /// No description provided for @studyHarmonyRelayMixLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} lessons relayed'**
+  String studyHarmonyRelayMixLabel(Object count);
+
+  /// No description provided for @studyHarmonyRelayChapterSpreadLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} chapters mixed'**
+  String studyHarmonyRelayChapterSpreadLabel(Object count);
+
+  /// No description provided for @studyHarmonyRelayChainLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Interleaving under pressure'**
+  String get studyHarmonyRelayChainLabel;
+
+  /// No description provided for @studyHarmonyResultRelayLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Relay wins {count}'**
+  String studyHarmonyResultRelayLine(Object count);
+
+  /// No description provided for @studyHarmonyMilestoneRelayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Relay Runner'**
+  String get studyHarmonyMilestoneRelayTitle;
+
+  /// No description provided for @studyHarmonyMilestoneRelayBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear {target} Arena Relay runs.'**
+  String studyHarmonyMilestoneRelayBody(Object target);
+
+  /// No description provided for @studyHarmonyChapterNeonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Neon Detours'**
+  String get studyHarmonyChapterNeonTitle;
+
+  /// No description provided for @studyHarmonyChapterNeonDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A late-game chapter that keeps bending the path with borrowed color, pivot pressure, and recovery reads.'**
+  String get studyHarmonyChapterNeonDescription;
+
+  /// No description provided for @studyHarmonyLessonNeonDetourTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Modal Detour'**
+  String get studyHarmonyLessonNeonDetourTitle;
+
+  /// No description provided for @studyHarmonyLessonNeonDetourDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Track the true center even while borrowed color keeps shoving the phrase into a side street.'**
+  String get studyHarmonyLessonNeonDetourDescription;
+
+  /// No description provided for @studyHarmonyLessonNeonPivotTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pivot Pressure'**
+  String get studyHarmonyLessonNeonPivotTitle;
+
+  /// No description provided for @studyHarmonyLessonNeonPivotDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Read center shifts and function pressure back to back before the harmonic lane changes again.'**
+  String get studyHarmonyLessonNeonPivotDescription;
+
+  /// No description provided for @studyHarmonyLessonNeonLandingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowed Landing'**
+  String get studyHarmonyLessonNeonLandingTitle;
+
+  /// No description provided for @studyHarmonyLessonNeonLandingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Repair the missing landing chord after a borrowed-color fakeout changes the expected resolution.'**
+  String get studyHarmonyLessonNeonLandingDescription;
+
+  /// No description provided for @studyHarmonyLessonNeonBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'City Lights Boss'**
+  String get studyHarmonyLessonNeonBossTitle;
+
+  /// No description provided for @studyHarmonyLessonNeonBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A closing neon boss that mixes pivot reads, borrowed color, and cadence recovery without a soft landing.'**
+  String get studyHarmonyLessonNeonBossDescription;
+
+  /// No description provided for @studyHarmonyProgressLeague.
+  ///
+  /// In en, this message translates to:
+  /// **'{tier} league'**
+  String studyHarmonyProgressLeague(Object tier);
+
+  /// No description provided for @studyHarmonyLeagueCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Harmony League'**
+  String get studyHarmonyLeagueCardTitle;
+
+  /// No description provided for @studyHarmonyLeagueCardHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Push toward {tier} league this week. The cleanest boost right now is {mode}.'**
+  String studyHarmonyLeagueCardHint(Object tier, Object mode);
+
+  /// No description provided for @studyHarmonyLeagueCardHintMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Diamond is secured for this week. Keep chaining high-pressure clears to hold the pace.'**
+  String get studyHarmonyLeagueCardHintMax;
+
+  /// No description provided for @studyHarmonyLeagueFallbackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your league climb will light up once there is a recommended run to push this week.'**
+  String get studyHarmonyLeagueFallbackHint;
+
+  /// No description provided for @studyHarmonyLeagueAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Climb league'**
+  String get studyHarmonyLeagueAction;
+
+  /// No description provided for @studyHarmonyLeagueScoreLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{score} XP this week'**
+  String studyHarmonyLeagueScoreLabel(Object score);
+
+  /// No description provided for @studyHarmonyLeagueProgressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{score}/{target} XP this week'**
+  String studyHarmonyLeagueProgressLabel(Object score, Object target);
+
+  /// No description provided for @studyHarmonyLeagueNextTierLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: {tier}'**
+  String studyHarmonyLeagueNextTierLabel(Object tier);
+
+  /// No description provided for @studyHarmonyLeagueBoostLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Best boost: {mode}'**
+  String studyHarmonyLeagueBoostLabel(Object mode);
+
+  /// No description provided for @studyHarmonyResultLeagueXpLine.
+  ///
+  /// In en, this message translates to:
+  /// **'League XP +{count}'**
+  String studyHarmonyResultLeagueXpLine(Object count);
+
+  /// No description provided for @studyHarmonyResultLeaguePromotionLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Promoted to {tier} league'**
+  String studyHarmonyResultLeaguePromotionLine(Object tier);
+
+  /// No description provided for @studyHarmonyLeagueTierRookie.
+  ///
+  /// In en, this message translates to:
+  /// **'Rookie'**
+  String get studyHarmonyLeagueTierRookie;
+
+  /// No description provided for @studyHarmonyLeagueTierBronze.
+  ///
+  /// In en, this message translates to:
+  /// **'Bronze'**
+  String get studyHarmonyLeagueTierBronze;
+
+  /// No description provided for @studyHarmonyLeagueTierSilver.
+  ///
+  /// In en, this message translates to:
+  /// **'Silver'**
+  String get studyHarmonyLeagueTierSilver;
+
+  /// No description provided for @studyHarmonyLeagueTierGold.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold'**
+  String get studyHarmonyLeagueTierGold;
+
+  /// No description provided for @studyHarmonyLeagueTierDiamond.
+  ///
+  /// In en, this message translates to:
+  /// **'Diamond'**
+  String get studyHarmonyLeagueTierDiamond;
+
+  /// No description provided for @studyHarmonyChapterMidnightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Midnight Switchboard'**
+  String get studyHarmonyChapterMidnightTitle;
+
+  /// No description provided for @studyHarmonyChapterMidnightDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A final control-room chapter that forces fast reads across drifting centers, false cadences, and borrowed reroutes.'**
+  String get studyHarmonyChapterMidnightDescription;
+
+  /// No description provided for @studyHarmonyLessonMidnightDriftTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Signal Drift'**
+  String get studyHarmonyLessonMidnightDriftTitle;
+
+  /// No description provided for @studyHarmonyLessonMidnightDriftDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Track the true tonal signal even while the surface keeps drifting into borrowed color.'**
+  String get studyHarmonyLessonMidnightDriftDescription;
+
+  /// No description provided for @studyHarmonyLessonMidnightLineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'False Line'**
+  String get studyHarmonyLessonMidnightLineTitle;
+
+  /// No description provided for @studyHarmonyLessonMidnightLineDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Read function pressure through fake resolutions before the line folds back into place.'**
+  String get studyHarmonyLessonMidnightLineDescription;
+
+  /// No description provided for @studyHarmonyLessonMidnightRerouteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowed Reroute'**
+  String get studyHarmonyLessonMidnightRerouteTitle;
+
+  /// No description provided for @studyHarmonyLessonMidnightRerouteDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Recover the expected landing after borrowed color reroutes the phrase midstream.'**
+  String get studyHarmonyLessonMidnightRerouteDescription;
+
+  /// No description provided for @studyHarmonyLessonMidnightBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Blackout Boss'**
+  String get studyHarmonyLessonMidnightBossTitle;
+
+  /// No description provided for @studyHarmonyLessonMidnightBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A closing blackout set that mixes every late-game lens without giving you a safe reset.'**
+  String get studyHarmonyLessonMidnightBossDescription;
+
+  /// No description provided for @studyHarmonyProgressQuestChests.
+  ///
+  /// In en, this message translates to:
+  /// **'Quest chests {count}'**
+  String studyHarmonyProgressQuestChests(Object count);
+
+  /// No description provided for @studyHarmonyProgressLeagueBoost.
+  ///
+  /// In en, this message translates to:
+  /// **'2x league XP x{count}'**
+  String studyHarmonyProgressLeagueBoost(Object count);
+
+  /// No description provided for @studyHarmonyQuestChestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quest Chest'**
+  String get studyHarmonyQuestChestTitle;
+
+  /// No description provided for @studyHarmonyQuestChestLockedHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} quests left'**
+  String studyHarmonyQuestChestLockedHeadline(Object count);
+
+  /// No description provided for @studyHarmonyQuestChestReadyHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Quest Chest ready'**
+  String get studyHarmonyQuestChestReadyHeadline;
+
+  /// No description provided for @studyHarmonyQuestChestOpenedHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Quest Chest opened'**
+  String get studyHarmonyQuestChestOpenedHeadline;
+
+  /// No description provided for @studyHarmonyQuestChestBoostHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'2x League XP live'**
+  String get studyHarmonyQuestChestBoostHeadline;
+
+  /// No description provided for @studyHarmonyQuestChestRewardLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward: +{xp} league XP'**
+  String studyHarmonyQuestChestRewardLabel(Object xp);
+
+  /// No description provided for @studyHarmonyQuestChestLockedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish today\'s quest trio to cash out a bonus chest and keep the weekly climb moving.'**
+  String get studyHarmonyQuestChestLockedBody;
+
+  /// No description provided for @studyHarmonyQuestChestReadyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'All three quests are done. Clear one more run to cash out today\'s chest bonus.'**
+  String get studyHarmonyQuestChestReadyBody;
+
+  /// No description provided for @studyHarmonyQuestChestOpenedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s trio is complete and the chest bonus has already been converted into league XP.'**
+  String get studyHarmonyQuestChestOpenedBody;
+
+  /// No description provided for @studyHarmonyQuestChestOpenedBoostBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s chest is open and 2x League XP is active for your next {count} clears.'**
+  String studyHarmonyQuestChestOpenedBoostBody(Object count);
+
+  /// No description provided for @studyHarmonyQuestChestAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish trio'**
+  String get studyHarmonyQuestChestAction;
+
+  /// No description provided for @studyHarmonyQuestChestBoostLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Best finish: {mode}'**
+  String studyHarmonyQuestChestBoostLabel(Object mode);
+
+  /// No description provided for @studyHarmonyQuestChestBoostReadyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'2x XP x{count}'**
+  String studyHarmonyQuestChestBoostReadyLabel(Object count);
+
+  /// No description provided for @studyHarmonyQuestChestProgressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily quests {count}/{target}'**
+  String studyHarmonyQuestChestProgressLabel(Object count, Object target);
+
+  /// No description provided for @studyHarmonyResultQuestChestLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Quest Chest opened.'**
+  String get studyHarmonyResultQuestChestLine;
+
+  /// No description provided for @studyHarmonyResultQuestChestXpLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Quest Chest bonus +{count} League XP'**
+  String studyHarmonyResultQuestChestXpLine(Object count);
+
+  /// No description provided for @studyHarmonyResultLeagueBoostReadyLine.
+  ///
+  /// In en, this message translates to:
+  /// **'2x League XP boost ready for the next {count} clears'**
+  String studyHarmonyResultLeagueBoostReadyLine(Object count);
+
+  /// No description provided for @studyHarmonyResultLeagueBoostAppliedLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Boost bonus +{count} League XP'**
+  String studyHarmonyResultLeagueBoostAppliedLine(Object count);
+
+  /// No description provided for @studyHarmonyResultLeagueBoostRemainingLine.
+  ///
+  /// In en, this message translates to:
+  /// **'2x boost clears left {count}'**
+  String studyHarmonyResultLeagueBoostRemainingLine(Object count);
+
+  /// No description provided for @studyHarmonyLeagueBoostReadyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'2x XP x{count}'**
+  String studyHarmonyLeagueBoostReadyLabel(Object count);
+
+  /// No description provided for @studyHarmonyLeagueCardHintBoosted.
+  ///
+  /// In en, this message translates to:
+  /// **'2x League XP is live for {count} clears. Spend it on {mode} while the boost lasts.'**
+  String studyHarmonyLeagueCardHintBoosted(Object count, Object mode);
+
+  /// No description provided for @studyHarmonyChapterSkylineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Skyline Circuit'**
+  String get studyHarmonyChapterSkylineTitle;
+
+  /// No description provided for @studyHarmonyChapterSkylineDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A final skyline circuit that forces fast mixed reads across ghosted centers, borrowed gravity, and false homes.'**
+  String get studyHarmonyChapterSkylineDescription;
+
+  /// No description provided for @studyHarmonyLessonSkylinePulseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Afterimage Pulse'**
+  String get studyHarmonyLessonSkylinePulseTitle;
+
+  /// No description provided for @studyHarmonyLessonSkylinePulseDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Catch center and function in the afterimage before the phrase locks into a new lane.'**
+  String get studyHarmonyLessonSkylinePulseDescription;
+
+  /// No description provided for @studyHarmonyLessonSkylineSwapTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Gravity Swap'**
+  String get studyHarmonyLessonSkylineSwapTitle;
+
+  /// No description provided for @studyHarmonyLessonSkylineSwapDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Handle borrowed gravity and missing-chord repair while the progression keeps swapping its weight.'**
+  String get studyHarmonyLessonSkylineSwapDescription;
+
+  /// No description provided for @studyHarmonyLessonSkylineHomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'False Home'**
+  String get studyHarmonyLessonSkylineHomeTitle;
+
+  /// No description provided for @studyHarmonyLessonSkylineHomeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Read through the false arrival and rebuild the true landing before the progression snaps shut.'**
+  String get studyHarmonyLessonSkylineHomeDescription;
+
+  /// No description provided for @studyHarmonyLessonSkylineBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Final Signal Boss'**
+  String get studyHarmonyLessonSkylineBossTitle;
+
+  /// No description provided for @studyHarmonyLessonSkylineBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A last skyline boss that chains every late-game progression lens into one closing signal test.'**
+  String get studyHarmonyLessonSkylineBossDescription;
+
+  /// No description provided for @studyHarmonyChapterAfterglowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Afterglow Runway'**
+  String get studyHarmonyChapterAfterglowTitle;
+
+  /// No description provided for @studyHarmonyChapterAfterglowDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A closing runway of split decisions, borrowed bait, and flickering centers that rewards clean late-game reads under pressure.'**
+  String get studyHarmonyChapterAfterglowDescription;
+
+  /// No description provided for @studyHarmonyLessonAfterglowSplitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Split Decision'**
+  String get studyHarmonyLessonAfterglowSplitTitle;
+
+  /// No description provided for @studyHarmonyLessonAfterglowSplitDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the repair chord that keeps the function moving without letting the phrase drift off course.'**
+  String get studyHarmonyLessonAfterglowSplitDescription;
+
+  /// No description provided for @studyHarmonyLessonAfterglowLureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowed Lure'**
+  String get studyHarmonyLessonAfterglowLureTitle;
+
+  /// No description provided for @studyHarmonyLessonAfterglowLureDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Spot the borrowed color chord that looks like a pivot before the progression snaps back home.'**
+  String get studyHarmonyLessonAfterglowLureDescription;
+
+  /// No description provided for @studyHarmonyLessonAfterglowFlickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Center Flicker'**
+  String get studyHarmonyLessonAfterglowFlickerTitle;
+
+  /// No description provided for @studyHarmonyLessonAfterglowFlickerDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold the tonal center while cadence cues blink and reroute in quick succession.'**
+  String get studyHarmonyLessonAfterglowFlickerDescription;
+
+  /// No description provided for @studyHarmonyLessonAfterglowBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Redline Return Boss'**
+  String get studyHarmonyLessonAfterglowBossTitle;
+
+  /// No description provided for @studyHarmonyLessonAfterglowBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A final mixed test of key center, function, borrowed color, and missing-chord repair at full speed.'**
+  String get studyHarmonyLessonAfterglowBossDescription;
+
+  /// No description provided for @studyHarmonyProgressTour.
+  ///
+  /// In en, this message translates to:
+  /// **'Tour stamps {count}/{target}'**
+  String studyHarmonyProgressTour(Object count, Object target);
+
+  /// No description provided for @studyHarmonyProgressTourClaimed.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly tour cleared'**
+  String get studyHarmonyProgressTourClaimed;
+
+  /// No description provided for @studyHarmonyTourTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Harmony Tour'**
+  String get studyHarmonyTourTitle;
+
+  /// No description provided for @studyHarmonyTourProgressHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}/{target} tour stamps'**
+  String studyHarmonyTourProgressHeadline(Object count, Object target);
+
+  /// No description provided for @studyHarmonyTourReadyHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Tour finale ready'**
+  String get studyHarmonyTourReadyHeadline;
+
+  /// No description provided for @studyHarmonyTourClaimedHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly tour cleared'**
+  String get studyHarmonyTourClaimedHeadline;
+
+  /// No description provided for @studyHarmonyTourRewardLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward: +{xp} league XP and {count} Streak Saver'**
+  String studyHarmonyTourRewardLabel(Object xp, Object count);
+
+  /// No description provided for @studyHarmonyTourActiveDaysBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Show up on {target} different days this month to lock in the tour bonus.'**
+  String studyHarmonyTourActiveDaysBody(Object target);
+
+  /// No description provided for @studyHarmonyTourQuestChestBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open {target} Quest Chests this month to keep the tour stamp book moving.'**
+  String studyHarmonyTourQuestChestBody(Object target);
+
+  /// No description provided for @studyHarmonyTourSpotlightBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear {target} spotlight runs this month. Boss Rush, Relay, Focus, Legend, and boss lessons all count.'**
+  String studyHarmonyTourSpotlightBody(Object target);
+
+  /// No description provided for @studyHarmonyTourReadyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Every monthly stamp is in. One more clear locks in the tour bonus.'**
+  String get studyHarmonyTourReadyBody;
+
+  /// No description provided for @studyHarmonyTourClaimedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This month\'s tour is complete. Keep the rhythm sharp so next month\'s route starts hot.'**
+  String get studyHarmonyTourClaimedBody;
+
+  /// No description provided for @studyHarmonyTourAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Advance tour'**
+  String get studyHarmonyTourAction;
+
+  /// No description provided for @studyHarmonyTourActiveDaysLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Active days {count}/{target}'**
+  String studyHarmonyTourActiveDaysLabel(Object count, Object target);
+
+  /// No description provided for @studyHarmonyTourQuestChestsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Quest Chests {count}/{target}'**
+  String studyHarmonyTourQuestChestsLabel(Object count, Object target);
+
+  /// No description provided for @studyHarmonyTourSpotlightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Spotlights {count}/{target}'**
+  String studyHarmonyTourSpotlightLabel(Object count, Object target);
+
+  /// No description provided for @studyHarmonyResultTourCompleteLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Harmony Tour complete'**
+  String get studyHarmonyResultTourCompleteLine;
+
+  /// No description provided for @studyHarmonyResultTourXpLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Tour bonus +{count} League XP'**
+  String studyHarmonyResultTourXpLine(Object count);
+
+  /// No description provided for @studyHarmonyResultTourStreakSaverLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak Saver stock {count}'**
+  String studyHarmonyResultTourStreakSaverLine(Object count);
+
+  /// No description provided for @studyHarmonyChapterDaybreakTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daybreak Frequency'**
+  String get studyHarmonyChapterDaybreakTitle;
+
+  /// No description provided for @studyHarmonyChapterDaybreakDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A sunrise encore of ghost cadences, false dawn pivots, and borrowed blooms that forces clean late-game reads after a long run.'**
+  String get studyHarmonyChapterDaybreakDescription;
+
+  /// No description provided for @studyHarmonyLessonDaybreakGhostTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ghost Cadence'**
+  String get studyHarmonyLessonDaybreakGhostTitle;
+
+  /// No description provided for @studyHarmonyLessonDaybreakGhostDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Repair the cadence and function at the same time when the phrase pretends to close without actually landing.'**
+  String get studyHarmonyLessonDaybreakGhostDescription;
+
+  /// No description provided for @studyHarmonyLessonDaybreakDawnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'False Dawn'**
+  String get studyHarmonyLessonDaybreakDawnTitle;
+
+  /// No description provided for @studyHarmonyLessonDaybreakDawnDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Catch the center shift hiding inside a too-early sunrise before the progression pulls away again.'**
+  String get studyHarmonyLessonDaybreakDawnDescription;
+
+  /// No description provided for @studyHarmonyLessonDaybreakBloomTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowed Bloom'**
+  String get studyHarmonyLessonDaybreakBloomTitle;
+
+  /// No description provided for @studyHarmonyLessonDaybreakBloomDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Track borrowed color and function together while the harmony opens into a brighter but unstable lane.'**
+  String get studyHarmonyLessonDaybreakBloomDescription;
+
+  /// No description provided for @studyHarmonyLessonDaybreakBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunrise Overdrive Boss'**
+  String get studyHarmonyLessonDaybreakBossTitle;
+
+  /// No description provided for @studyHarmonyLessonDaybreakBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A final dawn-speed boss that chains key center, function, non-diatonic color, and missing-chord repair into one last overdrive set.'**
+  String get studyHarmonyLessonDaybreakBossDescription;
+
+  /// No description provided for @studyHarmonyProgressDuetPact.
+  ///
+  /// In en, this message translates to:
+  /// **'Duet streak {count}'**
+  String studyHarmonyProgressDuetPact(Object count);
+
+  /// No description provided for @studyHarmonyDuetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Duet Pact'**
+  String get studyHarmonyDuetTitle;
+
+  /// No description provided for @studyHarmonyDuetStartHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Start today\'s duet'**
+  String get studyHarmonyDuetStartHeadline;
+
+  /// No description provided for @studyHarmonyDuetInProgressHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Duet streak {count}'**
+  String studyHarmonyDuetInProgressHeadline(Object count);
+
+  /// No description provided for @studyHarmonyDuetReadyHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Duet locked for day {count}'**
+  String studyHarmonyDuetReadyHeadline(Object count);
+
+  /// No description provided for @studyHarmonyDuetRewardLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward: +{xp} league XP at key streaks'**
+  String studyHarmonyDuetRewardLabel(Object xp);
+
+  /// No description provided for @studyHarmonyDuetNeedDailyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear today\'s Daily first, then land one spotlight run to keep the duet alive.'**
+  String get studyHarmonyDuetNeedDailyBody;
+
+  /// No description provided for @studyHarmonyDuetNeedSpotlightBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily is in. Finish one spotlight run like Focus, Relay, Boss Rush, Legend, or a boss lesson to seal the duet.'**
+  String get studyHarmonyDuetNeedSpotlightBody;
+
+  /// No description provided for @studyHarmonyDuetActiveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s duet is sealed and the shared streak is now {count} days long.'**
+  String studyHarmonyDuetActiveBody(Object count);
+
+  /// No description provided for @studyHarmonyDuetDailyDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily in'**
+  String get studyHarmonyDuetDailyDone;
+
+  /// No description provided for @studyHarmonyDuetDailyMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily missing'**
+  String get studyHarmonyDuetDailyMissing;
+
+  /// No description provided for @studyHarmonyDuetSpotlightDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Spotlight in'**
+  String get studyHarmonyDuetSpotlightDone;
+
+  /// No description provided for @studyHarmonyDuetSpotlightMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Spotlight missing'**
+  String get studyHarmonyDuetSpotlightMissing;
+
+  /// No description provided for @studyHarmonyDuetDailyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily {done}'**
+  String studyHarmonyDuetDailyLabel(bool done);
+
+  /// No description provided for @studyHarmonyDuetSpotlightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Spotlight {done}'**
+  String studyHarmonyDuetSpotlightLabel(bool done);
+
+  /// No description provided for @studyHarmonyDuetTargetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak {count}/{target}'**
+  String studyHarmonyDuetTargetLabel(Object count, Object target);
+
+  /// No description provided for @studyHarmonyDuetAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep duet going'**
+  String get studyHarmonyDuetAction;
+
+  /// No description provided for @studyHarmonyResultDuetLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Duet streak {count}'**
+  String studyHarmonyResultDuetLine(Object count);
+
+  /// No description provided for @studyHarmonyResultDuetRewardLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Duet reward +{count} League XP'**
+  String studyHarmonyResultDuetRewardLine(Object count);
+
+  /// No description provided for @studyHarmonyChapterBlueHourTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue Hour Exchange'**
+  String get studyHarmonyChapterBlueHourTitle;
+
+  /// No description provided for @studyHarmonyChapterBlueHourDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A twilight encore of crossing currents, haloed borrows, and dual horizons that keeps late-game reads unstable in the best way.'**
+  String get studyHarmonyChapterBlueHourDescription;
+
+  /// No description provided for @studyHarmonyLessonBlueHourCurrentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cross Current'**
+  String get studyHarmonyLessonBlueHourCurrentTitle;
+
+  /// No description provided for @studyHarmonyLessonBlueHourCurrentDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Track key center and function while the progression starts pulling in two directions at once.'**
+  String get studyHarmonyLessonBlueHourCurrentDescription;
+
+  /// No description provided for @studyHarmonyLessonBlueHourHaloTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Halo Borrow'**
+  String get studyHarmonyLessonBlueHourHaloTitle;
+
+  /// No description provided for @studyHarmonyLessonBlueHourHaloDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the borrowed color and restore the missing chord before the phrase turns hazy.'**
+  String get studyHarmonyLessonBlueHourHaloDescription;
+
+  /// No description provided for @studyHarmonyLessonBlueHourHorizonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Dual Horizon'**
+  String get studyHarmonyLessonBlueHourHorizonTitle;
+
+  /// No description provided for @studyHarmonyLessonBlueHourHorizonDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold the real arrival point while two possible horizons keep flashing in and out.'**
+  String get studyHarmonyLessonBlueHourHorizonDescription;
+
+  /// No description provided for @studyHarmonyLessonBlueHourBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Twin Lanterns Boss'**
+  String get studyHarmonyLessonBlueHourBossTitle;
+
+  /// No description provided for @studyHarmonyLessonBlueHourBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A final blue-hour boss that forces fast swaps across center, function, borrowed color, and missing-chord repair.'**
+  String get studyHarmonyLessonBlueHourBossDescription;
 }
 
 class _AppLocalizationsDelegate

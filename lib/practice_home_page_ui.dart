@@ -204,6 +204,46 @@ extension _PracticeHomePageUi on _MyHomePageState {
                                           ),
                                         ),
                                       ),
+                                      const SizedBox(height: 12),
+                                      Wrap(
+                                        alignment: WrapAlignment.center,
+                                        spacing: 10,
+                                        runSpacing: 10,
+                                        children: [
+                                          OutlinedButton.icon(
+                                            key: const ValueKey(
+                                              'practice-play-chord-button',
+                                            ),
+                                            onPressed: _currentChord == null
+                                                ? null
+                                                : () => _playCurrentChordPreview(
+                                                    pattern:
+                                                        HarmonyPlaybackPattern
+                                                            .block,
+                                                  ),
+                                            icon: const Icon(
+                                              Icons.music_note_rounded,
+                                            ),
+                                            label: Text(l10n.audioPlayChord),
+                                          ),
+                                          OutlinedButton.icon(
+                                            key: const ValueKey(
+                                              'practice-play-arpeggio-button',
+                                            ),
+                                            onPressed: _currentChord == null
+                                                ? null
+                                                : () => _playCurrentChordPreview(
+                                                    pattern:
+                                                        HarmonyPlaybackPattern
+                                                            .arpeggio,
+                                                  ),
+                                            icon: const Icon(
+                                              Icons.multitrack_audio_rounded,
+                                            ),
+                                            label: Text(l10n.audioPlayArpeggio),
+                                          ),
+                                        ],
+                                      ),
                                     ],
                                   ),
                                 ),

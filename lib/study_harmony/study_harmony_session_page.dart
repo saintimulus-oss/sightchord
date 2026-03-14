@@ -3,6 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../audio/harmony_audio_service.dart';
+import '../audio/harmony_audio_models.dart';
+import '../audio/sampled_instrument_engine.dart';
+import '../audio/sightchord_audio_scope.dart';
 import '../l10n/app_localizations.dart';
 import 'application/study_harmony_progress_controller.dart';
 import 'application/study_harmony_session_controller.dart';
@@ -54,6 +58,10 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
   late final FocusNode _pageFocusNode;
   bool _hasPersistedCurrentRun = false;
   StudyHarmonySessionProgressEffect? _lastProgressEffect;
+  bool _requestedHarmonyAudioWarmUp = false;
+  HarmonyAudioService? _harmonyAudio;
+  final Map<String, ActiveInstrumentNote> _activePreviewNotes =
+      <String, ActiveInstrumentNote>{};
 
   @override
   void initState() {
@@ -64,6 +72,21 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
     _controller.addListener(_handleSessionChanged);
     _markLessonStarted();
     _requestPageFocus();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_requestedHarmonyAudioWarmUp) {
+      return;
+    }
+    final harmonyAudio = SightChordAudioScope.maybeOf(context);
+    _harmonyAudio = harmonyAudio;
+    if (harmonyAudio == null) {
+      return;
+    }
+    _requestedHarmonyAudioWarmUp = true;
+    unawaited(harmonyAudio.warmUp());
   }
 
   @override
@@ -97,6 +120,7 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
 
   @override
   void dispose() {
+    unawaited(_stopPreviewNotes());
     _controller.removeListener(_handleSessionChanged);
     _controller.dispose();
     _pageFocusNode.dispose();
@@ -123,6 +147,61 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
 
   void _toggleAnswer(StudyHarmonyAnswerOptionId answerId) {
     _controller.toggleAnswer(answerId);
+  }
+
+  Future<void> _playPromptPreview({
+    required HarmonyPlaybackPattern pattern,
+  }) async {
+    final task = _controller.state.currentTask;
+    final harmonyAudio = _harmonyAudio;
+    if (task == null || harmonyAudio == null) {
+      return;
+    }
+    await harmonyAudio.playStudyPrompt(task, pattern: pattern);
+  }
+
+  Future<void> _previewKeyDown(StudyHarmonyAnswerOptionId answerId) async {
+    if (_activePreviewNotes.containsKey(answerId)) {
+      return;
+    }
+    final harmonyAudio = _harmonyAudio;
+    if (harmonyAudio == null) {
+      return;
+    }
+    final clip = harmonyAudio.noteClipForStudyAnswerId(answerId);
+    if (clip.notes.isEmpty) {
+      return;
+    }
+    final previewNote = clip.notes.first;
+    final active = await harmonyAudio.noteOn(
+      midiNote: previewNote.midiNote,
+      velocity: previewNote.velocity,
+      gain: previewNote.gain,
+    );
+    if (active != null) {
+      _activePreviewNotes[answerId] = active;
+    }
+  }
+
+  Future<void> _previewKeyUp(StudyHarmonyAnswerOptionId answerId) async {
+    final active = _activePreviewNotes.remove(answerId);
+    final harmonyAudio = _harmonyAudio;
+    if (active == null || harmonyAudio == null) {
+      return;
+    }
+    await harmonyAudio.noteOff(active);
+  }
+
+  Future<void> _stopPreviewNotes() async {
+    final activeNotes = _activePreviewNotes.values.toList(growable: false);
+    _activePreviewNotes.clear();
+    final harmonyAudio = _harmonyAudio;
+    if (harmonyAudio == null) {
+      return;
+    }
+    for (final note in activeNotes) {
+      await harmonyAudio.noteOff(note);
+    }
   }
 
   void _submit() {
@@ -238,11 +317,41 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
         final task = state.currentTask;
         final showFeedback =
             state.lastEvaluation.status != StudyHarmonyEvaluationStatus.idle;
+        final sessionStars =
+            _lastProgressEffect?.sessionStars ??
+            _sessionStarsForResult(
+              cleared: state.isCompleted,
+              accuracy: state.accuracy,
+            );
+        final sessionRank =
+            _lastProgressEffect?.sessionRank ??
+            _sessionRankForResult(
+              cleared: state.isCompleted,
+              accuracy: state.accuracy,
+            );
         final primaryActionLabel =
             state.phase == StudyHarmonySessionPhase.submittedCorrect ||
                 state.phase == StudyHarmonySessionPhase.submittedIncorrect
             ? l10n.studyHarmonyNextPrompt
             : l10n.studyHarmonySubmit;
+        final bonusGoals = _sessionBonusGoals(
+          l10n: l10n,
+          lesson: lesson,
+          state: state,
+        );
+        final completedBonusGoalLabels = [
+          for (final goal in bonusGoals)
+            if (goal.completed) goal.label,
+        ];
+        final unlockedMilestoneLabels = [
+          for (final milestoneId
+              in (_lastProgressEffect?.newlyUnlockedMilestoneIds ??
+                  const <String>[]))
+            _milestoneUnlockedLabel(l10n, milestoneId),
+        ].whereType<String>().toList(growable: false);
+        final bonusSweep =
+            bonusGoals.isNotEmpty &&
+            completedBonusGoalLabels.length == bonusGoals.length;
 
         return Shortcuts(
           shortcuts: const <ShortcutActivator, Intent>{
@@ -434,8 +543,19 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                                     '${l10n.studyHarmonyAccuracy} ${_formatAccuracy(state.accuracy)}',
                                                 elapsedLabel:
                                                     '${l10n.studyHarmonyElapsedTime} ${_formatDuration(state.elapsed)}',
+                                                comboLabel: l10n
+                                                    .studyHarmonyComboLabel(
+                                                      state.currentCombo,
+                                                    ),
+                                                bestComboLabel: l10n
+                                                    .studyHarmonyBestComboLabel(
+                                                      state.bestCombo,
+                                                    ),
                                                 objectiveLabel:
                                                     l10n.studyHarmonyObjective,
+                                                bonusTitle: l10n
+                                                    .studyHarmonyBonusGoalsTitle,
+                                                bonusGoals: bonusGoals,
                                               ),
                                               const SizedBox(height: 20),
                                               if (isWide)
@@ -454,6 +574,36 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                                             task: task,
                                                             instructionLabel: l10n
                                                                 .studyHarmonyPromptInstruction,
+                                                            playLabel: l10n
+                                                                .audioPlayPrompt,
+                                                            arpeggioLabel: l10n
+                                                                .audioPlayArpeggio,
+                                                            onPlayPreview:
+                                                                task
+                                                                        .prompt
+                                                                        .showsPianoPreview ||
+                                                                    task
+                                                                        .prompt
+                                                                        .showsProgressionPreview
+                                                                ? () => _playPromptPreview(
+                                                                    pattern:
+                                                                        HarmonyPlaybackPattern
+                                                                            .block,
+                                                                  )
+                                                                : null,
+                                                            onPlayArpeggio:
+                                                                task
+                                                                        .prompt
+                                                                        .showsPianoPreview ||
+                                                                    task
+                                                                        .prompt
+                                                                        .showsProgressionPreview
+                                                                ? () => _playPromptPreview(
+                                                                    pattern:
+                                                                        HarmonyPlaybackPattern
+                                                                            .arpeggio,
+                                                                  )
+                                                                : null,
                                                           ),
                                                         ],
                                                       ),
@@ -488,6 +638,36 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                                   task: task,
                                                   instructionLabel: l10n
                                                       .studyHarmonyPromptInstruction,
+                                                  playLabel:
+                                                      l10n.audioPlayPrompt,
+                                                  arpeggioLabel:
+                                                      l10n.audioPlayArpeggio,
+                                                  onPlayPreview:
+                                                      task
+                                                              .prompt
+                                                              .showsPianoPreview ||
+                                                          task
+                                                              .prompt
+                                                              .showsProgressionPreview
+                                                      ? () => _playPromptPreview(
+                                                          pattern:
+                                                              HarmonyPlaybackPattern
+                                                                  .block,
+                                                        )
+                                                      : null,
+                                                  onPlayArpeggio:
+                                                      task
+                                                              .prompt
+                                                              .showsPianoPreview ||
+                                                          task
+                                                              .prompt
+                                                              .showsProgressionPreview
+                                                      ? () => _playPromptPreview(
+                                                          pattern:
+                                                              HarmonyPlaybackPattern
+                                                                  .arpeggio,
+                                                        )
+                                                      : null,
                                                 ),
                                                 const SizedBox(height: 16),
                                                 if (feedbackBanner != null) ...[
@@ -555,6 +735,174 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                         l10n.studyHarmonyResultSkillGainTitle,
                                     reviewFocusTitle:
                                         l10n.studyHarmonyResultReviewFocusTitle,
+                                    rewardTitle:
+                                        l10n.studyHarmonyResultRewardTitle,
+                                    milestoneTitle:
+                                        l10n.studyHarmonyResultMilestonesTitle,
+                                    bonusTitle:
+                                        l10n.studyHarmonyBonusGoalsTitle,
+                                    rewardHighlightLabel:
+                                        _lastProgressEffect
+                                                ?.personalBestImproved ==
+                                            true
+                                        ? l10n.studyHarmonyResultNewBestTag
+                                        : null,
+                                    rewardLabels: [
+                                      l10n.studyHarmonyResultRankLine(
+                                        sessionRank,
+                                      ),
+                                      l10n.studyHarmonyResultStarsLine(
+                                        sessionStars,
+                                      ),
+                                      if (_lastProgressEffect
+                                                  ?.countsTowardLessonProgress ==
+                                              true &&
+                                          _lastProgressEffect?.bestRank !=
+                                              null &&
+                                          _lastProgressEffect?.bestStars !=
+                                              null)
+                                        l10n.studyHarmonyResultBestLine(
+                                          _lastProgressEffect!.bestRank!,
+                                          _lastProgressEffect!.bestStars!,
+                                        ),
+                                      if (_lastProgressEffect
+                                                  ?.dailyChallengeCompleted ==
+                                              true &&
+                                          _lastProgressEffect
+                                                  ?.dailyStreakCount !=
+                                              null)
+                                        l10n.studyHarmonyResultDailyStreakLine(
+                                          _lastProgressEffect!
+                                              .dailyStreakCount!,
+                                        ),
+                                      if (_lastProgressEffect
+                                              ?.streakSaverUsed ==
+                                          true)
+                                        l10n.studyHarmonyResultStreakSaverUsedLine,
+                                      if (_lastProgressEffect
+                                              ?.weeklyRewardUnlocked ==
+                                          true)
+                                        l10n.studyHarmonyResultStreakSaverEarnedLine(
+                                          _lastProgressEffect!.streakSaverCount,
+                                        ),
+                                      if (_lastProgressEffect
+                                              ?.dailyQuestChestOpened ==
+                                          true)
+                                        l10n.studyHarmonyResultQuestChestLine,
+                                      if ((_lastProgressEffect
+                                                  ?.questChestLeagueXpBonus ??
+                                              0) >
+                                          0)
+                                        l10n.studyHarmonyResultQuestChestXpLine(
+                                          _lastProgressEffect!
+                                              .questChestLeagueXpBonus,
+                                        ),
+                                      if (_lastProgressEffect
+                                              ?.monthlyTourRewardUnlocked ==
+                                          true)
+                                        l10n.studyHarmonyResultTourCompleteLine,
+                                      if ((_lastProgressEffect
+                                                  ?.monthlyTourLeagueXpBonus ??
+                                              0) >
+                                          0)
+                                        l10n.studyHarmonyResultTourXpLine(
+                                          _lastProgressEffect!
+                                              .monthlyTourLeagueXpBonus,
+                                        ),
+                                      if (_lastProgressEffect
+                                              ?.monthlyTourRewardUnlocked ==
+                                          true)
+                                        l10n.studyHarmonyResultTourStreakSaverLine(
+                                          _lastProgressEffect!
+                                              .monthlyTourStreakSaverCount,
+                                        ),
+                                      if ((_lastProgressEffect
+                                                  ?.duetPactCurrentStreak ??
+                                              0) >
+                                          0)
+                                        l10n.studyHarmonyResultDuetLine(
+                                          _lastProgressEffect!
+                                              .duetPactCurrentStreak,
+                                        ),
+                                      if (_lastProgressEffect
+                                              ?.duetPactRewardUnlocked ==
+                                          true)
+                                        l10n.studyHarmonyResultDuetRewardLine(
+                                          _lastProgressEffect!
+                                              .duetPactLeagueXpBonus,
+                                        ),
+                                      if (_lastProgressEffect
+                                              ?.leagueXpBoostUnlocked ==
+                                          true)
+                                        l10n.studyHarmonyResultLeagueBoostReadyLine(
+                                          _lastProgressEffect!
+                                              .leagueXpBoostChargeCount,
+                                        ),
+                                      if ((_lastProgressEffect
+                                                  ?.leagueXpBoostAppliedBonus ??
+                                              0) >
+                                          0)
+                                        l10n.studyHarmonyResultLeagueBoostAppliedLine(
+                                          _lastProgressEffect!
+                                              .leagueXpBoostAppliedBonus,
+                                        ),
+                                      if ((_lastProgressEffect
+                                                      ?.leagueXpBoostAppliedBonus ??
+                                                  0) >
+                                              0 &&
+                                          (_lastProgressEffect
+                                                      ?.leagueXpBoostChargeCount ??
+                                                  0) >
+                                              0)
+                                        l10n.studyHarmonyResultLeagueBoostRemainingLine(
+                                          _lastProgressEffect!
+                                              .leagueXpBoostChargeCount,
+                                        ),
+                                      if (_lastProgressEffect
+                                              ?.focusSprintCompleted ==
+                                          true)
+                                        l10n.studyHarmonyResultFocusSprintLine,
+                                      if (_lastProgressEffect
+                                              ?.weeklyLeagueScoreDelta !=
+                                          0)
+                                        l10n.studyHarmonyResultLeagueXpLine(
+                                          _lastProgressEffect!
+                                              .weeklyLeagueScoreDelta,
+                                        ),
+                                      if (_lastProgressEffect
+                                              ?.promotedLeagueTier
+                                          case final promotedTier?)
+                                        l10n.studyHarmonyResultLeaguePromotionLine(
+                                          _leagueTierLabel(l10n, promotedTier),
+                                        ),
+                                      if (lesson.sessionMode ==
+                                              StudyHarmonySessionMode.relay &&
+                                          state.isCompleted &&
+                                          (_lastProgressEffect?.relayWinCount ??
+                                                  0) >
+                                              0)
+                                        l10n.studyHarmonyResultRelayLine(
+                                          _lastProgressEffect!.relayWinCount!,
+                                        ),
+                                      if (lesson.sessionMode ==
+                                              StudyHarmonySessionMode.legend &&
+                                          state.isCompleted)
+                                        _legendRewardLine(
+                                          l10n,
+                                          widget.courseToSync,
+                                          lesson,
+                                        ),
+                                      if (lesson.sessionMode ==
+                                              StudyHarmonySessionMode
+                                                  .bossRush &&
+                                          state.isCompleted)
+                                        l10n.studyHarmonyResultBossRushLine,
+                                    ],
+                                    milestoneLabels: unlockedMilestoneLabels,
+                                    bonusHighlightLabel: bonusSweep
+                                        ? l10n.studyHarmonyBonusSweepTag
+                                        : null,
+                                    bonusLabels: completedBonusGoalLabels,
                                     skillGainLabels: [
                                       for (final gain
                                           in (_lastProgressEffect?.skillGains ??
@@ -608,6 +956,12 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
         keys: _keyboardKeysForTask(task),
         selectedAnswerIds: state.selectedAnswerIds,
         onToggleKey: _toggleAnswer,
+        onPreviewKeyDown: state.isFinished || awaitingAdvance
+            ? null
+            : _previewKeyDown,
+        onPreviewKeyUp: state.isFinished || awaitingAdvance
+            ? null
+            : _previewKeyUp,
         readOnly: state.isFinished || awaitingAdvance,
       ),
       StudyHarmonyAnswerSurfaceKind.choiceChips => Wrap(
@@ -649,7 +1003,11 @@ class _SessionOverviewCard extends StatelessWidget {
     required this.attemptsLabel,
     required this.accuracyLabel,
     required this.elapsedLabel,
+    required this.comboLabel,
+    required this.bestComboLabel,
     required this.objectiveLabel,
+    required this.bonusTitle,
+    this.bonusGoals = const <_SessionBonusGoal>[],
   });
 
   final StudyHarmonyLessonDefinition lesson;
@@ -658,7 +1016,11 @@ class _SessionOverviewCard extends StatelessWidget {
   final String attemptsLabel;
   final String accuracyLabel;
   final String elapsedLabel;
+  final String comboLabel;
+  final String bestComboLabel;
   final String objectiveLabel;
+  final String bonusTitle;
+  final List<_SessionBonusGoal> bonusGoals;
 
   @override
   Widget build(BuildContext context) {
@@ -692,6 +1054,13 @@ class _SessionOverviewCard extends StatelessWidget {
                     avatar: const Icon(Icons.layers_rounded, size: 18),
                     label: Text(modeLabel),
                   ),
+                  Chip(
+                    avatar: const Icon(
+                      Icons.local_fire_department_rounded,
+                      size: 18,
+                    ),
+                    label: Text(comboLabel),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -709,11 +1078,39 @@ class _SessionOverviewCard extends StatelessWidget {
                   _StatChip(label: attemptsLabel),
                   _StatChip(label: accuracyLabel),
                   _StatChip(label: elapsedLabel),
+                  _StatChip(label: bestComboLabel),
                   _StatChip(
                     label: '$objectiveLabel ${lesson.goalCorrectAnswers}',
                   ),
                 ],
               ),
+              if (bonusGoals.isNotEmpty) ...[
+                const SizedBox(height: 18),
+                Text(
+                  bonusTitle,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final goal in bonusGoals)
+                      Chip(
+                        key: ValueKey('study-harmony-bonus-goal-${goal.id}'),
+                        avatar: Icon(
+                          goal.completed
+                              ? Icons.check_circle_rounded
+                              : Icons.flag_rounded,
+                          size: 18,
+                        ),
+                        label: Text(goal.label),
+                      ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),
@@ -723,10 +1120,21 @@ class _SessionOverviewCard extends StatelessWidget {
 }
 
 class _PromptCard extends StatelessWidget {
-  const _PromptCard({required this.task, required this.instructionLabel});
+  const _PromptCard({
+    required this.task,
+    required this.instructionLabel,
+    required this.playLabel,
+    required this.arpeggioLabel,
+    this.onPlayPreview,
+    this.onPlayArpeggio,
+  });
 
   final StudyHarmonyTaskInstance task;
   final String instructionLabel;
+  final String playLabel;
+  final String arpeggioLabel;
+  final VoidCallback? onPlayPreview;
+  final VoidCallback? onPlayArpeggio;
 
   @override
   Widget build(BuildContext context) {
@@ -752,6 +1160,31 @@ class _PromptCard extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
+              if (onPlayPreview != null || onPlayArpeggio != null) ...[
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    if (onPlayPreview != null)
+                      OutlinedButton.icon(
+                        key: const ValueKey('study-harmony-play-prompt-button'),
+                        onPressed: onPlayPreview,
+                        icon: const Icon(Icons.music_note_rounded),
+                        label: Text(playLabel),
+                      ),
+                    if (onPlayArpeggio != null)
+                      OutlinedButton.icon(
+                        key: const ValueKey(
+                          'study-harmony-play-prompt-arpeggio-button',
+                        ),
+                        onPressed: onPlayArpeggio,
+                        icon: const Icon(Icons.multitrack_audio_rounded),
+                        label: Text(arpeggioLabel),
+                      ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 12),
               if (task.prompt.showsPianoPreview) ...[
                 StudyHarmonyPianoKeyboard(
@@ -882,6 +1315,18 @@ class _SelectionPanel extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SessionBonusGoal {
+  const _SessionBonusGoal({
+    required this.id,
+    required this.label,
+    required this.completed,
+  });
+
+  final String id;
+  final String label;
+  final bool completed;
 }
 
 class _FeedbackBanner extends StatelessWidget {
@@ -1037,12 +1482,20 @@ class _ResultOverlay extends StatelessWidget {
     required this.modeLabel,
     required this.skillGainTitle,
     required this.reviewFocusTitle,
+    required this.rewardTitle,
+    required this.milestoneTitle,
+    required this.bonusTitle,
     required this.retryLabel,
     required this.backLabel,
     required this.onRetry,
     required this.onBack,
     this.reviewReasonLabel,
     this.dailyDateLabel,
+    this.rewardHighlightLabel,
+    this.bonusHighlightLabel,
+    this.rewardLabels = const <String>[],
+    this.milestoneLabels = const <String>[],
+    this.bonusLabels = const <String>[],
     this.skillGainLabels = const <String>[],
     this.focusSkillLabels = const <String>[],
   });
@@ -1056,10 +1509,18 @@ class _ResultOverlay extends StatelessWidget {
   final String modeLabel;
   final String skillGainTitle;
   final String reviewFocusTitle;
+  final String rewardTitle;
+  final String milestoneTitle;
+  final String bonusTitle;
   final String retryLabel;
   final String backLabel;
   final String? reviewReasonLabel;
   final String? dailyDateLabel;
+  final String? rewardHighlightLabel;
+  final String? bonusHighlightLabel;
+  final List<String> rewardLabels;
+  final List<String> milestoneLabels;
+  final List<String> bonusLabels;
   final List<String> skillGainLabels;
   final List<String> focusSkillLabels;
   final VoidCallback onRetry;
@@ -1114,6 +1575,67 @@ class _ResultOverlay extends StatelessWidget {
               if (reviewReasonLabel case final String reviewReason?) ...[
                 const SizedBox(height: 8),
                 _StatChip(label: reviewReason),
+              ],
+              if (rewardLabels.isNotEmpty) ...[
+                const SizedBox(height: 18),
+                Text(
+                  rewardTitle,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                if (rewardHighlightLabel
+                    case final String rewardHighlight?) ...[
+                  const SizedBox(height: 10),
+                  Chip(label: Text(rewardHighlight)),
+                ],
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final label in rewardLabels) Chip(label: Text(label)),
+                  ],
+                ),
+              ],
+              if (milestoneLabels.isNotEmpty) ...[
+                const SizedBox(height: 18),
+                Text(
+                  milestoneTitle,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final label in milestoneLabels)
+                      Chip(label: Text(label)),
+                  ],
+                ),
+              ],
+              if (bonusLabels.isNotEmpty) ...[
+                const SizedBox(height: 18),
+                Text(
+                  bonusTitle,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                if (bonusHighlightLabel case final String highlight?) ...[
+                  const SizedBox(height: 10),
+                  Chip(label: Text(highlight)),
+                ],
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final label in bonusLabels) Chip(label: Text(label)),
+                  ],
+                ),
               ],
               if (skillGainLabels.isNotEmpty) ...[
                 const SizedBox(height: 18),
@@ -1229,13 +1751,159 @@ String _formatSignedPercent(double value) {
   return '$rounded%';
 }
 
+List<_SessionBonusGoal> _sessionBonusGoals({
+  required AppLocalizations l10n,
+  required StudyHarmonyLessonDefinition lesson,
+  required StudyHarmonySessionState state,
+}) {
+  final comboTarget = _comboTargetForLesson(lesson);
+  final accuracyTarget = _accuracyBonusTarget(lesson);
+  return <_SessionBonusGoal>[
+    _SessionBonusGoal(
+      id: 'full-hearts',
+      label: l10n.studyHarmonyBonusFullHearts,
+      completed:
+          state.attempts > 0 && state.livesRemaining == lesson.startingLives,
+    ),
+    _SessionBonusGoal(
+      id: 'accuracy',
+      label: l10n.studyHarmonyBonusAccuracyTarget(
+        (accuracyTarget * 100).round(),
+      ),
+      completed: state.attempts > 0 && state.accuracy >= accuracyTarget,
+    ),
+    _SessionBonusGoal(
+      id: 'combo',
+      label: l10n.studyHarmonyBonusComboTarget(comboTarget),
+      completed: state.bestCombo >= comboTarget,
+    ),
+  ];
+}
+
+int _comboTargetForLesson(StudyHarmonyLessonDefinition lesson) {
+  if (lesson.goalCorrectAnswers <= 2) {
+    return lesson.goalCorrectAnswers;
+  }
+  if (lesson.goalCorrectAnswers >= 9) {
+    return 4;
+  }
+  return 3;
+}
+
+double _accuracyBonusTarget(StudyHarmonyLessonDefinition lesson) {
+  return switch (lesson.sessionMode) {
+    StudyHarmonySessionMode.daily => 0.9,
+    StudyHarmonySessionMode.review => 0.85,
+    StudyHarmonySessionMode.focus => 0.92,
+    StudyHarmonySessionMode.relay => 0.94,
+    StudyHarmonySessionMode.bossRush => 0.93,
+    StudyHarmonySessionMode.legend => 0.95,
+    _ => lesson.goalCorrectAnswers >= 9 ? 0.9 : 0.85,
+  };
+}
+
+String? _milestoneUnlockedLabel(AppLocalizations l10n, String milestoneId) {
+  final parts = milestoneId.split('-');
+  if (parts.length != 2) {
+    return null;
+  }
+  final tier = int.tryParse(parts[1]) ?? 1;
+  final title = switch (parts[0]) {
+    'lessonPath' => l10n.studyHarmonyMilestoneLessonsTitle,
+    'starCollector' => l10n.studyHarmonyMilestoneStarsTitle,
+    'streakLegend' => l10n.studyHarmonyMilestoneStreakTitle,
+    'masteryScholar' => l10n.studyHarmonyMilestoneMasteryTitle,
+    'relayRunner' => l10n.studyHarmonyMilestoneRelayTitle,
+    _ => null,
+  };
+  if (title == null) {
+    return null;
+  }
+  return l10n.studyHarmonyMilestoneUnlockedLabel(
+    title,
+    _milestoneTierLabel(l10n, tier),
+  );
+}
+
+String _milestoneTierLabel(AppLocalizations l10n, int tier) {
+  return switch (tier) {
+    1 => l10n.studyHarmonyMilestoneTierBronze,
+    2 => l10n.studyHarmonyMilestoneTierSilver,
+    3 => l10n.studyHarmonyMilestoneTierGold,
+    _ => l10n.studyHarmonyMilestoneTierPlatinum,
+  };
+}
+
+int _sessionStarsForResult({required bool cleared, required double accuracy}) {
+  if (!cleared) {
+    return 0;
+  }
+  if (accuracy >= 0.95) {
+    return 3;
+  }
+  if (accuracy >= 0.8) {
+    return 2;
+  }
+  return 1;
+}
+
+String _sessionRankForResult({
+  required bool cleared,
+  required double accuracy,
+}) {
+  if (!cleared) {
+    return 'C';
+  }
+  if (accuracy >= 0.95) {
+    return 'S';
+  }
+  if (accuracy >= 0.85) {
+    return 'A';
+  }
+  if (accuracy >= 0.7) {
+    return 'B';
+  }
+  return 'C';
+}
+
 String _sessionModeLabel(AppLocalizations l10n, StudyHarmonySessionMode mode) {
   return switch (mode) {
     StudyHarmonySessionMode.lesson => l10n.studyHarmonyModeLesson,
     StudyHarmonySessionMode.review => l10n.studyHarmonyModeReview,
     StudyHarmonySessionMode.daily => l10n.studyHarmonyModeDaily,
+    StudyHarmonySessionMode.focus => l10n.studyHarmonyModeFocus,
+    StudyHarmonySessionMode.relay => l10n.studyHarmonyModeRelay,
+    StudyHarmonySessionMode.bossRush => l10n.studyHarmonyModeBossRush,
+    StudyHarmonySessionMode.legend => l10n.studyHarmonyModeLegend,
     StudyHarmonySessionMode.legacyLevel => l10n.studyHarmonyModeLegacy,
   };
+}
+
+String _leagueTierLabel(AppLocalizations l10n, StudyHarmonyLeagueTier tier) {
+  return switch (tier) {
+    StudyHarmonyLeagueTier.rookie => l10n.studyHarmonyLeagueTierRookie,
+    StudyHarmonyLeagueTier.bronze => l10n.studyHarmonyLeagueTierBronze,
+    StudyHarmonyLeagueTier.silver => l10n.studyHarmonyLeagueTierSilver,
+    StudyHarmonyLeagueTier.gold => l10n.studyHarmonyLeagueTierGold,
+    StudyHarmonyLeagueTier.diamond => l10n.studyHarmonyLeagueTierDiamond,
+  };
+}
+
+String _legendRewardLine(
+  AppLocalizations l10n,
+  StudyHarmonyCourseDefinition? course,
+  StudyHarmonyLessonDefinition lesson,
+) {
+  var chapterTitle = lesson.chapterId;
+  if (course != null) {
+    for (final chapter in course.chapters) {
+      if (chapter.id == lesson.chapterId) {
+        chapterTitle = chapter.title;
+        break;
+      }
+    }
+  }
+  return l10n.studyHarmonyResultLegendLine(chapterTitle);
 }
 
 String? _reviewReasonLabel(AppLocalizations l10n, String? reason) {

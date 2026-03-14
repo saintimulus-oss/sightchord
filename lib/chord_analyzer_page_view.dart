@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import 'audio/harmony_audio_models.dart';
+import 'audio/harmony_audio_service.dart';
+import 'audio/sightchord_audio_scope.dart';
 import 'l10n/app_localizations.dart';
 import 'music/progression_analysis_models.dart';
 import 'music/progression_analyzer.dart';
@@ -31,6 +36,8 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   ProgressionAnalysis? _analysis;
   String? _errorKey;
   bool _isAnalyzing = false;
+  bool _requestedHarmonyAudioWarmUp = false;
+  HarmonyAudioService? _harmonyAudio;
 
   Future<void> _analyze() async {
     final input = _controller.text.trim();
@@ -76,6 +83,21 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_requestedHarmonyAudioWarmUp) {
+      return;
+    }
+    final harmonyAudio = SightChordAudioScope.maybeOf(context);
+    _harmonyAudio = harmonyAudio;
+    if (harmonyAudio == null) {
+      return;
+    }
+    _requestedHarmonyAudioWarmUp = true;
+    unawaited(harmonyAudio.warmUp());
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -89,6 +111,26 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     setState(() {
       _errorKey = null;
     });
+  }
+
+  Future<void> _playAnalysis({required HarmonyPlaybackPattern pattern}) async {
+    final analysis = _analysis;
+    final harmonyAudio = _harmonyAudio;
+    if (analysis == null || harmonyAudio == null) {
+      return;
+    }
+    await harmonyAudio.playProgressionAnalysis(analysis, pattern: pattern);
+  }
+
+  Future<void> _playChord(
+    ParsedChord chord, {
+    required HarmonyPlaybackPattern pattern,
+  }) async {
+    final harmonyAudio = _harmonyAudio;
+    if (harmonyAudio == null) {
+      return;
+    }
+    await harmonyAudio.playParsedChord(chord, pattern: pattern);
   }
 
   @override
@@ -177,11 +219,47 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
                             const SizedBox(height: 16),
                             Align(
                               alignment: Alignment.centerRight,
-                              child: FilledButton.icon(
-                                key: const ValueKey('analyzer-analyze-button'),
-                                onPressed: _isAnalyzing ? null : _analyze,
-                                icon: const Icon(Icons.insights_rounded),
-                                label: Text(l10n.chordAnalyzerAnalyze),
+                              child: Wrap(
+                                spacing: 10,
+                                runSpacing: 10,
+                                alignment: WrapAlignment.end,
+                                children: [
+                                  if (_analysis != null) ...[
+                                    OutlinedButton.icon(
+                                      key: const ValueKey(
+                                        'analyzer-play-progression-button',
+                                      ),
+                                      onPressed: () => _playAnalysis(
+                                        pattern: HarmonyPlaybackPattern.block,
+                                      ),
+                                      icon: const Icon(
+                                        Icons.music_note_rounded,
+                                      ),
+                                      label: Text(l10n.audioPlayProgression),
+                                    ),
+                                    OutlinedButton.icon(
+                                      key: const ValueKey(
+                                        'analyzer-play-progression-arpeggio-button',
+                                      ),
+                                      onPressed: () => _playAnalysis(
+                                        pattern:
+                                            HarmonyPlaybackPattern.arpeggio,
+                                      ),
+                                      icon: const Icon(
+                                        Icons.multitrack_audio_rounded,
+                                      ),
+                                      label: Text(l10n.audioPlayArpeggio),
+                                    ),
+                                  ],
+                                  FilledButton.icon(
+                                    key: const ValueKey(
+                                      'analyzer-analyze-button',
+                                    ),
+                                    onPressed: _isAnalyzing ? null : _analyze,
+                                    icon: const Icon(Icons.insights_rounded),
+                                    label: Text(l10n.chordAnalyzerAnalyze),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -321,6 +399,19 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
                                         l10n,
                                         groupedMeasures[measureIndex]
                                             .chordAnalyses[chordIndex],
+                                      ),
+                                      onPlayChord: () => _playChord(
+                                        groupedMeasures[measureIndex]
+                                            .chordAnalyses[chordIndex]
+                                            .chord,
+                                        pattern: HarmonyPlaybackPattern.block,
+                                      ),
+                                      onPlayArpeggio: () => _playChord(
+                                        groupedMeasures[measureIndex]
+                                            .chordAnalyses[chordIndex]
+                                            .chord,
+                                        pattern:
+                                            HarmonyPlaybackPattern.arpeggio,
                                       ),
                                     ),
                                     if (chordIndex !=

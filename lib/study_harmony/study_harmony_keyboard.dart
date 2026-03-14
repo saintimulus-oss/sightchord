@@ -8,12 +8,16 @@ class StudyHarmonyPianoKeyboard extends StatelessWidget {
     required this.keys,
     required this.selectedAnswerIds,
     this.onToggleKey,
+    this.onPreviewKeyDown,
+    this.onPreviewKeyUp,
     this.readOnly = false,
   });
 
   final List<StudyHarmonyPianoKeyDefinition> keys;
   final Set<String> selectedAnswerIds;
   final ValueChanged<String>? onToggleKey;
+  final ValueChanged<String>? onPreviewKeyDown;
+  final ValueChanged<String>? onPreviewKeyUp;
   final bool readOnly;
 
   @override
@@ -52,6 +56,12 @@ class StudyHarmonyPianoKeyboard extends StatelessWidget {
                           onTap: onToggleKey == null
                               ? null
                               : () => onToggleKey!(key.id),
+                          onPreviewStart: onPreviewKeyDown == null
+                              ? null
+                              : () => onPreviewKeyDown!(key.id),
+                          onPreviewEnd: onPreviewKeyUp == null
+                              ? null
+                              : () => onPreviewKeyUp!(key.id),
                         ),
                       ),
                     ),
@@ -72,6 +82,12 @@ class StudyHarmonyPianoKeyboard extends StatelessWidget {
                     onTap: onToggleKey == null
                         ? null
                         : () => onToggleKey!(key.id),
+                    onPreviewStart: onPreviewKeyDown == null
+                        ? null
+                        : () => onPreviewKeyDown!(key.id),
+                    onPreviewEnd: onPreviewKeyUp == null
+                        ? null
+                        : () => onPreviewKeyUp!(key.id),
                   ),
                 ),
             ],
@@ -89,12 +105,16 @@ class _PianoKeyTile extends StatelessWidget {
     required this.selected,
     required this.readOnly,
     this.onTap,
+    this.onPreviewStart,
+    this.onPreviewEnd,
   });
 
   final StudyHarmonyPianoKeyDefinition definition;
   final bool selected;
   final bool readOnly;
   final VoidCallback? onTap;
+  final VoidCallback? onPreviewStart;
+  final VoidCallback? onPreviewEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -122,6 +142,21 @@ class _PianoKeyTile extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: readOnly ? null : onTap,
+          onTapDown: readOnly
+              ? null
+              : (_) {
+                  onPreviewStart?.call();
+                },
+          onTapUp: readOnly
+              ? null
+              : (_) {
+                  onPreviewEnd?.call();
+                },
+          onTapCancel: readOnly
+              ? null
+              : () {
+                  onPreviewEnd?.call();
+                },
           canRequestFocus: !readOnly,
           borderRadius: BorderRadius.circular(isBlack ? 12 : 16),
           child: ExcludeSemantics(

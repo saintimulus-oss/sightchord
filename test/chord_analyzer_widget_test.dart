@@ -128,6 +128,14 @@ void main() {
         find.byKey(const ValueKey('analyzer-results-card')),
         findsOneWidget,
       );
+      expect(
+        find.byKey(const ValueKey('analyzer-play-progression-button')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('analyzer-play-progression-arpeggio-button')),
+        findsOneWidget,
+      );
       expect(find.text('Detected Keys'), findsOneWidget);
       expect(find.text('Chord-by-chord analysis'), findsOneWidget);
       expect(find.text('Progression summary'), findsOneWidget);

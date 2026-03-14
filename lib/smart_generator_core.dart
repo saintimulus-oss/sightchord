@@ -3551,7 +3551,7 @@ class SmartGeneratorHelper {
       ],
       blockedReason: approachDecision.insertedApproach
           ? opportunity.blockedReason
-          : SmartBlockedReason.appliedNotInserted,
+          : opportunity.blockedReason ?? SmartBlockedReason.appliedNotInserted,
       decision: approachDecision.insertedApproach
           ? 'fallback-with-applied-approach'
           : 'fallback-diatonic-continuation',
@@ -7319,8 +7319,7 @@ class SmartGeneratorHelper {
       JazzPreset.standardsCore =>
         relation == KeyRelation.relative ||
             relation == KeyRelation.dominant ||
-            relation == KeyRelation.subdominant ||
-            relation == KeyRelation.parallel,
+            relation == KeyRelation.subdominant,
       JazzPreset.modulationStudy => relation != KeyRelation.distant,
       JazzPreset.advanced => true,
     };

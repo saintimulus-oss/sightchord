@@ -214,12 +214,16 @@ class _ChordAnalysisRow extends StatelessWidget {
     required this.explainer,
     required this.functionLabel,
     this.remarkText,
+    this.onPlayChord,
+    this.onPlayArpeggio,
   });
 
   final AnalyzedChord analysis;
   final ProgressionExplainer explainer;
   final String functionLabel;
   final String? remarkText;
+  final VoidCallback? onPlayChord;
+  final VoidCallback? onPlayArpeggio;
 
   @override
   Widget build(BuildContext context) {
@@ -305,7 +309,40 @@ class _ChordAnalysisRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        Chip(label: Text(functionLabel)),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Chip(label: Text(functionLabel)),
+            if (onPlayChord != null || onPlayArpeggio != null) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                children: [
+                  if (onPlayChord != null)
+                    IconButton.outlined(
+                      key: ValueKey(
+                        'analyzer-play-chord-${analysis.chord.sourceSymbol}',
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      onPressed: onPlayChord,
+                      tooltip: l10n.audioPlayChord,
+                      icon: const Icon(Icons.music_note_rounded),
+                    ),
+                  if (onPlayArpeggio != null)
+                    IconButton.outlined(
+                      key: ValueKey(
+                        'analyzer-play-arpeggio-${analysis.chord.sourceSymbol}',
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      onPressed: onPlayArpeggio,
+                      tooltip: l10n.audioPlayArpeggio,
+                      icon: const Icon(Icons.multitrack_audio_rounded),
+                    ),
+                ],
+              ),
+            ],
+          ],
+        ),
       ],
     );
   }

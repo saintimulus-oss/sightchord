@@ -341,9 +341,28 @@ class StudyHarmonyProgressSnapshot {
     this.reviewQueuePlaceholders =
         const <StudyHarmonyReviewQueuePlaceholderEntry>[],
     this.dailyChallengeSeedMetadata,
+    this.completedDailyChallengeDateKeys = const <String>{},
+    this.protectedDailyChallengeDateKeys = const <String>{},
+    this.activityDateKeys = const <String>{},
+    this.completedFocusChallengeDateKeys = const <String>{},
+    this.completedSpotlightChallengeDateKeys = const <String>{},
+    this.completedFrontierQuestDateKeys = const <String>{},
+    this.awardedWeeklyPlanWeekKeys = const <String>{},
+    this.awardedDailyQuestChestDateKeys = const <String>{},
+    this.awardedMonthlyTourMonthKeys = const <String>{},
+    this.weeklyLeagueScores = const <String, int>{},
+    this.monthlySpotlightClearCounts = const <String, int>{},
+    this.legendaryChapterIds = const <StudyHarmonyChapterId>{},
+    this.relayWinCount = 0,
+    this.bestDailyChallengeStreak = 0,
+    this.bestDuetPactStreak = 0,
+    this.streakSaverCount = 0,
+    this.questChestCount = 0,
+    this.activeLeagueXpBoostDateKey,
+    this.activeLeagueXpBoostCharges = 0,
   });
 
-  static const int currentSerializationVersion = 2;
+  static const int currentSerializationVersion = 12;
 
   final int serializationVersion;
   final StudyHarmonyTrackId? lastPlayedTrackId;
@@ -357,6 +376,25 @@ class StudyHarmonyProgressSnapshot {
   skillMasteryPlaceholders;
   final List<StudyHarmonyReviewQueuePlaceholderEntry> reviewQueuePlaceholders;
   final StudyHarmonyDailyChallengeSeedMetadata? dailyChallengeSeedMetadata;
+  final Set<String> completedDailyChallengeDateKeys;
+  final Set<String> protectedDailyChallengeDateKeys;
+  final Set<String> activityDateKeys;
+  final Set<String> completedFocusChallengeDateKeys;
+  final Set<String> completedSpotlightChallengeDateKeys;
+  final Set<String> completedFrontierQuestDateKeys;
+  final Set<String> awardedWeeklyPlanWeekKeys;
+  final Set<String> awardedDailyQuestChestDateKeys;
+  final Set<String> awardedMonthlyTourMonthKeys;
+  final Map<String, int> weeklyLeagueScores;
+  final Map<String, int> monthlySpotlightClearCounts;
+  final Set<StudyHarmonyChapterId> legendaryChapterIds;
+  final int relayWinCount;
+  final int bestDailyChallengeStreak;
+  final int bestDuetPactStreak;
+  final int streakSaverCount;
+  final int questChestCount;
+  final String? activeLeagueXpBoostDateKey;
+  final int activeLeagueXpBoostCharges;
 
   factory StudyHarmonyProgressSnapshot.initial() {
     return const StudyHarmonyProgressSnapshot(
@@ -376,10 +414,30 @@ class StudyHarmonyProgressSnapshot {
     skillMasteryPlaceholders,
     List<StudyHarmonyReviewQueuePlaceholderEntry>? reviewQueuePlaceholders,
     StudyHarmonyDailyChallengeSeedMetadata? dailyChallengeSeedMetadata,
+    Set<String>? completedDailyChallengeDateKeys,
+    Set<String>? protectedDailyChallengeDateKeys,
+    Set<String>? activityDateKeys,
+    Set<String>? completedFocusChallengeDateKeys,
+    Set<String>? completedSpotlightChallengeDateKeys,
+    Set<String>? completedFrontierQuestDateKeys,
+    Set<String>? awardedWeeklyPlanWeekKeys,
+    Set<String>? awardedDailyQuestChestDateKeys,
+    Set<String>? awardedMonthlyTourMonthKeys,
+    Map<String, int>? weeklyLeagueScores,
+    Map<String, int>? monthlySpotlightClearCounts,
+    Set<StudyHarmonyChapterId>? legendaryChapterIds,
+    int? relayWinCount,
+    int? bestDailyChallengeStreak,
+    int? bestDuetPactStreak,
+    int? streakSaverCount,
+    int? questChestCount,
+    String? activeLeagueXpBoostDateKey,
+    int? activeLeagueXpBoostCharges,
     bool clearLastPlayedTrackId = false,
     bool clearLastPlayedChapterId = false,
     bool clearLastPlayedLessonId = false,
     bool clearDailyChallengeSeedMetadata = false,
+    bool clearActiveLeagueXpBoostDateKey = false,
   }) {
     return StudyHarmonyProgressSnapshot(
       serializationVersion: serializationVersion ?? this.serializationVersion,
@@ -402,6 +460,42 @@ class StudyHarmonyProgressSnapshot {
       dailyChallengeSeedMetadata: clearDailyChallengeSeedMetadata
           ? null
           : dailyChallengeSeedMetadata ?? this.dailyChallengeSeedMetadata,
+      completedDailyChallengeDateKeys:
+          completedDailyChallengeDateKeys ??
+          this.completedDailyChallengeDateKeys,
+      protectedDailyChallengeDateKeys:
+          protectedDailyChallengeDateKeys ??
+          this.protectedDailyChallengeDateKeys,
+      activityDateKeys: activityDateKeys ?? this.activityDateKeys,
+      completedFocusChallengeDateKeys:
+          completedFocusChallengeDateKeys ??
+          this.completedFocusChallengeDateKeys,
+      completedSpotlightChallengeDateKeys:
+          completedSpotlightChallengeDateKeys ??
+          this.completedSpotlightChallengeDateKeys,
+      completedFrontierQuestDateKeys:
+          completedFrontierQuestDateKeys ?? this.completedFrontierQuestDateKeys,
+      awardedWeeklyPlanWeekKeys:
+          awardedWeeklyPlanWeekKeys ?? this.awardedWeeklyPlanWeekKeys,
+      awardedDailyQuestChestDateKeys:
+          awardedDailyQuestChestDateKeys ?? this.awardedDailyQuestChestDateKeys,
+      awardedMonthlyTourMonthKeys:
+          awardedMonthlyTourMonthKeys ?? this.awardedMonthlyTourMonthKeys,
+      weeklyLeagueScores: weeklyLeagueScores ?? this.weeklyLeagueScores,
+      monthlySpotlightClearCounts:
+          monthlySpotlightClearCounts ?? this.monthlySpotlightClearCounts,
+      legendaryChapterIds: legendaryChapterIds ?? this.legendaryChapterIds,
+      relayWinCount: relayWinCount ?? this.relayWinCount,
+      bestDailyChallengeStreak:
+          bestDailyChallengeStreak ?? this.bestDailyChallengeStreak,
+      bestDuetPactStreak: bestDuetPactStreak ?? this.bestDuetPactStreak,
+      streakSaverCount: streakSaverCount ?? this.streakSaverCount,
+      questChestCount: questChestCount ?? this.questChestCount,
+      activeLeagueXpBoostDateKey: clearActiveLeagueXpBoostDateKey
+          ? null
+          : activeLeagueXpBoostDateKey ?? this.activeLeagueXpBoostDateKey,
+      activeLeagueXpBoostCharges:
+          activeLeagueXpBoostCharges ?? this.activeLeagueXpBoostCharges,
     );
   }
 
@@ -414,6 +508,37 @@ class StudyHarmonyProgressSnapshot {
       ..sort();
     final sortedUnlockedLessons = unlockedLessonIds.toList(growable: false)
       ..sort();
+    final sortedCompletedDailyDates = completedDailyChallengeDateKeys.toList(
+      growable: false,
+    )..sort();
+    final sortedProtectedDailyDates = protectedDailyChallengeDateKeys.toList(
+      growable: false,
+    )..sort();
+    final sortedActivityDates = activityDateKeys.toList(growable: false)
+      ..sort();
+    final sortedCompletedFocusDates = completedFocusChallengeDateKeys.toList(
+      growable: false,
+    )..sort();
+    final sortedCompletedSpotlightDates =
+        completedSpotlightChallengeDateKeys.toList(growable: false)..sort();
+    final sortedCompletedFrontierQuestDates =
+        completedFrontierQuestDateKeys.toList(growable: false)..sort();
+    final sortedAwardedWeeklyPlanWeekKeys = awardedWeeklyPlanWeekKeys.toList(
+      growable: false,
+    )..sort();
+    final sortedAwardedDailyQuestChestDates =
+        awardedDailyQuestChestDateKeys.toList(growable: false)..sort();
+    final sortedAwardedMonthlyTourMonthKeys =
+        awardedMonthlyTourMonthKeys.toList(growable: false)..sort();
+    final sortedWeeklyLeagueScoreKeys = weeklyLeagueScores.keys.toList(
+      growable: false,
+    )..sort();
+    final sortedMonthlySpotlightKeys = monthlySpotlightClearCounts.keys.toList(
+      growable: false,
+    )..sort();
+    final sortedLegendaryChapterIds = legendaryChapterIds.toList(
+      growable: false,
+    )..sort();
 
     return {
       'serializationVersion': serializationVersion,
@@ -434,6 +559,31 @@ class StudyHarmonyProgressSnapshot {
         for (final entry in reviewQueuePlaceholders) entry.toJson(),
       ],
       'dailyChallengeSeedMetadata': dailyChallengeSeedMetadata?.toJson(),
+      'completedDailyChallengeDateKeys': sortedCompletedDailyDates,
+      'protectedDailyChallengeDateKeys': sortedProtectedDailyDates,
+      'activityDateKeys': sortedActivityDates,
+      'completedFocusChallengeDateKeys': sortedCompletedFocusDates,
+      'completedSpotlightChallengeDateKeys': sortedCompletedSpotlightDates,
+      'completedFrontierQuestDateKeys': sortedCompletedFrontierQuestDates,
+      'awardedWeeklyPlanWeekKeys': sortedAwardedWeeklyPlanWeekKeys,
+      'awardedDailyQuestChestDateKeys': sortedAwardedDailyQuestChestDates,
+      'awardedMonthlyTourMonthKeys': sortedAwardedMonthlyTourMonthKeys,
+      'weeklyLeagueScores': {
+        for (final weekKey in sortedWeeklyLeagueScoreKeys)
+          weekKey: weeklyLeagueScores[weekKey],
+      },
+      'monthlySpotlightClearCounts': {
+        for (final monthKey in sortedMonthlySpotlightKeys)
+          monthKey: monthlySpotlightClearCounts[monthKey],
+      },
+      'legendaryChapterIds': sortedLegendaryChapterIds,
+      'relayWinCount': relayWinCount,
+      'bestDailyChallengeStreak': bestDailyChallengeStreak,
+      'bestDuetPactStreak': bestDuetPactStreak,
+      'streakSaverCount': streakSaverCount,
+      'questChestCount': questChestCount,
+      'activeLeagueXpBoostDateKey': activeLeagueXpBoostDateKey,
+      'activeLeagueXpBoostCharges': activeLeagueXpBoostCharges,
     };
   }
 
@@ -484,6 +634,22 @@ class StudyHarmonyProgressSnapshot {
         if (_mapOrNull(entry) case final nested?)
           StudyHarmonyReviewQueuePlaceholderEntry.fromJson(nested),
     ];
+    final weeklyLeagueScores = <String, int>{};
+    final weeklyLeagueJson = _mapOrNull(json['weeklyLeagueScores']);
+    if (weeklyLeagueJson != null) {
+      for (final entry in weeklyLeagueJson.entries) {
+        weeklyLeagueScores[entry.key] = _intOrZero(entry.value);
+      }
+    }
+    final monthlySpotlightClearCounts = <String, int>{};
+    final monthlySpotlightJson = _mapOrNull(
+      json['monthlySpotlightClearCounts'],
+    );
+    if (monthlySpotlightJson != null) {
+      for (final entry in monthlySpotlightJson.entries) {
+        monthlySpotlightClearCounts[entry.key] = _intOrZero(entry.value);
+      }
+    }
 
     return StudyHarmonyProgressSnapshot(
       serializationVersion: _intOr(
@@ -502,6 +668,45 @@ class StudyHarmonyProgressSnapshot {
           StudyHarmonyDailyChallengeSeedMetadata.fromJsonValue(
             json['dailyChallengeSeedMetadata'],
           ),
+      completedDailyChallengeDateKeys: _stringSetFromValue(
+        json['completedDailyChallengeDateKeys'],
+      ),
+      protectedDailyChallengeDateKeys: _stringSetFromValue(
+        json['protectedDailyChallengeDateKeys'],
+      ),
+      activityDateKeys: _stringSetFromValue(json['activityDateKeys']),
+      completedFocusChallengeDateKeys: _stringSetFromValue(
+        json['completedFocusChallengeDateKeys'],
+      ),
+      completedSpotlightChallengeDateKeys: _stringSetFromValue(
+        json['completedSpotlightChallengeDateKeys'],
+      ),
+      completedFrontierQuestDateKeys: _stringSetFromValue(
+        json['completedFrontierQuestDateKeys'],
+      ),
+      awardedWeeklyPlanWeekKeys: _stringSetFromValue(
+        json['awardedWeeklyPlanWeekKeys'],
+      ),
+      awardedDailyQuestChestDateKeys: _stringSetFromValue(
+        json['awardedDailyQuestChestDateKeys'],
+      ),
+      awardedMonthlyTourMonthKeys: _stringSetFromValue(
+        json['awardedMonthlyTourMonthKeys'],
+      ),
+      weeklyLeagueScores: weeklyLeagueScores,
+      monthlySpotlightClearCounts: monthlySpotlightClearCounts,
+      legendaryChapterIds: _stringSetFromValue(json['legendaryChapterIds']),
+      relayWinCount: _intOrZero(json['relayWinCount']),
+      bestDailyChallengeStreak: _intOrZero(json['bestDailyChallengeStreak']),
+      bestDuetPactStreak: _intOrZero(json['bestDuetPactStreak']),
+      streakSaverCount: _intOrZero(json['streakSaverCount']),
+      questChestCount: _intOrZero(json['questChestCount']),
+      activeLeagueXpBoostDateKey: _stringOrNull(
+        json['activeLeagueXpBoostDateKey'],
+      ),
+      activeLeagueXpBoostCharges: _intOrZero(
+        json['activeLeagueXpBoostCharges'],
+      ),
     );
   }
 
@@ -516,6 +721,8 @@ class StudyHarmonyProgressSnapshot {
     }
   }
 }
+
+enum StudyHarmonyChapterMasteryTier { none, bronze, silver, gold, legendary }
 
 Map<String, Object?>? _mapOrNull(Object? value) {
   if (value is Map<String, Object?>) {

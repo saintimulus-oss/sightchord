@@ -1,0 +1,663 @@
+{
+  "id": "salamander-grand-piano-essential",
+  "displayName": "Salamander Grand Piano Essential",
+  "version": 1,
+  "source": {
+    "library": "Salamander Grand Piano",
+    "sfz": "assets/piano/salamander/SalamanderGrandPiano-V3+20200602.sfz",
+    "license": "CC-BY 3.0"
+  },
+  "range": {
+    "minMidi": 36,
+    "maxMidi": 84,
+    "minLabel": "C2",
+    "maxLabel": "C6"
+  },
+  "velocityLayers": [
+    {
+      "layer": 1,
+      "minVelocity": 1,
+      "maxVelocity": 29
+    },
+    {
+      "layer": 5,
+      "minVelocity": 30,
+      "maxVelocity": 60
+    },
+    {
+      "layer": 10,
+      "minVelocity": 61,
+      "maxVelocity": 100
+    },
+    {
+      "layer": 16,
+      "minVelocity": 101,
+      "maxVelocity": 127
+    }
+  ],
+  "defaults": {
+    "polyphony": 24,
+    "releaseFadeOutMs": 90,
+    "defaultChordHoldMs": 950,
+    "defaultArpeggioStepMs": 120,
+    "defaultArpeggioHoldMs": 780,
+    "velocityCurvePower": 0.88,
+    "baseVolume": 0.94,
+    "noteOnPrerollVoices": 6,
+    "clampOutOfRangeNotes": true
+  },
+  "regions": [
+    {
+      "sample": "samples/C2v1.flac",
+      "lokey": 35,
+      "hikey": 37,
+      "pitchKeycenter": 36,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/C2v5.flac",
+      "lokey": 35,
+      "hikey": 37,
+      "pitchKeycenter": 36,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/C2v10.flac",
+      "lokey": 35,
+      "hikey": 37,
+      "pitchKeycenter": 36,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/C2v16.flac",
+      "lokey": 35,
+      "hikey": 37,
+      "pitchKeycenter": 36,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    },
+    {
+      "sample": "samples/D#2v1.flac",
+      "lokey": 38,
+      "hikey": 40,
+      "pitchKeycenter": 39,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/D#2v5.flac",
+      "lokey": 38,
+      "hikey": 40,
+      "pitchKeycenter": 39,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/D#2v10.flac",
+      "lokey": 38,
+      "hikey": 40,
+      "pitchKeycenter": 39,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/D#2v16.flac",
+      "lokey": 38,
+      "hikey": 40,
+      "pitchKeycenter": 39,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    },
+    {
+      "sample": "samples/F#2v1.flac",
+      "lokey": 41,
+      "hikey": 43,
+      "pitchKeycenter": 42,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/F#2v5.flac",
+      "lokey": 41,
+      "hikey": 43,
+      "pitchKeycenter": 42,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/F#2v10.flac",
+      "lokey": 41,
+      "hikey": 43,
+      "pitchKeycenter": 42,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/F#2v16.flac",
+      "lokey": 41,
+      "hikey": 43,
+      "pitchKeycenter": 42,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    },
+    {
+      "sample": "samples/A2v1.flac",
+      "lokey": 44,
+      "hikey": 46,
+      "pitchKeycenter": 45,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/A2v5.flac",
+      "lokey": 44,
+      "hikey": 46,
+      "pitchKeycenter": 45,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/A2v10.flac",
+      "lokey": 44,
+      "hikey": 46,
+      "pitchKeycenter": 45,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/A2v16.flac",
+      "lokey": 44,
+      "hikey": 46,
+      "pitchKeycenter": 45,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    },
+    {
+      "sample": "samples/C3v1.flac",
+      "lokey": 47,
+      "hikey": 49,
+      "pitchKeycenter": 48,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/C3v5.flac",
+      "lokey": 47,
+      "hikey": 49,
+      "pitchKeycenter": 48,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/C3v10.flac",
+      "lokey": 47,
+      "hikey": 49,
+      "pitchKeycenter": 48,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/C3v16.flac",
+      "lokey": 47,
+      "hikey": 49,
+      "pitchKeycenter": 48,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    },
+    {
+      "sample": "samples/D#3v1.flac",
+      "lokey": 50,
+      "hikey": 52,
+      "pitchKeycenter": 51,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/D#3v5.flac",
+      "lokey": 50,
+      "hikey": 52,
+      "pitchKeycenter": 51,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/D#3v10.flac",
+      "lokey": 50,
+      "hikey": 52,
+      "pitchKeycenter": 51,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/D#3v16.flac",
+      "lokey": 50,
+      "hikey": 52,
+      "pitchKeycenter": 51,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    },
+    {
+      "sample": "samples/F#3v1.flac",
+      "lokey": 53,
+      "hikey": 55,
+      "pitchKeycenter": 54,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/F#3v5.flac",
+      "lokey": 53,
+      "hikey": 55,
+      "pitchKeycenter": 54,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/F#3v10.flac",
+      "lokey": 53,
+      "hikey": 55,
+      "pitchKeycenter": 54,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/F#3v16.flac",
+      "lokey": 53,
+      "hikey": 55,
+      "pitchKeycenter": 54,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    },
+    {
+      "sample": "samples/A3v1.flac",
+      "lokey": 56,
+      "hikey": 58,
+      "pitchKeycenter": 57,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/A3v5.flac",
+      "lokey": 56,
+      "hikey": 58,
+      "pitchKeycenter": 57,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/A3v10.flac",
+      "lokey": 56,
+      "hikey": 58,
+      "pitchKeycenter": 57,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/A3v16.flac",
+      "lokey": 56,
+      "hikey": 58,
+      "pitchKeycenter": 57,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    },
+    {
+      "sample": "samples/C4v1.flac",
+      "lokey": 59,
+      "hikey": 61,
+      "pitchKeycenter": 60,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/C4v5.flac",
+      "lokey": 59,
+      "hikey": 61,
+      "pitchKeycenter": 60,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/C4v10.flac",
+      "lokey": 59,
+      "hikey": 61,
+      "pitchKeycenter": 60,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/C4v16.flac",
+      "lokey": 59,
+      "hikey": 61,
+      "pitchKeycenter": 60,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    },
+    {
+      "sample": "samples/D#4v1.flac",
+      "lokey": 62,
+      "hikey": 64,
+      "pitchKeycenter": 63,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/D#4v5.flac",
+      "lokey": 62,
+      "hikey": 64,
+      "pitchKeycenter": 63,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/D#4v10.flac",
+      "lokey": 62,
+      "hikey": 64,
+      "pitchKeycenter": 63,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/D#4v16.flac",
+      "lokey": 62,
+      "hikey": 64,
+      "pitchKeycenter": 63,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    },
+    {
+      "sample": "samples/F#4v1.flac",
+      "lokey": 65,
+      "hikey": 67,
+      "pitchKeycenter": 66,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/F#4v5.flac",
+      "lokey": 65,
+      "hikey": 67,
+      "pitchKeycenter": 66,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/F#4v10.flac",
+      "lokey": 65,
+      "hikey": 67,
+      "pitchKeycenter": 66,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/F#4v16.flac",
+      "lokey": 65,
+      "hikey": 67,
+      "pitchKeycenter": 66,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    },
+    {
+      "sample": "samples/A4v1.flac",
+      "lokey": 68,
+      "hikey": 70,
+      "pitchKeycenter": 69,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/A4v5.flac",
+      "lokey": 68,
+      "hikey": 70,
+      "pitchKeycenter": 69,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/A4v10.flac",
+      "lokey": 68,
+      "hikey": 70,
+      "pitchKeycenter": 69,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/A4v16.flac",
+      "lokey": 68,
+      "hikey": 70,
+      "pitchKeycenter": 69,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    },
+    {
+      "sample": "samples/C5v1.flac",
+      "lokey": 71,
+      "hikey": 73,
+      "pitchKeycenter": 72,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/C5v5.flac",
+      "lokey": 71,
+      "hikey": 73,
+      "pitchKeycenter": 72,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/C5v10.flac",
+      "lokey": 71,
+      "hikey": 73,
+      "pitchKeycenter": 72,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/C5v16.flac",
+      "lokey": 71,
+      "hikey": 73,
+      "pitchKeycenter": 72,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    },
+    {
+      "sample": "samples/D#5v1.flac",
+      "lokey": 74,
+      "hikey": 76,
+      "pitchKeycenter": 75,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/D#5v5.flac",
+      "lokey": 74,
+      "hikey": 76,
+      "pitchKeycenter": 75,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/D#5v10.flac",
+      "lokey": 74,
+      "hikey": 76,
+      "pitchKeycenter": 75,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/D#5v16.flac",
+      "lokey": 74,
+      "hikey": 76,
+      "pitchKeycenter": 75,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    },
+    {
+      "sample": "samples/F#5v1.flac",
+      "lokey": 77,
+      "hikey": 79,
+      "pitchKeycenter": 78,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/F#5v5.flac",
+      "lokey": 77,
+      "hikey": 79,
+      "pitchKeycenter": 78,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/F#5v10.flac",
+      "lokey": 77,
+      "hikey": 79,
+      "pitchKeycenter": 78,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/F#5v16.flac",
+      "lokey": 77,
+      "hikey": 79,
+      "pitchKeycenter": 78,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    },
+    {
+      "sample": "samples/A5v1.flac",
+      "lokey": 80,
+      "hikey": 82,
+      "pitchKeycenter": 81,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/A5v5.flac",
+      "lokey": 80,
+      "hikey": 82,
+      "pitchKeycenter": 81,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/A5v10.flac",
+      "lokey": 80,
+      "hikey": 82,
+      "pitchKeycenter": 81,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/A5v16.flac",
+      "lokey": 80,
+      "hikey": 82,
+      "pitchKeycenter": 81,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    },
+    {
+      "sample": "samples/C6v1.flac",
+      "lokey": 83,
+      "hikey": 85,
+      "pitchKeycenter": 84,
+      "layer": 1,
+      "lovel": 1,
+      "hivel": 29
+    },
+    {
+      "sample": "samples/C6v5.flac",
+      "lokey": 83,
+      "hikey": 85,
+      "pitchKeycenter": 84,
+      "layer": 5,
+      "lovel": 30,
+      "hivel": 60
+    },
+    {
+      "sample": "samples/C6v10.flac",
+      "lokey": 83,
+      "hikey": 85,
+      "pitchKeycenter": 84,
+      "layer": 10,
+      "lovel": 61,
+      "hivel": 100
+    },
+    {
+      "sample": "samples/C6v16.flac",
+      "lokey": 83,
+      "hikey": 85,
+      "pitchKeycenter": 84,
+      "layer": 16,
+      "lovel": 101,
+      "hivel": 127
+    }
+  ]
+}

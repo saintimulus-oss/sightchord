@@ -34,7 +34,16 @@ enum StudyHarmonyAnswerSurfaceKind { pianoKeyboard, choiceChips }
 
 enum StudyHarmonySelectionModeKind { single, multiple }
 
-enum StudyHarmonySessionMode { legacyLevel, lesson, review, daily }
+enum StudyHarmonySessionMode {
+  legacyLevel,
+  lesson,
+  review,
+  daily,
+  focus,
+  relay,
+  bossRush,
+  legend,
+}
 
 enum StudyHarmonySessionPhase {
   loading,
@@ -543,6 +552,8 @@ class StudyHarmonySessionState {
     this.lastEvaluation = const StudyHarmonyEvaluationResult.idle(),
     this.correctAnswers = 0,
     this.attempts = 0,
+    this.currentCombo = 0,
+    this.bestCombo = 0,
     this.elapsed = Duration.zero,
     this.performance = const StudyHarmonySessionPerformance(),
   });
@@ -567,6 +578,8 @@ class StudyHarmonySessionState {
   final StudyHarmonyEvaluationResult lastEvaluation;
   final int correctAnswers;
   final int attempts;
+  final int currentCombo;
+  final int bestCombo;
   final int livesRemaining;
   final Duration elapsed;
   final StudyHarmonySessionPerformance performance;
@@ -588,6 +601,8 @@ class StudyHarmonySessionState {
     StudyHarmonyEvaluationResult? lastEvaluation,
     int? correctAnswers,
     int? attempts,
+    int? currentCombo,
+    int? bestCombo,
     int? livesRemaining,
     Duration? elapsed,
     StudyHarmonySessionPerformance? performance,
@@ -605,6 +620,8 @@ class StudyHarmonySessionState {
           : lastEvaluation ?? this.lastEvaluation,
       correctAnswers: correctAnswers ?? this.correctAnswers,
       attempts: attempts ?? this.attempts,
+      currentCombo: currentCombo ?? this.currentCombo,
+      bestCombo: bestCombo ?? this.bestCombo,
       livesRemaining: livesRemaining ?? this.livesRemaining,
       elapsed: elapsed ?? this.elapsed,
       performance: performance ?? this.performance,
