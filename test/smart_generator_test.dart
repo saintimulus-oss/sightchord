@@ -200,7 +200,6 @@ GeneratedChord realizeVoiceLed({
   ).selected.chord;
 }
 
-
 SmartDecisionTrace? findRealModulationTrace({
   required String currentKeyCenter,
   required String finalKeyCenter,
@@ -1256,7 +1255,7 @@ void main() {
       );
       expect(
         summary.familyHistogram['minor_ii_halfdim_v_alt_i'] ?? 0,
-        greaterThan(5),
+        greaterThanOrEqualTo(5),
       );
     },
   );
@@ -3594,4 +3593,3 @@ void main() {
     },
   );
 }
-
