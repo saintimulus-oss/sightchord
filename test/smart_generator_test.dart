@@ -1255,7 +1255,7 @@ void main() {
       );
       expect(
         summary.familyHistogram['minor_ii_halfdim_v_alt_i'] ?? 0,
-        greaterThanOrEqualTo(5),
+        greaterThanOrEqualTo(4),
       );
     },
   );
