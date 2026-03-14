@@ -243,8 +243,27 @@ void main() {
     await pumpAppWithSettings(tester, PracticeSettings());
   }
 
+  Future<void> tapNextChordRegion(WidgetTester tester) async {
+    await tester.tap(find.byKey(const ValueKey('next-chord-text')));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> tapPreviousChordRegion(WidgetTester tester) async {
+    await tester.tap(find.byKey(const ValueKey('previous-chord-text')));
+    await tester.pumpAndSettle();
+  }
+
+  String? currentChordText(WidgetTester tester) {
+    return tester
+        .widget<Text>(find.byKey(const ValueKey('current-chord-text')))
+        .data;
+  }
+
   Future<void> advanceChord(WidgetTester tester) async {
-    await tester.tap(find.byKey(const ValueKey('chord-swipe-surface')));
+    await tester.drag(
+      find.byKey(const ValueKey('chord-swipe-surface')),
+      const Offset(-220, 0),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -1264,6 +1283,68 @@ void main() {
     expect(nextText, isNotNull);
     expect(nextText, isNot(initialText));
     expect(nextText, isNotEmpty);
+  });
+
+  testWidgets(
+    'tapping previous and next chord regions uses animated navigation',
+    (WidgetTester tester) async {
+      await pumpApp(tester);
+
+      await tester.tap(find.byKey(const ValueKey('next-chord-text')));
+      await tester.pump(const Duration(milliseconds: 40));
+
+      expect(tester.hasRunningAnimations, isTrue);
+
+      await tester.pumpAndSettle();
+
+      final firstAdvancedText = currentChordText(tester);
+      expect(firstAdvancedText, isNotNull);
+      expect(firstAdvancedText, isNot(''));
+
+      await tapNextChordRegion(tester);
+      final secondAdvancedText = currentChordText(tester);
+
+      expect(secondAdvancedText, isNot(firstAdvancedText));
+
+      await tapPreviousChordRegion(tester);
+
+      expect(currentChordText(tester), firstAdvancedText);
+    },
+  );
+
+  testWidgets('hard fling glides through multiple chords in one gesture', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(tester);
+
+    final initialText = currentChordText(tester);
+
+    await tester.fling(
+      find.byKey(const ValueKey('chord-swipe-surface')),
+      const Offset(-360, 0),
+      3600,
+    );
+    await tester.pumpAndSettle();
+
+    final flingText = currentChordText(tester);
+
+    expect(flingText, isNotNull);
+    expect(flingText, isNot(initialText));
+
+    await tapPreviousChordRegion(tester);
+
+    final afterOneBack = currentChordText(tester);
+    expect(afterOneBack, isNot(initialText));
+    expect(afterOneBack, isNot(flingText));
+
+    await tester.fling(
+      find.byKey(const ValueKey('chord-swipe-surface')),
+      const Offset(360, 0),
+      3600,
+    );
+    await tester.pumpAndSettle();
+
+    expect(currentChordText(tester), initialText);
   });
 
   testWidgets('bpm input accepts three digits and hides the range helper', (
