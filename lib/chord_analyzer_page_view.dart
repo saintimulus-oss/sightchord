@@ -151,16 +151,23 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
         _analysis?.groupedMeasures ?? const <AnalyzedMeasure>[];
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.chordAnalyzerTitle)),
+      appBar: AppBar(
+        title: Text(l10n.chordAnalyzerTitle),
+        backgroundColor: theme.scaffoldBackgroundColor,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+      ),
       body: DecoratedBox(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              colorScheme.primaryContainer.withValues(alpha: 0.48),
+              colorScheme.primary.withValues(alpha: 0.06),
+              theme.scaffoldBackgroundColor,
               theme.scaffoldBackgroundColor,
             ],
+            stops: const [0, 0.24, 1],
           ),
         ),
         child: SafeArea(
@@ -172,9 +179,11 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Card(
-                      elevation: 0,
-                      color: colorScheme.surface.withValues(alpha: 0.92),
+                    DecoratedBox(
+                      decoration: _analyzerPanelDecoration(
+                        colorScheme,
+                        accent: true,
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(20),
                         child: Column(
@@ -182,8 +191,8 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
                           children: [
                             Text(
                               l10n.chordAnalyzerSubtitle,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                             const SizedBox(height: 12),
@@ -200,6 +209,7 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
                             Text(
                               l10n.chordAnalyzerExamplesTitle,
                               style: theme.textTheme.labelLarge?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),

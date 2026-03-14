@@ -13,6 +13,36 @@ import 'study_harmony/study_harmony_session_page.dart';
 
 enum _StudyHarmonyHubTrack { core, pop, jazz, classical }
 
+Color _hubCardColor(ColorScheme colorScheme) => colorScheme.surfaceContainerLow;
+
+RoundedRectangleBorder _hubCardShape(
+  ColorScheme colorScheme, {
+  double radius = 28,
+}) {
+  return RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(radius),
+    side: BorderSide(color: colorScheme.outlineVariant),
+  );
+}
+
+BoxDecoration _hubPanelDecoration(
+  ColorScheme colorScheme, {
+  bool accent = false,
+  double radius = 24,
+}) {
+  return BoxDecoration(
+    color: accent
+        ? colorScheme.primaryContainer.withValues(alpha: 0.34)
+        : colorScheme.surfaceContainerLowest,
+    borderRadius: BorderRadius.circular(radius),
+    border: Border.all(
+      color: accent
+          ? colorScheme.primary.withValues(alpha: 0.18)
+          : colorScheme.outlineVariant,
+    ),
+  );
+}
+
 class StudyHarmonyPage extends StatefulWidget {
   const StudyHarmonyPage({super.key, required this.progressController});
 
@@ -372,7 +402,12 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
         ];
 
         return Scaffold(
-          appBar: AppBar(title: Text(l10n.studyHarmonyTitle)),
+          appBar: AppBar(
+            title: Text(l10n.studyHarmonyTitle),
+            backgroundColor: theme.scaffoldBackgroundColor,
+            surfaceTintColor: Colors.transparent,
+            scrolledUnderElevation: 0,
+          ),
           body: DecoratedBox(
             key: const ValueKey('study-harmony-page'),
             decoration: BoxDecoration(
@@ -380,9 +415,11 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  colorScheme.tertiaryContainer.withValues(alpha: 0.38),
+                  colorScheme.primary.withValues(alpha: 0.06),
+                  theme.scaffoldBackgroundColor,
                   theme.scaffoldBackgroundColor,
                 ],
+                stops: const [0, 0.28, 1],
               ),
             ),
             child: SafeArea(
@@ -1325,6 +1362,27 @@ class _TrackFilterChipData {
   final IconData icon;
 }
 
+class _HubIconBadge extends StatelessWidget {
+  const _HubIconBadge({required this.icon});
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: SizedBox.square(
+        dimension: 44,
+        child: Icon(icon, color: colorScheme.primary),
+      ),
+    );
+  }
+}
+
 class _TrackFilterBar extends StatelessWidget {
   const _TrackFilterBar({
     super.key,
@@ -1339,19 +1397,53 @@ class _TrackFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        for (final option in options)
-          ChoiceChip(
-            key: ValueKey('study-harmony-track-filter-${option.track.name}'),
-            selected: option.track == selectedTrack,
-            avatar: Icon(option.icon, size: 18),
-            label: Text(option.label),
-            onSelected: (_) => onChanged(option.track),
-          ),
-      ],
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return DecoratedBox(
+      decoration: _hubPanelDecoration(colorScheme),
+      child: Padding(
+        padding: const EdgeInsets.all(6),
+        child: Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            for (final option in options)
+              Builder(
+                builder: (context) {
+                  final isSelected = option.track == selectedTrack;
+                  return ChoiceChip(
+                    key: ValueKey(
+                      'study-harmony-track-filter-${option.track.name}',
+                    ),
+                    selected: isSelected,
+                    backgroundColor: colorScheme.surfaceContainerLow,
+                    selectedColor: colorScheme.primaryContainer,
+                    side: BorderSide(
+                      color: isSelected
+                          ? colorScheme.primary.withValues(alpha: 0.18)
+                          : colorScheme.outlineVariant,
+                    ),
+                    avatar: Icon(
+                      option.icon,
+                      size: 18,
+                      color: isSelected
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
+                    ),
+                    labelStyle: theme.textTheme.labelLarge?.copyWith(
+                      color: isSelected
+                          ? colorScheme.primary
+                          : colorScheme.onSurface,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    label: Text(option.label),
+                    onSelected: (_) => onChanged(option.track),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -1381,7 +1473,9 @@ class _HubHeroCard extends StatelessWidget {
       child: Card(
         key: const ValueKey('study-harmony-hero-card'),
         elevation: 0,
-        color: colorScheme.surface.withValues(alpha: 0.94),
+        color: _hubCardColor(colorScheme),
+        shape: _hubCardShape(colorScheme),
+        clipBehavior: Clip.antiAlias,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
           child: Column(
@@ -1411,11 +1505,17 @@ class _HubHeroCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              Text(
-                body,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  height: 1.45,
+              DecoratedBox(
+                decoration: _hubPanelDecoration(colorScheme, accent: true),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    body,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      height: 1.45,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -1468,17 +1568,20 @@ class _HubActionCard extends StatelessWidget {
     return MergeSemantics(
       child: Card(
         elevation: 0,
-        color: colorScheme.surface.withValues(alpha: 0.94),
+        color: _hubCardColor(colorScheme),
+        shape: _hubCardShape(colorScheme),
+        clipBehavior: Clip.antiAlias,
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: colorScheme.primary),
+              _HubIconBadge(icon: icon),
               const SizedBox(height: 14),
               Text(
                 title,
                 style: theme.textTheme.titleMedium?.copyWith(
+                  color: colorScheme.primary,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -1493,7 +1596,7 @@ class _HubActionCard extends StatelessWidget {
               Text(
                 supportingLabel,
                 style: theme.textTheme.titleSmall?.copyWith(
-                  color: colorScheme.primary,
+                  color: colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -1546,13 +1649,15 @@ class _HubQuestCard extends StatelessWidget {
     return Card(
       key: ValueKey('study-harmony-quest-card-${data.id}'),
       elevation: 0,
-      color: colorScheme.surface.withValues(alpha: 0.94),
+      color: _hubCardColor(colorScheme),
+      shape: _hubCardShape(colorScheme),
+      clipBehavior: Clip.antiAlias,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(data.icon, color: colorScheme.primary),
+            _HubIconBadge(icon: data.icon),
             const SizedBox(height: 14),
             Text(
               data.title,
@@ -1615,13 +1720,15 @@ class _HubMilestoneCard extends StatelessWidget {
     return Card(
       key: ValueKey('study-harmony-milestone-card-${data.id}'),
       elevation: 0,
-      color: colorScheme.surface.withValues(alpha: 0.94),
+      color: _hubCardColor(colorScheme),
+      shape: _hubCardShape(colorScheme),
+      clipBehavior: Clip.antiAlias,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(data.icon, color: colorScheme.secondary),
+            _HubIconBadge(icon: data.icon),
             const SizedBox(height: 14),
             Text(
               data.title,
@@ -1681,13 +1788,15 @@ class _HubWeeklyGoalCard extends StatelessWidget {
     return Card(
       key: ValueKey('study-harmony-weekly-goal-card-${data.id}'),
       elevation: 0,
-      color: colorScheme.surface.withValues(alpha: 0.94),
+      color: _hubCardColor(colorScheme),
+      shape: _hubCardShape(colorScheme),
+      clipBehavior: Clip.antiAlias,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(data.icon, color: colorScheme.tertiary),
+            _HubIconBadge(icon: data.icon),
             const SizedBox(height: 14),
             Text(
               data.title,
@@ -1769,7 +1878,9 @@ class _HubChapterCard extends StatelessWidget {
       child: Card(
         key: ValueKey('study-harmony-chapter-card-${summary.chapter.id}'),
         elevation: 0,
-        color: colorScheme.surface.withValues(alpha: 0.94),
+        color: _hubCardColor(colorScheme),
+        shape: _hubCardShape(colorScheme),
+        clipBehavior: Clip.antiAlias,
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -1860,7 +1971,7 @@ class _HubChapterCard extends StatelessWidget {
               const SizedBox(height: 18),
               SizedBox(
                 width: double.infinity,
-                child: FilledButton.tonalIcon(
+                child: FilledButton.icon(
                   key: ValueKey(
                     'study-harmony-open-chapter-${summary.chapter.id}',
                   ),
@@ -1903,10 +2014,7 @@ class _ChapterLessonTile extends StatelessWidget {
 
     return MergeSemantics(
       child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
-          borderRadius: BorderRadius.circular(20),
-        ),
+        decoration: _hubPanelDecoration(colorScheme, radius: 20),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -2006,7 +2114,9 @@ class _LockedTrackPlaceholderCard extends StatelessWidget {
       child: Card(
         key: const ValueKey('study-harmony-track-placeholder'),
         elevation: 0,
-        color: colorScheme.surface.withValues(alpha: 0.94),
+        color: _hubCardColor(colorScheme),
+        shape: _hubCardShape(colorScheme),
+        clipBehavior: Clip.antiAlias,
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(

@@ -1,5 +1,29 @@
 part of 'chord_analyzer_page_view.dart';
 
+BoxDecoration _analyzerPanelDecoration(
+  ColorScheme colorScheme, {
+  bool accent = false,
+}) {
+  return BoxDecoration(
+    color: accent
+        ? colorScheme.primaryContainer.withValues(alpha: 0.34)
+        : colorScheme.surfaceContainerLow,
+    borderRadius: BorderRadius.circular(28),
+    border: Border.all(
+      color: accent
+          ? colorScheme.primary.withValues(alpha: 0.18)
+          : colorScheme.outlineVariant,
+    ),
+  );
+}
+
+RoundedRectangleBorder _analyzerCardShape(ColorScheme colorScheme) {
+  return RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(28),
+    side: BorderSide(color: colorScheme.outlineVariant),
+  );
+}
+
 class _MeasureSection extends StatelessWidget {
   const _MeasureSection({required this.title, required this.children});
 
@@ -10,10 +34,7 @@ class _MeasureSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: _analyzerPanelDecoration(theme.colorScheme),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -46,6 +67,9 @@ class _SectionCard extends StatelessWidget {
     final theme = Theme.of(context);
     return Card(
       elevation: 0,
+      color: theme.colorScheme.surfaceContainerLow,
+      clipBehavior: Clip.antiAlias,
+      shape: _analyzerCardShape(theme.colorScheme),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -76,19 +100,13 @@ class _LowConfidenceBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(18),
-      ),
+      decoration: _analyzerPanelDecoration(theme.colorScheme, accent: true),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              Icons.warning_amber_rounded,
-              color: theme.colorScheme.onSecondaryContainer,
-            ),
+            Icon(Icons.warning_amber_rounded, color: theme.colorScheme.primary),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -98,14 +116,14 @@ class _LowConfidenceBanner extends StatelessWidget {
                     title,
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.onSecondaryContainer,
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     body,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSecondaryContainer,
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -134,7 +152,7 @@ class _MetricMeter extends StatelessWidget {
     final theme = Theme.of(context);
     final normalized = value.clamp(0.0, 1.0);
     final barColor = invertColor
-        ? theme.colorScheme.tertiary
+        ? theme.colorScheme.onSurfaceVariant
         : theme.colorScheme.primary;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,116 +252,145 @@ class _ChordAnalysisRow extends StatelessWidget {
         if (evidence.kind != ProgressionEvidenceKind.qualityMatch)
           explainer.evidenceLabel(l10n, evidence),
     ];
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    final details = Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            analysis.chord.sourceSymbol,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(
-                analysis.chord.sourceSymbol,
-                style: theme.textTheme.titleSmall?.copyWith(
+                analysis.romanNumeral,
+                style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 4),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  Text(analysis.romanNumeral, style: theme.textTheme.bodyLarge),
-                  Chip(
-                    label: Text(
-                      '${l10n.chordAnalyzerConfidenceLabel} '
-                      '${(analysis.confidence * 100).round()}%',
-                    ),
-                    visualDensity: VisualDensity.compact,
-                  ),
-                ],
+              Chip(
+                backgroundColor: theme.colorScheme.primaryContainer,
+                side: BorderSide.none,
+                labelStyle: theme.textTheme.labelLarge?.copyWith(
+                  color: theme.colorScheme.onPrimaryContainer,
+                  fontWeight: FontWeight.w700,
+                ),
+                label: Text(
+                  '${l10n.chordAnalyzerConfidenceLabel} '
+                  '${(analysis.confidence * 100).round()}%',
+                ),
+                visualDensity: VisualDensity.compact,
               ),
-              if (remarkText != null) ...[
-                const SizedBox(height: 6),
-                Text(
-                  remarkText!,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-              if (evidenceLabels.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  l10n.chordAnalyzerWhyThisReading,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final label in evidenceLabels.take(3))
-                      FilterChip(
-                        label: Text(label),
-                        selected: false,
-                        showCheckmark: false,
-                        visualDensity: VisualDensity.compact,
-                        onSelected: null,
-                      ),
-                  ],
-                ),
-              ],
-              if (analysis.competingInterpretations.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  '${l10n.chordAnalyzerCompetingReadings}: '
-                  '${analysis.competingInterpretations.map((item) => item.romanNumeral).join(', ')}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
             ],
           ),
-        ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Chip(label: Text(functionLabel)),
-            if (onPlayChord != null || onPlayArpeggio != null) ...[
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 6,
-                children: [
-                  if (onPlayChord != null)
-                    IconButton.outlined(
-                      key: ValueKey(
-                        'analyzer-play-chord-${analysis.chord.sourceSymbol}',
-                      ),
-                      visualDensity: VisualDensity.compact,
-                      onPressed: onPlayChord,
-                      tooltip: l10n.audioPlayChord,
-                      icon: const Icon(Icons.music_note_rounded),
-                    ),
-                  if (onPlayArpeggio != null)
-                    IconButton.outlined(
-                      key: ValueKey(
-                        'analyzer-play-arpeggio-${analysis.chord.sourceSymbol}',
-                      ),
-                      visualDensity: VisualDensity.compact,
-                      onPressed: onPlayArpeggio,
-                      tooltip: l10n.audioPlayArpeggio,
-                      icon: const Icon(Icons.multitrack_audio_rounded),
-                    ),
-                ],
+          if (remarkText != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              remarkText!,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
               ),
-            ],
+            ),
           ],
-        ),
+          if (evidenceLabels.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              l10n.chordAnalyzerWhyThisReading,
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final label in evidenceLabels.take(3))
+                  FilterChip(
+                    label: Text(label),
+                    selected: false,
+                    showCheckmark: false,
+                    visualDensity: VisualDensity.compact,
+                    onSelected: null,
+                  ),
+              ],
+            ),
+          ],
+          if (analysis.competingInterpretations.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              '${l10n.chordAnalyzerCompetingReadings}: '
+              '${analysis.competingInterpretations.map((item) => item.romanNumeral).join(', ')}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+    final controls = Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Chip(label: Text(functionLabel)),
+        if (onPlayChord != null || onPlayArpeggio != null) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            children: [
+              if (onPlayChord != null)
+                IconButton.outlined(
+                  key: ValueKey(
+                    'analyzer-play-chord-${analysis.chord.sourceSymbol}',
+                  ),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onPlayChord,
+                  tooltip: l10n.audioPlayChord,
+                  icon: const Icon(Icons.music_note_rounded),
+                ),
+              if (onPlayArpeggio != null)
+                IconButton.outlined(
+                  key: ValueKey(
+                    'analyzer-play-arpeggio-${analysis.chord.sourceSymbol}',
+                  ),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onPlayArpeggio,
+                  tooltip: l10n.audioPlayArpeggio,
+                  icon: const Icon(Icons.multitrack_audio_rounded),
+                ),
+            ],
+          ),
+        ],
       ],
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 540) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [details],
+              ),
+              const SizedBox(height: 10),
+              controls,
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [details, const SizedBox(width: 12), controls],
+        );
+      },
     );
   }
 }

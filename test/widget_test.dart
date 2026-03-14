@@ -160,6 +160,23 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> openGeneratorSettings(WidgetTester tester) async {
+    await tester.tap(find.byIcon(Icons.settings));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> openAdvancedGeneratorSettings(WidgetTester tester) async {
+    await openGeneratorSettings(tester);
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('open-advanced-settings-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('open-advanced-settings-button')),
+    );
+    await tester.pumpAndSettle();
+  }
+
   Future<void> openMainMenuSettings(WidgetTester tester) async {
     await tester.ensureVisible(
       find.byKey(const ValueKey('main-open-settings-button')),
@@ -308,9 +325,6 @@ void main() {
     expect(find.text('Chordest'), findsOneWidget);
     expect(find.byKey(const ValueKey('current-chord-text')), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.settings));
-    await tester.pumpAndSettle();
-
     expect(find.byKey(const ValueKey('allow-v7sus4-chip')), findsOneWidget);
     expect(
       tester
@@ -318,12 +332,16 @@ void main() {
           .onSelected,
       isNull,
     );
-    expect(find.byKey(const ValueKey('allow-tensions-toggle')), findsNothing);
-    expect(find.byKey(const ValueKey('tension-chip-9')), findsNothing);
+    expect(find.byKey(const ValueKey('allow-tensions-toggle')), findsOneWidget);
     expect(
-      find.byKey(const ValueKey('modal-interchange-chip')),
-      findsOneWidget,
+      tester
+          .widget<FilterChip>(
+            find.byKey(const ValueKey('allow-tensions-toggle')),
+          )
+          .onSelected,
+      isNull,
     );
+    expect(find.byKey(const ValueKey('modal-interchange-chip')), findsNothing);
   });
 
   testWidgets('shows tension controls when key mode is active', (
@@ -334,9 +352,6 @@ void main() {
       PracticeSettings(activeKeys: const {'C'}),
     );
 
-    await tester.tap(find.byIcon(Icons.settings));
-    await tester.pumpAndSettle();
-
     expect(
       tester
           .widget<FilterChip>(find.byKey(const ValueKey('allow-v7sus4-chip')))
@@ -344,7 +359,35 @@ void main() {
       isNotNull,
     );
     expect(find.byKey(const ValueKey('allow-tensions-toggle')), findsOneWidget);
+    expect(
+      tester
+          .widget<FilterChip>(
+            find.byKey(const ValueKey('allow-tensions-toggle')),
+          )
+          .onSelected,
+      isNotNull,
+    );
+
+    await openAdvancedGeneratorSettings(tester);
     expect(find.byKey(const ValueKey('tension-chip-9')), findsOneWidget);
+  });
+
+  testWidgets('quick key picker updates active keys from generator screen', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithController(tester, PracticeSettings());
+
+    await tester.tap(
+      find.byKey(const ValueKey('practice-key-selector-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('practice-key-center-C-major')));
+    await tester.pumpAndSettle();
+
+    expect(
+      controller.settings.activeKeyCenters,
+      contains(const KeyCenter(tonicName: 'C', mode: KeyMode.major)),
+    );
   });
 
   testWidgets('minor-only key selection produces a minor analysis label', (
@@ -416,8 +459,7 @@ void main() {
         PracticeSettings(activeKeys: const {'C'}),
       );
 
-      await tester.tap(find.byIcon(Icons.settings));
-      await tester.pumpAndSettle();
+      await openAdvancedGeneratorSettings(tester);
 
       expect(find.text('Advanced Smart Generator'), findsNothing);
       expect(
@@ -435,8 +477,7 @@ void main() {
         PracticeSettings(activeKeys: const {'C'}, smartGeneratorMode: true),
       );
 
-      await tester.tap(find.byIcon(Icons.settings));
-      await tester.pumpAndSettle();
+      await openAdvancedGeneratorSettings(tester);
 
       expect(find.text('Advanced Smart Generator'), findsOneWidget);
       expect(
@@ -455,11 +496,11 @@ void main() {
       await tester.tap(find.text('High').last);
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const ValueKey('smart-diagnostics-toggle')));
-      await tester.pumpAndSettle();
-
       expect(controller.settings.modulationIntensity, ModulationIntensity.high);
-      expect(controller.settings.smartDiagnosticsEnabled, isTrue);
+      expect(
+        find.byKey(const ValueKey('smart-diagnostics-toggle')),
+        findsNothing,
+      );
     },
   );
 
@@ -474,8 +515,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.settings));
-    await tester.pumpAndSettle();
+    await openAdvancedGeneratorSettings(tester);
     await tester.ensureVisible(
       find.byKey(const ValueKey('voicing-complexity-dropdown')),
     );
@@ -496,8 +536,7 @@ void main() {
       PracticeSettings(voicingSuggestionsEnabled: true),
     );
 
-    await tester.tap(find.byIcon(Icons.settings));
-    await tester.pumpAndSettle();
+    await openAdvancedGeneratorSettings(tester);
     await tester.ensureVisible(
       find.byKey(const ValueKey('voicing-top-note-dropdown')),
     );
@@ -1187,13 +1226,14 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.byIcon(Icons.settings));
-    await tester.pumpAndSettle();
+    await openAdvancedGeneratorSettings(tester);
     await tester.ensureVisible(
       find.byKey(const ValueKey('show-voicing-reasons-toggle')),
     );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('show-voicing-reasons-toggle')));
+    await tester.pumpAndSettle();
+    await tester.pageBack();
     await tester.pumpAndSettle();
 
     expect(voicingNotesFor(tester, 'natural'), beforeToggle);
@@ -1234,7 +1274,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();
 
-    expect(find.text('\uC124\uC815'), findsOneWidget);
+    expect(find.text('\uC124\uC815'), findsWidgets);
     expect(find.text('\uBA54\uD2B8\uB85C\uB188'), findsWidgets);
     expect(find.text('\uBA54\uD2B8\uB85C\uB188 \uC18C\uB9AC'), findsOneWidget);
     expect(find.text('\uC870\uC131 \uD45C\uAE30 \uBC29\uC2DD'), findsOneWidget);
@@ -1305,7 +1345,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();
 
-    expect(find.text('\uC124\uC815'), findsOneWidget);
+    expect(find.text('\uC124\uC815'), findsWidgets);
     expect(find.text('\uBA54\uD2B8\uB85C\uB188'), findsWidgets);
   });
 
@@ -1320,7 +1360,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();
 
-    expect(find.text('\u8A2D\u5B9A'), findsOneWidget);
+    expect(find.text('\u8A2D\u5B9A'), findsWidgets);
     expect(find.text('\u7BC0\u62CD\u5668'), findsWidgets);
     expect(find.text('\u7BC0\u62CD\u5668\u97F3\u8272'), findsOneWidget);
   });
