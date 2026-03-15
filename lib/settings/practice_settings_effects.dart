@@ -10,6 +10,9 @@ class PracticeSettingsEffects {
   ) {
     return !_setEquals(previous.activeKeyCenters, next.activeKeyCenters) ||
         previous.smartGeneratorMode != next.smartGeneratorMode ||
+        previous.timeSignature != next.timeSignature ||
+        previous.harmonicRhythmPreset != next.harmonicRhythmPreset ||
+        previous.anchorLoop != next.anchorLoop ||
         previous.chordLanguageLevel != next.chordLanguageLevel ||
         previous.romanPoolPreset != next.romanPoolPreset ||
         previous.secondaryDominantEnabled != next.secondaryDominantEnabled ||
@@ -45,6 +48,52 @@ class PracticeSettingsEffects {
       return true;
     }
     return queueAffectingChanged(previous, next);
+  }
+
+  static bool metronomeAudioChanged(
+    PracticeSettings previous,
+    PracticeSettings next,
+  ) {
+    return previous.metronomeEnabled != next.metronomeEnabled ||
+        previous.metronomeVolume != next.metronomeVolume ||
+        previous.metronomeSource != next.metronomeSource ||
+        previous.metronomePattern != next.metronomePattern ||
+        previous.metronomeUseAccentSound != next.metronomeUseAccentSound ||
+        previous.metronomeAccentSource != next.metronomeAccentSource ||
+        previous.timeSignature != next.timeSignature ||
+        previous.bpm != next.bpm;
+  }
+
+  static bool harmonyAudioChanged(
+    PracticeSettings previous,
+    PracticeSettings next,
+  ) {
+    return previous.autoPlayChordChanges != next.autoPlayChordChanges ||
+        previous.autoPlayPattern != next.autoPlayPattern ||
+        previous.autoPlayHoldFactor != next.autoPlayHoldFactor ||
+        previous.autoPlayMelodyWithChords != next.autoPlayMelodyWithChords ||
+        previous.harmonyMasterVolume != next.harmonyMasterVolume ||
+        previous.harmonyPreviewHoldFactor != next.harmonyPreviewHoldFactor ||
+        previous.harmonyArpeggioStepSpeed != next.harmonyArpeggioStepSpeed ||
+        previous.harmonyVelocityHumanization !=
+            next.harmonyVelocityHumanization ||
+        previous.harmonyGainRandomness != next.harmonyGainRandomness ||
+        previous.harmonyTimingHumanization != next.harmonyTimingHumanization;
+  }
+
+  static bool melodyGenerationChanged(
+    PracticeSettings previous,
+    PracticeSettings next,
+  ) {
+    return queueAffectingChanged(previous, next) ||
+        previous.melodyGenerationEnabled != next.melodyGenerationEnabled ||
+        previous.melodyDensity != next.melodyDensity ||
+        previous.motifRepetitionStrength != next.motifRepetitionStrength ||
+        previous.approachToneDensity != next.approachToneDensity ||
+        previous.melodyRangeLow != next.melodyRangeLow ||
+        previous.melodyRangeHigh != next.melodyRangeHigh ||
+        previous.melodyStyle != next.melodyStyle ||
+        previous.allowChromaticApproaches != next.allowChromaticApproaches;
   }
 
   static bool _setEquals<T>(Set<T> left, Set<T> right) {

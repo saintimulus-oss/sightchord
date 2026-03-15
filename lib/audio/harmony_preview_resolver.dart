@@ -62,7 +62,55 @@ class HarmonyPreviewResolver {
     );
   }
 
-  static HarmonyChordClip fromParsedChord(ParsedChord chord, {String? label}) {
+  static HarmonyChordClip auditionClipForGeneratedChord(
+    GeneratedChord chord, {
+    ConcreteVoicing? preferredVoicing,
+    String? label,
+  }) {
+    final resolvedLabel = label ?? chord.analysisLabel;
+    final baseClip = fromChordSymbolData(
+      chord.symbolData,
+      label: resolvedLabel,
+    );
+    if (preferredVoicing == null) {
+      return baseClip;
+    }
+
+    final mergedNotes = <HarmonyPreviewNote>[
+      for (final note in baseClip.notes)
+        if (note.toneLabel == 'bass') note,
+      for (var index = 0; index < preferredVoicing.midiNotes.length; index += 1)
+        HarmonyPreviewNote(
+          midiNote: preferredVoicing.midiNotes[index],
+          gain: _gainForToneLabel(preferredVoicing.toneLabels[index]),
+          toneLabel: preferredVoicing.toneLabels[index],
+        ),
+    ];
+    final mergedToneLabels = {for (final note in mergedNotes) ?note.toneLabel};
+    for (final note in baseClip.notes) {
+      final toneLabel = note.toneLabel;
+      if (toneLabel == 'bass') {
+        continue;
+      }
+      if (toneLabel != null && mergedToneLabels.contains(toneLabel)) {
+        continue;
+      }
+      mergedNotes.add(note);
+      if (toneLabel != null) {
+        mergedToneLabels.add(toneLabel);
+      }
+    }
+    return HarmonyChordClip(
+      notes: _sortAndDeduplicateNotes(mergedNotes),
+      label: resolvedLabel,
+    );
+  }
+
+  static HarmonyChordClip fromParsedChord(
+    ParsedChord chord, {
+    String? label,
+    int? previousBassMidi,
+  }) {
     final rootSemitone = MusicTheory.noteToSemitone[chord.root];
     if (rootSemitone == null) {
       return const HarmonyChordClip(notes: <HarmonyPreviewNote>[]);
@@ -72,12 +120,14 @@ class HarmonyPreviewResolver {
       bass: chord.bass,
       toneLabels: _orderedToneLabelsForParsedChord(chord),
       label: label ?? chord.sourceSymbol,
+      previousBassMidi: previousBassMidi,
     );
   }
 
   static HarmonyChordClip fromChordSymbolData(
     ChordSymbolData symbolData, {
     String? label,
+    int? previousBassMidi,
   }) {
     final rootSemitone = MusicTheory.noteToSemitone[symbolData.root];
     if (rootSemitone == null) {
@@ -88,19 +138,25 @@ class HarmonyPreviewResolver {
       bass: symbolData.bass,
       toneLabels: _orderedToneLabelsForSymbolData(symbolData),
       label: label,
+      previousBassMidi: previousBassMidi,
     );
   }
 
   static List<HarmonyChordClip> progressionFromAnalysis(
     ProgressionAnalysis analysis,
   ) {
-    return [
-      for (final chordAnalysis in analysis.chordAnalyses)
-        fromParsedChord(
-          chordAnalysis.chord,
-          label: chordAnalysis.resolvedSymbol,
-        ),
-    ];
+    final clips = <HarmonyChordClip>[];
+    int? previousBassMidi;
+    for (final chordAnalysis in analysis.chordAnalyses) {
+      final clip = fromParsedChord(
+        chordAnalysis.chord,
+        label: chordAnalysis.resolvedSymbol,
+        previousBassMidi: previousBassMidi,
+      );
+      clips.add(clip);
+      previousBassMidi = _bassMidiOf(clip) ?? previousBassMidi;
+    }
+    return clips;
   }
 
   static List<HarmonyChordClip> progressionFromChordLabels(
@@ -116,9 +172,14 @@ class HarmonyPreviewResolver {
     final parseResult = const ProgressionParser().parse(
       visibleLabels.join(' '),
     );
-    return [
-      for (final chord in parseResult.validChords) fromParsedChord(chord),
-    ];
+    final clips = <HarmonyChordClip>[];
+    int? previousBassMidi;
+    for (final chord in parseResult.validChords) {
+      final clip = fromParsedChord(chord, previousBassMidi: previousBassMidi);
+      clips.add(clip);
+      previousBassMidi = _bassMidiOf(clip) ?? previousBassMidi;
+    }
+    return clips;
   }
 
   static List<HarmonyChordClip> promptClipsForStudyTask(
@@ -163,33 +224,67 @@ class HarmonyPreviewResolver {
     required List<String> toneLabels,
     String? bass,
     String? label,
+    int? previousBassMidi,
   }) {
     final notes = <HarmonyPreviewNote>[];
-    if (bass case final bassName?) {
-      final bassSemitone = MusicTheory.noteToSemitone[bassName];
-      if (bassSemitone != null) {
-        final bassMidi = _nearestMidiForPitchClass(
-          pitchClass: bassSemitone,
-          targetMidi: 41,
-          minPitch: 36,
-          maxPitch: 52,
-        );
-        if (bassMidi != null) {
-          notes.add(
-            HarmonyPreviewNote(
-              midiNote: bassMidi,
-              gain: 0.98,
-              toneLabel: 'bass',
-            ),
+    final bassSemitone = bass == null
+        ? rootSemitone
+        : MusicTheory.noteToSemitone[bass];
+    final bassMidi = bassSemitone == null
+        ? null
+        : _resolveBassMidi(
+            pitchClass: bassSemitone,
+            targetMidi: 41,
+            minPitch: 36,
+            maxPitch: 52,
+            previousBassMidi: previousBassMidi,
           );
-        }
-      }
+    if (bassMidi != null) {
+      notes.add(
+        HarmonyPreviewNote(midiNote: bassMidi, gain: 0.98, toneLabel: 'bass'),
+      );
     }
 
     notes.addAll(
-      _realizeUpperVoicing(rootSemitone: rootSemitone, toneLabels: toneLabels),
+      _realizeUpperVoicing(
+        rootSemitone: rootSemitone,
+        toneLabels: toneLabels,
+        minPitch: bassMidi == null ? 43 : bassMidi + 5,
+        bassCarriesRoot: bassSemitone == rootSemitone,
+      ),
     );
-    return HarmonyChordClip(notes: notes, label: label);
+    return HarmonyChordClip(
+      notes: _sortAndDeduplicateNotes(notes),
+      label: label,
+    );
+  }
+
+  static List<HarmonyPreviewNote> _sortAndDeduplicateNotes(
+    Iterable<HarmonyPreviewNote> notes,
+  ) {
+    final byMidi = <int, HarmonyPreviewNote>{};
+    for (final note in notes) {
+      final existing = byMidi[note.midiNote];
+      if (existing == null || _shouldPreferNote(note, existing)) {
+        byMidi[note.midiNote] = note;
+      }
+    }
+    final ordered = byMidi.values.toList(growable: false);
+    ordered.sort((left, right) => left.midiNote.compareTo(right.midiNote));
+    return ordered;
+  }
+
+  static bool _shouldPreferNote(
+    HarmonyPreviewNote candidate,
+    HarmonyPreviewNote existing,
+  ) {
+    if (candidate.toneLabel == 'bass' && existing.toneLabel != 'bass') {
+      return true;
+    }
+    if (existing.toneLabel == 'bass' && candidate.toneLabel != 'bass') {
+      return false;
+    }
+    return candidate.gain >= existing.gain;
   }
 
   static List<String> _orderedToneLabelsForSymbolData(
@@ -201,7 +296,7 @@ class HarmonyPreviewResolver {
     for (final tension in symbolData.tensions) {
       _appendToneLabel(labels, tension);
     }
-    return _limitToneLabels(labels, maxToneCount: 5);
+    return _limitToneLabels(labels, maxToneCount: 6);
   }
 
   static List<String> _orderedToneLabelsForParsedChord(ParsedChord chord) {
@@ -326,27 +421,32 @@ class HarmonyPreviewResolver {
   static List<HarmonyPreviewNote> _realizeUpperVoicing({
     required int rootSemitone,
     required List<String> toneLabels,
+    required int minPitch,
+    required bool bassCarriesRoot,
   }) {
     const targets = <int>[48, 52, 55, 60, 64, 67, 71, 74];
     final notes = <HarmonyPreviewNote>[];
-    var minPitch = 43;
-    for (var index = 0; index < toneLabels.length; index += 1) {
-      final label = toneLabels[index];
+    var workingMinPitch = minPitch;
+    var targetIndex = 0;
+
+    void addLabel(String label) {
       final semitone = _toneSemitones[label];
       if (semitone == null) {
-        continue;
+        return;
       }
       final pitchClass = (rootSemitone + semitone) % 12;
       final targetMidi =
-          targets[index < targets.length ? index : targets.length - 1];
+          targets[targetIndex < targets.length
+              ? targetIndex
+              : targets.length - 1];
       final midi = _nearestMidiForPitchClass(
         pitchClass: pitchClass,
         targetMidi: targetMidi,
-        minPitch: minPitch,
+        minPitch: workingMinPitch,
         maxPitch: 84,
       );
       if (midi == null) {
-        continue;
+        return;
       }
       notes.add(
         HarmonyPreviewNote(
@@ -355,7 +455,43 @@ class HarmonyPreviewResolver {
           toneLabel: label,
         ),
       );
-      minPitch = midi + _minimumGap(label);
+      workingMinPitch = midi + _minimumGap(label);
+      targetIndex += 1;
+    }
+
+    if (toneLabels.length <= 4) {
+      for (final label in toneLabels) {
+        addLabel(label);
+      }
+      return notes;
+    }
+
+    final remainingLabels = toneLabels.toList(growable: true);
+    if (bassCarriesRoot && remainingLabels.length > 4) {
+      remainingLabels.remove('1');
+    }
+
+    final densePriorityOrder = bassCarriesRoot
+        ? const <String>['3', 'b3', '7', 'b7', '4', '5', 'b5', '#5', '6']
+        : const <String>['1', '3', 'b3', '7', 'b7', '4', '5', 'b5', '#5', '6'];
+    for (final label in densePriorityOrder) {
+      if (!remainingLabels.remove(label)) {
+        continue;
+      }
+      addLabel(label);
+    }
+
+    while (remainingLabels.isNotEmpty) {
+      final nextLabel = _nextDenseToneLabel(
+        rootSemitone: rootSemitone,
+        toneLabels: remainingLabels,
+        minPitch: workingMinPitch,
+      );
+      if (nextLabel == null) {
+        break;
+      }
+      remainingLabels.remove(nextLabel);
+      addLabel(nextLabel);
     }
     return notes;
   }
@@ -400,6 +536,91 @@ class HarmonyPreviewResolver {
       }
     }
     return bestMidi;
+  }
+
+  static String? _nextDenseToneLabel({
+    required int rootSemitone,
+    required List<String> toneLabels,
+    required int minPitch,
+  }) {
+    String? bestLabel;
+    var bestMidi = 999;
+    for (final label in toneLabels) {
+      final semitone = _toneSemitones[label];
+      if (semitone == null) {
+        continue;
+      }
+      final pitchClass = (rootSemitone + semitone) % 12;
+      final midi = _lowestMidiForPitchClassAtOrAbove(
+        pitchClass: pitchClass,
+        minPitch: minPitch,
+        maxPitch: 84,
+      );
+      if (midi == null) {
+        continue;
+      }
+      if (midi < bestMidi) {
+        bestMidi = midi;
+        bestLabel = label;
+      }
+    }
+    return bestLabel;
+  }
+
+  static int? _lowestMidiForPitchClassAtOrAbove({
+    required int pitchClass,
+    required int minPitch,
+    required int maxPitch,
+  }) {
+    for (var octave = 1; octave <= 8; octave += 1) {
+      final candidate = pitchClass + (octave * 12);
+      if (candidate < minPitch) {
+        continue;
+      }
+      if (candidate > maxPitch) {
+        return null;
+      }
+      return candidate;
+    }
+    return null;
+  }
+
+  static int? _resolveBassMidi({
+    required int pitchClass,
+    required int targetMidi,
+    required int minPitch,
+    required int maxPitch,
+    required int? previousBassMidi,
+  }) {
+    final continuityTarget = previousBassMidi ?? targetMidi;
+    int? bestMidi;
+    var bestPrimaryDistance = 999;
+    var bestSecondaryDistance = 999;
+    for (var octave = 1; octave <= 5; octave += 1) {
+      final candidate = pitchClass + (octave * 12);
+      if (candidate < minPitch || candidate > maxPitch) {
+        continue;
+      }
+      final primaryDistance = (candidate - continuityTarget).abs();
+      final secondaryDistance = (candidate - targetMidi).abs();
+      if (primaryDistance < bestPrimaryDistance ||
+          (primaryDistance == bestPrimaryDistance &&
+              secondaryDistance < bestSecondaryDistance)) {
+        bestPrimaryDistance = primaryDistance;
+        bestSecondaryDistance = secondaryDistance;
+        bestMidi = candidate;
+      }
+    }
+    return bestMidi;
+  }
+
+  static int? _bassMidiOf(HarmonyChordClip clip) {
+    for (final note in clip.notes) {
+      if (note.toneLabel == 'bass') {
+        return note.midiNote;
+      }
+    }
+    return null;
   }
 
   static int? _midiForStudyAnswerId(String answerId) {

@@ -1,4 +1,4 @@
-﻿import 'dart:math';
+import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:chordest/music/chord_formatting.dart';
@@ -195,6 +195,46 @@ void main() {
         expect(rendered, entry.value);
       }
     });
+  });
+
+  group('Displayed Roman tokens', () {
+    test(
+      'reflect rendered quality replacements instead of the planned token',
+      () {
+        final chord = GeneratedChord(
+          symbolData: _symbol('C', ChordQuality.major7),
+          repeatGuardKey: 'cmaj7',
+          harmonicComparisonKey: 'cmaj7',
+          keyName: 'C',
+          keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+          romanNumeralId: RomanNumeralId.iMaj69,
+          harmonicFunction: HarmonicFunction.tonic,
+        );
+
+        expect(ChordRenderingHelper.displayedRomanToken(chord), 'Imaj7');
+      },
+    );
+
+    test(
+      'keeps applied-dominant targets while reflecting rendered tensions',
+      () {
+        final chord = GeneratedChord(
+          symbolData: _symbol(
+            'D',
+            ChordQuality.dominant7,
+            tensions: const ['9'],
+          ),
+          repeatGuardKey: 'd7(9)',
+          harmonicComparisonKey: 'd7(9)',
+          keyName: 'C',
+          keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+          romanNumeralId: RomanNumeralId.secondaryOfV,
+          harmonicFunction: HarmonicFunction.dominant,
+        );
+
+        expect(ChordRenderingHelper.displayedRomanToken(chord), 'V7(9)/V');
+      },
+    );
   });
 
   group('V7sus4 gating', () {
@@ -638,4 +678,3 @@ void main() {
     });
   });
 }
-

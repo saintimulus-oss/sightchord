@@ -3,7 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chordest/app.dart';
+import 'package:chordest/audio/harmony_audio_models.dart';
+import 'package:chordest/audio/harmony_audio_service.dart';
 import 'package:chordest/l10n/app_localizations.dart';
+import 'package:chordest/music/chord_anchor_loop.dart';
 import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/music/voicing_models.dart';
 import 'package:chordest/settings/practice_settings.dart';
@@ -95,6 +98,7 @@ VoicingSuggestion buildTestSuggestion({
 Future<void> pumpVoicingSection(
   WidgetTester tester, {
   required VoicingRecommendationSet recommendations,
+  VoicingDisplayMode displayMode = VoicingDisplayMode.standard,
   String? selectedSignature,
   bool showReasons = true,
 }) async {
@@ -109,6 +113,7 @@ Future<void> pumpVoicingSection(
               width: 320,
               child: VoicingSuggestionsSection(
                 recommendations: recommendations,
+                displayMode: displayMode,
                 selectedSignature: selectedSignature,
                 showReasons: showReasons,
                 onSelectSuggestion: (_) {},
@@ -121,6 +126,48 @@ Future<void> pumpVoicingSection(
     ),
   );
   await tester.pumpAndSettle();
+}
+
+class _SpyHarmonyAudioService extends HarmonyAudioService {
+  _SpyHarmonyAudioService() : super();
+
+  final List<(HarmonyPlaybackPattern, String?)> playedLabels =
+      <(HarmonyPlaybackPattern, String?)>[];
+  final List<HarmonyCompositeClip> playedCompositeClips =
+      <HarmonyCompositeClip>[];
+  HarmonyAudioConfig? lastConfig;
+
+  @override
+  Future<void> warmUp() async {}
+
+  @override
+  Future<void> applyConfig(HarmonyAudioConfig config) async {
+    lastConfig = config;
+  }
+
+  @override
+  Future<void> playClip(
+    HarmonyChordClip clip, {
+    HarmonyPlaybackPattern pattern = HarmonyPlaybackPattern.block,
+    Duration? hold,
+    HarmonyPlaybackOverrides? overrides,
+  }) async {
+    playedLabels.add((pattern, clip.label));
+  }
+
+  @override
+  Future<void> playCompositeClip(
+    HarmonyCompositeClip clip, {
+    HarmonyPlaybackPattern pattern = HarmonyPlaybackPattern.block,
+    Duration? hold,
+    HarmonyPlaybackOverrides? overrides,
+  }) async {
+    playedCompositeClips.add(clip);
+    playedLabels.add((
+      pattern,
+      clip.label ?? clip.chordClip?.label ?? clip.melodyClip?.label,
+    ));
+  }
 }
 
 void main() {
@@ -160,6 +207,26 @@ void main() {
         : settings;
     final controller = AppSettingsController(initialSettings: resolvedSettings);
     await tester.pumpWidget(MyApp(controller: controller));
+    await tester.pumpAndSettle();
+    return controller;
+  }
+
+  Future<AppSettingsController> pumpMainMenuWithAudioService(
+    WidgetTester tester,
+    PracticeSettings settings, {
+    required HarmonyAudioService harmonyAudioService,
+    bool completeGuidedSetup = true,
+  }) async {
+    final resolvedSettings = completeGuidedSetup
+        ? settings.copyWith(
+            guidedSetupCompleted: true,
+            settingsComplexityMode: SettingsComplexityMode.standard,
+          )
+        : settings;
+    final controller = AppSettingsController(initialSettings: resolvedSettings);
+    await tester.pumpWidget(
+      MyApp(controller: controller, harmonyAudioService: harmonyAudioService),
+    );
     await tester.pumpAndSettle();
     return controller;
   }
@@ -251,17 +318,41 @@ void main() {
     return controller;
   }
 
+  Future<AppSettingsController> pumpAppWithAudioService(
+    WidgetTester tester,
+    PracticeSettings settings, {
+    required HarmonyAudioService harmonyAudioService,
+    bool completeGuidedSetup = true,
+  }) async {
+    final controller = await pumpMainMenuWithAudioService(
+      tester,
+      settings,
+      harmonyAudioService: harmonyAudioService,
+      completeGuidedSetup: completeGuidedSetup,
+    );
+    await openChordGenerator(tester);
+    return controller;
+  }
+
   Future<void> pumpApp(WidgetTester tester) async {
     await pumpAppWithSettings(tester, PracticeSettings());
   }
 
   Future<void> tapNextChordRegion(WidgetTester tester) async {
-    await tester.tap(find.byKey(const ValueKey('next-chord-text')));
+    await tester.ensureVisible(find.byKey(const ValueKey('next-chord-text')));
+    await tester.tap(
+      find.byKey(const ValueKey('next-chord-text')).hitTestable(),
+    );
     await tester.pumpAndSettle();
   }
 
   Future<void> tapPreviousChordRegion(WidgetTester tester) async {
-    await tester.tap(find.byKey(const ValueKey('previous-chord-text')));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('previous-chord-text')),
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('previous-chord-text')).hitTestable(),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -275,6 +366,12 @@ void main() {
     return tester
         .widget<BeatIndicatorRow>(find.byType(BeatIndicatorRow))
         .activeBeat;
+  }
+
+  int beatCount(WidgetTester tester) {
+    return tester
+        .widget<BeatIndicatorRow>(find.byType(BeatIndicatorRow))
+        .beatCount;
   }
 
   IconData iconForButton(WidgetTester tester, String key) {
@@ -978,6 +1075,245 @@ void main() {
     expect(voicingToneLabelsFor(tester, 'easy'), '13 3 13');
   });
 
+  testWidgets('voicing suggestion cards expose individual play buttons', (
+    WidgetTester tester,
+  ) async {
+    final chord = buildTestChord(
+      root: 'G',
+      quality: ChordQuality.dominant7,
+      repeatKey: 'g7-play-buttons',
+      romanNumeralId: RomanNumeralId.vDom7,
+      keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+      harmonicFunction: HarmonicFunction.dominant,
+    );
+    final interpretation = const ChordVoicingInterpretation(
+      root: 'G',
+      rootSemitone: 7,
+      preferFlatSpelling: false,
+      essentialTones: <VoicingTone>[
+        VoicingTone(label: '3', semitone: 4),
+        VoicingTone(label: 'b7', semitone: 10),
+      ],
+      optionalTones: <VoicingTone>[VoicingTone(label: '9', semitone: 2)],
+      avoidTones: <VoicingTone>[],
+      styleTags: <String>{},
+      isDominantFamily: true,
+    );
+    final naturalVoicing = buildTestVoicing(
+      family: VoicingFamily.shell,
+      midiNotes: const [43, 53, 59, 62],
+      noteNames: const ['G', 'F', 'B', 'D'],
+      toneLabels: const ['1', 'b7', '3', '9'],
+      tensions: const {'9'},
+      containsRoot: true,
+      containsThird: true,
+      containsSeventh: true,
+    );
+    final colorfulVoicing = buildTestVoicing(
+      family: VoicingFamily.upperStructure,
+      midiNotes: const [47, 53, 61, 66],
+      noteNames: const ['B', 'F', 'C#', 'F#'],
+      toneLabels: const ['3', 'b7', '#11', '13'],
+      tensions: const {'#11', '13'},
+      containsThird: true,
+      containsSeventh: true,
+    );
+    final easyVoicing = buildTestVoicing(
+      family: VoicingFamily.spread,
+      midiNotes: const [43, 50, 59],
+      noteNames: const ['G', 'D', 'B'],
+      toneLabels: const ['1', '5', '3'],
+      containsRoot: true,
+      containsThird: true,
+      containsSeventh: false,
+    );
+    final recommendations = VoicingRecommendationSet(
+      currentChord: chord,
+      interpretation: interpretation,
+      rankedCandidates: const [],
+      suggestions: [
+        buildTestSuggestion(
+          kind: VoicingSuggestionKind.natural,
+          voicing: naturalVoicing,
+          reasonTags: const [VoicingReasonTag.essentialCore],
+        ),
+        buildTestSuggestion(
+          kind: VoicingSuggestionKind.colorful,
+          voicing: colorfulVoicing,
+          reasonTags: const [VoicingReasonTag.upperStructureColor],
+        ),
+        buildTestSuggestion(
+          kind: VoicingSuggestionKind.easy,
+          voicing: easyVoicing,
+          reasonTags: const [VoicingReasonTag.compactReach],
+        ),
+      ],
+    );
+
+    await pumpVoicingSection(tester, recommendations: recommendations);
+
+    expect(find.byKey(const ValueKey('voicing-play-natural')), findsOneWidget);
+    expect(find.byKey(const ValueKey('voicing-play-colorful')), findsOneWidget);
+    expect(find.byKey(const ValueKey('voicing-play-easy')), findsOneWidget);
+  });
+
+  testWidgets(
+    'performance mode shows a representative voicing with next preview markers',
+    (WidgetTester tester) async {
+      final chord = buildTestChord(
+        root: 'G',
+        quality: ChordQuality.dominant7,
+        repeatKey: 'g7Performance',
+        romanNumeralId: RomanNumeralId.vDom7,
+        keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        harmonicFunction: HarmonicFunction.dominant,
+      );
+      final currentVoicing = buildTestVoicing(
+        family: VoicingFamily.rootlessA,
+        midiNotes: const [50, 53, 59, 64],
+        noteNames: const ['D', 'F', 'B', 'E'],
+        toneLabels: const ['5', 'b7', '3', '13'],
+        tensions: const {'13'},
+        containsThird: true,
+        containsSeventh: true,
+      );
+      final nextVoicing = buildTestVoicing(
+        family: VoicingFamily.rootlessB,
+        midiNotes: const [50, 55, 60, 65],
+        noteNames: const ['D', 'G', 'C', 'F'],
+        toneLabels: const ['9', '5', '1', '11'],
+        tensions: const {'9', '11'},
+        containsRoot: true,
+        containsThird: true,
+        containsSeventh: true,
+      );
+      final representative = buildTestSuggestion(
+        kind: VoicingSuggestionKind.natural,
+        voicing: currentVoicing,
+        reasonTags: const [
+          VoicingReasonTag.guideToneAnchor,
+          VoicingReasonTag.nextChordReady,
+        ],
+      );
+      final colorful = buildTestSuggestion(
+        kind: VoicingSuggestionKind.colorful,
+        voicing: buildTestVoicing(
+          family: VoicingFamily.altered,
+          midiNotes: const [49, 53, 58, 64],
+          noteNames: const ['Db', 'F', 'Bb', 'E'],
+          toneLabels: const ['b5', 'b7', '#9', '13'],
+          tensions: const {'#9', '13'},
+          containsThird: true,
+          containsSeventh: true,
+        ),
+        reasonTags: const [VoicingReasonTag.alteredColor],
+      );
+      final easy = buildTestSuggestion(
+        kind: VoicingSuggestionKind.easy,
+        voicing: buildTestVoicing(
+          family: VoicingFamily.shell,
+          midiNotes: const [43, 53, 59],
+          noteNames: const ['G', 'F', 'B'],
+          toneLabels: const ['1', 'b7', '3'],
+          containsRoot: true,
+          containsThird: true,
+          containsSeventh: true,
+        ),
+        reasonTags: const [VoicingReasonTag.guideToneAnchor],
+      );
+      final nextSuggestion = buildTestSuggestion(
+        kind: VoicingSuggestionKind.easy,
+        voicing: nextVoicing,
+        reasonTags: const [VoicingReasonTag.commonToneRetention],
+      );
+      final recommendations = VoicingRecommendationSet(
+        currentChord: chord,
+        interpretation: const ChordVoicingInterpretation(
+          root: 'G',
+          rootSemitone: 7,
+          preferFlatSpelling: false,
+          essentialTones: [],
+          optionalTones: [],
+          avoidTones: [],
+          styleTags: {},
+        ),
+        rankedCandidates: [
+          RankedVoicingCandidate(
+            voicing: currentVoicing,
+            breakdown: const VoicingBreakdown(
+              total: 2.6,
+              nextChordLookAheadBonus: 0.8,
+            ),
+            naturalScore: 2.6,
+            colorfulScore: 2.0,
+            easyScore: 2.1,
+            reasonTags: representative.reasonTags,
+          ),
+          RankedVoicingCandidate(
+            voicing: colorful.voicing,
+            breakdown: const VoicingBreakdown(total: 2.0, colorBonus: 1.1),
+            naturalScore: 1.9,
+            colorfulScore: 2.4,
+            easyScore: 1.5,
+            reasonTags: colorful.reasonTags,
+          ),
+          RankedVoicingCandidate(
+            voicing: easy.voicing,
+            breakdown: const VoicingBreakdown(total: 1.8, simplicityBonus: 0.9),
+            naturalScore: 1.7,
+            colorfulScore: 1.2,
+            easyScore: 2.3,
+            reasonTags: easy.reasonTags,
+          ),
+        ],
+        suggestions: [representative, colorful, easy],
+        performancePreview: PerformanceVoicingPreview(
+          representativeSuggestion: representative,
+          nextSuggestion: nextSuggestion,
+          sharedMidiNotes: const {50},
+          currentOnlyMidiNotes: const {53, 59, 64},
+          nextOnlyMidiNotes: const {55, 60, 65},
+        ),
+      );
+
+      await pumpVoicingSection(
+        tester,
+        recommendations: recommendations,
+        displayMode: VoicingDisplayMode.performance,
+        selectedSignature: currentVoicing.signature,
+      );
+
+      expect(
+        find.byKey(const ValueKey('voicing-performance-panel')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('voicing-performance-current-notes')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('voicing-performance-next-notes')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('voicing-performance-keyboard')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('mini-key-shared-50')), findsOneWidget);
+      expect(find.byKey(const ValueKey('mini-key-current-53')), findsOneWidget);
+      expect(find.byKey(const ValueKey('mini-key-next-55')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('voicing-performance-topline-path')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('voicing-performance-selected-badge')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets(
     'modern upper-structure card shows subtitle, chip, and badges without overflow',
     (WidgetTester tester) async {
@@ -1392,7 +1728,9 @@ void main() {
     (WidgetTester tester) async {
       await pumpApp(tester);
 
-      await tester.tap(find.byKey(const ValueKey('next-chord-text')));
+      await tester.tap(
+        find.byKey(const ValueKey('next-chord-text')).hitTestable(),
+      );
       await tester.pump(const Duration(milliseconds: 40));
 
       expect(tester.hasRunningAnimations, isTrue);
@@ -1506,15 +1844,29 @@ void main() {
     expect(currentChordText(tester), initialText);
   });
 
-  test('practice auto tick advances chords only when the beat wraps', () {
-    final firstTick = computeNextPracticeAutoBeat(currentBeat: null);
-    expect(firstTick.nextBeat, 0);
-    expect(firstTick.shouldAdvanceChord, isFalse);
+  test(
+    'practice auto tick advances chords only at the scheduled change beat',
+    () {
+      final firstTick = computeNextPracticeAutoBeat(currentBeat: null);
+      expect(firstTick.nextBeat, 0);
+      expect(firstTick.shouldAdvanceChord, isFalse);
 
-    final wrapTick = computeNextPracticeAutoBeat(currentBeat: 3);
-    expect(wrapTick.nextBeat, 0);
-    expect(wrapTick.shouldAdvanceChord, isTrue);
-  });
+      final wrapTick = computeNextPracticeAutoBeat(
+        currentBeat: 3,
+        nextChangeBeat: 0,
+      );
+      expect(wrapTick.nextBeat, 0);
+      expect(wrapTick.shouldAdvanceChord, isTrue);
+
+      final splitTick = computeNextPracticeAutoBeat(
+        currentBeat: 1,
+        beatCount: 4,
+        nextChangeBeat: 2,
+      );
+      expect(splitTick.nextBeat, 2);
+      expect(splitTick.shouldAdvanceChord, isTrue);
+    },
+  );
 
   test(
     'practice autoplay starts immediately only from a cleared beat state',
@@ -1550,6 +1902,282 @@ void main() {
     await tester.pumpAndSettle();
   });
 
+  testWidgets('3/4 settings show a three-beat indicator', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(
+      tester,
+      PracticeSettings(
+        timeSignature: PracticeTimeSignature.threeFour,
+        bpm: 240,
+      ),
+    );
+
+    expect(beatCount(tester), 3);
+
+    await tester.tap(find.byKey(const ValueKey('practice-autoplay-button')));
+    await tester.pump();
+    expect(activeBeatIndex(tester), 0);
+  });
+
+  testWidgets('2/4 settings show a two-beat indicator', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(
+      tester,
+      PracticeSettings(timeSignature: PracticeTimeSignature.twoFour, bpm: 240),
+    );
+
+    expect(beatCount(tester), 2);
+
+    await tester.tap(find.byKey(const ValueKey('practice-autoplay-button')));
+    await tester.pump();
+    expect(activeBeatIndex(tester), 0);
+  });
+
+  testWidgets('advanced settings update time signature and harmonic rhythm', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithController(tester, PracticeSettings());
+
+    await openAdvancedGeneratorSettings(tester);
+
+    await tester.tap(
+      find.byKey(const ValueKey('practice-time-signature-dropdown')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('3/4').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey('practice-harmonic-rhythm-dropdown')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Phrase-aware jazz').last);
+    await tester.pumpAndSettle();
+
+    expect(controller.settings.timeSignature, PracticeTimeSignature.threeFour);
+    expect(
+      controller.settings.harmonicRhythmPreset,
+      HarmonicRhythmPreset.phraseAwareJazz,
+    );
+  });
+
+  testWidgets('advanced settings update transport audio controls', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithController(tester, PracticeSettings());
+
+    await openAdvancedGeneratorSettings(tester);
+
+    await tester.tap(
+      find.byKey(const ValueKey('auto-play-chord-changes-toggle')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('auto-play-pattern-dropdown')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Arpeggio').last);
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('metronome-pattern-dropdown')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('metronome-pattern-dropdown')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Meter accent').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey('metronome-accent-sound-toggle')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(controller.settings.autoPlayChordChanges, isTrue);
+    expect(
+      controller.settings.autoPlayPattern,
+      HarmonyPlaybackPattern.arpeggio,
+    );
+    expect(
+      controller.settings.metronomePattern.preset,
+      MetronomePatternPreset.meterAccent,
+    );
+    expect(controller.settings.metronomeUseAccentSound, isTrue);
+  });
+
+  testWidgets('advanced settings update melody generation controls', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithController(tester, PracticeSettings());
+
+    await openAdvancedGeneratorSettings(tester);
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('melody-generation-enabled-toggle')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('melody-generation-enabled-toggle')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('melody-density-dropdown')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('melody-density-dropdown')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Active').last);
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('melody-style-dropdown')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('melody-style-dropdown')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bebop').last);
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('allow-chromatic-approaches-toggle')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('allow-chromatic-approaches-toggle')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('melody-playback-mode-dropdown')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('melody-playback-mode-dropdown')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Melody only').last);
+    await tester.pumpAndSettle();
+
+    expect(controller.settings.melodyGenerationEnabled, isTrue);
+    expect(controller.settings.melodyDensity, MelodyDensity.active);
+    expect(controller.settings.melodyStyle, MelodyStyle.bebop);
+    expect(controller.settings.allowChromaticApproaches, isTrue);
+    expect(
+      controller.settings.melodyPlaybackMode,
+      MelodyPlaybackMode.melodyOnly,
+    );
+  });
+
+  testWidgets('advanced settings anchor editor saves enabled anchor slots', (
+    WidgetTester tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(900, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final controller = await pumpAppWithController(tester, PracticeSettings());
+
+    await openAdvancedGeneratorSettings(tester);
+    await tester.ensureVisible(find.byKey(const ValueKey('anchor-slot-0-0')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('anchor-slot-0-0')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(TextField).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('analyzer-key-f')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('analyzer-key-minor')));
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(const ValueKey('analyzer-key-dom7')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('analyzer-key-dom7')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Save').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save').last);
+    await tester.pumpAndSettle();
+
+    final slot = controller.settings.anchorLoop.slotForPosition(
+      barOffset: 0,
+      slotIndexWithinBar: 0,
+    );
+
+    expect(slot, isNotNull);
+    expect(slot?.trimmedChordSymbol, 'Fm7');
+    expect(slot?.enabled, isTrue);
+    expect(find.text('Fm7'), findsOneWidget);
+  });
+
+  testWidgets('exact anchor symbols recur across repeated cycle slots', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(
+      tester,
+      PracticeSettings(
+        activeKeyCenters: {
+          const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        },
+        anchorLoop: const ChordAnchorLoop(
+          cycleLengthBars: 4,
+          slots: [
+            ChordAnchorSlot(
+              barOffset: 0,
+              slotIndexWithinBar: 0,
+              chordSymbol: 'Fm7',
+              enabled: true,
+            ),
+          ],
+        ),
+      ),
+    );
+
+    final observed = <String?>[currentChordText(tester)];
+    for (var index = 0; index < 8; index += 1) {
+      await advanceChord(tester);
+      observed.add(currentChordText(tester));
+    }
+
+    final anchorIndices = <int>[
+      for (var index = 0; index < observed.length; index += 1)
+        if (observed[index] == 'Fm7') index,
+    ];
+
+    expect(anchorIndices.length, greaterThanOrEqualTo(2));
+    for (var index = 1; index < anchorIndices.length; index += 1) {
+      expect(anchorIndices[index] - anchorIndices[index - 1], 4);
+    }
+  });
+
+  testWidgets('melody quick toggle reveals regenerate and playback controls', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithController(tester, PracticeSettings());
+
+    expect(
+      find.byKey(const ValueKey('practice-regenerate-melody-button')),
+      findsNothing,
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('melody-generation-toggle')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('melody-generation-toggle')));
+    await tester.pumpAndSettle();
+
+    expect(controller.settings.melodyGenerationEnabled, isTrue);
+    expect(
+      find.byKey(const ValueKey('practice-regenerate-melody-button')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('melody-playback-mode-both')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('play chord button uses a speaker icon distinct from autoplay', (
     WidgetTester tester,
   ) async {
@@ -1564,6 +2192,54 @@ void main() {
       Icons.play_arrow_rounded,
     );
   });
+
+  testWidgets('manual advance auto-plays chord changes when enabled', (
+    WidgetTester tester,
+  ) async {
+    final audio = _SpyHarmonyAudioService();
+    await pumpAppWithAudioService(
+      tester,
+      PracticeSettings(autoPlayChordChanges: true, metronomeEnabled: false),
+      harmonyAudioService: audio,
+    );
+
+    await tapNextChordRegion(tester);
+
+    expect(audio.playedLabels, isNotEmpty);
+    expect(audio.playedLabels.last.$1, HarmonyPlaybackPattern.block);
+  });
+
+  testWidgets('melody playback mode routes preview audio correctly', (
+    WidgetTester tester,
+  ) async {
+    final audio = _SpyHarmonyAudioService();
+    await pumpAppWithAudioService(
+      tester,
+      PracticeSettings(
+        melodyGenerationEnabled: true,
+        melodyPlaybackMode: MelodyPlaybackMode.melodyOnly,
+        metronomeEnabled: false,
+      ),
+      harmonyAudioService: audio,
+    );
+
+    await advanceChord(tester);
+    await tester.tap(find.byKey(const ValueKey('practice-play-chord-button')));
+    await tester.pumpAndSettle();
+
+    expect(audio.playedCompositeClips, isNotEmpty);
+    expect(audio.playedCompositeClips.last.chordClip, isNull);
+    expect(audio.playedCompositeClips.last.melodyClip, isNotNull);
+
+    await tester.tap(find.byKey(const ValueKey('melody-playback-mode-both')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('practice-play-chord-button')));
+    await tester.pumpAndSettle();
+
+    expect(audio.playedCompositeClips.last.chordClip, isNotNull);
+    expect(audio.playedCompositeClips.last.melodyClip, isNotNull);
+  });
+
   testWidgets('bpm input accepts three digits and hides the range helper', (
     WidgetTester tester,
   ) async {

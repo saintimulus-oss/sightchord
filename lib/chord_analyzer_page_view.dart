@@ -10,14 +10,21 @@ import 'music/progression_analysis_models.dart';
 import 'music/progression_analyzer.dart';
 import 'music/progression_explainer.dart';
 import 'music/progression_variation_generator.dart';
+import 'settings/practice_settings.dart';
+import 'settings/settings_controller.dart';
 import 'widgets/chord_input_editor.dart';
 
 part 'chord_analyzer_page_sections.dart';
 
 class ChordAnalyzerPage extends StatefulWidget {
-  const ChordAnalyzerPage({super.key, this.inputPlatformOverride});
+  const ChordAnalyzerPage({
+    super.key,
+    this.inputPlatformOverride,
+    this.controller,
+  });
 
   final TargetPlatform? inputPlatformOverride;
+  final AppSettingsController? controller;
 
   @override
   State<ChordAnalyzerPage> createState() => _ChordAnalyzerPageState();
@@ -30,7 +37,7 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   final ProgressionVariationGenerator _variationGenerator =
       const ProgressionVariationGenerator();
   static const List<String> _exampleProgressions = [
-    'Dm7, G7, ? | Am7',
+    'Dm7, G7 | ? Am',
     'Cmaj7/E | A7(b9) Dm7 | G7',
     'Db7(#11), Cmaj7',
     'Bm7b5 E7alt | Am6, Dm9 G13',
@@ -40,8 +47,26 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   String? _errorKey;
   bool _isAnalyzing = false;
   bool _requestedHarmonyAudioWarmUp = false;
+  bool _isResultDialogVisible = false;
   HarmonyAudioService? _harmonyAudio;
   List<ProgressionVariation> _variations = const [];
+  late ProgressionExplanationDetailLevel _localExplanationDetailLevel;
+  late ProgressionHighlightTheme _localHighlightTheme;
+
+  ProgressionExplanationDetailLevel get _detailLevel =>
+      widget.controller?.settings.progressionExplanationDetailLevel ??
+      _localExplanationDetailLevel;
+  ProgressionHighlightTheme get _highlightTheme =>
+      widget.controller?.settings.progressionHighlightTheme ??
+      _localHighlightTheme;
+
+  @override
+  void initState() {
+    super.initState();
+    final settings = widget.controller?.settings ?? PracticeSettings();
+    _localExplanationDetailLevel = settings.progressionExplanationDetailLevel;
+    _localHighlightTheme = settings.progressionHighlightTheme;
+  }
 
   Future<void> _analyze() async {
     final input = _controller.text.trim();
@@ -70,6 +95,9 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
       setState(() {
         _analysis = analysis;
       });
+      if (analysis.inferredChordCount > 0) {
+        _queueResultDialog(analysis: analysis);
+      }
     } on ProgressionAnalysisException catch (error) {
       if (!mounted) {
         return;
@@ -129,6 +157,177 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     });
   }
 
+  Future<void> _updateAnalyzerSettings({
+    ProgressionExplanationDetailLevel? detailLevel,
+    ProgressionHighlightTheme? highlightTheme,
+  }) async {
+    final controller = widget.controller;
+    if (controller != null) {
+      await controller.mutate(
+        (current) => current.copyWith(
+          progressionExplanationDetailLevel:
+              detailLevel ?? current.progressionExplanationDetailLevel,
+          progressionHighlightTheme:
+              highlightTheme ?? current.progressionHighlightTheme,
+        ),
+      );
+      if (mounted) {
+        setState(() {});
+      }
+      return;
+    }
+    setState(() {
+      _localExplanationDetailLevel =
+          detailLevel ?? _localExplanationDetailLevel;
+      _localHighlightTheme = highlightTheme ?? _localHighlightTheme;
+    });
+  }
+
+  Future<void> _openDisplaySettings() async {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    var draftDetailLevel = _detailLevel;
+    var draftTheme = _highlightTheme;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            Future<void> applyTheme(ProgressionHighlightTheme nextTheme) async {
+              setModalState(() {
+                draftTheme = nextTheme;
+              });
+              await _updateAnalyzerSettings(highlightTheme: nextTheme);
+            }
+
+            return SafeArea(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  8,
+                  20,
+                  24 + MediaQuery.of(sheetContext).viewInsets.bottom,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.chordAnalyzerDisplaySettings,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.chordAnalyzerDisplaySettingsHelp,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<ProgressionExplanationDetailLevel>(
+                      key: const ValueKey('analyzer-detail-level-selector'),
+                      initialValue: draftDetailLevel,
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        labelText: l10n.chordAnalyzerDetailLevel,
+                      ),
+                      items: ProgressionExplanationDetailLevel.values
+                          .map(
+                            (level) =>
+                                DropdownMenuItem<
+                                  ProgressionExplanationDetailLevel
+                                >(
+                                  value: level,
+                                  child: Text(level.localizedLabel(l10n)),
+                                ),
+                          )
+                          .toList(growable: false),
+                      onChanged: (value) {
+                        if (value == null) {
+                          return;
+                        }
+                        setModalState(() {
+                          draftDetailLevel = value;
+                        });
+                        unawaited(_updateAnalyzerSettings(detailLevel: value));
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<ProgressionHighlightThemePreset>(
+                      key: const ValueKey('analyzer-theme-preset-selector'),
+                      initialValue: draftTheme.preset,
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        labelText: l10n.chordAnalyzerHighlightTheme,
+                      ),
+                      items: ProgressionHighlightThemePreset.values
+                          .map(
+                            (preset) =>
+                                DropdownMenuItem<
+                                  ProgressionHighlightThemePreset
+                                >(
+                                  value: preset,
+                                  child: Text(preset.localizedLabel(l10n)),
+                                ),
+                          )
+                          .toList(growable: false),
+                      onChanged: (value) {
+                        if (value == null) {
+                          return;
+                        }
+                        final nextTheme = draftTheme.withPreset(value);
+                        unawaited(applyTheme(nextTheme));
+                      },
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      l10n.chordAnalyzerThemeLegend,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _AnalyzerLegendWrap(
+                      categories: ProgressionHighlightCategory.values,
+                      highlightTheme: draftTheme,
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      l10n.chordAnalyzerCustomColors,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    for (final category
+                        in ProgressionHighlightCategory.values) ...[
+                      _ThemeCategoryEditorRow(
+                        category: category,
+                        highlightTheme: draftTheme,
+                        onPickColor: (colorValue) {
+                          final nextTheme = draftTheme.withColor(
+                            category,
+                            Color(colorValue),
+                          );
+                          unawaited(applyTheme(nextTheme));
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _applyVariation(ProgressionVariation variation) async {
     _applyExample(variation.progression);
     await _analyze();
@@ -178,6 +377,228 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     await harmonyAudio.playParsedChord(chord, pattern: pattern);
   }
 
+  void _queueResultDialog({ProgressionAnalysis? analysis, String? errorKey}) {
+    if ((analysis == null && errorKey == null) || _isResultDialogVisible) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _isResultDialogVisible) {
+        return;
+      }
+      unawaited(
+        _showAnalysisResultDialog(analysis: analysis, errorKey: errorKey),
+      );
+    });
+  }
+
+  Future<void> _showAnalysisResultDialog({
+    ProgressionAnalysis? analysis,
+    String? errorKey,
+  }) async {
+    if (_isResultDialogVisible || !mounted) {
+      return;
+    }
+
+    final l10n = AppLocalizations.of(context)!;
+    final materialL10n = MaterialLocalizations.of(context);
+    final theme = Theme.of(context);
+    final summary = analysis == null
+        ? const <String>[]
+        : _explainer.buildSummary(l10n, analysis, detailLevel: _detailLevel);
+    final warnings = analysis == null
+        ? const <String>[]
+        : _warningTexts(l10n, analysis);
+    final keyCandidates = analysis == null
+        ? const <ProgressionKeyCandidate>[]
+        : analysis.keyCandidates.take(2).toList();
+    final inferredChords = analysis == null
+        ? const <AnalyzedChord>[]
+        : analysis.chordAnalyses.where((item) => item.isInferred).toList();
+
+    Widget buildSection(String title, List<Widget> children) {
+      return DecoratedBox(
+        decoration: _analyzerPanelDecoration(theme.colorScheme),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 10),
+              ...children,
+            ],
+          ),
+        ),
+      );
+    }
+
+    _isResultDialogVisible = true;
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          key: const ValueKey('analyzer-result-dialog'),
+          title: Text(l10n.chordAnalyzerTitle),
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (errorKey != null)
+                    buildSection(l10n.chordAnalyzerWarnings, [
+                      Text(_errorTextForKey(l10n, errorKey)),
+                    ])
+                  else if (analysis != null) ...[
+                    buildSection(l10n.chordAnalyzerDetectedKeys, [
+                      Text(
+                        _explainer.keyLabel(
+                          l10n,
+                          analysis.primaryKey.keyCenter,
+                        ),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '${l10n.chordAnalyzerConfidenceLabel} '
+                        '${(analysis.confidence * 100).round()}%',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      if (keyCandidates.length > 1) ...[
+                        const SizedBox(height: 10),
+                        for (final candidate in keyCandidates.skip(1))
+                          Text(
+                            '${l10n.chordAnalyzerAlternativeReading}: '
+                            '${_explainer.keyLabel(l10n, candidate.keyCenter)}',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                      ],
+                    ]),
+                    if (inferredChords.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      buildSection(l10n.chordAnalyzerPlaceholderExplanation, [
+                        for (
+                          var index = 0;
+                          index < inferredChords.length;
+                          index += 1
+                        ) ...[
+                          DecoratedBox(
+                            decoration: _analyzerPanelDecoration(
+                              theme.colorScheme,
+                              accent: true,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          l10n.chordAnalyzerMeasureLabel(
+                                            inferredChords[index]
+                                                    .chord
+                                                    .measureIndex +
+                                                1,
+                                          ),
+                                          style: theme.textTheme.labelLarge
+                                              ?.copyWith(
+                                                color:
+                                                    theme.colorScheme.primary,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          inferredChords[index]
+                                              .chord
+                                              .sourceSymbol,
+                                          style: theme.textTheme.titleLarge
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.arrow_forward_rounded,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    inferredChords[index].resolvedSymbol,
+                                    style: theme.textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          if (index != inferredChords.length - 1)
+                            const SizedBox(height: 10),
+                        ],
+                      ]),
+                    ],
+                    if (summary.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      buildSection(l10n.chordAnalyzerProgressionSummary, [
+                        for (var index = 0; index < summary.length; index += 1)
+                          Padding(
+                            padding: EdgeInsets.only(
+                              bottom: index == summary.length - 1 ? 0 : 8,
+                            ),
+                            child: Text(summary[index]),
+                          ),
+                      ]),
+                    ],
+                    if (warnings.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      buildSection(l10n.chordAnalyzerWarnings, [
+                        for (var index = 0; index < warnings.length; index += 1)
+                          Padding(
+                            padding: EdgeInsets.only(
+                              bottom: index == warnings.length - 1 ? 0 : 8,
+                            ),
+                            child: Text(warnings[index]),
+                          ),
+                      ]),
+                    ],
+                  ],
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(materialL10n.closeButtonLabel),
+            ),
+          ],
+        ),
+      );
+    } finally {
+      _isResultDialogVisible = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -186,7 +607,7 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     final isDark = theme.brightness == Brightness.dark;
     final summary = _analysis == null
         ? const <String>[]
-        : _explainer.buildSummary(l10n, _analysis!);
+        : _explainer.buildSummary(l10n, _analysis!, detailLevel: _detailLevel);
     final warnings = _analysis == null
         ? const <String>[]
         : _warningTexts(l10n, _analysis!);
@@ -203,6 +624,14 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
         backgroundColor: theme.scaffoldBackgroundColor,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
+        actions: [
+          IconButton(
+            key: const ValueKey('analyzer-display-settings-button'),
+            onPressed: _openDisplaySettings,
+            tooltip: l10n.chordAnalyzerDisplaySettings,
+            icon: const Icon(Icons.palette_outlined),
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -483,18 +912,53 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              if (_analysis!
+                                  .highlightCategories
+                                  .isNotEmpty) ...[
+                                _AnalyzerLegendWrap(
+                                  categories: ProgressionHighlightCategory
+                                      .values
+                                      .where(
+                                        _analysis!.highlightCategories.contains,
+                                      )
+                                      .toList(growable: false),
+                                  highlightTheme: _highlightTheme,
+                                ),
+                                const SizedBox(height: 12),
+                              ],
                               if (_analysis!.tags.isNotEmpty) ...[
                                 Wrap(
                                   spacing: 8,
                                   runSpacing: 8,
                                   children: [
                                     for (final tag in _analysis!.tags)
-                                      Chip(
-                                        label: Text(
-                                          _explainer.tagLabel(l10n, tag),
-                                        ),
-                                        visualDensity: VisualDensity.compact,
-                                      ),
+                                      (() {
+                                        final category =
+                                            _highlightCategoryForTag(tag);
+                                        final color = category == null
+                                            ? null
+                                            : _highlightTheme.colorFor(
+                                                category,
+                                              );
+                                        return Chip(
+                                          backgroundColor: color == null
+                                              ? theme
+                                                    .colorScheme
+                                                    .surfaceContainerHighest
+                                              : _softHighlightBackground(color),
+                                          side: BorderSide(
+                                            color: color == null
+                                                ? theme
+                                                      .colorScheme
+                                                      .outlineVariant
+                                                : color.withValues(alpha: 0.45),
+                                          ),
+                                          label: Text(
+                                            _explainer.tagLabel(l10n, tag),
+                                          ),
+                                          visualDensity: VisualDensity.compact,
+                                        );
+                                      })(),
                                   ],
                                 ),
                                 const SizedBox(height: 12),
@@ -588,7 +1052,11 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   }
 
   String _errorText(AppLocalizations l10n) {
-    return switch (_errorKey) {
+    return _errorTextForKey(l10n, _errorKey);
+  }
+
+  String _errorTextForKey(AppLocalizations l10n, String? errorKey) {
+    return switch (errorKey) {
       'empty' => l10n.chordAnalyzerNoInputError,
       'no-valid-chords' => l10n.chordAnalyzerNoRecognizedChordsError,
       _ => l10n.chordAnalyzerNoRecognizedChordsError,
@@ -634,15 +1102,6 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     return warnings;
   }
 
-  String? _remarkText(AppLocalizations l10n, AnalyzedChord analysis) {
-    if (analysis.remarks.isEmpty) {
-      return null;
-    }
-    return analysis.remarks
-        .map((remark) => _explainer.remarkLabel(l10n, remark))
-        .join(' ');
-  }
-
   String _diagnosticLabel(AppLocalizations l10n, String diagnostic) {
     return switch (diagnostic) {
       'unbalanced-parentheses' =>
@@ -661,6 +1120,26 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
       return l10n.chordAnalyzerAlternativeReading;
     }
     return '#${index + 1}';
+  }
+
+  ProgressionHighlightCategory? _highlightCategoryForTag(ProgressionTagId tag) {
+    return switch (tag) {
+      ProgressionTagId.iiVI ||
+      ProgressionTagId.turnaround ||
+      ProgressionTagId.dominantResolution => null,
+      ProgressionTagId.plagalColor ||
+      ProgressionTagId.backdoorChain => ProgressionHighlightCategory.backdoor,
+      ProgressionTagId.tonicization =>
+        ProgressionHighlightCategory.tonicization,
+      ProgressionTagId.realModulation =>
+        ProgressionHighlightCategory.modulation,
+      ProgressionTagId.deceptiveCadence =>
+        ProgressionHighlightCategory.deceptiveCadence,
+      ProgressionTagId.chromaticLine =>
+        ProgressionHighlightCategory.chromaticLine,
+      ProgressionTagId.commonToneMotion =>
+        ProgressionHighlightCategory.commonTone,
+    };
   }
 
   List<AnalyzedChord> _orderedMeasureAnalyses(AnalyzedMeasure measure) {
@@ -710,41 +1189,52 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
           chordIndex < orderedAnalyses.length;
           chordIndex += 1
         ) ...[
-          if (orderedAnalyses[chordIndex].isInferred)
-            _InferredChordAnalysisRow(
-              analysis: orderedAnalyses[chordIndex],
+          (() {
+            final analysis = orderedAnalyses[chordIndex];
+            final detailText = _explainer.buildChordExplanation(
+              l10n,
+              analysis,
+              detailLevel: _detailLevel,
+            );
+            if (analysis.isInferred) {
+              return _InferredChordAnalysisRow(
+                analysis: analysis,
+                explainer: _explainer,
+                functionLabel: _explainer.functionLabel(
+                  l10n,
+                  analysis.harmonicFunction,
+                ),
+                detailText: detailText,
+                highlightTheme: _highlightTheme,
+                onPlayChord: () => _playChord(
+                  analysis.chord,
+                  pattern: HarmonyPlaybackPattern.block,
+                ),
+                onPlayArpeggio: () => _playChord(
+                  analysis.chord,
+                  pattern: HarmonyPlaybackPattern.arpeggio,
+                ),
+              );
+            }
+            return _ChordAnalysisRow(
+              analysis: analysis,
               explainer: _explainer,
               functionLabel: _explainer.functionLabel(
                 l10n,
-                orderedAnalyses[chordIndex].harmonicFunction,
+                analysis.harmonicFunction,
               ),
+              detailText: detailText,
+              highlightTheme: _highlightTheme,
               onPlayChord: () => _playChord(
-                orderedAnalyses[chordIndex].chord,
+                analysis.chord,
                 pattern: HarmonyPlaybackPattern.block,
               ),
               onPlayArpeggio: () => _playChord(
-                orderedAnalyses[chordIndex].chord,
+                analysis.chord,
                 pattern: HarmonyPlaybackPattern.arpeggio,
               ),
-            )
-          else
-            _ChordAnalysisRow(
-              analysis: orderedAnalyses[chordIndex],
-              explainer: _explainer,
-              functionLabel: _explainer.functionLabel(
-                l10n,
-                orderedAnalyses[chordIndex].harmonicFunction,
-              ),
-              remarkText: _remarkText(l10n, orderedAnalyses[chordIndex]),
-              onPlayChord: () => _playChord(
-                orderedAnalyses[chordIndex].chord,
-                pattern: HarmonyPlaybackPattern.block,
-              ),
-              onPlayArpeggio: () => _playChord(
-                orderedAnalyses[chordIndex].chord,
-                pattern: HarmonyPlaybackPattern.arpeggio,
-              ),
-            ),
+            );
+          })(),
           if (chordIndex != orderedAnalyses.length - 1)
             const Divider(height: 20),
         ],

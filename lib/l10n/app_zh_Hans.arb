@@ -125,6 +125,17 @@
   "metronomeSoundClickE": "点击 E",
   "metronomeSoundClickF": "点击 F",
   "metronomeVolume": "节拍器音量",
+  "practiceMeter": "Time Signature",
+  "practiceMeterHelp": "Choose how many beats are in each bar for transport and metronome timing.",
+  "practiceTimeSignatureTwoFour": "2/4",
+  "practiceTimeSignatureThreeFour": "3/4",
+  "practiceTimeSignatureFourFour": "4/4",
+  "harmonicRhythm": "Harmonic Rhythm",
+  "harmonicRhythmHelp": "Choose how often chord changes can happen inside the bar.",
+  "harmonicRhythmOnePerBar": "One per bar",
+  "harmonicRhythmTwoPerBar": "Two per bar",
+  "harmonicRhythmPhraseAwareJazz": "Phrase-aware jazz",
+  "harmonicRhythmCadenceCompression": "Cadence compression",
   "keys": "调性",
   "noKeysSelected": "尚未选择任何调性。关闭所有调性后，即可在自由模式下练习所有根音。",
   "keysSelectedHelp": "已选的调性会用于调性感知随机模式和 Smart Generator 模式。",
@@ -226,6 +237,10 @@
   "voicingSuggestionsSubtitle": "看看该和弦的具体音符选择。",
   "voicingSuggestionsEnabled": "启用语音建议",
   "voicingSuggestionsHelp": "显示当前和弦的三个可演奏音符级 和声配置 想法。",
+  "voicingDisplayMode": "Voicing Display Mode",
+  "voicingDisplayModeHelp": "Switch between the standard three-card view and a performance-focused current/next preview.",
+  "voicingDisplayModeStandard": "Standard",
+  "voicingDisplayModePerformance": "Performance",
   "voicingComplexity": "发声复杂性",
   "voicingComplexityHelp": "控制建议的丰富多彩程度。",
   "voicingComplexityBasic": "基本的",
@@ -256,6 +271,19 @@
   "voicingSuggestionColorfulUpperStructureSubtitle": "带有明亮扩展的引导音",
   "voicingSuggestionEasyAnchoredSubtitle": "核心色调，范围较小",
   "voicingSuggestionEasyStableSubtitle": "重复友善的手形",
+  "voicingPerformanceSubtitle": "Feature one representative comping shape and keep the next move in view.",
+  "voicingPerformanceCurrentTitle": "Current voicing",
+  "voicingPerformanceNextTitle": "Next preview",
+  "voicingPerformanceCurrentOnly": "Current only",
+  "voicingPerformanceShared": "Shared",
+  "voicingPerformanceNextOnly": "Next move",
+  "voicingPerformanceTopLinePath": "Top line: {current} -> {next}",
+  "@voicingPerformanceTopLinePath": {
+    "placeholders": {
+      "current": {},
+      "next": {}
+    }
+  },
   "voicingTopNoteLabel": "顶部",
   "voicingTopNoteContextExplicit": "顶线目标：{note}",
   "@voicingTopNoteContextExplicit": {
@@ -934,7 +962,7 @@
   "chordAnalyzerTitle": "和弦分析器",
   "chordAnalyzerSubtitle": "贴上和弦进行，即可得到偏保守的和声判读。",
   "chordAnalyzerInputLabel": "和弦进行",
-  "chordAnalyzerInputHint": "Dm7, G7, ? | Am7",
+  "chordAnalyzerInputHint": "Dm7, G7 | ? Am",
   "chordAnalyzerInputHelper": "括号外可用空格、| 或逗号分隔和弦。括号内的逗号会保留在同一个和弦之中。\n\n使用 ? 代表尚未确定的和弦空位。分析器会根据前后和声语境推断最自然的补法，若判读存在歧义也会给出候选。变奏生成功能也能更自由地重新和声化这个位置。\n\n支持小写根音、斜线低音、sus/alt/add 形式，以及 C7(b9, #11) 这类张力写法。\n\n在触控设备上可使用和弦面板，或在需要自由输入时切换到 ABC 输入。",
   "chordAnalyzerInputHelpTitle": "输入提示",
   "chordAnalyzerAnalyze": "分析",
@@ -949,7 +977,7 @@
   "chordAnalyzerSpace": "空格键",
   "chordAnalyzerAnalyzing": "正在分析进行...",
   "chordAnalyzerInitialTitle": "先输入一段进行",
-  "chordAnalyzerInitialBody": "输入像 Dm7, G7, ? | Am7 或 Cmaj7 | Am7 D7 | Gmaj7 这样的进行，即可查看可能的调性、罗马数字、推断补全与简短摘要。",
+  "chordAnalyzerInitialBody": "输入像 Dm7, G7 | ? Am 或 Cmaj7 | Am7 D7 | Gmaj7 这样的进行，即可查看可能的调性、罗马数字、推断补全与简短摘要。",
   "chordAnalyzerPlaceholderExplanation": "这个 ? 是根据前后和声语境推断出的空位。",
   "chordAnalyzerSuggestedFill": "建议补入：{chord}",
   "@chordAnalyzerSuggestedFill": {
@@ -1141,6 +1169,139 @@
   "@chordAnalyzerParseIssueUnsupportedSuffix": {
     "placeholders": {
       "suffix": {}
+    }
+  },
+  "chordAnalyzerDisplaySettings": "Analysis display",
+  "chordAnalyzerDisplaySettingsHelp": "Choose how much theory detail appears and how non-diatonic categories are highlighted.",
+  "chordAnalyzerDetailLevel": "Explanation detail",
+  "chordAnalyzerDetailLevelConcise": "Concise",
+  "chordAnalyzerDetailLevelDetailed": "Detailed",
+  "chordAnalyzerDetailLevelAdvanced": "Advanced",
+  "chordAnalyzerHighlightTheme": "Highlight theme",
+  "chordAnalyzerThemePresetDefault": "Default",
+  "chordAnalyzerThemePresetHighContrast": "High contrast",
+  "chordAnalyzerThemePresetColorBlindSafe": "Color-blind safe",
+  "chordAnalyzerThemePresetCustom": "Custom",
+  "chordAnalyzerThemeLegend": "Category legend",
+  "chordAnalyzerCustomColors": "Custom category colors",
+  "chordAnalyzerHighlightAppliedDominant": "Applied dominant",
+  "chordAnalyzerHighlightTritoneSubstitute": "Tritone substitute",
+  "chordAnalyzerHighlightTonicization": "Tonicization",
+  "chordAnalyzerHighlightModulation": "Modulation",
+  "chordAnalyzerHighlightBackdoor": "Backdoor / subdominant minor",
+  "chordAnalyzerHighlightBorrowedColor": "Borrowed color",
+  "chordAnalyzerHighlightCommonTone": "Common-tone motion",
+  "chordAnalyzerHighlightDeceptiveCadence": "Deceptive cadence",
+  "chordAnalyzerHighlightChromaticLine": "Chromatic line color",
+  "chordAnalyzerHighlightAmbiguity": "Ambiguity",
+  "chordAnalyzerSummaryRealModulation": "It makes a stronger case for a real modulation toward {key}.",
+  "@chordAnalyzerSummaryRealModulation": {
+    "placeholders": {
+      "key": {}
+    }
+  },
+  "chordAnalyzerSummaryTonicization": "It briefly tonicizes {target} without fully settling there.",
+  "@chordAnalyzerSummaryTonicization": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "chordAnalyzerSummaryBackdoor": "The progression leans into backdoor or subdominant-minor color before resolving.",
+  "chordAnalyzerSummaryDeceptiveCadence": "One cadence sidesteps the expected tonic for a deceptive effect.",
+  "chordAnalyzerSummaryChromaticLine": "A chromatic inner-line or line-cliche color helps connect part of the phrase.",
+  "chordAnalyzerSummaryBackdoorDominant": "{chord} works like a backdoor dominant rather than a plain borrowed dominant.",
+  "@chordAnalyzerSummaryBackdoorDominant": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "chordAnalyzerSummarySubdominantMinor": "{chord} reads more naturally as subdominant-minor color than as a random non-diatonic chord.",
+  "@chordAnalyzerSummarySubdominantMinor": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "chordAnalyzerSummaryCommonToneDiminished": "{chord} can be heard as a common-tone diminished color that resolves by shared pitch content.",
+  "@chordAnalyzerSummaryCommonToneDiminished": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "chordAnalyzerSummaryDeceptiveTarget": "{chord} participates in a deceptive landing instead of a plain authentic cadence.",
+  "@chordAnalyzerSummaryDeceptiveTarget": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "chordAnalyzerSummaryCompeting": "An advanced reading keeps competing interpretations in play, such as {readings}.",
+  "@chordAnalyzerSummaryCompeting": {
+    "placeholders": {
+      "readings": {}
+    }
+  },
+  "chordAnalyzerFunctionLine": "Function: {function}",
+  "@chordAnalyzerFunctionLine": {
+    "placeholders": {
+      "function": {}
+    }
+  },
+  "chordAnalyzerEvidenceLead": "Evidence: {evidence}",
+  "@chordAnalyzerEvidenceLead": {
+    "placeholders": {
+      "evidence": {}
+    }
+  },
+  "chordAnalyzerAdvancedCompetingReadings": "Competing readings remain possible here: {readings}.",
+  "@chordAnalyzerAdvancedCompetingReadings": {
+    "placeholders": {
+      "readings": {}
+    }
+  },
+  "chordAnalyzerRemarkTonicization": "This sounds more like a local tonicization of {target} than a full modulation.",
+  "@chordAnalyzerRemarkTonicization": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "chordAnalyzerRemarkRealModulation": "This supports a real modulation toward {key}.",
+  "@chordAnalyzerRemarkRealModulation": {
+    "placeholders": {
+      "key": {}
+    }
+  },
+  "chordAnalyzerRemarkBackdoorDominant": "This can be heard as a backdoor dominant with subdominant-minor color.",
+  "chordAnalyzerRemarkBackdoorChain": "This belongs to a backdoor chain rather than a plain borrowed detour.",
+  "chordAnalyzerRemarkSubdominantMinor": "This borrowed iv or subdominant-minor color behaves like a predominant area.",
+  "chordAnalyzerRemarkCommonToneDiminished": "This diminished chord works through common-tone reinterpretation.",
+  "chordAnalyzerRemarkPivotChord": "This chord can act as a pivot into the next local key area.",
+  "chordAnalyzerRemarkCommonToneModulation": "Common-tone continuity helps the modulation feel plausible.",
+  "chordAnalyzerRemarkDeceptiveCadence": "This points toward a deceptive cadence rather than a direct tonic arrival.",
+  "chordAnalyzerRemarkLineCliche": "Chromatic inner-line motion colors this chord choice.",
+  "chordAnalyzerRemarkDualFunction": "More than one functional reading stays credible here.",
+  "chordAnalyzerTagTonicization": "Tonicization",
+  "chordAnalyzerTagRealModulation": "Real modulation",
+  "chordAnalyzerTagBackdoorChain": "Backdoor chain",
+  "chordAnalyzerTagDeceptiveCadence": "Deceptive cadence",
+  "chordAnalyzerTagChromaticLine": "Chromatic line color",
+  "chordAnalyzerTagCommonToneMotion": "Common-tone motion",
+  "chordAnalyzerEvidenceCadentialArrival": "A local cadential arrival supports hearing a temporary target.",
+  "chordAnalyzerEvidenceFollowThrough": "Follow-through chords continue to support the new local center.",
+  "chordAnalyzerEvidencePhraseBoundary": "The change lands near a phrase boundary or structural accent.",
+  "chordAnalyzerEvidencePivotSupport": "A pivot-like shared reading supports the local shift.",
+  "chordAnalyzerEvidenceCommonToneSupport": "Shared common tones help connect the reinterpretation.",
+  "chordAnalyzerEvidenceHomeGravityWeakening": "The original tonic loses some of its pull in this window.",
+  "chordAnalyzerEvidenceBackdoorMotion": "The motion matches a backdoor or subdominant-minor resolution pattern.",
+  "chordAnalyzerEvidenceDeceptiveResolution": "The dominant resolves away from the expected tonic target.",
+  "chordAnalyzerEvidenceChromaticLine": "Chromatic line support: {detail}.",
+  "@chordAnalyzerEvidenceChromaticLine": {
+    "placeholders": {
+      "detail": {}
+    }
+  },
+  "chordAnalyzerEvidenceCompetingReading": "Competing reading: {detail}.",
+  "@chordAnalyzerEvidenceCompetingReading": {
+    "placeholders": {
+      "detail": {}
     }
   },
   "studyHarmonyDailyReplayAction": "每日重播",
@@ -1867,6 +2028,116 @@
   "chordTypeGroupSixthsAndAddedTone": "六和弦与附加音",
   "chordTypeGroupDominantVariants": "属功能变体",
   "chordTypeRequiresKeyMode": "只有在至少选择一个调性时才能使用 V7sus4。",
-  "chordTypeKeepOneEnabled": "至少保留一种和弦种类为启用状态。"
+  "chordTypeKeepOneEnabled": "至少保留一种和弦种类为启用状态。",
+  "anchorLoopTitle": "Anchor Loop",
+  "anchorLoopHelp": "Fix specific cycle slots so the same chord returns every cycle while the other slots can still be generated around it.",
+  "anchorLoopCycleLength": "Cycle Length (bars)",
+  "anchorLoopCycleLengthHelp": "Choose how many bars the repeating anchor cycle lasts.",
+  "anchorLoopVaryNonAnchorSlots": "Vary non-anchor slots",
+  "anchorLoopVaryNonAnchorSlotsHelp": "Keep anchor slots exact while letting the generated filler vary inside the same local function.",
+  "anchorLoopBarLabel": "Bar {bar}",
+  "@anchorLoopBarLabel": {
+    "placeholders": {
+      "bar": {
+        "type": "int"
+      }
+    }
+  },
+  "anchorLoopBeatLabel": "Beat {beat}",
+  "@anchorLoopBeatLabel": {
+    "placeholders": {
+      "beat": {
+        "type": "int"
+      }
+    }
+  },
+  "anchorLoopSlotEmpty": "No anchor chord set",
+  "anchorLoopEditTitle": "Edit anchor for bar {bar}, beat {beat}",
+  "@anchorLoopEditTitle": {
+    "placeholders": {
+      "bar": {
+        "type": "int"
+      },
+      "beat": {
+        "type": "int"
+      }
+    }
+  },
+  "anchorLoopChordSymbol": "Anchor chord symbol",
+  "anchorLoopChordHint": "Enter one chord symbol for this slot. Leave it empty to clear the anchor.",
+  "anchorLoopInvalidChord": "Enter a supported chord symbol before saving this anchor slot.",
+  "harmonyPlaybackPatternBlock": "Block",
+  "harmonyPlaybackPatternArpeggio": "Arpeggio",
+  "metronomeBeatStateNormal": "Normal",
+  "metronomeBeatStateAccent": "Accent",
+  "metronomeBeatStateMute": "Mute",
+  "metronomePatternPresetCustom": "Custom",
+  "metronomePatternPresetMeterAccent": "Meter accent",
+  "metronomePatternPresetJazzTwoAndFour": "Jazz 2 & 4",
+  "metronomeSourceKindBuiltIn": "Built-in asset",
+  "metronomeSourceKindLocalFile": "Local file",
+  "transportAudioTitle": "Transport Audio",
+  "autoPlayChordChanges": "Auto-play chord changes",
+  "autoPlayChordChangesHelp": "Play the next chord automatically when the transport reaches a chord-change event.",
+  "autoPlayPattern": "Auto-play pattern",
+  "autoPlayPatternHelp": "Choose whether auto-play uses a block chord or a short arpeggio.",
+  "autoPlayHoldFactor": "Auto-play hold length",
+  "autoPlayHoldFactorHelp": "Scale how long auto-played chord changes ring relative to the event duration.",
+  "autoPlayMelodyWithChords": "Play melody with chords",
+  "autoPlayMelodyWithChordsPlaceholder": "When melody generation is enabled, include the current melody line in auto-play chord-change previews.",
+  "melodyGenerationTitle": "Melody line",
+  "melodyGenerationHelp": "Generate a simple performance-ready melody that follows the current chord timeline.",
+  "melodyDensity": "Melody density",
+  "melodyDensityHelp": "Choose how many melody notes tend to appear inside each chord event.",
+  "melodyDensitySparse": "Sparse",
+  "melodyDensityBalanced": "Balanced",
+  "melodyDensityActive": "Active",
+  "motifRepetitionStrength": "Motif repetition",
+  "motifRepetitionStrengthHelp": "Higher values keep the contour identity of recent melody fragments more often.",
+  "approachToneDensity": "Approach tone density",
+  "approachToneDensityHelp": "Control how often passing, neighbor, and approach gestures appear before arrivals.",
+  "melodyRangeLow": "Melody range low",
+  "melodyRangeHigh": "Melody range high",
+  "melodyRangeHelp": "Keep generated melody notes inside this playable register window.",
+  "melodyStyle": "Melody style",
+  "melodyStyleHelp": "Bias the line toward safer guide tones, bebop motion, lyrical space, or colorful tensions.",
+  "melodyStyleSafe": "Safe",
+  "melodyStyleBebop": "Bebop",
+  "melodyStyleLyrical": "Lyrical",
+  "melodyStyleColorful": "Colorful",
+  "allowChromaticApproaches": "Allow chromatic approaches",
+  "allowChromaticApproachesHelp": "Permit enclosures and chromatic approach notes on weak beats when the style allows it.",
+  "melodyPlaybackMode": "Melody playback",
+  "melodyPlaybackModeHelp": "Choose whether manual preview buttons play chords, melody, or both together.",
+  "melodyPlaybackModeChordsOnly": "Chords only",
+  "melodyPlaybackModeMelodyOnly": "Melody only",
+  "melodyPlaybackModeBoth": "Both",
+  "regenerateMelody": "Regenerate melody",
+  "melodyPreviewCurrent": "Current line",
+  "melodyPreviewNext": "Next arrival",
+  "metronomePatternTitle": "Metronome Pattern",
+  "metronomePatternHelp": "Choose a meter-aware click pattern or define each beat manually.",
+  "metronomeUseAccentSound": "Use separate accent sound",
+  "metronomeUseAccentSoundHelp": "Use a different click source for accented beats instead of only raising the gain.",
+  "metronomePrimarySource": "Primary click source",
+  "metronomeAccentSource": "Accent click source",
+  "metronomeSourceKind": "Source type",
+  "metronomeLocalFilePath": "Local file path",
+  "metronomeLocalFilePathHelp": "Paste a local audio file path and press enter to apply it. Built-in sound remains the fallback.",
+  "metronomeAccentLocalFilePath": "Accent local file path",
+  "metronomeAccentLocalFilePathHelp": "Paste a local accent file path and press enter to apply it. Built-in sound remains the fallback.",
+  "harmonySoundTitle": "Harmony Sound",
+  "harmonyMasterVolume": "Master volume",
+  "harmonyMasterVolumeHelp": "Overall harmony preview loudness for manual and automatic chord playback.",
+  "harmonyPreviewHoldFactor": "Chord hold length",
+  "harmonyPreviewHoldFactorHelp": "Scale how long previewed chords and notes sustain.",
+  "harmonyArpeggioStepSpeed": "Arpeggio step speed",
+  "harmonyArpeggioStepSpeedHelp": "Control how quickly arpeggiated notes step forward.",
+  "harmonyVelocityHumanization": "Velocity humanization",
+  "harmonyVelocityHumanizationHelp": "Add small velocity variation so repeated previews feel less mechanical.",
+  "harmonyGainRandomness": "Gain randomness",
+  "harmonyGainRandomnessHelp": "Add slight per-note loudness variation on supported playback paths.",
+  "harmonyTimingHumanization": "Timing humanization",
+  "harmonyTimingHumanizationHelp": "Slightly loosen simultaneous note attacks for a less rigid block chord."
 }
 

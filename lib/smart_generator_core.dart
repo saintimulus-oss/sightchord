@@ -4,6 +4,7 @@ import 'dart:developer' as developer;
 import 'dart:math';
 
 import 'music/chord_formatting.dart';
+import 'music/chord_timing_models.dart';
 import 'music/chord_theory.dart';
 import 'settings/inversion_settings.dart';
 import 'settings/practice_settings.dart';
@@ -625,7 +626,12 @@ class SmartGeneratorHelper {
 
   static SmartPhraseContext _phraseContextForRequest(SmartStepRequest request) {
     return request.phraseContext ??
-        SmartPhraseContext.rollingForm(request.stepIndex);
+        SmartPhraseContext.rollingForm(
+          request.stepIndex,
+          timeSignature: request.timeSignature,
+          harmonicRhythmPreset: request.harmonicRhythmPreset,
+          timing: request.timing,
+        );
   }
 
   static String? _homeCenterLabelForStep({
@@ -1818,6 +1824,12 @@ class SmartGeneratorHelper {
     final tonicRoman = startingCenter.mode == KeyMode.major
         ? RomanNumeralId.iMaj69
         : _selectMinorTonic(random, request.sourceProfile);
+    final initialPhraseContext = SmartPhraseContext.rollingForm(
+      0,
+      timeSignature: request.timeSignature,
+      harmonicRhythmPreset: request.harmonicRhythmPreset,
+      timing: request.initialTiming,
+    );
     final syntheticRequest = SmartStepRequest(
       stepIndex: 0,
       activeKeys: request.activeKeys,
@@ -1845,8 +1857,11 @@ class SmartGeneratorHelper {
       currentPatternTag: null,
       plannedQueue: const [],
       currentRenderedNonDiatonic: false,
+      timeSignature: request.timeSignature,
+      harmonicRhythmPreset: request.harmonicRhythmPreset,
+      timing: request.initialTiming,
       currentTrace: null,
-      phraseContext: SmartPhraseContext.rollingForm(0),
+      phraseContext: initialPhraseContext,
     );
     final familyPlans = _buildFamilyPlans(
       random: random,
@@ -1861,7 +1876,7 @@ class SmartGeneratorHelper {
         currentKeyCenter: startingCenter,
         currentRomanNumeralId: tonicRoman,
         currentHarmonicFunction: HarmonicFunction.tonic,
-        phraseContext: SmartPhraseContext.rollingForm(0),
+        phraseContext: initialPhraseContext,
         previousTrace: null,
         queuedDecision: QueuedSmartChordDecision(
           queuedChord: _queuedChord(
@@ -1919,7 +1934,9 @@ class SmartGeneratorHelper {
       );
     }
 
-    final phrasePriority = _phrasePriorityForStep(request.stepIndex);
+    final phrasePriority = _phrasePriorityForContext(
+      _phraseContextForRequest(request),
+    );
     final opportunity = _modulationOpportunityForRequest(
       request: request,
       phrasePriority: phrasePriority,
@@ -2084,11 +2101,15 @@ class SmartGeneratorHelper {
               currentPatternTag: currentChord.patternTag,
               plannedQueue: plannedQueue,
               currentRenderedNonDiatonic: currentChord.isRenderedNonDiatonic,
+              timeSignature: request.timeSignature,
+              harmonicRhythmPreset: request.harmonicRhythmPreset,
               currentTrace: currentChord.smartDebug as SmartDecisionTrace?,
               phraseContext: SmartPhraseContext.rollingForm(
                 ((currentChord.smartDebug as SmartDecisionTrace?)?.stepIndex ??
                         0) +
                     1,
+                timeSignature: request.timeSignature,
+                harmonicRhythmPreset: request.harmonicRhythmPreset,
               ),
             ),
           );
@@ -3328,7 +3349,8 @@ class SmartGeneratorHelper {
     );
     if (opportunity.candidates.isNotEmpty &&
         request.modulationIntensity != ModulationIntensity.off &&
-        _phrasePriorityForStep(request.stepIndex) != _PhrasePriority.low) {
+        _phrasePriorityForContext(_phraseContextForRequest(request)) !=
+            _PhrasePriority.low) {
       final modulationFamily =
           _buildCadenceBasedRealModulationFamily(
             targetCenter: opportunity.candidates.first,
@@ -3975,10 +3997,11 @@ class SmartGeneratorHelper {
       RomanPoolPreset.corePrimary ||
       RomanPoolPreset.coreDiatonic ||
       RomanPoolPreset.fullDiatonic => sourceKind == ChordSourceKind.diatonic,
-      RomanPoolPreset.functionalJazz => sourceKind == ChordSourceKind.diatonic ||
-          sourceKind == ChordSourceKind.secondaryDominant ||
-          sourceKind == ChordSourceKind.substituteDominant ||
-          sourceKind == ChordSourceKind.tonicization,
+      RomanPoolPreset.functionalJazz =>
+        sourceKind == ChordSourceKind.diatonic ||
+            sourceKind == ChordSourceKind.secondaryDominant ||
+            sourceKind == ChordSourceKind.substituteDominant ||
+            sourceKind == ChordSourceKind.tonicization,
       RomanPoolPreset.expandedColor => true,
     };
   }
@@ -3998,7 +4021,8 @@ class SmartGeneratorHelper {
     return switch (romanPoolPreset) {
       RomanPoolPreset.expandedColor => true,
       RomanPoolPreset.functionalJazz => true,
-      RomanPoolPreset.fullDiatonic => spec.sourceKind == ChordSourceKind.diatonic,
+      RomanPoolPreset.fullDiatonic =>
+        spec.sourceKind == ChordSourceKind.diatonic,
       RomanPoolPreset.coreDiatonic => switch (romanNumeralId) {
         RomanNumeralId.iMaj7 ||
         RomanNumeralId.iMaj69 ||
@@ -4365,6 +4389,37 @@ class SmartGeneratorHelper {
     return _legacyBaseWeightsForPreset(jazzPreset)[family] ?? 0;
   }
 
+  static double _harmonicRhythmMultiplier({
+    required SmartProgressionFamily family,
+    required SmartPhraseContext phraseContext,
+  }) {
+    if (!phraseContext.isWeakBeatChange) {
+      return 1.0;
+    }
+    final cadentialPickup = phraseContext.isCadentialPickup;
+    final anticipationBoost = phraseContext.isAnticipationBeat ? 1.12 : 1.0;
+    final baseMultiplier = switch (family) {
+      SmartProgressionFamily.coreIiVIMajor ||
+      SmartProgressionFamily.minorIiVAltI ||
+      SmartProgressionFamily.appliedDominantWithRelatedIi ||
+      SmartProgressionFamily.dominantHeadedScopeChain =>
+        cadentialPickup ? 1.34 : 1.16,
+      SmartProgressionFamily.turnaroundISharpIdimIiV ||
+      SmartProgressionFamily.passingDimToIi => cadentialPickup ? 1.42 : 1.18,
+      SmartProgressionFamily.closingPlagalAuthenticHybrid ||
+      SmartProgressionFamily.backdoorRecursivePrep ||
+      SmartProgressionFamily.backdoorIvmBviiI ||
+      SmartProgressionFamily.bridgeReturnHomeCadence =>
+        cadentialPickup ? 1.18 : 1.08,
+      SmartProgressionFamily.turnaroundIViIiV ||
+      SmartProgressionFamily.turnaroundIIIviIiV ||
+      SmartProgressionFamily.relativeMinorReframe ||
+      SmartProgressionFamily.minorLineCliche => 0.62,
+      _ => cadentialPickup ? 0.9 : 0.82,
+    };
+    return baseMultiplier * anticipationBoost;
+  }
+
   static List<_WeightedFamily> _weightedFamiliesForRequest({
     required SmartStepRequest request,
     required _ModulationOpportunity opportunity,
@@ -4400,6 +4455,10 @@ class SmartGeneratorHelper {
       weight *= SmartPriorLookup.sourceProfileMultiplier(
         family,
         request.sourceProfile,
+      );
+      weight *= _harmonicRhythmMultiplier(
+        family: family,
+        phraseContext: phraseContext,
       );
       weight *= _scopeAffinityMultiplier(family: family, request: request);
       weight *= _debtPressureMultiplier(family: family, request: request);
@@ -7997,8 +8056,9 @@ class SmartGeneratorHelper {
           ];
   }
 
-  static _PhrasePriority _phrasePriorityForStep(int stepIndex) {
-    final phraseContext = SmartPhraseContext.rollingForm(stepIndex);
+  static _PhrasePriority _phrasePriorityForContext(
+    SmartPhraseContext phraseContext,
+  ) {
     if (phraseContext.barsToBoundary <= 1) {
       return _PhrasePriority.boundary;
     }

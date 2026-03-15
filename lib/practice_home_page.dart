@@ -7,13 +7,22 @@ import 'package:flutter/services.dart';
 
 import 'audio/beat_clock.dart';
 import 'audio/harmony_audio_models.dart';
+import 'audio/harmony_preview_resolver.dart';
 import 'audio/harmony_audio_service.dart';
 import 'audio/metronome_audio_service.dart';
 import 'audio/sightchord_audio_scope.dart';
 import 'l10n/app_localizations.dart';
+import 'music/anchor_loop_layout.dart';
+import 'music/anchor_loop_planner.dart';
+import 'music/chord_anchor_loop.dart';
 import 'music/chord_formatting.dart';
+import 'music/chord_timing_models.dart';
 import 'music/chord_theory.dart';
+import 'music/harmonic_rhythm_planner.dart';
+import 'music/melody_generator.dart';
+import 'music/melody_models.dart';
 import 'music/practice_chord_queue_state.dart';
+import 'music/progression_analysis_models.dart';
 import 'music/voicing_engine.dart';
 import 'music/voicing_models.dart';
 import 'music/voicing_session_state.dart';
@@ -44,24 +53,29 @@ class _WeightedGeneratedChordCandidate {
 class _PracticeHistoryEntry {
   const _PracticeHistoryEntry({
     required this.queueState,
+    required this.melodyState,
     required this.voicingState,
     required this.currentBeat,
+    required this.melodyGenerationSeed,
   });
 
   final PracticeChordQueueState queueState;
+  final PracticeMelodyQueueState melodyState;
   final VoicingSessionState voicingState;
   final int? currentBeat;
+  final int melodyGenerationSeed;
 }
 
 @visibleForTesting
 ({int nextBeat, bool shouldAdvanceChord}) computeNextPracticeAutoBeat({
   required int? currentBeat,
   int beatCount = 4,
+  int nextChangeBeat = 0,
 }) {
   final nextBeat = ((currentBeat ?? -1) + 1) % beatCount;
   return (
     nextBeat: nextBeat,
-    shouldAdvanceChord: currentBeat != null && nextBeat == 0,
+    shouldAdvanceChord: currentBeat != null && nextBeat == nextChangeBeat,
   );
 }
 
@@ -89,7 +103,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   static const int _minBpm = PracticeSettings.minBpm;
   static const int _maxBpm = PracticeSettings.maxBpm;
-  static const int _beatsPerBar = 4;
   static const int _practiceHistoryLimit = 24;
   static const Duration _scheduledMetronomeLookAhead = Duration(
     milliseconds: 120,
@@ -99,6 +112,7 @@ class _MyHomePageState extends State<MyHomePage> {
   );
 
   final Random _random = Random();
+  final AnchorLoopPlanner _anchorLoopPlanner = const AnchorLoopPlanner();
   late final MetronomeAudioService _metronomeAudio;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<_ChordSwipeSurfaceState> _chordSwipeSurfaceKey =
@@ -111,26 +125,45 @@ class _MyHomePageState extends State<MyHomePage> {
   BeatClock? _autoBeatClock;
   int? _currentBeat;
   int _nextScheduledMetronomeSequence = 0;
+  int _scheduledMetronomeBeatSeed = 0;
   bool _autoRunning = false;
   bool _practiceSessionInitialized = false;
   bool _setupAssistantScheduled = false;
   double? _scheduledMetronomeBaseTimeSeconds;
   bool _requestedHarmonyAudioWarmUp = false;
   HarmonyAudioService? _harmonyAudio;
+  AnchorCyclePlan? _cachedAnchorCyclePlan;
+  KeyCenter? _anchorLoopSeedKeyCenter;
   PracticeChordQueueState _queueState = const PracticeChordQueueState();
+  PracticeMelodyQueueState _melodyState = const PracticeMelodyQueueState();
   VoicingSessionState _voicingState = const VoicingSessionState();
+  int _melodyGenerationSeed = 0;
   final List<_PracticeHistoryEntry> _practiceHistory =
       <_PracticeHistoryEntry>[];
 
   PracticeSettings get _settings => widget.controller.settings;
+  ChordAnchorLoop get _anchorLoop => AnchorLoopLayout.sanitizeLoop(
+    loop: _settings.anchorLoop,
+    timeSignature: _settings.timeSignature,
+    harmonicRhythmPreset: _settings.harmonicRhythmPreset,
+  );
+  bool get _hasAnchorLoop => _anchorLoop.hasEnabledSlots;
+  int get _beatsPerBar => _settings.beatsPerBar;
+  GeneratedChordEvent? get _currentChordEvent => _queueState.currentEvent;
+  GeneratedChordEvent? get _nextChordEvent => _queueState.nextEvent;
+  GeneratedChordEvent? get _lookAheadChordEvent => _queueState.lookAheadEvent;
   GeneratedChord? get _previousChord => _queueState.previousChord;
   GeneratedChord? get _currentChord => _queueState.currentChord;
   GeneratedChord? get _nextChord => _queueState.nextChord;
   GeneratedChord? get _lookAheadChord => _queueState.lookAheadChord;
+  GeneratedMelodyEvent? get _currentMelodyEvent => _melodyState.currentEvent;
+  GeneratedMelodyEvent? get _nextMelodyEvent => _melodyState.nextEvent;
   List<QueuedSmartChord> get _plannedSmartChordQueue =>
       _queueState.plannedSmartChordQueue;
   VoicingRecommendationSet? get _voicingRecommendations =>
       _voicingState.recommendations;
+  PerformanceVoicingPreview? get _performanceVoicingPreview =>
+      _voicingRecommendations?.performancePreview;
   ConcreteVoicing? get _lockedCurrentVoicing =>
       _voicingState.lockedCurrentVoicing;
   ConcreteVoicing? get _continuityReferenceVoicing =>
@@ -140,6 +173,73 @@ class _MyHomePageState extends State<MyHomePage> {
   bool get _usesGuidedSettingsMode =>
       _settings.settingsComplexityMode == SettingsComplexityMode.guided;
   bool get _isSetupAssistantRequired => !_settings.guidedSetupCompleted;
+  int get _nextChangeBeat => _nextChordEvent?.timing.changeBeat ?? 0;
+
+  KeyCenter? get _resolvedAnchorLoopSeedKeyCenter {
+    final cachedSeed = _anchorLoopSeedKeyCenter;
+    if (cachedSeed != null) {
+      return cachedSeed;
+    }
+    if (_orderedKeyCenters.isNotEmpty) {
+      _anchorLoopSeedKeyCenter = _orderedKeyCenters.first;
+      return _anchorLoopSeedKeyCenter;
+    }
+    return null;
+  }
+
+  AnchorCyclePlan? get _activeAnchorCyclePlan {
+    if (!_hasAnchorLoop) {
+      return null;
+    }
+    return _cachedAnchorCyclePlan ??= _anchorLoopPlanner.buildCyclePlan(
+      settings: _settings,
+      loop: _anchorLoop,
+      seedKeyCenter: _resolvedAnchorLoopSeedKeyCenter,
+    );
+  }
+
+  void _invalidateAnchorLoopPlanCache() {
+    _cachedAnchorCyclePlan = null;
+    _anchorLoopSeedKeyCenter = null;
+  }
+
+  String _displaySymbolForEvent(GeneratedChordEvent? event) {
+    if (event == null) {
+      return '';
+    }
+    return event.displaySymbolOverride ??
+        ChordRenderingHelper.renderedSymbol(
+          event.chord,
+          _settings.chordSymbolStyle,
+        );
+  }
+
+  bool _preferFlatForMelodyEvent(GeneratedMelodyEvent? event) {
+    final chord = event?.chordEvent.chord;
+    if (chord == null) {
+      return true;
+    }
+    return chord.keyCenter?.prefersFlatSpelling ??
+        MusicTheory.prefersFlatSpellingForRoot(chord.symbolData.root);
+  }
+
+  String _previewTextForMelodyEvent(GeneratedMelodyEvent? event) {
+    if (event == null || event.notes.isEmpty) {
+      return '';
+    }
+    return event.previewText(preferFlat: _preferFlatForMelodyEvent(event));
+  }
+
+  HarmonicFunction _chordFunctionForProgressionFunction(
+    ProgressionHarmonicFunction function,
+  ) {
+    return switch (function) {
+      ProgressionHarmonicFunction.tonic => HarmonicFunction.tonic,
+      ProgressionHarmonicFunction.predominant => HarmonicFunction.predominant,
+      ProgressionHarmonicFunction.dominant => HarmonicFunction.dominant,
+      ProgressionHarmonicFunction.other => HarmonicFunction.free,
+    };
+  }
 
   @override
   void initState() {
@@ -202,12 +302,13 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_requestedHarmonyAudioWarmUp) {
-      return;
-    }
     final harmonyAudio = SightChordAudioScope.maybeOf(context);
     _harmonyAudio = harmonyAudio;
     if (harmonyAudio == null) {
+      return;
+    }
+    unawaited(_syncHarmonyAudioConfig(_settings));
+    if (_requestedHarmonyAudioWarmUp) {
       return;
     }
     _requestedHarmonyAudioWarmUp = true;
@@ -215,17 +316,41 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _initAudio() async {
-    await _queueMetronomeSoundLoad(_settings.metronomeSound);
+    await Future.wait<void>([
+      _queueMetronomeAudioLoad(_settings),
+      _syncHarmonyAudioConfig(_settings),
+    ]);
   }
 
-  Future<void> _queueMetronomeSoundLoad(MetronomeSound sound) async {
-    final result = await _metronomeAudio.queueSoundLoad(sound);
+  Future<void> _queueMetronomeAudioLoad(PracticeSettings settings) async {
+    final result = await _metronomeAudio.queueSourceLoad(
+      primarySource: settings.metronomeSource,
+      accentSource: settings.metronomeAccentSource,
+      useAccentSource: settings.metronomeUseAccentSound,
+    );
     if (!mounted) {
       return;
     }
     if (result.preciseAssetReloaded && _autoRunning) {
       _restartMetronomeScheduling(immediateFirstBeat: false);
     }
+  }
+
+  Future<void> _syncHarmonyAudioConfig(PracticeSettings settings) async {
+    final harmonyAudio = _harmonyAudio;
+    if (harmonyAudio == null) {
+      return;
+    }
+    await harmonyAudio.applyConfig(
+      HarmonyAudioConfig(
+        masterVolume: settings.harmonyMasterVolume,
+        previewHoldFactor: settings.harmonyPreviewHoldFactor,
+        arpeggioStepSpeed: settings.harmonyArpeggioStepSpeed,
+        velocityHumanization: settings.harmonyVelocityHumanization,
+        gainRandomness: settings.harmonyGainRandomness,
+        timingHumanization: settings.harmonyTimingHumanization,
+      ),
+    );
   }
 
   Duration _beatInterval() {
@@ -337,15 +462,179 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  ChordTimingSpec _initialTimingSpec() {
+    return HarmonicRhythmPlanner.initialTiming(
+      settings: _settings,
+      anchorLoop: _anchorLoop,
+    );
+  }
+
+  ChordTimingSpec _nextTimingSpec({
+    required GeneratedChordEvent? currentEvent,
+  }) {
+    return HarmonicRhythmPlanner.nextTiming(
+      settings: _settings,
+      currentEvent: currentEvent,
+      anchorLoop: _anchorLoop,
+    );
+  }
+
+  SmartPhraseContext _phraseContextForTiming({
+    required int stepIndex,
+    required ChordTimingSpec timing,
+  }) {
+    return SmartPhraseContext.rollingForm(
+      stepIndex,
+      timeSignature: _settings.timeSignature,
+      harmonicRhythmPreset: _settings.harmonicRhythmPreset,
+      timing: timing,
+    );
+  }
+
+  GeneratedChordEvent _eventForChord({
+    required GeneratedChord chord,
+    required ChordTimingSpec timing,
+  }) {
+    return GeneratedChordEvent(chord: chord, timing: timing);
+  }
+
+  int? _manualBeatStateForEvent(GeneratedChordEvent? event) {
+    if (_settings.usesLegacyBarTiming) {
+      return null;
+    }
+    return event?.timing.changeBeat;
+  }
+
+  int? _normalizeBeatForSettings(PracticeSettings settings, int? currentBeat) {
+    if (currentBeat == null) {
+      return null;
+    }
+    return currentBeat.clamp(0, settings.beatsPerBar - 1).toInt();
+  }
+
+  int _beatIndexForScheduledSequence(int sequence) {
+    return (_scheduledMetronomeBeatSeed + sequence) % _beatsPerBar;
+  }
+
+  HarmonyPlaybackOverrides _autoPlayOverridesForEvent(
+    GeneratedChordEvent event,
+    HarmonyChordClip clip, {
+    required HarmonyPlaybackPattern pattern,
+  }) {
+    final totalBeatMicros =
+        _beatInterval().inMicroseconds * event.timing.durationBeats;
+    final totalHoldFactor =
+        (_settings.autoPlayHoldFactor * _settings.harmonyPreviewHoldFactor)
+            .clamp(0.18, 2.0);
+    final totalBudget = Duration(
+      microseconds: max(1, (totalBeatMicros * totalHoldFactor).round()),
+    );
+    switch (pattern) {
+      case HarmonyPlaybackPattern.block:
+        final trimmedBudget = totalBudget - const Duration(milliseconds: 18);
+        return HarmonyPlaybackOverrides(
+          blockHold: trimmedBudget > const Duration(milliseconds: 70)
+              ? trimmedBudget
+              : const Duration(milliseconds: 70),
+        );
+      case HarmonyPlaybackPattern.arpeggio:
+        final noteCount = max(1, clip.notes.length);
+        final maxGapMicros = noteCount <= 1
+            ? 0
+            : (totalBudget.inMicroseconds * 0.24).round();
+        final gapMicros = noteCount <= 1
+            ? 0
+            : (maxGapMicros / noteCount).round().clamp(0, 140000);
+        final noteHoldMicros = max(
+          50000,
+          ((totalBudget.inMicroseconds - (gapMicros * max(0, noteCount - 1))) /
+                  noteCount)
+              .round()
+              .clamp(50000, 420000),
+        );
+        return HarmonyPlaybackOverrides(
+          arpeggioNoteHold: Duration(microseconds: noteHoldMicros),
+          arpeggioGap: Duration(microseconds: gapMicros),
+        );
+    }
+  }
+
+  Future<void> _playEventChord(
+    GeneratedChordEvent event, {
+    required HarmonyPlaybackPattern pattern,
+    bool isAutoPlay = false,
+    ConcreteVoicing? preferredVoicing,
+    GeneratedMelodyEvent? melodyEvent,
+    MelodyPlaybackMode playbackMode = MelodyPlaybackMode.chordsOnly,
+  }) async {
+    await _playEventPreview(
+      event: event,
+      pattern: pattern,
+      playbackMode: playbackMode,
+      preferredVoicing: preferredVoicing,
+      melodyEvent: melodyEvent,
+      isAutoPlay: isAutoPlay,
+    );
+  }
+
+  Future<void> _playAutoChordChangeForCurrentEvent() async {
+    if (!_settings.autoPlayChordChanges) {
+      return;
+    }
+    final currentEvent = _currentChordEvent;
+    if (currentEvent == null) {
+      return;
+    }
+    await _playEventChord(
+      currentEvent,
+      pattern: _settings.autoPlayPattern,
+      isAutoPlay: true,
+      preferredVoicing: _preferredPlaybackVoicing(),
+      melodyEvent: _currentMelodyEvent,
+      playbackMode: _autoPlaybackMode(),
+    );
+  }
+
+  Future<void> _playUpcomingAutoChordChange(GeneratedChordEvent event) async {
+    if (!_settings.autoPlayChordChanges) {
+      return;
+    }
+    await _playEventChord(
+      event,
+      pattern: _settings.autoPlayPattern,
+      isAutoPlay: true,
+      preferredVoicing: _preferredUpcomingPlaybackVoicing(),
+      melodyEvent: _nextMelodyEvent,
+      playbackMode: _autoPlaybackMode(),
+    );
+  }
+
   void _applySettings(
     PracticeSettings nextSettings, {
     bool reseed = false,
     bool syncBpmText = false,
   }) {
     final previousSettings = _settings;
-    if (nextSettings.metronomeSound != previousSettings.metronomeSound) {
-      unawaited(_queueMetronomeSoundLoad(nextSettings.metronomeSound));
+    _invalidateAnchorLoopPlanCache();
+    if (nextSettings.metronomeSource != previousSettings.metronomeSource ||
+        nextSettings.metronomeAccentSource !=
+            previousSettings.metronomeAccentSource ||
+        nextSettings.metronomeUseAccentSound !=
+            previousSettings.metronomeUseAccentSound) {
+      unawaited(_queueMetronomeAudioLoad(nextSettings));
     }
+    if (PracticeSettingsEffects.harmonyAudioChanged(
+      previousSettings,
+      nextSettings,
+    )) {
+      unawaited(_syncHarmonyAudioConfig(nextSettings));
+    }
+    final shouldRegenerateMelody =
+        !reseed &&
+        PracticeSettingsEffects.melodyGenerationChanged(
+          previousSettings,
+          nextSettings,
+        );
     final forceLookAheadRefresh =
         !reseed &&
         PracticeSettingsEffects.shouldForceLookAheadRefresh(
@@ -355,23 +644,35 @@ class _MyHomePageState extends State<MyHomePage> {
     unawaited(_persistSettingsUpdate(nextSettings));
     setState(() {
       _practiceHistory.clear();
+      _currentBeat = _normalizeBeatForSettings(nextSettings, _currentBeat);
       if (syncBpmText) {
         _bpmController.text = '${nextSettings.bpm}';
       }
       if (reseed) {
         _reseedChordQueue();
       } else {
+        if (shouldRegenerateMelody) {
+          _melodyGenerationSeed += 1;
+          _rebuildMelodyQueue();
+        } else if (!nextSettings.melodyGenerationEnabled) {
+          _melodyState = _melodyState.reset();
+        }
         _recomputeVoicingSuggestions(
           forceLookAheadRefresh: forceLookAheadRefresh,
         );
       }
     });
-    if (_autoRunning && nextSettings.bpm != previousSettings.bpm) {
+    if (_autoRunning &&
+        (nextSettings.bpm != previousSettings.bpm ||
+            nextSettings.timeSignature != previousSettings.timeSignature ||
+            nextSettings.harmonicRhythmPreset !=
+                previousSettings.harmonicRhythmPreset)) {
       _startAutoLoop(immediateFirstBeat: false);
     } else if (_autoRunning &&
-        (_usesPreciseMetronomeScheduling ||
-            nextSettings.metronomeEnabled !=
-                previousSettings.metronomeEnabled)) {
+        PracticeSettingsEffects.metronomeAudioChanged(
+          previousSettings,
+          nextSettings,
+        )) {
       _restartMetronomeScheduling(immediateFirstBeat: false);
     }
   }
@@ -391,30 +692,201 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  GeneratedMelodyEvent _generateMelodyEvent({
+    required GeneratedChordEvent chordEvent,
+    GeneratedChordEvent? previousChordEvent,
+    GeneratedChordEvent? nextChordEvent,
+    GeneratedMelodyEvent? previousMelodyEvent,
+  }) {
+    return MelodyGenerator.generateEvent(
+      request: MelodyGenerationRequest(
+        chordEvent: chordEvent,
+        previousChordEvent: previousChordEvent,
+        nextChordEvent: nextChordEvent,
+        previousMelodyEvent: previousMelodyEvent,
+        settings: _settings,
+        seed: _melodyGenerationSeed,
+      ),
+    );
+  }
+
+  void _rebuildMelodyQueue() {
+    if (!_settings.melodyGenerationEnabled) {
+      _melodyState = _melodyState.reset();
+      return;
+    }
+
+    GeneratedMelodyEvent? build(
+      GeneratedChordEvent? chordEvent, {
+      GeneratedChordEvent? previousChordEvent,
+      GeneratedChordEvent? nextChordEvent,
+      GeneratedMelodyEvent? previousMelodyEvent,
+    }) {
+      if (chordEvent == null) {
+        return null;
+      }
+      return _generateMelodyEvent(
+        chordEvent: chordEvent,
+        previousChordEvent: previousChordEvent,
+        nextChordEvent: nextChordEvent,
+        previousMelodyEvent: previousMelodyEvent,
+      );
+    }
+
+    final previousMelody = build(
+      _queueState.previousEvent,
+      nextChordEvent: _queueState.currentEvent,
+    );
+    final currentMelody = build(
+      _currentChordEvent,
+      previousChordEvent: _queueState.previousEvent,
+      nextChordEvent: _nextChordEvent,
+      previousMelodyEvent: previousMelody,
+    );
+    final nextMelody = build(
+      _nextChordEvent,
+      previousChordEvent: _currentChordEvent,
+      nextChordEvent: _lookAheadChordEvent,
+      previousMelodyEvent: currentMelody ?? previousMelody,
+    );
+    final lookAheadMelody = build(
+      _lookAheadChordEvent,
+      previousChordEvent: _nextChordEvent,
+      previousMelodyEvent: nextMelody ?? currentMelody ?? previousMelody,
+    );
+    _melodyState = PracticeMelodyQueueState(
+      previousEvent: previousMelody,
+      currentEvent: currentMelody,
+      nextEvent: nextMelody,
+      lookAheadEvent: lookAheadMelody,
+    );
+  }
+
+  MelodyPlaybackMode _autoPlaybackMode() {
+    if (_settings.melodyGenerationEnabled &&
+        _settings.autoPlayMelodyWithChords) {
+      return MelodyPlaybackMode.both;
+    }
+    return MelodyPlaybackMode.chordsOnly;
+  }
+
+  bool _playbackModeUsesChord(MelodyPlaybackMode mode) {
+    return mode == MelodyPlaybackMode.chordsOnly ||
+        mode == MelodyPlaybackMode.both;
+  }
+
+  bool _playbackModeUsesMelody(MelodyPlaybackMode mode) {
+    return mode == MelodyPlaybackMode.melodyOnly ||
+        mode == MelodyPlaybackMode.both;
+  }
+
+  HarmonyMelodyClip _melodyClipForEvent(GeneratedMelodyEvent melodyEvent) {
+    final beatMicros = _beatInterval().inMicroseconds;
+
+    Duration durationFromBeats(double beats) {
+      return Duration(
+        microseconds: max(1, (beatMicros * beats).round()),
+      );
+    }
+
+    return HarmonyMelodyClip(
+      label: _displaySymbolForEvent(melodyEvent.chordEvent),
+      notes: [
+        for (final note in melodyEvent.notes)
+          HarmonyMelodyNote(
+            midiNote: note.midiNote,
+            startOffset: durationFromBeats(note.startBeatOffset),
+            duration: durationFromBeats(note.durationBeats),
+            velocity: note.velocity,
+            gain: note.gain,
+            toneLabel: note.toneLabel,
+          ),
+      ],
+    );
+  }
+
+  Future<void> _playEventPreview({
+    required GeneratedChordEvent event,
+    required HarmonyPlaybackPattern pattern,
+    required MelodyPlaybackMode playbackMode,
+    ConcreteVoicing? preferredVoicing,
+    GeneratedMelodyEvent? melodyEvent,
+    bool isAutoPlay = false,
+  }) async {
+    final harmonyAudio = _harmonyAudio;
+    if (harmonyAudio == null) {
+      return;
+    }
+    final chordClip = _playbackModeUsesChord(playbackMode)
+        ? HarmonyPreviewResolver.auditionClipForGeneratedChord(
+            event.chord,
+            preferredVoicing: preferredVoicing,
+          )
+        : null;
+    final compositeClip = HarmonyCompositeClip(
+      chordClip: chordClip,
+      melodyClip:
+          _playbackModeUsesMelody(playbackMode) && melodyEvent != null
+          ? _melodyClipForEvent(melodyEvent)
+          : null,
+      label: _displaySymbolForEvent(event),
+    );
+    if (compositeClip.isEmpty) {
+      return;
+    }
+    await harmonyAudio.playCompositeClip(
+      compositeClip,
+      pattern: pattern,
+      overrides: isAutoPlay && chordClip != null
+          ? _autoPlayOverridesForEvent(event, chordClip, pattern: pattern)
+          : null,
+    );
+  }
+
   Future<void> _playCurrentChordPreview({
     required HarmonyPlaybackPattern pattern,
   }) async {
-    final currentChord = _currentChord;
-    final harmonyAudio = _harmonyAudio;
-    if (currentChord == null || harmonyAudio == null) {
+    final currentEvent = _currentChordEvent;
+    if (currentEvent == null) {
       return;
     }
-    await harmonyAudio.playGeneratedChord(
-      currentChord,
-      voicing: _authoritativeSelectedVoicing(),
+    await _playEventPreview(
+      event: currentEvent,
       pattern: pattern,
+      playbackMode: _settings.melodyPlaybackMode,
+      preferredVoicing: _preferredPlaybackVoicing(),
+      melodyEvent: _currentMelodyEvent,
+    );
+  }
+
+  Future<void> _playVoicingSuggestionPreview(
+    VoicingSuggestion suggestion,
+  ) async {
+    final harmonyAudio = _harmonyAudio;
+    if (harmonyAudio == null) {
+      return;
+    }
+    await harmonyAudio.playClip(
+      HarmonyPreviewResolver.fromVoicing(
+        suggestion.voicing,
+        label: suggestion.label,
+      ),
     );
   }
 
   void _ensureChordQueueInitialized() {
-    _queueState = _queueState.ensureNextChord(_generateChord());
+    _queueState = _queueState.ensureNextEvent(_generateChordEvent());
     _refreshLookAheadChord();
+    _rebuildMelodyQueue();
   }
 
   void _reseedChordQueue() {
     _practiceSessionInitialized = true;
     _practiceHistory.clear();
+    _invalidateAnchorLoopPlanCache();
+    _melodyGenerationSeed += 1;
     _queueState = _queueState.reset();
+    _melodyState = _melodyState.reset();
     _voicingState = _voicingState.reset();
     _ensureChordQueueInitialized();
     _recomputeVoicingSuggestions();
@@ -427,10 +899,22 @@ class _MyHomePageState extends State<MyHomePage> {
     _practiceHistory.add(
       _PracticeHistoryEntry(
         queueState: _queueState,
+        melodyState: _melodyState,
         voicingState: _voicingState,
         currentBeat: _currentBeat,
+        melodyGenerationSeed: _melodyGenerationSeed,
       ),
     );
+  }
+
+  void _regenerateCurrentMelody() {
+    if (!_settings.melodyGenerationEnabled) {
+      return;
+    }
+    setState(() {
+      _melodyGenerationSeed += 1;
+      _rebuildMelodyQueue();
+    });
   }
 
   void _restorePreviousChord() {
@@ -441,8 +925,12 @@ class _MyHomePageState extends State<MyHomePage> {
     final snapshot = _practiceHistory.removeLast();
     setState(() {
       _queueState = snapshot.queueState;
+      _melodyState = snapshot.melodyState;
       _voicingState = snapshot.voicingState;
-      _currentBeat = null;
+      _melodyGenerationSeed = snapshot.melodyGenerationSeed;
+      _currentBeat = _settings.usesLegacyBarTiming
+          ? null
+          : _normalizeBeatForSettings(_settings, snapshot.currentBeat);
     });
     if (shouldRestartAutoLoop) {
       _startAutoLoop(immediateFirstBeat: false);
@@ -450,19 +938,15 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   ChordExclusionContext _buildExclusionContext({
-    GeneratedChord? current,
-    Set<String> renderedSymbols = const <String>{},
+    GeneratedChordEvent? currentEvent,
+    Set<String> displayedSymbols = const <String>{},
   }) {
-    final nextRenderedSymbols = <String>{...renderedSymbols};
+    final nextRenderedSymbols = <String>{...displayedSymbols};
     final repeatGuardKeys = <String>{};
     final harmonicComparisonKeys = <String>{};
+    final current = currentEvent?.chord;
     if (current != null) {
-      nextRenderedSymbols.add(
-        ChordRenderingHelper.renderedSymbol(
-          current,
-          _settings.chordSymbolStyle,
-        ),
-      );
+      nextRenderedSymbols.add(_displaySymbolForEvent(currentEvent));
       repeatGuardKeys.add(current.repeatGuardKey);
       harmonicComparisonKeys.add(current.harmonicComparisonKey);
     }
@@ -473,39 +957,35 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  String _renderedSymbolForChord(GeneratedChord chord) {
-    return ChordRenderingHelper.renderedSymbol(
-      chord,
-      _settings.chordSymbolStyle,
-    );
-  }
-
   void _refreshLookAheadChord({bool force = false}) {
     if (!_settings.voicingSuggestionsEnabled || _settings.lookAheadDepth < 2) {
-      _queueState = _queueState.withLookAheadChord(null);
+      _queueState = _queueState.withLookAheadEvent(null);
+      _rebuildMelodyQueue();
       return;
     }
-    final nextChord = _nextChord;
-    if (nextChord == null) {
-      _queueState = _queueState.withLookAheadChord(null);
+    final nextEvent = _nextChordEvent;
+    if (nextEvent == null) {
+      _queueState = _queueState.withLookAheadEvent(null);
+      _rebuildMelodyQueue();
       return;
     }
-    if (_lookAheadChord != null && !force) {
+    if (_lookAheadChordEvent != null && !force) {
       return;
     }
-    final renderedSymbols = <String>{};
-    if (_currentChord != null) {
-      renderedSymbols.add(_renderedSymbolForChord(_currentChord!));
+    final displayedSymbols = <String>{};
+    if (_currentChordEvent != null) {
+      displayedSymbols.add(_displaySymbolForEvent(_currentChordEvent));
     }
-    _queueState = _queueState.withLookAheadChord(
-      _generateChord(
+    _queueState = _queueState.withLookAheadEvent(
+      _generateChordEvent(
         exclusionContext: _buildExclusionContext(
-          current: nextChord,
-          renderedSymbols: renderedSymbols,
+          currentEvent: nextEvent,
+          displayedSymbols: displayedSymbols,
         ),
-        current: nextChord,
+        currentEvent: nextEvent,
       ),
     );
+    _rebuildMelodyQueue();
   }
 
   List<GeneratedChord> _voicingFutureChords() => [?_lookAheadChord];
@@ -533,6 +1013,38 @@ class _MyHomePageState extends State<MyHomePage> {
     return _voicingState.authoritativeSelectedVoicing;
   }
 
+  ConcreteVoicing? _performanceRepresentativeVoicing() {
+    return _performanceVoicingPreview?.representativeVoicing;
+  }
+
+  ConcreteVoicing? _preferredPlaybackVoicing() {
+    final performanceVoicing = _performanceRepresentativeVoicing();
+    if (_settings.voicingDisplayMode == VoicingDisplayMode.performance &&
+        performanceVoicing != null) {
+      return performanceVoicing;
+    }
+    return _authoritativeSelectedVoicing() ??
+        (_voicingRecommendations != null &&
+                _voicingRecommendations!.suggestions.isNotEmpty
+            ? _voicingRecommendations!.suggestions.first.voicing
+            : null);
+  }
+
+  ConcreteVoicing? _preferredUpcomingPlaybackVoicing() {
+    if (_settings.voicingDisplayMode != VoicingDisplayMode.performance) {
+      return null;
+    }
+    return _performanceVoicingPreview?.nextVoicing;
+  }
+
+  String? _displayedVoicingSignature() {
+    if (_settings.voicingDisplayMode == VoicingDisplayMode.performance) {
+      return _performanceRepresentativeVoicing()?.signature ??
+          _authoritativeSelectedVoicing()?.signature;
+    }
+    return _authoritativeSelectedVoicing()?.signature;
+  }
+
   VoicingSuggestionKind get _preferredVoicingSuggestionKind =>
       switch (_settings.preferredSuggestionKind) {
         DefaultVoicingSuggestionKind.natural => VoicingSuggestionKind.natural,
@@ -542,18 +1054,22 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _promoteChordQueue() {
     _voicingState = _voicingState.promoteChordQueue();
-    final nextCurrentChord =
-        _nextChord ?? _generateChord(current: _currentChord);
-    final nextQueuedChord =
-        _lookAheadChord ??
-        _generateChord(
-          exclusionContext: _buildExclusionContext(current: nextCurrentChord),
-          current: nextCurrentChord,
+    final nextCurrentEvent =
+        _nextChordEvent ??
+        _generateChordEvent(currentEvent: _currentChordEvent);
+    final nextQueuedEvent =
+        _lookAheadChordEvent ??
+        _generateChordEvent(
+          exclusionContext: _buildExclusionContext(
+            currentEvent: nextCurrentEvent,
+          ),
+          currentEvent: nextCurrentEvent,
         );
     _queueState = _queueState.promote(
-      nextCurrentChord: nextCurrentChord,
-      nextQueuedChord: nextQueuedChord,
+      nextCurrentEvent: nextCurrentEvent,
+      nextQueuedEvent: nextQueuedEvent,
     );
+    _rebuildMelodyQueue();
     _recomputeVoicingSuggestions();
   }
 
@@ -629,9 +1145,192 @@ class _MyHomePageState extends State<MyHomePage> {
         );
   }
 
+  AppliedType? _appliedTypeForSourceKind(ChordSourceKind sourceKind) {
+    return switch (sourceKind) {
+      ChordSourceKind.secondaryDominant => AppliedType.secondary,
+      ChordSourceKind.substituteDominant => AppliedType.substitute,
+      _ => null,
+    };
+  }
+
+  GeneratedChord _buildParsedGeneratedChord({
+    required ParsedChord parsedChord,
+    required ChordExclusionContext exclusionContext,
+    GeneratedChord? previousChord,
+    KeyCenter? keyCenter,
+    RomanNumeralId? romanNumeralId,
+    ChordSourceKind? sourceKind,
+    HarmonicFunction? harmonicFunction,
+    bool allowVariation = false,
+  }) {
+    final resolvedSourceKind =
+        sourceKind ??
+        (romanNumeralId == null
+            ? ChordSourceKind.free
+            : MusicTheory.specFor(romanNumeralId).sourceKind);
+    final resolvedFunction =
+        harmonicFunction ??
+        (romanNumeralId == null
+            ? HarmonicFunction.free
+            : MusicTheory.specFor(romanNumeralId).harmonicFunction);
+    if (allowVariation && romanNumeralId != null && keyCenter != null) {
+      final generated = _buildGeneratedChord(
+        keyCenter.tonicName,
+        romanNumeralId,
+        keyCenter: keyCenter,
+        previousChord: previousChord,
+        exclusionContext: exclusionContext,
+      );
+      if (generated != null &&
+          !_isExcludedCandidate(generated, exclusionContext)) {
+        return generated;
+      }
+    }
+    final symbolData = ChordSymbolData(
+      root: parsedChord.root,
+      harmonicQuality: parsedChord.displayQuality,
+      renderQuality: parsedChord.displayQuality,
+      tensions: parsedChord.tensions,
+      bass: parsedChord.bass,
+    );
+    final appliedType = _appliedTypeForSourceKind(resolvedSourceKind);
+    final repeatGuardKey = ChordRenderingHelper.buildRepeatGuardKey(
+      keyName: keyCenter?.tonicName,
+      romanNumeralId: romanNumeralId,
+      harmonicFunction: resolvedFunction,
+      plannedChordKind: PlannedChordKind.resolvedRoman,
+      symbolData: symbolData,
+      sourceKind: resolvedSourceKind,
+      appliedType: appliedType,
+      resolutionTargetRomanId: romanNumeralId == null || keyCenter == null
+          ? null
+          : MusicTheory.modeAwareResolutionTarget(
+              romanNumeralId,
+              keyCenter.mode,
+            ),
+    );
+    final harmonicComparisonKey =
+        ChordRenderingHelper.buildHarmonicComparisonKey(
+          keyName: keyCenter?.tonicName,
+          romanNumeralId: romanNumeralId,
+          harmonicFunction: resolvedFunction,
+          plannedChordKind: PlannedChordKind.resolvedRoman,
+          symbolData: symbolData,
+          sourceKind: resolvedSourceKind,
+          appliedType: appliedType,
+          resolutionTargetRomanId: romanNumeralId == null || keyCenter == null
+              ? null
+              : MusicTheory.modeAwareResolutionTarget(
+                  romanNumeralId,
+                  keyCenter.mode,
+                ),
+        );
+    return GeneratedChord(
+      symbolData: symbolData,
+      repeatGuardKey: repeatGuardKey,
+      harmonicComparisonKey: harmonicComparisonKey,
+      keyName: keyCenter?.tonicName,
+      keyCenter: keyCenter,
+      romanNumeralId: romanNumeralId,
+      harmonicFunction: resolvedFunction,
+      plannedChordKind: PlannedChordKind.resolvedRoman,
+      sourceKind: resolvedSourceKind,
+      appliedType: appliedType,
+      resolutionTargetRomanId: romanNumeralId == null || keyCenter == null
+          ? null
+          : MusicTheory.modeAwareResolutionTarget(
+              romanNumeralId,
+              keyCenter.mode,
+            ),
+      isRenderedNonDiatonic: ChordRenderingHelper.isRenderedNonDiatonic(
+        romanNumeralId: romanNumeralId,
+        plannedChordKind: PlannedChordKind.resolvedRoman,
+        sourceKind: resolvedSourceKind,
+        renderQuality: symbolData.renderQuality,
+        tensions: symbolData.tensions,
+      ),
+    );
+  }
+
+  GeneratedChordEvent? _buildAnchorLoopEvent({
+    required ChordTimingSpec timing,
+    required ChordExclusionContext exclusionContext,
+    GeneratedChordEvent? currentEvent,
+  }) {
+    final cyclePlan = _activeAnchorCyclePlan;
+    final slotPlan = cyclePlan?.planForTiming(timing);
+    if (cyclePlan == null || slotPlan == null) {
+      return null;
+    }
+
+    final analysis = slotPlan.primaryAnalysis;
+    final keyCenter = cyclePlan.analysisKeyCenter ?? cyclePlan.seedKeyCenter;
+    if (slotPlan.isAnchor) {
+      final parsedAnchorChord = slotPlan.parsedAnchorChord;
+      if (parsedAnchorChord == null) {
+        return null;
+      }
+      _queueState = _queueState.clearPlannedSmartChordQueue();
+      return GeneratedChordEvent(
+        chord: _buildParsedGeneratedChord(
+          parsedChord: parsedAnchorChord,
+          exclusionContext: exclusionContext,
+          previousChord: currentEvent?.chord,
+          keyCenter: keyCenter,
+          romanNumeralId: analysis?.romanNumeralId,
+          sourceKind: analysis?.sourceKind,
+          harmonicFunction: analysis == null
+              ? HarmonicFunction.free
+              : _chordFunctionForProgressionFunction(analysis.harmonicFunction),
+        ),
+        timing: timing,
+        displaySymbolOverride: slotPlan.anchorSlot?.trimmedChordSymbol,
+      );
+    }
+
+    if (analysis == null) {
+      return null;
+    }
+
+    final chosenAlternative =
+        _anchorLoop.varyNonAnchorSlots &&
+            slotPlan.compatibleAlternatives.isNotEmpty
+        ? slotPlan.compatibleAlternatives[_random.nextInt(
+            slotPlan.compatibleAlternatives.length,
+          )]
+        : null;
+    final chosenSymbol =
+        chosenAlternative?.chordSymbol ?? analysis.resolvedSymbol;
+    final parsedCandidate =
+        _anchorLoopPlanner.tryParseChordSymbol(chosenSymbol) ?? analysis.chord;
+    final chord = _buildParsedGeneratedChord(
+      parsedChord: parsedCandidate,
+      exclusionContext: exclusionContext,
+      previousChord: currentEvent?.chord,
+      keyCenter: keyCenter,
+      romanNumeralId:
+          chosenAlternative?.romanNumeralId ?? analysis.romanNumeralId,
+      sourceKind: chosenAlternative?.sourceKind ?? analysis.sourceKind,
+      harmonicFunction: _chordFunctionForProgressionFunction(
+        chosenAlternative?.harmonicFunction ?? analysis.harmonicFunction,
+      ),
+      allowVariation:
+          _anchorLoop.varyNonAnchorSlots &&
+          chosenAlternative == null &&
+          analysis.romanNumeralId != null &&
+          keyCenter != null,
+    );
+    if (_isExcludedCandidate(chord, exclusionContext)) {
+      return null;
+    }
+    _queueState = _queueState.clearPlannedSmartChordQueue();
+    return GeneratedChordEvent(chord: chord, timing: timing);
+  }
+
   GeneratedChord _generateChord({
     ChordExclusionContext exclusionContext = const ChordExclusionContext(),
     GeneratedChord? current,
+    ChordTimingSpec? timing,
   }) {
     if (!_usesKeyMode) {
       final qualities = _activeChordQualities.toList(growable: false);
@@ -655,6 +1354,7 @@ class _MyHomePageState extends State<MyHomePage> {
         keyCenters: keyCenters,
         exclusionContext: exclusionContext,
         current: current,
+        timing: timing,
       );
     }
 
@@ -662,6 +1362,29 @@ class _MyHomePageState extends State<MyHomePage> {
       keyCenters: keyCenters,
       exclusionContext: exclusionContext,
     );
+  }
+
+  GeneratedChordEvent _generateChordEvent({
+    ChordExclusionContext exclusionContext = const ChordExclusionContext(),
+    GeneratedChordEvent? currentEvent,
+  }) {
+    final timing = currentEvent == null
+        ? _initialTimingSpec()
+        : _nextTimingSpec(currentEvent: currentEvent);
+    final anchorEvent = _buildAnchorLoopEvent(
+      timing: timing,
+      exclusionContext: exclusionContext,
+      currentEvent: currentEvent,
+    );
+    if (anchorEvent != null) {
+      return anchorEvent;
+    }
+    final chord = _generateChord(
+      exclusionContext: exclusionContext,
+      current: currentEvent?.chord,
+      timing: timing,
+    );
+    return _eventForChord(chord: chord, timing: timing);
   }
 
   GeneratedChord _buildFreeGeneratedChord(
@@ -1042,6 +1765,7 @@ class _MyHomePageState extends State<MyHomePage> {
     required List<KeyCenter> keyCenters,
     required ChordExclusionContext exclusionContext,
     GeneratedChord? current,
+    ChordTimingSpec? timing,
   }) {
     if (current?.keyName == null ||
         current?.romanNumeralId == null ||
@@ -1066,6 +1790,9 @@ class _MyHomePageState extends State<MyHomePage> {
           romanPoolPreset: _settings.romanPoolPreset,
           selectedTensionOptions: _settings.selectedTensionOptions,
           inversionSettings: _settings.inversionSettings,
+          timeSignature: _settings.timeSignature,
+          harmonicRhythmPreset: _settings.harmonicRhythmPreset,
+          initialTiming: timing,
           smartDiagnosticsEnabled: _settings.smartDiagnosticsEnabled,
         ),
       );
@@ -1121,12 +1848,16 @@ class _MyHomePageState extends State<MyHomePage> {
     final activeKeys = {
       for (final center in keyCenters) center.tonicName,
     }.toList(growable: false);
+    final stepIndex =
+        ((current.smartDebug as SmartDecisionTrace?)?.stepIndex ?? 0) + 1;
+    final phraseContext = timing == null
+        ? null
+        : _phraseContextForTiming(stepIndex: stepIndex, timing: timing);
 
     final plan = SmartGeneratorHelper.planNextStep(
       random: _random,
       request: SmartStepRequest(
-        stepIndex:
-            ((current.smartDebug as SmartDecisionTrace?)?.stepIndex ?? 0) + 1,
+        stepIndex: stepIndex,
         activeKeys: activeKeys,
         selectedKeyCenters: keyCenters,
         currentKeyCenter:
@@ -1153,10 +1884,11 @@ class _MyHomePageState extends State<MyHomePage> {
         currentPatternTag: current.patternTag,
         plannedQueue: _plannedSmartChordQueue,
         currentRenderedNonDiatonic: current.isRenderedNonDiatonic,
+        timeSignature: _settings.timeSignature,
+        harmonicRhythmPreset: _settings.harmonicRhythmPreset,
+        timing: timing,
         currentTrace: current.smartDebug as SmartDecisionTrace?,
-        phraseContext: SmartPhraseContext.rollingForm(
-          ((current.smartDebug as SmartDecisionTrace?)?.stepIndex ?? 0) + 1,
-        ),
+        phraseContext: phraseContext,
       ),
     );
     _queueState = _queueState.withPlannedSmartChordQueue(
@@ -1231,7 +1963,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return MusicTheory.specFor(romanNumeralId).harmonicFunction;
   }
 
-  void _playMetronomeIfNeeded({bool fromAutoTick = false}) {
+  void _playMetronomeIfNeeded({bool fromAutoTick = false, int? beatIndex}) {
     if (!_settings.metronomeEnabled) {
       return;
     }
@@ -1241,7 +1973,17 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!_metronomeAudio.isReady) {
       return;
     }
-    unawaited(_metronomeAudio.playNow(volume: _settings.metronomeVolume));
+    final resolvedBeatIndex = beatIndex ?? _currentBeat;
+    if (resolvedBeatIndex == null) {
+      return;
+    }
+    final beatState = _settings.metronomeBeatStateForBeat(resolvedBeatIndex);
+    if (beatState == MetronomeBeatState.mute) {
+      return;
+    }
+    unawaited(
+      _metronomeAudio.playBeat(beatState, volume: _settings.metronomeVolume),
+    );
   }
 
   void _requestAdvanceChord() {
@@ -1267,14 +2009,15 @@ class _MyHomePageState extends State<MyHomePage> {
     _recordPracticeHistory();
     setState(() {
       _promoteChordQueue();
-      _currentBeat = null;
+      _currentBeat = _manualBeatStateForEvent(_currentChordEvent);
     });
+    unawaited(_playAutoChordChangeForCurrentEvent());
     if (shouldRestartAutoLoop) {
       _startAutoLoop(immediateFirstBeat: false);
     }
   }
 
-  void _performAutoAdvanceChord() {
+  void _performAutoAdvanceChord({bool chordPlaybackHandled = false}) {
     if (!mounted || !_practiceSessionInitialized) {
       return;
     }
@@ -1282,6 +2025,9 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _promoteChordQueue();
     });
+    if (!chordPlaybackHandled) {
+      unawaited(_playAutoChordChangeForCurrentEvent());
+    }
   }
 
   void _handleAutoTick() {
@@ -1293,6 +2039,7 @@ class _MyHomePageState extends State<MyHomePage> {
       final autoTick = computeNextPracticeAutoBeat(
         currentBeat: _currentBeat,
         beatCount: _beatsPerBar,
+        nextChangeBeat: _nextChangeBeat,
       );
       _currentBeat = autoTick.nextBeat;
       shouldAdvanceChord = autoTick.shouldAdvanceChord;
@@ -1309,7 +2056,16 @@ class _MyHomePageState extends State<MyHomePage> {
       _performAutoAdvanceChord();
       return;
     }
-    swipeSurfaceState.animateAdvance(onCompleted: _performAutoAdvanceChord);
+    var playbackHandled = false;
+    final nextEvent = _nextChordEvent;
+    if (_settings.autoPlayChordChanges && nextEvent != null) {
+      playbackHandled = true;
+      unawaited(_playUpcomingAutoChordChange(nextEvent));
+    }
+    swipeSurfaceState.animateAdvance(
+      onCompleted: () =>
+          _performAutoAdvanceChord(chordPlaybackHandled: playbackHandled),
+    );
   }
 
   void _runDueAutoTicks() {
@@ -1360,7 +2116,13 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     if (immediateFirstBeat) {
-      await _metronomeAudio.playNow(volume: _settings.metronomeVolume);
+      final immediateBeatState = _settings.metronomeBeatStateForBeat(0);
+      if (immediateBeatState != MetronomeBeatState.mute) {
+        await _metronomeAudio.playBeat(
+          immediateBeatState,
+          volume: _settings.metronomeVolume,
+        );
+      }
       if (!mounted || !_shouldScheduleMetronomeAhead) {
         return;
       }
@@ -1402,7 +2164,12 @@ class _MyHomePageState extends State<MyHomePage> {
       if (beatTimeSeconds > horizonSeconds) {
         break;
       }
-      _metronomeAudio.scheduleAt(
+      final beatIndex = _beatIndexForScheduledSequence(
+        _nextScheduledMetronomeSequence,
+      );
+      final beatState = _settings.metronomeBeatStateForBeat(beatIndex);
+      _metronomeAudio.scheduleBeatAt(
+        beatState,
         whenSeconds: beatTimeSeconds,
         volume: _settings.metronomeVolume,
       );
@@ -1417,6 +2184,7 @@ class _MyHomePageState extends State<MyHomePage> {
       interval: _beatInterval(),
       immediateFirstBeat: immediateFirstBeat,
     );
+    _scheduledMetronomeBeatSeed = immediateFirstBeat ? 0 : (_currentBeat ?? 0);
     _restartMetronomeScheduling(immediateFirstBeat: immediateFirstBeat);
     if (immediateFirstBeat) {
       _runDueAutoTicks();
@@ -1449,6 +2217,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _autoBeatClock = null;
     _scheduledMetronomeBaseTimeSeconds = null;
     _nextScheduledMetronomeSequence = 0;
+    _scheduledMetronomeBeatSeed = 0;
     setState(() {
       _autoRunning = false;
       if (resetBeat) {

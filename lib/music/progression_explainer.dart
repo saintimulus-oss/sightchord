@@ -1,17 +1,43 @@
 import '../l10n/app_localizations.dart';
 import 'chord_theory.dart';
 import 'progression_analysis_models.dart';
+import 'progression_highlight_theme.dart';
 
 class ProgressionExplainer {
   const ProgressionExplainer();
 
   List<String> buildSummary(
     AppLocalizations l10n,
-    ProgressionAnalysis analysis,
-  ) {
+    ProgressionAnalysis analysis, {
+    ProgressionExplanationDetailLevel detailLevel =
+        ProgressionExplanationDetailLevel.concise,
+  }) {
     final sentences = <String>[];
     final primaryLabel = _keyLabel(l10n, analysis.primaryKey.keyCenter);
     sentences.add(l10n.chordAnalyzerSummaryCenter(primaryLabel));
+
+    final modulationRemark = _firstRemark(
+      analysis.chordAnalyses,
+      ProgressionRemarkKind.realModulation,
+    );
+    if (modulationRemark?.targetKeyCenter case final targetKeyCenter?) {
+      sentences.add(
+        l10n.chordAnalyzerSummaryRealModulation(
+          _keyLabel(l10n, targetKeyCenter),
+        ),
+      );
+    } else {
+      final tonicizationRemark = _firstRemark(
+        analysis.chordAnalyses,
+        ProgressionRemarkKind.tonicization,
+      );
+      if (tonicizationRemark != null) {
+        final targetText = tonicizationRemark.targetKeyCenter != null
+            ? _keyLabel(l10n, tonicizationRemark.targetKeyCenter!)
+            : tonicizationRemark.targetRomanNumeral ?? '?';
+        sentences.add(l10n.chordAnalyzerSummaryTonicization(targetText));
+      }
+    }
 
     final leadTag = analysis.tags.isEmpty ? null : analysis.tags.first;
     if (leadTag != null) {
@@ -19,7 +45,8 @@ class ProgressionExplainer {
     }
 
     final cadenceSpan = _iiVISpan(analysis.chordAnalyses);
-    if (cadenceSpan != null) {
+    if (cadenceSpan != null &&
+        detailLevel != ProgressionExplanationDetailLevel.concise) {
       sentences.add(
         l10n.chordAnalyzerSummaryFlow(
           cadenceSpan.first.resolvedSymbol,
@@ -37,15 +64,43 @@ class ProgressionExplainer {
       );
     }
 
+    if (analysis.tags.contains(ProgressionTagId.backdoorChain)) {
+      sentences.add(l10n.chordAnalyzerSummaryBackdoor);
+    }
+    if (analysis.tags.contains(ProgressionTagId.deceptiveCadence)) {
+      sentences.add(l10n.chordAnalyzerSummaryDeceptiveCadence);
+    }
+    if (analysis.tags.contains(ProgressionTagId.chromaticLine)) {
+      sentences.add(l10n.chordAnalyzerSummaryChromaticLine);
+    }
+
     final notable = _firstNotableChord(analysis.chordAnalyses);
     if (notable != null) {
       final remark = notable.remarks.firstWhere(
         (candidate) =>
+            candidate.kind == ProgressionRemarkKind.backdoorDominant ||
+            candidate.kind == ProgressionRemarkKind.subdominantMinor ||
+            candidate.kind == ProgressionRemarkKind.commonToneDiminished ||
             candidate.kind == ProgressionRemarkKind.possibleSecondaryDominant ||
             candidate.kind == ProgressionRemarkKind.possibleTritoneSubstitute ||
-            candidate.kind == ProgressionRemarkKind.possibleModalInterchange,
+            candidate.kind == ProgressionRemarkKind.possibleModalInterchange ||
+            candidate.kind == ProgressionRemarkKind.deceptiveCadence,
       );
       switch (remark.kind) {
+        case ProgressionRemarkKind.backdoorDominant:
+          sentences.add(
+            l10n.chordAnalyzerSummaryBackdoorDominant(notable.resolvedSymbol),
+          );
+        case ProgressionRemarkKind.subdominantMinor:
+          sentences.add(
+            l10n.chordAnalyzerSummarySubdominantMinor(notable.resolvedSymbol),
+          );
+        case ProgressionRemarkKind.commonToneDiminished:
+          sentences.add(
+            l10n.chordAnalyzerSummaryCommonToneDiminished(
+              notable.resolvedSymbol,
+            ),
+          );
         case ProgressionRemarkKind.possibleSecondaryDominant:
           sentences.add(
             l10n.chordAnalyzerSummarySecondaryDominant(
@@ -64,6 +119,17 @@ class ProgressionExplainer {
           sentences.add(
             l10n.chordAnalyzerSummaryModalInterchange(notable.resolvedSymbol),
           );
+        case ProgressionRemarkKind.deceptiveCadence:
+          sentences.add(
+            l10n.chordAnalyzerSummaryDeceptiveTarget(notable.resolvedSymbol),
+          );
+        case ProgressionRemarkKind.tonicization:
+        case ProgressionRemarkKind.realModulation:
+        case ProgressionRemarkKind.backdoorChain:
+        case ProgressionRemarkKind.pivotChordInterpretation:
+        case ProgressionRemarkKind.commonToneModulation:
+        case ProgressionRemarkKind.lineClicheColor:
+        case ProgressionRemarkKind.dualFunctionAmbiguity:
         case ProgressionRemarkKind.ambiguousInterpretation:
         case ProgressionRemarkKind.unresolved:
           break;
@@ -84,7 +150,26 @@ class ProgressionExplainer {
       sentences.add(l10n.chordAnalyzerSummaryAmbiguous);
     }
 
-    return sentences.take(5).toList();
+    if (detailLevel == ProgressionExplanationDetailLevel.advanced) {
+      final advancedFocus = analysis.chordAnalyses.firstWhere(
+        (candidate) =>
+            candidate.hasRemark(ProgressionRemarkKind.dualFunctionAmbiguity) ||
+            candidate.competingInterpretations.isNotEmpty,
+        orElse: () => analysis.chordAnalyses.first,
+      );
+      if (advancedFocus.competingInterpretations.isNotEmpty) {
+        sentences.add(
+          l10n.chordAnalyzerSummaryCompeting(
+            advancedFocus.competingInterpretations
+                .take(2)
+                .map((candidate) => candidate.romanNumeral)
+                .join(', '),
+          ),
+        );
+      }
+    }
+
+    return sentences.take(_summaryLimit(detailLevel)).toList();
   }
 
   String keyLabel(AppLocalizations l10n, KeyCenter keyCenter) {
@@ -102,6 +187,64 @@ class ProgressionExplainer {
     return _tagLabel(l10n, tag);
   }
 
+  String buildChordExplanation(
+    AppLocalizations l10n,
+    AnalyzedChord analysis, {
+    required ProgressionExplanationDetailLevel detailLevel,
+  }) {
+    final parts = <String>[
+      l10n.chordAnalyzerFunctionLine(
+        _functionLabel(l10n, analysis.harmonicFunction),
+      ),
+    ];
+    final nonAmbiguousRemarks = [
+      for (final remark in analysis.remarks)
+        if (remark.kind != ProgressionRemarkKind.ambiguousInterpretation)
+          remarkLabel(l10n, remark),
+    ];
+    if (nonAmbiguousRemarks.isNotEmpty) {
+      final limit = detailLevel == ProgressionExplanationDetailLevel.concise
+          ? 1
+          : 2;
+      parts.add(nonAmbiguousRemarks.take(limit).join(' '));
+    }
+
+    if (detailLevel != ProgressionExplanationDetailLevel.concise) {
+      final evidenceText = [
+        for (final evidence in analysis.evidence)
+          if (evidence.kind != ProgressionEvidenceKind.qualityMatch)
+            evidenceLabel(l10n, evidence),
+      ];
+      if (evidenceText.isNotEmpty) {
+        parts.add(
+          l10n.chordAnalyzerEvidenceLead(
+            evidenceText
+                .take(
+                  detailLevel == ProgressionExplanationDetailLevel.detailed
+                      ? 1
+                      : 2,
+                )
+                .join(' '),
+          ),
+        );
+      }
+    }
+
+    if (detailLevel == ProgressionExplanationDetailLevel.advanced &&
+        analysis.competingInterpretations.isNotEmpty) {
+      parts.add(
+        l10n.chordAnalyzerAdvancedCompetingReadings(
+          analysis.competingInterpretations
+              .take(2)
+              .map((candidate) => candidate.romanNumeral)
+              .join(', '),
+        ),
+      );
+    }
+
+    return parts.join(' ');
+  }
+
   String remarkLabel(AppLocalizations l10n, ProgressionRemark remark) {
     return switch (remark.kind) {
       ProgressionRemarkKind.possibleSecondaryDominant =>
@@ -112,6 +255,36 @@ class ProgressionExplainer {
         l10n.chordAnalyzerRemarkTritoneSub(remark.targetRomanNumeral ?? '?'),
       ProgressionRemarkKind.possibleModalInterchange =>
         l10n.chordAnalyzerRemarkModalInterchange,
+      ProgressionRemarkKind.tonicization =>
+        l10n.chordAnalyzerRemarkTonicization(
+          remark.targetKeyCenter == null
+              ? remark.targetRomanNumeral ?? '?'
+              : _keyLabel(l10n, remark.targetKeyCenter!),
+        ),
+      ProgressionRemarkKind.realModulation =>
+        l10n.chordAnalyzerRemarkRealModulation(
+          remark.targetKeyCenter == null
+              ? '?'
+              : _keyLabel(l10n, remark.targetKeyCenter!),
+        ),
+      ProgressionRemarkKind.backdoorDominant =>
+        l10n.chordAnalyzerRemarkBackdoorDominant,
+      ProgressionRemarkKind.backdoorChain =>
+        l10n.chordAnalyzerRemarkBackdoorChain,
+      ProgressionRemarkKind.subdominantMinor =>
+        l10n.chordAnalyzerRemarkSubdominantMinor,
+      ProgressionRemarkKind.commonToneDiminished =>
+        l10n.chordAnalyzerRemarkCommonToneDiminished,
+      ProgressionRemarkKind.pivotChordInterpretation =>
+        l10n.chordAnalyzerRemarkPivotChord,
+      ProgressionRemarkKind.commonToneModulation =>
+        l10n.chordAnalyzerRemarkCommonToneModulation,
+      ProgressionRemarkKind.deceptiveCadence =>
+        l10n.chordAnalyzerRemarkDeceptiveCadence,
+      ProgressionRemarkKind.lineClicheColor =>
+        l10n.chordAnalyzerRemarkLineCliche,
+      ProgressionRemarkKind.dualFunctionAmbiguity =>
+        l10n.chordAnalyzerRemarkDualFunction,
       ProgressionRemarkKind.ambiguousInterpretation =>
         l10n.chordAnalyzerRemarkAmbiguous,
       ProgressionRemarkKind.unresolved => l10n.chordAnalyzerRemarkUnresolved,
@@ -134,6 +307,26 @@ class ProgressionExplainer {
         l10n.chordAnalyzerEvidenceBorrowedColor,
       ProgressionEvidenceKind.suspensionColor =>
         l10n.chordAnalyzerEvidenceSuspensionColor,
+      ProgressionEvidenceKind.cadentialArrival =>
+        l10n.chordAnalyzerEvidenceCadentialArrival,
+      ProgressionEvidenceKind.followThroughSupport =>
+        l10n.chordAnalyzerEvidenceFollowThrough,
+      ProgressionEvidenceKind.phraseBoundary =>
+        l10n.chordAnalyzerEvidencePhraseBoundary,
+      ProgressionEvidenceKind.pivotSupport =>
+        l10n.chordAnalyzerEvidencePivotSupport,
+      ProgressionEvidenceKind.commonToneSupport =>
+        l10n.chordAnalyzerEvidenceCommonToneSupport,
+      ProgressionEvidenceKind.homeGravityWeakening =>
+        l10n.chordAnalyzerEvidenceHomeGravityWeakening,
+      ProgressionEvidenceKind.backdoorMotion =>
+        l10n.chordAnalyzerEvidenceBackdoorMotion,
+      ProgressionEvidenceKind.deceptiveResolution =>
+        l10n.chordAnalyzerEvidenceDeceptiveResolution,
+      ProgressionEvidenceKind.chromaticLine =>
+        l10n.chordAnalyzerEvidenceChromaticLine(evidence.detail ?? '?'),
+      ProgressionEvidenceKind.competingReading =>
+        l10n.chordAnalyzerEvidenceCompetingReading(evidence.detail ?? '?'),
     };
   }
 
@@ -141,9 +334,13 @@ class ProgressionExplainer {
     for (final analysis in analyses) {
       if (analysis.remarks.any(
         (remark) =>
+            remark.kind == ProgressionRemarkKind.backdoorDominant ||
+            remark.kind == ProgressionRemarkKind.subdominantMinor ||
+            remark.kind == ProgressionRemarkKind.commonToneDiminished ||
             remark.kind == ProgressionRemarkKind.possibleSecondaryDominant ||
             remark.kind == ProgressionRemarkKind.possibleTritoneSubstitute ||
-            remark.kind == ProgressionRemarkKind.possibleModalInterchange,
+            remark.kind == ProgressionRemarkKind.possibleModalInterchange ||
+            remark.kind == ProgressionRemarkKind.deceptiveCadence,
       )) {
         return analysis;
       }
@@ -204,6 +401,36 @@ class ProgressionExplainer {
       ProgressionTagId.dominantResolution =>
         l10n.chordAnalyzerTagDominantResolution,
       ProgressionTagId.plagalColor => l10n.chordAnalyzerTagPlagalColor,
+      ProgressionTagId.tonicization => l10n.chordAnalyzerTagTonicization,
+      ProgressionTagId.realModulation => l10n.chordAnalyzerTagRealModulation,
+      ProgressionTagId.backdoorChain => l10n.chordAnalyzerTagBackdoorChain,
+      ProgressionTagId.deceptiveCadence =>
+        l10n.chordAnalyzerTagDeceptiveCadence,
+      ProgressionTagId.chromaticLine => l10n.chordAnalyzerTagChromaticLine,
+      ProgressionTagId.commonToneMotion =>
+        l10n.chordAnalyzerTagCommonToneMotion,
+    };
+  }
+
+  ProgressionRemark? _firstRemark(
+    List<AnalyzedChord> analyses,
+    ProgressionRemarkKind kind,
+  ) {
+    for (final analysis in analyses) {
+      for (final remark in analysis.remarks) {
+        if (remark.kind == kind) {
+          return remark;
+        }
+      }
+    }
+    return null;
+  }
+
+  int _summaryLimit(ProgressionExplanationDetailLevel detailLevel) {
+    return switch (detailLevel) {
+      ProgressionExplanationDetailLevel.concise => 4,
+      ProgressionExplanationDetailLevel.detailed => 6,
+      ProgressionExplanationDetailLevel.advanced => 8,
     };
   }
 }

@@ -44,7 +44,9 @@ class MainMenuPage extends StatelessWidget {
 
   void _openChordAnalyzer(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (context) => const ChordAnalyzerPage()),
+      MaterialPageRoute<void>(
+        builder: (context) => ChordAnalyzerPage(controller: controller),
+      ),
     );
   }
 

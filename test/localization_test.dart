@@ -85,7 +85,7 @@ void main() {
     expect(ko.chordAnalyzerSpace, 'Spacebar');
     expect(ko.chordAnalyzerBackspace, '\u232b');
     expect(ko.chordAnalyzerClear, 'Reset');
-    expect(ko.chordAnalyzerInputHint, 'Dm7, G7, ? | Am7');
+    expect(ko.chordAnalyzerInputHint, 'Dm7, G7 | ? Am');
     expect(
       ko.chordAnalyzerPlaceholderExplanation,
       '\uC774 ?\uB294 \uC55E\uB4A4 \uD654\uC131 \uB9E5\uB77D\uC744 \uBC14\uD0D5\uC73C\uB85C \uCD94\uB860\uD55C \uC790\uB9AC\uC785\uB2C8\uB2E4.',

@@ -1,14 +1,34 @@
 import 'package:flutter/material.dart';
 
+import '../audio/harmony_audio_models.dart';
+import '../audio/metronome_audio_models.dart';
 import '../l10n/app_localizations.dart';
+import '../music/chord_anchor_loop.dart';
 import '../music/chord_theory.dart';
+import '../music/progression_highlight_theme.dart';
 import 'inversion_settings.dart';
+
+export '../audio/metronome_audio_models.dart';
+export '../music/progression_highlight_theme.dart';
 
 enum AppLanguage { system, en, es, zh, zhHans, ja, ko }
 
 enum AppThemeMode { system, light, dark }
 
-enum MetronomeSound { tick, tickB, tickC, tickD, tickE, tickF }
+enum PracticeTimeSignature { twoFour, threeFour, fourFour }
+
+enum HarmonicRhythmPreset {
+  onePerBar,
+  twoPerBar,
+  phraseAwareJazz,
+  cadenceCompression,
+}
+
+enum MelodyDensity { sparse, balanced, active }
+
+enum MelodyStyle { safe, bebop, lyrical, colorful }
+
+enum MelodyPlaybackMode { chordsOnly, melodyOnly, both }
 
 enum SettingsComplexityMode { guided, standard, advanced }
 
@@ -30,6 +50,8 @@ enum RomanPoolPreset {
 }
 
 enum VoicingComplexity { basic, standard, modern }
+
+enum VoicingDisplayMode { standard, performance }
 
 enum VoicingTopNotePreference { auto, c, db, d, eb, e, f, gb, g, ab, a, bb, b }
 
@@ -130,62 +152,109 @@ extension AppThemeModeX on AppThemeMode {
   }
 }
 
-extension MetronomeSoundX on MetronomeSound {
-  String get storageKey {
-    switch (this) {
-      case MetronomeSound.tick:
-        return 'tick';
-      case MetronomeSound.tickB:
-        return 'tickB';
-      case MetronomeSound.tickC:
-        return 'tickC';
-      case MetronomeSound.tickD:
-        return 'tickD';
-      case MetronomeSound.tickE:
-        return 'tickE';
-      case MetronomeSound.tickF:
-        return 'tickF';
-    }
-  }
+extension PracticeTimeSignatureX on PracticeTimeSignature {
+  String get storageKey => name;
 
-  String get assetFileName {
-    switch (this) {
-      case MetronomeSound.tick:
-        return 'tick.mp3';
-      case MetronomeSound.tickB:
-        return 'tickB.mp3';
-      case MetronomeSound.tickC:
-        return 'tickC.mp3';
-      case MetronomeSound.tickD:
-        return 'tickD.mp3';
-      case MetronomeSound.tickE:
-        return 'tickE.mp3';
-      case MetronomeSound.tickF:
-        return 'tickF.mp3';
-    }
+  int get beatsPerBar {
+    return switch (this) {
+      PracticeTimeSignature.twoFour => 2,
+      PracticeTimeSignature.threeFour => 3,
+      PracticeTimeSignature.fourFour => 4,
+    };
   }
 
   String localizedLabel(AppLocalizations l10n) {
-    switch (this) {
-      case MetronomeSound.tick:
-        return l10n.metronomeSoundClassic;
-      case MetronomeSound.tickB:
-        return l10n.metronomeSoundClickB;
-      case MetronomeSound.tickC:
-        return l10n.metronomeSoundClickC;
-      case MetronomeSound.tickD:
-        return l10n.metronomeSoundClickD;
-      case MetronomeSound.tickE:
-        return l10n.metronomeSoundClickE;
-      case MetronomeSound.tickF:
-        return l10n.metronomeSoundClickF;
-    }
+    return switch (this) {
+      PracticeTimeSignature.twoFour => l10n.practiceTimeSignatureTwoFour,
+      PracticeTimeSignature.threeFour => l10n.practiceTimeSignatureThreeFour,
+      PracticeTimeSignature.fourFour => l10n.practiceTimeSignatureFourFour,
+    };
   }
 
-  static MetronomeSound fromStorageKey(String? value) {
-    return MetronomeSound.values.firstWhere(
-      (sound) => sound.storageKey == value,
-      orElse: () => MetronomeSound.tick,
+  static PracticeTimeSignature fromStorageKey(String? value) {
+    return PracticeTimeSignature.values.firstWhere(
+      (signature) => signature.storageKey == value,
+      orElse: () => PracticeTimeSignature.fourFour,
+    );
+  }
+}
+
+extension HarmonicRhythmPresetX on HarmonicRhythmPreset {
+  String get storageKey => name;
+
+  String localizedLabel(AppLocalizations l10n) {
+    return switch (this) {
+      HarmonicRhythmPreset.onePerBar => l10n.harmonicRhythmOnePerBar,
+      HarmonicRhythmPreset.twoPerBar => l10n.harmonicRhythmTwoPerBar,
+      HarmonicRhythmPreset.phraseAwareJazz =>
+        l10n.harmonicRhythmPhraseAwareJazz,
+      HarmonicRhythmPreset.cadenceCompression =>
+        l10n.harmonicRhythmCadenceCompression,
+    };
+  }
+
+  static HarmonicRhythmPreset fromStorageKey(String? value) {
+    return HarmonicRhythmPreset.values.firstWhere(
+      (preset) => preset.storageKey == value,
+      orElse: () => HarmonicRhythmPreset.onePerBar,
+    );
+  }
+}
+
+extension MelodyDensityX on MelodyDensity {
+  String get storageKey => name;
+
+  String localizedLabel(AppLocalizations l10n) {
+    return switch (this) {
+      MelodyDensity.sparse => l10n.melodyDensitySparse,
+      MelodyDensity.balanced => l10n.melodyDensityBalanced,
+      MelodyDensity.active => l10n.melodyDensityActive,
+    };
+  }
+
+  static MelodyDensity fromStorageKey(String? value) {
+    return MelodyDensity.values.firstWhere(
+      (density) => density.storageKey == value,
+      orElse: () => MelodyDensity.balanced,
+    );
+  }
+}
+
+extension MelodyStyleX on MelodyStyle {
+  String get storageKey => name;
+
+  String localizedLabel(AppLocalizations l10n) {
+    return switch (this) {
+      MelodyStyle.safe => l10n.melodyStyleSafe,
+      MelodyStyle.bebop => l10n.melodyStyleBebop,
+      MelodyStyle.lyrical => l10n.melodyStyleLyrical,
+      MelodyStyle.colorful => l10n.melodyStyleColorful,
+    };
+  }
+
+  static MelodyStyle fromStorageKey(String? value) {
+    return MelodyStyle.values.firstWhere(
+      (style) => style.storageKey == value,
+      orElse: () => MelodyStyle.safe,
+    );
+  }
+}
+
+extension MelodyPlaybackModeX on MelodyPlaybackMode {
+  String get storageKey => name;
+
+  String localizedLabel(AppLocalizations l10n) {
+    return switch (this) {
+      MelodyPlaybackMode.chordsOnly => l10n.melodyPlaybackModeChordsOnly,
+      MelodyPlaybackMode.melodyOnly => l10n.melodyPlaybackModeMelodyOnly,
+      MelodyPlaybackMode.both => l10n.melodyPlaybackModeBoth,
+    };
+  }
+
+  static MelodyPlaybackMode fromStorageKey(String? value) {
+    return MelodyPlaybackMode.values.firstWhere(
+      (mode) => mode.storageKey == value,
+      orElse: () => MelodyPlaybackMode.both,
     );
   }
 }
@@ -230,6 +299,24 @@ extension RomanPoolPresetX on RomanPoolPreset {
     return RomanPoolPreset.values.firstWhere(
       (preset) => preset.storageKey == value,
       orElse: () => RomanPoolPreset.expandedColor,
+    );
+  }
+}
+
+extension VoicingDisplayModeX on VoicingDisplayMode {
+  String get storageKey => name;
+
+  String localizedLabel(AppLocalizations l10n) {
+    return switch (this) {
+      VoicingDisplayMode.standard => l10n.voicingDisplayModeStandard,
+      VoicingDisplayMode.performance => l10n.voicingDisplayModePerformance,
+    };
+  }
+
+  static VoicingDisplayMode fromStorageKey(String? value) {
+    return VoicingDisplayMode.values.firstWhere(
+      (mode) => mode.storageKey == value,
+      orElse: () => VoicingDisplayMode.standard,
     );
   }
 }
@@ -300,6 +387,23 @@ extension VoicingTopNotePreferenceX on VoicingTopNotePreference {
 class PracticeSettings {
   static const double minMetronomeVolume = 0;
   static const double maxMetronomeVolume = 1;
+  static const double minAutoPlayHoldFactor = 0.2;
+  static const double maxAutoPlayHoldFactor = 1.4;
+  static const double minMelodyMotifStrength = 0;
+  static const double maxMelodyMotifStrength = 1;
+  static const double minMelodyApproachToneDensity = 0;
+  static const double maxMelodyApproachToneDensity = 1;
+  static const int minMelodyRangeMidi = 48;
+  static const int maxMelodyRangeMidi = 90;
+  static const int minMelodyRangeSpan = 7;
+  static const double minHarmonyMasterVolume = 0;
+  static const double maxHarmonyMasterVolume = 1;
+  static const double minHarmonyHoldFactor = 0.35;
+  static const double maxHarmonyHoldFactor = 1.75;
+  static const double minHarmonyArpeggioStepSpeed = 0.5;
+  static const double maxHarmonyArpeggioStepSpeed = 2.0;
+  static const double minHumanizationAmount = 0;
+  static const double maxHumanizationAmount = 1;
   static const int minBpm = 20;
   static const int maxBpm = 300;
 
@@ -313,7 +417,33 @@ class PracticeSettings {
     this.romanPoolPreset = RomanPoolPreset.expandedColor,
     this.metronomeEnabled = true,
     double metronomeVolume = 1,
-    this.metronomeSound = MetronomeSound.tick,
+    MetronomeSound metronomeSound = MetronomeSound.tick,
+    MetronomeSourceSpec? metronomeSource,
+    MetronomePatternSettings? metronomePattern,
+    this.metronomeUseAccentSound = false,
+    MetronomeSourceSpec? metronomeAccentSource,
+    this.timeSignature = PracticeTimeSignature.fourFour,
+    this.harmonicRhythmPreset = HarmonicRhythmPreset.onePerBar,
+    this.autoPlayChordChanges = false,
+    this.autoPlayPattern = HarmonyPlaybackPattern.block,
+    double autoPlayHoldFactor = 0.82,
+    this.autoPlayMelodyWithChords = false,
+    this.melodyGenerationEnabled = false,
+    this.melodyDensity = MelodyDensity.balanced,
+    double motifRepetitionStrength = 0.55,
+    double approachToneDensity = 0.32,
+    int melodyRangeLow = 60,
+    int melodyRangeHigh = 84,
+    this.melodyStyle = MelodyStyle.safe,
+    this.allowChromaticApproaches = false,
+    this.melodyPlaybackMode = MelodyPlaybackMode.both,
+    double harmonyMasterVolume = 1,
+    double harmonyPreviewHoldFactor = 1,
+    double harmonyArpeggioStepSpeed = 1,
+    double harmonyVelocityHumanization = 0,
+    double harmonyGainRandomness = 0,
+    double harmonyTimingHumanization = 0,
+    ChordAnchorLoop? anchorLoop,
     Set<String>? activeKeys,
     Set<KeyCenter>? activeKeyCenters,
     this.smartGeneratorMode = false,
@@ -331,6 +461,7 @@ class PracticeSettings {
     Set<String>? selectedTensionOptions,
     InversionSettings? inversionSettings,
     this.voicingSuggestionsEnabled = true,
+    this.voicingDisplayMode = VoicingDisplayMode.standard,
     this.voicingComplexity = VoicingComplexity.standard,
     this.voicingTopNotePreference = VoicingTopNotePreference.auto,
     this.allowRootlessVoicings = true,
@@ -339,8 +470,58 @@ class PracticeSettings {
     this.showVoicingReasons = true,
     int bpm = 60,
     this.keyCenterLabelStyle = KeyCenterLabelStyle.modeText,
+    this.progressionExplanationDetailLevel =
+        ProgressionExplanationDetailLevel.concise,
+    ProgressionHighlightTheme? progressionHighlightTheme,
   }) : metronomeVolume = metronomeVolume
            .clamp(minMetronomeVolume, maxMetronomeVolume)
+           .toDouble(),
+       metronomeSource =
+           (metronomeSource ??
+                   MetronomeSourceSpec.builtIn(sound: metronomeSound))
+               .normalized(fallbackSound: metronomeSound),
+       metronomePattern = (metronomePattern ?? const MetronomePatternSettings())
+           .normalized(beatsPerBar: timeSignature.beatsPerBar),
+       metronomeAccentSource =
+           (metronomeAccentSource ??
+                   const MetronomeSourceSpec.builtIn(
+                     sound: MetronomeSound.tickF,
+                   ))
+               .normalized(fallbackSound: MetronomeSound.tickF),
+       autoPlayHoldFactor = autoPlayHoldFactor
+           .clamp(minAutoPlayHoldFactor, maxAutoPlayHoldFactor)
+           .toDouble(),
+       motifRepetitionStrength = motifRepetitionStrength
+           .clamp(minMelodyMotifStrength, maxMelodyMotifStrength)
+           .toDouble(),
+       approachToneDensity = approachToneDensity
+           .clamp(
+             minMelodyApproachToneDensity,
+             maxMelodyApproachToneDensity,
+           )
+           .toDouble(),
+       melodyRangeLow = _clampMelodyRangeLow(melodyRangeLow),
+       melodyRangeHigh = _clampMelodyRangeHigh(
+         low: _clampMelodyRangeLow(melodyRangeLow),
+         high: melodyRangeHigh,
+       ),
+       harmonyMasterVolume = harmonyMasterVolume
+           .clamp(minHarmonyMasterVolume, maxHarmonyMasterVolume)
+           .toDouble(),
+       harmonyPreviewHoldFactor = harmonyPreviewHoldFactor
+           .clamp(minHarmonyHoldFactor, maxHarmonyHoldFactor)
+           .toDouble(),
+       harmonyArpeggioStepSpeed = harmonyArpeggioStepSpeed
+           .clamp(minHarmonyArpeggioStepSpeed, maxHarmonyArpeggioStepSpeed)
+           .toDouble(),
+       harmonyVelocityHumanization = harmonyVelocityHumanization
+           .clamp(minHumanizationAmount, maxHumanizationAmount)
+           .toDouble(),
+       harmonyGainRandomness = harmonyGainRandomness
+           .clamp(minHumanizationAmount, maxHumanizationAmount)
+           .toDouble(),
+       harmonyTimingHumanization = harmonyTimingHumanization
+           .clamp(minHumanizationAmount, maxHumanizationAmount)
            .toDouble(),
        activeKeyCenters = Set.unmodifiable(
          activeKeyCenters ??
@@ -361,6 +542,10 @@ class PracticeSettings {
          ),
        ),
        inversionSettings = inversionSettings ?? const InversionSettings(),
+       anchorLoop = (anchorLoop ?? const ChordAnchorLoop()).normalized(),
+       progressionHighlightTheme =
+           (progressionHighlightTheme ?? ProgressionHighlightTheme())
+               .normalized(),
        maxVoicingNotes = maxVoicingNotes.clamp(3, 5),
        lookAheadDepth = lookAheadDepth.clamp(0, 2),
        bpm = bpm.clamp(minBpm, maxBpm).toInt();
@@ -374,7 +559,32 @@ class PracticeSettings {
   final RomanPoolPreset romanPoolPreset;
   final bool metronomeEnabled;
   final double metronomeVolume;
-  final MetronomeSound metronomeSound;
+  final MetronomeSourceSpec metronomeSource;
+  final MetronomePatternSettings metronomePattern;
+  final bool metronomeUseAccentSound;
+  final MetronomeSourceSpec metronomeAccentSource;
+  final PracticeTimeSignature timeSignature;
+  final HarmonicRhythmPreset harmonicRhythmPreset;
+  final bool autoPlayChordChanges;
+  final HarmonyPlaybackPattern autoPlayPattern;
+  final double autoPlayHoldFactor;
+  final bool autoPlayMelodyWithChords;
+  final bool melodyGenerationEnabled;
+  final MelodyDensity melodyDensity;
+  final double motifRepetitionStrength;
+  final double approachToneDensity;
+  final int melodyRangeLow;
+  final int melodyRangeHigh;
+  final MelodyStyle melodyStyle;
+  final bool allowChromaticApproaches;
+  final MelodyPlaybackMode melodyPlaybackMode;
+  final double harmonyMasterVolume;
+  final double harmonyPreviewHoldFactor;
+  final double harmonyArpeggioStepSpeed;
+  final double harmonyVelocityHumanization;
+  final double harmonyGainRandomness;
+  final double harmonyTimingHumanization;
+  final ChordAnchorLoop anchorLoop;
   final Set<KeyCenter> activeKeyCenters;
   final bool smartGeneratorMode;
   final bool secondaryDominantEnabled;
@@ -391,6 +601,7 @@ class PracticeSettings {
   final Set<String> selectedTensionOptions;
   final InversionSettings inversionSettings;
   final bool voicingSuggestionsEnabled;
+  final VoicingDisplayMode voicingDisplayMode;
   final VoicingComplexity voicingComplexity;
   final VoicingTopNotePreference voicingTopNotePreference;
   final bool allowRootlessVoicings;
@@ -399,9 +610,25 @@ class PracticeSettings {
   final bool showVoicingReasons;
   final int bpm;
   final KeyCenterLabelStyle keyCenterLabelStyle;
+  final ProgressionExplanationDetailLevel progressionExplanationDetailLevel;
+  final ProgressionHighlightTheme progressionHighlightTheme;
 
   Locale? get locale => language.locale;
   ThemeMode get themeMode => appThemeMode.materialThemeMode;
+  int get beatsPerBar => timeSignature.beatsPerBar;
+  int get melodyRangeCenter => ((melodyRangeLow + melodyRangeHigh) / 2).round();
+  MetronomeSound get metronomeSound => metronomeSource.builtInSound;
+  MetronomeSound get metronomeAccentSound => metronomeAccentSource.builtInSound;
+  List<MetronomeBeatState> get metronomeBeatStates =>
+      metronomePattern.resolve(beatsPerBar: beatsPerBar);
+  MetronomeBeatState metronomeBeatStateForBeat(int beatIndex) {
+    final beatStates = metronomeBeatStates;
+    return beatStates[beatIndex % beatStates.length];
+  }
+
+  bool get usesLegacyBarTiming =>
+      timeSignature == PracticeTimeSignature.fourFour &&
+      harmonicRhythmPreset == HarmonicRhythmPreset.onePerBar;
   bool get usesKeyMode => activeKeyCenters.isNotEmpty;
   Set<String> get activeKeys =>
       Set.unmodifiable(activeKeyCenters.map((center) => center.tonicName));
@@ -417,6 +644,33 @@ class PracticeSettings {
     bool? metronomeEnabled,
     double? metronomeVolume,
     MetronomeSound? metronomeSound,
+    MetronomeSourceSpec? metronomeSource,
+    MetronomePatternSettings? metronomePattern,
+    bool? metronomeUseAccentSound,
+    MetronomeSound? metronomeAccentSound,
+    MetronomeSourceSpec? metronomeAccentSource,
+    PracticeTimeSignature? timeSignature,
+    HarmonicRhythmPreset? harmonicRhythmPreset,
+    bool? autoPlayChordChanges,
+    HarmonyPlaybackPattern? autoPlayPattern,
+    double? autoPlayHoldFactor,
+    bool? autoPlayMelodyWithChords,
+    bool? melodyGenerationEnabled,
+    MelodyDensity? melodyDensity,
+    double? motifRepetitionStrength,
+    double? approachToneDensity,
+    int? melodyRangeLow,
+    int? melodyRangeHigh,
+    MelodyStyle? melodyStyle,
+    bool? allowChromaticApproaches,
+    MelodyPlaybackMode? melodyPlaybackMode,
+    double? harmonyMasterVolume,
+    double? harmonyPreviewHoldFactor,
+    double? harmonyArpeggioStepSpeed,
+    double? harmonyVelocityHumanization,
+    double? harmonyGainRandomness,
+    double? harmonyTimingHumanization,
+    ChordAnchorLoop? anchorLoop,
     Set<String>? activeKeys,
     Set<KeyCenter>? activeKeyCenters,
     bool? smartGeneratorMode,
@@ -434,6 +688,7 @@ class PracticeSettings {
     Set<String>? selectedTensionOptions,
     InversionSettings? inversionSettings,
     bool? voicingSuggestionsEnabled,
+    VoicingDisplayMode? voicingDisplayMode,
     VoicingComplexity? voicingComplexity,
     VoicingTopNotePreference? voicingTopNotePreference,
     bool? allowRootlessVoicings,
@@ -442,7 +697,21 @@ class PracticeSettings {
     bool? showVoicingReasons,
     int? bpm,
     KeyCenterLabelStyle? keyCenterLabelStyle,
+    ProgressionExplanationDetailLevel? progressionExplanationDetailLevel,
+    ProgressionHighlightTheme? progressionHighlightTheme,
   }) {
+    final resolvedMetronomeSource =
+        metronomeSource ??
+        (metronomeSound != null
+            ? this.metronomeSource.copyWith(builtInSound: metronomeSound)
+            : this.metronomeSource);
+    final resolvedAccentSource =
+        metronomeAccentSource ??
+        (metronomeAccentSound != null
+            ? this.metronomeAccentSource.copyWith(
+                builtInSound: metronomeAccentSound,
+              )
+            : this.metronomeAccentSource);
     return PracticeSettings(
       language: language ?? this.language,
       appThemeMode: appThemeMode ?? this.appThemeMode,
@@ -455,7 +724,43 @@ class PracticeSettings {
       romanPoolPreset: romanPoolPreset ?? this.romanPoolPreset,
       metronomeEnabled: metronomeEnabled ?? this.metronomeEnabled,
       metronomeVolume: metronomeVolume ?? this.metronomeVolume,
-      metronomeSound: metronomeSound ?? this.metronomeSound,
+      metronomeSound: resolvedMetronomeSource.builtInSound,
+      metronomeSource: resolvedMetronomeSource,
+      metronomePattern: metronomePattern ?? this.metronomePattern,
+      metronomeUseAccentSound:
+          metronomeUseAccentSound ?? this.metronomeUseAccentSound,
+      metronomeAccentSource: resolvedAccentSource,
+      timeSignature: timeSignature ?? this.timeSignature,
+      harmonicRhythmPreset: harmonicRhythmPreset ?? this.harmonicRhythmPreset,
+      autoPlayChordChanges: autoPlayChordChanges ?? this.autoPlayChordChanges,
+      autoPlayPattern: autoPlayPattern ?? this.autoPlayPattern,
+      autoPlayHoldFactor: autoPlayHoldFactor ?? this.autoPlayHoldFactor,
+      autoPlayMelodyWithChords:
+          autoPlayMelodyWithChords ?? this.autoPlayMelodyWithChords,
+      melodyGenerationEnabled:
+          melodyGenerationEnabled ?? this.melodyGenerationEnabled,
+      melodyDensity: melodyDensity ?? this.melodyDensity,
+      motifRepetitionStrength:
+          motifRepetitionStrength ?? this.motifRepetitionStrength,
+      approachToneDensity: approachToneDensity ?? this.approachToneDensity,
+      melodyRangeLow: melodyRangeLow ?? this.melodyRangeLow,
+      melodyRangeHigh: melodyRangeHigh ?? this.melodyRangeHigh,
+      melodyStyle: melodyStyle ?? this.melodyStyle,
+      allowChromaticApproaches:
+          allowChromaticApproaches ?? this.allowChromaticApproaches,
+      melodyPlaybackMode: melodyPlaybackMode ?? this.melodyPlaybackMode,
+      harmonyMasterVolume: harmonyMasterVolume ?? this.harmonyMasterVolume,
+      harmonyPreviewHoldFactor:
+          harmonyPreviewHoldFactor ?? this.harmonyPreviewHoldFactor,
+      harmonyArpeggioStepSpeed:
+          harmonyArpeggioStepSpeed ?? this.harmonyArpeggioStepSpeed,
+      harmonyVelocityHumanization:
+          harmonyVelocityHumanization ?? this.harmonyVelocityHumanization,
+      harmonyGainRandomness:
+          harmonyGainRandomness ?? this.harmonyGainRandomness,
+      harmonyTimingHumanization:
+          harmonyTimingHumanization ?? this.harmonyTimingHumanization,
+      anchorLoop: anchorLoop ?? this.anchorLoop,
       activeKeyCenters:
           activeKeyCenters ??
           (activeKeys != null
@@ -483,6 +788,7 @@ class PracticeSettings {
       inversionSettings: inversionSettings ?? this.inversionSettings,
       voicingSuggestionsEnabled:
           voicingSuggestionsEnabled ?? this.voicingSuggestionsEnabled,
+      voicingDisplayMode: voicingDisplayMode ?? this.voicingDisplayMode,
       voicingComplexity: voicingComplexity ?? this.voicingComplexity,
       voicingTopNotePreference:
           voicingTopNotePreference ?? this.voicingTopNotePreference,
@@ -493,6 +799,11 @@ class PracticeSettings {
       showVoicingReasons: showVoicingReasons ?? this.showVoicingReasons,
       bpm: bpm ?? this.bpm,
       keyCenterLabelStyle: keyCenterLabelStyle ?? this.keyCenterLabelStyle,
+      progressionExplanationDetailLevel:
+          progressionExplanationDetailLevel ??
+          this.progressionExplanationDetailLevel,
+      progressionHighlightTheme:
+          progressionHighlightTheme ?? this.progressionHighlightTheme,
     );
   }
 
@@ -511,5 +822,23 @@ class PracticeSettings {
       return ordered;
     }
     return MusicTheory.defaultGeneratorChordQualities(allowV7sus4: allowV7sus4);
+  }
+
+  static int _clampMelodyRangeLow(int value) {
+    return value.clamp(
+      minMelodyRangeMidi,
+      maxMelodyRangeMidi - minMelodyRangeSpan,
+    );
+  }
+
+  static int _clampMelodyRangeHigh({
+    required int low,
+    required int high,
+  }) {
+    final normalizedLow = _clampMelodyRangeLow(low);
+    return high.clamp(
+      normalizedLow + minMelodyRangeSpan,
+      maxMelodyRangeMidi,
+    );
   }
 }

@@ -80,6 +80,13 @@ class VoicingEngine {
   static const Set<String> _alteredLabels = {'b9', '#9', '#11', 'b13'};
 
   static VoicingRecommendationSet recommend({required VoicingContext context}) {
+    return _recommend(context: context, includePerformancePreview: true);
+  }
+
+  static VoicingRecommendationSet _recommend({
+    required VoicingContext context,
+    required bool includePerformancePreview,
+  }) {
     final interpretation = interpretChord(
       chord: context.currentChord,
       settings: context.settings,
@@ -149,12 +156,22 @@ class VoicingEngine {
       ),
       settings: context.settings,
     );
+    final performancePreview = includePerformancePreview
+        ? _buildPerformancePreview(
+            context: context,
+            interpretation: interpretation,
+            progressionContext: progressionContext,
+            rankedCandidates: ranked,
+            suggestions: suggestions,
+          )
+        : null;
 
     return VoicingRecommendationSet(
       currentChord: progressionContext.currentChord,
       interpretation: interpretation,
       rankedCandidates: ranked,
       suggestions: suggestions,
+      performancePreview: performancePreview,
       effectiveTopNotePitchClass:
           progressionContext.topNotePitchClassPreference,
       topNoteSource: progressionContext.topNotePreferenceSource,
@@ -169,17 +186,244 @@ class VoicingEngine {
     if (chord == null) {
       return null;
     }
-    final fallbackResult = recommend(
+    final fallbackResult = _recommend(
       context: VoicingContext(
         currentChord: chord,
         settings: settings,
         lookAheadDepth: 0,
       ),
+      includePerformancePreview: false,
     );
     if (fallbackResult.rankedCandidates.isEmpty) {
       return null;
     }
     return fallbackResult.rankedCandidates.first.voicing;
+  }
+
+  static PerformanceVoicingPreview? _buildPerformancePreview({
+    required VoicingContext context,
+    required ChordVoicingInterpretation interpretation,
+    required _ResolvedProgressionContext progressionContext,
+    required List<RankedVoicingCandidate> rankedCandidates,
+    required List<VoicingSuggestion> suggestions,
+  }) {
+    if (rankedCandidates.isEmpty) {
+      return null;
+    }
+    final representativeCandidate = _selectPerformanceCandidate(
+      rankedCandidates: rankedCandidates,
+      interpretation: interpretation,
+      settings: context.settings,
+      lockedVoicing: context.lockedVoicing,
+    );
+    final representativeSuggestion = _performanceSuggestionForCandidate(
+      candidate: representativeCandidate,
+      suggestions: suggestions,
+      locked:
+          context.lockedVoicing?.signature ==
+          representativeCandidate.voicing.signature,
+    );
+
+    VoicingSuggestion? nextSuggestion;
+    final nextChord = progressionContext.nextChord;
+    if (nextChord != null) {
+      final nextResult = _recommend(
+        context: VoicingContext(
+          previousChord: progressionContext.currentChord,
+          currentChord: nextChord,
+          nextChord: progressionContext.nextNextChord,
+          futureChords: progressionContext.lookAheadChords
+              .skip(1)
+              .toList(growable: false),
+          previousVoicing: representativeCandidate.voicing,
+          preferredTopNotePitchClass:
+              progressionContext.topNotePitchClassPreference,
+          settings: context.settings,
+          lookAheadDepth: min(1, context.lookAheadDepth),
+        ),
+        includePerformancePreview: false,
+      );
+      if (nextResult.rankedCandidates.isNotEmpty) {
+        final nextRepresentativeCandidate = _selectPerformanceCandidate(
+          rankedCandidates: nextResult.rankedCandidates,
+          interpretation: nextResult.interpretation,
+          settings: context.settings,
+        );
+        nextSuggestion = _performanceSuggestionForCandidate(
+          candidate: nextRepresentativeCandidate,
+          suggestions: nextResult.suggestions,
+        );
+      }
+    }
+
+    final currentNotes = representativeSuggestion.voicing.midiNotes.toSet();
+    final nextNotes = nextSuggestion?.voicing.midiNotes.toSet() ?? <int>{};
+    final sharedNotes = currentNotes.intersection(nextNotes);
+    return PerformanceVoicingPreview(
+      representativeSuggestion: representativeSuggestion,
+      nextSuggestion: nextSuggestion,
+      sharedMidiNotes: sharedNotes,
+      currentOnlyMidiNotes: currentNotes.difference(sharedNotes),
+      nextOnlyMidiNotes: nextNotes.difference(sharedNotes),
+    );
+  }
+
+  static VoicingSuggestion _performanceSuggestionForCandidate({
+    required RankedVoicingCandidate candidate,
+    required List<VoicingSuggestion> suggestions,
+    bool locked = false,
+  }) {
+    for (final suggestion in suggestions) {
+      if (suggestion.voicing.signature == candidate.voicing.signature) {
+        return suggestion.copyWith(locked: suggestion.locked || locked);
+      }
+    }
+    return VoicingSuggestion(
+      kind: VoicingSuggestionKind.natural,
+      label: 'Performance',
+      shortReasons: const <String>[],
+      score: candidate.breakdown.total,
+      voicing: candidate.voicing,
+      breakdown: candidate.breakdown,
+      reasonTags: _orderedReasonTagsForKind(
+        VoicingSuggestionKind.natural,
+        candidate.reasonTags,
+      ),
+      locked: locked,
+    );
+  }
+
+  static RankedVoicingCandidate _selectPerformanceCandidate({
+    required List<RankedVoicingCandidate> rankedCandidates,
+    required ChordVoicingInterpretation interpretation,
+    required PracticeSettings settings,
+    ConcreteVoicing? lockedVoicing,
+  }) {
+    if (lockedVoicing != null) {
+      for (final candidate in rankedCandidates) {
+        if (candidate.voicing.signature == lockedVoicing.signature) {
+          return candidate;
+        }
+      }
+    }
+    var bestCandidate = rankedCandidates.first;
+    var bestScore = double.negativeInfinity;
+    for (final candidate in rankedCandidates) {
+      final score = _performanceRepresentativeScore(
+        candidate: candidate,
+        interpretation: interpretation,
+        settings: settings,
+      );
+      if (score > bestScore) {
+        bestScore = score;
+        bestCandidate = candidate;
+        continue;
+      }
+      if (score < bestScore) {
+        continue;
+      }
+      final totalDelta = candidate.breakdown.total.compareTo(
+        bestCandidate.breakdown.total,
+      );
+      if (totalDelta > 0) {
+        bestCandidate = candidate;
+        continue;
+      }
+      if (totalDelta < 0) {
+        continue;
+      }
+      final familyDelta = _familyOrder(
+        candidate.voicing.family,
+      ).compareTo(_familyOrder(bestCandidate.voicing.family));
+      if (familyDelta < 0) {
+        bestCandidate = candidate;
+        continue;
+      }
+      if (familyDelta > 0) {
+        continue;
+      }
+      if (candidate.voicing.signature.compareTo(
+            bestCandidate.voicing.signature,
+          ) <
+          0) {
+        bestCandidate = candidate;
+      }
+    }
+    return bestCandidate;
+  }
+
+  static double _performanceRepresentativeScore({
+    required RankedVoicingCandidate candidate,
+    required ChordVoicingInterpretation interpretation,
+    required PracticeSettings settings,
+  }) {
+    final voicing = candidate.voicing;
+    final breakdown = candidate.breakdown;
+    final toneSet = voicing.toneLabels.toSet();
+    var score = breakdown.total;
+    score += breakdown.guideToneResolutionBonus * 1.25;
+    score += breakdown.commonToneRetentionBonus * 1.18;
+    score += breakdown.nextChordLookAheadBonus * 1.55;
+    score += breakdown.topNotePreferenceBonus * 0.95;
+    score += breakdown.sameHarmonyStabilityBonus * 0.82;
+    score += breakdown.lockContinuityBonus * 1.4;
+    score += breakdown.lowRegisterMudPenalty * 1.35;
+    score += breakdown.totalVoiceMotionPenalty * 1.2;
+    score += breakdown.outerVoiceLeapPenalty * 0.9;
+    score += breakdown.bassMovementPenalty * 0.55;
+    score += breakdown.pianoPlayabilityAdjustment * 0.28;
+    score += breakdown.handSpanPenalty * 0.25;
+    score += breakdown.simplicityBonus * 0.18;
+
+    if (voicing.hasGuideToneCore) {
+      score += 2.8;
+    } else if (voicing.containsThird || voicing.containsSeventh) {
+      score += 0.55;
+    } else {
+      score -= 4.0;
+    }
+
+    if (voicing.isRootless &&
+        settings.allowRootlessVoicings &&
+        voicing.hasGuideToneCore) {
+      score += 0.42;
+    }
+    if (voicing.noteCount <= 4) {
+      score += 0.18;
+    }
+    if (voicing.noteCount >= 5) {
+      score -= 0.22;
+    }
+
+    if (interpretation.isDominantFamily && !interpretation.isSusFamily) {
+      if (toneSet.contains('9')) {
+        score += 0.18;
+      }
+      if (toneSet.contains('13')) {
+        score += 0.18;
+      }
+      if (toneSet.contains('11') &&
+          !toneSet.contains('#11') &&
+          voicing.family != VoicingFamily.quartal) {
+        score -= 0.6;
+      }
+    }
+
+    if (voicing.bassNote < 43 &&
+        !voicing.isRootless &&
+        voicing.noteCount >= 4) {
+      score -= 0.4;
+    }
+    if (breakdown.commonToneCount > 0) {
+      score += breakdown.commonToneCount * 0.18;
+    }
+    if (breakdown.guideResolutionCount > 0) {
+      score += breakdown.guideResolutionCount * 0.22;
+    }
+    if (breakdown.totalMotionSemitones > 0) {
+      score += max(0.0, 1.3 - (breakdown.totalMotionSemitones * 0.09));
+    }
+    return score;
   }
 
   static ChordVoicingInterpretation interpretChord({
@@ -2622,12 +2866,12 @@ class VoicingEngine {
     required PracticeSettings settings,
   }) {
     return switch (settings.chordLanguageLevel) {
-      ChordLanguageLevel.triadsOnly ||
-      ChordLanguageLevel.seventhChords => family == VoicingFamily.shell ||
-          family == VoicingFamily.spread,
-      ChordLanguageLevel.safeExtensions => family != VoicingFamily.quartal &&
-          family != VoicingFamily.altered &&
-          family != VoicingFamily.upperStructure,
+      ChordLanguageLevel.triadsOnly || ChordLanguageLevel.seventhChords =>
+        family == VoicingFamily.shell || family == VoicingFamily.spread,
+      ChordLanguageLevel.safeExtensions =>
+        family != VoicingFamily.quartal &&
+            family != VoicingFamily.altered &&
+            family != VoicingFamily.upperStructure,
       ChordLanguageLevel.fullExtensions => true,
     };
   }

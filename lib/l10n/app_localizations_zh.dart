@@ -403,6 +403,41 @@ class AppLocalizationsZh extends AppLocalizations {
   String get metronomeVolume => '節拍器音量';
 
   @override
+  String get practiceMeter => 'Time Signature';
+
+  @override
+  String get practiceMeterHelp =>
+      'Choose how many beats are in each bar for transport and metronome timing.';
+
+  @override
+  String get practiceTimeSignatureTwoFour => '2/4';
+
+  @override
+  String get practiceTimeSignatureThreeFour => '3/4';
+
+  @override
+  String get practiceTimeSignatureFourFour => '4/4';
+
+  @override
+  String get harmonicRhythm => 'Harmonic Rhythm';
+
+  @override
+  String get harmonicRhythmHelp =>
+      'Choose how often chord changes can happen inside the bar.';
+
+  @override
+  String get harmonicRhythmOnePerBar => 'One per bar';
+
+  @override
+  String get harmonicRhythmTwoPerBar => 'Two per bar';
+
+  @override
+  String get harmonicRhythmPhraseAwareJazz => 'Phrase-aware jazz';
+
+  @override
+  String get harmonicRhythmCadenceCompression => 'Cadence compression';
+
+  @override
   String get keys => '調性';
 
   @override
@@ -673,6 +708,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get voicingSuggestionsHelp => '顯示當前和弦的三個可演奏音符級 和聲配置 想法。';
 
   @override
+  String get voicingDisplayMode => 'Voicing Display Mode';
+
+  @override
+  String get voicingDisplayModeHelp =>
+      'Switch between the standard three-card view and a performance-focused current/next preview.';
+
+  @override
+  String get voicingDisplayModeStandard => 'Standard';
+
+  @override
+  String get voicingDisplayModePerformance => 'Performance';
+
+  @override
   String get voicingComplexity => '發聲複雜性';
 
   @override
@@ -763,6 +811,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get voicingSuggestionEasyStableSubtitle => '重複友善的手形';
+
+  @override
+  String get voicingPerformanceSubtitle =>
+      'Feature one representative comping shape and keep the next move in view.';
+
+  @override
+  String get voicingPerformanceCurrentTitle => 'Current voicing';
+
+  @override
+  String get voicingPerformanceNextTitle => 'Next preview';
+
+  @override
+  String get voicingPerformanceCurrentOnly => 'Current only';
+
+  @override
+  String get voicingPerformanceShared => 'Shared';
+
+  @override
+  String get voicingPerformanceNextOnly => 'Next move';
+
+  @override
+  String voicingPerformanceTopLinePath(Object current, Object next) {
+    return 'Top line: $current -> $next';
+  }
 
   @override
   String get voicingTopNoteLabel => '頂部';
@@ -1832,7 +1904,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chordAnalyzerInputLabel => '和弦進行';
 
   @override
-  String get chordAnalyzerInputHint => 'Dm7, G7, ? | Am7';
+  String get chordAnalyzerInputHint => 'Dm7, G7 | ? Am';
 
   @override
   String get chordAnalyzerInputHelper =>
@@ -1880,7 +1952,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chordAnalyzerInitialBody =>
-      '輸入像 Dm7, G7, ? | Am7 或 Cmaj7 | Am7 D7 | Gmaj7 這樣的進行，即可查看可能的調性、羅馬數字、推定補全與簡短摘要。';
+      '輸入像 Dm7, G7 | ? Am 或 Cmaj7 | Am7 D7 | Gmaj7 這樣的進行，即可查看可能的調性、羅馬數字、推定補全與簡短摘要。';
 
   @override
   String get chordAnalyzerPlaceholderExplanation => '這個 ? 是根據前後和聲脈絡推定出的空位。';
@@ -2165,6 +2237,244 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String chordAnalyzerParseIssueUnsupportedSuffix(Object suffix) {
     return '不支援的後綴或修飾：$suffix';
+  }
+
+  @override
+  String get chordAnalyzerDisplaySettings => 'Analysis display';
+
+  @override
+  String get chordAnalyzerDisplaySettingsHelp =>
+      'Choose how much theory detail appears and how non-diatonic categories are highlighted.';
+
+  @override
+  String get chordAnalyzerDetailLevel => 'Explanation detail';
+
+  @override
+  String get chordAnalyzerDetailLevelConcise => 'Concise';
+
+  @override
+  String get chordAnalyzerDetailLevelDetailed => 'Detailed';
+
+  @override
+  String get chordAnalyzerDetailLevelAdvanced => 'Advanced';
+
+  @override
+  String get chordAnalyzerHighlightTheme => 'Highlight theme';
+
+  @override
+  String get chordAnalyzerThemePresetDefault => 'Default';
+
+  @override
+  String get chordAnalyzerThemePresetHighContrast => 'High contrast';
+
+  @override
+  String get chordAnalyzerThemePresetColorBlindSafe => 'Color-blind safe';
+
+  @override
+  String get chordAnalyzerThemePresetCustom => 'Custom';
+
+  @override
+  String get chordAnalyzerThemeLegend => 'Category legend';
+
+  @override
+  String get chordAnalyzerCustomColors => 'Custom category colors';
+
+  @override
+  String get chordAnalyzerHighlightAppliedDominant => 'Applied dominant';
+
+  @override
+  String get chordAnalyzerHighlightTritoneSubstitute => 'Tritone substitute';
+
+  @override
+  String get chordAnalyzerHighlightTonicization => 'Tonicization';
+
+  @override
+  String get chordAnalyzerHighlightModulation => 'Modulation';
+
+  @override
+  String get chordAnalyzerHighlightBackdoor => 'Backdoor / subdominant minor';
+
+  @override
+  String get chordAnalyzerHighlightBorrowedColor => 'Borrowed color';
+
+  @override
+  String get chordAnalyzerHighlightCommonTone => 'Common-tone motion';
+
+  @override
+  String get chordAnalyzerHighlightDeceptiveCadence => 'Deceptive cadence';
+
+  @override
+  String get chordAnalyzerHighlightChromaticLine => 'Chromatic line color';
+
+  @override
+  String get chordAnalyzerHighlightAmbiguity => 'Ambiguity';
+
+  @override
+  String chordAnalyzerSummaryRealModulation(Object key) {
+    return 'It makes a stronger case for a real modulation toward $key.';
+  }
+
+  @override
+  String chordAnalyzerSummaryTonicization(Object target) {
+    return 'It briefly tonicizes $target without fully settling there.';
+  }
+
+  @override
+  String get chordAnalyzerSummaryBackdoor =>
+      'The progression leans into backdoor or subdominant-minor color before resolving.';
+
+  @override
+  String get chordAnalyzerSummaryDeceptiveCadence =>
+      'One cadence sidesteps the expected tonic for a deceptive effect.';
+
+  @override
+  String get chordAnalyzerSummaryChromaticLine =>
+      'A chromatic inner-line or line-cliche color helps connect part of the phrase.';
+
+  @override
+  String chordAnalyzerSummaryBackdoorDominant(Object chord) {
+    return '$chord works like a backdoor dominant rather than a plain borrowed dominant.';
+  }
+
+  @override
+  String chordAnalyzerSummarySubdominantMinor(Object chord) {
+    return '$chord reads more naturally as subdominant-minor color than as a random non-diatonic chord.';
+  }
+
+  @override
+  String chordAnalyzerSummaryCommonToneDiminished(Object chord) {
+    return '$chord can be heard as a common-tone diminished color that resolves by shared pitch content.';
+  }
+
+  @override
+  String chordAnalyzerSummaryDeceptiveTarget(Object chord) {
+    return '$chord participates in a deceptive landing instead of a plain authentic cadence.';
+  }
+
+  @override
+  String chordAnalyzerSummaryCompeting(Object readings) {
+    return 'An advanced reading keeps competing interpretations in play, such as $readings.';
+  }
+
+  @override
+  String chordAnalyzerFunctionLine(Object function) {
+    return 'Function: $function';
+  }
+
+  @override
+  String chordAnalyzerEvidenceLead(Object evidence) {
+    return 'Evidence: $evidence';
+  }
+
+  @override
+  String chordAnalyzerAdvancedCompetingReadings(Object readings) {
+    return 'Competing readings remain possible here: $readings.';
+  }
+
+  @override
+  String chordAnalyzerRemarkTonicization(Object target) {
+    return 'This sounds more like a local tonicization of $target than a full modulation.';
+  }
+
+  @override
+  String chordAnalyzerRemarkRealModulation(Object key) {
+    return 'This supports a real modulation toward $key.';
+  }
+
+  @override
+  String get chordAnalyzerRemarkBackdoorDominant =>
+      'This can be heard as a backdoor dominant with subdominant-minor color.';
+
+  @override
+  String get chordAnalyzerRemarkBackdoorChain =>
+      'This belongs to a backdoor chain rather than a plain borrowed detour.';
+
+  @override
+  String get chordAnalyzerRemarkSubdominantMinor =>
+      'This borrowed iv or subdominant-minor color behaves like a predominant area.';
+
+  @override
+  String get chordAnalyzerRemarkCommonToneDiminished =>
+      'This diminished chord works through common-tone reinterpretation.';
+
+  @override
+  String get chordAnalyzerRemarkPivotChord =>
+      'This chord can act as a pivot into the next local key area.';
+
+  @override
+  String get chordAnalyzerRemarkCommonToneModulation =>
+      'Common-tone continuity helps the modulation feel plausible.';
+
+  @override
+  String get chordAnalyzerRemarkDeceptiveCadence =>
+      'This points toward a deceptive cadence rather than a direct tonic arrival.';
+
+  @override
+  String get chordAnalyzerRemarkLineCliche =>
+      'Chromatic inner-line motion colors this chord choice.';
+
+  @override
+  String get chordAnalyzerRemarkDualFunction =>
+      'More than one functional reading stays credible here.';
+
+  @override
+  String get chordAnalyzerTagTonicization => 'Tonicization';
+
+  @override
+  String get chordAnalyzerTagRealModulation => 'Real modulation';
+
+  @override
+  String get chordAnalyzerTagBackdoorChain => 'Backdoor chain';
+
+  @override
+  String get chordAnalyzerTagDeceptiveCadence => 'Deceptive cadence';
+
+  @override
+  String get chordAnalyzerTagChromaticLine => 'Chromatic line color';
+
+  @override
+  String get chordAnalyzerTagCommonToneMotion => 'Common-tone motion';
+
+  @override
+  String get chordAnalyzerEvidenceCadentialArrival =>
+      'A local cadential arrival supports hearing a temporary target.';
+
+  @override
+  String get chordAnalyzerEvidenceFollowThrough =>
+      'Follow-through chords continue to support the new local center.';
+
+  @override
+  String get chordAnalyzerEvidencePhraseBoundary =>
+      'The change lands near a phrase boundary or structural accent.';
+
+  @override
+  String get chordAnalyzerEvidencePivotSupport =>
+      'A pivot-like shared reading supports the local shift.';
+
+  @override
+  String get chordAnalyzerEvidenceCommonToneSupport =>
+      'Shared common tones help connect the reinterpretation.';
+
+  @override
+  String get chordAnalyzerEvidenceHomeGravityWeakening =>
+      'The original tonic loses some of its pull in this window.';
+
+  @override
+  String get chordAnalyzerEvidenceBackdoorMotion =>
+      'The motion matches a backdoor or subdominant-minor resolution pattern.';
+
+  @override
+  String get chordAnalyzerEvidenceDeceptiveResolution =>
+      'The dominant resolves away from the expected tonic target.';
+
+  @override
+  String chordAnalyzerEvidenceChromaticLine(Object detail) {
+    return 'Chromatic line support: $detail.';
+  }
+
+  @override
+  String chordAnalyzerEvidenceCompetingReading(Object detail) {
+    return 'Competing reading: $detail.';
   }
 
   @override
@@ -3185,6 +3495,297 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get studyHarmonyLessonBlueHourBossDescription =>
       '最後的藍色時刻 Boss 強制快速交換中心、功能、借用的顏色和缺少的和弦修復。';
+
+  @override
+  String get anchorLoopTitle => 'Anchor Loop';
+
+  @override
+  String get anchorLoopHelp =>
+      'Fix specific cycle slots so the same chord returns every cycle while the other slots can still be generated around it.';
+
+  @override
+  String get anchorLoopCycleLength => 'Cycle Length (bars)';
+
+  @override
+  String get anchorLoopCycleLengthHelp =>
+      'Choose how many bars the repeating anchor cycle lasts.';
+
+  @override
+  String get anchorLoopVaryNonAnchorSlots => 'Vary non-anchor slots';
+
+  @override
+  String get anchorLoopVaryNonAnchorSlotsHelp =>
+      'Keep anchor slots exact while letting the generated filler vary inside the same local function.';
+
+  @override
+  String anchorLoopBarLabel(int bar) {
+    return 'Bar $bar';
+  }
+
+  @override
+  String anchorLoopBeatLabel(int beat) {
+    return 'Beat $beat';
+  }
+
+  @override
+  String get anchorLoopSlotEmpty => 'No anchor chord set';
+
+  @override
+  String anchorLoopEditTitle(int bar, int beat) {
+    return 'Edit anchor for bar $bar, beat $beat';
+  }
+
+  @override
+  String get anchorLoopChordSymbol => 'Anchor chord symbol';
+
+  @override
+  String get anchorLoopChordHint =>
+      'Enter one chord symbol for this slot. Leave it empty to clear the anchor.';
+
+  @override
+  String get anchorLoopInvalidChord =>
+      'Enter a supported chord symbol before saving this anchor slot.';
+
+  @override
+  String get harmonyPlaybackPatternBlock => 'Block';
+
+  @override
+  String get harmonyPlaybackPatternArpeggio => 'Arpeggio';
+
+  @override
+  String get metronomeBeatStateNormal => 'Normal';
+
+  @override
+  String get metronomeBeatStateAccent => 'Accent';
+
+  @override
+  String get metronomeBeatStateMute => 'Mute';
+
+  @override
+  String get metronomePatternPresetCustom => 'Custom';
+
+  @override
+  String get metronomePatternPresetMeterAccent => 'Meter accent';
+
+  @override
+  String get metronomePatternPresetJazzTwoAndFour => 'Jazz 2 & 4';
+
+  @override
+  String get metronomeSourceKindBuiltIn => 'Built-in asset';
+
+  @override
+  String get metronomeSourceKindLocalFile => 'Local file';
+
+  @override
+  String get transportAudioTitle => 'Transport Audio';
+
+  @override
+  String get autoPlayChordChanges => 'Auto-play chord changes';
+
+  @override
+  String get autoPlayChordChangesHelp =>
+      'Play the next chord automatically when the transport reaches a chord-change event.';
+
+  @override
+  String get autoPlayPattern => 'Auto-play pattern';
+
+  @override
+  String get autoPlayPatternHelp =>
+      'Choose whether auto-play uses a block chord or a short arpeggio.';
+
+  @override
+  String get autoPlayHoldFactor => 'Auto-play hold length';
+
+  @override
+  String get autoPlayHoldFactorHelp =>
+      'Scale how long auto-played chord changes ring relative to the event duration.';
+
+  @override
+  String get autoPlayMelodyWithChords => 'Play melody with chords';
+
+  @override
+  String get autoPlayMelodyWithChordsPlaceholder =>
+      'When melody generation is enabled, include the current melody line in auto-play chord-change previews.';
+
+  @override
+  String get melodyGenerationTitle => 'Melody line';
+
+  @override
+  String get melodyGenerationHelp =>
+      'Generate a simple performance-ready melody that follows the current chord timeline.';
+
+  @override
+  String get melodyDensity => 'Melody density';
+
+  @override
+  String get melodyDensityHelp =>
+      'Choose how many melody notes tend to appear inside each chord event.';
+
+  @override
+  String get melodyDensitySparse => 'Sparse';
+
+  @override
+  String get melodyDensityBalanced => 'Balanced';
+
+  @override
+  String get melodyDensityActive => 'Active';
+
+  @override
+  String get motifRepetitionStrength => 'Motif repetition';
+
+  @override
+  String get motifRepetitionStrengthHelp =>
+      'Higher values keep the contour identity of recent melody fragments more often.';
+
+  @override
+  String get approachToneDensity => 'Approach tone density';
+
+  @override
+  String get approachToneDensityHelp =>
+      'Control how often passing, neighbor, and approach gestures appear before arrivals.';
+
+  @override
+  String get melodyRangeLow => 'Melody range low';
+
+  @override
+  String get melodyRangeHigh => 'Melody range high';
+
+  @override
+  String get melodyRangeHelp =>
+      'Keep generated melody notes inside this playable register window.';
+
+  @override
+  String get melodyStyle => 'Melody style';
+
+  @override
+  String get melodyStyleHelp =>
+      'Bias the line toward safer guide tones, bebop motion, lyrical space, or colorful tensions.';
+
+  @override
+  String get melodyStyleSafe => 'Safe';
+
+  @override
+  String get melodyStyleBebop => 'Bebop';
+
+  @override
+  String get melodyStyleLyrical => 'Lyrical';
+
+  @override
+  String get melodyStyleColorful => 'Colorful';
+
+  @override
+  String get allowChromaticApproaches => 'Allow chromatic approaches';
+
+  @override
+  String get allowChromaticApproachesHelp =>
+      'Permit enclosures and chromatic approach notes on weak beats when the style allows it.';
+
+  @override
+  String get melodyPlaybackMode => 'Melody playback';
+
+  @override
+  String get melodyPlaybackModeHelp =>
+      'Choose whether manual preview buttons play chords, melody, or both together.';
+
+  @override
+  String get melodyPlaybackModeChordsOnly => 'Chords only';
+
+  @override
+  String get melodyPlaybackModeMelodyOnly => 'Melody only';
+
+  @override
+  String get melodyPlaybackModeBoth => 'Both';
+
+  @override
+  String get regenerateMelody => 'Regenerate melody';
+
+  @override
+  String get melodyPreviewCurrent => 'Current line';
+
+  @override
+  String get melodyPreviewNext => 'Next arrival';
+
+  @override
+  String get metronomePatternTitle => 'Metronome Pattern';
+
+  @override
+  String get metronomePatternHelp =>
+      'Choose a meter-aware click pattern or define each beat manually.';
+
+  @override
+  String get metronomeUseAccentSound => 'Use separate accent sound';
+
+  @override
+  String get metronomeUseAccentSoundHelp =>
+      'Use a different click source for accented beats instead of only raising the gain.';
+
+  @override
+  String get metronomePrimarySource => 'Primary click source';
+
+  @override
+  String get metronomeAccentSource => 'Accent click source';
+
+  @override
+  String get metronomeSourceKind => 'Source type';
+
+  @override
+  String get metronomeLocalFilePath => 'Local file path';
+
+  @override
+  String get metronomeLocalFilePathHelp =>
+      'Paste a local audio file path and press enter to apply it. Built-in sound remains the fallback.';
+
+  @override
+  String get metronomeAccentLocalFilePath => 'Accent local file path';
+
+  @override
+  String get metronomeAccentLocalFilePathHelp =>
+      'Paste a local accent file path and press enter to apply it. Built-in sound remains the fallback.';
+
+  @override
+  String get harmonySoundTitle => 'Harmony Sound';
+
+  @override
+  String get harmonyMasterVolume => 'Master volume';
+
+  @override
+  String get harmonyMasterVolumeHelp =>
+      'Overall harmony preview loudness for manual and automatic chord playback.';
+
+  @override
+  String get harmonyPreviewHoldFactor => 'Chord hold length';
+
+  @override
+  String get harmonyPreviewHoldFactorHelp =>
+      'Scale how long previewed chords and notes sustain.';
+
+  @override
+  String get harmonyArpeggioStepSpeed => 'Arpeggio step speed';
+
+  @override
+  String get harmonyArpeggioStepSpeedHelp =>
+      'Control how quickly arpeggiated notes step forward.';
+
+  @override
+  String get harmonyVelocityHumanization => 'Velocity humanization';
+
+  @override
+  String get harmonyVelocityHumanizationHelp =>
+      'Add small velocity variation so repeated previews feel less mechanical.';
+
+  @override
+  String get harmonyGainRandomness => 'Gain randomness';
+
+  @override
+  String get harmonyGainRandomnessHelp =>
+      'Add slight per-note loudness variation on supported playback paths.';
+
+  @override
+  String get harmonyTimingHumanization => 'Timing humanization';
+
+  @override
+  String get harmonyTimingHumanizationHelp =>
+      'Slightly loosen simultaneous note attacks for a less rigid block chord.';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -3586,6 +4187,41 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get metronomeVolume => '节拍器音量';
 
   @override
+  String get practiceMeter => 'Time Signature';
+
+  @override
+  String get practiceMeterHelp =>
+      'Choose how many beats are in each bar for transport and metronome timing.';
+
+  @override
+  String get practiceTimeSignatureTwoFour => '2/4';
+
+  @override
+  String get practiceTimeSignatureThreeFour => '3/4';
+
+  @override
+  String get practiceTimeSignatureFourFour => '4/4';
+
+  @override
+  String get harmonicRhythm => 'Harmonic Rhythm';
+
+  @override
+  String get harmonicRhythmHelp =>
+      'Choose how often chord changes can happen inside the bar.';
+
+  @override
+  String get harmonicRhythmOnePerBar => 'One per bar';
+
+  @override
+  String get harmonicRhythmTwoPerBar => 'Two per bar';
+
+  @override
+  String get harmonicRhythmPhraseAwareJazz => 'Phrase-aware jazz';
+
+  @override
+  String get harmonicRhythmCadenceCompression => 'Cadence compression';
+
+  @override
   String get keys => '调性';
 
   @override
@@ -3856,6 +4492,19 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get voicingSuggestionsHelp => '显示当前和弦的三个可演奏音符级 和声配置 想法。';
 
   @override
+  String get voicingDisplayMode => 'Voicing Display Mode';
+
+  @override
+  String get voicingDisplayModeHelp =>
+      'Switch between the standard three-card view and a performance-focused current/next preview.';
+
+  @override
+  String get voicingDisplayModeStandard => 'Standard';
+
+  @override
+  String get voicingDisplayModePerformance => 'Performance';
+
+  @override
   String get voicingComplexity => '发声复杂性';
 
   @override
@@ -3946,6 +4595,30 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get voicingSuggestionEasyStableSubtitle => '重复友善的手形';
+
+  @override
+  String get voicingPerformanceSubtitle =>
+      'Feature one representative comping shape and keep the next move in view.';
+
+  @override
+  String get voicingPerformanceCurrentTitle => 'Current voicing';
+
+  @override
+  String get voicingPerformanceNextTitle => 'Next preview';
+
+  @override
+  String get voicingPerformanceCurrentOnly => 'Current only';
+
+  @override
+  String get voicingPerformanceShared => 'Shared';
+
+  @override
+  String get voicingPerformanceNextOnly => 'Next move';
+
+  @override
+  String voicingPerformanceTopLinePath(Object current, Object next) {
+    return 'Top line: $current -> $next';
+  }
 
   @override
   String get voicingTopNoteLabel => '顶部';
@@ -5015,7 +5688,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get chordAnalyzerInputLabel => '和弦进行';
 
   @override
-  String get chordAnalyzerInputHint => 'Dm7, G7, ? | Am7';
+  String get chordAnalyzerInputHint => 'Dm7, G7 | ? Am';
 
   @override
   String get chordAnalyzerInputHelper =>
@@ -5063,7 +5736,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get chordAnalyzerInitialBody =>
-      '输入像 Dm7, G7, ? | Am7 或 Cmaj7 | Am7 D7 | Gmaj7 这样的进行，即可查看可能的调性、罗马数字、推断补全与简短摘要。';
+      '输入像 Dm7, G7 | ? Am 或 Cmaj7 | Am7 D7 | Gmaj7 这样的进行，即可查看可能的调性、罗马数字、推断补全与简短摘要。';
 
   @override
   String get chordAnalyzerPlaceholderExplanation => '这个 ? 是根据前后和声语境推断出的空位。';
@@ -5348,6 +6021,244 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   @override
   String chordAnalyzerParseIssueUnsupportedSuffix(Object suffix) {
     return '不支援的后缀或修饰：$suffix';
+  }
+
+  @override
+  String get chordAnalyzerDisplaySettings => 'Analysis display';
+
+  @override
+  String get chordAnalyzerDisplaySettingsHelp =>
+      'Choose how much theory detail appears and how non-diatonic categories are highlighted.';
+
+  @override
+  String get chordAnalyzerDetailLevel => 'Explanation detail';
+
+  @override
+  String get chordAnalyzerDetailLevelConcise => 'Concise';
+
+  @override
+  String get chordAnalyzerDetailLevelDetailed => 'Detailed';
+
+  @override
+  String get chordAnalyzerDetailLevelAdvanced => 'Advanced';
+
+  @override
+  String get chordAnalyzerHighlightTheme => 'Highlight theme';
+
+  @override
+  String get chordAnalyzerThemePresetDefault => 'Default';
+
+  @override
+  String get chordAnalyzerThemePresetHighContrast => 'High contrast';
+
+  @override
+  String get chordAnalyzerThemePresetColorBlindSafe => 'Color-blind safe';
+
+  @override
+  String get chordAnalyzerThemePresetCustom => 'Custom';
+
+  @override
+  String get chordAnalyzerThemeLegend => 'Category legend';
+
+  @override
+  String get chordAnalyzerCustomColors => 'Custom category colors';
+
+  @override
+  String get chordAnalyzerHighlightAppliedDominant => 'Applied dominant';
+
+  @override
+  String get chordAnalyzerHighlightTritoneSubstitute => 'Tritone substitute';
+
+  @override
+  String get chordAnalyzerHighlightTonicization => 'Tonicization';
+
+  @override
+  String get chordAnalyzerHighlightModulation => 'Modulation';
+
+  @override
+  String get chordAnalyzerHighlightBackdoor => 'Backdoor / subdominant minor';
+
+  @override
+  String get chordAnalyzerHighlightBorrowedColor => 'Borrowed color';
+
+  @override
+  String get chordAnalyzerHighlightCommonTone => 'Common-tone motion';
+
+  @override
+  String get chordAnalyzerHighlightDeceptiveCadence => 'Deceptive cadence';
+
+  @override
+  String get chordAnalyzerHighlightChromaticLine => 'Chromatic line color';
+
+  @override
+  String get chordAnalyzerHighlightAmbiguity => 'Ambiguity';
+
+  @override
+  String chordAnalyzerSummaryRealModulation(Object key) {
+    return 'It makes a stronger case for a real modulation toward $key.';
+  }
+
+  @override
+  String chordAnalyzerSummaryTonicization(Object target) {
+    return 'It briefly tonicizes $target without fully settling there.';
+  }
+
+  @override
+  String get chordAnalyzerSummaryBackdoor =>
+      'The progression leans into backdoor or subdominant-minor color before resolving.';
+
+  @override
+  String get chordAnalyzerSummaryDeceptiveCadence =>
+      'One cadence sidesteps the expected tonic for a deceptive effect.';
+
+  @override
+  String get chordAnalyzerSummaryChromaticLine =>
+      'A chromatic inner-line or line-cliche color helps connect part of the phrase.';
+
+  @override
+  String chordAnalyzerSummaryBackdoorDominant(Object chord) {
+    return '$chord works like a backdoor dominant rather than a plain borrowed dominant.';
+  }
+
+  @override
+  String chordAnalyzerSummarySubdominantMinor(Object chord) {
+    return '$chord reads more naturally as subdominant-minor color than as a random non-diatonic chord.';
+  }
+
+  @override
+  String chordAnalyzerSummaryCommonToneDiminished(Object chord) {
+    return '$chord can be heard as a common-tone diminished color that resolves by shared pitch content.';
+  }
+
+  @override
+  String chordAnalyzerSummaryDeceptiveTarget(Object chord) {
+    return '$chord participates in a deceptive landing instead of a plain authentic cadence.';
+  }
+
+  @override
+  String chordAnalyzerSummaryCompeting(Object readings) {
+    return 'An advanced reading keeps competing interpretations in play, such as $readings.';
+  }
+
+  @override
+  String chordAnalyzerFunctionLine(Object function) {
+    return 'Function: $function';
+  }
+
+  @override
+  String chordAnalyzerEvidenceLead(Object evidence) {
+    return 'Evidence: $evidence';
+  }
+
+  @override
+  String chordAnalyzerAdvancedCompetingReadings(Object readings) {
+    return 'Competing readings remain possible here: $readings.';
+  }
+
+  @override
+  String chordAnalyzerRemarkTonicization(Object target) {
+    return 'This sounds more like a local tonicization of $target than a full modulation.';
+  }
+
+  @override
+  String chordAnalyzerRemarkRealModulation(Object key) {
+    return 'This supports a real modulation toward $key.';
+  }
+
+  @override
+  String get chordAnalyzerRemarkBackdoorDominant =>
+      'This can be heard as a backdoor dominant with subdominant-minor color.';
+
+  @override
+  String get chordAnalyzerRemarkBackdoorChain =>
+      'This belongs to a backdoor chain rather than a plain borrowed detour.';
+
+  @override
+  String get chordAnalyzerRemarkSubdominantMinor =>
+      'This borrowed iv or subdominant-minor color behaves like a predominant area.';
+
+  @override
+  String get chordAnalyzerRemarkCommonToneDiminished =>
+      'This diminished chord works through common-tone reinterpretation.';
+
+  @override
+  String get chordAnalyzerRemarkPivotChord =>
+      'This chord can act as a pivot into the next local key area.';
+
+  @override
+  String get chordAnalyzerRemarkCommonToneModulation =>
+      'Common-tone continuity helps the modulation feel plausible.';
+
+  @override
+  String get chordAnalyzerRemarkDeceptiveCadence =>
+      'This points toward a deceptive cadence rather than a direct tonic arrival.';
+
+  @override
+  String get chordAnalyzerRemarkLineCliche =>
+      'Chromatic inner-line motion colors this chord choice.';
+
+  @override
+  String get chordAnalyzerRemarkDualFunction =>
+      'More than one functional reading stays credible here.';
+
+  @override
+  String get chordAnalyzerTagTonicization => 'Tonicization';
+
+  @override
+  String get chordAnalyzerTagRealModulation => 'Real modulation';
+
+  @override
+  String get chordAnalyzerTagBackdoorChain => 'Backdoor chain';
+
+  @override
+  String get chordAnalyzerTagDeceptiveCadence => 'Deceptive cadence';
+
+  @override
+  String get chordAnalyzerTagChromaticLine => 'Chromatic line color';
+
+  @override
+  String get chordAnalyzerTagCommonToneMotion => 'Common-tone motion';
+
+  @override
+  String get chordAnalyzerEvidenceCadentialArrival =>
+      'A local cadential arrival supports hearing a temporary target.';
+
+  @override
+  String get chordAnalyzerEvidenceFollowThrough =>
+      'Follow-through chords continue to support the new local center.';
+
+  @override
+  String get chordAnalyzerEvidencePhraseBoundary =>
+      'The change lands near a phrase boundary or structural accent.';
+
+  @override
+  String get chordAnalyzerEvidencePivotSupport =>
+      'A pivot-like shared reading supports the local shift.';
+
+  @override
+  String get chordAnalyzerEvidenceCommonToneSupport =>
+      'Shared common tones help connect the reinterpretation.';
+
+  @override
+  String get chordAnalyzerEvidenceHomeGravityWeakening =>
+      'The original tonic loses some of its pull in this window.';
+
+  @override
+  String get chordAnalyzerEvidenceBackdoorMotion =>
+      'The motion matches a backdoor or subdominant-minor resolution pattern.';
+
+  @override
+  String get chordAnalyzerEvidenceDeceptiveResolution =>
+      'The dominant resolves away from the expected tonic target.';
+
+  @override
+  String chordAnalyzerEvidenceChromaticLine(Object detail) {
+    return 'Chromatic line support: $detail.';
+  }
+
+  @override
+  String chordAnalyzerEvidenceCompetingReading(Object detail) {
+    return 'Competing reading: $detail.';
   }
 
   @override
@@ -6368,4 +7279,295 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   @override
   String get studyHarmonyLessonBlueHourBossDescription =>
       '最后的蓝色时刻 Boss 强制快速交换中心、功能、借用的颜色和缺少的和弦修复。';
+
+  @override
+  String get anchorLoopTitle => 'Anchor Loop';
+
+  @override
+  String get anchorLoopHelp =>
+      'Fix specific cycle slots so the same chord returns every cycle while the other slots can still be generated around it.';
+
+  @override
+  String get anchorLoopCycleLength => 'Cycle Length (bars)';
+
+  @override
+  String get anchorLoopCycleLengthHelp =>
+      'Choose how many bars the repeating anchor cycle lasts.';
+
+  @override
+  String get anchorLoopVaryNonAnchorSlots => 'Vary non-anchor slots';
+
+  @override
+  String get anchorLoopVaryNonAnchorSlotsHelp =>
+      'Keep anchor slots exact while letting the generated filler vary inside the same local function.';
+
+  @override
+  String anchorLoopBarLabel(int bar) {
+    return 'Bar $bar';
+  }
+
+  @override
+  String anchorLoopBeatLabel(int beat) {
+    return 'Beat $beat';
+  }
+
+  @override
+  String get anchorLoopSlotEmpty => 'No anchor chord set';
+
+  @override
+  String anchorLoopEditTitle(int bar, int beat) {
+    return 'Edit anchor for bar $bar, beat $beat';
+  }
+
+  @override
+  String get anchorLoopChordSymbol => 'Anchor chord symbol';
+
+  @override
+  String get anchorLoopChordHint =>
+      'Enter one chord symbol for this slot. Leave it empty to clear the anchor.';
+
+  @override
+  String get anchorLoopInvalidChord =>
+      'Enter a supported chord symbol before saving this anchor slot.';
+
+  @override
+  String get harmonyPlaybackPatternBlock => 'Block';
+
+  @override
+  String get harmonyPlaybackPatternArpeggio => 'Arpeggio';
+
+  @override
+  String get metronomeBeatStateNormal => 'Normal';
+
+  @override
+  String get metronomeBeatStateAccent => 'Accent';
+
+  @override
+  String get metronomeBeatStateMute => 'Mute';
+
+  @override
+  String get metronomePatternPresetCustom => 'Custom';
+
+  @override
+  String get metronomePatternPresetMeterAccent => 'Meter accent';
+
+  @override
+  String get metronomePatternPresetJazzTwoAndFour => 'Jazz 2 & 4';
+
+  @override
+  String get metronomeSourceKindBuiltIn => 'Built-in asset';
+
+  @override
+  String get metronomeSourceKindLocalFile => 'Local file';
+
+  @override
+  String get transportAudioTitle => 'Transport Audio';
+
+  @override
+  String get autoPlayChordChanges => 'Auto-play chord changes';
+
+  @override
+  String get autoPlayChordChangesHelp =>
+      'Play the next chord automatically when the transport reaches a chord-change event.';
+
+  @override
+  String get autoPlayPattern => 'Auto-play pattern';
+
+  @override
+  String get autoPlayPatternHelp =>
+      'Choose whether auto-play uses a block chord or a short arpeggio.';
+
+  @override
+  String get autoPlayHoldFactor => 'Auto-play hold length';
+
+  @override
+  String get autoPlayHoldFactorHelp =>
+      'Scale how long auto-played chord changes ring relative to the event duration.';
+
+  @override
+  String get autoPlayMelodyWithChords => 'Play melody with chords';
+
+  @override
+  String get autoPlayMelodyWithChordsPlaceholder =>
+      'When melody generation is enabled, include the current melody line in auto-play chord-change previews.';
+
+  @override
+  String get melodyGenerationTitle => 'Melody line';
+
+  @override
+  String get melodyGenerationHelp =>
+      'Generate a simple performance-ready melody that follows the current chord timeline.';
+
+  @override
+  String get melodyDensity => 'Melody density';
+
+  @override
+  String get melodyDensityHelp =>
+      'Choose how many melody notes tend to appear inside each chord event.';
+
+  @override
+  String get melodyDensitySparse => 'Sparse';
+
+  @override
+  String get melodyDensityBalanced => 'Balanced';
+
+  @override
+  String get melodyDensityActive => 'Active';
+
+  @override
+  String get motifRepetitionStrength => 'Motif repetition';
+
+  @override
+  String get motifRepetitionStrengthHelp =>
+      'Higher values keep the contour identity of recent melody fragments more often.';
+
+  @override
+  String get approachToneDensity => 'Approach tone density';
+
+  @override
+  String get approachToneDensityHelp =>
+      'Control how often passing, neighbor, and approach gestures appear before arrivals.';
+
+  @override
+  String get melodyRangeLow => 'Melody range low';
+
+  @override
+  String get melodyRangeHigh => 'Melody range high';
+
+  @override
+  String get melodyRangeHelp =>
+      'Keep generated melody notes inside this playable register window.';
+
+  @override
+  String get melodyStyle => 'Melody style';
+
+  @override
+  String get melodyStyleHelp =>
+      'Bias the line toward safer guide tones, bebop motion, lyrical space, or colorful tensions.';
+
+  @override
+  String get melodyStyleSafe => 'Safe';
+
+  @override
+  String get melodyStyleBebop => 'Bebop';
+
+  @override
+  String get melodyStyleLyrical => 'Lyrical';
+
+  @override
+  String get melodyStyleColorful => 'Colorful';
+
+  @override
+  String get allowChromaticApproaches => 'Allow chromatic approaches';
+
+  @override
+  String get allowChromaticApproachesHelp =>
+      'Permit enclosures and chromatic approach notes on weak beats when the style allows it.';
+
+  @override
+  String get melodyPlaybackMode => 'Melody playback';
+
+  @override
+  String get melodyPlaybackModeHelp =>
+      'Choose whether manual preview buttons play chords, melody, or both together.';
+
+  @override
+  String get melodyPlaybackModeChordsOnly => 'Chords only';
+
+  @override
+  String get melodyPlaybackModeMelodyOnly => 'Melody only';
+
+  @override
+  String get melodyPlaybackModeBoth => 'Both';
+
+  @override
+  String get regenerateMelody => 'Regenerate melody';
+
+  @override
+  String get melodyPreviewCurrent => 'Current line';
+
+  @override
+  String get melodyPreviewNext => 'Next arrival';
+
+  @override
+  String get metronomePatternTitle => 'Metronome Pattern';
+
+  @override
+  String get metronomePatternHelp =>
+      'Choose a meter-aware click pattern or define each beat manually.';
+
+  @override
+  String get metronomeUseAccentSound => 'Use separate accent sound';
+
+  @override
+  String get metronomeUseAccentSoundHelp =>
+      'Use a different click source for accented beats instead of only raising the gain.';
+
+  @override
+  String get metronomePrimarySource => 'Primary click source';
+
+  @override
+  String get metronomeAccentSource => 'Accent click source';
+
+  @override
+  String get metronomeSourceKind => 'Source type';
+
+  @override
+  String get metronomeLocalFilePath => 'Local file path';
+
+  @override
+  String get metronomeLocalFilePathHelp =>
+      'Paste a local audio file path and press enter to apply it. Built-in sound remains the fallback.';
+
+  @override
+  String get metronomeAccentLocalFilePath => 'Accent local file path';
+
+  @override
+  String get metronomeAccentLocalFilePathHelp =>
+      'Paste a local accent file path and press enter to apply it. Built-in sound remains the fallback.';
+
+  @override
+  String get harmonySoundTitle => 'Harmony Sound';
+
+  @override
+  String get harmonyMasterVolume => 'Master volume';
+
+  @override
+  String get harmonyMasterVolumeHelp =>
+      'Overall harmony preview loudness for manual and automatic chord playback.';
+
+  @override
+  String get harmonyPreviewHoldFactor => 'Chord hold length';
+
+  @override
+  String get harmonyPreviewHoldFactorHelp =>
+      'Scale how long previewed chords and notes sustain.';
+
+  @override
+  String get harmonyArpeggioStepSpeed => 'Arpeggio step speed';
+
+  @override
+  String get harmonyArpeggioStepSpeedHelp =>
+      'Control how quickly arpeggiated notes step forward.';
+
+  @override
+  String get harmonyVelocityHumanization => 'Velocity humanization';
+
+  @override
+  String get harmonyVelocityHumanizationHelp =>
+      'Add small velocity variation so repeated previews feel less mechanical.';
+
+  @override
+  String get harmonyGainRandomness => 'Gain randomness';
+
+  @override
+  String get harmonyGainRandomnessHelp =>
+      'Add slight per-note loudness variation on supported playback paths.';
+
+  @override
+  String get harmonyTimingHumanization => 'Timing humanization';
+
+  @override
+  String get harmonyTimingHumanizationHelp =>
+      'Slightly loosen simultaneous note attacks for a less rigid block chord.';
 }

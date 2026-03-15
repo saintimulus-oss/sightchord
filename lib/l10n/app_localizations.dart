@@ -795,6 +795,72 @@ abstract class AppLocalizations {
   /// **'Metronome Volume'**
   String get metronomeVolume;
 
+  /// No description provided for @practiceMeter.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Signature'**
+  String get practiceMeter;
+
+  /// No description provided for @practiceMeterHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how many beats are in each bar for transport and metronome timing.'**
+  String get practiceMeterHelp;
+
+  /// No description provided for @practiceTimeSignatureTwoFour.
+  ///
+  /// In en, this message translates to:
+  /// **'2/4'**
+  String get practiceTimeSignatureTwoFour;
+
+  /// No description provided for @practiceTimeSignatureThreeFour.
+  ///
+  /// In en, this message translates to:
+  /// **'3/4'**
+  String get practiceTimeSignatureThreeFour;
+
+  /// No description provided for @practiceTimeSignatureFourFour.
+  ///
+  /// In en, this message translates to:
+  /// **'4/4'**
+  String get practiceTimeSignatureFourFour;
+
+  /// No description provided for @harmonicRhythm.
+  ///
+  /// In en, this message translates to:
+  /// **'Harmonic Rhythm'**
+  String get harmonicRhythm;
+
+  /// No description provided for @harmonicRhythmHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how often chord changes can happen inside the bar.'**
+  String get harmonicRhythmHelp;
+
+  /// No description provided for @harmonicRhythmOnePerBar.
+  ///
+  /// In en, this message translates to:
+  /// **'One per bar'**
+  String get harmonicRhythmOnePerBar;
+
+  /// No description provided for @harmonicRhythmTwoPerBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Two per bar'**
+  String get harmonicRhythmTwoPerBar;
+
+  /// No description provided for @harmonicRhythmPhraseAwareJazz.
+  ///
+  /// In en, this message translates to:
+  /// **'Phrase-aware jazz'**
+  String get harmonicRhythmPhraseAwareJazz;
+
+  /// No description provided for @harmonicRhythmCadenceCompression.
+  ///
+  /// In en, this message translates to:
+  /// **'Cadence compression'**
+  String get harmonicRhythmCadenceCompression;
+
   /// No description provided for @keys.
   ///
   /// In en, this message translates to:
@@ -1317,6 +1383,30 @@ abstract class AppLocalizations {
   /// **'Shows three playable note-level voicing ideas for the current chord.'**
   String get voicingSuggestionsHelp;
 
+  /// No description provided for @voicingDisplayMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Voicing Display Mode'**
+  String get voicingDisplayMode;
+
+  /// No description provided for @voicingDisplayModeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch between the standard three-card view and a performance-focused current/next preview.'**
+  String get voicingDisplayModeHelp;
+
+  /// No description provided for @voicingDisplayModeStandard.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard'**
+  String get voicingDisplayModeStandard;
+
+  /// No description provided for @voicingDisplayModePerformance.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance'**
+  String get voicingDisplayModePerformance;
+
   /// No description provided for @voicingComplexity.
   ///
   /// In en, this message translates to:
@@ -1496,6 +1586,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Repeat-friendly hand shape'**
   String get voicingSuggestionEasyStableSubtitle;
+
+  /// No description provided for @voicingPerformanceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Feature one representative comping shape and keep the next move in view.'**
+  String get voicingPerformanceSubtitle;
+
+  /// No description provided for @voicingPerformanceCurrentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Current voicing'**
+  String get voicingPerformanceCurrentTitle;
+
+  /// No description provided for @voicingPerformanceNextTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Next preview'**
+  String get voicingPerformanceNextTitle;
+
+  /// No description provided for @voicingPerformanceCurrentOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Current only'**
+  String get voicingPerformanceCurrentOnly;
+
+  /// No description provided for @voicingPerformanceShared.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared'**
+  String get voicingPerformanceShared;
+
+  /// No description provided for @voicingPerformanceNextOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Next move'**
+  String get voicingPerformanceNextOnly;
+
+  /// No description provided for @voicingPerformanceTopLinePath.
+  ///
+  /// In en, this message translates to:
+  /// **'Top line: {current} -> {next}'**
+  String voicingPerformanceTopLinePath(Object current, Object next);
 
   /// No description provided for @voicingTopNoteLabel.
   ///
@@ -3315,7 +3447,7 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerInputHint.
   ///
   /// In en, this message translates to:
-  /// **'Dm7, G7, ? | Am7'**
+  /// **'Dm7, G7 | ? Am'**
   String get chordAnalyzerInputHint;
 
   /// No description provided for @chordAnalyzerInputHelper.
@@ -3405,7 +3537,7 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerInitialBody.
   ///
   /// In en, this message translates to:
-  /// **'Enter a progression such as Dm7, G7, ? | Am7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, inferred fills, and a short summary.'**
+  /// **'Enter a progression such as Dm7, G7 | ? Am or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, inferred fills, and a short summary.'**
   String get chordAnalyzerInitialBody;
 
   /// No description provided for @chordAnalyzerPlaceholderExplanation.
@@ -3863,6 +3995,384 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unsupported suffix or modifier: {suffix}'**
   String chordAnalyzerParseIssueUnsupportedSuffix(Object suffix);
+
+  /// No description provided for @chordAnalyzerDisplaySettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Analysis display'**
+  String get chordAnalyzerDisplaySettings;
+
+  /// No description provided for @chordAnalyzerDisplaySettingsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how much theory detail appears and how non-diatonic categories are highlighted.'**
+  String get chordAnalyzerDisplaySettingsHelp;
+
+  /// No description provided for @chordAnalyzerDetailLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Explanation detail'**
+  String get chordAnalyzerDetailLevel;
+
+  /// No description provided for @chordAnalyzerDetailLevelConcise.
+  ///
+  /// In en, this message translates to:
+  /// **'Concise'**
+  String get chordAnalyzerDetailLevelConcise;
+
+  /// No description provided for @chordAnalyzerDetailLevelDetailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed'**
+  String get chordAnalyzerDetailLevelDetailed;
+
+  /// No description provided for @chordAnalyzerDetailLevelAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get chordAnalyzerDetailLevelAdvanced;
+
+  /// No description provided for @chordAnalyzerHighlightTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlight theme'**
+  String get chordAnalyzerHighlightTheme;
+
+  /// No description provided for @chordAnalyzerThemePresetDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get chordAnalyzerThemePresetDefault;
+
+  /// No description provided for @chordAnalyzerThemePresetHighContrast.
+  ///
+  /// In en, this message translates to:
+  /// **'High contrast'**
+  String get chordAnalyzerThemePresetHighContrast;
+
+  /// No description provided for @chordAnalyzerThemePresetColorBlindSafe.
+  ///
+  /// In en, this message translates to:
+  /// **'Color-blind safe'**
+  String get chordAnalyzerThemePresetColorBlindSafe;
+
+  /// No description provided for @chordAnalyzerThemePresetCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get chordAnalyzerThemePresetCustom;
+
+  /// No description provided for @chordAnalyzerThemeLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Category legend'**
+  String get chordAnalyzerThemeLegend;
+
+  /// No description provided for @chordAnalyzerCustomColors.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom category colors'**
+  String get chordAnalyzerCustomColors;
+
+  /// No description provided for @chordAnalyzerHighlightAppliedDominant.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied dominant'**
+  String get chordAnalyzerHighlightAppliedDominant;
+
+  /// No description provided for @chordAnalyzerHighlightTritoneSubstitute.
+  ///
+  /// In en, this message translates to:
+  /// **'Tritone substitute'**
+  String get chordAnalyzerHighlightTritoneSubstitute;
+
+  /// No description provided for @chordAnalyzerHighlightTonicization.
+  ///
+  /// In en, this message translates to:
+  /// **'Tonicization'**
+  String get chordAnalyzerHighlightTonicization;
+
+  /// No description provided for @chordAnalyzerHighlightModulation.
+  ///
+  /// In en, this message translates to:
+  /// **'Modulation'**
+  String get chordAnalyzerHighlightModulation;
+
+  /// No description provided for @chordAnalyzerHighlightBackdoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Backdoor / subdominant minor'**
+  String get chordAnalyzerHighlightBackdoor;
+
+  /// No description provided for @chordAnalyzerHighlightBorrowedColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowed color'**
+  String get chordAnalyzerHighlightBorrowedColor;
+
+  /// No description provided for @chordAnalyzerHighlightCommonTone.
+  ///
+  /// In en, this message translates to:
+  /// **'Common-tone motion'**
+  String get chordAnalyzerHighlightCommonTone;
+
+  /// No description provided for @chordAnalyzerHighlightDeceptiveCadence.
+  ///
+  /// In en, this message translates to:
+  /// **'Deceptive cadence'**
+  String get chordAnalyzerHighlightDeceptiveCadence;
+
+  /// No description provided for @chordAnalyzerHighlightChromaticLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Chromatic line color'**
+  String get chordAnalyzerHighlightChromaticLine;
+
+  /// No description provided for @chordAnalyzerHighlightAmbiguity.
+  ///
+  /// In en, this message translates to:
+  /// **'Ambiguity'**
+  String get chordAnalyzerHighlightAmbiguity;
+
+  /// No description provided for @chordAnalyzerSummaryRealModulation.
+  ///
+  /// In en, this message translates to:
+  /// **'It makes a stronger case for a real modulation toward {key}.'**
+  String chordAnalyzerSummaryRealModulation(Object key);
+
+  /// No description provided for @chordAnalyzerSummaryTonicization.
+  ///
+  /// In en, this message translates to:
+  /// **'It briefly tonicizes {target} without fully settling there.'**
+  String chordAnalyzerSummaryTonicization(Object target);
+
+  /// No description provided for @chordAnalyzerSummaryBackdoor.
+  ///
+  /// In en, this message translates to:
+  /// **'The progression leans into backdoor or subdominant-minor color before resolving.'**
+  String get chordAnalyzerSummaryBackdoor;
+
+  /// No description provided for @chordAnalyzerSummaryDeceptiveCadence.
+  ///
+  /// In en, this message translates to:
+  /// **'One cadence sidesteps the expected tonic for a deceptive effect.'**
+  String get chordAnalyzerSummaryDeceptiveCadence;
+
+  /// No description provided for @chordAnalyzerSummaryChromaticLine.
+  ///
+  /// In en, this message translates to:
+  /// **'A chromatic inner-line or line-cliche color helps connect part of the phrase.'**
+  String get chordAnalyzerSummaryChromaticLine;
+
+  /// No description provided for @chordAnalyzerSummaryBackdoorDominant.
+  ///
+  /// In en, this message translates to:
+  /// **'{chord} works like a backdoor dominant rather than a plain borrowed dominant.'**
+  String chordAnalyzerSummaryBackdoorDominant(Object chord);
+
+  /// No description provided for @chordAnalyzerSummarySubdominantMinor.
+  ///
+  /// In en, this message translates to:
+  /// **'{chord} reads more naturally as subdominant-minor color than as a random non-diatonic chord.'**
+  String chordAnalyzerSummarySubdominantMinor(Object chord);
+
+  /// No description provided for @chordAnalyzerSummaryCommonToneDiminished.
+  ///
+  /// In en, this message translates to:
+  /// **'{chord} can be heard as a common-tone diminished color that resolves by shared pitch content.'**
+  String chordAnalyzerSummaryCommonToneDiminished(Object chord);
+
+  /// No description provided for @chordAnalyzerSummaryDeceptiveTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'{chord} participates in a deceptive landing instead of a plain authentic cadence.'**
+  String chordAnalyzerSummaryDeceptiveTarget(Object chord);
+
+  /// No description provided for @chordAnalyzerSummaryCompeting.
+  ///
+  /// In en, this message translates to:
+  /// **'An advanced reading keeps competing interpretations in play, such as {readings}.'**
+  String chordAnalyzerSummaryCompeting(Object readings);
+
+  /// No description provided for @chordAnalyzerFunctionLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Function: {function}'**
+  String chordAnalyzerFunctionLine(Object function);
+
+  /// No description provided for @chordAnalyzerEvidenceLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Evidence: {evidence}'**
+  String chordAnalyzerEvidenceLead(Object evidence);
+
+  /// No description provided for @chordAnalyzerAdvancedCompetingReadings.
+  ///
+  /// In en, this message translates to:
+  /// **'Competing readings remain possible here: {readings}.'**
+  String chordAnalyzerAdvancedCompetingReadings(Object readings);
+
+  /// No description provided for @chordAnalyzerRemarkTonicization.
+  ///
+  /// In en, this message translates to:
+  /// **'This sounds more like a local tonicization of {target} than a full modulation.'**
+  String chordAnalyzerRemarkTonicization(Object target);
+
+  /// No description provided for @chordAnalyzerRemarkRealModulation.
+  ///
+  /// In en, this message translates to:
+  /// **'This supports a real modulation toward {key}.'**
+  String chordAnalyzerRemarkRealModulation(Object key);
+
+  /// No description provided for @chordAnalyzerRemarkBackdoorDominant.
+  ///
+  /// In en, this message translates to:
+  /// **'This can be heard as a backdoor dominant with subdominant-minor color.'**
+  String get chordAnalyzerRemarkBackdoorDominant;
+
+  /// No description provided for @chordAnalyzerRemarkBackdoorChain.
+  ///
+  /// In en, this message translates to:
+  /// **'This belongs to a backdoor chain rather than a plain borrowed detour.'**
+  String get chordAnalyzerRemarkBackdoorChain;
+
+  /// No description provided for @chordAnalyzerRemarkSubdominantMinor.
+  ///
+  /// In en, this message translates to:
+  /// **'This borrowed iv or subdominant-minor color behaves like a predominant area.'**
+  String get chordAnalyzerRemarkSubdominantMinor;
+
+  /// No description provided for @chordAnalyzerRemarkCommonToneDiminished.
+  ///
+  /// In en, this message translates to:
+  /// **'This diminished chord works through common-tone reinterpretation.'**
+  String get chordAnalyzerRemarkCommonToneDiminished;
+
+  /// No description provided for @chordAnalyzerRemarkPivotChord.
+  ///
+  /// In en, this message translates to:
+  /// **'This chord can act as a pivot into the next local key area.'**
+  String get chordAnalyzerRemarkPivotChord;
+
+  /// No description provided for @chordAnalyzerRemarkCommonToneModulation.
+  ///
+  /// In en, this message translates to:
+  /// **'Common-tone continuity helps the modulation feel plausible.'**
+  String get chordAnalyzerRemarkCommonToneModulation;
+
+  /// No description provided for @chordAnalyzerRemarkDeceptiveCadence.
+  ///
+  /// In en, this message translates to:
+  /// **'This points toward a deceptive cadence rather than a direct tonic arrival.'**
+  String get chordAnalyzerRemarkDeceptiveCadence;
+
+  /// No description provided for @chordAnalyzerRemarkLineCliche.
+  ///
+  /// In en, this message translates to:
+  /// **'Chromatic inner-line motion colors this chord choice.'**
+  String get chordAnalyzerRemarkLineCliche;
+
+  /// No description provided for @chordAnalyzerRemarkDualFunction.
+  ///
+  /// In en, this message translates to:
+  /// **'More than one functional reading stays credible here.'**
+  String get chordAnalyzerRemarkDualFunction;
+
+  /// No description provided for @chordAnalyzerTagTonicization.
+  ///
+  /// In en, this message translates to:
+  /// **'Tonicization'**
+  String get chordAnalyzerTagTonicization;
+
+  /// No description provided for @chordAnalyzerTagRealModulation.
+  ///
+  /// In en, this message translates to:
+  /// **'Real modulation'**
+  String get chordAnalyzerTagRealModulation;
+
+  /// No description provided for @chordAnalyzerTagBackdoorChain.
+  ///
+  /// In en, this message translates to:
+  /// **'Backdoor chain'**
+  String get chordAnalyzerTagBackdoorChain;
+
+  /// No description provided for @chordAnalyzerTagDeceptiveCadence.
+  ///
+  /// In en, this message translates to:
+  /// **'Deceptive cadence'**
+  String get chordAnalyzerTagDeceptiveCadence;
+
+  /// No description provided for @chordAnalyzerTagChromaticLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Chromatic line color'**
+  String get chordAnalyzerTagChromaticLine;
+
+  /// No description provided for @chordAnalyzerTagCommonToneMotion.
+  ///
+  /// In en, this message translates to:
+  /// **'Common-tone motion'**
+  String get chordAnalyzerTagCommonToneMotion;
+
+  /// No description provided for @chordAnalyzerEvidenceCadentialArrival.
+  ///
+  /// In en, this message translates to:
+  /// **'A local cadential arrival supports hearing a temporary target.'**
+  String get chordAnalyzerEvidenceCadentialArrival;
+
+  /// No description provided for @chordAnalyzerEvidenceFollowThrough.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow-through chords continue to support the new local center.'**
+  String get chordAnalyzerEvidenceFollowThrough;
+
+  /// No description provided for @chordAnalyzerEvidencePhraseBoundary.
+  ///
+  /// In en, this message translates to:
+  /// **'The change lands near a phrase boundary or structural accent.'**
+  String get chordAnalyzerEvidencePhraseBoundary;
+
+  /// No description provided for @chordAnalyzerEvidencePivotSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'A pivot-like shared reading supports the local shift.'**
+  String get chordAnalyzerEvidencePivotSupport;
+
+  /// No description provided for @chordAnalyzerEvidenceCommonToneSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared common tones help connect the reinterpretation.'**
+  String get chordAnalyzerEvidenceCommonToneSupport;
+
+  /// No description provided for @chordAnalyzerEvidenceHomeGravityWeakening.
+  ///
+  /// In en, this message translates to:
+  /// **'The original tonic loses some of its pull in this window.'**
+  String get chordAnalyzerEvidenceHomeGravityWeakening;
+
+  /// No description provided for @chordAnalyzerEvidenceBackdoorMotion.
+  ///
+  /// In en, this message translates to:
+  /// **'The motion matches a backdoor or subdominant-minor resolution pattern.'**
+  String get chordAnalyzerEvidenceBackdoorMotion;
+
+  /// No description provided for @chordAnalyzerEvidenceDeceptiveResolution.
+  ///
+  /// In en, this message translates to:
+  /// **'The dominant resolves away from the expected tonic target.'**
+  String get chordAnalyzerEvidenceDeceptiveResolution;
+
+  /// No description provided for @chordAnalyzerEvidenceChromaticLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Chromatic line support: {detail}.'**
+  String chordAnalyzerEvidenceChromaticLine(Object detail);
+
+  /// No description provided for @chordAnalyzerEvidenceCompetingReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Competing reading: {detail}.'**
+  String chordAnalyzerEvidenceCompetingReading(Object detail);
 
   /// No description provided for @studyHarmonyDailyReplayAction.
   ///
@@ -5513,6 +6023,522 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A final blue-hour boss that forces fast swaps across center, function, borrowed color, and missing-chord repair.'**
   String get studyHarmonyLessonBlueHourBossDescription;
+
+  /// No description provided for @anchorLoopTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Anchor Loop'**
+  String get anchorLoopTitle;
+
+  /// No description provided for @anchorLoopHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Fix specific cycle slots so the same chord returns every cycle while the other slots can still be generated around it.'**
+  String get anchorLoopHelp;
+
+  /// No description provided for @anchorLoopCycleLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Cycle Length (bars)'**
+  String get anchorLoopCycleLength;
+
+  /// No description provided for @anchorLoopCycleLengthHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how many bars the repeating anchor cycle lasts.'**
+  String get anchorLoopCycleLengthHelp;
+
+  /// No description provided for @anchorLoopVaryNonAnchorSlots.
+  ///
+  /// In en, this message translates to:
+  /// **'Vary non-anchor slots'**
+  String get anchorLoopVaryNonAnchorSlots;
+
+  /// No description provided for @anchorLoopVaryNonAnchorSlotsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep anchor slots exact while letting the generated filler vary inside the same local function.'**
+  String get anchorLoopVaryNonAnchorSlotsHelp;
+
+  /// No description provided for @anchorLoopBarLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bar {bar}'**
+  String anchorLoopBarLabel(int bar);
+
+  /// No description provided for @anchorLoopBeatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Beat {beat}'**
+  String anchorLoopBeatLabel(int beat);
+
+  /// No description provided for @anchorLoopSlotEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No anchor chord set'**
+  String get anchorLoopSlotEmpty;
+
+  /// No description provided for @anchorLoopEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit anchor for bar {bar}, beat {beat}'**
+  String anchorLoopEditTitle(int bar, int beat);
+
+  /// No description provided for @anchorLoopChordSymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Anchor chord symbol'**
+  String get anchorLoopChordSymbol;
+
+  /// No description provided for @anchorLoopChordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter one chord symbol for this slot. Leave it empty to clear the anchor.'**
+  String get anchorLoopChordHint;
+
+  /// No description provided for @anchorLoopInvalidChord.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a supported chord symbol before saving this anchor slot.'**
+  String get anchorLoopInvalidChord;
+
+  /// No description provided for @harmonyPlaybackPatternBlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get harmonyPlaybackPatternBlock;
+
+  /// No description provided for @harmonyPlaybackPatternArpeggio.
+  ///
+  /// In en, this message translates to:
+  /// **'Arpeggio'**
+  String get harmonyPlaybackPatternArpeggio;
+
+  /// No description provided for @metronomeBeatStateNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get metronomeBeatStateNormal;
+
+  /// No description provided for @metronomeBeatStateAccent.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent'**
+  String get metronomeBeatStateAccent;
+
+  /// No description provided for @metronomeBeatStateMute.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute'**
+  String get metronomeBeatStateMute;
+
+  /// No description provided for @metronomePatternPresetCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get metronomePatternPresetCustom;
+
+  /// No description provided for @metronomePatternPresetMeterAccent.
+  ///
+  /// In en, this message translates to:
+  /// **'Meter accent'**
+  String get metronomePatternPresetMeterAccent;
+
+  /// No description provided for @metronomePatternPresetJazzTwoAndFour.
+  ///
+  /// In en, this message translates to:
+  /// **'Jazz 2 & 4'**
+  String get metronomePatternPresetJazzTwoAndFour;
+
+  /// No description provided for @metronomeSourceKindBuiltIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Built-in asset'**
+  String get metronomeSourceKindBuiltIn;
+
+  /// No description provided for @metronomeSourceKindLocalFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Local file'**
+  String get metronomeSourceKindLocalFile;
+
+  /// No description provided for @transportAudioTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport Audio'**
+  String get transportAudioTitle;
+
+  /// No description provided for @autoPlayChordChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-play chord changes'**
+  String get autoPlayChordChanges;
+
+  /// No description provided for @autoPlayChordChangesHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Play the next chord automatically when the transport reaches a chord-change event.'**
+  String get autoPlayChordChangesHelp;
+
+  /// No description provided for @autoPlayPattern.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-play pattern'**
+  String get autoPlayPattern;
+
+  /// No description provided for @autoPlayPatternHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose whether auto-play uses a block chord or a short arpeggio.'**
+  String get autoPlayPatternHelp;
+
+  /// No description provided for @autoPlayHoldFactor.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-play hold length'**
+  String get autoPlayHoldFactor;
+
+  /// No description provided for @autoPlayHoldFactorHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale how long auto-played chord changes ring relative to the event duration.'**
+  String get autoPlayHoldFactorHelp;
+
+  /// No description provided for @autoPlayMelodyWithChords.
+  ///
+  /// In en, this message translates to:
+  /// **'Play melody with chords'**
+  String get autoPlayMelodyWithChords;
+
+  /// No description provided for @autoPlayMelodyWithChordsPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'When melody generation is enabled, include the current melody line in auto-play chord-change previews.'**
+  String get autoPlayMelodyWithChordsPlaceholder;
+
+  /// No description provided for @melodyGenerationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Melody line'**
+  String get melodyGenerationTitle;
+
+  /// No description provided for @melodyGenerationHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate a simple performance-ready melody that follows the current chord timeline.'**
+  String get melodyGenerationHelp;
+
+  /// No description provided for @melodyDensity.
+  ///
+  /// In en, this message translates to:
+  /// **'Melody density'**
+  String get melodyDensity;
+
+  /// No description provided for @melodyDensityHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how many melody notes tend to appear inside each chord event.'**
+  String get melodyDensityHelp;
+
+  /// No description provided for @melodyDensitySparse.
+  ///
+  /// In en, this message translates to:
+  /// **'Sparse'**
+  String get melodyDensitySparse;
+
+  /// No description provided for @melodyDensityBalanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced'**
+  String get melodyDensityBalanced;
+
+  /// No description provided for @melodyDensityActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get melodyDensityActive;
+
+  /// No description provided for @motifRepetitionStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'Motif repetition'**
+  String get motifRepetitionStrength;
+
+  /// No description provided for @motifRepetitionStrengthHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Higher values keep the contour identity of recent melody fragments more often.'**
+  String get motifRepetitionStrengthHelp;
+
+  /// No description provided for @approachToneDensity.
+  ///
+  /// In en, this message translates to:
+  /// **'Approach tone density'**
+  String get approachToneDensity;
+
+  /// No description provided for @approachToneDensityHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Control how often passing, neighbor, and approach gestures appear before arrivals.'**
+  String get approachToneDensityHelp;
+
+  /// No description provided for @melodyRangeLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Melody range low'**
+  String get melodyRangeLow;
+
+  /// No description provided for @melodyRangeHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Melody range high'**
+  String get melodyRangeHigh;
+
+  /// No description provided for @melodyRangeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep generated melody notes inside this playable register window.'**
+  String get melodyRangeHelp;
+
+  /// No description provided for @melodyStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Melody style'**
+  String get melodyStyle;
+
+  /// No description provided for @melodyStyleHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Bias the line toward safer guide tones, bebop motion, lyrical space, or colorful tensions.'**
+  String get melodyStyleHelp;
+
+  /// No description provided for @melodyStyleSafe.
+  ///
+  /// In en, this message translates to:
+  /// **'Safe'**
+  String get melodyStyleSafe;
+
+  /// No description provided for @melodyStyleBebop.
+  ///
+  /// In en, this message translates to:
+  /// **'Bebop'**
+  String get melodyStyleBebop;
+
+  /// No description provided for @melodyStyleLyrical.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrical'**
+  String get melodyStyleLyrical;
+
+  /// No description provided for @melodyStyleColorful.
+  ///
+  /// In en, this message translates to:
+  /// **'Colorful'**
+  String get melodyStyleColorful;
+
+  /// No description provided for @allowChromaticApproaches.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow chromatic approaches'**
+  String get allowChromaticApproaches;
+
+  /// No description provided for @allowChromaticApproachesHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Permit enclosures and chromatic approach notes on weak beats when the style allows it.'**
+  String get allowChromaticApproachesHelp;
+
+  /// No description provided for @melodyPlaybackMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Melody playback'**
+  String get melodyPlaybackMode;
+
+  /// No description provided for @melodyPlaybackModeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose whether manual preview buttons play chords, melody, or both together.'**
+  String get melodyPlaybackModeHelp;
+
+  /// No description provided for @melodyPlaybackModeChordsOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Chords only'**
+  String get melodyPlaybackModeChordsOnly;
+
+  /// No description provided for @melodyPlaybackModeMelodyOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Melody only'**
+  String get melodyPlaybackModeMelodyOnly;
+
+  /// No description provided for @melodyPlaybackModeBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Both'**
+  String get melodyPlaybackModeBoth;
+
+  /// No description provided for @regenerateMelody.
+  ///
+  /// In en, this message translates to:
+  /// **'Regenerate melody'**
+  String get regenerateMelody;
+
+  /// No description provided for @melodyPreviewCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current line'**
+  String get melodyPreviewCurrent;
+
+  /// No description provided for @melodyPreviewNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next arrival'**
+  String get melodyPreviewNext;
+
+  /// No description provided for @metronomePatternTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Metronome Pattern'**
+  String get metronomePatternTitle;
+
+  /// No description provided for @metronomePatternHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a meter-aware click pattern or define each beat manually.'**
+  String get metronomePatternHelp;
+
+  /// No description provided for @metronomeUseAccentSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Use separate accent sound'**
+  String get metronomeUseAccentSound;
+
+  /// No description provided for @metronomeUseAccentSoundHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a different click source for accented beats instead of only raising the gain.'**
+  String get metronomeUseAccentSoundHelp;
+
+  /// No description provided for @metronomePrimarySource.
+  ///
+  /// In en, this message translates to:
+  /// **'Primary click source'**
+  String get metronomePrimarySource;
+
+  /// No description provided for @metronomeAccentSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent click source'**
+  String get metronomeAccentSource;
+
+  /// No description provided for @metronomeSourceKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Source type'**
+  String get metronomeSourceKind;
+
+  /// No description provided for @metronomeLocalFilePath.
+  ///
+  /// In en, this message translates to:
+  /// **'Local file path'**
+  String get metronomeLocalFilePath;
+
+  /// No description provided for @metronomeLocalFilePathHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a local audio file path and press enter to apply it. Built-in sound remains the fallback.'**
+  String get metronomeLocalFilePathHelp;
+
+  /// No description provided for @metronomeAccentLocalFilePath.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent local file path'**
+  String get metronomeAccentLocalFilePath;
+
+  /// No description provided for @metronomeAccentLocalFilePathHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a local accent file path and press enter to apply it. Built-in sound remains the fallback.'**
+  String get metronomeAccentLocalFilePathHelp;
+
+  /// No description provided for @harmonySoundTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Harmony Sound'**
+  String get harmonySoundTitle;
+
+  /// No description provided for @harmonyMasterVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Master volume'**
+  String get harmonyMasterVolume;
+
+  /// No description provided for @harmonyMasterVolumeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall harmony preview loudness for manual and automatic chord playback.'**
+  String get harmonyMasterVolumeHelp;
+
+  /// No description provided for @harmonyPreviewHoldFactor.
+  ///
+  /// In en, this message translates to:
+  /// **'Chord hold length'**
+  String get harmonyPreviewHoldFactor;
+
+  /// No description provided for @harmonyPreviewHoldFactorHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale how long previewed chords and notes sustain.'**
+  String get harmonyPreviewHoldFactorHelp;
+
+  /// No description provided for @harmonyArpeggioStepSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Arpeggio step speed'**
+  String get harmonyArpeggioStepSpeed;
+
+  /// No description provided for @harmonyArpeggioStepSpeedHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Control how quickly arpeggiated notes step forward.'**
+  String get harmonyArpeggioStepSpeedHelp;
+
+  /// No description provided for @harmonyVelocityHumanization.
+  ///
+  /// In en, this message translates to:
+  /// **'Velocity humanization'**
+  String get harmonyVelocityHumanization;
+
+  /// No description provided for @harmonyVelocityHumanizationHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Add small velocity variation so repeated previews feel less mechanical.'**
+  String get harmonyVelocityHumanizationHelp;
+
+  /// No description provided for @harmonyGainRandomness.
+  ///
+  /// In en, this message translates to:
+  /// **'Gain randomness'**
+  String get harmonyGainRandomness;
+
+  /// No description provided for @harmonyGainRandomnessHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Add slight per-note loudness variation on supported playback paths.'**
+  String get harmonyGainRandomnessHelp;
+
+  /// No description provided for @harmonyTimingHumanization.
+  ///
+  /// In en, this message translates to:
+  /// **'Timing humanization'**
+  String get harmonyTimingHumanization;
+
+  /// No description provided for @harmonyTimingHumanizationHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Slightly loosen simultaneous note attacks for a less rigid block chord.'**
+  String get harmonyTimingHumanizationHelp;
 }
 
 class _AppLocalizationsDelegate
