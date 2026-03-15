@@ -3,7 +3,7 @@ part of 'practice_home_page.dart';
 extension _PracticeHomePageLabels on _MyHomePageState {
   String _currentStatusLabel(AppLocalizations l10n) {
     if (_currentChord == null) {
-      return l10n.pressNextChordToBegin;
+      return '';
     }
     final analysisLabel = _localizedAnalysisLabel(l10n, _currentChord!);
     return analysisLabel.isEmpty ? l10n.freeModeActive : analysisLabel;
