@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:chordest/audio/harmony_preview_resolver.dart';
 import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/music/progression_analysis_models.dart';
+import 'package:chordest/music/progression_analyzer.dart';
 import 'package:chordest/study_harmony/domain/study_harmony_session_models.dart';
 import 'package:chordest/study_harmony/domain/study_harmony_task_evaluators.dart';
 
@@ -174,5 +175,15 @@ void main() {
       60,
       64,
     ]);
+  });
+
+  test('keeps inferred placeholder fills in progression previews', () {
+    const analyzer = ProgressionAnalyzer();
+    final analysis = analyzer.analyze('Dm7 G7 ? Am7');
+    final clips = HarmonyPreviewResolver.progressionFromAnalysis(analysis);
+
+    expect(clips, hasLength(4));
+    expect(clips[2].label, 'Cmaj7');
+    expect(clips[2].notes, isNotEmpty);
   });
 }

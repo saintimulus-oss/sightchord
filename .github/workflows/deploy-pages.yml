@@ -37,7 +37,9 @@ jobs:
         run: flutter analyze
 
       - name: Test
-        run: flutter test
+        run: |
+          rm -f build/unit_test_assets/NativeAssetsManifest.json
+          flutter test
 
       - name: Resolve GitHub Pages base href
         id: base_href

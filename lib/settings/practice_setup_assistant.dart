@@ -6,6 +6,7 @@ import '../audio/harmony_audio_models.dart';
 import '../audio/harmony_preview_resolver.dart';
 import '../audio/sightchord_audio_scope.dart';
 import '../l10n/app_localizations.dart';
+import '../music/chord_formatting.dart';
 import '../music/chord_theory.dart';
 import 'practice_setup_models.dart';
 import 'practice_setup_preview.dart';
@@ -69,10 +70,9 @@ class _PracticeSetupAssistantSheetState
         baseSettings: widget.currentSettings,
       );
 
-  PracticeSetupPreview get _preview =>
-      PracticeSetupPreviewBuilder.fromSettings(
-        settings: _resolvedPreviewSettings,
-      );
+  PracticeSetupPreview get _preview => PracticeSetupPreviewBuilder.fromSettings(
+    settings: _resolvedPreviewSettings,
+  );
 
   @override
   void initState() {
@@ -172,8 +172,7 @@ class _PracticeSetupAssistantSheetState
         adjusted.maxVoicingNotes != current.maxVoicingNotes ||
         adjusted.voicingComplexity != current.voicingComplexity ||
         adjusted.allowRootlessVoicings != current.allowRootlessVoicings ||
-        adjusted.secondaryDominantEnabled !=
-            current.secondaryDominantEnabled ||
+        adjusted.secondaryDominantEnabled != current.secondaryDominantEnabled ||
         adjusted.modulationIntensity != current.modulationIntensity;
   }
 
@@ -512,7 +511,7 @@ class _PracticeSetupAssistantSheetState
         subtitle: l10n.setupAssistantSymbolQuestionBody,
         children: [
           _ChoiceCard(
-            title: 'Cmaj7',
+            title: _symbolStyleTitle(ChordSymbolStyle.majText),
             description: l10n.setupAssistantSymbolMajTextBody,
             selected: _profile.chordSymbolStyle == ChordSymbolStyle.majText,
             onTap: () => _updateProfile(
@@ -520,7 +519,7 @@ class _PracticeSetupAssistantSheetState
             ),
           ),
           _ChoiceCard(
-            title: 'CM7',
+            title: _symbolStyleTitle(ChordSymbolStyle.compact),
             description: l10n.setupAssistantSymbolCompactBody,
             selected: _profile.chordSymbolStyle == ChordSymbolStyle.compact,
             onTap: () => _updateProfile(
@@ -528,7 +527,7 @@ class _PracticeSetupAssistantSheetState
             ),
           ),
           _ChoiceCard(
-            title: 'C?7',
+            title: _symbolStyleTitle(ChordSymbolStyle.deltaJazz),
             description: l10n.setupAssistantSymbolDeltaBody,
             selected: _profile.chordSymbolStyle == ChordSymbolStyle.deltaJazz,
             onTap: () => _updateProfile(
@@ -547,7 +546,7 @@ class _PracticeSetupAssistantSheetState
               description: _keyCenterDescription(l10n, center),
               selected: _profile.startingKeyCenter == center,
               onTap: () =>
-                _updateProfile(_profile.copyWith(startingKeyCenter: center)),
+                  _updateProfile(_profile.copyWith(startingKeyCenter: center)),
             ),
         ],
       ),
@@ -609,9 +608,10 @@ class _PracticeSetupAssistantSheetState
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: _adjustmentChanges(
-                  PracticeSettingsFactory.nudgeTowardEasier,
-                )
+                onPressed:
+                    _adjustmentChanges(
+                      PracticeSettingsFactory.nudgeTowardEasier,
+                    )
                     ? () => _adjustPreview(
                         PracticeSettingsFactory.nudgeTowardEasier,
                       )
@@ -622,9 +622,10 @@ class _PracticeSetupAssistantSheetState
             const SizedBox(width: 12),
             Expanded(
               child: FilledButton.tonal(
-                onPressed: _adjustmentChanges(
-                  PracticeSettingsFactory.nudgeTowardJazzier,
-                )
+                onPressed:
+                    _adjustmentChanges(
+                      PracticeSettingsFactory.nudgeTowardJazzier,
+                    )
                     ? () => _adjustPreview(
                         PracticeSettingsFactory.nudgeTowardJazzier,
                       )
@@ -811,10 +812,7 @@ class _PracticeSetupAssistantSheetState
     };
   }
 
-  String _profileSummaryTitle(
-    AppLocalizations l10n,
-    GeneratorProfile profile,
-  ) {
+  String _profileSummaryTitle(AppLocalizations l10n, GeneratorProfile profile) {
     return switch (profile.harmonyLiteracy) {
       HarmonyLiteracy.absoluteBeginner =>
         l10n.setupAssistantPreviewSummaryAbsolute,
@@ -822,18 +820,13 @@ class _PracticeSetupAssistantSheetState
         l10n.setupAssistantPreviewSummaryBasic,
       HarmonyLiteracy.functionalHarmony =>
         l10n.setupAssistantPreviewSummaryFunctional,
-      HarmonyLiteracy.reharmReady =>
-        l10n.setupAssistantPreviewSummaryAdvanced,
+      HarmonyLiteracy.reharmReady => l10n.setupAssistantPreviewSummaryAdvanced,
     };
   }
 
-  String _profileSummaryBody(
-    AppLocalizations l10n,
-    PracticeSettings settings,
-  ) {
+  String _profileSummaryBody(AppLocalizations l10n, PracticeSettings settings) {
     return switch (settings.chordLanguageLevel) {
-      ChordLanguageLevel.triadsOnly =>
-        l10n.setupAssistantPreviewBodyTriads,
+      ChordLanguageLevel.triadsOnly => l10n.setupAssistantPreviewBodyTriads,
       ChordLanguageLevel.seventhChords =>
         l10n.setupAssistantPreviewBodySevenths,
       ChordLanguageLevel.safeExtensions =>
@@ -843,10 +836,7 @@ class _PracticeSetupAssistantSheetState
     };
   }
 
-  String _notationSummaryLabel(
-    AppLocalizations l10n,
-    ChordSymbolStyle style,
-  ) {
+  String _notationSummaryLabel(AppLocalizations l10n, ChordSymbolStyle style) {
     return switch (style) {
       ChordSymbolStyle.majText => l10n.setupAssistantNotationMajText,
       ChordSymbolStyle.compact => l10n.setupAssistantNotationCompact,
@@ -860,13 +850,23 @@ class _PracticeSetupAssistantSheetState
   ) {
     return switch (settings.chordLanguageLevel) {
       ChordLanguageLevel.triadsOnly => l10n.setupAssistantDifficultyTriads,
-      ChordLanguageLevel.seventhChords =>
-        l10n.setupAssistantDifficultySevenths,
+      ChordLanguageLevel.seventhChords => l10n.setupAssistantDifficultySevenths,
       ChordLanguageLevel.safeExtensions =>
         l10n.setupAssistantDifficultySafeExtensions,
       ChordLanguageLevel.fullExtensions =>
         l10n.setupAssistantDifficultyFullExtensions,
     };
+  }
+
+  String _symbolStyleTitle(ChordSymbolStyle style) {
+    return ChordSymbolFormatter.format(
+      const ChordSymbolData(
+        root: 'C',
+        harmonicQuality: ChordQuality.major7,
+        renderQuality: ChordQuality.major7,
+      ),
+      style,
+    );
   }
 }
 
@@ -942,11 +942,7 @@ class _PreviewStatCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              icon,
-              size: 18,
-              color: theme.colorScheme.primary,
-            ),
+            Icon(icon, size: 18, color: theme.colorScheme.primary),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -1057,4 +1053,3 @@ class _ChoiceCard extends StatelessWidget {
     );
   }
 }
-

@@ -8,6 +8,7 @@ import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/music/voicing_models.dart';
 import 'package:chordest/settings/practice_settings.dart';
 import 'package:chordest/settings/settings_controller.dart';
+import 'package:chordest/widgets/beat_indicator_row.dart';
 import 'package:chordest/widgets/mini_keyboard.dart';
 import 'package:chordest/widgets/voicing_suggestions_section.dart';
 
@@ -239,6 +240,17 @@ void main() {
     return controller;
   }
 
+  Future<AppSettingsController> pumpAppWithExactSettings(
+    WidgetTester tester,
+    PracticeSettings settings,
+  ) async {
+    final controller = AppSettingsController(initialSettings: settings);
+    await tester.pumpWidget(MyApp(controller: controller));
+    await tester.pumpAndSettle();
+    await openChordGenerator(tester);
+    return controller;
+  }
+
   Future<void> pumpApp(WidgetTester tester) async {
     await pumpAppWithSettings(tester, PracticeSettings());
   }
@@ -259,6 +271,22 @@ void main() {
         .data;
   }
 
+  int? activeBeatIndex(WidgetTester tester) {
+    return tester
+        .widget<BeatIndicatorRow>(find.byType(BeatIndicatorRow))
+        .activeBeat;
+  }
+
+  IconData iconForButton(WidgetTester tester, String key) {
+    return tester
+        .widget<Icon>(
+          find.descendant(
+            of: find.byKey(ValueKey(key)),
+            matching: find.byType(Icon),
+          ),
+        )
+        .icon!;
+  }
   Future<void> advanceChord(WidgetTester tester) async {
     await tester.drag(
       find.byKey(const ValueKey('chord-swipe-surface')),
@@ -364,6 +392,33 @@ void main() {
     expect(find.byKey(const ValueKey('current-chord-text')), findsNothing);
   });
 
+  testWidgets('setup assistant symbol examples keep the delta glyph intact', (
+    WidgetTester tester,
+  ) async {
+    await pumpMainMenuWithSettings(
+      tester,
+      PracticeSettings(language: AppLanguage.en),
+      completeGuidedSetup: false,
+    );
+
+    await openChordGenerator(tester);
+
+    for (
+      var index = 0;
+      index < 6 &&
+          find.text('C\u03947').evaluate().isEmpty &&
+          find.text('C?7').evaluate().isEmpty;
+      index += 1
+    ) {
+      await tester.tap(find.text('Next'));
+      await tester.pumpAndSettle();
+    }
+
+    expect(find.byKey(const ValueKey('setup-assistant-sheet')), findsOneWidget);
+    expect(find.text('C\u03947'), findsOneWidget);
+    expect(find.text('C?7'), findsNothing);
+  });
+
   testWidgets('skipping setup assistant applies the beginner-safe preset', (
     WidgetTester tester,
   ) async {
@@ -420,6 +475,44 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('setup-assistant-sheet')), findsOneWidget);
+  });
+
+  testWidgets('settings drawer lets users switch guided mode off directly', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithExactSettings(
+      tester,
+      PracticeSettings(
+        guidedSetupCompleted: true,
+        settingsComplexityMode: SettingsComplexityMode.guided,
+      ),
+    );
+
+    await openGeneratorSettings(tester);
+
+    expect(
+      find.byKey(const ValueKey('settings-complexity-mode-guided')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('open-advanced-settings-button')),
+      findsNothing,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('settings-complexity-mode-standard')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      controller.settings.settingsComplexityMode,
+      SettingsComplexityMode.standard,
+    );
+    expect(controller.settings.guidedSetupCompleted, isTrue);
+    expect(
+      find.byKey(const ValueKey('open-advanced-settings-button')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('main menu settings allow changing language and theme', (
@@ -1347,6 +1440,121 @@ void main() {
     expect(currentChordText(tester), initialText);
   });
 
+  testWidgets('manual chord navigation resets metronome progress', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(
+      tester,
+      PracticeSettings(bpm: 240, metronomeEnabled: false),
+    );
+
+    await tester.tap(find.byKey(const ValueKey('practice-autoplay-button')));
+    await tester.pump();
+
+    expect(activeBeatIndex(tester), 0);
+
+    await tester.tap(find.byKey(const ValueKey('practice-autoplay-button')));
+    await tester.pumpAndSettle();
+
+    expect(activeBeatIndex(tester), 0);
+
+    await tapNextChordRegion(tester);
+    expect(activeBeatIndex(tester), isNull);
+
+    await tester.drag(
+      find.byKey(const ValueKey('chord-swipe-surface')),
+      const Offset(220, 0),
+    );
+    await tester.pumpAndSettle();
+    expect(activeBeatIndex(tester), isNull);
+  });
+
+  testWidgets('autoplay resumes from the stopped beat without jumping chords', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(
+      tester,
+      PracticeSettings(bpm: 240, metronomeEnabled: false),
+    );
+
+    final initialText = currentChordText(tester);
+
+    await tester.tap(find.byKey(const ValueKey('practice-autoplay-button')));
+    await tester.pump();
+
+    expect(currentChordText(tester), initialText);
+    expect(activeBeatIndex(tester), 0);
+
+    await tester.tap(find.byKey(const ValueKey('practice-autoplay-button')));
+    await tester.pumpAndSettle();
+
+    expect(activeBeatIndex(tester), 0);
+
+    await tester.tap(find.byKey(const ValueKey('practice-autoplay-button')));
+    await tester.pump();
+
+    expect(activeBeatIndex(tester), 0);
+    expect(currentChordText(tester), initialText);
+  });
+
+  test('practice auto tick advances chords only when the beat wraps', () {
+    final firstTick = computeNextPracticeAutoBeat(currentBeat: null);
+    expect(firstTick.nextBeat, 0);
+    expect(firstTick.shouldAdvanceChord, isFalse);
+
+    final wrapTick = computeNextPracticeAutoBeat(currentBeat: 3);
+    expect(wrapTick.nextBeat, 0);
+    expect(wrapTick.shouldAdvanceChord, isTrue);
+  });
+
+  test(
+    'practice autoplay starts immediately only from a cleared beat state',
+    () {
+      expect(shouldStartPracticeAutoplayImmediately(null), isTrue);
+      expect(shouldStartPracticeAutoplayImmediately(0), isFalse);
+      expect(shouldStartPracticeAutoplayImmediately(2), isFalse);
+    },
+  );
+
+  testWidgets('queued momentum fling keeps sliding instead of pausing', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(tester);
+
+    final centeredX = tester
+        .getCenter(find.byKey(const ValueKey('current-chord-text')))
+        .dx;
+
+    await tester.fling(
+      find.byKey(const ValueKey('chord-swipe-surface')),
+      const Offset(-360, 0),
+      3600,
+    );
+    await tester.pump(const Duration(milliseconds: 220));
+
+    expect(tester.hasRunningAnimations, isTrue);
+    expect(
+      tester.getCenter(find.byKey(const ValueKey('current-chord-text'))).dx,
+      lessThan(centeredX - 6),
+    );
+
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('play chord button uses a speaker icon distinct from autoplay', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(tester);
+
+    expect(
+      iconForButton(tester, 'practice-play-chord-button'),
+      Icons.volume_up_rounded,
+    );
+    expect(
+      iconForButton(tester, 'practice-autoplay-button'),
+      Icons.play_arrow_rounded,
+    );
+  });
   testWidgets('bpm input accepts three digits and hides the range helper', (
     WidgetTester tester,
   ) async {

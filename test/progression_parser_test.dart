@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/music/progression_parser.dart';
 
@@ -83,5 +83,19 @@ void main() {
     expect(result.measures[2].validChords.single.sourceSymbol, 'F');
     expect(result.measures[3].validChords.single.sourceSymbol, 'G');
   });
-}
 
+  test('supports placeholder tokens and ignores dash connectors', () {
+    final result = parser.parse('Dm7 - G7 - ? - Am7');
+
+    expect(result.issues, isEmpty);
+    expect(result.validChords, hasLength(3));
+    expect(result.placeholders, hasLength(1));
+    expect(result.placeholders.single.rawText, '?');
+    expect(result.tokens.map((token) => token.rawText).toList(), <String>[
+      'Dm7',
+      'G7',
+      '?',
+      'Am7',
+    ]);
+  });
+}

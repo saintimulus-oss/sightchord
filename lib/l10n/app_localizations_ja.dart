@@ -1864,11 +1864,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chordAnalyzerInputLabel => 'コード進行';
 
   @override
-  String get chordAnalyzerInputHint => 'Dm7 G7 Cmaj7';
+  String get chordAnalyzerInputHint => 'Dm7, G7, ? | Am7';
 
   @override
   String get chordAnalyzerInputHelper =>
-      '括弧の外では、区切りにスペース、|、カンマを使えます。括弧内のカンマは同じコード内のまま扱われます。小文字ルート、スラッシュベース、sus/alt/add 形式、C7(b9, #11) のようなテンション表記に対応しています。タッチ端末ではコードパッドを使うか、ABC 入力に切り替えられます。';
+      '括弧の外では、スペース、|、カンマでコードを区切れます。括弧内のカンマは同じコード内に残ります。\n\n不明なコード枠には ? を使えます。アナライザーが前後の文脈から最も自然な補完を推定し、解釈が曖昧な場合は候補も提案します。変化生成でもその枠はより自由に再ハーモナイズできます。\n\n小文字ルート、スラッシュベース、sus/alt/add 形式、C7(b9, #11) のようなテンション表記に対応しています。\n\nタッチ端末ではコードパッドを使うか、自由入力したいときに ABC 入力へ切り替えられます。';
+
+  @override
+  String get chordAnalyzerInputHelpTitle => '入力のヒント';
 
   @override
   String get chordAnalyzerAnalyze => '解析する';
@@ -1894,10 +1897,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chordAnalyzerPaste => '貼り付け';
 
   @override
-  String get chordAnalyzerClear => 'クリア';
+  String get chordAnalyzerClear => 'リセット';
 
   @override
-  String get chordAnalyzerBackspace => '削除';
+  String get chordAnalyzerBackspace => '⌫';
 
   @override
   String get chordAnalyzerSpace => 'スペース';
@@ -1910,7 +1913,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get chordAnalyzerInitialBody =>
-      'Dm7 G7 Cmaj7 や Cmaj7 | Am7 D7 | Gmaj7 のような進行を入力すると、考えられるキー、ローマ数字、短い要約を確認できます。';
+      'Dm7, G7, ? | Am7 や Cmaj7 | Am7 D7 | Gmaj7 のような進行を入力すると、考えられるキー、ローマ数字、推定補完、短い要約を確認できます。';
+
+  @override
+  String get chordAnalyzerPlaceholderExplanation =>
+      'この ? は前後の和声文脈から推定したスロットです。';
+
+  @override
+  String chordAnalyzerSuggestedFill(Object chord) {
+    return '推定候補: $chord';
+  }
 
   @override
   String get chordAnalyzerDetectedKeys => '検出されたキー';
@@ -2064,6 +2076,54 @@ class AppLocalizationsJa extends AppLocalizations {
   String chordAnalyzerIgnoredModifiersWarning(Object details) {
     return '無視された修飾子: $details';
   }
+
+  @override
+  String get chordAnalyzerGenerateVariations => 'バリエーションを作る';
+
+  @override
+  String get chordAnalyzerVariationsTitle => '自然なバリエーション';
+
+  @override
+  String get chordAnalyzerVariationsBody =>
+      '近い機能の代理和音で流れを保ったまま色味を変えた提案です。適用するとそのまま再解析します。';
+
+  @override
+  String get chordAnalyzerApplyVariation => 'この変形を使う';
+
+  @override
+  String get chordAnalyzerVariationCadentialColorTitle => '終止の色替え';
+
+  @override
+  String get chordAnalyzerVariationCadentialColorBody =>
+      '到着先はそのままに、プレドミナントを少し暗くしてトライトーン代理のドミナントへ置き換えます。';
+
+  @override
+  String get chordAnalyzerVariationBackdoorTitle => 'バックドアの色味';
+
+  @override
+  String get chordAnalyzerVariationBackdoorBody =>
+      '平行短調由来の ivm7-bVII7 の色で、同じトニックへ着地します。';
+
+  @override
+  String get chordAnalyzerVariationAppliedApproachTitle => '狙いを保つ ii-V';
+
+  @override
+  String get chordAnalyzerVariationAppliedApproachBody =>
+      '同じ着地点へ向かう関連 ii-V を組み直します。';
+
+  @override
+  String get chordAnalyzerVariationMinorCadenceTitle => '短調終止の色味';
+
+  @override
+  String get chordAnalyzerVariationMinorCadenceBody =>
+      '短調の終止感は保ったまま、iiø-Valt-i の色を強めます。';
+
+  @override
+  String get chordAnalyzerVariationColorLiftTitle => 'カラーリフト';
+
+  @override
+  String get chordAnalyzerVariationColorLiftBody =>
+      'ルートと機能は近く保ちつつ、自然なテンションで表情を持ち上げます。';
 
   @override
   String chordAnalyzerParserDiagnosticWarning(Object details) {

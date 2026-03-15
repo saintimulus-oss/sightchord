@@ -740,7 +740,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
                                         buttonKey: const ValueKey(
                                           'practice-play-chord-button',
                                         ),
-                                        icon: Icons.play_arrow_rounded,
+                                        icon: Icons.volume_up_rounded,
                                         tooltip: l10n.audioPlayChord,
                                         onPressed: _currentChord == null
                                             ? null
@@ -1189,9 +1189,10 @@ class _ChordSwipeSurface extends StatefulWidget {
 class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
     with TickerProviderStateMixin {
   static const Duration _swipeDuration = Duration(milliseconds: 260);
-  static const Duration _momentumSwipeDuration = Duration(milliseconds: 210);
+  static const Duration _momentumSwipeDuration = Duration(milliseconds: 180);
   static const Duration _snapBackDuration = Duration(milliseconds: 190);
   static const Duration _edgeRevealDuration = Duration(milliseconds: 170);
+  static const double _momentumCarryFraction = 0.16;
 
   late final AnimationController _swipeController;
   late final AnimationController _edgeRevealController;
@@ -1353,28 +1354,49 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
       direction == _ChordSwipeTransition.advance ? -width : width,
       onCommitted: _sequenceCallback,
       duration: _sequenceUsesMomentum ? _momentumSwipeDuration : _swipeDuration,
-      curve: Curves.easeOutCubic,
+      curve: _sequenceUsesMomentum
+          ? Curves.linearToEaseOut
+          : Curves.easeOutCubic,
     );
   }
 
   void _syncLabelsAfterCommittedTransition() {
     final revealTransition = _activeTransition;
+    final continuesMomentumSequence =
+        _sequenceUsesMomentum &&
+        _remainingSequenceSteps > 0 &&
+        revealTransition != null;
+    final nextDragOffset = continuesMomentumSequence
+        ? _momentumCarryOffsetFor(revealTransition)
+        : 0.0;
     setState(() {
       _activeTransition = null;
-      _dragOffset = 0;
+      _dragOffset = nextDragOffset;
       _displayPreviousLabel = widget.previousLabel;
       _displayCurrentLabel = widget.currentLabel;
       _displayNextLabel = widget.nextLabel;
-      _edgeRevealTransition = revealTransition;
+      _edgeRevealTransition = continuesMomentumSequence
+          ? null
+          : revealTransition;
     });
-    if (revealTransition == null) {
+    if (revealTransition == null || continuesMomentumSequence) {
       _startNextQueuedStepIfNeeded();
       return;
     }
     _edgeRevealController.forward(from: 0);
   }
 
-  void animateAdvance({VoidCallback? onCompleted, int steps = 1}) {
+  double _momentumCarryOffsetFor(_ChordSwipeTransition direction) {
+    final width = _surfaceWidth > 0 ? _surfaceWidth : 260.0;
+    final carry = width * _momentumCarryFraction;
+    return direction == _ChordSwipeTransition.advance ? -carry : carry;
+  }
+
+  void animateAdvance({
+    VoidCallback? onCompleted,
+    int steps = 1,
+    bool useMomentum = false,
+  }) {
     final completion = onCompleted ?? widget.onAdvance;
     if (_surfaceWidth <= 0) {
       for (var index = 0; index < steps; index += 1) {
@@ -1386,11 +1408,15 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
       _ChordSwipeTransition.advance,
       steps: steps,
       callback: completion,
-      usesMomentum: steps > 1,
+      usesMomentum: useMomentum || steps > 1,
     );
   }
 
-  void animateGoBack({VoidCallback? onCompleted, int steps = 1}) {
+  void animateGoBack({
+    VoidCallback? onCompleted,
+    int steps = 1,
+    bool useMomentum = false,
+  }) {
     if (!_canGoBack) {
       return;
     }
@@ -1406,7 +1432,7 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
       _ChordSwipeTransition.goBack,
       steps: steps.clamp(0, widget.availableBackSteps),
       callback: completion,
-      usesMomentum: steps > 1,
+      usesMomentum: useMomentum || steps > 1,
     );
   }
 
@@ -1445,14 +1471,22 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
     final velocity = details.primaryVelocity ?? 0;
     final threshold = width * 0.16;
     final targetOffset = _effectiveOffset;
+    final projectedOffset =
+        targetOffset + (velocity * (_surfaceWidth > 0 ? 0.08 : 0.06));
+    final prefersMomentum =
+        velocity.abs() >= 900 || projectedOffset.abs() >= width * 0.28;
 
-    if (targetOffset <= -threshold || velocity <= -720) {
-      animateAdvance(steps: _stepCountForFling(velocity));
+    if (projectedOffset <= -threshold || velocity <= -720) {
+      animateAdvance(
+        steps: _stepCountForFling(velocity),
+        useMomentum: prefersMomentum,
+      );
       return;
     }
-    if ((targetOffset >= threshold || velocity >= 720) && _canGoBack) {
+    if ((projectedOffset >= threshold || velocity >= 720) && _canGoBack) {
       animateGoBack(
         steps: _stepCountForFling(velocity).clamp(1, widget.availableBackSteps),
+        useMomentum: prefersMomentum,
       );
       return;
     }
@@ -1856,13 +1890,13 @@ class _ChordMotionStage extends StatelessWidget {
       _ChordTokenRole.current => null,
     };
     final tokenKey = switch (role) {
-      _ChordTokenRole.previous => const ValueKey('previous-chord-token'),
-      _ChordTokenRole.next => const ValueKey('next-chord-token'),
+      _ChordTokenRole.previous => const ValueKey('previous-chord-text'),
+      _ChordTokenRole.next => const ValueKey('next-chord-text'),
       _ChordTokenRole.current => null,
     };
     final textKey = switch (role) {
-      _ChordTokenRole.previous => const ValueKey('previous-chord-text'),
-      _ChordTokenRole.next => const ValueKey('next-chord-text'),
+      _ChordTokenRole.previous => null,
+      _ChordTokenRole.next => null,
       _ChordTokenRole.current => const ValueKey('current-chord-text'),
     };
     final textStyle = TextStyle.lerp(

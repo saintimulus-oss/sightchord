@@ -953,8 +953,9 @@
   "chordAnalyzerTitle": "Chord Analyzer",
   "chordAnalyzerSubtitle": "Paste a progression and get a conservative harmonic reading.",
   "chordAnalyzerInputLabel": "Chord progression",
-  "chordAnalyzerInputHint": "Dm7 G7 Cmaj7",
-  "chordAnalyzerInputHelper": "Separators outside parentheses can be spaces, |, or commas. Commas inside parentheses stay inside one chord. Lowercase roots, slash bass, sus/alt/add forms, and tensions such as C7(b9, #11) are supported. Touch devices can use the chord pad or switch to ABC input.",
+  "chordAnalyzerInputHint": "Dm7, G7, ? | Am7",
+  "chordAnalyzerInputHelper": "Use spaces, |, or commas between chords. Commas inside parentheses stay in the same chord.\n\nUse ? for an unknown chord slot. The analyzer will infer the most natural fill from context and suggest alternatives when the reading is ambiguous. Variation generation can also reharmonize that slot more freely.\n\nLowercase roots, slash bass, sus/alt/add forms, and tensions like C7(b9, #11) are supported.\n\nOn touch devices, use the chord pad or switch to ABC input when you want free typing.",
+  "chordAnalyzerInputHelpTitle": "Input tips",
   "chordAnalyzerAnalyze": "Analyze",
   "chordAnalyzerKeyboardTitle": "Chord Pad",
   "chordAnalyzerKeyboardTouchHint": "Tap tokens to build a progression. ABC input keeps the system keyboard available when you need free typing.",
@@ -962,12 +963,19 @@
   "chordAnalyzerChordPad": "Pad",
   "chordAnalyzerRawInput": "ABC",
   "chordAnalyzerPaste": "Paste",
-  "chordAnalyzerClear": "Clear",
-  "chordAnalyzerBackspace": "Backspace",
-  "chordAnalyzerSpace": "Space",
+  "chordAnalyzerClear": "Reset",
+  "chordAnalyzerBackspace": "⌫",
+  "chordAnalyzerSpace": "Spacebar",
   "chordAnalyzerAnalyzing": "Analyzing progression...",
   "chordAnalyzerInitialTitle": "Start with a progression",
-  "chordAnalyzerInitialBody": "Enter a progression such as Dm7 G7 Cmaj7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, and a short summary.",
+  "chordAnalyzerInitialBody": "Enter a progression such as Dm7, G7, ? | Am7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, inferred fills, and a short summary.",
+  "chordAnalyzerPlaceholderExplanation": "This ? was inferred from the surrounding harmonic context.",
+  "chordAnalyzerSuggestedFill": "Suggested fill: {chord}",
+  "@chordAnalyzerSuggestedFill": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
   "chordAnalyzerDetectedKeys": "Detected Keys",
   "chordAnalyzerPrimaryReading": "Primary reading",
   "chordAnalyzerAlternativeReading": "Alternative reading",
@@ -1079,6 +1087,20 @@
       "details": {}
     }
   },
+  "chordAnalyzerGenerateVariations": "Create Variations",
+  "chordAnalyzerVariationsTitle": "Natural variations",
+  "chordAnalyzerVariationsBody": "These reharmonize the same flow with nearby functional substitutes. Apply one to send it back through the analyzer.",
+  "chordAnalyzerApplyVariation": "Use Variation",
+  "chordAnalyzerVariationCadentialColorTitle": "Cadential color",
+  "chordAnalyzerVariationCadentialColorBody": "Darkens the predominant and swaps in a tritone dominant while keeping the same arrival.",
+  "chordAnalyzerVariationBackdoorTitle": "Backdoor color",
+  "chordAnalyzerVariationBackdoorBody": "Uses ivm7-bVII7 color from the parallel minor before landing on the same tonic.",
+  "chordAnalyzerVariationAppliedApproachTitle": "Targeted ii-V",
+  "chordAnalyzerVariationAppliedApproachBody": "Builds a related ii-V that still points to the same destination chord.",
+  "chordAnalyzerVariationMinorCadenceTitle": "Minor cadence color",
+  "chordAnalyzerVariationMinorCadenceBody": "Keeps the minor cadence intact but leans into iiø-Valt-i color.",
+  "chordAnalyzerVariationColorLiftTitle": "Color lift",
+  "chordAnalyzerVariationColorLiftBody": "Keeps the roots and functions close, but upgrades the chords with natural extensions.",
   "chordAnalyzerParserDiagnosticWarning": "Input warning: {details}",
   "@chordAnalyzerParserDiagnosticWarning": {
     "placeholders": {

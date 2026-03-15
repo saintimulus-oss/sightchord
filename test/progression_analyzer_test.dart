@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/music/progression_analysis_models.dart';
 import 'package:chordest/music/progression_analyzer.dart';
@@ -256,5 +256,25 @@ void main() {
     expect(firstMeasure.parseIssues.single.error, 'invalid-bass');
     expect(firstMeasure.parseIssues.single.errorDetail, 'H');
   });
-}
 
+  test('infers placeholder chords from surrounding harmonic context', () {
+    final analysis = analyzer.analyze('Dm7 - G7 - ? - Am7');
+    final inferred = analysis.chordAnalyses[2];
+
+    expect(analysis.primaryKey.keyCenter.tonicName, 'A');
+    expect(analysis.primaryKey.keyCenter.mode, KeyMode.minor);
+    expect(analysis.chordAnalyses, hasLength(4));
+    expect(analysis.parseResult.placeholders, hasLength(1));
+    expect(analysis.inferredChordCount, 1);
+    expect(inferred.isInferred, isTrue);
+    expect(inferred.chord.sourceSymbol, '?');
+    expect(inferred.resolvedSymbol, 'Cmaj7');
+    expect(inferred.romanNumeral, 'bIIImaj7');
+    expect(
+      inferred.competingInterpretations
+          .where((candidate) => candidate.chordSymbol != null)
+          .map((candidate) => candidate.chordSymbol),
+      isNotEmpty,
+    );
+  });
+}

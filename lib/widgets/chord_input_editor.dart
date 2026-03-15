@@ -12,7 +12,7 @@ class ChordInputEditor extends StatefulWidget {
     required this.controller,
     required this.labelText,
     required this.hintText,
-    required this.helperText,
+    this.helperText,
     required this.onAnalyze,
     this.platformOverride,
     this.fieldKey,
@@ -23,7 +23,7 @@ class ChordInputEditor extends StatefulWidget {
   final TextEditingController controller;
   final String labelText;
   final String hintText;
-  final String helperText;
+  final String? helperText;
   final VoidCallback onAnalyze;
   final TargetPlatform? platformOverride;
   final Key? fieldKey;
@@ -119,6 +119,26 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
     _replaceSelection('$prefix$suffix', selectionOffset: prefix.length);
   }
 
+  void _insertPlaceholder() {
+    _ensureValidSelection();
+    final value = widget.controller.value;
+    final start = math.min(value.selection.start, value.selection.end);
+    final end = math.max(value.selection.start, value.selection.end);
+    final leftCharacter = start > 0 ? value.text[start - 1] : '';
+    final rightCharacter = end < value.text.length ? value.text[end] : '';
+    final leadingSpace =
+        start > 0 &&
+            !_EditorTokenContext._separatorPattern.hasMatch(leftCharacter)
+        ? ' '
+        : '';
+    final trailingSpace =
+        end < value.text.length &&
+            !_EditorTokenContext._separatorPattern.hasMatch(rightCharacter)
+        ? ' '
+        : '';
+    _replaceSelection('$leadingSpace?$trailingSpace');
+  }
+
   void _backspace() {
     _ensureValidSelection();
     final value = widget.controller.value;
@@ -186,6 +206,9 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
         }
         _replaceSelection(spec.text);
         return;
+      case _InsertKind.placeholder:
+        _insertPlaceholder();
+        return;
     }
   }
 
@@ -213,7 +236,9 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
             decoration: InputDecoration(
               labelText: widget.labelText,
               hintText: widget.hintText,
-              helperText: widget.helperText,
+              helperText: widget.helperText?.isEmpty ?? true
+                  ? null
+                  : widget.helperText,
               border: const OutlineInputBorder(),
             ),
           ),
@@ -454,6 +479,16 @@ class _ChordKeyboardPanel extends StatelessWidget {
                 ),
                 _InsertButton(
                   spec: const _KeyboardInsertSpec(
+                    id: 'unknown',
+                    label: '?',
+                    text: '?',
+                    kind: _InsertKind.placeholder,
+                  ),
+                  enabled: !editorContext.inTension,
+                  onInsert: onInsert,
+                ),
+                _InsertButton(
+                  spec: const _KeyboardInsertSpec(
                     id: 'comma',
                     label: ',',
                     text: ', ',
@@ -585,7 +620,13 @@ class _KeyboardInsertSpec {
   final _InsertKind kind;
 }
 
-enum _InsertKind { text, pairedParentheses, tensionToken, separator }
+enum _InsertKind {
+  text,
+  pairedParentheses,
+  tensionToken,
+  separator,
+  placeholder,
+}
 
 class _EditorTokenContext {
   const _EditorTokenContext({

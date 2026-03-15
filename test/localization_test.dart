@@ -79,6 +79,26 @@ void main() {
     expect(ko.chordAnalyzerTitle, '\uCF54\uB4DC \uBD84\uC11D\uAE30');
     expect(ko.chordAnalyzerAnalyze, '\uBD84\uC11D\uD558\uAE30');
     expect(
+      ko.chordAnalyzerGenerateVariations,
+      '\uBCC0\uC8FC \uB9CC\uB4E4\uAE30',
+    );
+    expect(ko.chordAnalyzerSpace, 'Spacebar');
+    expect(ko.chordAnalyzerBackspace, '\u232b');
+    expect(ko.chordAnalyzerClear, 'Reset');
+    expect(ko.chordAnalyzerInputHint, 'Dm7, G7, ? | Am7');
+    expect(
+      ko.chordAnalyzerPlaceholderExplanation,
+      '\uC774 ?\uB294 \uC55E\uB4A4 \uD654\uC131 \uB9E5\uB77D\uC744 \uBC14\uD0D5\uC73C\uB85C \uCD94\uB860\uD55C \uC790\uB9AC\uC785\uB2C8\uB2E4.',
+    );
+    expect(
+      ko.chordAnalyzerSuggestedFill('Cmaj7'),
+      '\uCD94\uCC9C \uCC44\uC6C0 \uD654\uC74C: Cmaj7',
+    );
+    expect(
+      ko.chordAnalyzerVariationsTitle,
+      '\uC790\uC5F0\uC2A4\uB7EC\uC6B4 \uBCC0\uC8FC',
+    );
+    expect(
       ko.chordAnalyzerSummaryCenter('\uC7A5\uC870 C'),
       '\uC774 \uC9C4\uD589\uC758 \uC911\uC2EC \uC870\uC131\uC740 \uC7A5\uC870 C\uC77C \uAC00\uB2A5\uC131\uC774 \uAC00\uC7A5 \uB192\uC2B5\uB2C8\uB2E4.',
     );

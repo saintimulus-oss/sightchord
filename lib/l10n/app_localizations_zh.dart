@@ -1832,11 +1832,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chordAnalyzerInputLabel => '和弦進行';
 
   @override
-  String get chordAnalyzerInputHint => 'Dm7 G7 Cmaj7';
+  String get chordAnalyzerInputHint => 'Dm7, G7, ? | Am7';
 
   @override
   String get chordAnalyzerInputHelper =>
-      '括號外可用空格、| 或逗號分隔。括號內的逗號會保留在同一個和弦之中。支援小寫根音、斜線低音、sus/alt/add 形式，以及 C7(b9, #11) 這類張力寫法。觸控裝置可使用和弦面板，或切換到 ABC 輸入。';
+      '括號外可用空格、| 或逗號分隔和弦。括號內的逗號會保留在同一個和弦之中。\n\n使用 ? 代表尚未確定的和弦空位。分析器會依前後和聲脈絡推定最自然的補法，若判讀有歧義也會提出候選。變化生成功能也能更自由地重新和聲化這個位置。\n\n支援小寫根音、斜線低音、sus/alt/add 形式，以及 C7(b9, #11) 這類張力寫法。\n\n在觸控裝置上可使用和弦面板，或在需要自由輸入時切換到 ABC 輸入。';
+
+  @override
+  String get chordAnalyzerInputHelpTitle => '輸入提示';
 
   @override
   String get chordAnalyzerAnalyze => '分析';
@@ -1861,13 +1864,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chordAnalyzerPaste => '貼上';
 
   @override
-  String get chordAnalyzerClear => '清除';
+  String get chordAnalyzerClear => '重設';
 
   @override
-  String get chordAnalyzerBackspace => '退格';
+  String get chordAnalyzerBackspace => '⌫';
 
   @override
-  String get chordAnalyzerSpace => '空格';
+  String get chordAnalyzerSpace => '空格鍵';
 
   @override
   String get chordAnalyzerAnalyzing => '正在分析進行...';
@@ -1877,7 +1880,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chordAnalyzerInitialBody =>
-      '輸入像 Dm7 G7 Cmaj7 或 Cmaj7 | Am7 D7 | Gmaj7 這樣的進行，即可查看可能的調性、羅馬數字與簡短摘要。';
+      '輸入像 Dm7, G7, ? | Am7 或 Cmaj7 | Am7 D7 | Gmaj7 這樣的進行，即可查看可能的調性、羅馬數字、推定補全與簡短摘要。';
+
+  @override
+  String get chordAnalyzerPlaceholderExplanation => '這個 ? 是根據前後和聲脈絡推定出的空位。';
+
+  @override
+  String chordAnalyzerSuggestedFill(Object chord) {
+    return '建議補入：$chord';
+  }
 
   @override
   String get chordAnalyzerDetectedKeys => '偵測到的調性';
@@ -2027,6 +2038,54 @@ class AppLocalizationsZh extends AppLocalizations {
   String chordAnalyzerIgnoredModifiersWarning(Object details) {
     return '已忽略的修飾：$details';
   }
+
+  @override
+  String get chordAnalyzerGenerateVariations => '建立變化版';
+
+  @override
+  String get chordAnalyzerVariationsTitle => '自然的變化版';
+
+  @override
+  String get chordAnalyzerVariationsBody =>
+      '這些提案會保留原本的走向，並用相近功能的替代和弦重新著色。套用後會立刻重新分析。';
+
+  @override
+  String get chordAnalyzerApplyVariation => '套用這個變化版';
+
+  @override
+  String get chordAnalyzerVariationCadentialColorTitle => '終止色彩';
+
+  @override
+  String get chordAnalyzerVariationCadentialColorBody =>
+      '保留原本的落點，同時讓下屬前功能更暗一些，並換成三全音替代屬和弦。';
+
+  @override
+  String get chordAnalyzerVariationBackdoorTitle => 'Backdoor 色彩';
+
+  @override
+  String get chordAnalyzerVariationBackdoorBody =>
+      '借用平行小調的 ivm7-bVII7 色彩，最後落回同一個主和弦。';
+
+  @override
+  String get chordAnalyzerVariationAppliedApproachTitle => '定向 ii-V';
+
+  @override
+  String get chordAnalyzerVariationAppliedApproachBody =>
+      '重新組成一個仍然指向相同目標和弦的相關 ii-V。';
+
+  @override
+  String get chordAnalyzerVariationMinorCadenceTitle => '小調終止色彩';
+
+  @override
+  String get chordAnalyzerVariationMinorCadenceBody =>
+      '保留小調終止感，但把色彩推向 iiø-Valt-i。';
+
+  @override
+  String get chordAnalyzerVariationColorLiftTitle => '色彩抬升';
+
+  @override
+  String get chordAnalyzerVariationColorLiftBody =>
+      '維持接近的根音與功能，同時用自然的延伸音讓和弦更有表情。';
 
   @override
   String chordAnalyzerParserDiagnosticWarning(Object details) {
@@ -4956,11 +5015,14 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get chordAnalyzerInputLabel => '和弦进行';
 
   @override
-  String get chordAnalyzerInputHint => 'Dm7 G7 Cmaj7';
+  String get chordAnalyzerInputHint => 'Dm7, G7, ? | Am7';
 
   @override
   String get chordAnalyzerInputHelper =>
-      '括号外可用空格、| 或逗号分隔。括号内的逗号会保留在同一个和弦之中。支援小写根音、斜线低音、sus/alt/add 形式，以及 C7(b9, #11) 这类张力写法。触控装置可使用和弦面板，或切换到 ABC 输入。';
+      '括号外可用空格、| 或逗号分隔和弦。括号内的逗号会保留在同一个和弦之中。\n\n使用 ? 代表尚未确定的和弦空位。分析器会根据前后和声语境推断最自然的补法，若判读存在歧义也会给出候选。变奏生成功能也能更自由地重新和声化这个位置。\n\n支持小写根音、斜线低音、sus/alt/add 形式，以及 C7(b9, #11) 这类张力写法。\n\n在触控设备上可使用和弦面板，或在需要自由输入时切换到 ABC 输入。';
+
+  @override
+  String get chordAnalyzerInputHelpTitle => '输入提示';
 
   @override
   String get chordAnalyzerAnalyze => '分析';
@@ -4985,13 +5047,13 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get chordAnalyzerPaste => '贴上';
 
   @override
-  String get chordAnalyzerClear => '清除';
+  String get chordAnalyzerClear => '重置';
 
   @override
-  String get chordAnalyzerBackspace => '退格';
+  String get chordAnalyzerBackspace => '⌫';
 
   @override
-  String get chordAnalyzerSpace => '空格';
+  String get chordAnalyzerSpace => '空格键';
 
   @override
   String get chordAnalyzerAnalyzing => '正在分析进行...';
@@ -5001,7 +5063,15 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get chordAnalyzerInitialBody =>
-      '输入像 Dm7 G7 Cmaj7 或 Cmaj7 | Am7 D7 | Gmaj7 这样的进行，即可查看可能的调性、罗马数字与简短摘要。';
+      '输入像 Dm7, G7, ? | Am7 或 Cmaj7 | Am7 D7 | Gmaj7 这样的进行，即可查看可能的调性、罗马数字、推断补全与简短摘要。';
+
+  @override
+  String get chordAnalyzerPlaceholderExplanation => '这个 ? 是根据前后和声语境推断出的空位。';
+
+  @override
+  String chordAnalyzerSuggestedFill(Object chord) {
+    return '建议补入：$chord';
+  }
 
   @override
   String get chordAnalyzerDetectedKeys => '检测到的调性';
@@ -5151,6 +5221,54 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String chordAnalyzerIgnoredModifiersWarning(Object details) {
     return '已忽略的修饰：$details';
   }
+
+  @override
+  String get chordAnalyzerGenerateVariations => '生成变体';
+
+  @override
+  String get chordAnalyzerVariationsTitle => '自然的变体';
+
+  @override
+  String get chordAnalyzerVariationsBody =>
+      '这些建议会保留原本的走向，并用相近功能的替代和弦重新上色。套用后会立刻重新分析。';
+
+  @override
+  String get chordAnalyzerApplyVariation => '应用这个变体';
+
+  @override
+  String get chordAnalyzerVariationCadentialColorTitle => '终止色彩';
+
+  @override
+  String get chordAnalyzerVariationCadentialColorBody =>
+      '保留原本的落点，同时让下属前功能更暗一些，并换成三全音替代属和弦。';
+
+  @override
+  String get chordAnalyzerVariationBackdoorTitle => 'Backdoor 色彩';
+
+  @override
+  String get chordAnalyzerVariationBackdoorBody =>
+      '借用平行小调的 ivm7-bVII7 色彩，最后落回同一个主和弦。';
+
+  @override
+  String get chordAnalyzerVariationAppliedApproachTitle => '定向 ii-V';
+
+  @override
+  String get chordAnalyzerVariationAppliedApproachBody =>
+      '重新组成一个仍然指向相同目标和弦的相关 ii-V。';
+
+  @override
+  String get chordAnalyzerVariationMinorCadenceTitle => '小调终止色彩';
+
+  @override
+  String get chordAnalyzerVariationMinorCadenceBody =>
+      '保留小调终止感，但把色彩推向 iiø-Valt-i。';
+
+  @override
+  String get chordAnalyzerVariationColorLiftTitle => '色彩提升';
+
+  @override
+  String get chordAnalyzerVariationColorLiftBody =>
+      '保持接近的根音与功能，同时用自然的扩展音让和弦更有表情。';
 
   @override
   String chordAnalyzerParserDiagnosticWarning(Object details) {

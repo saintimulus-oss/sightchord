@@ -99,6 +99,7 @@ class ParsedChordToken {
     required this.measureIndex,
     required this.positionInMeasure,
     this.chord,
+    this.isPlaceholder = false,
     this.error,
     this.errorDetail,
   });
@@ -108,10 +109,11 @@ class ParsedChordToken {
   final int measureIndex;
   final int positionInMeasure;
   final ParsedChord? chord;
+  final bool isPlaceholder;
   final String? error;
   final String? errorDetail;
 
-  bool get isValid => chord != null;
+  bool get isValid => chord != null || isPlaceholder;
 }
 
 class ParsedMeasure {
@@ -123,6 +125,11 @@ class ParsedMeasure {
   List<ParsedChord> get validChords => [
     for (final token in tokens)
       if (token.chord != null) token.chord!,
+  ];
+
+  List<ParsedChordToken> get placeholders => [
+    for (final token in tokens)
+      if (token.isPlaceholder) token,
   ];
 
   List<ParsedChordToken> get issues => [
@@ -142,12 +149,19 @@ class ProgressionParseResult {
       if (token.chord != null) token.chord!,
   ];
 
+  List<ParsedChordToken> get placeholders => [
+    for (final token in tokens)
+      if (token.isPlaceholder) token,
+  ];
+
   List<ParsedChordToken> get issues => [
     for (final token in tokens)
       if (!token.isValid) token,
   ];
 
   bool get hasPartialFailure => validChords.isNotEmpty && issues.isNotEmpty;
+
+  bool get hasPlaceholders => placeholders.isNotEmpty;
 }
 
 class ProgressionRemark {
@@ -174,6 +188,7 @@ class ChordInterpretationCandidate {
     required this.romanNumeral,
     required this.harmonicFunction,
     required this.score,
+    this.chordSymbol,
     this.romanNumeralId,
     this.sourceKind,
     this.remarks = const [],
@@ -182,6 +197,7 @@ class ChordInterpretationCandidate {
 
   final String romanNumeral;
   final ProgressionHarmonicFunction harmonicFunction;
+  final String? chordSymbol;
   final RomanNumeralId? romanNumeralId;
   final ChordSourceKind? sourceKind;
   final double score;
@@ -194,6 +210,8 @@ class AnalyzedChord {
     required this.chord,
     required this.romanNumeral,
     required this.harmonicFunction,
+    this.isInferred = false,
+    this.inferredSymbol,
     this.romanNumeralId,
     this.sourceKind,
     this.score = 0,
@@ -207,6 +225,8 @@ class AnalyzedChord {
   final ParsedChord chord;
   final String romanNumeral;
   final ProgressionHarmonicFunction harmonicFunction;
+  final bool isInferred;
+  final String? inferredSymbol;
   final RomanNumeralId? romanNumeralId;
   final ChordSourceKind? sourceKind;
   final double score;
@@ -215,6 +235,8 @@ class AnalyzedChord {
   final List<ProgressionRemark> remarks;
   final List<ProgressionEvidence> evidence;
   final List<ChordInterpretationCandidate> competingInterpretations;
+
+  String get resolvedSymbol => inferredSymbol ?? chord.sourceSymbol;
 
   bool get isNonDiatonic =>
       sourceKind == ChordSourceKind.secondaryDominant ||
@@ -268,6 +290,9 @@ class ProgressionAnalysis {
   int get ambiguousChordCount =>
       chordAnalyses.where((analysis) => analysis.isAmbiguous).length;
 
+  int get inferredChordCount =>
+      chordAnalyses.where((analysis) => analysis.isInferred).length;
+
   int get unresolvedChordCount => chordAnalyses
       .where(
         (analysis) => analysis.remarks.any(
@@ -280,6 +305,7 @@ class ProgressionAnalysis {
 
   bool get hasWarnings =>
       parseResult.issues.isNotEmpty ||
+      parseResult.hasPlaceholders ||
       alternativeKey != null ||
       ambiguousChordCount > 0 ||
       unresolvedChordCount > 0;

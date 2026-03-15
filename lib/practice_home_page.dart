@@ -53,6 +53,23 @@ class _PracticeHistoryEntry {
   final int? currentBeat;
 }
 
+@visibleForTesting
+({int nextBeat, bool shouldAdvanceChord}) computeNextPracticeAutoBeat({
+  required int? currentBeat,
+  int beatCount = 4,
+}) {
+  final nextBeat = ((currentBeat ?? -1) + 1) % beatCount;
+  return (
+    nextBeat: nextBeat,
+    shouldAdvanceChord: currentBeat != null && nextBeat == 0,
+  );
+}
+
+@visibleForTesting
+bool shouldStartPracticeAutoplayImmediately(int? currentBeat) {
+  return currentBeat == null;
+}
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({
     super.key,
@@ -420,12 +437,16 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!mounted || _practiceHistory.isEmpty) {
       return;
     }
+    final shouldRestartAutoLoop = _autoRunning;
     final snapshot = _practiceHistory.removeLast();
     setState(() {
       _queueState = snapshot.queueState;
       _voicingState = snapshot.voicingState;
-      _currentBeat = snapshot.currentBeat;
+      _currentBeat = null;
     });
+    if (shouldRestartAutoLoop) {
+      _startAutoLoop(immediateFirstBeat: false);
+    }
   }
 
   ChordExclusionContext _buildExclusionContext({
@@ -1242,12 +1263,15 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!mounted || !_practiceSessionInitialized) {
       return;
     }
+    final shouldRestartAutoLoop = _autoRunning;
     _recordPracticeHistory();
     setState(() {
       _promoteChordQueue();
-      _currentBeat = ((_currentBeat ?? -1) + 1) % _beatsPerBar;
+      _currentBeat = null;
     });
-    _playMetronomeIfNeeded();
+    if (shouldRestartAutoLoop) {
+      _startAutoLoop(immediateFirstBeat: false);
+    }
   }
 
   void _performAutoAdvanceChord() {
@@ -1266,9 +1290,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     var shouldAdvanceChord = false;
     setState(() {
-      final nextBeat = ((_currentBeat ?? -1) + 1) % _beatsPerBar;
-      _currentBeat = nextBeat;
-      shouldAdvanceChord = nextBeat == 0;
+      final autoTick = computeNextPracticeAutoBeat(
+        currentBeat: _currentBeat,
+        beatCount: _beatsPerBar,
+      );
+      _currentBeat = autoTick.nextBeat;
+      shouldAdvanceChord = autoTick.shouldAdvanceChord;
     });
 
     _playMetronomeIfNeeded(fromAutoTick: true);
@@ -1434,11 +1461,16 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!_practiceSessionInitialized) {
       return;
     }
+    final immediateFirstBeat = shouldStartPracticeAutoplayImmediately(
+      _currentBeat,
+    );
     setState(() {
       _autoRunning = true;
-      _currentBeat = null;
+      if (immediateFirstBeat) {
+        _currentBeat = null;
+      }
     });
-    _startAutoLoop(immediateFirstBeat: true);
+    _startAutoLoop(immediateFirstBeat: immediateFirstBeat);
   }
 
   void _rescheduleAutoTimer() {
@@ -1453,7 +1485,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
     if (_autoRunning) {
-      _stopAutoPlay();
+      _stopAutoPlay(resetBeat: false);
       return;
     }
     _startAutoPlay();

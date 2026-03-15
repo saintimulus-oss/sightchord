@@ -77,12 +77,69 @@ abstract class SamplePlayerVoice {
   Future<void> dispose();
 }
 
+typedef AudioPlayerBackendFactory = AudioPlayerBackend Function();
+
+abstract class AudioPlayerBackend {
+  Future<void> setPlayerMode(PlayerMode mode);
+
+  Future<void> setReleaseMode(ReleaseMode mode);
+
+  Future<void> setSourceAsset(String path);
+
+  Future<void> setPlaybackRate(double playbackRate);
+
+  Future<void> setVolume(double volume);
+
+  Future<void> resume();
+
+  Future<void> stop();
+
+  Future<void> dispose();
+}
+
+class AudioplayersAudioPlayerBackend implements AudioPlayerBackend {
+  AudioplayersAudioPlayerBackend() : _player = AudioPlayer();
+
+  final AudioPlayer _player;
+
+  @override
+  Future<void> setPlayerMode(PlayerMode mode) => _player.setPlayerMode(mode);
+
+  @override
+  Future<void> setReleaseMode(ReleaseMode mode) => _player.setReleaseMode(mode);
+
+  @override
+  Future<void> setSourceAsset(String path) => _player.setSourceAsset(path);
+
+  @override
+  Future<void> setPlaybackRate(double playbackRate) =>
+      _player.setPlaybackRate(playbackRate);
+
+  @override
+  Future<void> setVolume(double volume) => _player.setVolume(volume);
+
+  @override
+  Future<void> resume() => _player.resume();
+
+  @override
+  Future<void> stop() => _player.stop();
+
+  @override
+  Future<void> dispose() => _player.dispose();
+}
+
+AudioPlayerBackend _defaultAudioPlayerBackendFactory() =>
+    AudioplayersAudioPlayerBackend();
+
 class AudioPlayerVoiceFactory implements SamplePlayerVoiceFactory {
-  const AudioPlayerVoiceFactory();
+  const AudioPlayerVoiceFactory({AudioPlayerBackendFactory? backendFactory})
+    : _backendFactory = backendFactory ?? _defaultAudioPlayerBackendFactory;
+
+  final AudioPlayerBackendFactory _backendFactory;
 
   @override
   Future<SamplePlayerVoice> createVoice() async {
-    final voice = _AudioPlayerVoice();
+    final voice = _AudioPlayerVoice(player: _backendFactory());
     await voice.configure();
     return voice;
   }
@@ -429,11 +486,13 @@ class SampledInstrumentEngine {
 }
 
 class _AudioPlayerVoice implements SamplePlayerVoice {
-  _AudioPlayerVoice() : _player = AudioPlayer();
+  _AudioPlayerVoice({AudioPlayerBackend? player})
+    : _player = player ?? AudioplayersAudioPlayerBackend();
 
-  final AudioPlayer _player;
+  final AudioPlayerBackend _player;
   String? _currentAssetPath;
-  double _currentPlaybackRate = 1.0;
+  double _targetPlaybackRate = 1.0;
+  bool _playbackRateDirty = false;
 
   @override
   Future<void> configure() async {
@@ -449,17 +508,25 @@ class _AudioPlayerVoice implements SamplePlayerVoice {
     if (_currentAssetPath != assetPath) {
       await _player.setSourceAsset(normalizeAssetPathForAudioPlayer(assetPath));
       _currentAssetPath = assetPath;
+      _playbackRateDirty = true;
     }
-    if ((_currentPlaybackRate - playbackRate).abs() > 0.0001) {
-      await _player.setPlaybackRate(playbackRate);
-      _currentPlaybackRate = playbackRate;
+    if ((_targetPlaybackRate - playbackRate).abs() > 0.0001) {
+      _targetPlaybackRate = playbackRate;
+      _playbackRateDirty = true;
     }
   }
 
   @override
   Future<void> start({required double volume}) async {
-    await _player.setVolume(volume);
+    final startVolume = _playbackRateDirty ? 0.0 : volume;
+    await _player.setVolume(startVolume);
     await _player.resume();
+    if (_playbackRateDirty) {
+      // audioplayers expects playback rate changes after playback starts.
+      await _player.setPlaybackRate(_targetPlaybackRate);
+      _playbackRateDirty = false;
+      await _player.setVolume(volume);
+    }
   }
 
   @override

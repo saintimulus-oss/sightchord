@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chordest/app.dart';
@@ -205,13 +205,76 @@ void main() {
     addTearDown(() => restoreDisplay(tester));
     await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
 
-    await tester.tap(find.text('Db7(#11) Cmaj7'));
+    await tester.tap(find.text('Db7(#11), Cmaj7'));
     await tester.pump();
 
     final field = tester.widget<TextField>(
       find.byKey(const ValueKey('analyzer-input-field')),
     );
-    expect(field.controller!.text, 'Db7(#11) Cmaj7');
+    expect(field.controller!.text, 'Db7(#11), Cmaj7');
+  });
+
+  testWidgets('input help opens from the top-right help marker', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    expect(find.textContaining('spaces, |, or commas'), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('analyzer-help-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('analyzer-help-dialog')), findsOneWidget);
+    expect(find.text('Input tips'), findsOneWidget);
+    expect(find.textContaining('spaces, |, or commas'), findsOneWidget);
+  });
+
+  testWidgets('generated analyzer variations can be previewed and applied', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('analyzer-input-field')),
+      'Dm7 G7 Cmaj7',
+    );
+    await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('analyzer-generate-variations-button')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('analyzer-generate-variations-button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Natural variations'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('analyzer-variation-cadentialColor')),
+      findsOneWidget,
+    );
+    expect(find.text('Dm7b5 Db7 Cmaj9'), findsOneWidget);
+    expect(find.text('Fm7 Bb7 C6/9'), findsOneWidget);
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('analyzer-apply-variation-cadentialColor')),
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('analyzer-apply-variation-cadentialColor')),
+    );
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    final field = tester.widget<TextField>(
+      find.byKey(const ValueKey('analyzer-input-field')),
+    );
+    expect(field.controller!.text, 'Dm7b5 Db7 Cmaj9');
   });
 
   testWidgets(
@@ -360,6 +423,43 @@ void main() {
     },
   );
 
+  testWidgets(
+    'placeholder chords surface inferred fills and clean variations',
+    (WidgetTester tester) async {
+      addTearDown(() => restoreDisplay(tester));
+      await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+      await tester.enterText(
+        find.byKey(const ValueKey('analyzer-input-field')),
+        'Dm7 G7 ? Am7',
+      );
+      await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Suggested fill: Cmaj7'), findsOneWidget);
+      expect(
+        find.text('This ? was inferred from the surrounding harmonic context.'),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey('analyzer-generate-variations-button')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('analyzer-variation-colorLift')),
+        findsOneWidget,
+      );
+
+      final variationText = tester.widget<SelectableText>(
+        find.byKey(const ValueKey('analyzer-variation-colorLift')),
+      );
+      expect(variationText.data, isNot(contains('?')));
+    },
+  );
+
   testWidgets('analysis results show confidence and evidence details', (
     WidgetTester tester,
   ) async {
@@ -423,4 +523,3 @@ void main() {
     },
   );
 }
-

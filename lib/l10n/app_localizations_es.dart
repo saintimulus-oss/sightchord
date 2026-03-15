@@ -1938,11 +1938,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get chordAnalyzerInputLabel => 'Progresión de acordes';
 
   @override
-  String get chordAnalyzerInputHint => 'Dm7 G7 Cmaj7';
+  String get chordAnalyzerInputHint => 'Dm7, G7, ? | Am7';
 
   @override
   String get chordAnalyzerInputHelper =>
-      'Fuera de paréntesis, los separadores pueden ser espacios, | o comas. Las comas dentro de paréntesis permanecen dentro de un mismo acorde. Se admiten fundamentales en minúscula, bajo con barra, formas sus/alt/add y tensiones como C7(b9, #11). En dispositivos táctiles puedes usar el pad de acordes o cambiar a la entrada ABC.';
+      'Fuera de paréntesis, puedes separar acordes con espacios, | o comas. Las comas dentro de paréntesis se mantienen dentro del mismo acorde.\n\nUsa ? para un hueco de acorde desconocido. El analizador inferirá la opción más natural según el contexto y sugerirá alternativas si la lectura es ambigua. La generación de variaciones también podrá reharmonizar ese hueco con más libertad.\n\nSe admiten fundamentales en minúscula, bajo con barra, formas sus/alt/add y tensiones como C7(b9, #11).\n\nEn dispositivos táctiles puedes usar el pad de acordes o cambiar a la entrada ABC cuando necesites escribir libremente.';
+
+  @override
+  String get chordAnalyzerInputHelpTitle => 'Consejos de entrada';
 
   @override
   String get chordAnalyzerAnalyze => 'Analizar';
@@ -1968,10 +1971,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get chordAnalyzerPaste => 'Pegar';
 
   @override
-  String get chordAnalyzerClear => 'Borrar';
+  String get chordAnalyzerClear => 'Reiniciar';
 
   @override
-  String get chordAnalyzerBackspace => 'Retroceso';
+  String get chordAnalyzerBackspace => '⌫';
 
   @override
   String get chordAnalyzerSpace => 'Espacio';
@@ -1984,7 +1987,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get chordAnalyzerInitialBody =>
-      'Introduce una progresión como Dm7 G7 Cmaj7 o Cmaj7 | Am7 D7 | Gmaj7 para ver tonalidades probables, números romanos y un breve resumen.';
+      'Introduce una progresión como Dm7, G7, ? | Am7 o Cmaj7 | Am7 D7 | Gmaj7 para ver tonalidades probables, números romanos, rellenos inferidos y un breve resumen.';
+
+  @override
+  String get chordAnalyzerPlaceholderExplanation =>
+      'Este ? se infirió a partir del contexto armónico que lo rodea.';
+
+  @override
+  String chordAnalyzerSuggestedFill(Object chord) {
+    return 'Relleno sugerido: $chord';
+  }
 
   @override
   String get chordAnalyzerDetectedKeys => 'Tonalidades detectadas';
@@ -2141,6 +2153,55 @@ class AppLocalizationsEs extends AppLocalizations {
   String chordAnalyzerIgnoredModifiersWarning(Object details) {
     return 'Modificadores ignorados: $details';
   }
+
+  @override
+  String get chordAnalyzerGenerateVariations => 'Crear variaciones';
+
+  @override
+  String get chordAnalyzerVariationsTitle => 'Variaciones naturales';
+
+  @override
+  String get chordAnalyzerVariationsBody =>
+      'Estas opciones reharmonizan el mismo flujo con sustituciones funcionales cercanas. Aplica una para volver a analizarla al instante.';
+
+  @override
+  String get chordAnalyzerApplyVariation => 'Usar variación';
+
+  @override
+  String get chordAnalyzerVariationCadentialColorTitle => 'Color cadencial';
+
+  @override
+  String get chordAnalyzerVariationCadentialColorBody =>
+      'Oscurece el predominante y cambia el dominante por un sustituto por tritono sin mover la llegada.';
+
+  @override
+  String get chordAnalyzerVariationBackdoorTitle => 'Color backdoor';
+
+  @override
+  String get chordAnalyzerVariationBackdoorBody =>
+      'Usa el color ivm7-bVII7 del menor paralelo antes de caer en la misma tónica.';
+
+  @override
+  String get chordAnalyzerVariationAppliedApproachTitle => 'ii-V dirigido';
+
+  @override
+  String get chordAnalyzerVariationAppliedApproachBody =>
+      'Construye un ii-V relacionado que sigue apuntando al mismo acorde de destino.';
+
+  @override
+  String get chordAnalyzerVariationMinorCadenceTitle =>
+      'Color de cadencia menor';
+
+  @override
+  String get chordAnalyzerVariationMinorCadenceBody =>
+      'Mantiene la cadencia menor, pero se inclina hacia el color iiø-Valt-i.';
+
+  @override
+  String get chordAnalyzerVariationColorLiftTitle => 'Realce de color';
+
+  @override
+  String get chordAnalyzerVariationColorLiftBody =>
+      'Mantiene cercanos la raíz y la función, pero eleva los acordes con extensiones naturales.';
 
   @override
   String chordAnalyzerParserDiagnosticWarning(Object details) {

@@ -3315,14 +3315,20 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerInputHint.
   ///
   /// In en, this message translates to:
-  /// **'Dm7 G7 Cmaj7'**
+  /// **'Dm7, G7, ? | Am7'**
   String get chordAnalyzerInputHint;
 
   /// No description provided for @chordAnalyzerInputHelper.
   ///
   /// In en, this message translates to:
-  /// **'Separators outside parentheses can be spaces, |, or commas. Commas inside parentheses stay inside one chord. Lowercase roots, slash bass, sus/alt/add forms, and tensions such as C7(b9, #11) are supported. Touch devices can use the chord pad or switch to ABC input.'**
+  /// **'Use spaces, |, or commas between chords. Commas inside parentheses stay in the same chord.\n\nUse ? for an unknown chord slot. The analyzer will infer the most natural fill from context and suggest alternatives when the reading is ambiguous. Variation generation can also reharmonize that slot more freely.\n\nLowercase roots, slash bass, sus/alt/add forms, and tensions like C7(b9, #11) are supported.\n\nOn touch devices, use the chord pad or switch to ABC input when you want free typing.'**
   String get chordAnalyzerInputHelper;
+
+  /// No description provided for @chordAnalyzerInputHelpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Input tips'**
+  String get chordAnalyzerInputHelpTitle;
 
   /// No description provided for @chordAnalyzerAnalyze.
   ///
@@ -3369,19 +3375,19 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerClear.
   ///
   /// In en, this message translates to:
-  /// **'Clear'**
+  /// **'Reset'**
   String get chordAnalyzerClear;
 
   /// No description provided for @chordAnalyzerBackspace.
   ///
   /// In en, this message translates to:
-  /// **'Backspace'**
+  /// **'⌫'**
   String get chordAnalyzerBackspace;
 
   /// No description provided for @chordAnalyzerSpace.
   ///
   /// In en, this message translates to:
-  /// **'Space'**
+  /// **'Spacebar'**
   String get chordAnalyzerSpace;
 
   /// No description provided for @chordAnalyzerAnalyzing.
@@ -3399,8 +3405,20 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerInitialBody.
   ///
   /// In en, this message translates to:
-  /// **'Enter a progression such as Dm7 G7 Cmaj7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, and a short summary.'**
+  /// **'Enter a progression such as Dm7, G7, ? | Am7 or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, inferred fills, and a short summary.'**
   String get chordAnalyzerInitialBody;
+
+  /// No description provided for @chordAnalyzerPlaceholderExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'This ? was inferred from the surrounding harmonic context.'**
+  String get chordAnalyzerPlaceholderExplanation;
+
+  /// No description provided for @chordAnalyzerSuggestedFill.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested fill: {chord}'**
+  String chordAnalyzerSuggestedFill(Object chord);
 
   /// No description provided for @chordAnalyzerDetectedKeys.
   ///
@@ -3641,6 +3659,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ignored modifiers: {details}'**
   String chordAnalyzerIgnoredModifiersWarning(Object details);
+
+  /// No description provided for @chordAnalyzerGenerateVariations.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Variations'**
+  String get chordAnalyzerGenerateVariations;
+
+  /// No description provided for @chordAnalyzerVariationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Natural variations'**
+  String get chordAnalyzerVariationsTitle;
+
+  /// No description provided for @chordAnalyzerVariationsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'These reharmonize the same flow with nearby functional substitutes. Apply one to send it back through the analyzer.'**
+  String get chordAnalyzerVariationsBody;
+
+  /// No description provided for @chordAnalyzerApplyVariation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Variation'**
+  String get chordAnalyzerApplyVariation;
+
+  /// No description provided for @chordAnalyzerVariationCadentialColorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cadential color'**
+  String get chordAnalyzerVariationCadentialColorTitle;
+
+  /// No description provided for @chordAnalyzerVariationCadentialColorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Darkens the predominant and swaps in a tritone dominant while keeping the same arrival.'**
+  String get chordAnalyzerVariationCadentialColorBody;
+
+  /// No description provided for @chordAnalyzerVariationBackdoorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Backdoor color'**
+  String get chordAnalyzerVariationBackdoorTitle;
+
+  /// No description provided for @chordAnalyzerVariationBackdoorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses ivm7-bVII7 color from the parallel minor before landing on the same tonic.'**
+  String get chordAnalyzerVariationBackdoorBody;
+
+  /// No description provided for @chordAnalyzerVariationAppliedApproachTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Targeted ii-V'**
+  String get chordAnalyzerVariationAppliedApproachTitle;
+
+  /// No description provided for @chordAnalyzerVariationAppliedApproachBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Builds a related ii-V that still points to the same destination chord.'**
+  String get chordAnalyzerVariationAppliedApproachBody;
+
+  /// No description provided for @chordAnalyzerVariationMinorCadenceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Minor cadence color'**
+  String get chordAnalyzerVariationMinorCadenceTitle;
+
+  /// No description provided for @chordAnalyzerVariationMinorCadenceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Keeps the minor cadence intact but leans into iiø-Valt-i color.'**
+  String get chordAnalyzerVariationMinorCadenceBody;
+
+  /// No description provided for @chordAnalyzerVariationColorLiftTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Color lift'**
+  String get chordAnalyzerVariationColorLiftTitle;
+
+  /// No description provided for @chordAnalyzerVariationColorLiftBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Keeps the roots and functions close, but upgrades the chords with natural extensions.'**
+  String get chordAnalyzerVariationColorLiftBody;
 
   /// No description provided for @chordAnalyzerParserDiagnosticWarning.
   ///

@@ -95,8 +95,11 @@ class HarmonyPreviewResolver {
     ProgressionAnalysis analysis,
   ) {
     return [
-      for (final chord in analysis.parseResult.validChords)
-        fromParsedChord(chord),
+      for (final chordAnalysis in analysis.chordAnalyses)
+        fromParsedChord(
+          chordAnalysis.chord,
+          label: chordAnalysis.resolvedSymbol,
+        ),
     ];
   }
 

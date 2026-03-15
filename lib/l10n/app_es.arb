@@ -934,8 +934,9 @@
   "chordAnalyzerTitle": "Analizador de acordes",
   "chordAnalyzerSubtitle": "Pega una progresión y obtén una lectura armónica conservadora.",
   "chordAnalyzerInputLabel": "Progresión de acordes",
-  "chordAnalyzerInputHint": "Dm7 G7 Cmaj7",
-  "chordAnalyzerInputHelper": "Fuera de paréntesis, los separadores pueden ser espacios, | o comas. Las comas dentro de paréntesis permanecen dentro de un mismo acorde. Se admiten fundamentales en minúscula, bajo con barra, formas sus/alt/add y tensiones como C7(b9, #11). En dispositivos táctiles puedes usar el pad de acordes o cambiar a la entrada ABC.",
+  "chordAnalyzerInputHint": "Dm7, G7, ? | Am7",
+  "chordAnalyzerInputHelper": "Fuera de paréntesis, puedes separar acordes con espacios, | o comas. Las comas dentro de paréntesis se mantienen dentro del mismo acorde.\n\nUsa ? para un hueco de acorde desconocido. El analizador inferirá la opción más natural según el contexto y sugerirá alternativas si la lectura es ambigua. La generación de variaciones también podrá reharmonizar ese hueco con más libertad.\n\nSe admiten fundamentales en minúscula, bajo con barra, formas sus/alt/add y tensiones como C7(b9, #11).\n\nEn dispositivos táctiles puedes usar el pad de acordes o cambiar a la entrada ABC cuando necesites escribir libremente.",
+  "chordAnalyzerInputHelpTitle": "Consejos de entrada",
   "chordAnalyzerAnalyze": "Analizar",
   "chordAnalyzerKeyboardTitle": "Pad de acordes",
   "chordAnalyzerKeyboardTouchHint": "Toca los tokens para armar una progresión. La entrada ABC mantiene disponible el teclado del sistema cuando necesitas escribir libremente.",
@@ -943,12 +944,19 @@
   "chordAnalyzerChordPad": "Panel",
   "chordAnalyzerRawInput": "ABC",
   "chordAnalyzerPaste": "Pegar",
-  "chordAnalyzerClear": "Borrar",
-  "chordAnalyzerBackspace": "Retroceso",
+  "chordAnalyzerClear": "Reiniciar",
+  "chordAnalyzerBackspace": "⌫",
   "chordAnalyzerSpace": "Espacio",
   "chordAnalyzerAnalyzing": "Analizando progresión...",
   "chordAnalyzerInitialTitle": "Empieza con una progresión",
-  "chordAnalyzerInitialBody": "Introduce una progresión como Dm7 G7 Cmaj7 o Cmaj7 | Am7 D7 | Gmaj7 para ver tonalidades probables, números romanos y un breve resumen.",
+  "chordAnalyzerInitialBody": "Introduce una progresión como Dm7, G7, ? | Am7 o Cmaj7 | Am7 D7 | Gmaj7 para ver tonalidades probables, números romanos, rellenos inferidos y un breve resumen.",
+  "chordAnalyzerPlaceholderExplanation": "Este ? se infirió a partir del contexto armónico que lo rodea.",
+  "chordAnalyzerSuggestedFill": "Relleno sugerido: {chord}",
+  "@chordAnalyzerSuggestedFill": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
   "chordAnalyzerDetectedKeys": "Tonalidades detectadas",
   "chordAnalyzerPrimaryReading": "Lectura principal",
   "chordAnalyzerAlternativeReading": "Lectura alternativa",
@@ -1060,6 +1068,20 @@
       "details": {}
     }
   },
+  "chordAnalyzerGenerateVariations": "Crear variaciones",
+  "chordAnalyzerVariationsTitle": "Variaciones naturales",
+  "chordAnalyzerVariationsBody": "Estas opciones reharmonizan el mismo flujo con sustituciones funcionales cercanas. Aplica una para volver a analizarla al instante.",
+  "chordAnalyzerApplyVariation": "Usar variación",
+  "chordAnalyzerVariationCadentialColorTitle": "Color cadencial",
+  "chordAnalyzerVariationCadentialColorBody": "Oscurece el predominante y cambia el dominante por un sustituto por tritono sin mover la llegada.",
+  "chordAnalyzerVariationBackdoorTitle": "Color backdoor",
+  "chordAnalyzerVariationBackdoorBody": "Usa el color ivm7-bVII7 del menor paralelo antes de caer en la misma tónica.",
+  "chordAnalyzerVariationAppliedApproachTitle": "ii-V dirigido",
+  "chordAnalyzerVariationAppliedApproachBody": "Construye un ii-V relacionado que sigue apuntando al mismo acorde de destino.",
+  "chordAnalyzerVariationMinorCadenceTitle": "Color de cadencia menor",
+  "chordAnalyzerVariationMinorCadenceBody": "Mantiene la cadencia menor, pero se inclina hacia el color iiø-Valt-i.",
+  "chordAnalyzerVariationColorLiftTitle": "Realce de color",
+  "chordAnalyzerVariationColorLiftBody": "Mantiene cercanos la raíz y la función, pero eleva los acordes con extensiones naturales.",
   "chordAnalyzerParserDiagnosticWarning": "Advertencia de entrada: {details}",
   "@chordAnalyzerParserDiagnosticWarning": {
     "placeholders": {

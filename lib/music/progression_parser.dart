@@ -83,10 +83,9 @@ class ProgressionParser {
     final tokens = <String>[];
     var buffer = StringBuffer();
     var parenthesisDepth = 0;
-
     void flush() {
       final token = buffer.toString().trim();
-      if (token.isNotEmpty) {
+      if (token.isNotEmpty && !_isStandaloneConnectorToken(token)) {
         tokens.add(token);
       }
       buffer = StringBuffer();
@@ -104,7 +103,6 @@ class ProgressionParser {
         buffer.write(character);
         continue;
       }
-
       final isSeparator =
           parenthesisDepth == 0 &&
           (character == ',' || _whitespacePattern.hasMatch(character));
@@ -114,7 +112,6 @@ class ProgressionParser {
       }
       buffer.write(character);
     }
-
     flush();
     return tokens;
   }
@@ -133,6 +130,16 @@ class ProgressionParser {
         measureIndex: measureIndex,
         positionInMeasure: positionInMeasure,
         error: 'empty',
+      );
+    }
+
+    if (rawToken == '?' || rawToken == '\uFF1F') {
+      return ParsedChordToken(
+        index: index,
+        rawText: rawToken,
+        measureIndex: measureIndex,
+        positionInMeasure: positionInMeasure,
+        isPlaceholder: true,
       );
     }
 
@@ -935,26 +942,34 @@ class ProgressionParser {
     return _dynamicModifierTokenFor(normalized);
   }
 
+  bool _isStandaloneConnectorToken(String token) {
+    return token == '-' ||
+        token == '\u2013' ||
+        token == '\u2014' ||
+        token == '\u2212';
+  }
+
   String _normalizeInput(String input) {
     return input
-        .replaceAll('♭', 'b')
-        .replaceAll('♯', '#')
-        .replaceAll('＃', '#')
-        .replaceAll('ｂ', 'b')
-        .replaceAll('⁄', '/')
-        .replaceAll('−', '-')
-        .replaceAll('–', '-')
-        .replaceAll('—', '-')
-        .replaceAll('△7', 'maj7')
-        .replaceAll('Δ7', 'maj7')
-        .replaceAll('△', 'maj7')
-        .replaceAll('Δ', 'maj7')
-        .replaceAll('Ø7', 'm7b5')
-        .replaceAll('ø7', 'm7b5')
-        .replaceAll('Ø', 'm7b5')
-        .replaceAll('ø', 'm7b5')
-        .replaceAll('°7', 'dim7')
-        .replaceAll('°', 'dim')
+        .replaceAll('\u266d', 'b')
+        .replaceAll('\u266f', '#')
+        .replaceAll('\uFF03', '#')
+        .replaceAll('\uFF0F', '/')
+        .replaceAll('\u2010', '-')
+        .replaceAll('\u2011', '-')
+        .replaceAll('\u2012', '-')
+        .replaceAll('\u2013', '-')
+        .replaceAll('\u2014', '-')
+        .replaceAll('\u2212', '-')
+        .replaceAll('\u25B3', 'maj7')
+        .replaceAll('\u03947', 'maj7')
+        .replaceAll('\u0394', 'maj7')
+        .replaceAll('\u00F87', 'm7b5')
+        .replaceAll('\u00D87', 'm7b5')
+        .replaceAll('\u00F8', 'm7b5')
+        .replaceAll('\u00D8', 'm7b5')
+        .replaceAll('\u00B07', 'dim7')
+        .replaceAll('\u00B0', 'dim')
         .trim();
   }
 

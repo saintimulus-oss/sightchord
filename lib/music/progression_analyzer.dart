@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../smart_generator.dart';
 import 'chord_theory.dart';
 import 'progression_analysis_models.dart';
 import 'progression_parser.dart';
@@ -11,21 +12,21 @@ class ProgressionAnalyzer {
 
   ProgressionAnalysis analyze(String input) {
     final parseResult = parser.parse(input);
-    final chords = parseResult.validChords;
+    final knownChords = parseResult.validChords;
 
-    if (chords.isEmpty) {
+    if (knownChords.isEmpty) {
       throw const ProgressionAnalysisException('no-valid-chords');
     }
 
     final evaluations = [
       for (final keyCenter in _candidateKeyCenters)
-        _evaluateKeyCenter(keyCenter, chords),
+        _evaluateKeyCenter(keyCenter, parseResult),
     ]..sort((left, right) => right.score.compareTo(left.score));
 
     final primary = evaluations.first;
     final alternative =
         evaluations.length > 1 &&
-            _showAlternative(primary, evaluations[1], chords.length)
+            _showAlternative(primary, evaluations[1], knownChords.length)
         ? evaluations[1]
         : null;
     final primaryConfidence = _analysisConfidence(
@@ -33,6 +34,8 @@ class ProgressionAnalyzer {
       alternative: alternative,
       parseResult: parseResult,
     );
+    final chordAnalyses = primary.chordAnalyses;
+    final tags = primary.tags;
     final keyCandidates = [
       for (var index = 0; index < math.min(evaluations.length, 5); index += 1)
         ProgressionKeyCandidate(
@@ -64,12 +67,9 @@ class ProgressionAnalyzer {
               ),
             ),
       keyCandidates: keyCandidates,
-      chordAnalyses: primary.chordAnalyses,
-      groupedMeasures: _groupAnalyzedMeasures(
-        parseResult,
-        primary.chordAnalyses,
-      ),
-      tags: primary.tags,
+      chordAnalyses: chordAnalyses,
+      groupedMeasures: _groupAnalyzedMeasures(parseResult, chordAnalyses),
+      tags: tags,
       confidence: primaryConfidence,
       ambiguity: 1 - primaryConfidence,
     );
@@ -82,8 +82,9 @@ class ProgressionAnalyzer {
 
   _KeyEvaluation _evaluateKeyCenter(
     KeyCenter keyCenter,
-    List<ParsedChord> chords,
+    ProgressionParseResult parseResult,
   ) {
+    final chords = parseResult.validChords;
     final chordAnalyses = <AnalyzedChord>[];
     var score = 0.0;
 
@@ -97,17 +98,606 @@ class ProgressionAnalyzer {
       score += best.score;
     }
 
-    final tags = _detectTags(chordAnalyses);
+    final resolvedAnalyses = parseResult.hasPlaceholders
+        ? _resolvePlaceholderAnalyses(
+            parseResult: parseResult,
+            keyCenter: keyCenter,
+            knownAnalyses: chordAnalyses,
+          )
+        : chordAnalyses;
+    if (parseResult.hasPlaceholders) {
+      score += resolvedAnalyses
+          .where((analysis) => analysis.isInferred)
+          .fold<double>(
+            0.0,
+            (total, analysis) => total + (analysis.score * 0.68),
+          );
+    }
+
+    final tags = _detectTags(resolvedAnalyses);
     score += _tagBonus(tags);
-    score += _tonicAnchorBonus(chordAnalyses);
-    score += _dominantResolutionBonus(chordAnalyses);
+    score += _tonicAnchorBonus(resolvedAnalyses);
+    score += _dominantResolutionBonus(resolvedAnalyses);
 
     return _KeyEvaluation(
       keyCenter: keyCenter,
       score: score,
-      chordAnalyses: chordAnalyses,
+      chordAnalyses: resolvedAnalyses,
       tags: tags,
     );
+  }
+
+  List<AnalyzedChord> _resolvePlaceholderAnalyses({
+    required ProgressionParseResult parseResult,
+    required KeyCenter keyCenter,
+    required List<AnalyzedChord> knownAnalyses,
+  }) {
+    if (!parseResult.hasPlaceholders) {
+      return knownAnalyses;
+    }
+
+    final analysesByTokenIndex = <int, AnalyzedChord>{};
+    var knownIndex = 0;
+    for (final token in parseResult.tokens) {
+      if (token.chord == null) {
+        continue;
+      }
+      analysesByTokenIndex[token.index] = knownAnalyses[knownIndex];
+      knownIndex += 1;
+    }
+
+    final nextKnownByTokenIndex = <int, AnalyzedChord?>{};
+    AnalyzedChord? nextKnown;
+    for (var index = parseResult.tokens.length - 1; index >= 0; index -= 1) {
+      final token = parseResult.tokens[index];
+      nextKnownByTokenIndex[token.index] = nextKnown;
+      final current = analysesByTokenIndex[token.index];
+      if (current != null) {
+        nextKnown = current;
+      }
+    }
+
+    final resolvedAnalyses = <AnalyzedChord>[];
+    for (final token in parseResult.tokens) {
+      final knownAnalysis = analysesByTokenIndex[token.index];
+      if (knownAnalysis != null) {
+        resolvedAnalyses.add(knownAnalysis);
+        continue;
+      }
+      if (!token.isPlaceholder) {
+        continue;
+      }
+      resolvedAnalyses.add(
+        _inferPlaceholderAnalysis(
+          token: token,
+          keyCenter: keyCenter,
+          left: resolvedAnalyses.isEmpty ? null : resolvedAnalyses.last,
+          right: nextKnownByTokenIndex[token.index],
+        ),
+      );
+    }
+
+    return resolvedAnalyses;
+  }
+
+  AnalyzedChord _inferPlaceholderAnalysis({
+    required ParsedChordToken token,
+    required KeyCenter keyCenter,
+    required AnalyzedChord? left,
+    required AnalyzedChord? right,
+  }) {
+    final candidates = [
+      for (final romanNumeralId in _candidateRomansForPlaceholder(
+        keyCenter: keyCenter,
+        left: left,
+        right: right,
+      ))
+        _placeholderCandidateForRoman(
+          token: token,
+          keyCenter: keyCenter,
+          romanNumeralId: romanNumeralId,
+          left: left,
+          right: right,
+        ),
+    ]..sort((left, right) => right.score.compareTo(left.score));
+
+    final best = candidates.first;
+    final second = candidates.length > 1 ? candidates[1] : null;
+    final gap = second == null ? 3.4 : best.score - second.score;
+    final ambiguous = second != null && gap < 1.4;
+
+    return AnalyzedChord(
+      chord: _buildInferredParsedChord(
+        token: token,
+        keyCenter: keyCenter,
+        romanNumeralId: best.romanNumeralId,
+      ),
+      romanNumeral: best.romanNumeral,
+      harmonicFunction: best.harmonicFunction,
+      isInferred: true,
+      inferredSymbol: best.symbol,
+      romanNumeralId: best.romanNumeralId,
+      sourceKind: best.sourceKind,
+      score: best.score,
+      confidence: _placeholderConfidence(
+        gap: gap,
+        hasBothSides: left != null && right != null,
+        sourceKind: best.sourceKind,
+      ),
+      isAmbiguous: ambiguous,
+      remarks: [
+        ...best.remarks,
+        if (ambiguous)
+          const ProgressionRemark(
+            kind: ProgressionRemarkKind.ambiguousInterpretation,
+          ),
+      ],
+      evidence: best.evidence,
+      competingInterpretations: [
+        for (final candidate in candidates.skip(1).take(3))
+          ChordInterpretationCandidate(
+            romanNumeral: candidate.romanNumeral,
+            harmonicFunction: candidate.harmonicFunction,
+            chordSymbol: candidate.symbol,
+            romanNumeralId: candidate.romanNumeralId,
+            sourceKind: candidate.sourceKind,
+            score: candidate.score,
+            remarks: candidate.remarks,
+            evidence: candidate.evidence,
+          ),
+      ],
+    );
+  }
+
+  Set<RomanNumeralId> _candidateRomansForPlaceholder({
+    required KeyCenter keyCenter,
+    required AnalyzedChord? left,
+    required AnalyzedChord? right,
+  }) {
+    final romans = <RomanNumeralId>{
+      ..._canonicalPlaceholderRomansForMode(keyCenter.mode),
+    };
+
+    final rightRoman = right?.romanNumeralId;
+    if (rightRoman != null) {
+      final secondary =
+          SmartGeneratorHelper.secondaryDominantByResolution[rightRoman];
+      if (secondary != null) {
+        romans.add(secondary);
+      }
+
+      final substitute =
+          SmartGeneratorHelper.substituteDominantByResolution[rightRoman];
+      if (substitute != null) {
+        romans.add(substitute);
+      }
+
+      if (rightRoman == RomanNumeralId.iiiMin7) {
+        romans.add(RomanNumeralId.relatedIiOfIII);
+      } else if (rightRoman == RomanNumeralId.ivMaj7) {
+        romans.add(RomanNumeralId.relatedIiOfIV);
+      }
+
+      if (keyCenter.mode == KeyMode.major && _isTonicRoman(rightRoman)) {
+        romans.add(RomanNumeralId.borrowedFlatVII7);
+        romans.add(RomanNumeralId.borrowedFlatIIIMaj7);
+      }
+    }
+
+    if (left?.romanNumeralId == RomanNumeralId.borrowedIvMin7) {
+      romans.add(RomanNumeralId.borrowedFlatVII7);
+    }
+
+    return {
+      for (final romanNumeralId in romans)
+        if (_romanMatchesMode(romanNumeralId, keyCenter.mode)) romanNumeralId,
+    };
+  }
+
+  List<RomanNumeralId> _canonicalPlaceholderRomansForMode(KeyMode mode) {
+    return switch (mode) {
+      KeyMode.major => const [
+        RomanNumeralId.iMaj7,
+        RomanNumeralId.iiMin7,
+        RomanNumeralId.iiiMin7,
+        RomanNumeralId.ivMaj7,
+        RomanNumeralId.vDom7,
+        RomanNumeralId.viMin7,
+        RomanNumeralId.viiHalfDiminished7,
+      ],
+      KeyMode.minor => const [
+        RomanNumeralId.iMin7,
+        RomanNumeralId.iiHalfDiminishedMinor,
+        RomanNumeralId.flatIIIMaj7Minor,
+        RomanNumeralId.ivMin7Minor,
+        RomanNumeralId.vDom7,
+        RomanNumeralId.flatVIMaj7Minor,
+        RomanNumeralId.flatVIIDom7Minor,
+      ],
+    };
+  }
+
+  bool _romanMatchesMode(RomanNumeralId romanNumeralId, KeyMode mode) {
+    final spec = MusicTheory.specFor(romanNumeralId);
+    return spec.homeMode == null || spec.homeMode == mode;
+  }
+
+  _PlaceholderCandidate _placeholderCandidateForRoman({
+    required ParsedChordToken token,
+    required KeyCenter keyCenter,
+    required RomanNumeralId romanNumeralId,
+    required AnalyzedChord? left,
+    required AnalyzedChord? right,
+  }) {
+    final spec = MusicTheory.specFor(romanNumeralId);
+    final symbol = _symbolForRoman(keyCenter, romanNumeralId);
+    final parsedChord = _buildInferredParsedChord(
+      token: token,
+      keyCenter: keyCenter,
+      romanNumeralId: romanNumeralId,
+    );
+    final harmonicFunction = _mapFunction(spec.harmonicFunction);
+    var score = _basePlaceholderScoreForSource(spec.sourceKind);
+
+    if (left != null) {
+      score += _transitionBridgeScore(
+        fromRoman: left.romanNumeralId,
+        fromFunction: left.harmonicFunction,
+        toRoman: romanNumeralId,
+        toFunction: harmonicFunction,
+        keyMode: keyCenter.mode,
+      );
+    }
+    if (right != null) {
+      score += _transitionBridgeScore(
+        fromRoman: romanNumeralId,
+        fromFunction: harmonicFunction,
+        toRoman: right.romanNumeralId,
+        toFunction: right.harmonicFunction,
+        keyMode: keyCenter.mode,
+      );
+    }
+
+    score += _placeholderBridgeBonus(
+      candidateRoman: romanNumeralId,
+      candidateFunction: harmonicFunction,
+      left: left,
+      right: right,
+    );
+
+    final rightRoman = right?.romanNumeralId;
+    if (rightRoman != null && spec.resolutionTargetId == rightRoman) {
+      score += switch (spec.sourceKind) {
+        ChordSourceKind.secondaryDominant ||
+        ChordSourceKind.substituteDominant => 5.2,
+        ChordSourceKind.tonicization => 4.7,
+        _ => 0.0,
+      };
+    }
+    if (romanNumeralId == RomanNumeralId.borrowedFlatVII7 &&
+        rightRoman != null &&
+        _isTonicRoman(rightRoman)) {
+      score += 4.4;
+    }
+
+    return _PlaceholderCandidate(
+      romanNumeralId: romanNumeralId,
+      symbol: symbol,
+      romanNumeral: _displayRomanForCandidate(
+        chord: parsedChord,
+        romanNumeralId: romanNumeralId,
+        sourceKind: spec.sourceKind,
+        keyCenter: keyCenter,
+        resolutionTarget: spec.resolutionTargetId,
+      ),
+      harmonicFunction: harmonicFunction,
+      sourceKind: spec.sourceKind,
+      score: score,
+      remarks: _placeholderRemarksForSpec(spec),
+      evidence: _placeholderEvidenceForSpec(spec, rightRoman),
+    );
+  }
+
+  double _basePlaceholderScoreForSource(ChordSourceKind sourceKind) {
+    return switch (sourceKind) {
+      ChordSourceKind.diatonic => 8.0,
+      ChordSourceKind.tonicization => 7.3,
+      ChordSourceKind.secondaryDominant => 6.9,
+      ChordSourceKind.substituteDominant => 6.6,
+      ChordSourceKind.modalInterchange => 6.3,
+      ChordSourceKind.free => 4.8,
+    };
+  }
+
+  double _transitionBridgeScore({
+    required RomanNumeralId? fromRoman,
+    required ProgressionHarmonicFunction fromFunction,
+    required RomanNumeralId? toRoman,
+    required ProgressionHarmonicFunction toFunction,
+    required KeyMode keyMode,
+  }) {
+    var score = _functionTransitionScore(fromFunction, toFunction);
+    if (fromRoman != null && toRoman != null) {
+      score += _transitionPriorScore(fromRoman, toRoman, keyMode);
+      if (fromRoman == toRoman) {
+        score -= 0.9;
+      }
+    }
+    return score;
+  }
+
+  double _transitionPriorScore(
+    RomanNumeralId fromRoman,
+    RomanNumeralId toRoman,
+    KeyMode keyMode,
+  ) {
+    final transitionMap = keyMode == KeyMode.major
+        ? SmartGeneratorHelper.majorDiatonicTransitions
+        : SmartGeneratorHelper.minorDiatonicTransitions;
+    for (final candidate
+        in transitionMap[fromRoman] ?? const <WeightedNextRoman>[]) {
+      if (candidate.romanNumeralId == toRoman) {
+        return candidate.weight / 18;
+      }
+    }
+
+    final spec = MusicTheory.specFor(fromRoman);
+    if (spec.resolutionTargetId == toRoman) {
+      return switch (spec.sourceKind) {
+        ChordSourceKind.secondaryDominant ||
+        ChordSourceKind.substituteDominant => 4.8,
+        ChordSourceKind.tonicization => 4.2,
+        _ => 0.0,
+      };
+    }
+
+    if (fromRoman == RomanNumeralId.borrowedIvMin7 &&
+        toRoman == RomanNumeralId.borrowedFlatVII7) {
+      return 3.9;
+    }
+    if (fromRoman == RomanNumeralId.borrowedFlatVII7 &&
+        _isTonicRoman(toRoman)) {
+      return 4.5;
+    }
+
+    return 0.0;
+  }
+
+  double _functionTransitionScore(
+    ProgressionHarmonicFunction from,
+    ProgressionHarmonicFunction to,
+  ) {
+    return switch ((from, to)) {
+      (
+        ProgressionHarmonicFunction.tonic,
+        ProgressionHarmonicFunction.predominant,
+      ) =>
+        1.0,
+      (ProgressionHarmonicFunction.tonic, ProgressionHarmonicFunction.tonic) =>
+        0.45,
+      (
+        ProgressionHarmonicFunction.predominant,
+        ProgressionHarmonicFunction.dominant,
+      ) =>
+        1.9,
+      (
+        ProgressionHarmonicFunction.predominant,
+        ProgressionHarmonicFunction.tonic,
+      ) =>
+        0.6,
+      (
+        ProgressionHarmonicFunction.dominant,
+        ProgressionHarmonicFunction.tonic,
+      ) =>
+        2.7,
+      (
+        ProgressionHarmonicFunction.tonic,
+        ProgressionHarmonicFunction.dominant,
+      ) =>
+        0.25,
+      (
+        ProgressionHarmonicFunction.predominant,
+        ProgressionHarmonicFunction.predominant,
+      ) =>
+        0.2,
+      (
+        ProgressionHarmonicFunction.dominant,
+        ProgressionHarmonicFunction.dominant,
+      ) =>
+        0.15,
+      _ => 0.0,
+    };
+  }
+
+  double _placeholderBridgeBonus({
+    required RomanNumeralId candidateRoman,
+    required ProgressionHarmonicFunction candidateFunction,
+    required AnalyzedChord? left,
+    required AnalyzedChord? right,
+  }) {
+    var score = 0.0;
+    final rightRoman = right?.romanNumeralId;
+
+    if (left != null && right != null) {
+      if (left.harmonicFunction == ProgressionHarmonicFunction.predominant &&
+          right.harmonicFunction == ProgressionHarmonicFunction.tonic &&
+          candidateFunction == ProgressionHarmonicFunction.dominant) {
+        score += 3.6;
+      }
+      if (left.harmonicFunction == ProgressionHarmonicFunction.tonic &&
+          right.harmonicFunction == ProgressionHarmonicFunction.dominant &&
+          candidateFunction == ProgressionHarmonicFunction.predominant) {
+        score += 2.6;
+      }
+      if (left.harmonicFunction == ProgressionHarmonicFunction.dominant &&
+          right.harmonicFunction == ProgressionHarmonicFunction.tonic) {
+        score += _isTonicRoman(candidateRoman)
+            ? 3.4
+            : candidateFunction == ProgressionHarmonicFunction.tonic
+            ? 1.4
+            : 0;
+      }
+      if (rightRoman != null && candidateRoman == rightRoman) {
+        score -= 1.1;
+      }
+    } else if (left != null) {
+      if (left.harmonicFunction == ProgressionHarmonicFunction.predominant &&
+          candidateFunction == ProgressionHarmonicFunction.dominant) {
+        score += 2.2;
+      }
+      if (left.harmonicFunction == ProgressionHarmonicFunction.dominant &&
+          _isTonicRoman(candidateRoman)) {
+        score += 2.8;
+      }
+    } else if (right != null) {
+      if (candidateFunction == ProgressionHarmonicFunction.predominant &&
+          right.harmonicFunction == ProgressionHarmonicFunction.dominant) {
+        score += 2.6;
+      }
+      if (_isTonicRoman(candidateRoman) &&
+          right.harmonicFunction == ProgressionHarmonicFunction.tonic) {
+        score += 1.2;
+      }
+    }
+
+    return score;
+  }
+
+  List<ProgressionRemark> _placeholderRemarksForSpec(RomanSpec spec) {
+    final resolutionTarget = spec.resolutionTargetId;
+    return switch (spec.sourceKind) {
+      ChordSourceKind.secondaryDominant when resolutionTarget != null => [
+        ProgressionRemark(
+          kind: ProgressionRemarkKind.possibleSecondaryDominant,
+          targetRomanNumeral: _displayResolutionTargetRoman(resolutionTarget),
+        ),
+      ],
+      ChordSourceKind.substituteDominant when resolutionTarget != null => [
+        ProgressionRemark(
+          kind: ProgressionRemarkKind.possibleTritoneSubstitute,
+          targetRomanNumeral: _displayResolutionTargetRoman(resolutionTarget),
+        ),
+      ],
+      ChordSourceKind.modalInterchange => const [
+        ProgressionRemark(kind: ProgressionRemarkKind.possibleModalInterchange),
+      ],
+      _ => const <ProgressionRemark>[],
+    };
+  }
+
+  List<ProgressionEvidence> _placeholderEvidenceForSpec(
+    RomanSpec spec,
+    RomanNumeralId? rightRoman,
+  ) {
+    final evidence = <ProgressionEvidence>[];
+    if (spec.sourceKind == ChordSourceKind.modalInterchange) {
+      evidence.add(
+        const ProgressionEvidence(kind: ProgressionEvidenceKind.borrowedColor),
+      );
+    }
+    if (rightRoman != null && spec.resolutionTargetId == rightRoman) {
+      evidence.add(
+        ProgressionEvidence(
+          kind: ProgressionEvidenceKind.resolution,
+          detail: _displayResolutionTargetRoman(rightRoman),
+        ),
+      );
+    }
+    return evidence;
+  }
+
+  double _placeholderConfidence({
+    required double gap,
+    required bool hasBothSides,
+    required ChordSourceKind sourceKind,
+  }) {
+    var confidence = 0.42 + (gap / 5.8);
+    if (hasBothSides) {
+      confidence += 0.1;
+    }
+    if (sourceKind != ChordSourceKind.diatonic) {
+      confidence -= 0.04;
+    }
+    return (confidence.clamp(0.2, 0.94) as num).toDouble();
+  }
+
+  ParsedChord _buildInferredParsedChord({
+    required ParsedChordToken token,
+    required KeyCenter keyCenter,
+    required RomanNumeralId romanNumeralId,
+  }) {
+    final spec = MusicTheory.specFor(romanNumeralId);
+    final root = MusicTheory.resolveChordRootForCenter(
+      keyCenter,
+      romanNumeralId,
+    );
+    final rootSemitone = MusicTheory.noteToSemitone[root] ?? 0;
+    final normalizedSuffix = _specQualitySuffix(spec.quality);
+
+    return ParsedChord(
+      sourceSymbol: token.rawText,
+      root: root,
+      rootSemitone: rootSemitone,
+      displayQuality: spec.quality,
+      analysisFamily: MusicTheory.familyForQuality(spec.quality),
+      measureIndex: token.measureIndex,
+      positionInMeasure: token.positionInMeasure,
+      suffix: normalizedSuffix,
+      normalizedSuffix: normalizedSuffix,
+      extension: _extensionForQuality(spec.quality),
+      tensions: _defaultTensionsForQuality(spec.quality),
+      alterations: _defaultAlterationsForQuality(spec.quality),
+      suspensions: _defaultSuspensionsForQuality(spec.quality),
+    );
+  }
+
+  String _symbolForRoman(KeyCenter keyCenter, RomanNumeralId romanNumeralId) {
+    final root = MusicTheory.resolveChordRootForCenter(
+      keyCenter,
+      romanNumeralId,
+    );
+    return '$root${_specQualitySuffix(MusicTheory.specFor(romanNumeralId).quality)}';
+  }
+
+  int? _extensionForQuality(ChordQuality quality) {
+    return switch (quality) {
+      ChordQuality.major7 ||
+      ChordQuality.minor7 ||
+      ChordQuality.minorMajor7 ||
+      ChordQuality.halfDiminished7 ||
+      ChordQuality.diminished7 ||
+      ChordQuality.dominant7 ||
+      ChordQuality.dominant7Alt ||
+      ChordQuality.dominant7Sharp11 ||
+      ChordQuality.dominant7sus4 => 7,
+      ChordQuality.six || ChordQuality.minor6 || ChordQuality.major69 => 6,
+      ChordQuality.dominant13sus4 => 13,
+      _ => null,
+    };
+  }
+
+  List<String> _defaultTensionsForQuality(ChordQuality quality) {
+    return switch (quality) {
+      ChordQuality.major69 => const ['9'],
+      ChordQuality.dominant7Sharp11 => const ['#11'],
+      ChordQuality.dominant13sus4 => const ['13'],
+      _ => const <String>[],
+    };
+  }
+
+  List<String> _defaultAlterationsForQuality(ChordQuality quality) {
+    return switch (quality) {
+      ChordQuality.dominant7Alt => const ['alt'],
+      ChordQuality.dominant7Sharp11 => const ['#11'],
+      _ => const <String>[],
+    };
+  }
+
+  List<String> _defaultSuspensionsForQuality(ChordQuality quality) {
+    return switch (quality) {
+      ChordQuality.dominant13sus4 || ChordQuality.dominant7sus4 => const ['4'],
+      _ => const <String>[],
+    };
   }
 
   AnalyzedChord _bestInterpretation({
@@ -752,6 +1342,9 @@ class ProgressionAnalyzer {
     if (parseResult.hasPartialFailure) {
       confidence -= 0.08;
     }
+    if (parseResult.hasPlaceholders) {
+      confidence -= math.min(0.18, parseResult.placeholders.length * 0.05);
+    }
     final ambiguousRatio = primary.chordAnalyses.isEmpty
         ? 0.0
         : primary.chordAnalyses
@@ -1008,6 +1601,28 @@ class _InterpretationCandidate {
   final List<ProgressionRemark> remarks;
   final List<ProgressionEvidence> evidence;
   final bool ambiguous;
+}
+
+class _PlaceholderCandidate {
+  const _PlaceholderCandidate({
+    required this.romanNumeralId,
+    required this.symbol,
+    required this.romanNumeral,
+    required this.harmonicFunction,
+    required this.sourceKind,
+    required this.score,
+    this.remarks = const [],
+    this.evidence = const [],
+  });
+
+  final RomanNumeralId romanNumeralId;
+  final String symbol;
+  final String romanNumeral;
+  final ProgressionHarmonicFunction harmonicFunction;
+  final ChordSourceKind sourceKind;
+  final double score;
+  final List<ProgressionRemark> remarks;
+  final List<ProgressionEvidence> evidence;
 }
 
 class _KeyEvaluation {

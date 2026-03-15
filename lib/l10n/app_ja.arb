@@ -934,8 +934,9 @@
   "chordAnalyzerTitle": "コード解析",
   "chordAnalyzerSubtitle": "進行を貼り付けると、保守的な和声解釈を返します。",
   "chordAnalyzerInputLabel": "コード進行",
-  "chordAnalyzerInputHint": "Dm7 G7 Cmaj7",
-  "chordAnalyzerInputHelper": "括弧の外では、区切りにスペース、|、カンマを使えます。括弧内のカンマは同じコード内のまま扱われます。小文字ルート、スラッシュベース、sus/alt/add 形式、C7(b9, #11) のようなテンション表記に対応しています。タッチ端末ではコードパッドを使うか、ABC 入力に切り替えられます。",
+  "chordAnalyzerInputHint": "Dm7, G7, ? | Am7",
+  "chordAnalyzerInputHelper": "括弧の外では、スペース、|、カンマでコードを区切れます。括弧内のカンマは同じコード内に残ります。\n\n不明なコード枠には ? を使えます。アナライザーが前後の文脈から最も自然な補完を推定し、解釈が曖昧な場合は候補も提案します。変化生成でもその枠はより自由に再ハーモナイズできます。\n\n小文字ルート、スラッシュベース、sus/alt/add 形式、C7(b9, #11) のようなテンション表記に対応しています。\n\nタッチ端末ではコードパッドを使うか、自由入力したいときに ABC 入力へ切り替えられます。",
+  "chordAnalyzerInputHelpTitle": "入力のヒント",
   "chordAnalyzerAnalyze": "解析する",
   "chordAnalyzerKeyboardTitle": "コードパッド",
   "chordAnalyzerKeyboardTouchHint": "トークンをタップして進行を組み立てます。ABC 入力にすると、自由入力が必要なときもシステムキーボードを使えます。",
@@ -943,12 +944,19 @@
   "chordAnalyzerChordPad": "パッド",
   "chordAnalyzerRawInput": "ABC",
   "chordAnalyzerPaste": "貼り付け",
-  "chordAnalyzerClear": "クリア",
-  "chordAnalyzerBackspace": "削除",
+  "chordAnalyzerClear": "リセット",
+  "chordAnalyzerBackspace": "⌫",
   "chordAnalyzerSpace": "スペース",
   "chordAnalyzerAnalyzing": "進行を解析中...",
   "chordAnalyzerInitialTitle": "進行から始める",
-  "chordAnalyzerInitialBody": "Dm7 G7 Cmaj7 や Cmaj7 | Am7 D7 | Gmaj7 のような進行を入力すると、考えられるキー、ローマ数字、短い要約を確認できます。",
+  "chordAnalyzerInitialBody": "Dm7, G7, ? | Am7 や Cmaj7 | Am7 D7 | Gmaj7 のような進行を入力すると、考えられるキー、ローマ数字、推定補完、短い要約を確認できます。",
+  "chordAnalyzerPlaceholderExplanation": "この ? は前後の和声文脈から推定したスロットです。",
+  "chordAnalyzerSuggestedFill": "推定候補: {chord}",
+  "@chordAnalyzerSuggestedFill": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
   "chordAnalyzerDetectedKeys": "検出されたキー",
   "chordAnalyzerPrimaryReading": "主要な読み",
   "chordAnalyzerAlternativeReading": "代替の読み",
@@ -1060,6 +1068,20 @@
       "details": {}
     }
   },
+  "chordAnalyzerGenerateVariations": "バリエーションを作る",
+  "chordAnalyzerVariationsTitle": "自然なバリエーション",
+  "chordAnalyzerVariationsBody": "近い機能の代理和音で流れを保ったまま色味を変えた提案です。適用するとそのまま再解析します。",
+  "chordAnalyzerApplyVariation": "この変形を使う",
+  "chordAnalyzerVariationCadentialColorTitle": "終止の色替え",
+  "chordAnalyzerVariationCadentialColorBody": "到着先はそのままに、プレドミナントを少し暗くしてトライトーン代理のドミナントへ置き換えます。",
+  "chordAnalyzerVariationBackdoorTitle": "バックドアの色味",
+  "chordAnalyzerVariationBackdoorBody": "平行短調由来の ivm7-bVII7 の色で、同じトニックへ着地します。",
+  "chordAnalyzerVariationAppliedApproachTitle": "狙いを保つ ii-V",
+  "chordAnalyzerVariationAppliedApproachBody": "同じ着地点へ向かう関連 ii-V を組み直します。",
+  "chordAnalyzerVariationMinorCadenceTitle": "短調終止の色味",
+  "chordAnalyzerVariationMinorCadenceBody": "短調の終止感は保ったまま、iiø-Valt-i の色を強めます。",
+  "chordAnalyzerVariationColorLiftTitle": "カラーリフト",
+  "chordAnalyzerVariationColorLiftBody": "ルートと機能は近く保ちつつ、自然なテンションで表情を持ち上げます。",
   "chordAnalyzerParserDiagnosticWarning": "入力上の注意: {details}",
   "@chordAnalyzerParserDiagnosticWarning": {
     "placeholders": {

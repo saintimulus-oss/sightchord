@@ -96,7 +96,7 @@ class PracticeSettingsDrawer extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSetupCard(context, guidedMode: true),
+        _buildSetupCard(context, dispatcher, guidedMode: true),
         if (_shouldShowStudyHarmonyCta) ...[
           const SizedBox(height: 16),
           _buildStudyHarmonyCard(context),
@@ -124,7 +124,7 @@ class PracticeSettingsDrawer extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSetupCard(context, guidedMode: false),
+        _buildSetupCard(context, dispatcher, guidedMode: false),
         const SizedBox(height: 24),
         _buildLanguageSection(context, dispatcher),
         const SizedBox(height: 24),
@@ -139,7 +139,11 @@ class PracticeSettingsDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildSetupCard(BuildContext context, {required bool guidedMode}) {
+  Widget _buildSetupCard(
+    BuildContext context,
+    PracticeSettingsDispatcher dispatcher, {
+    required bool guidedMode,
+  }) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final profile = PracticeSettingsFactory.profileFromSettings(settings);
@@ -181,6 +185,8 @@ class PracticeSettingsDrawer extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 14),
+            _buildComplexityModeSelector(context, dispatcher),
+            const SizedBox(height: 16),
             Text(
               _profileSummaryTitle(l10n, profile),
               style: theme.textTheme.titleSmall?.copyWith(
@@ -226,6 +232,49 @@ class PracticeSettingsDrawer extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildComplexityModeSelector(
+    BuildContext context,
+    PracticeSettingsDispatcher dispatcher,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.setupAssistantCurrentMode,
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final mode in SettingsComplexityMode.values)
+              ChoiceChip(
+                key: ValueKey('settings-complexity-mode-${mode.name}'),
+                label: Text(_settingsComplexityModeOptionLabel(l10n, mode)),
+                selected: settings.settingsComplexityMode == mode,
+                onSelected: (selected) {
+                  if (!selected || settings.settingsComplexityMode == mode) {
+                    return;
+                  }
+                  dispatcher.apply(
+                    (current) => current.copyWith(
+                      guidedSetupCompleted: true,
+                      settingsComplexityMode: mode,
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -345,9 +394,7 @@ class PracticeSettingsDrawer extends StatelessWidget {
             if (value == null) {
               return;
             }
-            dispatcher.apply(
-              (current) => current.copyWith(language: value),
-            );
+            dispatcher.apply((current) => current.copyWith(language: value));
           },
         ),
       ],
@@ -411,10 +458,7 @@ class PracticeSettingsDrawer extends StatelessWidget {
           },
         ),
         const SizedBox(height: 16),
-        Text(
-          l10n.metronomeVolume,
-          style: theme.textTheme.titleMedium,
-        ),
+        Text(l10n.metronomeVolume, style: theme.textTheme.titleMedium),
         Slider(
           value: settings.metronomeVolume,
           onChanged: settings.metronomeEnabled
@@ -461,9 +505,7 @@ class PracticeSettingsDrawer extends StatelessWidget {
                 };
                 return DropdownMenuItem<ChordSymbolStyle>(
                   value: style,
-                  child: Text(
-                    '$label  ${ChordSymbolFormatter.example(style)}',
-                  ),
+                  child: Text('$label  ${ChordSymbolFormatter.example(style)}'),
                 );
               })
               .toList(growable: false),
@@ -477,10 +519,7 @@ class PracticeSettingsDrawer extends StatelessWidget {
                   };
                   return Align(
                     alignment: Alignment.centerLeft,
-                    child: Text(
-                      label,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    child: Text(label, overflow: TextOverflow.ellipsis),
                   );
                 })
                 .toList(growable: false);
@@ -582,7 +621,17 @@ class PracticeSettingsDrawer extends StatelessWidget {
   }
 
   String _settingsComplexityModeLabel(AppLocalizations l10n) {
-    return switch (settings.settingsComplexityMode) {
+    return _settingsComplexityModeOptionLabel(
+      l10n,
+      settings.settingsComplexityMode,
+    );
+  }
+
+  String _settingsComplexityModeOptionLabel(
+    AppLocalizations l10n,
+    SettingsComplexityMode mode,
+  ) {
+    return switch (mode) {
       SettingsComplexityMode.guided => l10n.setupAssistantModeGuided,
       SettingsComplexityMode.standard => l10n.setupAssistantModeStandard,
       SettingsComplexityMode.advanced => l10n.setupAssistantModeAdvanced,
@@ -593,10 +642,7 @@ class PracticeSettingsDrawer extends StatelessWidget {
     return '${MusicTheory.displayRootForKey(center.tonicName)} ${l10n.modeMajor}';
   }
 
-  String _notationSummaryLabel(
-    AppLocalizations l10n,
-    ChordSymbolStyle style,
-  ) {
+  String _notationSummaryLabel(AppLocalizations l10n, ChordSymbolStyle style) {
     return switch (style) {
       ChordSymbolStyle.majText => l10n.setupAssistantNotationMajText,
       ChordSymbolStyle.compact => l10n.setupAssistantNotationCompact,
@@ -604,10 +650,7 @@ class PracticeSettingsDrawer extends StatelessWidget {
     };
   }
 
-  String _profileSummaryTitle(
-    AppLocalizations l10n,
-    GeneratorProfile profile,
-  ) {
+  String _profileSummaryTitle(AppLocalizations l10n, GeneratorProfile profile) {
     return switch (profile.harmonyLiteracy) {
       HarmonyLiteracy.absoluteBeginner =>
         l10n.setupAssistantPreviewSummaryAbsolute,
@@ -615,8 +658,7 @@ class PracticeSettingsDrawer extends StatelessWidget {
         l10n.setupAssistantPreviewSummaryBasic,
       HarmonyLiteracy.functionalHarmony =>
         l10n.setupAssistantPreviewSummaryFunctional,
-      HarmonyLiteracy.reharmReady =>
-        l10n.setupAssistantPreviewSummaryAdvanced,
+      HarmonyLiteracy.reharmReady => l10n.setupAssistantPreviewSummaryAdvanced,
     };
   }
 
@@ -626,8 +668,7 @@ class PracticeSettingsDrawer extends StatelessWidget {
   ) {
     return switch (settings.chordLanguageLevel) {
       ChordLanguageLevel.triadsOnly => l10n.setupAssistantDifficultyTriads,
-      ChordLanguageLevel.seventhChords =>
-        l10n.setupAssistantDifficultySevenths,
+      ChordLanguageLevel.seventhChords => l10n.setupAssistantDifficultySevenths,
       ChordLanguageLevel.safeExtensions =>
         l10n.setupAssistantDifficultySafeExtensions,
       ChordLanguageLevel.fullExtensions =>
@@ -635,13 +676,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
     };
   }
 
-  String _profileSummaryBody(
-    AppLocalizations l10n,
-    PracticeSettings settings,
-  ) {
+  String _profileSummaryBody(AppLocalizations l10n, PracticeSettings settings) {
     return switch (settings.chordLanguageLevel) {
-      ChordLanguageLevel.triadsOnly =>
-        l10n.setupAssistantPreviewBodyTriads,
+      ChordLanguageLevel.triadsOnly => l10n.setupAssistantPreviewBodyTriads,
       ChordLanguageLevel.seventhChords =>
         l10n.setupAssistantPreviewBodySevenths,
       ChordLanguageLevel.safeExtensions =>
@@ -653,10 +690,7 @@ class PracticeSettingsDrawer extends StatelessWidget {
 }
 
 class _SummaryRow extends StatelessWidget {
-  const _SummaryRow({
-    required this.label,
-    required this.value,
-  });
+  const _SummaryRow({required this.label, required this.value});
 
   final String label;
   final String value;

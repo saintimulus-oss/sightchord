@@ -22,8 +22,8 @@ class ProgressionExplainer {
     if (cadenceSpan != null) {
       sentences.add(
         l10n.chordAnalyzerSummaryFlow(
-          cadenceSpan.first.chord.sourceSymbol,
-          cadenceSpan.second.chord.sourceSymbol,
+          cadenceSpan.first.resolvedSymbol,
+          cadenceSpan.second.resolvedSymbol,
           _functionLabel(
             l10n,
             cadenceSpan.first.harmonicFunction,
@@ -32,7 +32,7 @@ class ProgressionExplainer {
             l10n,
             cadenceSpan.second.harmonicFunction,
           ).toLowerCase(),
-          cadenceSpan.third.chord.sourceSymbol,
+          cadenceSpan.third.resolvedSymbol,
         ),
       );
     }
@@ -49,22 +49,20 @@ class ProgressionExplainer {
         case ProgressionRemarkKind.possibleSecondaryDominant:
           sentences.add(
             l10n.chordAnalyzerSummarySecondaryDominant(
-              notable.chord.sourceSymbol,
+              notable.resolvedSymbol,
               remark.targetRomanNumeral ?? '?',
             ),
           );
         case ProgressionRemarkKind.possibleTritoneSubstitute:
           sentences.add(
             l10n.chordAnalyzerSummaryTritoneSub(
-              notable.chord.sourceSymbol,
+              notable.resolvedSymbol,
               remark.targetRomanNumeral ?? '?',
             ),
           );
         case ProgressionRemarkKind.possibleModalInterchange:
           sentences.add(
-            l10n.chordAnalyzerSummaryModalInterchange(
-              notable.chord.sourceSymbol,
-            ),
+            l10n.chordAnalyzerSummaryModalInterchange(notable.resolvedSymbol),
           );
         case ProgressionRemarkKind.ambiguousInterpretation:
         case ProgressionRemarkKind.unresolved:

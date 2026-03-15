@@ -1831,11 +1831,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chordAnalyzerInputLabel => '코드 진행';
 
   @override
-  String get chordAnalyzerInputHint => 'DM7 G7 Cmaj7';
+  String get chordAnalyzerInputHint => 'Dm7, G7, ? | Am7';
 
   @override
   String get chordAnalyzerInputHelper =>
-      '괄호 바깥에서는 공백, |, 쉼표로 코드를 구분할 수 있습니다. 괄호 안의 쉼표는 같은 코드의 텐션 구분자로 유지됩니다. 소문자 루트, 슬래시 베이스, sus/alt/add 표기와 C7(b9, #11) 같은 괄호형 텐션을 지원합니다. 터치 기기에서는 코드 패드나 ABC 입력을 사용할 수 있습니다.';
+      '코드 사이에는 Spacebar, |, 쉼표를 쓸 수 있습니다. 괄호 안의 쉼표는 같은 코드 안의 텐션 구분자로 유지됩니다.\n\n?는 아직 정하지 않은 코드 자리를 뜻합니다. 분석기는 앞뒤 화성 맥락을 바탕으로 가장 자연스러운 채움을 추론하고, 해석이 모호하면 후보도 함께 제안합니다. 변주 만들기에서는 그 자리를 더 자유롭게 리하모나이즈할 수 있습니다.\n\n소문자 루트, 슬래시 베이스, sus/alt/add 표기와 C7(b9, #11) 같은 괄호형 텐션을 지원합니다.\n\n터치 기기에서는 코드 패드를 쓰거나, 자유 입력이 필요할 때 ABC 입력으로 전환할 수 있습니다.';
+
+  @override
+  String get chordAnalyzerInputHelpTitle => '입력 팁';
 
   @override
   String get chordAnalyzerAnalyze => '분석하기';
@@ -1861,13 +1864,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chordAnalyzerPaste => '붙여넣기';
 
   @override
-  String get chordAnalyzerClear => '지우기';
+  String get chordAnalyzerClear => 'Reset';
 
   @override
-  String get chordAnalyzerBackspace => '백스페이스';
+  String get chordAnalyzerBackspace => '⌫';
 
   @override
-  String get chordAnalyzerSpace => '공백';
+  String get chordAnalyzerSpace => 'Spacebar';
 
   @override
   String get chordAnalyzerAnalyzing => '진행을 분석하는 중...';
@@ -1877,7 +1880,16 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chordAnalyzerInitialBody =>
-      'Dm7 G7 Cmaj7 또는 Cmaj7 | Am7 D7 | Gmaj7 같은 진행을 입력하면 가능한 조성, 로마 숫자, 짧은 요약을 볼 수 있습니다.';
+      'Dm7, G7, ? | Am7 또는 Cmaj7 | Am7 D7 | Gmaj7 같은 진행을 입력하면 가능한 조성, 로마 숫자, 추론된 채움, 짧은 요약을 볼 수 있습니다.';
+
+  @override
+  String get chordAnalyzerPlaceholderExplanation =>
+      '이 ?는 앞뒤 화성 맥락을 바탕으로 추론한 자리입니다.';
+
+  @override
+  String chordAnalyzerSuggestedFill(Object chord) {
+    return '추천 채움 화음: $chord';
+  }
 
   @override
   String get chordAnalyzerDetectedKeys => '감지된 조성';
@@ -2032,6 +2044,54 @@ class AppLocalizationsKo extends AppLocalizations {
   String chordAnalyzerIgnoredModifiersWarning(Object details) {
     return '무시된 modifier: $details';
   }
+
+  @override
+  String get chordAnalyzerGenerateVariations => '변주 만들기';
+
+  @override
+  String get chordAnalyzerVariationsTitle => '자연스러운 변주';
+
+  @override
+  String get chordAnalyzerVariationsBody =>
+      '같은 흐름을 유지하면서 가까운 기능 대체 화음으로 색감을 바꾼 제안입니다. 적용하면 바로 다시 분석합니다.';
+
+  @override
+  String get chordAnalyzerApplyVariation => '이 변주 적용';
+
+  @override
+  String get chordAnalyzerVariationCadentialColorTitle => '카덴스 컬러';
+
+  @override
+  String get chordAnalyzerVariationCadentialColorBody =>
+      '도착점은 유지한 채 프리도미넌트를 더 어둡게 만들고 트라이톤 서브 도미넌트로 바꿉니다.';
+
+  @override
+  String get chordAnalyzerVariationBackdoorTitle => '백도어 컬러';
+
+  @override
+  String get chordAnalyzerVariationBackdoorBody =>
+      '평행단조의 ivm7-bVII7 색채로 같은 토닉에 착지합니다.';
+
+  @override
+  String get chordAnalyzerVariationAppliedApproachTitle => '타깃 ii-V';
+
+  @override
+  String get chordAnalyzerVariationAppliedApproachBody =>
+      '같은 목적 화음으로 향하는 관련 ii-V를 다시 세웁니다.';
+
+  @override
+  String get chordAnalyzerVariationMinorCadenceTitle => '단조 카덴스 컬러';
+
+  @override
+  String get chordAnalyzerVariationMinorCadenceBody =>
+      '단조 종지는 유지하면서 iiø-Valt-i 색채를 더합니다.';
+
+  @override
+  String get chordAnalyzerVariationColorLiftTitle => '컬러 리프트';
+
+  @override
+  String get chordAnalyzerVariationColorLiftBody =>
+      '루트와 기능은 가깝게 두고, 자연스러운 익스텐션으로 표정을 바꿉니다.';
 
   @override
   String chordAnalyzerParserDiagnosticWarning(Object details) {
