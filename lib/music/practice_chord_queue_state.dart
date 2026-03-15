@@ -1,32 +1,38 @@
 import 'chord_theory.dart';
+import 'chord_timing_models.dart';
 import '../smart_generator.dart';
 
 class PracticeChordQueueState {
   const PracticeChordQueueState({
-    this.previousChord,
-    this.currentChord,
-    this.nextChord,
-    this.lookAheadChord,
+    this.previousEvent,
+    this.currentEvent,
+    this.nextEvent,
+    this.lookAheadEvent,
     this.plannedSmartChordQueue = const <QueuedSmartChord>[],
   });
 
-  final GeneratedChord? previousChord;
-  final GeneratedChord? currentChord;
-  final GeneratedChord? nextChord;
-  final GeneratedChord? lookAheadChord;
+  final GeneratedChordEvent? previousEvent;
+  final GeneratedChordEvent? currentEvent;
+  final GeneratedChordEvent? nextEvent;
+  final GeneratedChordEvent? lookAheadEvent;
   final List<QueuedSmartChord> plannedSmartChordQueue;
+
+  GeneratedChord? get previousChord => previousEvent?.chord;
+  GeneratedChord? get currentChord => currentEvent?.chord;
+  GeneratedChord? get nextChord => nextEvent?.chord;
+  GeneratedChord? get lookAheadChord => lookAheadEvent?.chord;
 
   PracticeChordQueueState reset() => const PracticeChordQueueState();
 
-  PracticeChordQueueState ensureNextChord(GeneratedChord seededNextChord) {
-    if (nextChord != null) {
+  PracticeChordQueueState ensureNextEvent(GeneratedChordEvent seededNextEvent) {
+    if (nextEvent != null) {
       return this;
     }
-    return copyWith(nextChord: seededNextChord);
+    return copyWith(nextEvent: seededNextEvent);
   }
 
-  PracticeChordQueueState withLookAheadChord(GeneratedChord? chord) {
-    return copyWith(lookAheadChord: chord);
+  PracticeChordQueueState withLookAheadEvent(GeneratedChordEvent? event) {
+    return copyWith(lookAheadEvent: event);
   }
 
   PracticeChordQueueState withPlannedSmartChordQueue(
@@ -46,48 +52,48 @@ class PracticeChordQueueState {
   }
 
   PracticeChordQueueState promote({
-    required GeneratedChord nextCurrentChord,
-    required GeneratedChord nextQueuedChord,
+    required GeneratedChordEvent nextCurrentEvent,
+    required GeneratedChordEvent nextQueuedEvent,
   }) {
     return copyWith(
-      previousChord: currentChord,
-      currentChord: nextCurrentChord,
-      nextChord: nextQueuedChord,
-      lookAheadChord: _clearField,
+      previousEvent: currentEvent,
+      currentEvent: nextCurrentEvent,
+      nextEvent: nextQueuedEvent,
+      lookAheadEvent: _clearField,
     );
   }
 
   PracticeChordQueueState copyWith({
-    Object? previousChord = _retainField,
-    Object? currentChord = _retainField,
-    Object? nextChord = _retainField,
-    Object? lookAheadChord = _retainField,
+    Object? previousEvent = _retainField,
+    Object? currentEvent = _retainField,
+    Object? nextEvent = _retainField,
+    Object? lookAheadEvent = _retainField,
     Object? plannedSmartChordQueue = _retainField,
   }) {
     return PracticeChordQueueState(
-      previousChord: switch (previousChord) {
-        _Sentinel() => this.previousChord,
+      previousEvent: switch (previousEvent) {
+        _Sentinel() => this.previousEvent,
         _ClearField() => null,
-        GeneratedChord value => value,
-        _ => this.previousChord,
+        GeneratedChordEvent value => value,
+        _ => this.previousEvent,
       },
-      currentChord: switch (currentChord) {
-        _Sentinel() => this.currentChord,
+      currentEvent: switch (currentEvent) {
+        _Sentinel() => this.currentEvent,
         _ClearField() => null,
-        GeneratedChord value => value,
-        _ => this.currentChord,
+        GeneratedChordEvent value => value,
+        _ => this.currentEvent,
       },
-      nextChord: switch (nextChord) {
-        _Sentinel() => this.nextChord,
+      nextEvent: switch (nextEvent) {
+        _Sentinel() => this.nextEvent,
         _ClearField() => null,
-        GeneratedChord value => value,
-        _ => this.nextChord,
+        GeneratedChordEvent value => value,
+        _ => this.nextEvent,
       },
-      lookAheadChord: switch (lookAheadChord) {
-        _Sentinel() => this.lookAheadChord,
+      lookAheadEvent: switch (lookAheadEvent) {
+        _Sentinel() => this.lookAheadEvent,
         _ClearField() => null,
-        GeneratedChord value => value,
-        _ => this.lookAheadChord,
+        GeneratedChordEvent value => value,
+        _ => this.lookAheadEvent,
       },
       plannedSmartChordQueue: switch (plannedSmartChordQueue) {
         _Sentinel() => this.plannedSmartChordQueue,

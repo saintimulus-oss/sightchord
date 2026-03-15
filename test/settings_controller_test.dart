@@ -115,6 +115,15 @@ void main() {
       'maxVoicingNotes': 3,
       'lookAheadDepth': 2,
       'showVoicingReasons': false,
+      'melodyGenerationEnabled': true,
+      'melodyDensity': 'active',
+      'motifRepetitionStrength': 0.7,
+      'approachToneDensity': 0.6,
+      'melodyRangeLow': 58,
+      'melodyRangeHigh': 82,
+      'melodyStyle': 'colorful',
+      'allowChromaticApproaches': true,
+      'melodyPlaybackMode': 'both',
       'keyCenterLabelStyle': 'classicalCase',
     });
     final controller = AppSettingsController();
@@ -159,6 +168,15 @@ void main() {
     expect(controller.settings.maxVoicingNotes, 3);
     expect(controller.settings.lookAheadDepth, 2);
     expect(controller.settings.showVoicingReasons, isFalse);
+    expect(controller.settings.melodyGenerationEnabled, isTrue);
+    expect(controller.settings.melodyDensity, MelodyDensity.active);
+    expect(controller.settings.motifRepetitionStrength, 0.7);
+    expect(controller.settings.approachToneDensity, 0.6);
+    expect(controller.settings.melodyRangeLow, 58);
+    expect(controller.settings.melodyRangeHigh, 82);
+    expect(controller.settings.melodyStyle, MelodyStyle.colorful);
+    expect(controller.settings.allowChromaticApproaches, isTrue);
+    expect(controller.settings.melodyPlaybackMode, MelodyPlaybackMode.both);
     expect(
       controller.settings.keyCenterLabelStyle,
       KeyCenterLabelStyle.classicalCase,

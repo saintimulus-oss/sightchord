@@ -1,5 +1,8 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../audio/harmony_audio_models.dart';
+import '../music/anchor_loop_layout.dart';
+import '../music/chord_anchor_loop.dart';
 import '../music/chord_formatting.dart';
 import '../music/chord_theory.dart';
 import 'practice_settings.dart';
@@ -21,6 +24,35 @@ class PracticeSettingsStore {
   static const String metronomeEnabledKey = 'metronomeEnabled';
   static const String metronomeVolumeKey = 'metronomeVolume';
   static const String metronomeSoundKey = 'metronomeSound';
+  static const String metronomeSourceKey = 'metronomeSource';
+  static const String metronomePatternKey = 'metronomePattern';
+  static const String metronomeUseAccentSoundKey = 'metronomeUseAccentSound';
+  static const String metronomeAccentSourceKey = 'metronomeAccentSource';
+  static const String timeSignatureKey = 'timeSignature';
+  static const String harmonicRhythmPresetKey = 'harmonicRhythmPreset';
+  static const String autoPlayChordChangesKey = 'autoPlayChordChanges';
+  static const String autoPlayPatternKey = 'autoPlayPattern';
+  static const String autoPlayHoldFactorKey = 'autoPlayHoldFactor';
+  static const String autoPlayMelodyWithChordsKey = 'autoPlayMelodyWithChords';
+  static const String melodyGenerationEnabledKey = 'melodyGenerationEnabled';
+  static const String melodyDensityKey = 'melodyDensity';
+  static const String motifRepetitionStrengthKey = 'motifRepetitionStrength';
+  static const String approachToneDensityKey = 'approachToneDensity';
+  static const String melodyRangeLowKey = 'melodyRangeLow';
+  static const String melodyRangeHighKey = 'melodyRangeHigh';
+  static const String melodyStyleKey = 'melodyStyle';
+  static const String allowChromaticApproachesKey =
+      'allowChromaticApproaches';
+  static const String melodyPlaybackModeKey = 'melodyPlaybackMode';
+  static const String harmonyMasterVolumeKey = 'harmonyMasterVolume';
+  static const String harmonyPreviewHoldFactorKey = 'harmonyPreviewHoldFactor';
+  static const String harmonyArpeggioStepSpeedKey = 'harmonyArpeggioStepSpeed';
+  static const String harmonyVelocityHumanizationKey =
+      'harmonyVelocityHumanization';
+  static const String harmonyGainRandomnessKey = 'harmonyGainRandomness';
+  static const String harmonyTimingHumanizationKey =
+      'harmonyTimingHumanization';
+  static const String chordAnchorLoopKey = 'chordAnchorLoop';
   static const String activeKeysKey = 'activeKeys';
   static const String activeKeyCentersKey = 'activeKeyCenters';
   static const String smartGeneratorModeKey = 'smartGeneratorMode';
@@ -39,6 +71,7 @@ class PracticeSettingsStore {
   static const String selectedTensionsKey = 'selectedTensions';
   static const String voicingSuggestionsEnabledKey =
       'voicingSuggestionsEnabled';
+  static const String voicingDisplayModeKey = 'voicingDisplayMode';
   static const String voicingComplexityKey = 'voicingComplexity';
   static const String voicingTopNotePreferenceKey = 'voicingTopNotePreference';
   static const String allowRootlessVoicingsKey = 'allowRootlessVoicings';
@@ -47,6 +80,10 @@ class PracticeSettingsStore {
   static const String showVoicingReasonsKey = 'showVoicingReasons';
   static const String bpmKey = 'bpm';
   static const String keyCenterLabelStyleKey = 'keyCenterLabelStyle';
+  static const String progressionExplanationDetailLevelKey =
+      'progressionExplanationDetailLevel';
+  static const String progressionHighlightThemeKey =
+      'progressionHighlightTheme';
   static const String inversionsEnabledKey = 'inversionsEnabled';
   static const String firstInversionEnabledKey = 'firstInversionEnabled';
   static const String secondInversionEnabledKey = 'secondInversionEnabled';
@@ -58,6 +95,32 @@ class PracticeSettingsStore {
     metronomeEnabledKey,
     metronomeVolumeKey,
     metronomeSoundKey,
+    metronomeSourceKey,
+    metronomePatternKey,
+    metronomeUseAccentSoundKey,
+    metronomeAccentSourceKey,
+    timeSignatureKey,
+    harmonicRhythmPresetKey,
+    autoPlayChordChangesKey,
+    autoPlayPatternKey,
+    autoPlayHoldFactorKey,
+    autoPlayMelodyWithChordsKey,
+    melodyGenerationEnabledKey,
+    melodyDensityKey,
+    motifRepetitionStrengthKey,
+    approachToneDensityKey,
+    melodyRangeLowKey,
+    melodyRangeHighKey,
+    melodyStyleKey,
+    allowChromaticApproachesKey,
+    melodyPlaybackModeKey,
+    harmonyMasterVolumeKey,
+    harmonyPreviewHoldFactorKey,
+    harmonyArpeggioStepSpeedKey,
+    harmonyVelocityHumanizationKey,
+    harmonyGainRandomnessKey,
+    harmonyTimingHumanizationKey,
+    chordAnchorLoopKey,
     activeKeysKey,
     activeKeyCentersKey,
     smartGeneratorModeKey,
@@ -74,6 +137,7 @@ class PracticeSettingsStore {
     enabledChordQualitiesKey,
     selectedTensionsKey,
     voicingSuggestionsEnabledKey,
+    voicingDisplayModeKey,
     voicingComplexityKey,
     voicingTopNotePreferenceKey,
     allowRootlessVoicingsKey,
@@ -82,6 +146,8 @@ class PracticeSettingsStore {
     showVoicingReasonsKey,
     bpmKey,
     keyCenterLabelStyleKey,
+    progressionExplanationDetailLevelKey,
+    progressionHighlightThemeKey,
     inversionsEnabledKey,
     firstInversionEnabledKey,
     secondInversionEnabledKey,
@@ -111,6 +177,21 @@ class PracticeSettingsStore {
     );
     final storedRomanPoolPreset = preferences.getString(romanPoolPresetKey);
     final storedMetronomeSound = preferences.getString(metronomeSoundKey);
+    final storedMetronomeSource = preferences.getString(metronomeSourceKey);
+    final storedMetronomePattern = preferences.getString(metronomePatternKey);
+    final storedMetronomeAccentSource = preferences.getString(
+      metronomeAccentSourceKey,
+    );
+    final storedTimeSignature = preferences.getString(timeSignatureKey);
+    final storedHarmonicRhythmPreset = preferences.getString(
+      harmonicRhythmPresetKey,
+    );
+    final storedMelodyDensity = preferences.getString(melodyDensityKey);
+    final storedMelodyStyle = preferences.getString(melodyStyleKey);
+    final storedMelodyPlaybackMode = preferences.getString(
+      melodyPlaybackModeKey,
+    );
+    final storedChordAnchorLoop = preferences.getString(chordAnchorLoopKey);
     final storedActiveKeyCenters = preferences.getStringList(
       activeKeyCentersKey,
     );
@@ -126,6 +207,9 @@ class PracticeSettingsStore {
     );
     final storedTopNotePreference = preferences.getString(
       voicingTopNotePreferenceKey,
+    );
+    final storedVoicingDisplayMode = preferences.getString(
+      voicingDisplayModeKey,
     );
     final resolvedAllowV7sus4 =
         preferences.getBool(allowV7sus4Key) ?? fallbackSettings.allowV7sus4;
@@ -149,6 +233,41 @@ class PracticeSettingsStore {
     final resolvedRomanPoolPreset = storedRomanPoolPreset == null
         ? fallbackSettings.romanPoolPreset
         : RomanPoolPresetX.fromStorageKey(storedRomanPoolPreset);
+    final resolvedTimeSignature = storedTimeSignature == null
+        ? fallbackSettings.timeSignature
+        : PracticeTimeSignatureX.fromStorageKey(storedTimeSignature);
+    final resolvedHarmonicRhythmPreset = storedHarmonicRhythmPreset == null
+        ? fallbackSettings.harmonicRhythmPreset
+        : HarmonicRhythmPresetX.fromStorageKey(storedHarmonicRhythmPreset);
+    final resolvedPrimaryFallbackSound = storedMetronomeSound == null
+        ? fallbackSettings.metronomeSound
+        : MetronomeSoundX.fromStorageKey(storedMetronomeSound);
+    final resolvedMetronomeSource = storedMetronomeSource == null
+        ? fallbackSettings.metronomeSource.copyWith(
+            builtInSound: resolvedPrimaryFallbackSound,
+          )
+        : MetronomeSourceSpec.fromStorageString(
+            storedMetronomeSource,
+          ).normalized(fallbackSound: resolvedPrimaryFallbackSound);
+    final resolvedMetronomePattern = storedMetronomePattern == null
+        ? fallbackSettings.metronomePattern.normalized(
+            beatsPerBar: resolvedTimeSignature.beatsPerBar,
+          )
+        : MetronomePatternSettings.fromStorageString(
+            storedMetronomePattern,
+          ).normalized(beatsPerBar: resolvedTimeSignature.beatsPerBar);
+    final resolvedMetronomeAccentSource = storedMetronomeAccentSource == null
+        ? fallbackSettings.metronomeAccentSource
+        : MetronomeSourceSpec.fromStorageString(
+            storedMetronomeAccentSource,
+          ).normalized(fallbackSound: fallbackSettings.metronomeAccentSound);
+    final resolvedAnchorLoop = AnchorLoopLayout.sanitizeLoop(
+      loop: storedChordAnchorLoop == null
+          ? fallbackSettings.anchorLoop
+          : ChordAnchorLoop.fromStorageString(storedChordAnchorLoop),
+      timeSignature: resolvedTimeSignature,
+      harmonicRhythmPreset: resolvedHarmonicRhythmPreset,
+    );
     return PracticeSettings(
       language: storedLanguage == null
           ? fallbackSettings.language
@@ -167,9 +286,75 @@ class PracticeSettingsStore {
       metronomeVolume:
           preferences.getDouble(metronomeVolumeKey) ??
           fallbackSettings.metronomeVolume,
-      metronomeSound: storedMetronomeSound == null
-          ? fallbackSettings.metronomeSound
-          : MetronomeSoundX.fromStorageKey(storedMetronomeSound),
+      metronomeSound: resolvedMetronomeSource.builtInSound,
+      metronomeSource: resolvedMetronomeSource,
+      metronomePattern: resolvedMetronomePattern,
+      metronomeUseAccentSound:
+          preferences.getBool(metronomeUseAccentSoundKey) ??
+          fallbackSettings.metronomeUseAccentSound,
+      metronomeAccentSource: resolvedMetronomeAccentSource,
+      timeSignature: resolvedTimeSignature,
+      harmonicRhythmPreset: resolvedHarmonicRhythmPreset,
+      autoPlayChordChanges:
+          preferences.getBool(autoPlayChordChangesKey) ??
+          fallbackSettings.autoPlayChordChanges,
+      autoPlayPattern: preferences.getString(autoPlayPatternKey) == null
+          ? fallbackSettings.autoPlayPattern
+          : HarmonyPlaybackPatternX.fromStorageKey(
+              preferences.getString(autoPlayPatternKey),
+            ),
+      autoPlayHoldFactor:
+          preferences.getDouble(autoPlayHoldFactorKey) ??
+          fallbackSettings.autoPlayHoldFactor,
+      autoPlayMelodyWithChords:
+          preferences.getBool(autoPlayMelodyWithChordsKey) ??
+          fallbackSettings.autoPlayMelodyWithChords,
+      melodyGenerationEnabled:
+          preferences.getBool(melodyGenerationEnabledKey) ??
+          fallbackSettings.melodyGenerationEnabled,
+      melodyDensity: storedMelodyDensity == null
+          ? fallbackSettings.melodyDensity
+          : MelodyDensityX.fromStorageKey(storedMelodyDensity),
+      motifRepetitionStrength:
+          preferences.getDouble(motifRepetitionStrengthKey) ??
+          fallbackSettings.motifRepetitionStrength,
+      approachToneDensity:
+          preferences.getDouble(approachToneDensityKey) ??
+          fallbackSettings.approachToneDensity,
+      melodyRangeLow:
+          preferences.getInt(melodyRangeLowKey) ??
+          fallbackSettings.melodyRangeLow,
+      melodyRangeHigh:
+          preferences.getInt(melodyRangeHighKey) ??
+          fallbackSettings.melodyRangeHigh,
+      melodyStyle: storedMelodyStyle == null
+          ? fallbackSettings.melodyStyle
+          : MelodyStyleX.fromStorageKey(storedMelodyStyle),
+      allowChromaticApproaches:
+          preferences.getBool(allowChromaticApproachesKey) ??
+          fallbackSettings.allowChromaticApproaches,
+      melodyPlaybackMode: storedMelodyPlaybackMode == null
+          ? fallbackSettings.melodyPlaybackMode
+          : MelodyPlaybackModeX.fromStorageKey(storedMelodyPlaybackMode),
+      harmonyMasterVolume:
+          preferences.getDouble(harmonyMasterVolumeKey) ??
+          fallbackSettings.harmonyMasterVolume,
+      harmonyPreviewHoldFactor:
+          preferences.getDouble(harmonyPreviewHoldFactorKey) ??
+          fallbackSettings.harmonyPreviewHoldFactor,
+      harmonyArpeggioStepSpeed:
+          preferences.getDouble(harmonyArpeggioStepSpeedKey) ??
+          fallbackSettings.harmonyArpeggioStepSpeed,
+      harmonyVelocityHumanization:
+          preferences.getDouble(harmonyVelocityHumanizationKey) ??
+          fallbackSettings.harmonyVelocityHumanization,
+      harmonyGainRandomness:
+          preferences.getDouble(harmonyGainRandomnessKey) ??
+          fallbackSettings.harmonyGainRandomness,
+      harmonyTimingHumanization:
+          preferences.getDouble(harmonyTimingHumanizationKey) ??
+          fallbackSettings.harmonyTimingHumanization,
+      anchorLoop: resolvedAnchorLoop,
       activeKeyCenters: storedActiveKeyCenters != null
           ? storedActiveKeyCenters
                 .map(KeyCenter.fromSerialized)
@@ -232,6 +417,9 @@ class PracticeSettingsStore {
       voicingSuggestionsEnabled:
           preferences.getBool(voicingSuggestionsEnabledKey) ??
           fallbackSettings.voicingSuggestionsEnabled,
+      voicingDisplayMode: storedVoicingDisplayMode == null
+          ? fallbackSettings.voicingDisplayMode
+          : VoicingDisplayModeX.fromStorageKey(storedVoicingDisplayMode),
       voicingComplexity: VoicingComplexity.values.firstWhere(
         (value) => value.name == preferences.getString(voicingComplexityKey),
         orElse: () => fallbackSettings.voicingComplexity,
@@ -255,6 +443,18 @@ class PracticeSettingsStore {
         (value) => value.name == preferences.getString(keyCenterLabelStyleKey),
         orElse: () => fallbackSettings.keyCenterLabelStyle,
       ),
+      progressionExplanationDetailLevel:
+          preferences.getString(progressionExplanationDetailLevelKey) == null
+          ? fallbackSettings.progressionExplanationDetailLevel
+          : ProgressionExplanationDetailLevelX.fromStorageKey(
+              preferences.getString(progressionExplanationDetailLevelKey),
+            ),
+      progressionHighlightTheme:
+          preferences.getString(progressionHighlightThemeKey) == null
+          ? fallbackSettings.progressionHighlightTheme
+          : ProgressionHighlightTheme.fromStorageString(
+              preferences.getString(progressionHighlightThemeKey)!,
+            ),
       bpm: preferences.getInt(bpmKey) ?? fallbackSettings.bpm,
       inversionSettings: fallbackSettings.inversionSettings.copyWith(
         enabled:
@@ -306,6 +506,105 @@ class PracticeSettingsStore {
       metronomeSoundKey,
       settings.metronomeSound.storageKey,
     );
+    await preferences.setString(
+      metronomeSourceKey,
+      settings.metronomeSource.toStorageString(),
+    );
+    await preferences.setString(
+      metronomePatternKey,
+      settings.metronomePattern.toStorageString(),
+    );
+    await preferences.setBool(
+      metronomeUseAccentSoundKey,
+      settings.metronomeUseAccentSound,
+    );
+    await preferences.setString(
+      metronomeAccentSourceKey,
+      settings.metronomeAccentSource.toStorageString(),
+    );
+    await preferences.setString(
+      timeSignatureKey,
+      settings.timeSignature.storageKey,
+    );
+    await preferences.setString(
+      harmonicRhythmPresetKey,
+      settings.harmonicRhythmPreset.storageKey,
+    );
+    await preferences.setBool(
+      autoPlayChordChangesKey,
+      settings.autoPlayChordChanges,
+    );
+    await preferences.setString(
+      autoPlayPatternKey,
+      settings.autoPlayPattern.storageKey,
+    );
+    await preferences.setDouble(
+      autoPlayHoldFactorKey,
+      settings.autoPlayHoldFactor,
+    );
+    await preferences.setBool(
+      autoPlayMelodyWithChordsKey,
+      settings.autoPlayMelodyWithChords,
+    );
+    await preferences.setBool(
+      melodyGenerationEnabledKey,
+      settings.melodyGenerationEnabled,
+    );
+    await preferences.setString(
+      melodyDensityKey,
+      settings.melodyDensity.storageKey,
+    );
+    await preferences.setDouble(
+      motifRepetitionStrengthKey,
+      settings.motifRepetitionStrength,
+    );
+    await preferences.setDouble(
+      approachToneDensityKey,
+      settings.approachToneDensity,
+    );
+    await preferences.setInt(melodyRangeLowKey, settings.melodyRangeLow);
+    await preferences.setInt(melodyRangeHighKey, settings.melodyRangeHigh);
+    await preferences.setString(melodyStyleKey, settings.melodyStyle.storageKey);
+    await preferences.setBool(
+      allowChromaticApproachesKey,
+      settings.allowChromaticApproaches,
+    );
+    await preferences.setString(
+      melodyPlaybackModeKey,
+      settings.melodyPlaybackMode.storageKey,
+    );
+    await preferences.setDouble(
+      harmonyMasterVolumeKey,
+      settings.harmonyMasterVolume,
+    );
+    await preferences.setDouble(
+      harmonyPreviewHoldFactorKey,
+      settings.harmonyPreviewHoldFactor,
+    );
+    await preferences.setDouble(
+      harmonyArpeggioStepSpeedKey,
+      settings.harmonyArpeggioStepSpeed,
+    );
+    await preferences.setDouble(
+      harmonyVelocityHumanizationKey,
+      settings.harmonyVelocityHumanization,
+    );
+    await preferences.setDouble(
+      harmonyGainRandomnessKey,
+      settings.harmonyGainRandomness,
+    );
+    await preferences.setDouble(
+      harmonyTimingHumanizationKey,
+      settings.harmonyTimingHumanization,
+    );
+    await preferences.setString(
+      chordAnchorLoopKey,
+      AnchorLoopLayout.sanitizeLoop(
+        loop: settings.anchorLoop,
+        timeSignature: settings.timeSignature,
+        harmonicRhythmPreset: settings.harmonicRhythmPreset,
+      ).toStorageString(),
+    );
     await preferences.setStringList(activeKeysKey, _sortedActiveKeys(settings));
     await preferences.setStringList(
       activeKeyCentersKey,
@@ -356,6 +655,10 @@ class PracticeSettingsStore {
       settings.voicingSuggestionsEnabled,
     );
     await preferences.setString(
+      voicingDisplayModeKey,
+      settings.voicingDisplayMode.storageKey,
+    );
+    await preferences.setString(
       voicingComplexityKey,
       settings.voicingComplexity.name,
     );
@@ -376,6 +679,14 @@ class PracticeSettingsStore {
     await preferences.setString(
       keyCenterLabelStyleKey,
       settings.keyCenterLabelStyle.name,
+    );
+    await preferences.setString(
+      progressionExplanationDetailLevelKey,
+      settings.progressionExplanationDetailLevel.storageKey,
+    );
+    await preferences.setString(
+      progressionHighlightThemeKey,
+      settings.progressionHighlightTheme.toStorageString(),
     );
     await preferences.setInt(bpmKey, settings.bpm);
     await preferences.setBool(

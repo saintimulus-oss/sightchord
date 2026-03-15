@@ -56,6 +56,19 @@ void main() {
     expect(analysis.tags, contains(ProgressionTagId.turnaround));
   });
 
+  test('distinguishes tonicization from real modulation conservatively', () {
+    final tonicization = analyzer.analyze('Cmaj7 | A7 | Dm7 G7 | Cmaj7');
+    final realModulation = analyzer.analyze(
+      'Cmaj7 Dm7 G7 Cmaj7 | Em7 A7 | Dmaj7 Gmaj7 | A7 Dmaj7 | G7 Cmaj7',
+    );
+
+    expect(tonicization.hasRealModulation, isFalse);
+    expect(tonicization.hasTonicization, isTrue);
+    expect(tonicization.tags, contains(ProgressionTagId.tonicization));
+    expect(realModulation.hasRealModulation, isTrue);
+    expect(realModulation.tags, contains(ProgressionTagId.realModulation));
+  });
+
   test('keeps ii-V-I detection across adjacent measures', () {
     final analysis = analyzer.analyze('Dm7 | G7 | Cmaj7');
 
@@ -100,6 +113,49 @@ void main() {
     );
     expect(firstChord.isAmbiguous, isTrue);
     expect(firstChord.confidence, greaterThan(0));
+  });
+
+  test('detects backdoor and subdominant minor color separately', () {
+    final analysis = analyzer.analyze('Fm7 Bb7 Cmaj7');
+
+    expect(analysis.tags, contains(ProgressionTagId.backdoorChain));
+    expect(
+      analysis.chordAnalyses.first.hasRemark(
+        ProgressionRemarkKind.subdominantMinor,
+      ),
+      isTrue,
+    );
+    expect(
+      analysis.chordAnalyses[1].hasRemark(
+        ProgressionRemarkKind.backdoorDominant,
+      ),
+      isTrue,
+    );
+  });
+
+  test('detects common-tone diminished color and tags it distinctly', () {
+    final analysis = analyzer.analyze('C#dim7 Cmaj7');
+
+    expect(
+      analysis.chordAnalyses.first.hasRemark(
+        ProgressionRemarkKind.commonToneDiminished,
+      ),
+      isTrue,
+    );
+    expect(analysis.tags, contains(ProgressionTagId.commonToneMotion));
+  });
+
+  test('detects deceptive cadence without collapsing the whole reading', () {
+    final analysis = analyzer.analyze('Cmaj7 G7 Am7 | Dm7 G7 Cmaj7');
+
+    expect(
+      analysis.chordAnalyses[2].hasRemark(
+        ProgressionRemarkKind.deceptiveCadence,
+      ),
+      isTrue,
+    );
+    expect(analysis.tags, contains(ProgressionTagId.deceptiveCadence));
+    expect(analysis.primaryKey.keyCenter.tonicName, 'C');
   });
 
   test('keeps partial parses and ambiguity warnings conservative', () {

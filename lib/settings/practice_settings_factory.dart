@@ -64,6 +64,8 @@ class PracticeSettingsFactory {
       metronomeEnabled: true,
       metronomeVolume: 0.4,
       metronomeSound: MetronomeSound.tick,
+      timeSignature: base.timeSignature,
+      harmonicRhythmPreset: base.harmonicRhythmPreset,
       bpm: 60,
       activeKeyCenters: {_defaultBeginnerCenter},
       smartGeneratorMode: true,
@@ -114,6 +116,8 @@ class PracticeSettingsFactory {
       guidedSetupCompleted: true,
       chordSymbolStyle: profile.chordSymbolStyle,
       activeKeyCenters: {profile.startingKeyCenter},
+      timeSignature: settings.timeSignature,
+      harmonicRhythmPreset: settings.harmonicRhythmPreset,
       keyCenterLabelStyle: KeyCenterLabelStyle.modeText,
       smartDiagnosticsEnabled: false,
       showVoicingReasons: true,
@@ -127,8 +131,7 @@ class PracticeSettingsFactory {
       goal: _inferGoal(settings),
       harmonyLiteracy: harmonyLiteracy,
       handComfort: _inferHandComfort(settings),
-      explorationPreference: harmonyLiteracy ==
-              HarmonyLiteracy.absoluteBeginner
+      explorationPreference: harmonyLiteracy == HarmonyLiteracy.absoluteBeginner
           ? ExplorationPreference.safe
           : _inferExplorationPreference(settings),
       chordSymbolStyle: settings.chordSymbolStyle,
@@ -155,7 +158,8 @@ class PracticeSettingsFactory {
         maxVoicingNotes: maxVoicingNotes,
         lookAheadDepth: 1,
         voicingComplexity: VoicingComplexity.basic,
-        secondaryDominantEnabled: nextRomanPool == RomanPoolPreset.functionalJazz
+        secondaryDominantEnabled:
+            nextRomanPool == RomanPoolPreset.functionalJazz
             ? settings.secondaryDominantEnabled
             : false,
         substituteDominantEnabled: false,
@@ -176,7 +180,8 @@ class PracticeSettingsFactory {
     final nextSettings = _applyLanguagePreset(
       settings.copyWith(
         settingsComplexityMode:
-            nextLanguageLevel.index >= ChordLanguageLevel.safeExtensions.index ||
+            nextLanguageLevel.index >=
+                    ChordLanguageLevel.safeExtensions.index ||
                 nextRomanPool.index >= RomanPoolPreset.functionalJazz.index
             ? SettingsComplexityMode.standard
             : SettingsComplexityMode.guided,
@@ -190,9 +195,10 @@ class PracticeSettingsFactory {
         maxVoicingNotes: settings.maxVoicingNotes < 4
             ? 4
             : settings.maxVoicingNotes,
-        lookAheadDepth: settings.lookAheadDepth < 2 ? 2 : settings.lookAheadDepth,
-        voicingComplexity:
-            settings.voicingComplexity == VoicingComplexity.basic
+        lookAheadDepth: settings.lookAheadDepth < 2
+            ? 2
+            : settings.lookAheadDepth,
+        voicingComplexity: settings.voicingComplexity == VoicingComplexity.basic
             ? VoicingComplexity.standard
             : settings.voicingComplexity,
         secondaryDominantEnabled:
@@ -206,7 +212,8 @@ class PracticeSettingsFactory {
         jazzPreset: nextRomanPool.index >= RomanPoolPreset.functionalJazz.index
             ? JazzPreset.modulationStudy
             : JazzPreset.standardsCore,
-        sourceProfile: settings.sourceProfile == SourceProfile.recordingInspired &&
+        sourceProfile:
+            settings.sourceProfile == SourceProfile.recordingInspired &&
                 settings.settingsComplexityMode ==
                     SettingsComplexityMode.advanced
             ? SourceProfile.recordingInspired
@@ -525,13 +532,13 @@ class PracticeSettingsFactory {
     if (settings.sourceProfile == SourceProfile.recordingInspired) {
       return OnboardingGoal.songIdeas;
     }
-    if (settings.romanPoolPreset.index >= RomanPoolPreset.functionalJazz.index &&
+    if (settings.romanPoolPreset.index >=
+            RomanPoolPreset.functionalJazz.index &&
         settings.settingsComplexityMode != SettingsComplexityMode.guided) {
       return OnboardingGoal.harmonyStudy;
     }
     if (settings.maxVoicingNotes <= 3 ||
-        settings.preferredSuggestionKind ==
-            DefaultVoicingSuggestionKind.easy) {
+        settings.preferredSuggestionKind == DefaultVoicingSuggestionKind.easy) {
       return OnboardingGoal.keyboardPractice;
     }
     return OnboardingGoal.earTraining;

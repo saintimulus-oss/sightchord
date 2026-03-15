@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chordest/settings/practice_settings.dart';
 import 'package:chordest/settings/settings_controller.dart';
@@ -8,6 +8,7 @@ void main() {
     'falls back and clamps new voicing settings from invalid storage',
     () async {
       SharedPreferences.setMockInitialValues({
+        'voicingDisplayMode': 'invalid',
         'voicingComplexity': 'invalid',
         'voicingTopNotePreference': 'invalid',
         'maxVoicingNotes': 9,
@@ -23,6 +24,10 @@ void main() {
 
       await controller.load();
 
+      expect(
+        controller.settings.voicingDisplayMode,
+        VoicingDisplayMode.standard,
+      );
       expect(controller.settings.voicingComplexity, VoicingComplexity.modern);
       expect(
         controller.settings.voicingTopNotePreference,
@@ -50,4 +55,3 @@ void main() {
     expect(controller.settings.bpm, PracticeSettings.minBpm);
   });
 }
-

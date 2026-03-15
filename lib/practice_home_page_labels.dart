@@ -19,7 +19,7 @@ extension _PracticeHomePageLabels on _MyHomePageState {
     final centerLabel = keyCenter == null
         ? chord.keyName
         : _keyCenterLabel(l10n, keyCenter, trailingColon: false);
-    final roman = MusicTheory.romanTokenOf(romanNumeralId);
+    final roman = ChordRenderingHelper.displayedRomanToken(chord);
 
     if (centerLabel == null || centerLabel.isEmpty) {
       return roman;

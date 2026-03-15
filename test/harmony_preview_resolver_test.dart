@@ -3,6 +3,7 @@ import 'package:chordest/audio/harmony_preview_resolver.dart';
 import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/music/progression_analysis_models.dart';
 import 'package:chordest/music/progression_analyzer.dart';
+import 'package:chordest/music/voicing_models.dart';
 import 'package:chordest/study_harmony/domain/study_harmony_session_models.dart';
 import 'package:chordest/study_harmony/domain/study_harmony_task_evaluators.dart';
 
@@ -36,6 +37,95 @@ void main() {
     expect(
       clip.notes.map((note) => note.toneLabel),
       containsAll(<String>['3', '7', '9']),
+    );
+  });
+
+  test('adds a tracked bass note for root-position generated chords', () {
+    final clip = HarmonyPreviewResolver.fromChordSymbolData(
+      const ChordSymbolData(
+        root: 'C',
+        harmonicQuality: ChordQuality.major7,
+        renderQuality: ChordQuality.major7,
+      ),
+    );
+
+    expect(clip.notes, isNotEmpty);
+    expect(clip.notes.first.toneLabel, 'bass');
+    expect(clip.notes.first.midiNote % 12, 0);
+  });
+
+  test('audition clips add bass support to rootless voicing suggestions', () {
+    final clip = HarmonyPreviewResolver.auditionClipForGeneratedChord(
+      const GeneratedChord(
+        symbolData: ChordSymbolData(
+          root: 'C',
+          harmonicQuality: ChordQuality.major7,
+          renderQuality: ChordQuality.major7,
+        ),
+        repeatGuardKey: 'cmaj7',
+        harmonicComparisonKey: 'cmaj7',
+        keyName: 'C',
+        keyCenter: KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        romanNumeralId: RomanNumeralId.iMaj7,
+        harmonicFunction: HarmonicFunction.tonic,
+      ),
+      preferredVoicing: const ConcreteVoicing(
+        midiNotes: <int>[52, 59, 62, 69],
+        noteNames: <String>['E', 'B', 'D', 'A'],
+        toneLabels: <String>['3', '7', '9', '13'],
+        tensions: <String>{'9', '13'},
+        family: VoicingFamily.rootlessA,
+        topNote: 69,
+        bassNote: 52,
+        containsRoot: false,
+        containsThird: true,
+        containsSeventh: true,
+        signature: 'rootless-preview',
+      ),
+    );
+
+    expect(clip.notes.first.toneLabel, 'bass');
+    expect(clip.notes.first.midiNote % 12, 0);
+    expect(clip.notes.map((note) => note.toneLabel), contains('1'));
+    expect(
+      clip.notes.map((note) => note.toneLabel),
+      containsAll(<String>['3', '7', '9', '13']),
+    );
+  });
+
+  test('keeps inversion basses close to the previous bass context', () {
+    final rootPosition = HarmonyPreviewResolver.fromParsedChord(
+      const ParsedChord(
+        sourceSymbol: 'Cmaj7',
+        root: 'C',
+        rootSemitone: 0,
+        displayQuality: ChordQuality.major7,
+        analysisFamily: ChordFamily.major,
+        measureIndex: 0,
+        positionInMeasure: 0,
+      ),
+    );
+    final inversion = HarmonyPreviewResolver.fromParsedChord(
+      const ParsedChord(
+        sourceSymbol: 'Cmaj7/E',
+        root: 'C',
+        rootSemitone: 0,
+        displayQuality: ChordQuality.major7,
+        analysisFamily: ChordFamily.major,
+        measureIndex: 0,
+        positionInMeasure: 1,
+        bass: 'E',
+        bassSemitone: 4,
+      ),
+      previousBassMidi: rootPosition.notes.first.midiNote,
+    );
+
+    expect(inversion.notes.first.toneLabel, 'bass');
+    expect(inversion.notes.first.midiNote, 40);
+    expect(
+      (inversion.notes.first.midiNote - rootPosition.notes.first.midiNote)
+          .abs(),
+      lessThanOrEqualTo(5),
     );
   });
 
@@ -179,7 +269,7 @@ void main() {
 
   test('keeps inferred placeholder fills in progression previews', () {
     const analyzer = ProgressionAnalyzer();
-    final analysis = analyzer.analyze('Dm7 G7 ? Am7');
+    final analysis = analyzer.analyze('Dm7 G7 | ? Am');
     final clips = HarmonyPreviewResolver.progressionFromAnalysis(analysis);
 
     expect(clips, hasLength(4));

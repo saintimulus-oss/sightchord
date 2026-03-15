@@ -550,12 +550,32 @@ class VoicingContext {
   }
 }
 
+class PerformanceVoicingPreview {
+  const PerformanceVoicingPreview({
+    required this.representativeSuggestion,
+    required this.sharedMidiNotes,
+    required this.currentOnlyMidiNotes,
+    required this.nextOnlyMidiNotes,
+    this.nextSuggestion,
+  });
+
+  final VoicingSuggestion representativeSuggestion;
+  final VoicingSuggestion? nextSuggestion;
+  final Set<int> sharedMidiNotes;
+  final Set<int> currentOnlyMidiNotes;
+  final Set<int> nextOnlyMidiNotes;
+
+  ConcreteVoicing get representativeVoicing => representativeSuggestion.voicing;
+  ConcreteVoicing? get nextVoicing => nextSuggestion?.voicing;
+}
+
 class VoicingRecommendationSet {
   const VoicingRecommendationSet({
     required this.currentChord,
     required this.interpretation,
     required this.rankedCandidates,
     required this.suggestions,
+    this.performancePreview,
     this.effectiveTopNotePitchClass,
     this.topNoteSource,
     this.topNoteMatch,
@@ -565,6 +585,7 @@ class VoicingRecommendationSet {
   final ChordVoicingInterpretation interpretation;
   final List<RankedVoicingCandidate> rankedCandidates;
   final List<VoicingSuggestion> suggestions;
+  final PerformanceVoicingPreview? performancePreview;
   final int? effectiveTopNotePitchClass;
   final VoicingTopNoteSource? topNoteSource;
   final VoicingTopNoteMatch? topNoteMatch;

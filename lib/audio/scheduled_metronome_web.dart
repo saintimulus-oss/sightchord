@@ -13,20 +13,20 @@ ScheduledMetronome createScheduledMetronome() => _WebScheduledMetronome();
 
 class _WebScheduledMetronome implements ScheduledMetronome {
   web.AudioContext? _audioContext;
-  web.AudioBuffer? _buffer;
+  final Map<String, web.AudioBuffer> _buffers = <String, web.AudioBuffer>{};
   final List<_ScheduledWebClick> _scheduledClicks = <_ScheduledWebClick>[];
 
   @override
   bool get supportsPreciseScheduling => true;
 
   @override
-  bool get isLoaded => _buffer != null;
+  bool get isLoaded => _buffers.isNotEmpty;
 
   @override
   double? get currentTimeSeconds => _audioContext?.currentTime;
 
   @override
-  Future<void> loadAsset(String assetPath) async {
+  Future<void> loadAsset(String assetPath, {String soundId = 'primary'}) async {
     final context = _audioContext ??= web.AudioContext();
     final assetData = await rootBundle.load(assetPath);
     final tightBytes = Uint8List.fromList(
@@ -38,7 +38,7 @@ class _WebScheduledMetronome implements ScheduledMetronome {
     final decodedBuffer = await context
         .decodeAudioData(tightBytes.buffer.toJS)
         .toDart;
-    _buffer = decodedBuffer;
+    _buffers[soundId] = decodedBuffer;
     _pruneCompletedClicks();
   }
 
@@ -51,7 +51,10 @@ class _WebScheduledMetronome implements ScheduledMetronome {
   }
 
   @override
-  Future<void> playNow({required double volume}) async {
+  Future<void> playNow({
+    required double volume,
+    String soundId = 'primary',
+  }) async {
     await ensureReady();
     final now = currentTimeSeconds;
     if (now == null) {
@@ -60,13 +63,18 @@ class _WebScheduledMetronome implements ScheduledMetronome {
     scheduleAt(
       whenSeconds: now + _immediateSchedulingSafetySeconds,
       volume: volume,
+      soundId: soundId,
     );
   }
 
   @override
-  void scheduleAt({required double whenSeconds, required double volume}) {
+  void scheduleAt({
+    required double whenSeconds,
+    required double volume,
+    String soundId = 'primary',
+  }) {
     final context = _audioContext;
-    final buffer = _buffer;
+    final buffer = _buffers[soundId];
     if (context == null || buffer == null) {
       return;
     }
@@ -118,7 +126,7 @@ class _WebScheduledMetronome implements ScheduledMetronome {
     _scheduledClicks.clear();
     final context = _audioContext;
     _audioContext = null;
-    _buffer = null;
+    _buffers.clear();
     if (context != null) {
       await context.close().toDart;
     }

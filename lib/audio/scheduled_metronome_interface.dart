@@ -3,10 +3,14 @@ abstract class ScheduledMetronome {
   bool get isLoaded;
   double? get currentTimeSeconds;
 
-  Future<void> loadAsset(String assetPath);
+  Future<void> loadAsset(String assetPath, {String soundId = 'primary'});
   Future<void> ensureReady();
-  Future<void> playNow({required double volume});
-  void scheduleAt({required double whenSeconds, required double volume});
+  Future<void> playNow({required double volume, String soundId = 'primary'});
+  void scheduleAt({
+    required double whenSeconds,
+    required double volume,
+    String soundId = 'primary',
+  });
   void cancelScheduled();
   Future<void> dispose();
 }

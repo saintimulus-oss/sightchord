@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import '../music/voicing_models.dart';
+import '../settings/practice_settings.dart';
 import 'mini_keyboard.dart';
 
 typedef VoicingSuggestionCallback = void Function(VoicingSuggestion suggestion);
@@ -12,17 +13,21 @@ class VoicingSuggestionsSection extends StatefulWidget {
   const VoicingSuggestionsSection({
     super.key,
     required this.recommendations,
+    required this.displayMode,
     required this.selectedSignature,
     required this.showReasons,
     required this.onSelectSuggestion,
     required this.onToggleLock,
+    this.onPlaySuggestion,
   });
 
   final VoicingRecommendationSet recommendations;
+  final VoicingDisplayMode displayMode;
   final String? selectedSignature;
   final bool showReasons;
   final VoicingSuggestionCallback onSelectSuggestion;
   final VoicingSuggestionCallback onToggleLock;
+  final VoicingSuggestionCallback? onPlaySuggestion;
 
   @override
   State<VoicingSuggestionsSection> createState() =>
@@ -59,6 +64,11 @@ class _VoicingSuggestionsSectionState extends State<VoicingSuggestionsSection> {
     final theme = Theme.of(context);
     if (widget.recommendations.suggestions.isEmpty) {
       return const SizedBox.shrink();
+    }
+
+    if (widget.displayMode == VoicingDisplayMode.performance &&
+        widget.recommendations.performancePreview != null) {
+      return _buildPerformanceSection(context, l10n, theme);
     }
 
     final sharedKeyboardRange = MiniKeyboard.resolveSharedDisplayRange(
@@ -129,6 +139,9 @@ class _VoicingSuggestionsSectionState extends State<VoicingSuggestionsSection> {
                         widget.onSelectSuggestion(suggestion);
                         _toggleExpanded(expansionKey);
                       },
+                      onPlay: widget.onPlaySuggestion == null
+                          ? null
+                          : () => widget.onPlaySuggestion!(suggestion),
                       onToggleLock: () => widget.onToggleLock(suggestion),
                     );
                   }(),
@@ -137,6 +150,82 @@ class _VoicingSuggestionsSectionState extends State<VoicingSuggestionsSection> {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPerformanceSection(
+    BuildContext context,
+    AppLocalizations l10n,
+    ThemeData theme,
+  ) {
+    final preview = widget.recommendations.performancePreview!;
+    final currentSuggestion = preview.representativeSuggestion;
+    final nextSuggestion = preview.nextSuggestion;
+    final keyboardRange = MiniKeyboard.resolveSharedDisplayRange([
+      currentSuggestion.voicing.midiNotes,
+      if (nextSuggestion != null) nextSuggestion.voicing.midiNotes,
+    ]);
+    final currentSlotCount = math
+        .max(3, currentSuggestion.voicing.noteCount)
+        .toInt();
+    final nextSlotCount = nextSuggestion == null
+        ? currentSlotCount
+        : math.max(currentSlotCount, nextSuggestion.voicing.noteCount).toInt();
+    final topLinePathLabel = nextSuggestion == null
+        ? null
+        : l10n.voicingPerformanceTopLinePath(
+            currentSuggestion.voicing.topNoteName,
+            nextSuggestion.voicing.topNoteName,
+          );
+
+    return Card(
+      key: const ValueKey('voicing-suggestions-section'),
+      color: theme.colorScheme.surface.withValues(alpha: 0.94),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: _PerformanceVoicingPanel(
+          currentSuggestion: currentSuggestion,
+          nextSuggestion: nextSuggestion,
+          selected:
+              widget.selectedSignature == currentSuggestion.voicing.signature,
+          showReasons: widget.showReasons,
+          sectionSubtitle: _performanceSectionSubtitle(l10n),
+          currentTitle: l10n.voicingPerformanceCurrentTitle,
+          nextTitle: l10n.voicingPerformanceNextTitle,
+          currentFamilyLabel: _familyLabel(
+            l10n,
+            currentSuggestion.voicing.family,
+          ),
+          nextFamilyLabel: nextSuggestion == null
+              ? null
+              : _familyLabel(l10n, nextSuggestion.voicing.family),
+          currentTopNoteLabel:
+              '${l10n.voicingTopNoteLabel} ${currentSuggestion.voicing.topNoteName}',
+          nextTopNoteLabel: nextSuggestion == null
+              ? null
+              : '${l10n.voicingTopNoteLabel} ${nextSuggestion.voicing.topNoteName}',
+          topLinePathLabel: topLinePathLabel,
+          currentSlotCount: currentSlotCount,
+          nextSlotCount: nextSlotCount,
+          sharedMinMidi: keyboardRange.minMidi,
+          sharedMaxMidi: keyboardRange.maxMidi,
+          currentOnlyNotes: preview.currentOnlyMidiNotes,
+          sharedNotes: preview.sharedMidiNotes,
+          nextOnlyNotes: preview.nextOnlyMidiNotes,
+          reasonLabels: [
+            for (final tag in currentSuggestion.reasonTags)
+              _reasonLabel(l10n, currentSuggestion, tag),
+          ],
+          currentLegendLabel: l10n.voicingPerformanceCurrentOnly,
+          sharedLegendLabel: l10n.voicingPerformanceShared,
+          nextLegendLabel: l10n.voicingPerformanceNextOnly,
+          onSelect: () => widget.onSelectSuggestion(currentSuggestion),
+          onPlay: widget.onPlaySuggestion == null
+              ? null
+              : () => widget.onPlaySuggestion!(currentSuggestion),
+          onToggleLock: () => widget.onToggleLock(currentSuggestion),
         ),
       ),
     );
@@ -175,6 +264,10 @@ class _VoicingSuggestionsSectionState extends State<VoicingSuggestionsSection> {
       ),
       null => l10n.voicingSuggestionsSubtitle,
     };
+  }
+
+  String _performanceSectionSubtitle(AppLocalizations l10n) {
+    return l10n.voicingPerformanceSubtitle;
   }
 
   String _suggestionSubtitle(
@@ -278,6 +371,7 @@ class _SuggestionCard extends StatelessWidget {
     required this.highlightsTopTarget,
     required this.reasonLabels,
     required this.onSelect,
+    required this.onPlay,
     required this.onToggleLock,
   });
 
@@ -295,6 +389,7 @@ class _SuggestionCard extends StatelessWidget {
   final bool highlightsTopTarget;
   final List<String> reasonLabels;
   final VoidCallback onSelect;
+  final VoidCallback? onPlay;
   final VoidCallback onToggleLock;
 
   @override
@@ -369,6 +464,23 @@ class _SuggestionCard extends StatelessWidget {
                       ),
                     ),
                     IconButton(
+                      key: ValueKey('voicing-play-${suggestion.kind.name}'),
+                      visualDensity: VisualDensity.compact,
+                      tooltip: l10n.audioPlayChord,
+                      onPressed: onPlay,
+                      style: IconButton.styleFrom(
+                        backgroundColor: theme.colorScheme.surface,
+                        foregroundColor: theme.colorScheme.onSurfaceVariant,
+                        minimumSize: const Size(36, 36),
+                        padding: EdgeInsets.zero,
+                        side: BorderSide(
+                          color: theme.colorScheme.outlineVariant,
+                        ),
+                      ),
+                      icon: const Icon(Icons.volume_up_rounded, size: 18),
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton(
                       key: ValueKey('voicing-lock-${suggestion.kind.name}'),
                       visualDensity: VisualDensity.compact,
                       tooltip: suggestion.locked
@@ -436,7 +548,7 @@ class _SuggestionCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 _NoteNameStrip(
                   key: ValueKey('voicing-notes-${suggestion.kind.name}'),
-                  kind: suggestion.kind,
+                  slotId: suggestion.kind.name,
                   noteNames: suggestion.voicing.noteNames,
                   slotCount: noteSlotCount,
                 ),
@@ -487,7 +599,7 @@ class _SuggestionCard extends StatelessWidget {
                                 key: ValueKey(
                                   'voicing-tones-${suggestion.kind.name}',
                                 ),
-                                kind: suggestion.kind,
+                                slotId: suggestion.kind.name,
                                 toneLabels: suggestion.voicing.toneLabels,
                                 tensions: suggestion.voicing.tensions,
                                 slotCount: noteSlotCount,
@@ -523,15 +635,420 @@ class _SuggestionCard extends StatelessWidget {
   }
 }
 
+class _PerformanceVoicingPanel extends StatelessWidget {
+  const _PerformanceVoicingPanel({
+    required this.currentSuggestion,
+    required this.nextSuggestion,
+    required this.selected,
+    required this.showReasons,
+    required this.sectionSubtitle,
+    required this.currentTitle,
+    required this.nextTitle,
+    required this.currentFamilyLabel,
+    required this.nextFamilyLabel,
+    required this.currentTopNoteLabel,
+    required this.nextTopNoteLabel,
+    required this.topLinePathLabel,
+    required this.currentSlotCount,
+    required this.nextSlotCount,
+    required this.sharedMinMidi,
+    required this.sharedMaxMidi,
+    required this.currentOnlyNotes,
+    required this.sharedNotes,
+    required this.nextOnlyNotes,
+    required this.reasonLabels,
+    required this.currentLegendLabel,
+    required this.sharedLegendLabel,
+    required this.nextLegendLabel,
+    required this.onSelect,
+    required this.onPlay,
+    required this.onToggleLock,
+  });
+
+  final VoicingSuggestion currentSuggestion;
+  final VoicingSuggestion? nextSuggestion;
+  final bool selected;
+  final bool showReasons;
+  final String sectionSubtitle;
+  final String currentTitle;
+  final String nextTitle;
+  final String currentFamilyLabel;
+  final String? nextFamilyLabel;
+  final String currentTopNoteLabel;
+  final String? nextTopNoteLabel;
+  final String? topLinePathLabel;
+  final int currentSlotCount;
+  final int nextSlotCount;
+  final int sharedMinMidi;
+  final int sharedMaxMidi;
+  final Set<int> currentOnlyNotes;
+  final Set<int> sharedNotes;
+  final Set<int> nextOnlyNotes;
+  final List<String> reasonLabels;
+  final String currentLegendLabel;
+  final String sharedLegendLabel;
+  final String nextLegendLabel;
+  final VoidCallback onSelect;
+  final VoidCallback? onPlay;
+  final VoidCallback onToggleLock;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final currentVoicing = currentSuggestion.voicing;
+    final nextVoicing = nextSuggestion?.voicing;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        key: const ValueKey('voicing-performance-panel'),
+        borderRadius: BorderRadius.circular(26),
+        onTap: onSelect,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(
+              color: selected || currentSuggestion.locked
+                  ? colorScheme.primary
+                  : colorScheme.outlineVariant,
+              width: selected || currentSuggestion.locked ? 1.2 : 1,
+            ),
+            color: Color.alphaBlend(
+              colorScheme.primary.withValues(
+                alpha: selected || currentSuggestion.locked ? 0.08 : 0.04,
+              ),
+              colorScheme.surfaceContainerLow,
+            ),
+            boxShadow: selected || currentSuggestion.locked
+                ? [
+                    BoxShadow(
+                      color: colorScheme.primary.withValues(alpha: 0.1),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            currentTitle,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            sectionSubtitle,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      key: const ValueKey('voicing-performance-play'),
+                      visualDensity: VisualDensity.compact,
+                      onPressed: onPlay,
+                      style: IconButton.styleFrom(
+                        backgroundColor: colorScheme.surface,
+                        foregroundColor: colorScheme.onSurfaceVariant,
+                        minimumSize: const Size(36, 36),
+                        padding: EdgeInsets.zero,
+                        side: BorderSide(color: colorScheme.outlineVariant),
+                      ),
+                      icon: const Icon(Icons.volume_up_rounded, size: 18),
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton(
+                      key: const ValueKey('voicing-performance-lock'),
+                      visualDensity: VisualDensity.compact,
+                      onPressed: onToggleLock,
+                      style: IconButton.styleFrom(
+                        backgroundColor: currentSuggestion.locked
+                            ? colorScheme.primaryContainer
+                            : colorScheme.surface,
+                        foregroundColor: currentSuggestion.locked
+                            ? colorScheme.onPrimaryContainer
+                            : colorScheme.onSurfaceVariant,
+                        minimumSize: const Size(36, 36),
+                        padding: EdgeInsets.zero,
+                        side: BorderSide(
+                          color: currentSuggestion.locked
+                              ? colorScheme.primary
+                              : colorScheme.outlineVariant,
+                        ),
+                      ),
+                      icon: Icon(
+                        currentSuggestion.locked ? Icons.lock : Icons.lock_open,
+                        size: 18,
+                      ),
+                    ),
+                  ],
+                ),
+                if (selected || currentSuggestion.locked) ...[
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      if (selected)
+                        _StatePill(
+                          key: const ValueKey(
+                            'voicing-performance-selected-badge',
+                          ),
+                          icon: Icons.check_circle,
+                          label: AppLocalizations.of(context)!.voicingSelected,
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: colorScheme.onPrimary,
+                        ),
+                      if (currentSuggestion.locked)
+                        _StatePill(
+                          key: const ValueKey(
+                            'voicing-performance-locked-badge',
+                          ),
+                          icon: Icons.lock,
+                          label: AppLocalizations.of(context)!.voicingLocked,
+                          backgroundColor: colorScheme.primaryContainer,
+                          foregroundColor: colorScheme.onPrimaryContainer,
+                        ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 14),
+                Text(
+                  currentTitle,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _NoteNameStrip(
+                  key: const ValueKey('voicing-performance-current-notes'),
+                  slotId: 'performance-current',
+                  noteNames: currentVoicing.noteNames,
+                  slotCount: currentSlotCount,
+                ),
+                const SizedBox(height: 10),
+                MiniKeyboard(
+                  key: const ValueKey('voicing-performance-keyboard'),
+                  notes: currentVoicing.midiNotes,
+                  minMidi: sharedMinMidi,
+                  maxMidi: sharedMaxMidi,
+                  currentNotes: {...currentOnlyNotes, ...sharedNotes},
+                  nextNotes: {...nextOnlyNotes, ...sharedNotes},
+                  sharedNotes: sharedNotes,
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _KeyboardLegendPill(
+                      key: const ValueKey('voicing-performance-legend-current'),
+                      label: currentLegendLabel,
+                      color: colorScheme.primary,
+                      foregroundColor: colorScheme.onPrimary,
+                    ),
+                    _KeyboardLegendPill(
+                      key: const ValueKey('voicing-performance-legend-shared'),
+                      label: sharedLegendLabel,
+                      color: colorScheme.secondary,
+                      foregroundColor: colorScheme.onSecondary,
+                    ),
+                    _KeyboardLegendPill(
+                      key: const ValueKey('voicing-performance-legend-next'),
+                      label: nextLegendLabel,
+                      color: colorScheme.tertiary,
+                      foregroundColor: colorScheme.onTertiary,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    _TopNotePill(
+                      key: const ValueKey('voicing-performance-current-top'),
+                      label: currentTopNoteLabel,
+                      highlighted: true,
+                    ),
+                    Chip(
+                      label: Text(currentFamilyLabel),
+                      visualDensity: VisualDensity.compact,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _ToneLabelStrip(
+                  key: const ValueKey('voicing-performance-current-tones'),
+                  slotId: 'performance-current',
+                  toneLabels: currentVoicing.toneLabels,
+                  tensions: currentVoicing.tensions,
+                  slotCount: currentSlotCount,
+                ),
+                if (nextSuggestion != null) ...[
+                  const SizedBox(height: 16),
+                  Divider(color: colorScheme.outlineVariant, height: 1),
+                  const SizedBox(height: 16),
+                  Text(
+                    nextTitle,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _NoteNameStrip(
+                    key: const ValueKey('voicing-performance-next-notes'),
+                    slotId: 'performance-next',
+                    noteNames: nextVoicing!.noteNames,
+                    slotCount: nextSlotCount,
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      if (nextTopNoteLabel != null)
+                        _TopNotePill(
+                          key: const ValueKey('voicing-performance-next-top'),
+                          label: nextTopNoteLabel!,
+                          highlighted: false,
+                        ),
+                      if (nextFamilyLabel != null)
+                        Chip(
+                          label: Text(nextFamilyLabel!),
+                          visualDensity: VisualDensity.compact,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  _ToneLabelStrip(
+                    key: const ValueKey('voicing-performance-next-tones'),
+                    slotId: 'performance-next',
+                    toneLabels: nextVoicing.toneLabels,
+                    tensions: nextVoicing.tensions,
+                    slotCount: nextSlotCount,
+                  ),
+                ],
+                if (topLinePathLabel != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    topLinePathLabel!,
+                    key: const ValueKey('voicing-performance-topline-path'),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+                if (showReasons && reasonLabels.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final reason in reasonLabels.take(4))
+                        FilterChip(
+                          label: Text(reason),
+                          selected: false,
+                          showCheckmark: false,
+                          visualDensity: VisualDensity.compact,
+                          onSelected: null,
+                        ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _KeyboardLegendPill extends StatelessWidget {
+  const _KeyboardLegendPill({
+    super.key,
+    required this.label,
+    required this.color,
+    required this.foregroundColor,
+  });
+
+  final String label;
+  final Color color;
+  final Color foregroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.24),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const SizedBox(width: 8, height: 8),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: foregroundColor.withValues(alpha: 0.9),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _NoteNameStrip extends StatelessWidget {
   const _NoteNameStrip({
     super.key,
-    required this.kind,
+    required this.slotId,
     required this.noteNames,
     required this.slotCount,
   });
 
-  final VoicingSuggestionKind kind;
+  final String slotId;
   final List<String> noteNames;
   final int slotCount;
 
@@ -544,7 +1061,7 @@ class _NoteNameStrip extends StatelessWidget {
           for (var index = 0; index < slotCount; index += 1) ...[
             Expanded(
               child: _NoteNameSlot(
-                key: ValueKey('voicing-note-slot-${kind.name}-$index'),
+                key: ValueKey('voicing-note-slot-$slotId-$index'),
                 label: index < noteNames.length ? noteNames[index] : null,
               ),
             ),
@@ -601,13 +1118,13 @@ class _NoteNameSlot extends StatelessWidget {
 class _ToneLabelStrip extends StatelessWidget {
   const _ToneLabelStrip({
     super.key,
-    required this.kind,
+    required this.slotId,
     required this.toneLabels,
     required this.tensions,
     required this.slotCount,
   });
 
-  final VoicingSuggestionKind kind;
+  final String slotId;
   final List<String> toneLabels;
   final Set<String> tensions;
   final int slotCount;
@@ -621,7 +1138,7 @@ class _ToneLabelStrip extends StatelessWidget {
           for (var index = 0; index < slotCount; index += 1) ...[
             Expanded(
               child: _ToneLabelSlot(
-                key: ValueKey('voicing-tone-slot-${kind.name}-$index'),
+                key: ValueKey('voicing-tone-slot-$slotId-$index'),
                 label: index < toneLabels.length ? toneLabels[index] : null,
                 highlighted:
                     index < toneLabels.length &&

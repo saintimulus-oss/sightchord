@@ -49,7 +49,7 @@
   "setupAssistantLiteracyAbsoluteBody": "표기와 진행을 최대한 읽기 쉽게 맞춰 드려요.",
   "setupAssistantLiteracyBasicTitle": "maj7 / m7 / 7 정도는 읽을 수 있다",
   "setupAssistantLiteracyBasicBody": "안전하게 가되 범위를 조금 넓혀요.",
-  "setupAssistantLiteracyFunctionalTitle": "ii-V-I와 다이어토닉 흐름은 어느 정도 따라간다",
+  "setupAssistantLiteracyFunctionalTitle": "ii-V-I와 다이아토닉 기능 흐름은 어느 정도 따라간다",
   "setupAssistantLiteracyFunctionalBody": "명확한 화성에 약간의 움직임을 더해요.",
   "setupAssistantLiteracyAdvancedTitle": "컬러풀한 리하모니와 익스텐션도 익숙하다",
   "setupAssistantLiteracyAdvancedBody": "파워 유저용 범위를 더 많이 열어 둬요.",
@@ -125,11 +125,22 @@
   "metronomeSoundClickE": "클릭 E",
   "metronomeSoundClickF": "클릭 F",
   "metronomeVolume": "메트로놈 볼륨",
+  "practiceMeter": "박자표",
+  "practiceMeterHelp": "각 마디의 박 수를 설정해 비트 표시, 자동 재생, 메트로놈 타이밍에 반영합니다.",
+  "practiceTimeSignatureTwoFour": "2/4",
+  "practiceTimeSignatureThreeFour": "3/4",
+  "practiceTimeSignatureFourFour": "4/4",
+  "harmonicRhythm": "화성 리듬",
+  "harmonicRhythmHelp": "마디 안에서 코드가 얼마나 자주 바뀔지 설정합니다.",
+  "harmonicRhythmOnePerBar": "마디당 1개",
+  "harmonicRhythmTwoPerBar": "마디당 2개",
+  "harmonicRhythmPhraseAwareJazz": "프레이즈 인지 재즈",
+  "harmonicRhythmCadenceCompression": "종지 압축",
   "keys": "키",
   "noKeysSelected": "선택된 키가 없습니다. 모두 끄면 모든 루트에서 자유 모드로 연습합니다.",
   "keysSelectedHelp": "선택한 키는 키 인식 랜덤 모드와 Smart Generator 모드에서 사용됩니다.",
   "smartGeneratorMode": "Smart Generator 모드",
-  "smartGeneratorHelp": "활성화된 비다이어토닉 옵션을 유지하면서 기능적 화성 진행을 우선합니다.",
+  "smartGeneratorHelp": "활성화된 논다이아토닉 옵션을 유지하면서 기능적 화성 진행을 우선합니다.",
   "advancedSmartGenerator": "고급 Smart Generator",
   "modulationIntensity": "전조 강도",
   "modulationIntensityOff": "끔",
@@ -146,8 +157,8 @@
   "smartDiagnostics": "Smart 진단",
   "smartDiagnosticsHelp": "디버깅을 위해 Smart Generator 결정 추적을 기록합니다.",
   "keyModeRequiredForSmartGenerator": "Smart Generator 모드를 사용하려면 키를 하나 이상 선택하세요.",
-  "nonDiatonic": "비다이아토닉",
-  "nonDiatonicRequiresKeyMode": "비다이어토닉 옵션은 키 모드에서만 사용할 수 있습니다.",
+  "nonDiatonic": "논다이아토닉",
+  "nonDiatonicRequiresKeyMode": "논다이아토닉 옵션은 키 모드에서만 사용할 수 있습니다.",
   "secondaryDominant": "세컨더리 도미넌트",
   "substituteDominant": "서브스티튜트 도미넌트",
   "modalInterchange": "모달 인터체인지",
@@ -161,7 +172,7 @@
   "styleMajText": "Maj 표기",
   "styleDeltaJazz": "델타 재즈",
   "keyCenterLabelStyleModeText": "C 장조: / C 단조:",
-  "keyCenterLabelStyleClassicalCase": "씨: / 씨:",
+  "keyCenterLabelStyleClassicalCase": "C: / c:",
   "allowV7sus4": "V7sus4 허용 (V7, V7/x)",
   "allowTensions": "텐션 허용",
   "tensionHelp": "로마 숫자 프로필과 선택한 칩만 사용",
@@ -182,7 +193,7 @@
   "freeModeActive": "자유 모드 활성",
   "freePracticeDescription": "12개의 모든 반음계 루트에서 무작위 코드 성질을 사용해 폭넓은 리딩 연습을 합니다.",
   "smartPracticeDescription": "선택한 키 안에서 화성 기능의 흐름을 따르면서도 자연스러운 Smart Generator 진행을 허용합니다.",
-  "keyPracticeDescription": "선택한 키와 활성화된 로마 숫자로 다이어토닉 연습 재료를 생성합니다.",
+  "keyPracticeDescription": "선택한 키와 활성화된 로마 숫자로 다이아토닉 연습 문제를 생성합니다.",
   "keyboardShortcutHelp": "Space: 다음 코드  Enter: 자동 재생 시작/정지  위/아래: BPM 조절",
   "nextChord": "다음 코드",
   "audioPlayChord": "코드 재생",
@@ -226,6 +237,10 @@
   "voicingSuggestionsSubtitle": "현재 코드에 맞는 구체적인 음 선택을 확인하세요.",
   "voicingSuggestionsEnabled": "보이싱 제안 사용",
   "voicingSuggestionsHelp": "현재 코드에 대해 연주 가능한 보이싱 아이디어 3개를 보여줍니다.",
+  "voicingDisplayMode": "보이싱 표시 모드",
+  "voicingDisplayModeHelp": "기존 3카드 보기와 연주 중심 현재/다음 미리보기 사이를 전환합니다.",
+  "voicingDisplayModeStandard": "표준",
+  "voicingDisplayModePerformance": "연주",
   "voicingComplexity": "보이싱 복잡도",
   "voicingComplexityHelp": "제안이 얼마나 다채로워질 수 있는지 조절합니다.",
   "voicingComplexityBasic": "기본",
@@ -236,11 +251,11 @@
   "voicingTopNotePreferenceAuto": "자동",
   "allowRootlessVoicings": "루트리스 보이싱 허용",
   "allowRootlessVoicingsHelp": "가이드톤이 분명할 때 루트를 생략한 제안을 허용합니다.",
-  "maxVoicingNotes": "최대 보이싱 음수",
-  "lookAheadDepth": "미리보기 깊이",
+  "maxVoicingNotes": "보이싱 최대 음 개수",
+  "lookAheadDepth": "앞보기 깊이",
   "lookAheadDepthHelp": "랭킹 계산 시 고려할 미래 코드 수입니다.",
   "showVoicingReasons": "보이싱 이유 표시",
-  "showVoicingReasonsHelp": "각 제안 카드에 짧은 설명 칩을 표시합니다.",
+  "showVoicingReasonsHelp": "각 제안 카드에 짧은 설명 태그를 표시합니다.",
   "voicingSuggestionNatural": "가장 자연스러움",
   "voicingSuggestionColorful": "가장 컬러풀함",
   "voicingSuggestionEasy": "가장 쉬움",
@@ -256,6 +271,19 @@
   "voicingSuggestionColorfulUpperStructureSubtitle": "밝은 익스텐션을 더한 가이드톤 중심",
   "voicingSuggestionEasyAnchoredSubtitle": "핵심 음 중심, 더 작은 도약",
   "voicingSuggestionEasyStableSubtitle": "반복하기 쉬운 손 모양",
+  "voicingPerformanceSubtitle": "대표 컴핑 보이싱 하나를 크게 보고, 다음 움직임까지 함께 확인하세요.",
+  "voicingPerformanceCurrentTitle": "현재 보이싱",
+  "voicingPerformanceNextTitle": "다음 미리보기",
+  "voicingPerformanceCurrentOnly": "현재만",
+  "voicingPerformanceShared": "공통음",
+  "voicingPerformanceNextOnly": "다음 이동",
+  "voicingPerformanceTopLinePath": "탑라인: {current} -> {next}",
+  "@voicingPerformanceTopLinePath": {
+    "placeholders": {
+      "current": {},
+      "next": {}
+    }
+  },
   "voicingTopNoteLabel": "탑",
   "voicingTopNoteContextExplicit": "목표 탑라인: {note}",
   "@voicingTopNoteContextExplicit": {
@@ -344,7 +372,7 @@
   "studyHarmonyTitle": "화성 학습",
   "studyHarmonySubtitle": "빠른 수업 진입과 챕터 진행도를 갖춘 구조화된 화성 학습 허브를 진행해 보세요.",
   "studyHarmonyPlaceholderTag": "학습 덱",
-  "studyHarmonyPlaceholderBody": "레슨 데이터, 문제 표현, 정답 입력 표면을 하나의 학습 흐름으로 묶어 두어 음, 코드, 스케일, 진행 과제를 같은 방식으로 확장할 수 있습니다.",
+  "studyHarmonyPlaceholderBody": "레슨 데이터, 문제 문구, 정답 입력 UI는 이미 공통 학습 흐름으로 묶여 있어 음, 코드, 스케일, 진행 문제에 같은 구조를 재사용할 수 있습니다.",
   "studyHarmonyTestLevelTag": "연습 드릴",
   "studyHarmonyTestLevelAction": "드릴 열기",
   "studyHarmonySubmit": "제출",
@@ -468,7 +496,7 @@
   },
   "studyHarmonyBossTag": "보스",
   "studyHarmonyContinueCardTitle": "이어하기",
-  "studyHarmonyContinueResumeHint": "가장 최근에 건드린 수업부터 이어서 시작합니다.",
+  "studyHarmonyContinueResumeHint": "가장 최근에 하던 수업부터 이어서 시작합니다.",
   "studyHarmonyContinueFrontierHint": "현재 진행선에서 다음 수업으로 바로 이동합니다.",
   "studyHarmonyContinueLessonLabel": "{lessonTitle} 이어하기",
   "@studyHarmonyContinueLessonLabel": {
@@ -480,7 +508,7 @@
   "studyHarmonyReviewCardTitle": "복습",
   "studyHarmonyReviewQueueHint": "현재 복습 대기열 기준으로 가져왔습니다.",
   "studyHarmonyReviewWeakHint": "플레이한 수업 중 가장 약한 결과를 기준으로 골랐습니다.",
-  "studyHarmonyReviewFallbackHint": "아직 복습 부채가 없어 현재 진행선으로 되돌아갑니다.",
+  "studyHarmonyReviewFallbackHint": "아직 누적된 복습이 없어 현재 진행선으로 돌아갑니다.",
   "studyHarmonyReviewRetryNeededHint": "오답이나 미완료 기록이 있어 한 번 더 볼 필요가 있습니다.",
   "studyHarmonyReviewAccuracyRefreshHint": "정답률을 다시 다듬기 위한 빠른 복습 대상으로 잡혔습니다.",
   "studyHarmonyReviewAction": "복습하기",
@@ -653,7 +681,7 @@
   "studyHarmonySkillHarmonyFunction": "기능 분류 기초",
   "studyHarmonySkillProgressionKeyCenter": "진행의 조성 찾기",
   "studyHarmonySkillProgressionFunction": "진행 안에서 기능 읽기",
-  "studyHarmonySkillProgressionNonDiatonic": "비다이아토닉 코드 찾기",
+  "studyHarmonySkillProgressionNonDiatonic": "진행의 논다이아토닉 코드 찾기",
   "studyHarmonySkillProgressionFillBlank": "진행 빈칸 채우기",
   "studyHarmonyHubChapterSectionTitle": "챕터",
   "studyHarmonyChapterProgressText": "{cleared}/{total} 수업 완료",
@@ -697,7 +725,7 @@
       "chapterTitle": {}
     }
   },
-  "studyHarmonyTrackPlaceholderBody": "지금은 {coreTrack} 트랙이 활성 경로입니다. 다른 트랙은 이후 허브를 다시 뜯어고치지 않고 확장할 수 있도록 자리만 먼저 보여 줍니다.",
+  "studyHarmonyTrackPlaceholderBody": "이 트랙은 아직 잠겨 있습니다. 오늘은 {coreTrack}로 돌아가 계속 학습하세요.",
   "@studyHarmonyTrackPlaceholderBody": {
     "placeholders": {
       "coreTrack": {}
@@ -705,17 +733,17 @@
   },
   "studyHarmonyCoreTrackTitle": "핵심 트랙",
   "studyHarmonyCoreTrackDescription": "음과 건반에서 시작해 코드, 스케일, 로마숫자, 다이아토닉 기초를 거쳐 짧은 코드 진행 분석까지 올라가는 기본 경로입니다.",
-  "studyHarmonyChapterNotesTitle": "1장: 메모 및 키보드",
-  "studyHarmonyChapterNotesDescription": "음표 이름을 키보드에 매핑하고 흰색 건반과 간단한 우연 기호에 익숙해지세요.",
+  "studyHarmonyChapterNotesTitle": "1장: 음이름과 건반",
+  "studyHarmonyChapterNotesDescription": "음이름을 건반에 연결하고 흰건반과 기본 임시표에 익숙해집니다.",
   "studyHarmonyChapterChordsTitle": "2장: 코드 기초",
-  "studyHarmonyChapterChordsDescription": "기본 3화음과 7도의 철자를 입력한 다음 해당 음에서 일반적인 화음 모양을 지정합니다.",
-  "studyHarmonyChapterScalesTitle": "3장: 저울 및 키",
-  "studyHarmonyChapterScalesDescription": "메이저와 마이너 스케일을 만든 다음 키 안에 어떤 톤이 속하는지 알아보세요.",
-  "studyHarmonyChapterRomanTitle": "4장: 로마 숫자와 온음계",
-  "studyHarmonyChapterRomanDescription": "간단한 로마 숫자를 코드로 변환하고, 코드에서 식별하고, 다이아토닉 기본 사항을 기능별로 정렬합니다.",
-  "studyHarmonyChapterProgressionDetectiveTitle": "제5장 진행형 탐정Ⅰ",
+  "studyHarmonyChapterChordsDescription": "기본 3화음과 7화음의 구성음을 익히고, 구성음을 보고 흔한 코드 이름을 맞혀 봅니다.",
+  "studyHarmonyChapterScalesTitle": "3장: 스케일과 조성",
+  "studyHarmonyChapterScalesDescription": "메이저와 마이너 스케일을 만든 뒤, 어떤 음이 조 안에 속하는지 찾아봅니다.",
+  "studyHarmonyChapterRomanTitle": "4장: 로마 숫자와 다이아토닉",
+  "studyHarmonyChapterRomanDescription": "간단한 로마 숫자를 코드로 바꾸고, 코드를 로마 숫자로 읽고, 다이아토닉 기초를 기능별로 정리합니다.",
+  "studyHarmonyChapterProgressionDetectiveTitle": "5장: 코드 진행 탐정 I",
   "studyHarmonyChapterProgressionDetectiveDescription": "짧은 기본 진행을 보고 조성을 맞히고, 기능을 읽고, 어울리지 않는 코드를 찾아봅니다.",
-  "studyHarmonyChapterMissingChordTitle": "6장: 누락된 코드 I",
+  "studyHarmonyChapterMissingChordTitle": "6장: 빈칸 코드 I",
   "studyHarmonyChapterMissingChordDescription": "짧은 진행의 빈칸 하나를 채우면서 기능과 종지의 흐름을 읽는 감각을 익힙니다.",
   "studyHarmonyOpenLessonAction": "레슨 열기",
   "studyHarmonyLockedLessonAction": "잠김",
@@ -729,113 +757,113 @@
   "studyHarmonyClassicalTrackDescription": "고전적인 맥락에서 기능적 조화는 나중 단계에 도달할 것입니다.",
   "studyHarmonyObjectiveQuickDrill": "빠른 드릴",
   "studyHarmonyObjectiveBossReview": "보스 복습",
-  "studyHarmonyLessonNotesKeyboardTitle": "화이트 키 노트 헌트",
-  "studyHarmonyLessonNotesKeyboardDescription": "음표 이름을 읽고 일치하는 흰색 건반을 탭하세요.",
-  "studyHarmonyLessonNotesPreviewTitle": "강조 표시된 메모 이름 지정",
-  "studyHarmonyLessonNotesPreviewDescription": "강조 표시된 키를 보고 올바른 음표 이름을 선택하세요.",
-  "studyHarmonyLessonNotesAccidentalsTitle": "블랙 키와 쌍둥이",
-  "studyHarmonyLessonNotesAccidentalsDescription": "검은 건반의 날카롭고 단조로운 철자를 먼저 살펴보세요.",
-  "studyHarmonyLessonNotesBossTitle": "보스: 빠른 노트 헌트",
+  "studyHarmonyLessonNotesKeyboardTitle": "흰건반 음 찾기",
+  "studyHarmonyLessonNotesKeyboardDescription": "음이름을 보고 맞는 흰건반을 탭하세요.",
+  "studyHarmonyLessonNotesPreviewTitle": "강조된 음 이름 맞히기",
+  "studyHarmonyLessonNotesPreviewDescription": "강조된 건반을 보고 올바른 음이름을 고르세요.",
+  "studyHarmonyLessonNotesAccidentalsTitle": "검은건반의 두 이름",
+  "studyHarmonyLessonNotesAccidentalsDescription": "검은건반의 샵/플랫 표기를 먼저 익혀 보세요.",
+  "studyHarmonyLessonNotesBossTitle": "보스: 빠른 음 찾기",
   "studyHarmonyLessonNotesBossDescription": "노트 읽기와 키보드 찾기를 하나의 짧은 속도 라운드로 혼합합니다.",
-  "studyHarmonyLessonTriadKeyboardTitle": "키보드의 트라이어드",
+  "studyHarmonyLessonTriadKeyboardTitle": "건반에서 3화음 만들기",
   "studyHarmonyLessonTriadKeyboardDescription": "일반적인 장3화음, 단3화음, 감3화음을 키보드에서 직접 구성해 보세요.",
-  "studyHarmonyLessonSeventhKeyboardTitle": "키보드의 7분의 1",
-  "studyHarmonyLessonSeventhKeyboardDescription": "7도를 추가하고 키보드에 몇 가지 일반적인 7도 코드를 입력하세요.",
-  "studyHarmonyLessonChordNameTitle": "강조 표시된 코드 이름 지정",
+  "studyHarmonyLessonSeventhKeyboardTitle": "건반에서 7화음 만들기",
+  "studyHarmonyLessonSeventhKeyboardDescription": "7음을 더해 몇 가지 흔한 7화음을 건반에서 직접 구성해 보세요.",
+  "studyHarmonyLessonChordNameTitle": "강조된 코드 이름 맞히기",
   "studyHarmonyLessonChordNameDescription": "강조 표시된 코드 모양을 읽고 올바른 코드 이름을 선택하세요.",
-  "studyHarmonyLessonChordsBossTitle": "Boss: Triads and Sevenths 리뷰",
-  "studyHarmonyLessonChordsBossDescription": "한 번의 혼합 리뷰에서 코드 철자와 코드 이름 지정 사이를 전환하세요.",
+  "studyHarmonyLessonChordsBossTitle": "보스: 3화음과 7화음 복습",
+  "studyHarmonyLessonChordsBossDescription": "한 번의 혼합 복습에서 코드 스펠링과 코드 이름 맞히기를 오갑니다.",
   "studyHarmonyLessonMajorScaleTitle": "메이저 스케일 만들기",
   "studyHarmonyLessonMajorScaleDescription": "단순한 메이저 스케일에 속하는 모든 음을 선택하세요.",
-  "studyHarmonyLessonMinorScaleTitle": "마이너 스케일 구축",
-  "studyHarmonyLessonMinorScaleDescription": "몇 가지 공통 키를 사용하여 내추럴 마이너 및 하모닉 마이너 스케일을 만듭니다.",
-  "studyHarmonyLessonKeyMembershipTitle": "주요 회원",
-  "studyHarmonyLessonKeyMembershipDescription": "명명된 키 안에 어떤 톤이 속하는지 찾아보세요.",
-  "studyHarmonyLessonScalesBossTitle": "보스: 스케일 수리",
-  "studyHarmonyLessonScalesBossDescription": "짧은 수리 라운드에서 규모 구축과 주요 구성원을 혼합합니다.",
-  "studyHarmonyLessonRomanToChordTitle": "로마에서 코드로",
+  "studyHarmonyLessonMinorScaleTitle": "마이너 스케일 만들기",
+  "studyHarmonyLessonMinorScaleDescription": "몇 가지 익숙한 조를 바탕으로 내추럴 마이너와 하모닉 마이너 스케일을 만들어 봅니다.",
+  "studyHarmonyLessonKeyMembershipTitle": "조성 구성음 찾기",
+  "studyHarmonyLessonKeyMembershipDescription": "주어진 조에 속하는 음을 찾아보세요.",
+  "studyHarmonyLessonScalesBossTitle": "보스: 스케일 점검",
+  "studyHarmonyLessonScalesBossDescription": "짧은 복습 라운드에서 스케일 만들기와 조성 구성음 찾기를 함께 연습합니다.",
+  "studyHarmonyLessonRomanToChordTitle": "로마 숫자 → 코드",
   "studyHarmonyLessonRomanToChordDescription": "조와 로마 숫자를 읽은 다음 일치하는 코드를 선택하세요.",
-  "studyHarmonyLessonChordToRomanTitle": "코드에서 로마로",
+  "studyHarmonyLessonChordToRomanTitle": "코드 → 로마 숫자",
   "studyHarmonyLessonChordToRomanDescription": "키 내부의 코드를 읽고 일치하는 로마 숫자를 선택하세요.",
-  "studyHarmonyLessonDiatonicityTitle": "온음계인지 아닌지",
-  "studyHarmonyLessonDiatonicityDescription": "간단한 키로 코드를 다이아토닉 및 비다이아토닉 답변으로 정렬합니다.",
-  "studyHarmonyLessonFunctionTitle": "기능 기본",
-  "studyHarmonyLessonFunctionDescription": "쉬운 코드를 토닉, 프리도미넌트 또는 지배적으로 분류합니다.",
-  "studyHarmonyLessonRomanBossTitle": "상사: 기능적 기본 믹스",
-  "studyHarmonyLessonRomanBossDescription": "로마-코드, 코드-로마, 다이아토닉ity 및 기능을 함께 검토하세요.",
+  "studyHarmonyLessonDiatonicityTitle": "다이아토닉 판별",
+  "studyHarmonyLessonDiatonicityDescription": "간단한 조에서 코드를 다이아토닉과 논다이아토닉으로 나눠 봅니다.",
+  "studyHarmonyLessonFunctionTitle": "기능 기초",
+  "studyHarmonyLessonFunctionDescription": "쉬운 코드를 토닉, 프리도미넌트, 도미넌트로 분류합니다.",
+  "studyHarmonyLessonRomanBossTitle": "보스: 기능 기초 믹스",
+  "studyHarmonyLessonRomanBossDescription": "로마 숫자→코드, 코드→로마 숫자, 다이아토닉 판별, 기능 읽기를 함께 복습합니다.",
   "studyHarmonyLessonProgressionKeyCenterTitle": "조성 찾기",
-  "studyHarmonyLessonProgressionKeyCenterDescription": "짧은 코드 진행을 보고 가장 자연스러운 key center를 고릅니다.",
+  "studyHarmonyLessonProgressionKeyCenterDescription": "짧은 코드 진행을 보고 가장 자연스러운 중심 조성을 고릅니다.",
   "studyHarmonyLessonProgressionFunctionTitle": "맥락 속 기능 읽기",
   "studyHarmonyLessonProgressionFunctionDescription": "하이라이트된 코드 하나를 보고 진행 안에서 어떤 기능을 하는지 고릅니다.",
   "studyHarmonyLessonProgressionNonDiatonicTitle": "튀는 코드 찾기",
   "studyHarmonyLessonProgressionNonDiatonicDescription": "주된 다이아토닉 읽기에서 벗어나는 코드를 하나 골라냅니다.",
-  "studyHarmonyLessonProgressionBossTitle": "Boss: 혼합 분석",
-  "studyHarmonyLessonProgressionBossDescription": "조성, 기능, 비다이아토닉 판별을 짧은 분석 라운드로 함께 복습합니다.",
+  "studyHarmonyLessonProgressionBossTitle": "보스: 혼합 분석",
+  "studyHarmonyLessonProgressionBossDescription": "중심 조성 읽기, 기능 판별, 논다이아토닉 찾기를 짧은 탐정 라운드에서 함께 복습합니다.",
   "studyHarmonyLessonMissingChordPatternTitle": "빈칸 코드 채우기",
   "studyHarmonyLessonMissingChordPatternDescription": "짧은 4코드 진행의 빈칸에 가장 잘 맞는 코드를 골라 넣습니다.",
   "studyHarmonyLessonMissingChordCadenceTitle": "종지 빈칸 채우기",
   "studyHarmonyLessonMissingChordCadenceDescription": "구의 끝에서 어디로 끌리는지 보고 빈칸 코드를 고릅니다.",
-  "studyHarmonyLessonMissingChordBossTitle": "Boss: 혼합 빈칸 채우기",
+  "studyHarmonyLessonMissingChordBossTitle": "보스: 혼합 빈칸 채우기",
   "studyHarmonyLessonMissingChordBossDescription": "기능과 흐름을 더 강하게 요구하는 빈칸 채우기 문제를 짧게 섞어 풉니다.",
   "studyHarmonyChapterCheckpointTitle": "체크포인트 건틀렛",
-  "studyHarmonyChapterCheckpointDescription": "조성 중심, 기능, 컬러, 빈칸 채우기를 더 빠른 혼합 복습 세트로 묶어 봅니다.",
-  "studyHarmonyLessonCheckpointCadenceRushTitle": "케이던스 러시",
-  "studyHarmonyLessonCheckpointCadenceRushDescription": "화성 기능을 빠르게 읽고, 이어서 빠진 케이던스 코드를 가벼운 압박 속에서 채워 넣으세요.",
+  "studyHarmonyChapterCheckpointDescription": "중심 조성, 기능, 컬러, 빈칸 채우기를 더 빠른 혼합 복습 세트로 묶어 봅니다.",
+  "studyHarmonyLessonCheckpointCadenceRushTitle": "종지 러시",
+  "studyHarmonyLessonCheckpointCadenceRushDescription": "화성 기능을 빠르게 읽고, 이어서 빠진 종지 코드를 가벼운 압박 속에서 채워 넣으세요.",
   "studyHarmonyLessonCheckpointColorKeyTitle": "컬러와 조성 전환",
-  "studyHarmonyLessonCheckpointColorKeyDescription": "조성 판별과 비다이어토닉 컬러 판별을 번갈아 처리하면서도 흐름을 놓치지 마세요.",
+  "studyHarmonyLessonCheckpointColorKeyDescription": "중심 조성 판별과 논다이아토닉 색채 판별을 번갈아 처리하면서도 흐름을 놓치지 마세요.",
   "studyHarmonyLessonCheckpointBossTitle": "보스: 체크포인트 건틀렛",
-  "studyHarmonyLessonCheckpointBossDescription": "조성 중심, 기능, 컬러, 케이던스 복원을 한 번에 섞은 통합 체크포인트를 클리어하세요.",
+  "studyHarmonyLessonCheckpointBossDescription": "중심 조성, 기능, 컬러, 종지 복원을 한 번에 섞은 통합 체크포인트를 클리어하세요.",
   "studyHarmonyChapterCapstoneTitle": "캡스톤 트라이얼",
   "studyHarmonyChapterCapstoneDescription": "속도, 컬러 감지, 해소 감각까지 묻는 더 빡빡한 혼합 진행 문제로 코어 트랙을 마무리합니다.",
   "studyHarmonyLessonCapstoneTurnaroundTitle": "턴어라운드 릴레이",
   "studyHarmonyLessonCapstoneTurnaroundDescription": "짧은 턴어라운드 안에서 기능 읽기와 빠진 코드 복원을 번갈아 이어 갑니다.",
   "studyHarmonyLessonCapstoneBorrowedColorTitle": "차용 컬러 콜",
-  "studyHarmonyLessonCapstoneBorrowedColorDescription": "모달 컬러를 재빨리 포착하고, 흐트러지기 전에 조성 중심까지 확인하세요.",
+  "studyHarmonyLessonCapstoneBorrowedColorDescription": "모달 컬러를 재빨리 포착하고, 흐트러지기 전에 중심 조성까지 확인하세요.",
   "studyHarmonyLessonCapstoneResolutionTitle": "리졸루션 랩",
   "studyHarmonyLessonCapstoneResolutionDescription": "프레이즈가 어디로 해소되려는지 따라가며 가장 설득력 있는 코드를 고르세요.",
   "studyHarmonyLessonCapstoneBossTitle": "보스: 최종 진행 시험",
-  "studyHarmonyLessonCapstoneBossDescription": "조성 중심, 기능, 컬러, 해소를 모두 압박감 있게 섞은 최종 혼합 시험을 통과하세요.",
-  "studyHarmonyPromptFindNoteOnKeyboard": "키보드에서 {note}를 찾으세요.",
+  "studyHarmonyLessonCapstoneBossDescription": "중심 조성, 기능, 컬러, 해소를 모두 압박감 있게 섞은 최종 혼합 시험을 통과하세요.",
+  "studyHarmonyPromptFindNoteOnKeyboard": "건반에서 {note}를 찾으세요.",
   "@studyHarmonyPromptFindNoteOnKeyboard": {
     "placeholders": {
       "note": {}
     }
   },
-  "studyHarmonyPromptNameHighlightedNote": "어떤 메모가 강조표시되어 있나요?",
-  "studyHarmonyPromptFindChordOnKeyboard": "키보드에 {chord} 빌드",
+  "studyHarmonyPromptNameHighlightedNote": "강조된 음은 무엇인가요?",
+  "studyHarmonyPromptFindChordOnKeyboard": "건반에서 {chord}를 구성하세요.",
   "@studyHarmonyPromptFindChordOnKeyboard": {
     "placeholders": {
       "chord": {}
     }
   },
-  "studyHarmonyPromptNameHighlightedChord": "어떤 코드가 강조 표시됩니까?",
-  "studyHarmonyPromptBuildScale": "{scaleName}의 모든 메모를 선택하세요.",
+  "studyHarmonyPromptNameHighlightedChord": "강조된 코드는 무엇인가요?",
+  "studyHarmonyPromptBuildScale": "{scaleName}에 들어가는 모든 음을 고르세요.",
   "@studyHarmonyPromptBuildScale": {
     "placeholders": {
       "scaleName": {}
     }
   },
-  "studyHarmonyPromptKeyMembership": "{keyName}에 속한 메모를 선택하세요.",
+  "studyHarmonyPromptKeyMembership": "{keyName}에 속하는 음을 고르세요.",
   "@studyHarmonyPromptKeyMembership": {
     "placeholders": {
       "keyName": {}
     }
   },
-  "studyHarmonyPromptRomanToChord": "{keyName}에서 {roman}와 일치하는 코드는 무엇입니까?",
+  "studyHarmonyPromptRomanToChord": "{keyName}에서 {roman}에 해당하는 코드는 무엇인가요?",
   "@studyHarmonyPromptRomanToChord": {
     "placeholders": {
       "keyName": {},
       "roman": {}
     }
   },
-  "studyHarmonyPromptChordToRoman": "{keyName}에서 로마 숫자가 {chord}와 일치하는 것은 무엇입니까?",
+  "studyHarmonyPromptChordToRoman": "{keyName}에서 {chord}에 해당하는 로마 숫자는 무엇인가요?",
   "@studyHarmonyPromptChordToRoman": {
     "placeholders": {
       "keyName": {},
       "chord": {}
     }
   },
-  "studyHarmonyPromptDiatonicity": "{keyName}에서는 {chord} 다이아토닉인가요?",
+  "studyHarmonyPromptDiatonicity": "{keyName}에서 {chord}는 다이아토닉인가요?",
   "@studyHarmonyPromptDiatonicity": {
     "placeholders": {
       "keyName": {},
@@ -850,14 +878,14 @@
     }
   },
   "studyHarmonyProgressionStripLabel": "진행",
-  "studyHarmonyPromptProgressionKeyCenter": "이 진행에 가장 잘 맞는 key center는 무엇인가요?",
+  "studyHarmonyPromptProgressionKeyCenter": "이 진행에 가장 잘 맞는 중심 조성은 무엇인가요?",
   "studyHarmonyPromptProgressionFunction": "{chord}는 여기서 어떤 기능을 하나요?",
   "@studyHarmonyPromptProgressionFunction": {
     "placeholders": {
       "chord": {}
     }
   },
-  "studyHarmonyPromptProgressionNonDiatonic": "이 진행에서 가장 비다이아토닉한 코드는 무엇인가요?",
+  "studyHarmonyPromptProgressionNonDiatonic": "이 진행에서 가장 논다이아토닉하게 들리는 코드는 무엇인가요?",
   "studyHarmonyPromptProgressionMissingChord": "빈칸에 가장 잘 들어갈 코드는 무엇인가요?",
   "studyHarmonyProgressionExplanationKeyCenter": "분석기는 이 진행을 {keyLabel} 중심으로 읽는 것이 가장 자연스럽다고 봅니다.",
   "@studyHarmonyProgressionExplanationKeyCenter": {
@@ -872,7 +900,7 @@
       "functionLabel": {}
     }
   },
-  "studyHarmonyProgressionExplanationNonDiatonic": "{chord}는 주된 {keyLabel} 읽기에서 벗어나므로 비다이아토닉 후보로 가장 적절합니다.",
+  "studyHarmonyProgressionExplanationNonDiatonic": "{chord}는 주된 {keyLabel} 읽기에서 벗어나므로 논다이아토닉 후보로 가장 적절합니다.",
   "@studyHarmonyProgressionExplanationNonDiatonic": {
     "placeholders": {
       "chord": {},
@@ -925,8 +953,8 @@
       "tonic": {}
     }
   },
-  "studyHarmonyChoiceDiatonic": "온음계",
-  "studyHarmonyChoiceNonDiatonic": "비다이아토닉",
+  "studyHarmonyChoiceDiatonic": "다이아토닉",
+  "studyHarmonyChoiceNonDiatonic": "논다이아토닉",
   "studyHarmonyChoiceTonic": "토닉",
   "studyHarmonyChoicePredominant": "우세한",
   "studyHarmonyChoiceDominant": "우성",
@@ -934,7 +962,7 @@
   "chordAnalyzerTitle": "코드 분석기",
   "chordAnalyzerSubtitle": "진행을 붙여 넣으면 보수적인 화성 해석을 보여줍니다.",
   "chordAnalyzerInputLabel": "코드 진행",
-  "chordAnalyzerInputHint": "Dm7, G7, ? | Am7",
+  "chordAnalyzerInputHint": "Dm7, G7 | ? Am",
   "chordAnalyzerInputHelper": "코드 사이에는 Spacebar, |, 쉼표를 쓸 수 있습니다. 괄호 안의 쉼표는 같은 코드 안의 텐션 구분자로 유지됩니다.\n\n?는 아직 정하지 않은 코드 자리를 뜻합니다. 분석기는 앞뒤 화성 맥락을 바탕으로 가장 자연스러운 채움을 추론하고, 해석이 모호하면 후보도 함께 제안합니다. 변주 만들기에서는 그 자리를 더 자유롭게 리하모나이즈할 수 있습니다.\n\n소문자 루트, 슬래시 베이스, sus/alt/add 표기와 C7(b9, #11) 같은 괄호형 텐션을 지원합니다.\n\n터치 기기에서는 코드 패드를 쓰거나, 자유 입력이 필요할 때 ABC 입력으로 전환할 수 있습니다.",
   "chordAnalyzerInputHelpTitle": "입력 팁",
   "chordAnalyzerAnalyze": "분석하기",
@@ -949,7 +977,7 @@
   "chordAnalyzerSpace": "Spacebar",
   "chordAnalyzerAnalyzing": "진행을 분석하는 중...",
   "chordAnalyzerInitialTitle": "진행을 입력해 보세요",
-  "chordAnalyzerInitialBody": "Dm7, G7, ? | Am7 또는 Cmaj7 | Am7 D7 | Gmaj7 같은 진행을 입력하면 가능한 조성, 로마 숫자, 추론된 채움, 짧은 요약을 볼 수 있습니다.",
+  "chordAnalyzerInitialBody": "Dm7, G7 | ? Am 또는 Cmaj7 | Am7 D7 | Gmaj7 같은 진행을 입력하면 가능한 조성, 로마 숫자, 추론된 채움, 짧은 요약을 볼 수 있습니다.",
   "chordAnalyzerPlaceholderExplanation": "이 ?는 앞뒤 화성 맥락을 바탕으로 추론한 자리입니다.",
   "chordAnalyzerSuggestedFill": "추천 채움 화음: {chord}",
   "@chordAnalyzerSuggestedFill": {
@@ -977,7 +1005,7 @@
       "tokens": {}
     }
   },
-  "chordAnalyzerKeyAmbiguityWarning": "조성 중심이 {primary}와 {alternative} 사이에서 아직 다소 모호합니다.",
+  "chordAnalyzerKeyAmbiguityWarning": "중심 조성이 {primary}와 {alternative} 사이에서 아직 다소 모호합니다.",
   "@chordAnalyzerKeyAmbiguityWarning": {
     "placeholders": {
       "primary": {},
@@ -1062,7 +1090,7 @@
   "chordAnalyzerAmbiguityLabel": "모호성",
   "chordAnalyzerWhyThisReading": "이렇게 해석한 이유",
   "chordAnalyzerCompetingReadings": "함께 고려할 해석",
-  "chordAnalyzerIgnoredModifiersWarning": "무시된 modifier: {details}",
+  "chordAnalyzerIgnoredModifiersWarning": "무시된 수식어: {details}",
   "@chordAnalyzerIgnoredModifiersWarning": {
     "placeholders": {
       "details": {}
@@ -1072,13 +1100,13 @@
   "chordAnalyzerVariationsTitle": "자연스러운 변주",
   "chordAnalyzerVariationsBody": "같은 흐름을 유지하면서 가까운 기능 대체 화음으로 색감을 바꾼 제안입니다. 적용하면 바로 다시 분석합니다.",
   "chordAnalyzerApplyVariation": "이 변주 적용",
-  "chordAnalyzerVariationCadentialColorTitle": "카덴스 컬러",
+  "chordAnalyzerVariationCadentialColorTitle": "종지 색채",
   "chordAnalyzerVariationCadentialColorBody": "도착점은 유지한 채 프리도미넌트를 더 어둡게 만들고 트라이톤 서브 도미넌트로 바꿉니다.",
   "chordAnalyzerVariationBackdoorTitle": "백도어 컬러",
   "chordAnalyzerVariationBackdoorBody": "평행단조의 ivm7-bVII7 색채로 같은 토닉에 착지합니다.",
   "chordAnalyzerVariationAppliedApproachTitle": "타깃 ii-V",
   "chordAnalyzerVariationAppliedApproachBody": "같은 목적 화음으로 향하는 관련 ii-V를 다시 세웁니다.",
-  "chordAnalyzerVariationMinorCadenceTitle": "단조 카덴스 컬러",
+  "chordAnalyzerVariationMinorCadenceTitle": "단조 종지 색채",
   "chordAnalyzerVariationMinorCadenceBody": "단조 종지는 유지하면서 iiø-Valt-i 색채를 더합니다.",
   "chordAnalyzerVariationColorLiftTitle": "컬러 리프트",
   "chordAnalyzerVariationColorLiftBody": "루트와 기능은 가깝게 두고, 자연스러운 익스텐션으로 표정을 바꿉니다.",
@@ -1096,7 +1124,7 @@
       "extension": {}
     }
   },
-  "chordAnalyzerEvidenceAlteredDominantColor": "altered dominant 색채가 도미넌트 기능 해석을 뒷받침합니다.",
+  "chordAnalyzerEvidenceAlteredDominantColor": "얼터드 도미넌트 색채가 도미넌트 기능 해석을 뒷받침합니다.",
   "chordAnalyzerEvidenceSlashBass": "슬래시 베이스 {bass}가 베이스 라인이나 전위 정보를 유지해 줍니다.",
   "@chordAnalyzerEvidenceSlashBass": {
     "placeholders": {
@@ -1137,10 +1165,143 @@
       "bass": {}
     }
   },
-  "chordAnalyzerParseIssueUnsupportedSuffix": "지원하지 않는 suffix 또는 modifier입니다: {suffix}",
+  "chordAnalyzerParseIssueUnsupportedSuffix": "지원하지 않는 접미 표기 또는 수식어입니다: {suffix}",
   "@chordAnalyzerParseIssueUnsupportedSuffix": {
     "placeholders": {
       "suffix": {}
+    }
+  },
+  "chordAnalyzerDisplaySettings": "분석 표시",
+  "chordAnalyzerDisplaySettingsHelp": "이론 설명의 깊이와 비다이어토닉 범주의 강조 색상을 조절합니다.",
+  "chordAnalyzerDetailLevel": "설명 상세도",
+  "chordAnalyzerDetailLevelConcise": "간단히",
+  "chordAnalyzerDetailLevelDetailed": "자세히",
+  "chordAnalyzerDetailLevelAdvanced": "고급",
+  "chordAnalyzerHighlightTheme": "강조 테마",
+  "chordAnalyzerThemePresetDefault": "기본",
+  "chordAnalyzerThemePresetHighContrast": "고대비",
+  "chordAnalyzerThemePresetColorBlindSafe": "색각 이상 배려",
+  "chordAnalyzerThemePresetCustom": "사용자 지정",
+  "chordAnalyzerThemeLegend": "범례",
+  "chordAnalyzerCustomColors": "범주별 사용자 색상",
+  "chordAnalyzerHighlightAppliedDominant": "적용 도미넌트",
+  "chordAnalyzerHighlightTritoneSubstitute": "트라이톤 대리",
+  "chordAnalyzerHighlightTonicization": "일시적 조성화",
+  "chordAnalyzerHighlightModulation": "전조",
+  "chordAnalyzerHighlightBackdoor": "백도어 / 서브도미넌트 마이너",
+  "chordAnalyzerHighlightBorrowedColor": "차용 화성 색채",
+  "chordAnalyzerHighlightCommonTone": "공통음 진행",
+  "chordAnalyzerHighlightDeceptiveCadence": "기만 종지",
+  "chordAnalyzerHighlightChromaticLine": "반음계 라인 색채",
+  "chordAnalyzerHighlightAmbiguity": "해석 중첩",
+  "chordAnalyzerSummaryRealModulation": "{key}(으)로의 실제 전조로 읽을 근거가 더 강합니다.",
+  "@chordAnalyzerSummaryRealModulation": {
+    "placeholders": {
+      "key": {}
+    }
+  },
+  "chordAnalyzerSummaryTonicization": "{target}을 잠시 중심처럼 만들지만 완전히 정착하지는 않습니다.",
+  "@chordAnalyzerSummaryTonicization": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "chordAnalyzerSummaryBackdoor": "해결 직전에 백도어 또는 서브도미넌트 마이너 색채가 드러납니다.",
+  "chordAnalyzerSummaryDeceptiveCadence": "한 종지가 예상한 토닉 대신 다른 곳으로 비껴 가며 기만 효과를 냅니다.",
+  "chordAnalyzerSummaryChromaticLine": "구간 일부를 잇는 반음계 내성선 또는 line-cliche 색채가 보입니다.",
+  "chordAnalyzerSummaryBackdoorDominant": "{chord}는 단순 차용 도미넌트보다 백도어 도미넌트로 읽는 편이 자연스럽습니다.",
+  "@chordAnalyzerSummaryBackdoorDominant": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "chordAnalyzerSummarySubdominantMinor": "{chord}는 뜬금없는 비다이어토닉 화음보다 서브도미넌트 마이너 색채로 읽는 편이 자연스럽습니다.",
+  "@chordAnalyzerSummarySubdominantMinor": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "chordAnalyzerSummaryCommonToneDiminished": "{chord}는 공통음을 유지하며 해결되는 감화음 색채로 들을 수 있습니다.",
+  "@chordAnalyzerSummaryCommonToneDiminished": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "chordAnalyzerSummaryDeceptiveTarget": "{chord}는 정격 종지보다 기만적 도착점에 참여합니다.",
+  "@chordAnalyzerSummaryDeceptiveTarget": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "chordAnalyzerSummaryCompeting": "고급 해석에서는 {readings} 같은 경쟁 해석을 함께 유지합니다.",
+  "@chordAnalyzerSummaryCompeting": {
+    "placeholders": {
+      "readings": {}
+    }
+  },
+  "chordAnalyzerFunctionLine": "기능: {function}",
+  "@chordAnalyzerFunctionLine": {
+    "placeholders": {
+      "function": {}
+    }
+  },
+  "chordAnalyzerEvidenceLead": "근거: {evidence}",
+  "@chordAnalyzerEvidenceLead": {
+    "placeholders": {
+      "evidence": {}
+    }
+  },
+  "chordAnalyzerAdvancedCompetingReadings": "여기서는 {readings} 같은 경쟁 해석도 계속 가능합니다.",
+  "@chordAnalyzerAdvancedCompetingReadings": {
+    "placeholders": {
+      "readings": {}
+    }
+  },
+  "chordAnalyzerRemarkTonicization": "완전한 전조보다는 {target}의 일시적 조성화로 들립니다.",
+  "@chordAnalyzerRemarkTonicization": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "chordAnalyzerRemarkRealModulation": "{key}(으)로 실제 전조가 이루어진 것으로 볼 근거가 있습니다.",
+  "@chordAnalyzerRemarkRealModulation": {
+    "placeholders": {
+      "key": {}
+    }
+  },
+  "chordAnalyzerRemarkBackdoorDominant": "서브도미넌트 마이너 색채를 가진 백도어 도미넌트로 들을 수 있습니다.",
+  "chordAnalyzerRemarkBackdoorChain": "단순 차용 우회보다 백도어 체인에 속하는 흐름입니다.",
+  "chordAnalyzerRemarkSubdominantMinor": "차용 iv 또는 서브도미넌트 마이너 색채가 프리도미넌트처럼 작동합니다.",
+  "chordAnalyzerRemarkCommonToneDiminished": "이 감화음은 공통음 재해석으로 기능합니다.",
+  "chordAnalyzerRemarkPivotChord": "다음 국소 조성으로 넘어가는 pivot chord 역할을 할 수 있습니다.",
+  "chordAnalyzerRemarkCommonToneModulation": "공통음의 연속성이 이 전조를 더 그럴듯하게 만듭니다.",
+  "chordAnalyzerRemarkDeceptiveCadence": "직접 토닉으로 가지 않고 기만 종지 쪽으로 향합니다.",
+  "chordAnalyzerRemarkLineCliche": "반음계 내성선 움직임이 이 화음 선택에 색채를 줍니다.",
+  "chordAnalyzerRemarkDualFunction": "둘 이상의 기능 해석이 여전히 설득력 있게 남아 있습니다.",
+  "chordAnalyzerTagTonicization": "일시적 조성화",
+  "chordAnalyzerTagRealModulation": "실제 전조",
+  "chordAnalyzerTagBackdoorChain": "백도어 체인",
+  "chordAnalyzerTagDeceptiveCadence": "기만 종지",
+  "chordAnalyzerTagChromaticLine": "반음계 라인 색채",
+  "chordAnalyzerTagCommonToneMotion": "공통음 진행",
+  "chordAnalyzerEvidenceCadentialArrival": "국소적 종지 도착이 임시 목표 중심을 뒷받침합니다.",
+  "chordAnalyzerEvidenceFollowThrough": "뒤따르는 화음들도 새 국소 중심을 계속 지지합니다.",
+  "chordAnalyzerEvidencePhraseBoundary": "구조적 강세나 프레이즈 경계 부근에서 변화가 일어납니다.",
+  "chordAnalyzerEvidencePivotSupport": "공유 가능한 pivot 해석이 국소적 이동을 뒷받침합니다.",
+  "chordAnalyzerEvidenceCommonToneSupport": "공통음 유지가 재해석 연결을 자연스럽게 만듭니다.",
+  "chordAnalyzerEvidenceHomeGravityWeakening": "이 구간에서는 원래 토닉의 중력이 다소 약해집니다.",
+  "chordAnalyzerEvidenceBackdoorMotion": "이 진행은 백도어 또는 서브도미넌트 마이너 해결 패턴과 맞습니다.",
+  "chordAnalyzerEvidenceDeceptiveResolution": "도미넌트가 예상한 토닉이 아닌 다른 곳으로 해결됩니다.",
+  "chordAnalyzerEvidenceChromaticLine": "반음계 라인 근거: {detail}.",
+  "@chordAnalyzerEvidenceChromaticLine": {
+    "placeholders": {
+      "detail": {}
+    }
+  },
+  "chordAnalyzerEvidenceCompetingReading": "경쟁 해석: {detail}.",
+  "@chordAnalyzerEvidenceCompetingReading": {
+    "placeholders": {
+      "detail": {}
     }
   },
   "studyHarmonyDailyReplayAction": "오늘의 도전 다시 하기",
@@ -1194,13 +1355,13 @@
   },
   "studyHarmonyResultMilestonesTitle": "새 메달",
   "studyHarmonyChapterRemixTitle": "리믹스 아레나",
-  "studyHarmonyChapterRemixDescription": "키 센터, 기능, 차용 색채를 예고 없이 섞어 읽는 후반부 종합 구간입니다.",
+  "studyHarmonyChapterRemixDescription": "중심 조성, 기능, 차용 색채를 예고 없이 섞어 읽는 후반부 종합 구간입니다.",
   "studyHarmonyLessonRemixBridgeTitle": "브리지 빌더",
   "studyHarmonyLessonRemixBridgeDescription": "기능 읽기와 빈칸 채우기를 한 흐름의 진행으로 이어 붙입니다.",
   "studyHarmonyLessonRemixPivotTitle": "컬러 피벗",
-  "studyHarmonyLessonRemixPivotDescription": "진행이 흔들릴 때 차용 화음과 키 중심 전환 지점을 포착합니다.",
+  "studyHarmonyLessonRemixPivotDescription": "진행이 흔들릴 때 차용 화음과 중심 조성 전환 지점을 포착합니다.",
   "studyHarmonyLessonRemixSprintTitle": "리졸루션 스프린트",
-  "studyHarmonyLessonRemixSprintDescription": "기능, cadence fill, 조성 중력을 더 빠르게 연달아 읽어냅니다.",
+  "studyHarmonyLessonRemixSprintDescription": "기능, 종지 채우기, 조성 중력을 더 빠르게 연달아 읽어냅니다.",
   "studyHarmonyLessonRemixBossTitle": "리믹스 마라톤",
   "studyHarmonyLessonRemixBossDescription": "지금까지의 진행 읽기 관점을 모두 다시 섞어 던지는 후반부 최종 마라톤입니다.",
   "studyHarmonyProgressStreakSaver": "세이버 x{count}",
@@ -1295,9 +1456,9 @@
   "studyHarmonyChapterEncoreTitle": "앙코르 래더",
   "studyHarmonyChapterEncoreDescription": "지금까지의 진행 읽기 도구를 짧고 진하게 압축한 마지막 앙코르 구간입니다.",
   "studyHarmonyLessonEncorePulseTitle": "토널 펄스",
-  "studyHarmonyLessonEncorePulseDescription": "워밍업 없이 바로 키 중심과 기능을 고정해서 읽어냅니다.",
+  "studyHarmonyLessonEncorePulseDescription": "워밍업 없이 바로 중심 조성과 기능을 고정해서 읽어냅니다.",
   "studyHarmonyLessonEncoreSwapTitle": "컬러 스왑",
-  "studyHarmonyLessonEncoreSwapDescription": "차용 색채 판별과 missing chord 복원을 번갈아 처리하며 감각을 흔듭니다.",
+  "studyHarmonyLessonEncoreSwapDescription": "차용 색채 판별과 빈칸 코드 복원을 번갈아 처리하며 감각을 다집니다.",
   "studyHarmonyLessonEncoreBossTitle": "앙코르 피날레",
   "studyHarmonyLessonEncoreBossDescription": "진행 읽기 전 관점을 짧고 촘촘하게 다시 묻는 마지막 보스 라운드입니다.",
   "studyHarmonyChapterMasteryBronze": "브론즈 클리어",
@@ -1325,21 +1486,21 @@
   "studyHarmonyBossRushHighRiskLabel": "목숨 2개 한정",
   "studyHarmonyResultBossRushLine": "보스 러시를 클리어했습니다.",
   "studyHarmonyChapterSpotlightTitle": "스포트라이트 쇼다운",
-  "studyHarmonyChapterSpotlightDescription": "차용 색채, cadence 압박, 통합형 보스 판별을 정면으로 다루는 최종 스포트라이트 구간입니다.",
+  "studyHarmonyChapterSpotlightDescription": "차용 색채, 종지 압박, 보스급 통합 판별을 정면으로 다루는 최종 스포트라이트 구간입니다.",
   "studyHarmonyLessonSpotlightLensTitle": "차용 렌즈",
-  "studyHarmonyLessonSpotlightLensDescription": "차용 화음이 시선을 흔들어도 키 중심을 놓치지 않고 추적합니다.",
-  "studyHarmonyLessonSpotlightCadenceTitle": "케이던스 스왑",
-  "studyHarmonyLessonSpotlightCadenceDescription": "기능 읽기와 cadence 복원을 번갈아 처리하면서도 해결 지점을 유지합니다.",
+  "studyHarmonyLessonSpotlightLensDescription": "차용 색채가 시선을 흔들어도 중심 조성을 놓치지 않고 추적합니다.",
+  "studyHarmonyLessonSpotlightCadenceTitle": "종지 스왑",
+  "studyHarmonyLessonSpotlightCadenceDescription": "기능 읽기와 종지 복원을 번갈아 처리하면서도 해결 지점을 놓치지 않습니다.",
   "studyHarmonyLessonSpotlightBossTitle": "스포트라이트 쇼다운",
   "studyHarmonyLessonSpotlightBossDescription": "진행 읽기 전 관점을 압박 속에서도 끝까지 유지해야 하는 최종 보스 세트입니다.",
   "studyHarmonyChapterAfterHoursTitle": "애프터 아워 랩",
-  "studyHarmonyChapterAfterHoursDescription": "워밍업 힌트를 줄이고 차용 색채, cadence 압박, 키 중심 추적을 거칠게 다시 섞는 후반부 실험 구간입니다.",
+  "studyHarmonyChapterAfterHoursDescription": "워밍업 힌트를 걷어내고 차용 색채, 종지 압박, 중심 조성 추적을 거칠게 다시 섞는 후반부 실험 구간입니다.",
   "studyHarmonyLessonAfterHoursShadowTitle": "모달 섀도우",
-  "studyHarmonyLessonAfterHoursShadowDescription": "차용 색채가 읽기를 어둡게 흔들어도 키 중심을 놓치지 않고 붙잡습니다.",
+  "studyHarmonyLessonAfterHoursShadowDescription": "차용 색채가 읽기를 어둡게 흔들어도 중심 조성을 놓치지 않고 붙잡습니다.",
   "studyHarmonyLessonAfterHoursFeintTitle": "리졸루션 페인트",
-  "studyHarmonyLessonAfterHoursFeintDescription": "기능과 cadence 페이크를 읽어내며 진짜 해결 지점을 끝까지 추적합니다.",
+  "studyHarmonyLessonAfterHoursFeintDescription": "기능과 종지 페이크를 읽어내며 진짜 해결 지점을 끝까지 추적합니다.",
   "studyHarmonyLessonAfterHoursCrossfadeTitle": "센터 크로스페이드",
-  "studyHarmonyLessonAfterHoursCrossfadeDescription": "키 중심 판별, 기능 읽기, missing chord 복원을 추가 힌트 없이 한 흐름으로 묶습니다.",
+  "studyHarmonyLessonAfterHoursCrossfadeDescription": "중심 조성 판별, 기능 읽기, 빈칸 코드 복원을 추가 힌트 없이 한 흐름으로 묶습니다.",
   "studyHarmonyLessonAfterHoursBossTitle": "라스트 콜 보스",
   "studyHarmonyLessonAfterHoursBossDescription": "늦은 후반부 압박 속에서도 진행 읽기 전 관점을 또렷하게 유지해야 하는 마지막 심화 보스입니다.",
   "studyHarmonyProgressRelayWins": "릴레이 승리 {count}회",
@@ -1389,13 +1550,13 @@
   "studyHarmonyChapterNeonTitle": "네온 디투어",
   "studyHarmonyChapterNeonDescription": "차용 색채, 중심 전환, 착지 복원을 번갈아 흔들며 읽기 정확도를 끝까지 시험하는 후반부 종합 챕터입니다.",
   "studyHarmonyLessonNeonDetourTitle": "모달 디투어",
-  "studyHarmonyLessonNeonDetourDescription": "차용 색채가 진행을 옆길로 끌어도 실제 키 중심을 끝까지 추적합니다.",
+  "studyHarmonyLessonNeonDetourDescription": "차용 색채가 진행을 옆길로 끌어도 실제 중심 조성을 끝까지 추적합니다.",
   "studyHarmonyLessonNeonPivotTitle": "피벗 프레셔",
-  "studyHarmonyLessonNeonPivotDescription": "조성 중심 전환과 기능 압박을 연속으로 읽으며 다음 전환을 대비합니다.",
+  "studyHarmonyLessonNeonPivotDescription": "중심 조성 전환과 기능 압박을 연속으로 읽으며 다음 전환을 대비합니다.",
   "studyHarmonyLessonNeonLandingTitle": "차용 랜딩",
   "studyHarmonyLessonNeonLandingDescription": "차용 색채 페이크 이후 비어 있는 착지 화음을 복원하며 진짜 해결 지점을 되찾습니다.",
   "studyHarmonyLessonNeonBossTitle": "시티 라이트 보스",
-  "studyHarmonyLessonNeonBossDescription": "피벗 읽기, 차용 색채, cadence 복원을 한 번에 섞어 부드러운 착지 없이 밀어붙이는 네온 보스입니다.",
+  "studyHarmonyLessonNeonBossDescription": "피벗 읽기, 차용 색채, 종지 복원을 한 번에 섞어 부드러운 착지 없이 밀어붙이는 네온 보스입니다.",
   "studyHarmonyProgressLeague": "{tier} 리그",
   "@studyHarmonyProgressLeague": {
     "placeholders": {
@@ -1484,8 +1645,8 @@
       "count": {}
     }
   },
-  "studyHarmonyQuestChestReadyHeadline": "퀘스트 체스트 준비 완료",
-  "studyHarmonyQuestChestOpenedHeadline": "오늘의 체스트 오픈 완료",
+  "studyHarmonyQuestChestReadyHeadline": "퀘스트 상자 준비 완료",
+  "studyHarmonyQuestChestOpenedHeadline": "오늘의 퀘스트 상자 개봉 완료",
   "studyHarmonyQuestChestBoostHeadline": "2배 리그 XP 활성화",
   "studyHarmonyQuestChestRewardLabel": "보상: 리그 XP +{xp}",
   "@studyHarmonyQuestChestRewardLabel": {
@@ -1493,10 +1654,10 @@
       "xp": {}
     }
   },
-  "studyHarmonyQuestChestLockedBody": "오늘의 퀘스트 3종을 마치면 보너스 체스트가 열리고 주간 리그 XP를 추가로 받습니다.",
-  "studyHarmonyQuestChestReadyBody": "오늘의 퀘스트 3종이 모두 끝났습니다. 아무 런이나 하나 더 클리어하면 체스트 보상이 리그 XP로 반영됩니다.",
-  "studyHarmonyQuestChestOpenedBody": "오늘의 퀘스트 3종을 모두 끝내서 체스트 보상이 이미 리그 XP로 반영됐습니다.",
-  "studyHarmonyQuestChestOpenedBoostBody": "오늘의 체스트를 열었고 다음 {count}번 클리어에는 2배 리그 XP가 적용됩니다.",
+  "studyHarmonyQuestChestLockedBody": "오늘의 퀘스트 3종을 마치면 보너스 퀘스트 상자가 열리고 주간 리그 XP를 추가로 받습니다.",
+  "studyHarmonyQuestChestReadyBody": "오늘의 퀘스트 3종이 모두 끝났습니다. 아무 런이나 하나 더 클리어하면 퀘스트 상자 보상이 리그 XP로 반영됩니다.",
+  "studyHarmonyQuestChestOpenedBody": "오늘의 퀘스트 3종을 모두 끝내서 퀘스트 상자 보상이 이미 리그 XP로 반영됐습니다.",
+  "studyHarmonyQuestChestOpenedBoostBody": "오늘의 퀘스트 상자를 열었고 다음 {count}번 클리어에는 2배 리그 XP가 적용됩니다.",
   "@studyHarmonyQuestChestOpenedBoostBody": {
     "placeholders": {
       "count": {}
@@ -1522,8 +1683,8 @@
       "target": {}
     }
   },
-  "studyHarmonyResultQuestChestLine": "퀘스트 체스트를 열었습니다.",
-  "studyHarmonyResultQuestChestXpLine": "퀘스트 체스트 보너스 리그 XP +{count}",
+  "studyHarmonyResultQuestChestLine": "퀘스트 상자를 열었습니다.",
+  "studyHarmonyResultQuestChestXpLine": "퀘스트 상자 보너스 리그 XP +{count}",
   "@studyHarmonyResultQuestChestXpLine": {
     "placeholders": {
       "count": {}
@@ -1563,9 +1724,9 @@
   "studyHarmonyChapterSkylineTitle": "스카이라인 서킷",
   "studyHarmonyChapterSkylineDescription": "흔들리는 중심, 차용 중력, 가짜 귀착을 빠르게 섞어 읽어야 하는 최종 스카이라인 챕터입니다.",
   "studyHarmonyLessonSkylinePulseTitle": "잔상 펄스",
-  "studyHarmonyLessonSkylinePulseDescription": "진행이 새 레인으로 잠기기 전에 잔상 속 키 중심과 기능을 먼저 붙잡습니다.",
+  "studyHarmonyLessonSkylinePulseDescription": "진행이 새 레인으로 잠기기 전에 잔상 속 중심 조성과 기능을 먼저 붙잡습니다.",
   "studyHarmonyLessonSkylineSwapTitle": "중력 전환",
-  "studyHarmonyLessonSkylineSwapDescription": "차용 중력과 missing chord 복원을 동시에 처리하며 진행의 무게 이동을 따라갑니다.",
+  "studyHarmonyLessonSkylineSwapDescription": "차용 중력과 빈칸 코드 복원을 동시에 처리하며 진행의 무게 이동을 따라갑니다.",
   "studyHarmonyLessonSkylineHomeTitle": "헛귀착",
   "studyHarmonyLessonSkylineHomeDescription": "가짜 귀착을 통과한 뒤 진짜 착지 지점을 다시 복원해 진행을 끝까지 읽어냅니다.",
   "studyHarmonyLessonSkylineBossTitle": "최종 신호 보스",
@@ -1577,9 +1738,9 @@
   "studyHarmonyLessonAfterglowLureTitle": "차용 유인",
   "studyHarmonyLessonAfterglowLureDescription": "전조처럼 보이는 차용 색채를 구분하고 진행이 진짜로 돌아오는 지점을 읽습니다.",
   "studyHarmonyLessonAfterglowFlickerTitle": "중심 흔들림",
-  "studyHarmonyLessonAfterglowFlickerDescription": "카덴스 단서가 빠르게 흔들리는 동안에도 키 중심을 끝까지 유지합니다.",
+  "studyHarmonyLessonAfterglowFlickerDescription": "종지 단서가 빠르게 흔들리는 동안에도 중심 조성을 끝까지 유지합니다.",
   "studyHarmonyLessonAfterglowBossTitle": "레드라인 리턴 보스",
-  "studyHarmonyLessonAfterglowBossDescription": "키 중심, 기능, 차용 색채, missing chord 복원을 최고 속도로 한 번에 묶는 종반 보스입니다.",
+  "studyHarmonyLessonAfterglowBossDescription": "중심 조성, 기능, 차용 색채, 빈칸 코드 복원을 최고 속도로 한 번에 묶는 종반 보스입니다.",
   "studyHarmonyProgressTour": "투어 스탬프 {count}/{target}",
   "@studyHarmonyProgressTour": {
     "placeholders": {
@@ -1611,13 +1772,13 @@
       "target": {}
     }
   },
-  "studyHarmonyTourQuestChestBody": "이번 달 Quest Chest를 {target}번 열어 투어 스탬프를 채워보세요.",
+  "studyHarmonyTourQuestChestBody": "이번 달 퀘스트 상자를 {target}번 열어 투어 스탬프를 채워 보세요.",
   "@studyHarmonyTourQuestChestBody": {
     "placeholders": {
       "target": {}
     }
   },
-  "studyHarmonyTourSpotlightBody": "이번 달 spotlight 클리어를 {target}번 달성하세요. Boss Rush, Relay, Focus, Legend, 보스 레슨이 모두 카운트됩니다.",
+  "studyHarmonyTourSpotlightBody": "이번 달 스포트라이트 런을 {target}번 클리어하세요. 보스 러시, 아레나 릴레이, 포커스 스프린트, 레전드 트라이얼, 보스 레슨이 모두 카운트됩니다.",
   "@studyHarmonyTourSpotlightBody": {
     "placeholders": {
       "target": {}
@@ -1633,14 +1794,14 @@
       "target": {}
     }
   },
-  "studyHarmonyTourQuestChestsLabel": "Quest Chest {count}/{target}",
+  "studyHarmonyTourQuestChestsLabel": "퀘스트 상자 {count}/{target}",
   "@studyHarmonyTourQuestChestsLabel": {
     "placeholders": {
       "count": {},
       "target": {}
     }
   },
-  "studyHarmonyTourSpotlightLabel": "Spotlight {count}/{target}",
+  "studyHarmonyTourSpotlightLabel": "스포트라이트 {count}/{target}",
   "@studyHarmonyTourSpotlightLabel": {
     "placeholders": {
       "count": {},
@@ -1663,13 +1824,13 @@
   "studyHarmonyChapterDaybreakTitle": "새벽 주파수",
   "studyHarmonyChapterDaybreakDescription": "유령 종지, 가짜 새벽, 차용된 개화를 섞어 긴 종반 러닝 뒤에도 선명한 판별을 유지하게 만드는 최종 확장 챕터입니다.",
   "studyHarmonyLessonDaybreakGhostTitle": "허상 종지",
-  "studyHarmonyLessonDaybreakGhostDescription": "끝난 것처럼 들리지만 닫히지 않는 구간에서 기능과 missing chord 복원을 동시에 읽어냅니다.",
+  "studyHarmonyLessonDaybreakGhostDescription": "끝난 것처럼 들리지만 실제로는 닿지 않는 구간에서 종지와 기능을 동시에 바로잡습니다.",
   "studyHarmonyLessonDaybreakDawnTitle": "헛새벽",
-  "studyHarmonyLessonDaybreakDawnDescription": "너무 일찍 밝아지는 듯한 순간에 숨어 있는 중심 흔들림과 비다이아토닉 신호를 구분합니다.",
+  "studyHarmonyLessonDaybreakDawnDescription": "너무 일찍 밝아지는 듯한 순간에 숨어 있는 중심 조성의 흔들림과 논다이아토닉 신호를 구분합니다.",
   "studyHarmonyLessonDaybreakBloomTitle": "차용 개화",
   "studyHarmonyLessonDaybreakBloomDescription": "화성이 더 밝아지는 순간에도 차용 색채와 기능선을 함께 붙잡아 진행의 흐름을 지켜냅니다.",
   "studyHarmonyLessonDaybreakBossTitle": "선라이즈 오버드라이브 보스",
-  "studyHarmonyLessonDaybreakBossDescription": "키 중심, 기능, 비다이아토닉 색채, missing chord 복원을 새벽 속도로 한 번에 엮는 최종 오버드라이브 보스입니다.",
+  "studyHarmonyLessonDaybreakBossDescription": "중심 조성, 기능, 논다이아토닉 색채, 빈칸 코드 복원을 새벽 속도로 한 번에 엮는 최종 오버드라이브 보스입니다.",
   "studyHarmonyProgressDuetPact": "듀엣 연속 x{count}",
   "@studyHarmonyProgressDuetPact": {
     "placeholders": {
@@ -1696,19 +1857,19 @@
       "xp": {}
     }
   },
-  "studyHarmonyDuetNeedDailyBody": "먼저 오늘의 Daily를 끝내고, 이어서 spotlight 런 1회를 클리어해 듀엣을 이어가세요.",
-  "studyHarmonyDuetNeedSpotlightBody": "Daily는 끝났습니다. Focus, Relay, Boss Rush, Legend, 보스 레슨 중 하나를 클리어하면 오늘 듀엣이 잠깁니다.",
-  "studyHarmonyDuetActiveBody": "오늘 Daily와 Spotlight를 모두 마쳐 듀엣이 잠겼습니다. 현재 공유 연속은 {count}일입니다.",
+  "studyHarmonyDuetNeedDailyBody": "먼저 오늘의 데일리를 끝내고, 이어서 스포트라이트 런 1회를 클리어해 듀엣을 이어가세요.",
+  "studyHarmonyDuetNeedSpotlightBody": "데일리는 끝났습니다. 포커스 스프린트, 아레나 릴레이, 보스 러시, 레전드 트라이얼, 보스 레슨 중 하나를 클리어하면 오늘 듀엣이 완성됩니다.",
+  "studyHarmonyDuetActiveBody": "오늘 데일리와 스포트라이트를 모두 마쳐 듀엣이 완성됐습니다. 현재 공유 연속은 {count}일입니다.",
   "@studyHarmonyDuetActiveBody": {
     "placeholders": {
       "count": {}
     }
   },
-  "studyHarmonyDuetDailyDone": "Daily 완료",
-  "studyHarmonyDuetDailyMissing": "Daily 필요",
-  "studyHarmonyDuetSpotlightDone": "Spotlight 완료",
-  "studyHarmonyDuetSpotlightMissing": "Spotlight 필요",
-  "studyHarmonyDuetDailyLabel": "매일 {done}",
+  "studyHarmonyDuetDailyDone": "데일리 완료",
+  "studyHarmonyDuetDailyMissing": "데일리 필요",
+  "studyHarmonyDuetSpotlightDone": "스포트라이트 완료",
+  "studyHarmonyDuetSpotlightMissing": "스포트라이트 필요",
+  "studyHarmonyDuetDailyLabel": "데일리 {done}",
   "@studyHarmonyDuetDailyLabel": {
     "placeholders": {
       "done": {
@@ -1841,13 +2002,13 @@
   "studyHarmonyChapterBlueHourTitle": "블루 아워 교차점",
   "studyHarmonyChapterBlueHourDescription": "교차 흐름, 후광처럼 스치는 차용, 이중 지평선을 섞어 종반부 판별을 끝까지 흔드는 황혼 확장 챕터입니다.",
   "studyHarmonyLessonBlueHourCurrentTitle": "교차 흐름",
-  "studyHarmonyLessonBlueHourCurrentDescription": "진행이 두 방향으로 당겨질 때도 키 중심과 기능을 동시에 붙잡습니다.",
+  "studyHarmonyLessonBlueHourCurrentDescription": "진행이 두 방향으로 당겨질 때도 중심 조성과 기능을 동시에 붙잡습니다.",
   "studyHarmonyLessonBlueHourHaloTitle": "후광 차용",
   "studyHarmonyLessonBlueHourHaloDescription": "안개처럼 번지는 차용 색채 속에서 빠진 화음을 복원해 문장을 다시 세웁니다.",
   "studyHarmonyLessonBlueHourHorizonTitle": "이중 지평선",
   "studyHarmonyLessonBlueHourHorizonDescription": "두 개의 도착점이 번갈아 보이는 상황에서도 진짜 귀착 지점을 끝까지 유지합니다.",
   "studyHarmonyLessonBlueHourBossTitle": "트윈 랜턴즈 보스",
-  "studyHarmonyLessonBlueHourBossDescription": "키 중심, 기능, 차용 색채, missing chord 복원을 황혼 속도로 교차시키는 최종 블루 아워 보스입니다."
+  "studyHarmonyLessonBlueHourBossDescription": "중심 조성, 기능, 차용 색채, 빈칸 코드 복원을 황혼 속도로 빠르게 교차시키는 최종 블루 아워 보스입니다."
 ,
   "chordTypeFilters": "코드 종류",
   "chordTypeFiltersHelp": "생성기에 표시할 코드 종류를 선택하세요.",
@@ -1867,6 +2028,116 @@
   "chordTypeGroupSixthsAndAddedTone": "식스/부가음",
   "chordTypeGroupDominantVariants": "도미넌트 변형",
   "chordTypeRequiresKeyMode": "V7sus4는 키를 하나 이상 선택했을 때만 사용할 수 있습니다.",
-  "chordTypeKeepOneEnabled": "최소 한 가지 코드 종류는 켜 두어야 합니다."
+  "chordTypeKeepOneEnabled": "최소 한 가지 코드 종류는 켜 두어야 합니다.",
+  "anchorLoopTitle": "앵커 루프",
+  "anchorLoopHelp": "특정 cycle slot의 코드를 고정해 두고, 나머지 slot만 그 주변 문맥에 맞게 생성합니다.",
+  "anchorLoopCycleLength": "사이클 길이(마디)",
+  "anchorLoopCycleLengthHelp": "앵커가 반복되는 길이를 마디 단위로 고르세요.",
+  "anchorLoopVaryNonAnchorSlots": "비앵커 slot 변형 허용",
+  "anchorLoopVaryNonAnchorSlotsHelp": "앵커 slot은 정확히 유지하고, 나머지 filler만 같은 기능 안에서 조금씩 바꿉니다.",
+  "anchorLoopBarLabel": "{bar}마디",
+  "@anchorLoopBarLabel": {
+    "placeholders": {
+      "bar": {
+        "type": "int"
+      }
+    }
+  },
+  "anchorLoopBeatLabel": "{beat}박",
+  "@anchorLoopBeatLabel": {
+    "placeholders": {
+      "beat": {
+        "type": "int"
+      }
+    }
+  },
+  "anchorLoopSlotEmpty": "설정된 앵커 코드 없음",
+  "anchorLoopEditTitle": "{bar}마디 {beat}박 앵커 편집",
+  "@anchorLoopEditTitle": {
+    "placeholders": {
+      "bar": {
+        "type": "int"
+      },
+      "beat": {
+        "type": "int"
+      }
+    }
+  },
+  "anchorLoopChordSymbol": "앵커 코드 심볼",
+  "anchorLoopChordHint": "이 slot에 고정할 코드 심볼 하나를 입력하세요. 비우면 앵커가 해제됩니다.",
+  "anchorLoopInvalidChord": "이 앵커 slot을 저장하려면 지원되는 코드 심볼을 입력하세요.",
+  "harmonyPlaybackPatternBlock": "블록",
+  "harmonyPlaybackPatternArpeggio": "아르페지오",
+  "metronomeBeatStateNormal": "보통",
+  "metronomeBeatStateAccent": "강박",
+  "metronomeBeatStateMute": "뮤트",
+  "metronomePatternPresetCustom": "커스텀",
+  "metronomePatternPresetMeterAccent": "박자 기본 강세",
+  "metronomePatternPresetJazzTwoAndFour": "재즈 2·4",
+  "metronomeSourceKindBuiltIn": "내장 사운드",
+  "metronomeSourceKindLocalFile": "로컬 파일",
+  "transportAudioTitle": "트랜스포트 오디오",
+  "autoPlayChordChanges": "코드 변화 자동 재생",
+  "autoPlayChordChangesHelp": "트랜스포트가 chord-change event에 도달하면 다음 코드를 자동으로 재생합니다.",
+  "autoPlayPattern": "자동 재생 패턴",
+  "autoPlayPatternHelp": "자동 재생을 블록 코드로 할지 짧은 아르페지오로 할지 고릅니다.",
+  "autoPlayHoldFactor": "자동 재생 길이",
+  "autoPlayHoldFactorHelp": "event 길이에 비례해 자동 재생 코드가 얼마나 오래 울릴지 조절합니다.",
+  "autoPlayMelodyWithChords": "멜로디도 함께 재생",
+  "autoPlayMelodyWithChordsPlaceholder": "멜로디 생성이 켜져 있으면 chord-change 자동 재생 때 현재 멜로디 라인도 함께 들려줍니다.",
+  "melodyGenerationTitle": "멜로디 라인",
+  "melodyGenerationHelp": "현재 chord timeline을 따라가는 실전형 멜로디 라인을 생성합니다.",
+  "melodyDensity": "멜로디 밀도",
+  "melodyDensityHelp": "각 chord event 안에 멜로디 음이 얼마나 자주 나타날지 정합니다.",
+  "melodyDensitySparse": "성기게",
+  "melodyDensityBalanced": "균형",
+  "melodyDensityActive": "활발하게",
+  "motifRepetitionStrength": "모티프 반복 강도",
+  "motifRepetitionStrengthHelp": "값이 높을수록 직전 멜로디 조각의 contour 정체성을 더 자주 이어갑니다.",
+  "approachToneDensity": "어프로치 음 밀도",
+  "approachToneDensityHelp": "도착 직전의 passing, neighbor, approach 제스처가 얼마나 자주 나올지 조절합니다.",
+  "melodyRangeLow": "멜로디 최저음",
+  "melodyRangeHigh": "멜로디 최고음",
+  "melodyRangeHelp": "생성된 멜로디를 이 연주 가능 음역 안에 유지합니다.",
+  "melodyStyle": "멜로디 스타일",
+  "melodyStyleHelp": "안전한 가이드톤 중심, 비밥 진행, 서정적 여백, 컬러 텐션 중심 중 하나로 성향을 정합니다.",
+  "melodyStyleSafe": "안전",
+  "melodyStyleBebop": "비밥",
+  "melodyStyleLyrical": "서정적",
+  "melodyStyleColorful": "컬러풀",
+  "allowChromaticApproaches": "반음 어프로치 허용",
+  "allowChromaticApproachesHelp": "스타일이 허용할 때 weak beat에서 enclosure와 반음 접근음을 사용할 수 있게 합니다.",
+  "melodyPlaybackMode": "멜로디 재생 방식",
+  "melodyPlaybackModeHelp": "수동 미리듣기 버튼이 코드만, 멜로디만, 둘 다 재생할지 고릅니다.",
+  "melodyPlaybackModeChordsOnly": "코드만",
+  "melodyPlaybackModeMelodyOnly": "멜로디만",
+  "melodyPlaybackModeBoth": "둘 다",
+  "regenerateMelody": "멜로디 다시 생성",
+  "melodyPreviewCurrent": "현재 라인",
+  "melodyPreviewNext": "다음 도착음",
+  "metronomePatternTitle": "메트로놈 패턴",
+  "metronomePatternHelp": "박자표에 맞는 기본 패턴을 고르거나 각 박을 직접 지정하세요.",
+  "metronomeUseAccentSound": "강박용 별도 소리 사용",
+  "metronomeUseAccentSoundHelp": "강박에서 단순 gain 상승 대신 다른 클릭 소리를 사용합니다.",
+  "metronomePrimarySource": "기본 클릭 소스",
+  "metronomeAccentSource": "강박 클릭 소스",
+  "metronomeSourceKind": "소스 종류",
+  "metronomeLocalFilePath": "로컬 파일 경로",
+  "metronomeLocalFilePathHelp": "로컬 오디오 파일 경로를 붙여넣고 엔터를 누르세요. 실패하면 내장 사운드로 돌아갑니다.",
+  "metronomeAccentLocalFilePath": "강박 로컬 파일 경로",
+  "metronomeAccentLocalFilePathHelp": "강박용 로컬 파일 경로를 붙여넣고 엔터를 누르세요. 실패하면 내장 사운드로 돌아갑니다.",
+  "harmonySoundTitle": "화성 오디오",
+  "harmonyMasterVolume": "마스터 볼륨",
+  "harmonyMasterVolumeHelp": "수동 미리듣기와 자동 chord playback 전체 볼륨입니다.",
+  "harmonyPreviewHoldFactor": "코드 유지 길이",
+  "harmonyPreviewHoldFactorHelp": "미리듣기 코드와 음이 얼마나 오래 유지될지 조절합니다.",
+  "harmonyArpeggioStepSpeed": "아르페지오 속도",
+  "harmonyArpeggioStepSpeedHelp": "아르페지오 음이 얼마나 빨리 진행될지 조절합니다.",
+  "harmonyVelocityHumanization": "벨로시티 휴머니징",
+  "harmonyVelocityHumanizationHelp": "반복 재생이 덜 기계적으로 들리도록 미세한 벨로시티 변화를 줍니다.",
+  "harmonyGainRandomness": "게인 랜덤성",
+  "harmonyGainRandomnessHelp": "지원되는 재생 경로에서 음마다 작은 볼륨 차이를 추가합니다.",
+  "harmonyTimingHumanization": "타이밍 휴머니징",
+  "harmonyTimingHumanizationHelp": "블록 코드의 동시 어택을 약간 풀어 덜 딱딱하게 들리게 합니다."
 }
 

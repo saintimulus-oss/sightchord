@@ -292,6 +292,41 @@ class ChordRenderingHelper {
     return ChordSymbolFormatter.format(chord.symbolData, style);
   }
 
+  static String displayedRomanToken(GeneratedChord chord) {
+    final romanNumeralId = chord.romanNumeralId;
+    if (romanNumeralId == null) {
+      return '';
+    }
+    final spec = MusicTheory.specFor(romanNumeralId);
+    if (chord.symbolData.renderQuality == spec.quality &&
+        chord.symbolData.tensions.isEmpty) {
+      return MusicTheory.romanTokenOf(romanNumeralId);
+    }
+
+    final rendered = ChordSymbolFormatter.format(
+      chord.symbolData,
+      ChordSymbolStyle.majText,
+    );
+    if (!rendered.startsWith(chord.symbolData.root)) {
+      return MusicTheory.romanTokenOf(romanNumeralId);
+    }
+    var suffix = rendered.substring(chord.symbolData.root.length);
+    final bassSuffix = chord.symbolData.bass == null
+        ? null
+        : '/${chord.symbolData.bass}';
+    if (bassSuffix != null && suffix.endsWith(bassSuffix)) {
+      suffix = suffix.substring(0, suffix.length - bassSuffix.length);
+    }
+
+    final degreeToken = MusicTheory.romanDegreeTokenOf(romanNumeralId);
+    final slashIndex = degreeToken.indexOf('/');
+    if (slashIndex < 0) {
+      return '$degreeToken$suffix';
+    }
+    return '${degreeToken.substring(0, slashIndex)}$suffix'
+        '${degreeToken.substring(slashIndex)}';
+  }
+
   static ChordQuality simplifyRenderQualityForLanguage({
     required ChordQuality renderQuality,
     required ChordLanguageLevel chordLanguageLevel,
@@ -308,10 +343,8 @@ class ChordRenderingHelper {
         _ => renderQuality,
       },
       ChordLanguageLevel.seventhChords => switch (renderQuality) {
-        ChordQuality.six ||
-        ChordQuality.major69 => ChordQuality.major7,
-        ChordQuality.minor6 ||
-        ChordQuality.minorMajor7 => ChordQuality.minor7,
+        ChordQuality.six || ChordQuality.major69 => ChordQuality.major7,
+        ChordQuality.minor6 || ChordQuality.minorMajor7 => ChordQuality.minor7,
         ChordQuality.diminished7 => ChordQuality.diminishedTriad,
         ChordQuality.dominant7Alt ||
         ChordQuality.dominant7Sharp11 ||
@@ -874,8 +907,8 @@ class ChordRenderingHelper {
     required ChordLanguageLevel chordLanguageLevel,
   }) {
     return switch (chordLanguageLevel) {
-      ChordLanguageLevel.triadsOnly || ChordLanguageLevel.seventhChords =>
-        const <String>{},
+      ChordLanguageLevel.triadsOnly ||
+      ChordLanguageLevel.seventhChords => const <String>{},
       ChordLanguageLevel.safeExtensions => {
         for (final tension in selectedTensionOptions)
           if (safeExtensionTensions.contains(tension)) tension,

@@ -45,7 +45,7 @@ void main() {
   });
 
   test('placeholder slots are materialized in generated variations', () {
-    final analysis = analyzer.analyze('Dm7 G7 ? Am7');
+    final analysis = analyzer.analyze('Dm7 G7 | ? Am');
     final variations = generator.generate(analysis);
 
     expect(variations, isNotEmpty);

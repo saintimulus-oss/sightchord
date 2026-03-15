@@ -37,13 +37,17 @@ void main() {
   Future<void> pumpAnalyzerPage(
     WidgetTester tester, {
     required TargetPlatform platform,
+    AppSettingsController? controller,
   }) async {
     configureLargeDisplay(tester);
     await tester.pumpWidget(
       MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: ChordAnalyzerPage(inputPlatformOverride: platform),
+        home: ChordAnalyzerPage(
+          inputPlatformOverride: platform,
+          controller: controller,
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -228,6 +232,50 @@ void main() {
     expect(find.byKey(const ValueKey('analyzer-help-dialog')), findsOneWidget);
     expect(find.text('Input tips'), findsOneWidget);
     expect(find.textContaining('spaces, |, or commas'), findsOneWidget);
+  });
+
+  testWidgets('display settings update analyzer detail and theme settings', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    final controller = AppSettingsController(
+      initialSettings: PracticeSettings(language: AppLanguage.en),
+    );
+    await pumpAnalyzerPage(
+      tester,
+      platform: TargetPlatform.windows,
+      controller: controller,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('analyzer-display-settings-button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Analysis display'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const ValueKey('analyzer-detail-level-selector')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Advanced').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey('analyzer-theme-preset-selector')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('High contrast').last);
+    await tester.pumpAndSettle();
+
+    expect(
+      controller.settings.progressionExplanationDetailLevel,
+      ProgressionExplanationDetailLevel.advanced,
+    );
+    expect(
+      controller.settings.progressionHighlightTheme.preset,
+      ProgressionHighlightThemePreset.highContrast,
+    );
   });
 
   testWidgets('generated analyzer variations can be previewed and applied', (
@@ -431,17 +479,35 @@ void main() {
 
       await tester.enterText(
         find.byKey(const ValueKey('analyzer-input-field')),
-        'Dm7 G7 ? Am7',
+        'Dm7 G7 | ? Am',
       );
       await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
       await tester.pump();
       await tester.pumpAndSettle();
 
+      expect(
+        find.byKey(const ValueKey('analyzer-result-dialog')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('analyzer-result-dialog')),
+          matching: find.text('Cmaj7'),
+        ),
+        findsOneWidget,
+      );
       expect(find.text('Suggested fill: Cmaj7'), findsOneWidget);
       expect(
         find.text('This ? was inferred from the surrounding harmonic context.'),
-        findsOneWidget,
+        findsWidgets,
       );
+      await tester.tap(
+        find.descendant(
+          of: find.byKey(const ValueKey('analyzer-result-dialog')),
+          matching: find.text('Close'),
+        ),
+      );
+      await tester.pumpAndSettle();
 
       await tester.tap(
         find.byKey(const ValueKey('analyzer-generate-variations-button')),
@@ -480,6 +546,25 @@ void main() {
     expect(find.textContaining('Slash bass E'), findsOneWidget);
     expect(find.textContaining('resolution toward II'), findsOneWidget);
   });
+
+  testWidgets(
+    'analysis summary surfaces highlight legend for non-diatonic categories',
+    (WidgetTester tester) async {
+      addTearDown(() => restoreDisplay(tester));
+      await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+      await tester.enterText(
+        find.byKey(const ValueKey('analyzer-input-field')),
+        'Fm7 Bb7 Cmaj7',
+      );
+      await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Backdoor / subdominant minor'), findsWidgets);
+      expect(find.text('Borrowed color'), findsWidgets);
+    },
+  );
 
   testWidgets('ignored parser modifiers are surfaced as warnings', (
     WidgetTester tester,

@@ -25,11 +25,21 @@ class _UnsupportedScheduledMetronome implements ScheduledMetronome {
   Future<void> ensureReady() async {}
 
   @override
-  Future<void> loadAsset(String assetPath) async {}
+  Future<void> loadAsset(
+    String assetPath, {
+    String soundId = 'primary',
+  }) async {}
 
   @override
-  Future<void> playNow({required double volume}) async {}
+  Future<void> playNow({
+    required double volume,
+    String soundId = 'primary',
+  }) async {}
 
   @override
-  void scheduleAt({required double whenSeconds, required double volume}) {}
+  void scheduleAt({
+    required double whenSeconds,
+    required double volume,
+    String soundId = 'primary',
+  }) {}
 }

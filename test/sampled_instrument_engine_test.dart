@@ -194,6 +194,61 @@ void main() {
         expect(firstStartIndex, greaterThan(lastPrepareIndex));
       },
     );
+    test('logs and releases the slot when prepare fails during noteOn', () async {
+      final warnings = <String>[];
+      final events = <String>[];
+      final engine = SampledInstrumentEngine(
+        bundle: const SampledInstrumentAssetBundle(
+          id: 'test-piano',
+          manifestAssetPath: manifestAssetPath,
+          assetRootPath: 'assets/test-piano',
+        ),
+        voiceFactory: _SingleVoiceFactory(
+          _ControlledVoice(
+            onPrepare: () async => throw StateError('prepare failed'),
+            eventLog: events,
+          ),
+        ),
+        logWarning: (message, {error, stackTrace}) => warnings.add(message),
+      );
+
+      final note = await engine.noteOn(midiNote: 60);
+
+      expect(note, isNull);
+      expect(
+        warnings,
+        contains('Preparing instrument note-on failed for test-piano.'),
+      );
+      expect(events, contains('setVolume:1.0'));
+    });
+
+    test('logs and releases the slot when start fails during noteOn', () async {
+      final warnings = <String>[];
+      final events = <String>[];
+      final engine = SampledInstrumentEngine(
+        bundle: const SampledInstrumentAssetBundle(
+          id: 'test-piano',
+          manifestAssetPath: manifestAssetPath,
+          assetRootPath: 'assets/test-piano',
+        ),
+        voiceFactory: _SingleVoiceFactory(
+          _ControlledVoice(
+            onStart: () async => throw StateError('start failed'),
+            eventLog: events,
+          ),
+        ),
+        logWarning: (message, {error, stackTrace}) => warnings.add(message),
+      );
+
+      final note = await engine.noteOn(midiNote: 60);
+
+      expect(note, isNull);
+      expect(
+        warnings,
+        contains('Starting instrument note-on failed for test-piano.'),
+      );
+      expect(events, contains('setVolume:1.0'));
+    });
   });
 }
 
@@ -314,6 +369,64 @@ class _RecordingVoice implements SamplePlayerVoice {
   }
 }
 
+class _SingleVoiceFactory implements SamplePlayerVoiceFactory {
+  _SingleVoiceFactory(this.voice);
+
+  final SamplePlayerVoice voice;
+
+  @override
+  Future<SamplePlayerVoice> createVoice() async {
+    await voice.configure();
+    return voice;
+  }
+}
+
+class _ControlledVoice implements SamplePlayerVoice {
+  _ControlledVoice({
+    this.onPrepare,
+    this.onStart,
+    this.eventLog,
+  });
+
+  final Future<void> Function()? onPrepare;
+  final Future<void> Function()? onStart;
+  final List<String>? eventLog;
+
+  @override
+  Future<void> configure() async {}
+
+  @override
+  Future<void> dispose() async {}
+
+  @override
+  Future<void> prepare({
+    required String assetPath,
+    required double playbackRate,
+  }) async {
+    eventLog?.add('prepare:$assetPath@$playbackRate');
+    if (onPrepare != null) {
+      await onPrepare!.call();
+    }
+  }
+
+  @override
+  Future<void> setVolume(double volume) async {
+    eventLog?.add('setVolume:$volume');
+  }
+
+  @override
+  Future<void> start({required double volume}) async {
+    eventLog?.add('start:$volume');
+    if (onStart != null) {
+      await onStart!.call();
+    }
+  }
+
+  @override
+  Future<void> stop() async {
+    eventLog?.add('stop');
+  }
+}
 class _TestManifestLoader {
   _TestManifestLoader({required Map<String, String> assets}) : _assets = assets;
 

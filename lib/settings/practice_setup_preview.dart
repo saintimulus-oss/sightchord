@@ -1,7 +1,9 @@
 import 'dart:math';
 
+import '../music/chord_timing_models.dart';
 import '../music/chord_formatting.dart';
 import '../music/chord_theory.dart';
+import '../music/harmonic_rhythm_planner.dart';
 import '../smart_generator.dart';
 import 'practice_setup_models.dart';
 import 'practice_settings.dart';
@@ -18,10 +20,9 @@ class PracticeSetupPreview {
   final PracticeSettings settings;
   final List<GeneratedChord> chords;
 
-  KeyCenter get startingKeyCenter =>
-      settings.activeKeyCenters.isEmpty
-          ? GeneratorProfile.defaultStartingKeyCenter
-          : settings.activeKeyCenters.first;
+  KeyCenter get startingKeyCenter => settings.activeKeyCenters.isEmpty
+      ? GeneratorProfile.defaultStartingKeyCenter
+      : settings.activeKeyCenters.first;
 
   bool get recommendsStudyHarmony =>
       profile.harmonyLiteracy == HarmonyLiteracy.absoluteBeginner;
@@ -29,10 +30,7 @@ class PracticeSetupPreview {
   List<String> chordSymbols() {
     return [
       for (final chord in chords)
-        ChordRenderingHelper.renderedSymbol(
-          chord,
-          settings.chordSymbolStyle,
-        ),
+        ChordRenderingHelper.renderedSymbol(chord, settings.chordSymbolStyle),
     ];
   }
 }
@@ -57,7 +55,9 @@ class PracticeSetupPreviewBuilder {
   static PracticeSetupPreview fromSettings({
     required PracticeSettings settings,
   }) {
-    final normalizedSettings = settings.copyWith(smartDiagnosticsEnabled: false);
+    final normalizedSettings = settings.copyWith(
+      smartDiagnosticsEnabled: false,
+    );
     final profile = PracticeSettingsFactory.profileFromSettings(
       normalizedSettings,
     );
@@ -107,9 +107,13 @@ class PracticeSetupPreviewBuilder {
     final chords = <GeneratedChord>[];
     var plannedQueue = const <QueuedSmartChord>[];
     GeneratedChord? currentChord;
+    ChordTimingSpec? currentTiming;
 
     for (var stepIndex = 0; stepIndex < chordCount; stepIndex += 1) {
       if (currentChord == null) {
+        final initialTiming = HarmonicRhythmPlanner.initialTiming(
+          settings: settings,
+        );
         final initialPlan = SmartGeneratorHelper.planInitialStep(
           random: random,
           request: SmartStartRequest(
@@ -127,6 +131,9 @@ class PracticeSetupPreviewBuilder {
             romanPoolPreset: settings.romanPoolPreset,
             selectedTensionOptions: settings.selectedTensionOptions,
             inversionSettings: settings.inversionSettings,
+            timeSignature: settings.timeSignature,
+            harmonicRhythmPreset: settings.harmonicRhythmPreset,
+            initialTiming: initialTiming,
             smartDiagnosticsEnabled: false,
           ),
         );
@@ -137,7 +144,8 @@ class PracticeSetupPreviewBuilder {
           keyCenter: initialPlan.finalKeyCenter,
           romanNumeralId: initialPlan.finalRomanNumeralId,
           plannedChordKind: initialPlan.plannedChordKind,
-          renderQualityOverride: initialPlan.renderingPlan.renderQualityOverride,
+          renderQualityOverride:
+              initialPlan.renderingPlan.renderQualityOverride,
           patternTag: initialPlan.patternTag,
           appliedType: initialPlan.appliedType,
           resolutionTargetRomanId: initialPlan.resolutionTargetRomanId,
@@ -145,8 +153,18 @@ class PracticeSetupPreviewBuilder {
           dominantIntent: initialPlan.renderingPlan.dominantIntent,
           suppressTensions: initialPlan.renderingPlan.suppressTensions,
         );
+        currentTiming = initialTiming;
       } else {
-        final previousChord = chords.length >= 2 ? chords[chords.length - 2] : null;
+        final previousChord = chords.length >= 2
+            ? chords[chords.length - 2]
+            : null;
+        final nextTiming = HarmonicRhythmPlanner.nextTiming(
+          settings: settings,
+          currentEvent: GeneratedChordEvent(
+            chord: currentChord,
+            timing: currentTiming!,
+          ),
+        );
         final plan = SmartGeneratorHelper.planNextStep(
           random: random,
           request: SmartStepRequest(
@@ -177,12 +195,21 @@ class PracticeSetupPreviewBuilder {
             smartDiagnosticsEnabled: false,
             previousRomanNumeralId: previousChord?.romanNumeralId,
             previousHarmonicFunction: previousChord?.harmonicFunction,
-            previousWasAppliedDominant: previousChord?.isAppliedDominant ?? false,
+            previousWasAppliedDominant:
+                previousChord?.isAppliedDominant ?? false,
             currentPatternTag: currentChord.patternTag,
             plannedQueue: plannedQueue,
             currentRenderedNonDiatonic: currentChord.isRenderedNonDiatonic,
+            timeSignature: settings.timeSignature,
+            harmonicRhythmPreset: settings.harmonicRhythmPreset,
+            timing: nextTiming,
             currentTrace: currentChord.smartDebug as SmartDecisionTrace?,
-            phraseContext: SmartPhraseContext.rollingForm(stepIndex),
+            phraseContext: SmartPhraseContext.rollingForm(
+              stepIndex,
+              timeSignature: settings.timeSignature,
+              harmonicRhythmPreset: settings.harmonicRhythmPreset,
+              timing: nextTiming,
+            ),
           ),
         );
         plannedQueue = plan.remainingQueuedChords;
@@ -201,6 +228,7 @@ class PracticeSetupPreviewBuilder {
           suppressTensions: plan.renderingPlan.suppressTensions,
           previousChord: currentChord,
         );
+        currentTiming = nextTiming;
       }
 
       if (currentChord == null) {
@@ -314,9 +342,7 @@ class PracticeSetupPreviewBuilder {
         );
   }
 
-  static Set<ChordQuality> _activeChordQualitiesFor(
-    PracticeSettings settings,
-  ) {
+  static Set<ChordQuality> _activeChordQualitiesFor(PracticeSettings settings) {
     final enabled = <ChordQuality>{
       for (final quality in MusicTheory.supportedGeneratorChordQualities)
         if (settings.enabledChordQualities.contains(quality) &&
@@ -375,9 +401,9 @@ class PracticeSetupPreviewBuilder {
   }
 
   static int _seedForSettings(PracticeSettings settings) {
-    final activeCenters = _orderedKeyCenters(settings)
-        .map((center) => '${center.tonicName}:${center.mode.name}')
-        .join('|');
+    final activeCenters = _orderedKeyCenters(
+      settings,
+    ).map((center) => '${center.tonicName}:${center.mode.name}').join('|');
     final source = [
       settings.chordLanguageLevel.name,
       settings.romanPoolPreset.name,

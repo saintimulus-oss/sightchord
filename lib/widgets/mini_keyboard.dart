@@ -8,6 +8,9 @@ class MiniKeyboard extends StatelessWidget {
     required this.notes,
     this.minMidi,
     this.maxMidi,
+    this.currentNotes,
+    this.nextNotes,
+    this.sharedNotes,
   });
 
   static const int _displayMinMidi = 36;
@@ -23,6 +26,9 @@ class MiniKeyboard extends StatelessWidget {
   final List<int> notes;
   final int? minMidi;
   final int? maxMidi;
+  final Iterable<int>? currentNotes;
+  final Iterable<int>? nextNotes;
+  final Iterable<int>? sharedNotes;
 
   static ({int minMidi, int maxMidi}) resolveDisplayRange(
     Iterable<int> midiNotes, {
@@ -73,7 +79,32 @@ class MiniKeyboard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final noteSet = {for (final note in notes) note};
-    final resolvedRange = _resolvedRange();
+    final hasComparisonData =
+        currentNotes != null || nextNotes != null || sharedNotes != null;
+    final resolvedCurrentNotes = hasComparisonData
+        ? {for (final note in currentNotes ?? notes) note}
+        : noteSet;
+    final resolvedNextNotes = hasComparisonData
+        ? {for (final note in nextNotes ?? const <int>[]) note}
+        : const <int>{};
+    final resolvedSharedNotes = hasComparisonData
+        ? {
+            for (final note
+                in sharedNotes ??
+                    resolvedCurrentNotes.intersection(resolvedNextNotes))
+              note,
+          }
+        : const <int>{};
+    final currentOnlyNotes = hasComparisonData
+        ? resolvedCurrentNotes.difference(resolvedSharedNotes)
+        : const <int>{};
+    final nextOnlyNotes = hasComparisonData
+        ? resolvedNextNotes.difference(resolvedSharedNotes)
+        : const <int>{};
+    final activeNoteSet = hasComparisonData
+        ? {...currentOnlyNotes, ...resolvedSharedNotes, ...nextOnlyNotes}
+        : noteSet;
+    final resolvedRange = _resolvedRange(activeNoteSet);
     final displayKeys = [
       for (
         var midi = resolvedRange.minMidi;
@@ -126,7 +157,7 @@ class MiniKeyboard extends StatelessWidget {
                     width: key.width,
                     child: _WhiteKey(
                       key: ValueKey('mini-key-white-${key.midi}'),
-                      active: noteSet.contains(key.midi),
+                      active: activeNoteSet.contains(key.midi),
                       label: _octaveMarker(key.midi),
                     ),
                   ),
@@ -138,80 +169,27 @@ class MiniKeyboard extends StatelessWidget {
                     height: constraints.maxHeight * _blackKeyHeightFactor,
                     child: _BlackKey(
                       key: ValueKey('mini-key-black-${key.midi}'),
-                      active: noteSet.contains(key.midi),
+                      active: activeNoteSet.contains(key.midi),
                     ),
                   ),
-                for (final midi in noteSet)
-                  if (midi >= resolvedRange.minMidi &&
-                      midi <= resolvedRange.maxMidi &&
-                      !_isBlackKey(midi))
-                    Positioned(
-                      left: renderedKeys
-                          .firstWhere((key) => key.midi == midi)
-                          .left,
-                      right: null,
-                      bottom: 5,
-                      width: renderedKeys
-                          .firstWhere((key) => key.midi == midi)
-                          .width,
-                      child: Center(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary,
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(
-                              color: theme.colorScheme.onPrimary,
-                              width: 1,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: theme.colorScheme.primary.withValues(
-                                  alpha: 0.32,
-                                ),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const SizedBox(width: 14, height: 5),
-                        ),
-                      ),
-                    ),
-                for (final midi in noteSet)
-                  if (midi >= resolvedRange.minMidi &&
-                      midi <= resolvedRange.maxMidi &&
-                      _isBlackKey(midi))
-                    Positioned(
-                      left: renderedKeys
-                          .firstWhere((key) => key.midi == midi)
-                          .left,
-                      top: 4,
-                      width: renderedKeys
-                          .firstWhere((key) => key.midi == midi)
-                          .width,
-                      child: Center(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.onPrimary,
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(
-                              color: theme.colorScheme.primaryContainer,
-                              width: 1,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: theme.colorScheme.primary.withValues(
-                                  alpha: 0.22,
-                                ),
-                                blurRadius: 6,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const SizedBox(width: 10, height: 4),
-                        ),
-                      ),
-                    ),
+                if (!hasComparisonData)
+                  ..._buildStandardMarkers(
+                    renderedKeys: renderedKeys,
+                    noteSet: noteSet,
+                    minMidi: resolvedRange.minMidi,
+                    maxMidi: resolvedRange.maxMidi,
+                    theme: theme,
+                  ),
+                if (hasComparisonData)
+                  ..._buildComparisonMarkers(
+                    renderedKeys: renderedKeys,
+                    currentOnlyNotes: currentOnlyNotes,
+                    sharedNotes: resolvedSharedNotes,
+                    nextOnlyNotes: nextOnlyNotes,
+                    minMidi: resolvedRange.minMidi,
+                    maxMidi: resolvedRange.maxMidi,
+                    theme: theme,
+                  ),
               ],
             ),
           );
@@ -220,13 +198,150 @@ class MiniKeyboard extends StatelessWidget {
     );
   }
 
-  ({int minMidi, int maxMidi}) _resolvedRange() {
+  ({int minMidi, int maxMidi}) _resolvedRange(Iterable<int> displayNotes) {
     if (minMidi != null && maxMidi != null) {
       final lower = _clampMidi(math.min(minMidi!, maxMidi!));
       final upper = _clampMidi(math.max(minMidi!, maxMidi!));
       return (minMidi: lower, maxMidi: upper);
     }
-    return resolveDisplayRange(notes);
+    return resolveDisplayRange(displayNotes);
+  }
+
+  List<Widget> _buildStandardMarkers({
+    required List<_RenderedKey> renderedKeys,
+    required Set<int> noteSet,
+    required int minMidi,
+    required int maxMidi,
+    required ThemeData theme,
+  }) {
+    return [
+      for (final midi in noteSet)
+        if (midi >= minMidi && midi <= maxMidi)
+          _buildSingleMarker(
+            keySpec: _keyForMidi(renderedKeys, midi),
+            markerColor: _isBlackKey(midi)
+                ? theme.colorScheme.onPrimary
+                : theme.colorScheme.primary,
+            borderColor: _isBlackKey(midi)
+                ? theme.colorScheme.primaryContainer
+                : theme.colorScheme.onPrimary,
+            shadowColor: theme.colorScheme.primary,
+            markerKey: ValueKey('mini-key-active-$midi'),
+            role: _KeyboardMarkerRole.standard,
+          ),
+    ];
+  }
+
+  List<Widget> _buildComparisonMarkers({
+    required List<_RenderedKey> renderedKeys,
+    required Set<int> currentOnlyNotes,
+    required Set<int> sharedNotes,
+    required Set<int> nextOnlyNotes,
+    required int minMidi,
+    required int maxMidi,
+    required ThemeData theme,
+  }) {
+    final widgets = <Widget>[];
+    for (final midi in currentOnlyNotes) {
+      if (midi < minMidi || midi > maxMidi) {
+        continue;
+      }
+      widgets.add(
+        _buildSingleMarker(
+          keySpec: _keyForMidi(renderedKeys, midi),
+          markerColor: theme.colorScheme.primary,
+          borderColor: theme.colorScheme.onPrimary,
+          shadowColor: theme.colorScheme.primary,
+          markerKey: ValueKey('mini-key-current-$midi'),
+          role: _KeyboardMarkerRole.current,
+        ),
+      );
+    }
+    for (final midi in sharedNotes) {
+      if (midi < minMidi || midi > maxMidi) {
+        continue;
+      }
+      widgets.add(
+        _buildSingleMarker(
+          keySpec: _keyForMidi(renderedKeys, midi),
+          markerColor: theme.colorScheme.secondary,
+          borderColor: theme.colorScheme.onSecondary,
+          shadowColor: theme.colorScheme.secondary,
+          markerKey: ValueKey('mini-key-shared-$midi'),
+          role: _KeyboardMarkerRole.shared,
+        ),
+      );
+    }
+    for (final midi in nextOnlyNotes) {
+      if (midi < minMidi || midi > maxMidi) {
+        continue;
+      }
+      widgets.add(
+        _buildSingleMarker(
+          keySpec: _keyForMidi(renderedKeys, midi),
+          markerColor: theme.colorScheme.tertiary,
+          borderColor: theme.colorScheme.onTertiary,
+          shadowColor: theme.colorScheme.tertiary,
+          markerKey: ValueKey('mini-key-next-$midi'),
+          role: _KeyboardMarkerRole.next,
+        ),
+      );
+    }
+    return widgets;
+  }
+
+  Widget _buildSingleMarker({
+    required _RenderedKey keySpec,
+    required Color markerColor,
+    required Color borderColor,
+    required Color shadowColor,
+    required Key markerKey,
+    required _KeyboardMarkerRole role,
+  }) {
+    final isBlack = keySpec.isBlack;
+    final markerWidth = isBlack ? 10.0 : 14.0;
+    final markerHeight = isBlack ? 4.0 : 5.0;
+    final top = switch (role) {
+      _KeyboardMarkerRole.standard => isBlack ? 4.0 : null,
+      _KeyboardMarkerRole.current => isBlack ? null : null,
+      _KeyboardMarkerRole.shared => isBlack ? 12.0 : null,
+      _KeyboardMarkerRole.next => isBlack ? 4.0 : 5.0,
+    };
+    final bottom = switch (role) {
+      _KeyboardMarkerRole.standard => isBlack ? null : 5.0,
+      _KeyboardMarkerRole.current => isBlack ? 4.0 : 5.0,
+      _KeyboardMarkerRole.shared => isBlack ? null : 17.0,
+      _KeyboardMarkerRole.next => isBlack ? null : null,
+    };
+
+    return Positioned(
+      left: keySpec.left,
+      top: top,
+      bottom: bottom,
+      width: keySpec.width,
+      child: Center(
+        child: DecoratedBox(
+          key: markerKey,
+          decoration: BoxDecoration(
+            color: markerColor,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: borderColor, width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: shadowColor.withValues(alpha: 0.22),
+                blurRadius: isBlack ? 6 : 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: SizedBox(width: markerWidth, height: markerHeight),
+        ),
+      ),
+    );
+  }
+
+  _RenderedKey _keyForMidi(List<_RenderedKey> renderedKeys, int midi) {
+    return renderedKeys.firstWhere((key) => key.midi == midi);
   }
 
   static int _clampMidi(int midi) {
@@ -456,3 +571,5 @@ class _RenderedKey {
   final double width;
   final bool isBlack;
 }
+
+enum _KeyboardMarkerRole { standard, current, shared, next }

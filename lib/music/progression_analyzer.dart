@@ -114,15 +114,19 @@ class ProgressionAnalyzer {
           );
     }
 
-    final tags = _detectTags(resolvedAnalyses);
+    final enrichedAnalyses = _enrichContextualAnalyses(
+      keyCenter: keyCenter,
+      analyses: resolvedAnalyses,
+    );
+    final tags = _detectTags(enrichedAnalyses);
     score += _tagBonus(tags);
-    score += _tonicAnchorBonus(resolvedAnalyses);
-    score += _dominantResolutionBonus(resolvedAnalyses);
+    score += _tonicAnchorBonus(enrichedAnalyses);
+    score += _dominantResolutionBonus(enrichedAnalyses);
 
     return _KeyEvaluation(
       keyCenter: keyCenter,
       score: score,
-      chordAnalyses: resolvedAnalyses,
+      chordAnalyses: enrichedAnalyses,
       tags: tags,
     );
   }
@@ -178,6 +182,614 @@ class ProgressionAnalyzer {
     }
 
     return resolvedAnalyses;
+  }
+
+  List<AnalyzedChord> _enrichContextualAnalyses({
+    required KeyCenter keyCenter,
+    required List<AnalyzedChord> analyses,
+  }) {
+    if (analyses.isEmpty) {
+      return analyses;
+    }
+
+    final nextRemarks = [
+      for (final analysis in analyses) <ProgressionRemark>[...analysis.remarks],
+    ];
+    final nextEvidence = [
+      for (final analysis in analyses)
+        <ProgressionEvidence>[...analysis.evidence],
+    ];
+
+    void addRemark(int index, ProgressionRemark remark) {
+      final remarks = nextRemarks[index];
+      final exists = remarks.any(
+        (candidate) =>
+            candidate.kind == remark.kind &&
+            candidate.targetRomanNumeral == remark.targetRomanNumeral &&
+            candidate.targetKeyCenter == remark.targetKeyCenter &&
+            candidate.detail == remark.detail,
+      );
+      if (!exists) {
+        remarks.add(remark);
+      }
+    }
+
+    void addEvidence(int index, ProgressionEvidence evidence) {
+      final evidenceList = nextEvidence[index];
+      final exists = evidenceList.any(
+        (candidate) =>
+            candidate.kind == evidence.kind &&
+            candidate.detail == evidence.detail,
+      );
+      if (!exists) {
+        evidenceList.add(evidence);
+      }
+    }
+
+    for (var index = 0; index < analyses.length; index += 1) {
+      final analysis = analyses[index];
+      if (analysis.isAmbiguous &&
+          analysis.competingInterpretations.any(
+            (candidate) =>
+                candidate.harmonicFunction != analysis.harmonicFunction,
+          )) {
+        addRemark(
+          index,
+          const ProgressionRemark(
+            kind: ProgressionRemarkKind.dualFunctionAmbiguity,
+          ),
+        );
+        addEvidence(
+          index,
+          ProgressionEvidence(
+            kind: ProgressionEvidenceKind.competingReading,
+            detail: analysis.competingInterpretations
+                .take(2)
+                .map((candidate) => candidate.romanNumeral)
+                .join(', '),
+          ),
+        );
+      }
+
+      if (analysis.romanNumeralId == RomanNumeralId.borrowedIvMin7) {
+        addRemark(
+          index,
+          const ProgressionRemark(kind: ProgressionRemarkKind.subdominantMinor),
+        );
+      }
+    }
+
+    for (var index = 0; index < analyses.length - 2; index += 1) {
+      final first = analyses[index];
+      final second = analyses[index + 1];
+      final third = analyses[index + 2];
+      if ((first.romanNumeralId == RomanNumeralId.borrowedIvMin7 ||
+              first.hasRemark(ProgressionRemarkKind.subdominantMinor)) &&
+          _isBackdoorDominantResolution(second, third) &&
+          _isTonic(third)) {
+        addRemark(
+          index + 1,
+          const ProgressionRemark(kind: ProgressionRemarkKind.backdoorDominant),
+        );
+        addRemark(
+          index,
+          const ProgressionRemark(kind: ProgressionRemarkKind.backdoorChain),
+        );
+        addEvidence(
+          index,
+          const ProgressionEvidence(
+            kind: ProgressionEvidenceKind.backdoorMotion,
+          ),
+        );
+        addEvidence(
+          index + 1,
+          const ProgressionEvidence(
+            kind: ProgressionEvidenceKind.backdoorMotion,
+          ),
+        );
+      }
+    }
+
+    for (var index = 0; index < analyses.length - 1; index += 1) {
+      final current = analyses[index];
+      final next = analyses[index + 1];
+
+      if (_isBackdoorDominantResolution(current, next) && _isTonic(next)) {
+        addRemark(
+          index,
+          const ProgressionRemark(kind: ProgressionRemarkKind.backdoorDominant),
+        );
+        addEvidence(
+          index,
+          const ProgressionEvidence(
+            kind: ProgressionEvidenceKind.backdoorMotion,
+          ),
+        );
+      }
+
+      if (current.romanNumeralId == RomanNumeralId.sharpIDim7 &&
+          _isTonic(next) &&
+          _sharesCommonTone(current.chord, next.chord)) {
+        addRemark(
+          index,
+          const ProgressionRemark(
+            kind: ProgressionRemarkKind.commonToneDiminished,
+          ),
+        );
+        addEvidence(
+          index,
+          const ProgressionEvidence(
+            kind: ProgressionEvidenceKind.commonToneSupport,
+          ),
+        );
+      }
+
+      if (_isDeceptiveResolution(current, next)) {
+        addRemark(
+          index + 1,
+          const ProgressionRemark(kind: ProgressionRemarkKind.deceptiveCadence),
+        );
+        addEvidence(
+          index + 1,
+          const ProgressionEvidence(
+            kind: ProgressionEvidenceKind.deceptiveResolution,
+          ),
+        );
+      }
+
+      if (_isLineClichePair(current.chord, next.chord)) {
+        addRemark(
+          index,
+          const ProgressionRemark(kind: ProgressionRemarkKind.lineClicheColor),
+        );
+        addRemark(
+          index + 1,
+          const ProgressionRemark(kind: ProgressionRemarkKind.lineClicheColor),
+        );
+        addEvidence(
+          index,
+          ProgressionEvidence(
+            kind: ProgressionEvidenceKind.chromaticLine,
+            detail:
+                '${current.chord.sourceSymbol} -> ${next.chord.sourceSymbol}',
+          ),
+        );
+        addEvidence(
+          index + 1,
+          ProgressionEvidence(
+            kind: ProgressionEvidenceKind.chromaticLine,
+            detail:
+                '${current.chord.sourceSymbol} -> ${next.chord.sourceSymbol}',
+          ),
+        );
+      }
+    }
+
+    for (var index = 0; index < analyses.length; index += 1) {
+      final analysis = analyses[index];
+      final resolutionTargetIndex = _findAppliedResolutionIndex(
+        analysis: analysis,
+        analyses: analyses,
+        keyCenter: keyCenter,
+        startIndex: index,
+      );
+      if (resolutionTargetIndex == null) {
+        continue;
+      }
+
+      final target = analyses[resolutionTargetIndex];
+      final targetKeyCenter = _localKeyCenterForAnalysis(target);
+      final segmentEnd = math.min(analyses.length, resolutionTargetIndex + 4);
+      final localWindow = _interpretSegmentInKey(
+        keyCenter: targetKeyCenter,
+        chords: [
+          for (
+            var segmentIndex = resolutionTargetIndex;
+            segmentIndex < segmentEnd;
+            segmentIndex += 1
+          )
+            analyses[segmentIndex].chord,
+        ],
+      );
+
+      final hasCadentialArrival =
+          localWindow.isNotEmpty &&
+          localWindow.first.harmonicFunction ==
+              ProgressionHarmonicFunction.tonic;
+      final hasFollowThrough = _hasLocalKeyFollowThrough(localWindow);
+      final hasPhraseBoundary =
+          target.chord.positionInMeasure == 0 ||
+          target.chord.measureIndex != analysis.chord.measureIndex;
+      final pivotIndex = _pivotIndexBeforeTarget(
+        analyses: analyses,
+        primaryKey: keyCenter,
+        targetKeyCenter: targetKeyCenter,
+        startIndex: index,
+        targetIndex: resolutionTargetIndex,
+      );
+      final hasPivot = pivotIndex != null;
+      final hasCommonTone =
+          (pivotIndex != null &&
+              _sharesCommonTone(analyses[pivotIndex].chord, target.chord)) ||
+          (index > 0 &&
+              _sharesCommonTone(analyses[index - 1].chord, target.chord));
+      final endsOnLocalTonic = _windowEndsOnLocalTonic(localWindow);
+      final homeGravityWeakening =
+          !_windowContainsPrimaryTonic(analyses, resolutionTargetIndex) &&
+          endsOnLocalTonic;
+      final hasModulationEvidence =
+          homeGravityWeakening ||
+          (endsOnLocalTonic &&
+              (hasPhraseBoundary || hasPivot || hasCommonTone));
+
+      if (hasCadentialArrival && hasFollowThrough && hasModulationEvidence) {
+        addRemark(
+          index,
+          ProgressionRemark(
+            kind: ProgressionRemarkKind.realModulation,
+            targetKeyCenter: targetKeyCenter,
+          ),
+        );
+        addRemark(
+          resolutionTargetIndex,
+          ProgressionRemark(
+            kind: ProgressionRemarkKind.realModulation,
+            targetKeyCenter: targetKeyCenter,
+          ),
+        );
+        addEvidence(
+          index,
+          const ProgressionEvidence(
+            kind: ProgressionEvidenceKind.cadentialArrival,
+          ),
+        );
+        addEvidence(
+          index,
+          const ProgressionEvidence(
+            kind: ProgressionEvidenceKind.followThroughSupport,
+          ),
+        );
+        if (hasPhraseBoundary) {
+          addEvidence(
+            index,
+            const ProgressionEvidence(
+              kind: ProgressionEvidenceKind.phraseBoundary,
+            ),
+          );
+        }
+        if (homeGravityWeakening) {
+          addEvidence(
+            index,
+            const ProgressionEvidence(
+              kind: ProgressionEvidenceKind.homeGravityWeakening,
+            ),
+          );
+        }
+        if (pivotIndex != null) {
+          addRemark(
+            pivotIndex,
+            ProgressionRemark(
+              kind: ProgressionRemarkKind.pivotChordInterpretation,
+              targetKeyCenter: targetKeyCenter,
+            ),
+          );
+          addEvidence(
+            pivotIndex,
+            const ProgressionEvidence(
+              kind: ProgressionEvidenceKind.pivotSupport,
+            ),
+          );
+        } else if (hasCommonTone) {
+          addRemark(
+            index,
+            ProgressionRemark(
+              kind: ProgressionRemarkKind.commonToneModulation,
+              targetKeyCenter: targetKeyCenter,
+            ),
+          );
+          addEvidence(
+            index,
+            const ProgressionEvidence(
+              kind: ProgressionEvidenceKind.commonToneSupport,
+            ),
+          );
+        }
+      } else if (hasCadentialArrival) {
+        addRemark(
+          index,
+          ProgressionRemark(
+            kind: ProgressionRemarkKind.tonicization,
+            targetKeyCenter: targetKeyCenter,
+          ),
+        );
+        addEvidence(
+          index,
+          const ProgressionEvidence(
+            kind: ProgressionEvidenceKind.cadentialArrival,
+          ),
+        );
+        if (hasPhraseBoundary) {
+          addEvidence(
+            index,
+            const ProgressionEvidence(
+              kind: ProgressionEvidenceKind.phraseBoundary,
+            ),
+          );
+        }
+      }
+    }
+
+    return [
+      for (var index = 0; index < analyses.length; index += 1)
+        analyses[index].copyWith(
+          remarks: List<ProgressionRemark>.unmodifiable(nextRemarks[index]),
+          evidence: List<ProgressionEvidence>.unmodifiable(nextEvidence[index]),
+          isAmbiguous:
+              analyses[index].isAmbiguous ||
+              nextRemarks[index].any(
+                (remark) =>
+                    remark.kind ==
+                        ProgressionRemarkKind.dualFunctionAmbiguity ||
+                    remark.kind ==
+                        ProgressionRemarkKind.ambiguousInterpretation ||
+                    remark.kind == ProgressionRemarkKind.unresolved,
+              ),
+        ),
+    ];
+  }
+
+  bool _isLineClichePair(ParsedChord left, ParsedChord right) {
+    if (left.rootSemitone != right.rootSemitone) {
+      return false;
+    }
+    const majorLine = {
+      ChordQuality.majorTriad,
+      ChordQuality.major7,
+      ChordQuality.dominant7,
+      ChordQuality.six,
+      ChordQuality.major69,
+    };
+    const minorLine = {
+      ChordQuality.minorTriad,
+      ChordQuality.minorMajor7,
+      ChordQuality.minor7,
+      ChordQuality.minor6,
+    };
+    return (majorLine.contains(left.displayQuality) &&
+            majorLine.contains(right.displayQuality) &&
+            left.displayQuality != right.displayQuality) ||
+        (minorLine.contains(left.displayQuality) &&
+            minorLine.contains(right.displayQuality) &&
+            left.displayQuality != right.displayQuality);
+  }
+
+  bool _isDeceptiveResolution(AnalyzedChord dominant, AnalyzedChord target) {
+    if (dominant.harmonicFunction != ProgressionHarmonicFunction.dominant) {
+      return false;
+    }
+    return target.romanNumeralId == RomanNumeralId.viMin7 ||
+        target.romanNumeralId == RomanNumeralId.flatVIMaj7Minor;
+  }
+
+  bool _isBackdoorDominantResolution(
+    AnalyzedChord dominant,
+    AnalyzedChord target,
+  ) {
+    if (!dominant.chord.isDominantLike || !_isTonic(target)) {
+      return false;
+    }
+    final intervalToTarget =
+        (target.chord.rootSemitone - dominant.chord.rootSemitone) % 12;
+    return dominant.romanNumeralId == RomanNumeralId.borrowedFlatVII7 ||
+        intervalToTarget == 2;
+  }
+
+  int? _findAppliedResolutionIndex({
+    required AnalyzedChord analysis,
+    required List<AnalyzedChord> analyses,
+    required KeyCenter keyCenter,
+    required int startIndex,
+  }) {
+    final targetRomanId = analysis.romanNumeralId == null
+        ? null
+        : MusicTheory.modeAwareResolutionTarget(
+            analysis.romanNumeralId!,
+            keyCenter.mode,
+          );
+    if (targetRomanId == null) {
+      return analysis.hasRemark(
+                ProgressionRemarkKind.possibleTritoneSubstitute,
+              ) &&
+              startIndex + 1 < analyses.length
+          ? startIndex + 1
+          : null;
+    }
+
+    final targetRoot = MusicTheory.resolveChordRootForCenter(
+      keyCenter,
+      targetRomanId,
+    );
+    final targetSemitone = MusicTheory.noteToSemitone[targetRoot];
+    final targetQuality = MusicTheory.specFor(targetRomanId).quality;
+    if (targetSemitone == null) {
+      return null;
+    }
+
+    final searchEnd = math.min(analyses.length, startIndex + 3);
+    for (var index = startIndex + 1; index < searchEnd; index += 1) {
+      if (_matchesTarget(
+        analyses[index].chord,
+        targetSemitone,
+        targetQuality,
+      )) {
+        return index;
+      }
+    }
+    return null;
+  }
+
+  KeyCenter _localKeyCenterForAnalysis(AnalyzedChord analysis) {
+    final tonicName = _keyOptionForSemitone(
+      analysis.chord.rootSemitone,
+      preferFlat:
+          analysis.chord.root.contains('b') ||
+          analysis.chord.sourceSymbol.contains('b'),
+    );
+    final mode = switch (analysis.chord.analysisFamily) {
+      ChordFamily.minor ||
+      ChordFamily.halfDiminished ||
+      ChordFamily.diminished => KeyMode.minor,
+      ChordFamily.major ||
+      ChordFamily.dominant ||
+      ChordFamily.augmented => KeyMode.major,
+    };
+    return KeyCenter(tonicName: tonicName, mode: mode);
+  }
+
+  String _keyOptionForSemitone(int semitone, {required bool preferFlat}) {
+    final normalized = semitone % 12;
+    final matches = [
+      for (final key in MusicTheory.keyOptions)
+        if (MusicTheory.keyTonicSemitone(key) == normalized) key,
+    ];
+    if (matches.isEmpty) {
+      return MusicTheory.spellPitch(normalized, preferFlat: preferFlat);
+    }
+    for (final key in matches) {
+      if (MusicTheory.prefersFlatSpellingForKey(key) == preferFlat) {
+        return key;
+      }
+    }
+    return matches.first;
+  }
+
+  List<AnalyzedChord> _interpretSegmentInKey({
+    required KeyCenter keyCenter,
+    required List<ParsedChord> chords,
+  }) {
+    if (chords.isEmpty) {
+      return const [];
+    }
+    return [
+      for (var index = 0; index < chords.length; index += 1)
+        _bestInterpretation(keyCenter: keyCenter, chords: chords, index: index),
+    ];
+  }
+
+  bool _hasLocalKeyFollowThrough(List<AnalyzedChord> analyses) {
+    if (analyses.length < 2) {
+      return false;
+    }
+    for (var index = 0; index < analyses.length - 1; index += 1) {
+      final first = analyses[index];
+      final second = analyses[index + 1];
+      if (first.harmonicFunction == ProgressionHarmonicFunction.predominant &&
+          second.harmonicFunction == ProgressionHarmonicFunction.dominant) {
+        return true;
+      }
+      if (first.harmonicFunction == ProgressionHarmonicFunction.dominant &&
+          second.harmonicFunction == ProgressionHarmonicFunction.tonic) {
+        return true;
+      }
+    }
+    final supportingCount = analyses
+        .where(
+          (analysis) =>
+              analysis.harmonicFunction != ProgressionHarmonicFunction.other,
+        )
+        .length;
+    return supportingCount >= 2;
+  }
+
+  int? _pivotIndexBeforeTarget({
+    required List<AnalyzedChord> analyses,
+    required KeyCenter primaryKey,
+    required KeyCenter targetKeyCenter,
+    required int startIndex,
+    required int targetIndex,
+  }) {
+    for (
+      var index = math.max(0, startIndex - 1);
+      index < targetIndex;
+      index += 1
+    ) {
+      final chord = analyses[index].chord;
+      if (_bestDiatonicTarget(chord, primaryKey) != null &&
+          _bestDiatonicTarget(chord, targetKeyCenter) != null) {
+        return index;
+      }
+    }
+    return null;
+  }
+
+  bool _windowContainsPrimaryTonic(
+    List<AnalyzedChord> analyses,
+    int startIndex,
+  ) {
+    final end = math.min(analyses.length, startIndex + 3);
+    for (var index = startIndex; index < end; index += 1) {
+      if (_isTonic(analyses[index])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool _windowEndsOnLocalTonic(List<AnalyzedChord> analyses) {
+    return analyses.isNotEmpty &&
+        analyses.last.harmonicFunction == ProgressionHarmonicFunction.tonic;
+  }
+
+  bool _sharesCommonTone(ParsedChord left, ParsedChord right) {
+    final leftPitchClasses = _corePitchClasses(left);
+    final rightPitchClasses = _corePitchClasses(right);
+    return leftPitchClasses.any(rightPitchClasses.contains);
+  }
+
+  Set<int> _corePitchClasses(ParsedChord chord) {
+    final thirdOffset = switch (chord.displayQuality) {
+      ChordQuality.minorTriad ||
+      ChordQuality.minor7 ||
+      ChordQuality.minorMajor7 ||
+      ChordQuality.minor6 ||
+      ChordQuality.halfDiminished7 ||
+      ChordQuality.diminishedTriad ||
+      ChordQuality.diminished7 => 3,
+      _ => 4,
+    };
+    final fifthOffset = switch (chord.displayQuality) {
+      ChordQuality.diminishedTriad ||
+      ChordQuality.diminished7 ||
+      ChordQuality.halfDiminished7 => 6,
+      ChordQuality.augmentedTriad => 8,
+      _ => 7,
+    };
+    final pitchClasses = <int>{
+      chord.rootSemitone % 12,
+      (chord.rootSemitone + thirdOffset) % 12,
+      (chord.rootSemitone + fifthOffset) % 12,
+    };
+    if (chord.hasExtension) {
+      final seventhOffset = switch (chord.displayQuality) {
+        ChordQuality.major7 ||
+        ChordQuality.major69 ||
+        ChordQuality.minorMajor7 => 11,
+        ChordQuality.minor7 ||
+        ChordQuality.dominant7 ||
+        ChordQuality.dominant7Alt ||
+        ChordQuality.dominant7Sharp11 ||
+        ChordQuality.dominant13sus4 ||
+        ChordQuality.dominant7sus4 ||
+        ChordQuality.halfDiminished7 ||
+        ChordQuality.minor6 => 10,
+        ChordQuality.diminished7 => 9,
+        _ => null,
+      };
+      if (seventhOffset != null) {
+        pitchClasses.add((chord.rootSemitone + seventhOffset) % 12);
+      }
+    }
+    return pitchClasses;
   }
 
   AnalyzedChord _inferPlaceholderAnalysis({
@@ -1478,6 +2090,41 @@ class ProgressionAnalyzer {
       tags.add(ProgressionTagId.turnaround);
     }
 
+    if (analyses.any(
+      (analysis) => analysis.hasRemark(ProgressionRemarkKind.tonicization),
+    )) {
+      tags.add(ProgressionTagId.tonicization);
+    }
+    if (analyses.any(
+      (analysis) => analysis.hasRemark(ProgressionRemarkKind.realModulation),
+    )) {
+      tags.add(ProgressionTagId.realModulation);
+    }
+    if (analyses.any(
+      (analysis) =>
+          analysis.hasRemark(ProgressionRemarkKind.backdoorChain) ||
+          analysis.hasRemark(ProgressionRemarkKind.backdoorDominant),
+    )) {
+      tags.add(ProgressionTagId.backdoorChain);
+    }
+    if (analyses.any(
+      (analysis) => analysis.hasRemark(ProgressionRemarkKind.deceptiveCadence),
+    )) {
+      tags.add(ProgressionTagId.deceptiveCadence);
+    }
+    if (analyses.any(
+      (analysis) => analysis.hasRemark(ProgressionRemarkKind.lineClicheColor),
+    )) {
+      tags.add(ProgressionTagId.chromaticLine);
+    }
+    if (analyses.any(
+      (analysis) =>
+          analysis.hasRemark(ProgressionRemarkKind.commonToneDiminished) ||
+          analysis.hasRemark(ProgressionRemarkKind.commonToneModulation),
+    )) {
+      tags.add(ProgressionTagId.commonToneMotion);
+    }
+
     return tags.toList();
   }
 
@@ -1500,6 +2147,12 @@ class ProgressionAnalyzer {
         ProgressionTagId.turnaround => 5.5,
         ProgressionTagId.dominantResolution => 2.5,
         ProgressionTagId.plagalColor => 2,
+        ProgressionTagId.tonicization => 1.3,
+        ProgressionTagId.realModulation => 1.8,
+        ProgressionTagId.backdoorChain => 1.6,
+        ProgressionTagId.deceptiveCadence => 0.8,
+        ProgressionTagId.chromaticLine => 0.7,
+        ProgressionTagId.commonToneMotion => 0.9,
       };
     }
     return score;

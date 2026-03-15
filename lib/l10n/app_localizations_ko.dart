@@ -134,7 +134,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get setupAssistantLiteracyFunctionalTitle =>
-      'ii-V-I와 다이어토닉 흐름은 어느 정도 따라간다';
+      'ii-V-I와 다이아토닉 기능 흐름은 어느 정도 따라간다';
 
   @override
   String get setupAssistantLiteracyFunctionalBody => '명확한 화성에 약간의 움직임을 더해요.';
@@ -371,6 +371,40 @@ class AppLocalizationsKo extends AppLocalizations {
   String get metronomeVolume => '메트로놈 볼륨';
 
   @override
+  String get practiceMeter => '박자표';
+
+  @override
+  String get practiceMeterHelp =>
+      '각 마디의 박 수를 설정해 비트 표시, 자동 재생, 메트로놈 타이밍에 반영합니다.';
+
+  @override
+  String get practiceTimeSignatureTwoFour => '2/4';
+
+  @override
+  String get practiceTimeSignatureThreeFour => '3/4';
+
+  @override
+  String get practiceTimeSignatureFourFour => '4/4';
+
+  @override
+  String get harmonicRhythm => '화성 리듬';
+
+  @override
+  String get harmonicRhythmHelp => '마디 안에서 코드가 얼마나 자주 바뀔지 설정합니다.';
+
+  @override
+  String get harmonicRhythmOnePerBar => '마디당 1개';
+
+  @override
+  String get harmonicRhythmTwoPerBar => '마디당 2개';
+
+  @override
+  String get harmonicRhythmPhraseAwareJazz => '프레이즈 인지 재즈';
+
+  @override
+  String get harmonicRhythmCadenceCompression => '종지 압축';
+
+  @override
   String get keys => '키';
 
   @override
@@ -384,7 +418,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get smartGeneratorMode => 'Smart Generator 모드';
 
   @override
-  String get smartGeneratorHelp => '활성화된 비다이어토닉 옵션을 유지하면서 기능적 화성 진행을 우선합니다.';
+  String get smartGeneratorHelp => '활성화된 논다이아토닉 옵션을 유지하면서 기능적 화성 진행을 우선합니다.';
 
   @override
   String get advancedSmartGenerator => '고급 Smart Generator';
@@ -436,10 +470,10 @@ class AppLocalizationsKo extends AppLocalizations {
       'Smart Generator 모드를 사용하려면 키를 하나 이상 선택하세요.';
 
   @override
-  String get nonDiatonic => '비다이아토닉';
+  String get nonDiatonic => '논다이아토닉';
 
   @override
-  String get nonDiatonicRequiresKeyMode => '비다이어토닉 옵션은 키 모드에서만 사용할 수 있습니다.';
+  String get nonDiatonicRequiresKeyMode => '논다이아토닉 옵션은 키 모드에서만 사용할 수 있습니다.';
 
   @override
   String get secondaryDominant => '세컨더리 도미넌트';
@@ -483,7 +517,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get keyCenterLabelStyleModeText => 'C 장조: / C 단조:';
 
   @override
-  String get keyCenterLabelStyleClassicalCase => '씨: / 씨:';
+  String get keyCenterLabelStyleClassicalCase => 'C: / c:';
 
   @override
   String get allowV7sus4 => 'V7sus4 허용 (V7, V7/x)';
@@ -578,7 +612,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '선택한 키 안에서 화성 기능의 흐름을 따르면서도 자연스러운 Smart Generator 진행을 허용합니다.';
 
   @override
-  String get keyPracticeDescription => '선택한 키와 활성화된 로마 숫자로 다이어토닉 연습 재료를 생성합니다.';
+  String get keyPracticeDescription => '선택한 키와 활성화된 로마 숫자로 다이아토닉 연습 문제를 생성합니다.';
 
   @override
   String get keyboardShortcutHelp =>
@@ -648,6 +682,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get voicingSuggestionsHelp => '현재 코드에 대해 연주 가능한 보이싱 아이디어 3개를 보여줍니다.';
 
   @override
+  String get voicingDisplayMode => '보이싱 표시 모드';
+
+  @override
+  String get voicingDisplayModeHelp => '기존 3카드 보기와 연주 중심 현재/다음 미리보기 사이를 전환합니다.';
+
+  @override
+  String get voicingDisplayModeStandard => '표준';
+
+  @override
+  String get voicingDisplayModePerformance => '연주';
+
+  @override
   String get voicingComplexity => '보이싱 복잡도';
 
   @override
@@ -679,10 +725,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get allowRootlessVoicingsHelp => '가이드톤이 분명할 때 루트를 생략한 제안을 허용합니다.';
 
   @override
-  String get maxVoicingNotes => '최대 보이싱 음수';
+  String get maxVoicingNotes => '보이싱 최대 음 개수';
 
   @override
-  String get lookAheadDepth => '미리보기 깊이';
+  String get lookAheadDepth => '앞보기 깊이';
 
   @override
   String get lookAheadDepthHelp => '랭킹 계산 시 고려할 미래 코드 수입니다.';
@@ -691,7 +737,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get showVoicingReasons => '보이싱 이유 표시';
 
   @override
-  String get showVoicingReasonsHelp => '각 제안 카드에 짧은 설명 칩을 표시합니다.';
+  String get showVoicingReasonsHelp => '각 제안 카드에 짧은 설명 태그를 표시합니다.';
 
   @override
   String get voicingSuggestionNatural => '가장 자연스러움';
@@ -738,6 +784,30 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get voicingSuggestionEasyStableSubtitle => '반복하기 쉬운 손 모양';
+
+  @override
+  String get voicingPerformanceSubtitle =>
+      '대표 컴핑 보이싱 하나를 크게 보고, 다음 움직임까지 함께 확인하세요.';
+
+  @override
+  String get voicingPerformanceCurrentTitle => '현재 보이싱';
+
+  @override
+  String get voicingPerformanceNextTitle => '다음 미리보기';
+
+  @override
+  String get voicingPerformanceCurrentOnly => '현재만';
+
+  @override
+  String get voicingPerformanceShared => '공통음';
+
+  @override
+  String get voicingPerformanceNextOnly => '다음 이동';
+
+  @override
+  String voicingPerformanceTopLinePath(Object current, Object next) {
+    return '탑라인: $current -> $next';
+  }
 
   @override
   String get voicingTopNoteLabel => '탑';
@@ -905,7 +975,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyPlaceholderBody =>
-      '레슨 데이터, 문제 표현, 정답 입력 표면을 하나의 학습 흐름으로 묶어 두어 음, 코드, 스케일, 진행 과제를 같은 방식으로 확장할 수 있습니다.';
+      '레슨 데이터, 문제 문구, 정답 입력 UI는 이미 공통 학습 흐름으로 묶여 있어 음, 코드, 스케일, 진행 문제에 같은 구조를 재사용할 수 있습니다.';
 
   @override
   String get studyHarmonyTestLevelTag => '연습 드릴';
@@ -1053,7 +1123,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyContinueCardTitle => '이어하기';
 
   @override
-  String get studyHarmonyContinueResumeHint => '가장 최근에 건드린 수업부터 이어서 시작합니다.';
+  String get studyHarmonyContinueResumeHint => '가장 최근에 하던 수업부터 이어서 시작합니다.';
 
   @override
   String get studyHarmonyContinueFrontierHint => '현재 진행선에서 다음 수업으로 바로 이동합니다.';
@@ -1076,7 +1146,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyReviewWeakHint => '플레이한 수업 중 가장 약한 결과를 기준으로 골랐습니다.';
 
   @override
-  String get studyHarmonyReviewFallbackHint => '아직 복습 부채가 없어 현재 진행선으로 되돌아갑니다.';
+  String get studyHarmonyReviewFallbackHint => '아직 누적된 복습이 없어 현재 진행선으로 돌아갑니다.';
 
   @override
   String get studyHarmonyReviewRetryNeededHint =>
@@ -1315,7 +1385,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonySkillProgressionFunction => '진행 안에서 기능 읽기';
 
   @override
-  String get studyHarmonySkillProgressionNonDiatonic => '비다이아토닉 코드 찾기';
+  String get studyHarmonySkillProgressionNonDiatonic => '진행의 논다이아토닉 코드 찾기';
 
   @override
   String get studyHarmonySkillProgressionFillBlank => '진행 빈칸 채우기';
@@ -1356,7 +1426,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String studyHarmonyTrackPlaceholderBody(Object coreTrack) {
-    return '지금은 $coreTrack 트랙이 활성 경로입니다. 다른 트랙은 이후 허브를 다시 뜯어고치지 않고 확장할 수 있도록 자리만 먼저 보여 줍니다.';
+    return '이 트랙은 아직 잠겨 있습니다. 오늘은 $coreTrack로 돌아가 계속 학습하세요.';
   }
 
   @override
@@ -1367,42 +1437,42 @@ class AppLocalizationsKo extends AppLocalizations {
       '음과 건반에서 시작해 코드, 스케일, 로마숫자, 다이아토닉 기초를 거쳐 짧은 코드 진행 분석까지 올라가는 기본 경로입니다.';
 
   @override
-  String get studyHarmonyChapterNotesTitle => '1장: 메모 및 키보드';
+  String get studyHarmonyChapterNotesTitle => '1장: 음이름과 건반';
 
   @override
   String get studyHarmonyChapterNotesDescription =>
-      '음표 이름을 키보드에 매핑하고 흰색 건반과 간단한 우연 기호에 익숙해지세요.';
+      '음이름을 건반에 연결하고 흰건반과 기본 임시표에 익숙해집니다.';
 
   @override
   String get studyHarmonyChapterChordsTitle => '2장: 코드 기초';
 
   @override
   String get studyHarmonyChapterChordsDescription =>
-      '기본 3화음과 7도의 철자를 입력한 다음 해당 음에서 일반적인 화음 모양을 지정합니다.';
+      '기본 3화음과 7화음의 구성음을 익히고, 구성음을 보고 흔한 코드 이름을 맞혀 봅니다.';
 
   @override
-  String get studyHarmonyChapterScalesTitle => '3장: 저울 및 키';
+  String get studyHarmonyChapterScalesTitle => '3장: 스케일과 조성';
 
   @override
   String get studyHarmonyChapterScalesDescription =>
-      '메이저와 마이너 스케일을 만든 다음 키 안에 어떤 톤이 속하는지 알아보세요.';
+      '메이저와 마이너 스케일을 만든 뒤, 어떤 음이 조 안에 속하는지 찾아봅니다.';
 
   @override
-  String get studyHarmonyChapterRomanTitle => '4장: 로마 숫자와 온음계';
+  String get studyHarmonyChapterRomanTitle => '4장: 로마 숫자와 다이아토닉';
 
   @override
   String get studyHarmonyChapterRomanDescription =>
-      '간단한 로마 숫자를 코드로 변환하고, 코드에서 식별하고, 다이아토닉 기본 사항을 기능별로 정렬합니다.';
+      '간단한 로마 숫자를 코드로 바꾸고, 코드를 로마 숫자로 읽고, 다이아토닉 기초를 기능별로 정리합니다.';
 
   @override
-  String get studyHarmonyChapterProgressionDetectiveTitle => '제5장 진행형 탐정Ⅰ';
+  String get studyHarmonyChapterProgressionDetectiveTitle => '5장: 코드 진행 탐정 I';
 
   @override
   String get studyHarmonyChapterProgressionDetectiveDescription =>
       '짧은 기본 진행을 보고 조성을 맞히고, 기능을 읽고, 어울리지 않는 코드를 찾아봅니다.';
 
   @override
-  String get studyHarmonyChapterMissingChordTitle => '6장: 누락된 코드 I';
+  String get studyHarmonyChapterMissingChordTitle => '6장: 빈칸 코드 I';
 
   @override
   String get studyHarmonyChapterMissingChordDescription =>
@@ -1447,61 +1517,60 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyObjectiveBossReview => '보스 복습';
 
   @override
-  String get studyHarmonyLessonNotesKeyboardTitle => '화이트 키 노트 헌트';
+  String get studyHarmonyLessonNotesKeyboardTitle => '흰건반 음 찾기';
 
   @override
   String get studyHarmonyLessonNotesKeyboardDescription =>
-      '음표 이름을 읽고 일치하는 흰색 건반을 탭하세요.';
+      '음이름을 보고 맞는 흰건반을 탭하세요.';
 
   @override
-  String get studyHarmonyLessonNotesPreviewTitle => '강조 표시된 메모 이름 지정';
+  String get studyHarmonyLessonNotesPreviewTitle => '강조된 음 이름 맞히기';
 
   @override
   String get studyHarmonyLessonNotesPreviewDescription =>
-      '강조 표시된 키를 보고 올바른 음표 이름을 선택하세요.';
+      '강조된 건반을 보고 올바른 음이름을 고르세요.';
 
   @override
-  String get studyHarmonyLessonNotesAccidentalsTitle => '블랙 키와 쌍둥이';
+  String get studyHarmonyLessonNotesAccidentalsTitle => '검은건반의 두 이름';
 
   @override
   String get studyHarmonyLessonNotesAccidentalsDescription =>
-      '검은 건반의 날카롭고 단조로운 철자를 먼저 살펴보세요.';
+      '검은건반의 샵/플랫 표기를 먼저 익혀 보세요.';
 
   @override
-  String get studyHarmonyLessonNotesBossTitle => '보스: 빠른 노트 헌트';
+  String get studyHarmonyLessonNotesBossTitle => '보스: 빠른 음 찾기';
 
   @override
   String get studyHarmonyLessonNotesBossDescription =>
       '노트 읽기와 키보드 찾기를 하나의 짧은 속도 라운드로 혼합합니다.';
 
   @override
-  String get studyHarmonyLessonTriadKeyboardTitle => '키보드의 트라이어드';
+  String get studyHarmonyLessonTriadKeyboardTitle => '건반에서 3화음 만들기';
 
   @override
   String get studyHarmonyLessonTriadKeyboardDescription =>
       '일반적인 장3화음, 단3화음, 감3화음을 키보드에서 직접 구성해 보세요.';
 
   @override
-  String get studyHarmonyLessonSeventhKeyboardTitle => '키보드의 7분의 1';
+  String get studyHarmonyLessonSeventhKeyboardTitle => '건반에서 7화음 만들기';
 
   @override
   String get studyHarmonyLessonSeventhKeyboardDescription =>
-      '7도를 추가하고 키보드에 몇 가지 일반적인 7도 코드를 입력하세요.';
+      '7음을 더해 몇 가지 흔한 7화음을 건반에서 직접 구성해 보세요.';
 
   @override
-  String get studyHarmonyLessonChordNameTitle => '강조 표시된 코드 이름 지정';
+  String get studyHarmonyLessonChordNameTitle => '강조된 코드 이름 맞히기';
 
   @override
   String get studyHarmonyLessonChordNameDescription =>
       '강조 표시된 코드 모양을 읽고 올바른 코드 이름을 선택하세요.';
 
   @override
-  String get studyHarmonyLessonChordsBossTitle =>
-      'Boss: Triads and Sevenths 리뷰';
+  String get studyHarmonyLessonChordsBossTitle => '보스: 3화음과 7화음 복습';
 
   @override
   String get studyHarmonyLessonChordsBossDescription =>
-      '한 번의 혼합 리뷰에서 코드 철자와 코드 이름 지정 사이를 전환하세요.';
+      '한 번의 혼합 복습에서 코드 스펠링과 코드 이름 맞히기를 오갑니다.';
 
   @override
   String get studyHarmonyLessonMajorScaleTitle => '메이저 스케일 만들기';
@@ -1511,67 +1580,67 @@ class AppLocalizationsKo extends AppLocalizations {
       '단순한 메이저 스케일에 속하는 모든 음을 선택하세요.';
 
   @override
-  String get studyHarmonyLessonMinorScaleTitle => '마이너 스케일 구축';
+  String get studyHarmonyLessonMinorScaleTitle => '마이너 스케일 만들기';
 
   @override
   String get studyHarmonyLessonMinorScaleDescription =>
-      '몇 가지 공통 키를 사용하여 내추럴 마이너 및 하모닉 마이너 스케일을 만듭니다.';
+      '몇 가지 익숙한 조를 바탕으로 내추럴 마이너와 하모닉 마이너 스케일을 만들어 봅니다.';
 
   @override
-  String get studyHarmonyLessonKeyMembershipTitle => '주요 회원';
+  String get studyHarmonyLessonKeyMembershipTitle => '조성 구성음 찾기';
 
   @override
   String get studyHarmonyLessonKeyMembershipDescription =>
-      '명명된 키 안에 어떤 톤이 속하는지 찾아보세요.';
+      '주어진 조에 속하는 음을 찾아보세요.';
 
   @override
-  String get studyHarmonyLessonScalesBossTitle => '보스: 스케일 수리';
+  String get studyHarmonyLessonScalesBossTitle => '보스: 스케일 점검';
 
   @override
   String get studyHarmonyLessonScalesBossDescription =>
-      '짧은 수리 라운드에서 규모 구축과 주요 구성원을 혼합합니다.';
+      '짧은 복습 라운드에서 스케일 만들기와 조성 구성음 찾기를 함께 연습합니다.';
 
   @override
-  String get studyHarmonyLessonRomanToChordTitle => '로마에서 코드로';
+  String get studyHarmonyLessonRomanToChordTitle => '로마 숫자 → 코드';
 
   @override
   String get studyHarmonyLessonRomanToChordDescription =>
       '조와 로마 숫자를 읽은 다음 일치하는 코드를 선택하세요.';
 
   @override
-  String get studyHarmonyLessonChordToRomanTitle => '코드에서 로마로';
+  String get studyHarmonyLessonChordToRomanTitle => '코드 → 로마 숫자';
 
   @override
   String get studyHarmonyLessonChordToRomanDescription =>
       '키 내부의 코드를 읽고 일치하는 로마 숫자를 선택하세요.';
 
   @override
-  String get studyHarmonyLessonDiatonicityTitle => '온음계인지 아닌지';
+  String get studyHarmonyLessonDiatonicityTitle => '다이아토닉 판별';
 
   @override
   String get studyHarmonyLessonDiatonicityDescription =>
-      '간단한 키로 코드를 다이아토닉 및 비다이아토닉 답변으로 정렬합니다.';
+      '간단한 조에서 코드를 다이아토닉과 논다이아토닉으로 나눠 봅니다.';
 
   @override
-  String get studyHarmonyLessonFunctionTitle => '기능 기본';
+  String get studyHarmonyLessonFunctionTitle => '기능 기초';
 
   @override
   String get studyHarmonyLessonFunctionDescription =>
-      '쉬운 코드를 토닉, 프리도미넌트 또는 지배적으로 분류합니다.';
+      '쉬운 코드를 토닉, 프리도미넌트, 도미넌트로 분류합니다.';
 
   @override
-  String get studyHarmonyLessonRomanBossTitle => '상사: 기능적 기본 믹스';
+  String get studyHarmonyLessonRomanBossTitle => '보스: 기능 기초 믹스';
 
   @override
   String get studyHarmonyLessonRomanBossDescription =>
-      '로마-코드, 코드-로마, 다이아토닉ity 및 기능을 함께 검토하세요.';
+      '로마 숫자→코드, 코드→로마 숫자, 다이아토닉 판별, 기능 읽기를 함께 복습합니다.';
 
   @override
   String get studyHarmonyLessonProgressionKeyCenterTitle => '조성 찾기';
 
   @override
   String get studyHarmonyLessonProgressionKeyCenterDescription =>
-      '짧은 코드 진행을 보고 가장 자연스러운 key center를 고릅니다.';
+      '짧은 코드 진행을 보고 가장 자연스러운 중심 조성을 고릅니다.';
 
   @override
   String get studyHarmonyLessonProgressionFunctionTitle => '맥락 속 기능 읽기';
@@ -1588,11 +1657,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '주된 다이아토닉 읽기에서 벗어나는 코드를 하나 골라냅니다.';
 
   @override
-  String get studyHarmonyLessonProgressionBossTitle => 'Boss: 혼합 분석';
+  String get studyHarmonyLessonProgressionBossTitle => '보스: 혼합 분석';
 
   @override
   String get studyHarmonyLessonProgressionBossDescription =>
-      '조성, 기능, 비다이아토닉 판별을 짧은 분석 라운드로 함께 복습합니다.';
+      '중심 조성 읽기, 기능 판별, 논다이아토닉 찾기를 짧은 탐정 라운드에서 함께 복습합니다.';
 
   @override
   String get studyHarmonyLessonMissingChordPatternTitle => '빈칸 코드 채우기';
@@ -1609,7 +1678,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '구의 끝에서 어디로 끌리는지 보고 빈칸 코드를 고릅니다.';
 
   @override
-  String get studyHarmonyLessonMissingChordBossTitle => 'Boss: 혼합 빈칸 채우기';
+  String get studyHarmonyLessonMissingChordBossTitle => '보스: 혼합 빈칸 채우기';
 
   @override
   String get studyHarmonyLessonMissingChordBossDescription =>
@@ -1620,28 +1689,28 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyChapterCheckpointDescription =>
-      '조성 중심, 기능, 컬러, 빈칸 채우기를 더 빠른 혼합 복습 세트로 묶어 봅니다.';
+      '중심 조성, 기능, 컬러, 빈칸 채우기를 더 빠른 혼합 복습 세트로 묶어 봅니다.';
 
   @override
-  String get studyHarmonyLessonCheckpointCadenceRushTitle => '케이던스 러시';
+  String get studyHarmonyLessonCheckpointCadenceRushTitle => '종지 러시';
 
   @override
   String get studyHarmonyLessonCheckpointCadenceRushDescription =>
-      '화성 기능을 빠르게 읽고, 이어서 빠진 케이던스 코드를 가벼운 압박 속에서 채워 넣으세요.';
+      '화성 기능을 빠르게 읽고, 이어서 빠진 종지 코드를 가벼운 압박 속에서 채워 넣으세요.';
 
   @override
   String get studyHarmonyLessonCheckpointColorKeyTitle => '컬러와 조성 전환';
 
   @override
   String get studyHarmonyLessonCheckpointColorKeyDescription =>
-      '조성 판별과 비다이어토닉 컬러 판별을 번갈아 처리하면서도 흐름을 놓치지 마세요.';
+      '중심 조성 판별과 논다이아토닉 색채 판별을 번갈아 처리하면서도 흐름을 놓치지 마세요.';
 
   @override
   String get studyHarmonyLessonCheckpointBossTitle => '보스: 체크포인트 건틀렛';
 
   @override
   String get studyHarmonyLessonCheckpointBossDescription =>
-      '조성 중심, 기능, 컬러, 케이던스 복원을 한 번에 섞은 통합 체크포인트를 클리어하세요.';
+      '중심 조성, 기능, 컬러, 종지 복원을 한 번에 섞은 통합 체크포인트를 클리어하세요.';
 
   @override
   String get studyHarmonyChapterCapstoneTitle => '캡스톤 트라이얼';
@@ -1662,7 +1731,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyLessonCapstoneBorrowedColorDescription =>
-      '모달 컬러를 재빨리 포착하고, 흐트러지기 전에 조성 중심까지 확인하세요.';
+      '모달 컬러를 재빨리 포착하고, 흐트러지기 전에 중심 조성까지 확인하세요.';
 
   @override
   String get studyHarmonyLessonCapstoneResolutionTitle => '리졸루션 랩';
@@ -1676,47 +1745,47 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyLessonCapstoneBossDescription =>
-      '조성 중심, 기능, 컬러, 해소를 모두 압박감 있게 섞은 최종 혼합 시험을 통과하세요.';
+      '중심 조성, 기능, 컬러, 해소를 모두 압박감 있게 섞은 최종 혼합 시험을 통과하세요.';
 
   @override
   String studyHarmonyPromptFindNoteOnKeyboard(Object note) {
-    return '키보드에서 $note를 찾으세요.';
+    return '건반에서 $note를 찾으세요.';
   }
 
   @override
-  String get studyHarmonyPromptNameHighlightedNote => '어떤 메모가 강조표시되어 있나요?';
+  String get studyHarmonyPromptNameHighlightedNote => '강조된 음은 무엇인가요?';
 
   @override
   String studyHarmonyPromptFindChordOnKeyboard(Object chord) {
-    return '키보드에 $chord 빌드';
+    return '건반에서 $chord를 구성하세요.';
   }
 
   @override
-  String get studyHarmonyPromptNameHighlightedChord => '어떤 코드가 강조 표시됩니까?';
+  String get studyHarmonyPromptNameHighlightedChord => '강조된 코드는 무엇인가요?';
 
   @override
   String studyHarmonyPromptBuildScale(Object scaleName) {
-    return '$scaleName의 모든 메모를 선택하세요.';
+    return '$scaleName에 들어가는 모든 음을 고르세요.';
   }
 
   @override
   String studyHarmonyPromptKeyMembership(Object keyName) {
-    return '$keyName에 속한 메모를 선택하세요.';
+    return '$keyName에 속하는 음을 고르세요.';
   }
 
   @override
   String studyHarmonyPromptRomanToChord(Object keyName, Object roman) {
-    return '$keyName에서 $roman와 일치하는 코드는 무엇입니까?';
+    return '$keyName에서 $roman에 해당하는 코드는 무엇인가요?';
   }
 
   @override
   String studyHarmonyPromptChordToRoman(Object keyName, Object chord) {
-    return '$keyName에서 로마 숫자가 $chord와 일치하는 것은 무엇입니까?';
+    return '$keyName에서 $chord에 해당하는 로마 숫자는 무엇인가요?';
   }
 
   @override
   String studyHarmonyPromptDiatonicity(Object keyName, Object chord) {
-    return '$keyName에서는 $chord 다이아토닉인가요?';
+    return '$keyName에서 $chord는 다이아토닉인가요?';
   }
 
   @override
@@ -1729,7 +1798,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyPromptProgressionKeyCenter =>
-      '이 진행에 가장 잘 맞는 key center는 무엇인가요?';
+      '이 진행에 가장 잘 맞는 중심 조성은 무엇인가요?';
 
   @override
   String studyHarmonyPromptProgressionFunction(Object chord) {
@@ -1738,7 +1807,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyPromptProgressionNonDiatonic =>
-      '이 진행에서 가장 비다이아토닉한 코드는 무엇인가요?';
+      '이 진행에서 가장 논다이아토닉하게 들리는 코드는 무엇인가요?';
 
   @override
   String get studyHarmonyPromptProgressionMissingChord =>
@@ -1762,7 +1831,7 @@ class AppLocalizationsKo extends AppLocalizations {
     Object chord,
     Object keyLabel,
   ) {
-    return '$chord는 주된 $keyLabel 읽기에서 벗어나므로 비다이아토닉 후보로 가장 적절합니다.';
+    return '$chord는 주된 $keyLabel 읽기에서 벗어나므로 논다이아토닉 후보로 가장 적절합니다.';
   }
 
   @override
@@ -1804,10 +1873,10 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get studyHarmonyChoiceDiatonic => '온음계';
+  String get studyHarmonyChoiceDiatonic => '다이아토닉';
 
   @override
-  String get studyHarmonyChoiceNonDiatonic => '비다이아토닉';
+  String get studyHarmonyChoiceNonDiatonic => '논다이아토닉';
 
   @override
   String get studyHarmonyChoiceTonic => '토닉';
@@ -1831,7 +1900,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chordAnalyzerInputLabel => '코드 진행';
 
   @override
-  String get chordAnalyzerInputHint => 'Dm7, G7, ? | Am7';
+  String get chordAnalyzerInputHint => 'Dm7, G7 | ? Am';
 
   @override
   String get chordAnalyzerInputHelper =>
@@ -1880,7 +1949,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chordAnalyzerInitialBody =>
-      'Dm7, G7, ? | Am7 또는 Cmaj7 | Am7 D7 | Gmaj7 같은 진행을 입력하면 가능한 조성, 로마 숫자, 추론된 채움, 짧은 요약을 볼 수 있습니다.';
+      'Dm7, G7 | ? Am 또는 Cmaj7 | Am7 D7 | Gmaj7 같은 진행을 입력하면 가능한 조성, 로마 숫자, 추론된 채움, 짧은 요약을 볼 수 있습니다.';
 
   @override
   String get chordAnalyzerPlaceholderExplanation =>
@@ -1928,7 +1997,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String chordAnalyzerKeyAmbiguityWarning(Object primary, Object alternative) {
-    return '조성 중심이 $primary와 $alternative 사이에서 아직 다소 모호합니다.';
+    return '중심 조성이 $primary와 $alternative 사이에서 아직 다소 모호합니다.';
   }
 
   @override
@@ -2042,7 +2111,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String chordAnalyzerIgnoredModifiersWarning(Object details) {
-    return '무시된 modifier: $details';
+    return '무시된 수식어: $details';
   }
 
   @override
@@ -2059,7 +2128,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chordAnalyzerApplyVariation => '이 변주 적용';
 
   @override
-  String get chordAnalyzerVariationCadentialColorTitle => '카덴스 컬러';
+  String get chordAnalyzerVariationCadentialColorTitle => '종지 색채';
 
   @override
   String get chordAnalyzerVariationCadentialColorBody =>
@@ -2080,7 +2149,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '같은 목적 화음으로 향하는 관련 ii-V를 다시 세웁니다.';
 
   @override
-  String get chordAnalyzerVariationMinorCadenceTitle => '단조 카덴스 컬러';
+  String get chordAnalyzerVariationMinorCadenceTitle => '단조 종지 색채';
 
   @override
   String get chordAnalyzerVariationMinorCadenceBody =>
@@ -2113,7 +2182,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chordAnalyzerEvidenceAlteredDominantColor =>
-      'altered dominant 색채가 도미넌트 기능 해석을 뒷받침합니다.';
+      '얼터드 도미넌트 색채가 도미넌트 기능 해석을 뒷받침합니다.';
 
   @override
   String chordAnalyzerEvidenceSlashBass(Object bass) {
@@ -2174,7 +2243,244 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String chordAnalyzerParseIssueUnsupportedSuffix(Object suffix) {
-    return '지원하지 않는 suffix 또는 modifier입니다: $suffix';
+    return '지원하지 않는 접미 표기 또는 수식어입니다: $suffix';
+  }
+
+  @override
+  String get chordAnalyzerDisplaySettings => '분석 표시';
+
+  @override
+  String get chordAnalyzerDisplaySettingsHelp =>
+      '이론 설명의 깊이와 비다이어토닉 범주의 강조 색상을 조절합니다.';
+
+  @override
+  String get chordAnalyzerDetailLevel => '설명 상세도';
+
+  @override
+  String get chordAnalyzerDetailLevelConcise => '간단히';
+
+  @override
+  String get chordAnalyzerDetailLevelDetailed => '자세히';
+
+  @override
+  String get chordAnalyzerDetailLevelAdvanced => '고급';
+
+  @override
+  String get chordAnalyzerHighlightTheme => '강조 테마';
+
+  @override
+  String get chordAnalyzerThemePresetDefault => '기본';
+
+  @override
+  String get chordAnalyzerThemePresetHighContrast => '고대비';
+
+  @override
+  String get chordAnalyzerThemePresetColorBlindSafe => '색각 이상 배려';
+
+  @override
+  String get chordAnalyzerThemePresetCustom => '사용자 지정';
+
+  @override
+  String get chordAnalyzerThemeLegend => '범례';
+
+  @override
+  String get chordAnalyzerCustomColors => '범주별 사용자 색상';
+
+  @override
+  String get chordAnalyzerHighlightAppliedDominant => '적용 도미넌트';
+
+  @override
+  String get chordAnalyzerHighlightTritoneSubstitute => '트라이톤 대리';
+
+  @override
+  String get chordAnalyzerHighlightTonicization => '일시적 조성화';
+
+  @override
+  String get chordAnalyzerHighlightModulation => '전조';
+
+  @override
+  String get chordAnalyzerHighlightBackdoor => '백도어 / 서브도미넌트 마이너';
+
+  @override
+  String get chordAnalyzerHighlightBorrowedColor => '차용 화성 색채';
+
+  @override
+  String get chordAnalyzerHighlightCommonTone => '공통음 진행';
+
+  @override
+  String get chordAnalyzerHighlightDeceptiveCadence => '기만 종지';
+
+  @override
+  String get chordAnalyzerHighlightChromaticLine => '반음계 라인 색채';
+
+  @override
+  String get chordAnalyzerHighlightAmbiguity => '해석 중첩';
+
+  @override
+  String chordAnalyzerSummaryRealModulation(Object key) {
+    return '$key(으)로의 실제 전조로 읽을 근거가 더 강합니다.';
+  }
+
+  @override
+  String chordAnalyzerSummaryTonicization(Object target) {
+    return '$target을 잠시 중심처럼 만들지만 완전히 정착하지는 않습니다.';
+  }
+
+  @override
+  String get chordAnalyzerSummaryBackdoor =>
+      '해결 직전에 백도어 또는 서브도미넌트 마이너 색채가 드러납니다.';
+
+  @override
+  String get chordAnalyzerSummaryDeceptiveCadence =>
+      '한 종지가 예상한 토닉 대신 다른 곳으로 비껴 가며 기만 효과를 냅니다.';
+
+  @override
+  String get chordAnalyzerSummaryChromaticLine =>
+      '구간 일부를 잇는 반음계 내성선 또는 line-cliche 색채가 보입니다.';
+
+  @override
+  String chordAnalyzerSummaryBackdoorDominant(Object chord) {
+    return '$chord는 단순 차용 도미넌트보다 백도어 도미넌트로 읽는 편이 자연스럽습니다.';
+  }
+
+  @override
+  String chordAnalyzerSummarySubdominantMinor(Object chord) {
+    return '$chord는 뜬금없는 비다이어토닉 화음보다 서브도미넌트 마이너 색채로 읽는 편이 자연스럽습니다.';
+  }
+
+  @override
+  String chordAnalyzerSummaryCommonToneDiminished(Object chord) {
+    return '$chord는 공통음을 유지하며 해결되는 감화음 색채로 들을 수 있습니다.';
+  }
+
+  @override
+  String chordAnalyzerSummaryDeceptiveTarget(Object chord) {
+    return '$chord는 정격 종지보다 기만적 도착점에 참여합니다.';
+  }
+
+  @override
+  String chordAnalyzerSummaryCompeting(Object readings) {
+    return '고급 해석에서는 $readings 같은 경쟁 해석을 함께 유지합니다.';
+  }
+
+  @override
+  String chordAnalyzerFunctionLine(Object function) {
+    return '기능: $function';
+  }
+
+  @override
+  String chordAnalyzerEvidenceLead(Object evidence) {
+    return '근거: $evidence';
+  }
+
+  @override
+  String chordAnalyzerAdvancedCompetingReadings(Object readings) {
+    return '여기서는 $readings 같은 경쟁 해석도 계속 가능합니다.';
+  }
+
+  @override
+  String chordAnalyzerRemarkTonicization(Object target) {
+    return '완전한 전조보다는 $target의 일시적 조성화로 들립니다.';
+  }
+
+  @override
+  String chordAnalyzerRemarkRealModulation(Object key) {
+    return '$key(으)로 실제 전조가 이루어진 것으로 볼 근거가 있습니다.';
+  }
+
+  @override
+  String get chordAnalyzerRemarkBackdoorDominant =>
+      '서브도미넌트 마이너 색채를 가진 백도어 도미넌트로 들을 수 있습니다.';
+
+  @override
+  String get chordAnalyzerRemarkBackdoorChain =>
+      '단순 차용 우회보다 백도어 체인에 속하는 흐름입니다.';
+
+  @override
+  String get chordAnalyzerRemarkSubdominantMinor =>
+      '차용 iv 또는 서브도미넌트 마이너 색채가 프리도미넌트처럼 작동합니다.';
+
+  @override
+  String get chordAnalyzerRemarkCommonToneDiminished =>
+      '이 감화음은 공통음 재해석으로 기능합니다.';
+
+  @override
+  String get chordAnalyzerRemarkPivotChord =>
+      '다음 국소 조성으로 넘어가는 pivot chord 역할을 할 수 있습니다.';
+
+  @override
+  String get chordAnalyzerRemarkCommonToneModulation =>
+      '공통음의 연속성이 이 전조를 더 그럴듯하게 만듭니다.';
+
+  @override
+  String get chordAnalyzerRemarkDeceptiveCadence =>
+      '직접 토닉으로 가지 않고 기만 종지 쪽으로 향합니다.';
+
+  @override
+  String get chordAnalyzerRemarkLineCliche => '반음계 내성선 움직임이 이 화음 선택에 색채를 줍니다.';
+
+  @override
+  String get chordAnalyzerRemarkDualFunction =>
+      '둘 이상의 기능 해석이 여전히 설득력 있게 남아 있습니다.';
+
+  @override
+  String get chordAnalyzerTagTonicization => '일시적 조성화';
+
+  @override
+  String get chordAnalyzerTagRealModulation => '실제 전조';
+
+  @override
+  String get chordAnalyzerTagBackdoorChain => '백도어 체인';
+
+  @override
+  String get chordAnalyzerTagDeceptiveCadence => '기만 종지';
+
+  @override
+  String get chordAnalyzerTagChromaticLine => '반음계 라인 색채';
+
+  @override
+  String get chordAnalyzerTagCommonToneMotion => '공통음 진행';
+
+  @override
+  String get chordAnalyzerEvidenceCadentialArrival =>
+      '국소적 종지 도착이 임시 목표 중심을 뒷받침합니다.';
+
+  @override
+  String get chordAnalyzerEvidenceFollowThrough =>
+      '뒤따르는 화음들도 새 국소 중심을 계속 지지합니다.';
+
+  @override
+  String get chordAnalyzerEvidencePhraseBoundary =>
+      '구조적 강세나 프레이즈 경계 부근에서 변화가 일어납니다.';
+
+  @override
+  String get chordAnalyzerEvidencePivotSupport =>
+      '공유 가능한 pivot 해석이 국소적 이동을 뒷받침합니다.';
+
+  @override
+  String get chordAnalyzerEvidenceCommonToneSupport =>
+      '공통음 유지가 재해석 연결을 자연스럽게 만듭니다.';
+
+  @override
+  String get chordAnalyzerEvidenceHomeGravityWeakening =>
+      '이 구간에서는 원래 토닉의 중력이 다소 약해집니다.';
+
+  @override
+  String get chordAnalyzerEvidenceBackdoorMotion =>
+      '이 진행은 백도어 또는 서브도미넌트 마이너 해결 패턴과 맞습니다.';
+
+  @override
+  String get chordAnalyzerEvidenceDeceptiveResolution =>
+      '도미넌트가 예상한 토닉이 아닌 다른 곳으로 해결됩니다.';
+
+  @override
+  String chordAnalyzerEvidenceChromaticLine(Object detail) {
+    return '반음계 라인 근거: $detail.';
+  }
+
+  @override
+  String chordAnalyzerEvidenceCompetingReading(Object detail) {
+    return '경쟁 해석: $detail.';
   }
 
   @override
@@ -2248,7 +2554,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyChapterRemixDescription =>
-      '키 센터, 기능, 차용 색채를 예고 없이 섞어 읽는 후반부 종합 구간입니다.';
+      '중심 조성, 기능, 차용 색채를 예고 없이 섞어 읽는 후반부 종합 구간입니다.';
 
   @override
   String get studyHarmonyLessonRemixBridgeTitle => '브리지 빌더';
@@ -2262,14 +2568,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyLessonRemixPivotDescription =>
-      '진행이 흔들릴 때 차용 화음과 키 중심 전환 지점을 포착합니다.';
+      '진행이 흔들릴 때 차용 화음과 중심 조성 전환 지점을 포착합니다.';
 
   @override
   String get studyHarmonyLessonRemixSprintTitle => '리졸루션 스프린트';
 
   @override
   String get studyHarmonyLessonRemixSprintDescription =>
-      '기능, cadence fill, 조성 중력을 더 빠르게 연달아 읽어냅니다.';
+      '기능, 종지 채우기, 조성 중력을 더 빠르게 연달아 읽어냅니다.';
 
   @override
   String get studyHarmonyLessonRemixBossTitle => '리믹스 마라톤';
@@ -2418,14 +2724,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyLessonEncorePulseDescription =>
-      '워밍업 없이 바로 키 중심과 기능을 고정해서 읽어냅니다.';
+      '워밍업 없이 바로 중심 조성과 기능을 고정해서 읽어냅니다.';
 
   @override
   String get studyHarmonyLessonEncoreSwapTitle => '컬러 스왑';
 
   @override
   String get studyHarmonyLessonEncoreSwapDescription =>
-      '차용 색채 판별과 missing chord 복원을 번갈아 처리하며 감각을 흔듭니다.';
+      '차용 색채 판별과 빈칸 코드 복원을 번갈아 처리하며 감각을 다집니다.';
 
   @override
   String get studyHarmonyLessonEncoreBossTitle => '앙코르 피날레';
@@ -2487,21 +2793,21 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyChapterSpotlightDescription =>
-      '차용 색채, cadence 압박, 통합형 보스 판별을 정면으로 다루는 최종 스포트라이트 구간입니다.';
+      '차용 색채, 종지 압박, 보스급 통합 판별을 정면으로 다루는 최종 스포트라이트 구간입니다.';
 
   @override
   String get studyHarmonyLessonSpotlightLensTitle => '차용 렌즈';
 
   @override
   String get studyHarmonyLessonSpotlightLensDescription =>
-      '차용 화음이 시선을 흔들어도 키 중심을 놓치지 않고 추적합니다.';
+      '차용 색채가 시선을 흔들어도 중심 조성을 놓치지 않고 추적합니다.';
 
   @override
-  String get studyHarmonyLessonSpotlightCadenceTitle => '케이던스 스왑';
+  String get studyHarmonyLessonSpotlightCadenceTitle => '종지 스왑';
 
   @override
   String get studyHarmonyLessonSpotlightCadenceDescription =>
-      '기능 읽기와 cadence 복원을 번갈아 처리하면서도 해결 지점을 유지합니다.';
+      '기능 읽기와 종지 복원을 번갈아 처리하면서도 해결 지점을 놓치지 않습니다.';
 
   @override
   String get studyHarmonyLessonSpotlightBossTitle => '스포트라이트 쇼다운';
@@ -2515,28 +2821,28 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyChapterAfterHoursDescription =>
-      '워밍업 힌트를 줄이고 차용 색채, cadence 압박, 키 중심 추적을 거칠게 다시 섞는 후반부 실험 구간입니다.';
+      '워밍업 힌트를 걷어내고 차용 색채, 종지 압박, 중심 조성 추적을 거칠게 다시 섞는 후반부 실험 구간입니다.';
 
   @override
   String get studyHarmonyLessonAfterHoursShadowTitle => '모달 섀도우';
 
   @override
   String get studyHarmonyLessonAfterHoursShadowDescription =>
-      '차용 색채가 읽기를 어둡게 흔들어도 키 중심을 놓치지 않고 붙잡습니다.';
+      '차용 색채가 읽기를 어둡게 흔들어도 중심 조성을 놓치지 않고 붙잡습니다.';
 
   @override
   String get studyHarmonyLessonAfterHoursFeintTitle => '리졸루션 페인트';
 
   @override
   String get studyHarmonyLessonAfterHoursFeintDescription =>
-      '기능과 cadence 페이크를 읽어내며 진짜 해결 지점을 끝까지 추적합니다.';
+      '기능과 종지 페이크를 읽어내며 진짜 해결 지점을 끝까지 추적합니다.';
 
   @override
   String get studyHarmonyLessonAfterHoursCrossfadeTitle => '센터 크로스페이드';
 
   @override
   String get studyHarmonyLessonAfterHoursCrossfadeDescription =>
-      '키 중심 판별, 기능 읽기, missing chord 복원을 추가 힌트 없이 한 흐름으로 묶습니다.';
+      '중심 조성 판별, 기능 읽기, 빈칸 코드 복원을 추가 힌트 없이 한 흐름으로 묶습니다.';
 
   @override
   String get studyHarmonyLessonAfterHoursBossTitle => '라스트 콜 보스';
@@ -2613,14 +2919,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyLessonNeonDetourDescription =>
-      '차용 색채가 진행을 옆길로 끌어도 실제 키 중심을 끝까지 추적합니다.';
+      '차용 색채가 진행을 옆길로 끌어도 실제 중심 조성을 끝까지 추적합니다.';
 
   @override
   String get studyHarmonyLessonNeonPivotTitle => '피벗 프레셔';
 
   @override
   String get studyHarmonyLessonNeonPivotDescription =>
-      '조성 중심 전환과 기능 압박을 연속으로 읽으며 다음 전환을 대비합니다.';
+      '중심 조성 전환과 기능 압박을 연속으로 읽으며 다음 전환을 대비합니다.';
 
   @override
   String get studyHarmonyLessonNeonLandingTitle => '차용 랜딩';
@@ -2634,7 +2940,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyLessonNeonBossDescription =>
-      '피벗 읽기, 차용 색채, cadence 복원을 한 번에 섞어 부드러운 착지 없이 밀어붙이는 네온 보스입니다.';
+      '피벗 읽기, 차용 색채, 종지 복원을 한 번에 섞어 부드러운 착지 없이 밀어붙이는 네온 보스입니다.';
 
   @override
   String studyHarmonyProgressLeague(Object tier) {
@@ -2759,10 +3065,10 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get studyHarmonyQuestChestReadyHeadline => '퀘스트 체스트 준비 완료';
+  String get studyHarmonyQuestChestReadyHeadline => '퀘스트 상자 준비 완료';
 
   @override
-  String get studyHarmonyQuestChestOpenedHeadline => '오늘의 체스트 오픈 완료';
+  String get studyHarmonyQuestChestOpenedHeadline => '오늘의 퀘스트 상자 개봉 완료';
 
   @override
   String get studyHarmonyQuestChestBoostHeadline => '2배 리그 XP 활성화';
@@ -2774,19 +3080,19 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyQuestChestLockedBody =>
-      '오늘의 퀘스트 3종을 마치면 보너스 체스트가 열리고 주간 리그 XP를 추가로 받습니다.';
+      '오늘의 퀘스트 3종을 마치면 보너스 퀘스트 상자가 열리고 주간 리그 XP를 추가로 받습니다.';
 
   @override
   String get studyHarmonyQuestChestReadyBody =>
-      '오늘의 퀘스트 3종이 모두 끝났습니다. 아무 런이나 하나 더 클리어하면 체스트 보상이 리그 XP로 반영됩니다.';
+      '오늘의 퀘스트 3종이 모두 끝났습니다. 아무 런이나 하나 더 클리어하면 퀘스트 상자 보상이 리그 XP로 반영됩니다.';
 
   @override
   String get studyHarmonyQuestChestOpenedBody =>
-      '오늘의 퀘스트 3종을 모두 끝내서 체스트 보상이 이미 리그 XP로 반영됐습니다.';
+      '오늘의 퀘스트 3종을 모두 끝내서 퀘스트 상자 보상이 이미 리그 XP로 반영됐습니다.';
 
   @override
   String studyHarmonyQuestChestOpenedBoostBody(Object count) {
-    return '오늘의 체스트를 열었고 다음 $count번 클리어에는 2배 리그 XP가 적용됩니다.';
+    return '오늘의 퀘스트 상자를 열었고 다음 $count번 클리어에는 2배 리그 XP가 적용됩니다.';
   }
 
   @override
@@ -2808,11 +3114,11 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get studyHarmonyResultQuestChestLine => '퀘스트 체스트를 열었습니다.';
+  String get studyHarmonyResultQuestChestLine => '퀘스트 상자를 열었습니다.';
 
   @override
   String studyHarmonyResultQuestChestXpLine(Object count) {
-    return '퀘스트 체스트 보너스 리그 XP +$count';
+    return '퀘스트 상자 보너스 리그 XP +$count';
   }
 
   @override
@@ -2852,14 +3158,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyLessonSkylinePulseDescription =>
-      '진행이 새 레인으로 잠기기 전에 잔상 속 키 중심과 기능을 먼저 붙잡습니다.';
+      '진행이 새 레인으로 잠기기 전에 잔상 속 중심 조성과 기능을 먼저 붙잡습니다.';
 
   @override
   String get studyHarmonyLessonSkylineSwapTitle => '중력 전환';
 
   @override
   String get studyHarmonyLessonSkylineSwapDescription =>
-      '차용 중력과 missing chord 복원을 동시에 처리하며 진행의 무게 이동을 따라갑니다.';
+      '차용 중력과 빈칸 코드 복원을 동시에 처리하며 진행의 무게 이동을 따라갑니다.';
 
   @override
   String get studyHarmonyLessonSkylineHomeTitle => '헛귀착';
@@ -2901,14 +3207,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyLessonAfterglowFlickerDescription =>
-      '카덴스 단서가 빠르게 흔들리는 동안에도 키 중심을 끝까지 유지합니다.';
+      '종지 단서가 빠르게 흔들리는 동안에도 중심 조성을 끝까지 유지합니다.';
 
   @override
   String get studyHarmonyLessonAfterglowBossTitle => '레드라인 리턴 보스';
 
   @override
   String get studyHarmonyLessonAfterglowBossDescription =>
-      '키 중심, 기능, 차용 색채, missing chord 복원을 최고 속도로 한 번에 묶는 종반 보스입니다.';
+      '중심 조성, 기능, 차용 색채, 빈칸 코드 복원을 최고 속도로 한 번에 묶는 종반 보스입니다.';
 
   @override
   String studyHarmonyProgressTour(Object count, Object target) {
@@ -2944,12 +3250,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String studyHarmonyTourQuestChestBody(Object target) {
-    return '이번 달 Quest Chest를 $target번 열어 투어 스탬프를 채워보세요.';
+    return '이번 달 퀘스트 상자를 $target번 열어 투어 스탬프를 채워 보세요.';
   }
 
   @override
   String studyHarmonyTourSpotlightBody(Object target) {
-    return '이번 달 spotlight 클리어를 $target번 달성하세요. Boss Rush, Relay, Focus, Legend, 보스 레슨이 모두 카운트됩니다.';
+    return '이번 달 스포트라이트 런을 $target번 클리어하세요. 보스 러시, 아레나 릴레이, 포커스 스프린트, 레전드 트라이얼, 보스 레슨이 모두 카운트됩니다.';
   }
 
   @override
@@ -2970,12 +3276,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String studyHarmonyTourQuestChestsLabel(Object count, Object target) {
-    return 'Quest Chest $count/$target';
+    return '퀘스트 상자 $count/$target';
   }
 
   @override
   String studyHarmonyTourSpotlightLabel(Object count, Object target) {
-    return 'Spotlight $count/$target';
+    return '스포트라이트 $count/$target';
   }
 
   @override
@@ -3003,14 +3309,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyLessonDaybreakGhostDescription =>
-      '끝난 것처럼 들리지만 닫히지 않는 구간에서 기능과 missing chord 복원을 동시에 읽어냅니다.';
+      '끝난 것처럼 들리지만 실제로는 닿지 않는 구간에서 종지와 기능을 동시에 바로잡습니다.';
 
   @override
   String get studyHarmonyLessonDaybreakDawnTitle => '헛새벽';
 
   @override
   String get studyHarmonyLessonDaybreakDawnDescription =>
-      '너무 일찍 밝아지는 듯한 순간에 숨어 있는 중심 흔들림과 비다이아토닉 신호를 구분합니다.';
+      '너무 일찍 밝아지는 듯한 순간에 숨어 있는 중심 조성의 흔들림과 논다이아토닉 신호를 구분합니다.';
 
   @override
   String get studyHarmonyLessonDaybreakBloomTitle => '차용 개화';
@@ -3024,7 +3330,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyLessonDaybreakBossDescription =>
-      '키 중심, 기능, 비다이아토닉 색채, missing chord 복원을 새벽 속도로 한 번에 엮는 최종 오버드라이브 보스입니다.';
+      '중심 조성, 기능, 논다이아토닉 색채, 빈칸 코드 복원을 새벽 속도로 한 번에 엮는 최종 오버드라이브 보스입니다.';
 
   @override
   String studyHarmonyProgressDuetPact(Object count) {
@@ -3054,32 +3360,32 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyDuetNeedDailyBody =>
-      '먼저 오늘의 Daily를 끝내고, 이어서 spotlight 런 1회를 클리어해 듀엣을 이어가세요.';
+      '먼저 오늘의 데일리를 끝내고, 이어서 스포트라이트 런 1회를 클리어해 듀엣을 이어가세요.';
 
   @override
   String get studyHarmonyDuetNeedSpotlightBody =>
-      'Daily는 끝났습니다. Focus, Relay, Boss Rush, Legend, 보스 레슨 중 하나를 클리어하면 오늘 듀엣이 잠깁니다.';
+      '데일리는 끝났습니다. 포커스 스프린트, 아레나 릴레이, 보스 러시, 레전드 트라이얼, 보스 레슨 중 하나를 클리어하면 오늘 듀엣이 완성됩니다.';
 
   @override
   String studyHarmonyDuetActiveBody(Object count) {
-    return '오늘 Daily와 Spotlight를 모두 마쳐 듀엣이 잠겼습니다. 현재 공유 연속은 $count일입니다.';
+    return '오늘 데일리와 스포트라이트를 모두 마쳐 듀엣이 완성됐습니다. 현재 공유 연속은 $count일입니다.';
   }
 
   @override
-  String get studyHarmonyDuetDailyDone => 'Daily 완료';
+  String get studyHarmonyDuetDailyDone => '데일리 완료';
 
   @override
-  String get studyHarmonyDuetDailyMissing => 'Daily 필요';
+  String get studyHarmonyDuetDailyMissing => '데일리 필요';
 
   @override
-  String get studyHarmonyDuetSpotlightDone => 'Spotlight 완료';
+  String get studyHarmonyDuetSpotlightDone => '스포트라이트 완료';
 
   @override
-  String get studyHarmonyDuetSpotlightMissing => 'Spotlight 필요';
+  String get studyHarmonyDuetSpotlightMissing => '스포트라이트 필요';
 
   @override
   String studyHarmonyDuetDailyLabel(bool done) {
-    return '매일 $done';
+    return '데일리 $done';
   }
 
   @override
@@ -3192,7 +3498,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyLessonBlueHourCurrentDescription =>
-      '진행이 두 방향으로 당겨질 때도 키 중심과 기능을 동시에 붙잡습니다.';
+      '진행이 두 방향으로 당겨질 때도 중심 조성과 기능을 동시에 붙잡습니다.';
 
   @override
   String get studyHarmonyLessonBlueHourHaloTitle => '후광 차용';
@@ -3213,5 +3519,285 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyLessonBlueHourBossDescription =>
-      '키 중심, 기능, 차용 색채, missing chord 복원을 황혼 속도로 교차시키는 최종 블루 아워 보스입니다.';
+      '중심 조성, 기능, 차용 색채, 빈칸 코드 복원을 황혼 속도로 빠르게 교차시키는 최종 블루 아워 보스입니다.';
+
+  @override
+  String get anchorLoopTitle => '앵커 루프';
+
+  @override
+  String get anchorLoopHelp =>
+      '특정 cycle slot의 코드를 고정해 두고, 나머지 slot만 그 주변 문맥에 맞게 생성합니다.';
+
+  @override
+  String get anchorLoopCycleLength => '사이클 길이(마디)';
+
+  @override
+  String get anchorLoopCycleLengthHelp => '앵커가 반복되는 길이를 마디 단위로 고르세요.';
+
+  @override
+  String get anchorLoopVaryNonAnchorSlots => '비앵커 slot 변형 허용';
+
+  @override
+  String get anchorLoopVaryNonAnchorSlotsHelp =>
+      '앵커 slot은 정확히 유지하고, 나머지 filler만 같은 기능 안에서 조금씩 바꿉니다.';
+
+  @override
+  String anchorLoopBarLabel(int bar) {
+    return '$bar마디';
+  }
+
+  @override
+  String anchorLoopBeatLabel(int beat) {
+    return '$beat박';
+  }
+
+  @override
+  String get anchorLoopSlotEmpty => '설정된 앵커 코드 없음';
+
+  @override
+  String anchorLoopEditTitle(int bar, int beat) {
+    return '$bar마디 $beat박 앵커 편집';
+  }
+
+  @override
+  String get anchorLoopChordSymbol => '앵커 코드 심볼';
+
+  @override
+  String get anchorLoopChordHint =>
+      '이 slot에 고정할 코드 심볼 하나를 입력하세요. 비우면 앵커가 해제됩니다.';
+
+  @override
+  String get anchorLoopInvalidChord => '이 앵커 slot을 저장하려면 지원되는 코드 심볼을 입력하세요.';
+
+  @override
+  String get harmonyPlaybackPatternBlock => '블록';
+
+  @override
+  String get harmonyPlaybackPatternArpeggio => '아르페지오';
+
+  @override
+  String get metronomeBeatStateNormal => '보통';
+
+  @override
+  String get metronomeBeatStateAccent => '강박';
+
+  @override
+  String get metronomeBeatStateMute => '뮤트';
+
+  @override
+  String get metronomePatternPresetCustom => '커스텀';
+
+  @override
+  String get metronomePatternPresetMeterAccent => '박자 기본 강세';
+
+  @override
+  String get metronomePatternPresetJazzTwoAndFour => '재즈 2·4';
+
+  @override
+  String get metronomeSourceKindBuiltIn => '내장 사운드';
+
+  @override
+  String get metronomeSourceKindLocalFile => '로컬 파일';
+
+  @override
+  String get transportAudioTitle => '트랜스포트 오디오';
+
+  @override
+  String get autoPlayChordChanges => '코드 변화 자동 재생';
+
+  @override
+  String get autoPlayChordChangesHelp =>
+      '트랜스포트가 chord-change event에 도달하면 다음 코드를 자동으로 재생합니다.';
+
+  @override
+  String get autoPlayPattern => '자동 재생 패턴';
+
+  @override
+  String get autoPlayPatternHelp => '자동 재생을 블록 코드로 할지 짧은 아르페지오로 할지 고릅니다.';
+
+  @override
+  String get autoPlayHoldFactor => '자동 재생 길이';
+
+  @override
+  String get autoPlayHoldFactorHelp =>
+      'event 길이에 비례해 자동 재생 코드가 얼마나 오래 울릴지 조절합니다.';
+
+  @override
+  String get autoPlayMelodyWithChords => '멜로디도 함께 재생';
+
+  @override
+  String get autoPlayMelodyWithChordsPlaceholder =>
+      '멜로디 생성이 켜져 있으면 chord-change 자동 재생 때 현재 멜로디 라인도 함께 들려줍니다.';
+
+  @override
+  String get melodyGenerationTitle => '멜로디 라인';
+
+  @override
+  String get melodyGenerationHelp =>
+      '현재 chord timeline을 따라가는 실전형 멜로디 라인을 생성합니다.';
+
+  @override
+  String get melodyDensity => '멜로디 밀도';
+
+  @override
+  String get melodyDensityHelp => '각 chord event 안에 멜로디 음이 얼마나 자주 나타날지 정합니다.';
+
+  @override
+  String get melodyDensitySparse => '성기게';
+
+  @override
+  String get melodyDensityBalanced => '균형';
+
+  @override
+  String get melodyDensityActive => '활발하게';
+
+  @override
+  String get motifRepetitionStrength => '모티프 반복 강도';
+
+  @override
+  String get motifRepetitionStrengthHelp =>
+      '값이 높을수록 직전 멜로디 조각의 contour 정체성을 더 자주 이어갑니다.';
+
+  @override
+  String get approachToneDensity => '어프로치 음 밀도';
+
+  @override
+  String get approachToneDensityHelp =>
+      '도착 직전의 passing, neighbor, approach 제스처가 얼마나 자주 나올지 조절합니다.';
+
+  @override
+  String get melodyRangeLow => '멜로디 최저음';
+
+  @override
+  String get melodyRangeHigh => '멜로디 최고음';
+
+  @override
+  String get melodyRangeHelp => '생성된 멜로디를 이 연주 가능 음역 안에 유지합니다.';
+
+  @override
+  String get melodyStyle => '멜로디 스타일';
+
+  @override
+  String get melodyStyleHelp =>
+      '안전한 가이드톤 중심, 비밥 진행, 서정적 여백, 컬러 텐션 중심 중 하나로 성향을 정합니다.';
+
+  @override
+  String get melodyStyleSafe => '안전';
+
+  @override
+  String get melodyStyleBebop => '비밥';
+
+  @override
+  String get melodyStyleLyrical => '서정적';
+
+  @override
+  String get melodyStyleColorful => '컬러풀';
+
+  @override
+  String get allowChromaticApproaches => '반음 어프로치 허용';
+
+  @override
+  String get allowChromaticApproachesHelp =>
+      '스타일이 허용할 때 weak beat에서 enclosure와 반음 접근음을 사용할 수 있게 합니다.';
+
+  @override
+  String get melodyPlaybackMode => '멜로디 재생 방식';
+
+  @override
+  String get melodyPlaybackModeHelp => '수동 미리듣기 버튼이 코드만, 멜로디만, 둘 다 재생할지 고릅니다.';
+
+  @override
+  String get melodyPlaybackModeChordsOnly => '코드만';
+
+  @override
+  String get melodyPlaybackModeMelodyOnly => '멜로디만';
+
+  @override
+  String get melodyPlaybackModeBoth => '둘 다';
+
+  @override
+  String get regenerateMelody => '멜로디 다시 생성';
+
+  @override
+  String get melodyPreviewCurrent => '현재 라인';
+
+  @override
+  String get melodyPreviewNext => '다음 도착음';
+
+  @override
+  String get metronomePatternTitle => '메트로놈 패턴';
+
+  @override
+  String get metronomePatternHelp => '박자표에 맞는 기본 패턴을 고르거나 각 박을 직접 지정하세요.';
+
+  @override
+  String get metronomeUseAccentSound => '강박용 별도 소리 사용';
+
+  @override
+  String get metronomeUseAccentSoundHelp =>
+      '강박에서 단순 gain 상승 대신 다른 클릭 소리를 사용합니다.';
+
+  @override
+  String get metronomePrimarySource => '기본 클릭 소스';
+
+  @override
+  String get metronomeAccentSource => '강박 클릭 소스';
+
+  @override
+  String get metronomeSourceKind => '소스 종류';
+
+  @override
+  String get metronomeLocalFilePath => '로컬 파일 경로';
+
+  @override
+  String get metronomeLocalFilePathHelp =>
+      '로컬 오디오 파일 경로를 붙여넣고 엔터를 누르세요. 실패하면 내장 사운드로 돌아갑니다.';
+
+  @override
+  String get metronomeAccentLocalFilePath => '강박 로컬 파일 경로';
+
+  @override
+  String get metronomeAccentLocalFilePathHelp =>
+      '강박용 로컬 파일 경로를 붙여넣고 엔터를 누르세요. 실패하면 내장 사운드로 돌아갑니다.';
+
+  @override
+  String get harmonySoundTitle => '화성 오디오';
+
+  @override
+  String get harmonyMasterVolume => '마스터 볼륨';
+
+  @override
+  String get harmonyMasterVolumeHelp => '수동 미리듣기와 자동 chord playback 전체 볼륨입니다.';
+
+  @override
+  String get harmonyPreviewHoldFactor => '코드 유지 길이';
+
+  @override
+  String get harmonyPreviewHoldFactorHelp => '미리듣기 코드와 음이 얼마나 오래 유지될지 조절합니다.';
+
+  @override
+  String get harmonyArpeggioStepSpeed => '아르페지오 속도';
+
+  @override
+  String get harmonyArpeggioStepSpeedHelp => '아르페지오 음이 얼마나 빨리 진행될지 조절합니다.';
+
+  @override
+  String get harmonyVelocityHumanization => '벨로시티 휴머니징';
+
+  @override
+  String get harmonyVelocityHumanizationHelp =>
+      '반복 재생이 덜 기계적으로 들리도록 미세한 벨로시티 변화를 줍니다.';
+
+  @override
+  String get harmonyGainRandomness => '게인 랜덤성';
+
+  @override
+  String get harmonyGainRandomnessHelp => '지원되는 재생 경로에서 음마다 작은 볼륨 차이를 추가합니다.';
+
+  @override
+  String get harmonyTimingHumanization => '타이밍 휴머니징';
+
+  @override
+  String get harmonyTimingHumanizationHelp =>
+      '블록 코드의 동시 어택을 약간 풀어 덜 딱딱하게 들리게 합니다.';
 }

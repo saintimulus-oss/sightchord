@@ -1,17 +1,18 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/music/chord_timing_models.dart';
 import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/music/practice_chord_queue_state.dart';
 import 'package:chordest/smart_generator.dart';
 
 void main() {
-  test('ensureNextChord seeds the queue only once', () {
-    final seeded = _buildChord('first');
-    final existing = _buildChord('existing');
+  test('ensureNextEvent seeds the queue only once', () {
+    final seeded = _buildEvent('first');
+    final existing = _buildEvent('existing');
     final initial = const PracticeChordQueueState();
-    final withSeed = initial.ensureNextChord(seeded);
+    final withSeed = initial.ensureNextEvent(seeded);
     final preserved = withSeed
-        .copyWith(nextChord: existing)
-        .ensureNextChord(seeded);
+        .copyWith(nextEvent: existing)
+        .ensureNextEvent(seeded);
 
     expect(withSeed.nextChord?.repeatGuardKey, 'first');
     expect(preserved.nextChord?.repeatGuardKey, 'existing');
@@ -22,13 +23,17 @@ void main() {
     final current = _buildChord('current');
     final next = _buildChord('next');
     final lookAhead = _buildChord('lookAhead');
-    final promoted = PracticeChordQueueState(
-      previousChord: previous,
-      currentChord: current,
-      nextChord: next,
-      lookAheadChord: lookAhead,
-      plannedSmartChordQueue: const <QueuedSmartChord>[],
-    ).promote(nextCurrentChord: next, nextQueuedChord: lookAhead);
+    final promoted =
+        PracticeChordQueueState(
+          previousEvent: _buildEvent('previous', chord: previous),
+          currentEvent: _buildEvent('current', chord: current),
+          nextEvent: _buildEvent('next', chord: next),
+          lookAheadEvent: _buildEvent('lookAhead', chord: lookAhead),
+          plannedSmartChordQueue: const <QueuedSmartChord>[],
+        ).promote(
+          nextCurrentEvent: _buildEvent('next', chord: next),
+          nextQueuedEvent: _buildEvent('lookAhead', chord: lookAhead),
+        );
 
     expect(promoted.previousChord?.repeatGuardKey, 'current');
     expect(promoted.currentChord?.repeatGuardKey, 'next');
@@ -67,3 +72,16 @@ GeneratedChord _buildChord(String key) {
   );
 }
 
+GeneratedChordEvent _buildEvent(String key, {GeneratedChord? chord}) {
+  return GeneratedChordEvent(
+    chord: chord ?? _buildChord(key),
+    timing: const ChordTimingSpec(
+      barIndex: 0,
+      changeBeat: 0,
+      durationBeats: 4,
+      beatsPerBar: 4,
+      eventIndexInBar: 0,
+      eventsInBar: 1,
+    ),
+  );
+}

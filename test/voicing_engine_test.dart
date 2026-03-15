@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/music/voicing_engine.dart';
 import 'package:chordest/music/voicing_models.dart';
@@ -1349,6 +1349,122 @@ void main() {
     },
   );
 
+  test(
+    'performance preview exposes a representative voicing and next chord preview',
+    () {
+      final dm7 = _buildChord(
+        root: 'D',
+        quality: ChordQuality.minor7,
+        repeatKey: 'dm7PerformancePreview',
+        romanNumeralId: RomanNumeralId.iiMin7,
+        keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        harmonicFunction: HarmonicFunction.predominant,
+      );
+      final g7 = _buildChord(
+        root: 'G',
+        quality: ChordQuality.dominant7,
+        repeatKey: 'g7PerformancePreview',
+        romanNumeralId: RomanNumeralId.vDom7,
+        keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        harmonicFunction: HarmonicFunction.dominant,
+      );
+      final cmaj7 = _buildChord(
+        root: 'C',
+        quality: ChordQuality.major7,
+        repeatKey: 'cmaj7PerformancePreview',
+        romanNumeralId: RomanNumeralId.iMaj7,
+        keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        harmonicFunction: HarmonicFunction.tonic,
+      );
+
+      final result = VoicingEngine.recommend(
+        context: VoicingContext(
+          previousChord: dm7,
+          currentChord: g7,
+          nextChord: cmaj7,
+          settings: settings.copyWith(
+            voicingComplexity: VoicingComplexity.modern,
+          ),
+          lookAheadDepth: 1,
+        ),
+      );
+
+      final preview = result.performancePreview;
+
+      expect(preview, isNotNull);
+      expect(
+        preview!.representativeSuggestion.voicing.hasGuideToneCore,
+        isTrue,
+      );
+      expect(preview.nextSuggestion, isNotNull);
+      expect(preview.nextSuggestion!.voicing.hasGuideToneCore, isTrue);
+      expect(
+        preview.sharedMidiNotes.union(preview.currentOnlyMidiNotes),
+        preview.representativeSuggestion.voicing.midiNotes.toSet(),
+      );
+      expect(
+        preview.sharedMidiNotes.union(preview.nextOnlyMidiNotes),
+        preview.nextSuggestion!.voicing.midiNotes.toSet(),
+      );
+      expect(
+        preview.representativeSuggestion.breakdown.nextChordLookAheadBonus,
+        greaterThanOrEqualTo(0),
+      );
+    },
+  );
+
+  test('locked voicing stays authoritative in performance preview', () {
+    final g7 = _buildChord(
+      root: 'G',
+      quality: ChordQuality.dominant7,
+      repeatKey: 'g7PerformanceLock',
+      romanNumeralId: RomanNumeralId.vDom7,
+      keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+      harmonicFunction: HarmonicFunction.dominant,
+    );
+    final cmaj7 = _buildChord(
+      root: 'C',
+      quality: ChordQuality.major7,
+      repeatKey: 'cmaj7PerformanceLock',
+      romanNumeralId: RomanNumeralId.iMaj7,
+      keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+      harmonicFunction: HarmonicFunction.tonic,
+    );
+
+    final initial = VoicingEngine.recommend(
+      context: VoicingContext(
+        currentChord: g7,
+        nextChord: cmaj7,
+        settings: settings.copyWith(
+          voicingComplexity: VoicingComplexity.modern,
+        ),
+        lookAheadDepth: 1,
+      ),
+    );
+    final lockedVoicing = initial
+        .suggestionFor(VoicingSuggestionKind.colorful)!
+        .voicing;
+
+    final result = VoicingEngine.recommend(
+      context: VoicingContext(
+        currentChord: g7,
+        nextChord: cmaj7,
+        settings: settings.copyWith(
+          voicingComplexity: VoicingComplexity.modern,
+        ),
+        lockedVoicing: lockedVoicing,
+        lookAheadDepth: 1,
+      ),
+    );
+
+    expect(result.performancePreview, isNotNull);
+    expect(
+      result.performancePreview!.representativeSuggestion.voicing.signature,
+      lockedVoicing.signature,
+    );
+    expect(result.performancePreview!.representativeSuggestion.locked, isTrue);
+  });
+
   test('altered dominant note naming stays consistent with accidentals', () {
     final bb7alt = _buildChord(
       root: 'Bb',
@@ -1518,4 +1634,3 @@ void main() {
     );
   });
 }
-

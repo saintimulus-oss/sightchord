@@ -41,6 +41,14 @@ class SmartPhraseContext {
     required this.barInPhrase,
     required this.barsToBoundary,
     required this.phraseLength,
+    this.timeSignature = PracticeTimeSignature.fourFour,
+    this.harmonicRhythmPreset = HarmonicRhythmPreset.onePerBar,
+    this.beatsPerBar = 4,
+    this.barIndex = 0,
+    this.changeBeat = 0,
+    this.durationBeats = 4,
+    this.eventIndexInBar = 0,
+    this.eventsInBar = 1,
   });
 
   final PhraseRole phraseRole;
@@ -49,45 +57,97 @@ class SmartPhraseContext {
   final int barInPhrase;
   final int barsToBoundary;
   final int phraseLength;
+  final PracticeTimeSignature timeSignature;
+  final HarmonicRhythmPreset harmonicRhythmPreset;
+  final int beatsPerBar;
+  final int barIndex;
+  final int changeBeat;
+  final int durationBeats;
+  final int eventIndexInBar;
+  final int eventsInBar;
 
-  static SmartPhraseContext rollingForm(int stepIndex) {
-    final cycleBar = stepIndex % 32;
+  bool get isWeakBeatChange => changeBeat > 0;
+  bool get isAnticipationBeat => changeBeat == beatsPerBar - 1;
+  bool get isSplitBar => eventsInBar > 1;
+  bool get isCadentialPickup =>
+      isWeakBeatChange &&
+      (phraseRole == PhraseRole.preCadence ||
+          phraseRole == PhraseRole.cadence ||
+          phraseRole == PhraseRole.release);
+
+  static SmartPhraseContext rollingForm(
+    int stepIndex, {
+    PracticeTimeSignature timeSignature = PracticeTimeSignature.fourFour,
+    HarmonicRhythmPreset harmonicRhythmPreset = HarmonicRhythmPreset.onePerBar,
+    ChordTimingSpec? timing,
+    int? barIndex,
+    int? changeBeat,
+    int? durationBeats,
+    int? eventIndexInBar,
+    int? eventsInBar,
+  }) {
+    final resolvedBarIndex = timing?.barIndex ?? barIndex ?? stepIndex;
+    final resolvedBeatsPerBar = timeSignature.beatsPerBar;
+    final resolvedChangeBeat = timing?.changeBeat ?? changeBeat ?? 0;
+    final resolvedDurationBeats =
+        timing?.durationBeats ?? durationBeats ?? resolvedBeatsPerBar;
+    final resolvedEventIndexInBar =
+        timing?.eventIndexInBar ?? eventIndexInBar ?? 0;
+    final resolvedEventsInBar = timing?.eventsInBar ?? eventsInBar ?? 1;
+    final cycleBar = resolvedBarIndex % 32;
     SectionRole sectionRole;
-    HarmonicDensity density;
     int phraseLength;
     int barInPhrase;
     if (cycleBar < 8) {
       sectionRole = SectionRole.aLike;
-      density = HarmonicDensity.oneChordPerBar;
       phraseLength = 8;
       barInPhrase = cycleBar;
     } else if (cycleBar < 16) {
       sectionRole = SectionRole.aLike;
-      density = HarmonicDensity.oneChordPerBar;
       phraseLength = 8;
       barInPhrase = cycleBar - 8;
     } else if (cycleBar < 24) {
       sectionRole = SectionRole.bridgeLike;
-      density = HarmonicDensity.twoChordsPerBar;
       phraseLength = 8;
       barInPhrase = cycleBar - 16;
     } else if (cycleBar < 28) {
       sectionRole = SectionRole.turnaroundTail;
-      density = HarmonicDensity.turnaroundSplit;
       phraseLength = 4;
       barInPhrase = cycleBar - 24;
     } else {
       sectionRole = SectionRole.tag;
-      density = HarmonicDensity.turnaroundSplit;
       phraseLength = 4;
       barInPhrase = cycleBar - 28;
     }
     final barsToBoundary = phraseLength - 1 - barInPhrase;
-    final phraseRole = switch (barsToBoundary) {
+    final basePhraseRole = switch (barsToBoundary) {
       0 => PhraseRole.release,
       1 => PhraseRole.cadence,
       2 => PhraseRole.preCadence,
       _ => barInPhrase == 0 ? PhraseRole.opener : PhraseRole.continuation,
+    };
+    final phraseRole = resolvedChangeBeat > 0
+        ? barsToBoundary <= 1
+              ? PhraseRole.cadence
+              : barsToBoundary == 2
+              ? PhraseRole.preCadence
+              : basePhraseRole
+        : basePhraseRole;
+    final density = switch (harmonicRhythmPreset) {
+      HarmonicRhythmPreset.onePerBar => HarmonicDensity.oneChordPerBar,
+      HarmonicRhythmPreset.twoPerBar || HarmonicRhythmPreset.phraseAwareJazz =>
+        resolvedEventsInBar > 1
+            ? HarmonicDensity.twoChordsPerBar
+            : sectionRole == SectionRole.bridgeLike &&
+                  timeSignature == PracticeTimeSignature.fourFour
+            ? HarmonicDensity.twoChordsPerBar
+            : HarmonicDensity.oneChordPerBar,
+      HarmonicRhythmPreset.cadenceCompression =>
+        resolvedEventsInBar > 1 && resolvedChangeBeat >= resolvedBeatsPerBar - 1
+            ? HarmonicDensity.turnaroundSplit
+            : resolvedEventsInBar > 1
+            ? HarmonicDensity.twoChordsPerBar
+            : HarmonicDensity.oneChordPerBar,
     };
     return SmartPhraseContext(
       phraseRole: phraseRole,
@@ -96,13 +156,23 @@ class SmartPhraseContext {
       barInPhrase: barInPhrase,
       barsToBoundary: barsToBoundary,
       phraseLength: phraseLength,
+      timeSignature: timeSignature,
+      harmonicRhythmPreset: harmonicRhythmPreset,
+      beatsPerBar: resolvedBeatsPerBar,
+      barIndex: resolvedBarIndex,
+      changeBeat: resolvedChangeBeat,
+      durationBeats: resolvedDurationBeats,
+      eventIndexInBar: resolvedEventIndexInBar,
+      eventsInBar: resolvedEventsInBar,
     );
   }
 
   String describe() {
     return '${phraseRole.name}/${sectionRole.name}/'
         '${harmonicDensity.name}:bar=$barInPhrase/'
-        '$phraseLength:toBoundary=$barsToBoundary';
+        '$phraseLength:toBoundary=$barsToBoundary/'
+        'meter=${timeSignature.name}:beat=${changeBeat + 1}/'
+        '${durationBeats}ev=${eventIndexInBar + 1}/$eventsInBar';
   }
 }
 
@@ -460,6 +530,9 @@ class SmartStartRequest {
     this.romanPoolPreset = RomanPoolPreset.expandedColor,
     this.selectedTensionOptions,
     this.inversionSettings = const InversionSettings(),
+    this.timeSignature = PracticeTimeSignature.fourFour,
+    this.harmonicRhythmPreset = HarmonicRhythmPreset.onePerBar,
+    this.initialTiming,
     required this.smartDiagnosticsEnabled,
   });
 
@@ -477,6 +550,9 @@ class SmartStartRequest {
   final RomanPoolPreset romanPoolPreset;
   final Set<String>? selectedTensionOptions;
   final InversionSettings inversionSettings;
+  final PracticeTimeSignature timeSignature;
+  final HarmonicRhythmPreset harmonicRhythmPreset;
+  final ChordTimingSpec? initialTiming;
   final bool smartDiagnosticsEnabled;
 }
 
@@ -508,6 +584,9 @@ class SmartStepRequest {
     required this.currentPatternTag,
     required this.plannedQueue,
     required this.currentRenderedNonDiatonic,
+    this.timeSignature = PracticeTimeSignature.fourFour,
+    this.harmonicRhythmPreset = HarmonicRhythmPreset.onePerBar,
+    this.timing,
     this.currentTrace,
     this.phraseContext,
   });
@@ -538,6 +617,9 @@ class SmartStepRequest {
   final String? currentPatternTag;
   final List<QueuedSmartChord> plannedQueue;
   final bool currentRenderedNonDiatonic;
+  final PracticeTimeSignature timeSignature;
+  final HarmonicRhythmPreset harmonicRhythmPreset;
+  final ChordTimingSpec? timing;
   final SmartDecisionTrace? currentTrace;
   final SmartPhraseContext? phraseContext;
 }

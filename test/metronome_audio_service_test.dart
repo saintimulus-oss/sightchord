@@ -1,9 +1,9 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:chordest/audio/metronome_audio_service.dart';
+import 'package:chordest/audio/metronome_audio_models.dart';
 import 'package:chordest/audio/scheduled_metronome_interface.dart';
-import 'package:chordest/settings/practice_settings.dart';
 
 class _FakeScheduledMetronome implements ScheduledMetronome {
   _FakeScheduledMetronome({
@@ -21,16 +21,17 @@ class _FakeScheduledMetronome implements ScheduledMetronome {
   double? currentTimeSeconds = 16.0;
 
   final Object? ensureReadyError;
-  final List<String> loadedAssets = <String>[];
-  final List<double> playNowVolumes = <double>[];
-  final List<(double, double)> scheduledClicks = <(double, double)>[];
+  final List<(String, String)> loadedAssets = <(String, String)>[];
+  final List<(String, double)> playNowVolumes = <(String, double)>[];
+  final List<(String, double, double)> scheduledClicks =
+      <(String, double, double)>[];
   int cancelCount = 0;
   int disposeCount = 0;
   Completer<void>? nextLoadCompleter;
 
   @override
-  Future<void> loadAsset(String assetPath) async {
-    loadedAssets.add(assetPath);
+  Future<void> loadAsset(String assetPath, {String soundId = 'primary'}) async {
+    loadedAssets.add((soundId, assetPath));
     final pendingLoad = nextLoadCompleter;
     if (pendingLoad != null) {
       nextLoadCompleter = null;
@@ -47,13 +48,20 @@ class _FakeScheduledMetronome implements ScheduledMetronome {
   }
 
   @override
-  Future<void> playNow({required double volume}) async {
-    playNowVolumes.add(volume);
+  Future<void> playNow({
+    required double volume,
+    String soundId = 'primary',
+  }) async {
+    playNowVolumes.add((soundId, volume));
   }
 
   @override
-  void scheduleAt({required double whenSeconds, required double volume}) {
-    scheduledClicks.add((whenSeconds, volume));
+  void scheduleAt({
+    required double whenSeconds,
+    required double volume,
+    String soundId = 'primary',
+  }) {
+    scheduledClicks.add((soundId, whenSeconds, volume));
   }
 
   @override
@@ -81,11 +89,11 @@ void main() {
 
     expect(result.preciseAssetReloaded, isTrue);
     expect(service.isReady, isTrue);
-    expect(scheduled.loadedAssets.last, 'assets/tickF.mp3');
+    expect(scheduled.loadedAssets.last, ('primary', 'assets/tickF.mp3'));
 
     await service.playNow(volume: 0.7);
 
-    expect(scheduled.playNowVolumes, [0.7]);
+    expect(scheduled.playNowVolumes, [('primary', 0.7)]);
     expect(warnings, isEmpty);
   });
 
@@ -103,7 +111,7 @@ void main() {
       final secondLoad = service.queueSoundLoad(MetronomeSound.tickE);
 
       await Future<void>.delayed(Duration.zero);
-      expect(scheduled.loadedAssets, ['assets/tick.mp3']);
+      expect(scheduled.loadedAssets, [('primary', 'assets/tick.mp3')]);
 
       firstLoadCompleter.complete();
       final firstResult = await firstLoad;
@@ -111,7 +119,10 @@ void main() {
 
       expect(firstResult.preciseAssetReloaded, isTrue);
       expect(secondResult.preciseAssetReloaded, isTrue);
-      expect(scheduled.loadedAssets, ['assets/tick.mp3', 'assets/tickE.mp3']);
+      expect(scheduled.loadedAssets, [
+        ('primary', 'assets/tick.mp3'),
+        ('primary', 'assets/tickE.mp3'),
+      ]);
     },
   );
 
@@ -151,5 +162,51 @@ void main() {
 
     expect(prepared, isFalse);
   });
-}
 
+  test('accent beats can route to a separate sound id', () async {
+    final scheduled = _FakeScheduledMetronome();
+    final service = MetronomeAudioService(scheduledMetronome: scheduled);
+    addTearDown(service.dispose);
+
+    await service.queueSourceLoad(
+      primarySource: const MetronomeSourceSpec.builtIn(
+        sound: MetronomeSound.tick,
+      ),
+      accentSource: const MetronomeSourceSpec.builtIn(
+        sound: MetronomeSound.tickF,
+      ),
+      useAccentSource: true,
+    );
+
+    await service.playBeat(MetronomeBeatState.accent, volume: 0.6);
+    service.scheduleBeatAt(
+      MetronomeBeatState.accent,
+      whenSeconds: 12.5,
+      volume: 0.4,
+    );
+
+    expect(scheduled.loadedAssets, [
+      ('primary', 'assets/tick.mp3'),
+      ('accent', 'assets/tickF.mp3'),
+    ]);
+    expect(scheduled.playNowVolumes, [('accent', 0.6)]);
+    expect(scheduled.scheduledClicks, [('accent', 12.5, 0.4)]);
+  });
+
+  test('muted beats do not schedule or play', () async {
+    final scheduled = _FakeScheduledMetronome();
+    final service = MetronomeAudioService(scheduledMetronome: scheduled);
+    addTearDown(service.dispose);
+
+    await service.queueSoundLoad(MetronomeSound.tick);
+    await service.playBeat(MetronomeBeatState.mute, volume: 0.8);
+    service.scheduleBeatAt(
+      MetronomeBeatState.mute,
+      whenSeconds: 3.2,
+      volume: 0.8,
+    );
+
+    expect(scheduled.playNowVolumes, isEmpty);
+    expect(scheduled.scheduledClicks, isEmpty);
+  });
+}

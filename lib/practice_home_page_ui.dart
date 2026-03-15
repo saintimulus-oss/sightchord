@@ -382,6 +382,10 @@ extension _PracticeHomePageUi on _MyHomePageState {
     _applySettings(_settings.copyWith(voicingSuggestionsEnabled: selected));
   }
 
+  void _toggleQuickMelodyGeneration(bool selected) {
+    _applySettings(_settings.copyWith(melodyGenerationEnabled: selected));
+  }
+
   void _toggleQuickInversions(bool selected) {
     _applySettings(
       _settings.copyWith(
@@ -523,6 +527,12 @@ extension _PracticeHomePageUi on _MyHomePageState {
                   selected: _settings.voicingSuggestionsEnabled,
                   onSelected: _toggleQuickVoicingSuggestions,
                 ),
+                _GeneratorQuickSettingChip(
+                  chipKey: const ValueKey('melody-generation-toggle'),
+                  label: l10n.melodyGenerationTitle,
+                  selected: _settings.melodyGenerationEnabled,
+                  onSelected: _toggleQuickMelodyGeneration,
+                ),
                 if (showExpandedGeneratorControls)
                   _GeneratorQuickSettingChip(
                     chipKey: const ValueKey('non-diatonic-toggle'),
@@ -602,24 +612,9 @@ extension _PracticeHomePageUi on _MyHomePageState {
   Widget _buildPracticeHomePage(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final previousDisplay = _previousChord == null
-        ? ''
-        : ChordRenderingHelper.renderedSymbol(
-            _previousChord!,
-            _settings.chordSymbolStyle,
-          );
-    final currentDisplay = _currentChord == null
-        ? ''
-        : ChordRenderingHelper.renderedSymbol(
-            _currentChord!,
-            _settings.chordSymbolStyle,
-          );
-    final nextDisplay = _nextChord == null
-        ? ''
-        : ChordRenderingHelper.renderedSymbol(
-            _nextChord!,
-            _settings.chordSymbolStyle,
-          );
+    final previousDisplay = _displaySymbolForEvent(_queueState.previousEvent);
+    final currentDisplay = _displaySymbolForEvent(_currentChordEvent);
+    final nextDisplay = _displaySymbolForEvent(_nextChordEvent);
 
     return CallbackShortcuts(
       bindings: {
@@ -705,8 +700,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           BeatIndicatorRow(
-                                            beatCount:
-                                                _MyHomePageState._beatsPerBar,
+                                            beatCount: _beatsPerBar,
                                             activeBeat: _currentBeat,
                                             animationDuration:
                                                 _beatIndicatorAnimationDuration(),
@@ -729,40 +723,120 @@ extension _PracticeHomePageUi on _MyHomePageState {
                                   previousLabel: previousDisplay,
                                   currentLabel: currentDisplay,
                                   nextLabel: nextDisplay,
+                                  performanceMode:
+                                      _settings.voicingDisplayMode ==
+                                      VoicingDisplayMode.performance,
                                   statusLabel: _currentStatusLabel(l10n),
                                   availableBackSteps: _practiceHistory.length,
                                   onAdvance: _performManualAdvanceChord,
                                   onGoBack: _restorePreviousChord,
-                                  controls: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                                  controls: Column(
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      _PreviewControlButton(
-                                        buttonKey: const ValueKey(
-                                          'practice-play-chord-button',
-                                        ),
-                                        icon: Icons.volume_up_rounded,
-                                        tooltip: l10n.audioPlayChord,
-                                        onPressed: _currentChord == null
-                                            ? null
-                                            : () => _playCurrentChordPreview(
-                                                pattern: HarmonyPlaybackPattern
-                                                    .block,
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          _PreviewControlButton(
+                                            buttonKey: const ValueKey(
+                                              'practice-play-chord-button',
+                                            ),
+                                            icon: Icons.volume_up_rounded,
+                                            tooltip: l10n.audioPlayChord,
+                                            onPressed: _currentChord == null
+                                                ? null
+                                                : () => _playCurrentChordPreview(
+                                                    pattern:
+                                                        HarmonyPlaybackPattern
+                                                            .block,
+                                                  ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          _PreviewControlButton(
+                                            buttonKey: const ValueKey(
+                                              'practice-play-arpeggio-button',
+                                            ),
+                                            icon:
+                                                Icons.multitrack_audio_rounded,
+                                            tooltip: l10n.audioPlayArpeggio,
+                                            onPressed: _currentChord == null
+                                                ? null
+                                                : () => _playCurrentChordPreview(
+                                                    pattern:
+                                                        HarmonyPlaybackPattern
+                                                            .arpeggio,
+                                                  ),
+                                          ),
+                                          if (_settings
+                                              .melodyGenerationEnabled) ...[
+                                            const SizedBox(width: 12),
+                                            _PreviewControlButton(
+                                              buttonKey: const ValueKey(
+                                                'practice-regenerate-melody-button',
                                               ),
+                                              icon:
+                                                  Icons.auto_fix_high_rounded,
+                                              tooltip:
+                                                  l10n.regenerateMelody,
+                                              onPressed: _regenerateCurrentMelody,
+                                            ),
+                                          ],
+                                        ],
                                       ),
-                                      const SizedBox(width: 12),
-                                      _PreviewControlButton(
-                                        buttonKey: const ValueKey(
-                                          'practice-play-arpeggio-button',
-                                        ),
-                                        icon: Icons.multitrack_audio_rounded,
-                                        tooltip: l10n.audioPlayArpeggio,
-                                        onPressed: _currentChord == null
-                                            ? null
-                                            : () => _playCurrentChordPreview(
-                                                pattern: HarmonyPlaybackPattern
-                                                    .arpeggio,
+                                      if (_settings.melodyGenerationEnabled) ...[
+                                        const SizedBox(height: 10),
+                                        Wrap(
+                                          alignment: WrapAlignment.center,
+                                          spacing: 8,
+                                          runSpacing: 8,
+                                          children: [
+                                            for (final mode
+                                                in MelodyPlaybackMode.values)
+                                              ChoiceChip(
+                                                key: ValueKey(
+                                                  'melody-playback-mode-${mode.name}',
+                                                ),
+                                                label: Text(
+                                                  mode.localizedLabel(l10n),
+                                                ),
+                                                selected:
+                                                    _settings
+                                                        .melodyPlaybackMode ==
+                                                    mode,
+                                                onSelected: (selected) {
+                                                  if (!selected) {
+                                                    return;
+                                                  }
+                                                  _applySettings(
+                                                    _settings.copyWith(
+                                                      melodyPlaybackMode: mode,
+                                                    ),
+                                                  );
+                                                },
                                               ),
-                                      ),
+                                          ],
+                                        ),
+                                        if (_currentMelodyEvent != null &&
+                                            _previewTextForMelodyEvent(
+                                              _currentMelodyEvent,
+                                            ).isNotEmpty) ...[
+                                          const SizedBox(height: 10),
+                                          _MelodyPreviewStrip(
+                                            currentText:
+                                                _previewTextForMelodyEvent(
+                                                  _currentMelodyEvent,
+                                                ),
+                                            nextText:
+                                                _previewTextForMelodyEvent(
+                                                  _nextMelodyEvent,
+                                                ),
+                                            currentLabel:
+                                                l10n.melodyPreviewCurrent,
+                                            nextLabel:
+                                                l10n.melodyPreviewNext,
+                                          ),
+                                        ],
+                                      ],
                                     ],
                                   ),
                                 ),
@@ -776,12 +850,14 @@ extension _PracticeHomePageUi on _MyHomePageState {
                                   const SizedBox(height: 18),
                                   VoicingSuggestionsSection(
                                     recommendations: _voicingRecommendations!,
+                                    displayMode: _settings.voicingDisplayMode,
                                     selectedSignature:
-                                        _authoritativeSelectedVoicing()
-                                            ?.signature,
+                                        _displayedVoicingSignature(),
                                     showReasons: _settings.showVoicingReasons,
                                     onSelectSuggestion: _handleVoicingSelected,
                                     onToggleLock: _handleVoicingLockToggle,
+                                    onPlaySuggestion:
+                                        _playVoicingSuggestionPreview,
                                   ),
                                 ],
                                 const SizedBox(height: 18),
@@ -883,6 +959,69 @@ class _PreviewControlButton extends StatelessWidget {
         side: BorderSide(color: theme.colorScheme.outlineVariant),
       ),
       icon: Icon(icon, size: 28),
+    );
+  }
+}
+
+class _MelodyPreviewStrip extends StatelessWidget {
+  const _MelodyPreviewStrip({
+    required this.currentText,
+    required this.nextText,
+    required this.currentLabel,
+    required this.nextLabel,
+  });
+
+  final String currentText;
+  final String nextText;
+  final String currentLabel;
+  final String nextLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    Widget buildColumn(String label, String text) {
+      return Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              text.isEmpty ? '...' : text,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        child: Row(
+          children: [
+            buildColumn(currentLabel, currentText),
+            const SizedBox(width: 12),
+            buildColumn(nextLabel, nextText),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -1166,6 +1305,7 @@ class _ChordSwipeSurface extends StatefulWidget {
     required this.previousLabel,
     required this.currentLabel,
     required this.nextLabel,
+    this.performanceMode = false,
     required this.statusLabel,
     required this.availableBackSteps,
     required this.onAdvance,
@@ -1176,6 +1316,7 @@ class _ChordSwipeSurface extends StatefulWidget {
   final String previousLabel;
   final String currentLabel;
   final String nextLabel;
+  final bool performanceMode;
   final String statusLabel;
   final int availableBackSteps;
   final VoidCallback onAdvance;
@@ -1706,7 +1847,7 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
                             const SizedBox(height: 18),
                           ],
                           SizedBox(
-                            height: 154,
+                            height: widget.performanceMode ? 136 : 154,
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
@@ -1728,6 +1869,7 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
                                   previousLabel: _displayPreviousLabel,
                                   currentLabel: _displayCurrentLabel,
                                   nextLabel: _displayNextLabel,
+                                  performanceMode: widget.performanceMode,
                                   progress: progress,
                                   edgeRevealTransition: _edgeRevealTransition,
                                   edgeRevealProgress: _edgeRevealProgress,
@@ -1792,6 +1934,7 @@ class _ChordMotionStage extends StatelessWidget {
     required this.previousLabel,
     required this.currentLabel,
     required this.nextLabel,
+    required this.performanceMode,
     required this.progress,
     required this.edgeRevealTransition,
     required this.edgeRevealProgress,
@@ -1809,6 +1952,7 @@ class _ChordMotionStage extends StatelessWidget {
   final String previousLabel;
   final String currentLabel;
   final String nextLabel;
+  final bool performanceMode;
   final double progress;
   final _ChordSwipeTransition? edgeRevealTransition;
   final double edgeRevealProgress;
@@ -2024,16 +2168,28 @@ class _ChordMotionStage extends StatelessWidget {
       _ChordTokenRole.current => const ValueKey('current-chord-text'),
     };
     final textStyle = TextStyle.lerp(
-      theme.textTheme.titleLarge?.copyWith(
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.3,
-        height: 1,
-      ),
-      theme.textTheme.displayMedium?.copyWith(
-        fontWeight: FontWeight.w800,
-        letterSpacing: -1.6,
-        height: 1,
-      ),
+      performanceMode
+          ? theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.2,
+              height: 1,
+            )
+          : theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.3,
+              height: 1,
+            ),
+      performanceMode
+          ? theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.9,
+              height: 1,
+            )
+          : theme.textTheme.displayMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+              letterSpacing: -1.6,
+              height: 1,
+            ),
       emphasis,
     )?.copyWith(color: Color.lerp(sideColor, currentColor, emphasis));
 

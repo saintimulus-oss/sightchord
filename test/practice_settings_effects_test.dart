@@ -1,4 +1,5 @@
 import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/music/chord_anchor_loop.dart';
 import 'package:chordest/settings/practice_settings.dart';
 import 'package:chordest/settings/practice_settings_effects.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -99,5 +100,88 @@ void main() {
       PracticeSettingsEffects.shouldForceLookAheadRefresh(previous, next),
       isFalse,
     );
+  });
+
+  test(
+    'meter and harmonic rhythm changes refresh the smart chord look-ahead',
+    () {
+      final previous = PracticeSettings(
+        voicingSuggestionsEnabled: true,
+        lookAheadDepth: 2,
+      );
+      final next = previous.copyWith(
+        timeSignature: PracticeTimeSignature.threeFour,
+        harmonicRhythmPreset: HarmonicRhythmPreset.phraseAwareJazz,
+      );
+
+      expect(
+        PracticeSettingsEffects.queueAffectingChanged(previous, next),
+        isTrue,
+      );
+      expect(
+        PracticeSettingsEffects.shouldForceLookAheadRefresh(previous, next),
+        isTrue,
+      );
+    },
+  );
+
+  test(
+    'changing anchor loop settings refreshes the smart chord look-ahead',
+    () {
+      final previous = PracticeSettings(
+        voicingSuggestionsEnabled: true,
+        lookAheadDepth: 2,
+      );
+      final next = previous.copyWith(
+        anchorLoop: const ChordAnchorLoop(
+          cycleLengthBars: 4,
+          slots: [
+            ChordAnchorSlot(
+              barOffset: 0,
+              slotIndexWithinBar: 0,
+              chordSymbol: 'Fm7',
+              enabled: true,
+            ),
+          ],
+        ),
+      );
+
+      expect(
+        PracticeSettingsEffects.queueAffectingChanged(previous, next),
+        isTrue,
+      );
+      expect(
+        PracticeSettingsEffects.shouldForceLookAheadRefresh(previous, next),
+        isTrue,
+      );
+    },
+  );
+
+  test('audio-only changes do not refresh the smart chord look-ahead', () {
+    final previous = PracticeSettings(
+      voicingSuggestionsEnabled: true,
+      lookAheadDepth: 2,
+    );
+    final next = previous.copyWith(
+      autoPlayChordChanges: true,
+      harmonyMasterVolume: 0.6,
+      metronomePattern: const MetronomePatternSettings(
+        preset: MetronomePatternPreset.meterAccent,
+      ),
+    );
+
+    expect(
+      PracticeSettingsEffects.queueAffectingChanged(previous, next),
+      isFalse,
+    );
+    expect(
+      PracticeSettingsEffects.shouldForceLookAheadRefresh(previous, next),
+      isFalse,
+    );
+    expect(
+      PracticeSettingsEffects.metronomeAudioChanged(previous, next),
+      isTrue,
+    );
+    expect(PracticeSettingsEffects.harmonyAudioChanged(previous, next), isTrue);
   });
 }

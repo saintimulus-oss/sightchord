@@ -226,12 +226,244 @@ class _KeyCandidateRow extends StatelessWidget {
   }
 }
 
+Color _highlightForeground(Color background) {
+  return background.computeLuminance() > 0.45 ? Colors.black : Colors.white;
+}
+
+Color _softHighlightBackground(Color color) {
+  return color.withValues(alpha: 0.14);
+}
+
+class _HighlightCategoryChip extends StatelessWidget {
+  const _HighlightCategoryChip({
+    required this.category,
+    required this.highlightTheme,
+    this.compact = false,
+  });
+
+  final ProgressionHighlightCategory category;
+  final ProgressionHighlightTheme highlightTheme;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final color = highlightTheme.colorFor(category);
+    final foreground = _highlightForeground(color);
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 8 : 10,
+        vertical: compact ? 5 : 6,
+      ),
+      decoration: BoxDecoration(
+        color: _softHighlightBackground(color),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.55)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            category.localizedLabel(l10n),
+            style:
+                (compact
+                        ? theme.textTheme.labelSmall
+                        : theme.textTheme.labelMedium)
+                    ?.copyWith(
+                      color: foreground.withValues(alpha: 0.92),
+                      fontWeight: FontWeight.w700,
+                    ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AnalyzerLegendWrap extends StatelessWidget {
+  const _AnalyzerLegendWrap({
+    required this.categories,
+    required this.highlightTheme,
+  });
+
+  final Iterable<ProgressionHighlightCategory> categories;
+  final ProgressionHighlightTheme highlightTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final ordered = [
+      for (final category in ProgressionHighlightCategory.values)
+        if (categories.contains(category)) category,
+    ];
+    if (ordered.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final category in ordered)
+          _HighlightCategoryChip(
+            category: category,
+            highlightTheme: highlightTheme,
+          ),
+      ],
+    );
+  }
+}
+
+class _ThemeCategoryEditorRow extends StatelessWidget {
+  const _ThemeCategoryEditorRow({
+    required this.category,
+    required this.highlightTheme,
+    required this.onPickColor,
+  });
+
+  final ProgressionHighlightCategory category;
+  final ProgressionHighlightTheme highlightTheme;
+  final ValueChanged<int> onPickColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final selected = highlightTheme.colorValueFor(category);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: Color(selected),
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                category.localizedLabel(l10n),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final colorValue in ProgressionHighlightTheme.customPalette)
+              InkWell(
+                key: ValueKey(
+                  'analyzer-theme-${category.storageKey}-$colorValue',
+                ),
+                borderRadius: BorderRadius.circular(999),
+                onTap: () => onPickColor(colorValue),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 140),
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Color(colorValue),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: selected == colorValue
+                          ? theme.colorScheme.onSurface
+                          : theme.colorScheme.outlineVariant,
+                      width: selected == colorValue ? 2.5 : 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.colorScheme.shadow.withValues(alpha: 0.12),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _AnalysisRowFrame extends StatelessWidget {
+  const _AnalysisRowFrame({
+    required this.category,
+    required this.highlightTheme,
+    required this.child,
+  });
+
+  final ProgressionHighlightCategory? category;
+  final ProgressionHighlightTheme highlightTheme;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final accent = category == null
+        ? theme.colorScheme.outlineVariant
+        : highlightTheme.colorFor(category!);
+    final surface = category == null
+        ? theme.colorScheme.surface
+        : Color.alphaBlend(
+            _softHighlightBackground(accent),
+            theme.colorScheme.surface,
+          );
+    return Container(
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: accent.withValues(alpha: 0.3)),
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              width: 4,
+              decoration: BoxDecoration(
+                color: accent,
+                borderRadius: const BorderRadius.horizontal(
+                  left: Radius.circular(18),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                child: child,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _ChordAnalysisRow extends StatelessWidget {
   const _ChordAnalysisRow({
     required this.analysis,
     required this.explainer,
     required this.functionLabel,
-    this.remarkText,
+    required this.detailText,
+    required this.highlightTheme,
     this.onPlayChord,
     this.onPlayArpeggio,
   });
@@ -239,7 +471,8 @@ class _ChordAnalysisRow extends StatelessWidget {
   final AnalyzedChord analysis;
   final ProgressionExplainer explainer;
   final String functionLabel;
-  final String? remarkText;
+  final String detailText;
+  final ProgressionHighlightTheme highlightTheme;
   final VoidCallback? onPlayChord;
   final VoidCallback? onPlayArpeggio;
 
@@ -247,6 +480,7 @@ class _ChordAnalysisRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final categories = analysis.highlightCategories;
     final evidenceLabels = [
       for (final evidence in analysis.evidence)
         if (evidence.kind != ProgressionEvidenceKind.qualityMatch)
@@ -287,17 +521,41 @@ class _ChordAnalysisRow extends StatelessWidget {
                 ),
                 visualDensity: VisualDensity.compact,
               ),
+              if (analysis.isNonDiatonic)
+                Chip(
+                  backgroundColor: theme.colorScheme.tertiaryContainer,
+                  side: BorderSide.none,
+                  labelStyle: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.colorScheme.onTertiaryContainer,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  label: Text(l10n.nonDiatonic),
+                  visualDensity: VisualDensity.compact,
+                ),
             ],
           ),
-          if (remarkText != null) ...[
+          if (categories.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(
-              remarkText!,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final category in categories)
+                  _HighlightCategoryChip(
+                    category: category,
+                    highlightTheme: highlightTheme,
+                    compact: true,
+                  ),
+              ],
             ),
           ],
+          const SizedBox(height: 6),
+          Text(
+            detailText,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
           if (evidenceLabels.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
@@ -373,22 +631,30 @@ class _ChordAnalysisRow extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth < 540) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [details],
-              ),
-              const SizedBox(height: 10),
-              controls,
-            ],
+          return _AnalysisRowFrame(
+            category: analysis.primaryHighlightCategory,
+            highlightTheme: highlightTheme,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [details],
+                ),
+                const SizedBox(height: 10),
+                controls,
+              ],
+            ),
           );
         }
 
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [details, const SizedBox(width: 12), controls],
+        return _AnalysisRowFrame(
+          category: analysis.primaryHighlightCategory,
+          highlightTheme: highlightTheme,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [details, const SizedBox(width: 12), controls],
+          ),
         );
       },
     );
@@ -400,6 +666,8 @@ class _InferredChordAnalysisRow extends StatelessWidget {
     required this.analysis,
     required this.explainer,
     required this.functionLabel,
+    required this.detailText,
+    required this.highlightTheme,
     this.onPlayChord,
     this.onPlayArpeggio,
   });
@@ -407,6 +675,8 @@ class _InferredChordAnalysisRow extends StatelessWidget {
   final AnalyzedChord analysis;
   final ProgressionExplainer explainer;
   final String functionLabel;
+  final String detailText;
+  final ProgressionHighlightTheme highlightTheme;
   final VoidCallback? onPlayChord;
   final VoidCallback? onPlayArpeggio;
 
@@ -414,16 +684,12 @@ class _InferredChordAnalysisRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final categories = analysis.highlightCategories;
     final evidenceLabels = [
       for (final evidence in analysis.evidence)
         if (evidence.kind != ProgressionEvidenceKind.qualityMatch)
           explainer.evidenceLabel(l10n, evidence),
     ];
-    final remarkText = [
-      for (final remark in analysis.remarks)
-        if (remark.kind != ProgressionRemarkKind.ambiguousInterpretation)
-          explainer.remarkLabel(l10n, remark),
-    ].join(' ');
     final competingLabels = [
       for (final candidate in analysis.competingInterpretations)
         if (candidate.chordSymbol case final symbol?)
@@ -482,15 +748,28 @@ class _InferredChordAnalysisRow extends StatelessWidget {
               ),
             ],
           ),
-          if (remarkText.isNotEmpty) ...[
+          if (categories.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(
-              remarkText,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final category in categories)
+                  _HighlightCategoryChip(
+                    category: category,
+                    highlightTheme: highlightTheme,
+                    compact: true,
+                  ),
+              ],
             ),
           ],
+          const SizedBox(height: 6),
+          Text(
+            detailText,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
           if (evidenceLabels.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
@@ -567,22 +846,30 @@ class _InferredChordAnalysisRow extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth < 540) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [details],
-              ),
-              const SizedBox(height: 10),
-              controls,
-            ],
+          return _AnalysisRowFrame(
+            category: analysis.primaryHighlightCategory,
+            highlightTheme: highlightTheme,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [details],
+                ),
+                const SizedBox(height: 10),
+                controls,
+              ],
+            ),
           );
         }
 
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [details, const SizedBox(width: 12), controls],
+        return _AnalysisRowFrame(
+          category: analysis.primaryHighlightCategory,
+          highlightTheme: highlightTheme,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [details, const SizedBox(width: 12), controls],
+          ),
         );
       },
     );

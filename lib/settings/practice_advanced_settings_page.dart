@@ -1,8 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../audio/harmony_audio_models.dart';
 import '../l10n/app_localizations.dart';
+import '../music/anchor_loop_layout.dart';
+import '../music/anchor_loop_planner.dart';
+import '../music/chord_anchor_loop.dart';
 import '../music/chord_formatting.dart';
 import '../music/chord_theory.dart';
+import '../widgets/chord_input_editor.dart';
 import 'practice_settings.dart';
 import 'practice_settings_dispatcher.dart';
 
@@ -23,9 +30,16 @@ class PracticeAdvancedSettingsPage extends StatefulWidget {
 
 class _PracticeAdvancedSettingsPageState
     extends State<PracticeAdvancedSettingsPage> {
+  static const AnchorLoopPlanner _anchorLoopPlanner = AnchorLoopPlanner();
+
   late PracticeSettings _settings;
 
   bool get _usesKeyMode => _settings.usesKeyMode;
+  ChordAnchorLoop get _anchorLoop => AnchorLoopLayout.sanitizeLoop(
+    loop: _settings.anchorLoop,
+    timeSignature: _settings.timeSignature,
+    harmonicRhythmPreset: _settings.harmonicRhythmPreset,
+  );
 
   @override
   void initState() {
@@ -46,6 +60,145 @@ class _PracticeAdvancedSettingsPageState
       _settings = nextSettings;
     });
     widget.onApplySettings(nextSettings, reseed: reseed);
+  }
+
+  void _applyAnchorLoop(ChordAnchorLoop nextLoop) {
+    final sanitizedLoop = AnchorLoopLayout.sanitizeLoop(
+      loop: nextLoop,
+      timeSignature: _settings.timeSignature,
+      harmonicRhythmPreset: _settings.harmonicRhythmPreset,
+    );
+    _applySettings(_settings.copyWith(anchorLoop: sanitizedLoop), reseed: true);
+  }
+
+  List<_AnchorEditorSlotTiming> _anchorSlotTimingsForBar(int barOffset) {
+    final changeBeats = AnchorLoopLayout.validChangeBeats(
+      timeSignature: _settings.timeSignature,
+      harmonicRhythmPreset: _settings.harmonicRhythmPreset,
+    );
+    return [
+      for (var slotIndex = 0; slotIndex < changeBeats.length; slotIndex += 1)
+        _AnchorEditorSlotTiming(
+          barOffset: barOffset,
+          slotIndexWithinBar: slotIndex,
+          changeBeat: changeBeats[slotIndex],
+        ),
+    ];
+  }
+
+  List<MetronomeBeatState> get _customMetronomeBeatStates => _settings
+      .metronomePattern
+      .normalized(beatsPerBar: _settings.beatsPerBar)
+      .customBeatStates;
+
+  void _applyMetronomeSource(
+    MetronomeSourceSpec source, {
+    required bool accent,
+  }) {
+    _applySettings(
+      accent
+          ? _settings.copyWith(metronomeAccentSource: source)
+          : _settings.copyWith(metronomeSource: source),
+    );
+  }
+
+  void _applyCustomMetronomeBeatState(int beatIndex, MetronomeBeatState state) {
+    final nextStates = <MetronomeBeatState>[..._customMetronomeBeatStates];
+    nextStates[beatIndex] = state;
+    _applySettings(
+      _settings.copyWith(
+        metronomePattern: _settings.metronomePattern.copyWith(
+          preset: MetronomePatternPreset.custom,
+          customBeatStates: nextStates,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openAnchorSlotEditor(
+    BuildContext context, {
+    required _AnchorEditorSlotTiming timing,
+  }) async {
+    final existing = _anchorLoop.slotForPosition(
+      barOffset: timing.barOffset,
+      slotIndexWithinBar: timing.slotIndexWithinBar,
+    );
+    final result = await showModalBottomSheet<_AnchorSlotEditorResult>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return _AnchorSlotEditorSheet(
+          timing: timing,
+          existingSlot: existing,
+          planner: _anchorLoopPlanner,
+        );
+      },
+    );
+
+    if (!mounted) {
+      return;
+    }
+    if (result == null) {
+      return;
+    }
+    if (result.clear) {
+      _applyAnchorLoop(
+        _anchorLoop.withoutSlot(
+          barOffset: timing.barOffset,
+          slotIndexWithinBar: timing.slotIndexWithinBar,
+        ),
+      );
+      return;
+    }
+    _applyAnchorLoop(
+      _anchorLoop.withSlot(
+        ChordAnchorSlot(
+          barOffset: timing.barOffset,
+          slotIndexWithinBar: timing.slotIndexWithinBar,
+          chordSymbol: result.chordSymbol,
+          enabled: result.enabled,
+        ),
+      ),
+    );
+  }
+
+  void _toggleAnchorSlot(
+    BuildContext context, {
+    required _AnchorEditorSlotTiming timing,
+    required bool selected,
+  }) {
+    final existing = _anchorLoop.slotForPosition(
+      barOffset: timing.barOffset,
+      slotIndexWithinBar: timing.slotIndexWithinBar,
+    );
+    if (existing == null || !existing.hasChordSymbol) {
+      if (selected) {
+        unawaited(_openAnchorSlotEditor(context, timing: timing));
+      }
+      return;
+    }
+    _applyAnchorLoop(
+      _anchorLoop.withSlot(existing.copyWith(enabled: selected)),
+    );
+  }
+
+  List<int> _melodyRangeOptions({required bool forHigh}) {
+    final min = forHigh
+        ? _settings.melodyRangeLow + PracticeSettings.minMelodyRangeSpan
+        : PracticeSettings.minMelodyRangeMidi;
+    final max = forHigh
+        ? PracticeSettings.maxMelodyRangeMidi
+        : _settings.melodyRangeHigh - PracticeSettings.minMelodyRangeSpan;
+    return [
+      for (var midi = min; midi <= max; midi += 1) midi,
+    ];
+  }
+
+  String _melodyMidiLabel(int midi) {
+    final note = MusicTheory.spellPitch(midi % 12, preferFlat: false);
+    final octave = (midi ~/ 12) - 1;
+    return '$note$octave';
   }
 
   @override
@@ -93,6 +246,796 @@ class _PracticeAdvancedSettingsPageState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        _AdvancedSectionTitle(text: l10n.practiceMeter),
+                        DropdownButtonFormField<PracticeTimeSignature>(
+                          key: const ValueKey(
+                            'practice-time-signature-dropdown',
+                          ),
+                          initialValue: _settings.timeSignature,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: l10n.practiceMeter,
+                            helperText: l10n.practiceMeterHelp,
+                          ),
+                          items: PracticeTimeSignature.values
+                              .map(
+                                (value) =>
+                                    DropdownMenuItem<PracticeTimeSignature>(
+                                      value: value,
+                                      child: Text(value.localizedLabel(l10n)),
+                                    ),
+                              )
+                              .toList(growable: false),
+                          onChanged: (value) {
+                            if (value == null) {
+                              return;
+                            }
+                            dispatcher.apply(
+                              (current) =>
+                                  current.copyWith(timeSignature: value),
+                              reseed: true,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        DropdownButtonFormField<HarmonicRhythmPreset>(
+                          key: const ValueKey(
+                            'practice-harmonic-rhythm-dropdown',
+                          ),
+                          initialValue: _settings.harmonicRhythmPreset,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: l10n.harmonicRhythm,
+                            helperText: l10n.harmonicRhythmHelp,
+                          ),
+                          items: HarmonicRhythmPreset.values
+                              .map(
+                                (value) =>
+                                    DropdownMenuItem<HarmonicRhythmPreset>(
+                                      value: value,
+                                      child: Text(value.localizedLabel(l10n)),
+                                    ),
+                              )
+                              .toList(growable: false),
+                          onChanged: (value) {
+                            if (value == null) {
+                              return;
+                            }
+                            dispatcher.apply(
+                              (current) =>
+                                  current.copyWith(harmonicRhythmPreset: value),
+                              reseed: true,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                        _AdvancedSectionTitle(text: l10n.transportAudioTitle),
+                        SwitchListTile.adaptive(
+                          key: const ValueKey('auto-play-chord-changes-toggle'),
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(l10n.autoPlayChordChanges),
+                          subtitle: Text(l10n.autoPlayChordChangesHelp),
+                          value: _settings.autoPlayChordChanges,
+                          onChanged: (value) {
+                            dispatcher.apply(
+                              (current) =>
+                                  current.copyWith(autoPlayChordChanges: value),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        DropdownButtonFormField<HarmonyPlaybackPattern>(
+                          key: const ValueKey('auto-play-pattern-dropdown'),
+                          initialValue: _settings.autoPlayPattern,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: l10n.autoPlayPattern,
+                            helperText: l10n.autoPlayPatternHelp,
+                          ),
+                          items: HarmonyPlaybackPattern.values
+                              .map(
+                                (value) =>
+                                    DropdownMenuItem<HarmonyPlaybackPattern>(
+                                      value: value,
+                                      child: Text(value.localizedLabel(l10n)),
+                                    ),
+                              )
+                              .toList(growable: false),
+                          onChanged: (value) {
+                            if (value == null) {
+                              return;
+                            }
+                            dispatcher.apply(
+                              (current) =>
+                                  current.copyWith(autoPlayPattern: value),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        _AdvancedSliderTile(
+                          title: l10n.autoPlayHoldFactor,
+                          subtitle: l10n.autoPlayHoldFactorHelp,
+                          value: _settings.autoPlayHoldFactor,
+                          min: PracticeSettings.minAutoPlayHoldFactor,
+                          max: PracticeSettings.maxAutoPlayHoldFactor,
+                          divisions: 12,
+                          valueLabel: _percentLabel(
+                            _settings.autoPlayHoldFactor,
+                          ),
+                          onChanged: (value) {
+                            dispatcher.apply(
+                              (current) =>
+                                  current.copyWith(autoPlayHoldFactor: value),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        SwitchListTile.adaptive(
+                          key: const ValueKey('auto-play-melody-toggle'),
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(l10n.autoPlayMelodyWithChords),
+                          subtitle: Text(
+                            l10n.autoPlayMelodyWithChordsPlaceholder,
+                          ),
+                          value: _settings.autoPlayMelodyWithChords,
+                          onChanged: (value) {
+                            dispatcher.apply(
+                              (current) => current.copyWith(
+                                autoPlayMelodyWithChords: value,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                        _AdvancedSectionTitle(
+                          text: l10n.melodyGenerationTitle,
+                        ),
+                        SwitchListTile.adaptive(
+                          key: const ValueKey(
+                            'melody-generation-enabled-toggle',
+                          ),
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(l10n.melodyGenerationTitle),
+                          subtitle: Text(l10n.melodyGenerationHelp),
+                          value: _settings.melodyGenerationEnabled,
+                          onChanged: (value) {
+                            dispatcher.apply(
+                              (current) => current.copyWith(
+                                melodyGenerationEnabled: value,
+                              ),
+                            );
+                          },
+                        ),
+                        if (_settings.melodyGenerationEnabled) ...[
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<MelodyDensity>(
+                            key: const ValueKey('melody-density-dropdown'),
+                            initialValue: _settings.melodyDensity,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              border: const OutlineInputBorder(),
+                              labelText: l10n.melodyDensity,
+                              helperText: l10n.melodyDensityHelp,
+                            ),
+                            items: MelodyDensity.values
+                                .map(
+                                  (value) => DropdownMenuItem<MelodyDensity>(
+                                    value: value,
+                                    child: Text(value.localizedLabel(l10n)),
+                                  ),
+                                )
+                                .toList(growable: false),
+                            onChanged: (value) {
+                              if (value == null) {
+                                return;
+                              }
+                              dispatcher.apply(
+                                (current) =>
+                                    current.copyWith(melodyDensity: value),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          _AdvancedSliderTile(
+                            title: l10n.motifRepetitionStrength,
+                            subtitle: l10n.motifRepetitionStrengthHelp,
+                            value: _settings.motifRepetitionStrength,
+                            min: PracticeSettings.minMelodyMotifStrength,
+                            max: PracticeSettings.maxMelodyMotifStrength,
+                            divisions: 10,
+                            valueLabel: _percentLabel(
+                              _settings.motifRepetitionStrength,
+                            ),
+                            onChanged: (value) {
+                              dispatcher.apply(
+                                (current) => current.copyWith(
+                                  motifRepetitionStrength: value,
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          _AdvancedSliderTile(
+                            title: l10n.approachToneDensity,
+                            subtitle: l10n.approachToneDensityHelp,
+                            value: _settings.approachToneDensity,
+                            min:
+                                PracticeSettings.minMelodyApproachToneDensity,
+                            max:
+                                PracticeSettings.maxMelodyApproachToneDensity,
+                            divisions: 10,
+                            valueLabel: _percentLabel(
+                              _settings.approachToneDensity,
+                            ),
+                            onChanged: (value) {
+                              dispatcher.apply(
+                                (current) =>
+                                    current.copyWith(approachToneDensity: value),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            l10n.melodyRangeHelp,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: DropdownButtonFormField<int>(
+                                  key: const ValueKey(
+                                    'melody-range-low-dropdown',
+                                  ),
+                                  initialValue: _settings.melodyRangeLow,
+                                  isExpanded: true,
+                                  decoration: InputDecoration(
+                                    border: const OutlineInputBorder(),
+                                    labelText: l10n.melodyRangeLow,
+                                  ),
+                                  items: _melodyRangeOptions(forHigh: false)
+                                      .map(
+                                        (value) => DropdownMenuItem<int>(
+                                          value: value,
+                                          child: Text(_melodyMidiLabel(value)),
+                                        ),
+                                      )
+                                      .toList(growable: false),
+                                  onChanged: (value) {
+                                    if (value == null) {
+                                      return;
+                                    }
+                                    dispatcher.apply(
+                                      (current) =>
+                                          current.copyWith(melodyRangeLow: value),
+                                    );
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: DropdownButtonFormField<int>(
+                                  key: const ValueKey(
+                                    'melody-range-high-dropdown',
+                                  ),
+                                  initialValue: _settings.melodyRangeHigh,
+                                  isExpanded: true,
+                                  decoration: InputDecoration(
+                                    border: const OutlineInputBorder(),
+                                    labelText: l10n.melodyRangeHigh,
+                                  ),
+                                  items: _melodyRangeOptions(forHigh: true)
+                                      .map(
+                                        (value) => DropdownMenuItem<int>(
+                                          value: value,
+                                          child: Text(_melodyMidiLabel(value)),
+                                        ),
+                                      )
+                                      .toList(growable: false),
+                                  onChanged: (value) {
+                                    if (value == null) {
+                                      return;
+                                    }
+                                    dispatcher.apply(
+                                      (current) => current.copyWith(
+                                        melodyRangeHigh: value,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<MelodyStyle>(
+                            key: const ValueKey('melody-style-dropdown'),
+                            initialValue: _settings.melodyStyle,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              border: const OutlineInputBorder(),
+                              labelText: l10n.melodyStyle,
+                              helperText: l10n.melodyStyleHelp,
+                            ),
+                            items: MelodyStyle.values
+                                .map(
+                                  (value) => DropdownMenuItem<MelodyStyle>(
+                                    value: value,
+                                    child: Text(value.localizedLabel(l10n)),
+                                  ),
+                                )
+                                .toList(growable: false),
+                            onChanged: (value) {
+                              if (value == null) {
+                                return;
+                              }
+                              dispatcher.apply(
+                                (current) =>
+                                    current.copyWith(melodyStyle: value),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          SwitchListTile.adaptive(
+                            key: const ValueKey(
+                              'allow-chromatic-approaches-toggle',
+                            ),
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(l10n.allowChromaticApproaches),
+                            subtitle: Text(
+                              l10n.allowChromaticApproachesHelp,
+                            ),
+                            value: _settings.allowChromaticApproaches,
+                            onChanged: (value) {
+                              dispatcher.apply(
+                                (current) => current.copyWith(
+                                  allowChromaticApproaches: value,
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<MelodyPlaybackMode>(
+                            key: const ValueKey(
+                              'melody-playback-mode-dropdown',
+                            ),
+                            initialValue: _settings.melodyPlaybackMode,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              border: const OutlineInputBorder(),
+                              labelText: l10n.melodyPlaybackMode,
+                              helperText: l10n.melodyPlaybackModeHelp,
+                            ),
+                            items: MelodyPlaybackMode.values
+                                .map(
+                                  (value) =>
+                                      DropdownMenuItem<MelodyPlaybackMode>(
+                                        value: value,
+                                        child: Text(value.localizedLabel(l10n)),
+                                      ),
+                                )
+                                .toList(growable: false),
+                            onChanged: (value) {
+                              if (value == null) {
+                                return;
+                              }
+                              dispatcher.apply(
+                                (current) => current.copyWith(
+                                  melodyPlaybackMode: value,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                        const SizedBox(height: 24),
+                        _AdvancedSectionTitle(text: l10n.metronomePatternTitle),
+                        DropdownButtonFormField<MetronomePatternPreset>(
+                          key: const ValueKey('metronome-pattern-dropdown'),
+                          initialValue: _settings.metronomePattern.preset,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: l10n.metronomePatternTitle,
+                            helperText: l10n.metronomePatternHelp,
+                          ),
+                          items: MetronomePatternPreset.values
+                              .map(
+                                (value) =>
+                                    DropdownMenuItem<MetronomePatternPreset>(
+                                      value: value,
+                                      child: Text(value.localizedLabel(l10n)),
+                                    ),
+                              )
+                              .toList(growable: false),
+                          onChanged: (value) {
+                            if (value == null) {
+                              return;
+                            }
+                            dispatcher.apply(
+                              (current) => current.copyWith(
+                                metronomePattern: current.metronomePattern
+                                    .copyWith(preset: value),
+                              ),
+                            );
+                          },
+                        ),
+                        if (_settings.metronomePattern.preset ==
+                            MetronomePatternPreset.custom) ...[
+                          const SizedBox(height: 12),
+                          for (
+                            var beatIndex = 0;
+                            beatIndex < _settings.beatsPerBar;
+                            beatIndex += 1
+                          ) ...[
+                            DropdownButtonFormField<MetronomeBeatState>(
+                              key: ValueKey(
+                                'metronome-custom-beat-$beatIndex-dropdown',
+                              ),
+                              initialValue:
+                                  _customMetronomeBeatStates[beatIndex],
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                border: const OutlineInputBorder(),
+                                labelText: l10n.anchorLoopBeatLabel(
+                                  beatIndex + 1,
+                                ),
+                              ),
+                              items: MetronomeBeatState.values
+                                  .map(
+                                    (value) =>
+                                        DropdownMenuItem<MetronomeBeatState>(
+                                          value: value,
+                                          child: Text(
+                                            value.localizedLabel(l10n),
+                                          ),
+                                        ),
+                                  )
+                                  .toList(growable: false),
+                              onChanged: (value) {
+                                if (value == null) {
+                                  return;
+                                }
+                                _applyCustomMetronomeBeatState(
+                                  beatIndex,
+                                  value,
+                                );
+                              },
+                            ),
+                            if (beatIndex + 1 < _settings.beatsPerBar)
+                              const SizedBox(height: 12),
+                          ],
+                        ],
+                        const SizedBox(height: 12),
+                        SwitchListTile.adaptive(
+                          key: const ValueKey('metronome-accent-sound-toggle'),
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(l10n.metronomeUseAccentSound),
+                          subtitle: Text(l10n.metronomeUseAccentSoundHelp),
+                          value: _settings.metronomeUseAccentSound,
+                          onChanged: (value) {
+                            dispatcher.apply(
+                              (current) => current.copyWith(
+                                metronomeUseAccentSound: value,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        _MetronomeSourceEditor(
+                          title: l10n.metronomePrimarySource,
+                          kind: _settings.metronomeSource.kind,
+                          builtInSound: _settings.metronomeSound,
+                          localFilePath:
+                              _settings.metronomeSource.trimmedLocalFilePath,
+                          localFileLabel: l10n.metronomeLocalFilePath,
+                          localFileHelp: l10n.metronomeLocalFilePathHelp,
+                          onKindChanged: (value) {
+                            _applyMetronomeSource(
+                              _settings.metronomeSource.copyWith(kind: value),
+                              accent: false,
+                            );
+                          },
+                          onBuiltInSoundChanged: (value) {
+                            dispatcher.apply(
+                              (current) =>
+                                  current.copyWith(metronomeSound: value),
+                            );
+                          },
+                          onLocalFileSubmitted: (value) {
+                            _applyMetronomeSource(
+                              _settings.metronomeSource.copyWith(
+                                localFilePath: value.trim(),
+                              ),
+                              accent: false,
+                            );
+                          },
+                        ),
+                        if (_settings.metronomeUseAccentSound) ...[
+                          const SizedBox(height: 12),
+                          _MetronomeSourceEditor(
+                            title: l10n.metronomeAccentSource,
+                            kind: _settings.metronomeAccentSource.kind,
+                            builtInSound: _settings.metronomeAccentSound,
+                            localFilePath: _settings
+                                .metronomeAccentSource
+                                .trimmedLocalFilePath,
+                            localFileLabel: l10n.metronomeAccentLocalFilePath,
+                            localFileHelp:
+                                l10n.metronomeAccentLocalFilePathHelp,
+                            onKindChanged: (value) {
+                              _applyMetronomeSource(
+                                _settings.metronomeAccentSource.copyWith(
+                                  kind: value,
+                                ),
+                                accent: true,
+                              );
+                            },
+                            onBuiltInSoundChanged: (value) {
+                              dispatcher.apply(
+                                (current) => current.copyWith(
+                                  metronomeAccentSound: value,
+                                ),
+                              );
+                            },
+                            onLocalFileSubmitted: (value) {
+                              _applyMetronomeSource(
+                                _settings.metronomeAccentSource.copyWith(
+                                  localFilePath: value.trim(),
+                                ),
+                                accent: true,
+                              );
+                            },
+                          ),
+                        ],
+                        const SizedBox(height: 24),
+                        _AdvancedSectionTitle(text: l10n.harmonySoundTitle),
+                        _AdvancedSliderTile(
+                          title: l10n.harmonyMasterVolume,
+                          subtitle: l10n.harmonyMasterVolumeHelp,
+                          value: _settings.harmonyMasterVolume,
+                          min: PracticeSettings.minHarmonyMasterVolume,
+                          max: PracticeSettings.maxHarmonyMasterVolume,
+                          divisions: 10,
+                          valueLabel: _percentLabel(
+                            _settings.harmonyMasterVolume,
+                          ),
+                          onChanged: (value) {
+                            dispatcher.apply(
+                              (current) =>
+                                  current.copyWith(harmonyMasterVolume: value),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        _AdvancedSliderTile(
+                          title: l10n.harmonyPreviewHoldFactor,
+                          subtitle: l10n.harmonyPreviewHoldFactorHelp,
+                          value: _settings.harmonyPreviewHoldFactor,
+                          min: PracticeSettings.minHarmonyHoldFactor,
+                          max: PracticeSettings.maxHarmonyHoldFactor,
+                          divisions: 14,
+                          valueLabel: _percentLabel(
+                            _settings.harmonyPreviewHoldFactor,
+                          ),
+                          onChanged: (value) {
+                            dispatcher.apply(
+                              (current) => current.copyWith(
+                                harmonyPreviewHoldFactor: value,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        _AdvancedSliderTile(
+                          title: l10n.harmonyArpeggioStepSpeed,
+                          subtitle: l10n.harmonyArpeggioStepSpeedHelp,
+                          value: _settings.harmonyArpeggioStepSpeed,
+                          min: PracticeSettings.minHarmonyArpeggioStepSpeed,
+                          max: PracticeSettings.maxHarmonyArpeggioStepSpeed,
+                          divisions: 15,
+                          valueLabel: _speedLabel(
+                            _settings.harmonyArpeggioStepSpeed,
+                          ),
+                          onChanged: (value) {
+                            dispatcher.apply(
+                              (current) => current.copyWith(
+                                harmonyArpeggioStepSpeed: value,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        _AdvancedSliderTile(
+                          title: l10n.harmonyVelocityHumanization,
+                          subtitle: l10n.harmonyVelocityHumanizationHelp,
+                          value: _settings.harmonyVelocityHumanization,
+                          min: PracticeSettings.minHumanizationAmount,
+                          max: PracticeSettings.maxHumanizationAmount,
+                          divisions: 10,
+                          valueLabel: _percentLabel(
+                            _settings.harmonyVelocityHumanization,
+                          ),
+                          onChanged: (value) {
+                            dispatcher.apply(
+                              (current) => current.copyWith(
+                                harmonyVelocityHumanization: value,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        _AdvancedSliderTile(
+                          title: l10n.harmonyGainRandomness,
+                          subtitle: l10n.harmonyGainRandomnessHelp,
+                          value: _settings.harmonyGainRandomness,
+                          min: PracticeSettings.minHumanizationAmount,
+                          max: PracticeSettings.maxHumanizationAmount,
+                          divisions: 10,
+                          valueLabel: _percentLabel(
+                            _settings.harmonyGainRandomness,
+                          ),
+                          onChanged: (value) {
+                            dispatcher.apply(
+                              (current) => current.copyWith(
+                                harmonyGainRandomness: value,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        _AdvancedSliderTile(
+                          title: l10n.harmonyTimingHumanization,
+                          subtitle: l10n.harmonyTimingHumanizationHelp,
+                          value: _settings.harmonyTimingHumanization,
+                          min: PracticeSettings.minHumanizationAmount,
+                          max: PracticeSettings.maxHumanizationAmount,
+                          divisions: 10,
+                          valueLabel: _percentLabel(
+                            _settings.harmonyTimingHumanization,
+                          ),
+                          onChanged: (value) {
+                            dispatcher.apply(
+                              (current) => current.copyWith(
+                                harmonyTimingHumanization: value,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                        _AdvancedSectionTitle(text: l10n.anchorLoopTitle),
+                        Text(
+                          l10n.anchorLoopHelp,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        DropdownButtonFormField<int>(
+                          key: const ValueKey(
+                            'anchor-loop-cycle-length-dropdown',
+                          ),
+                          initialValue: _anchorLoop.clampedCycleLengthBars,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: l10n.anchorLoopCycleLength,
+                            helperText: l10n.anchorLoopCycleLengthHelp,
+                          ),
+                          items: const [1, 2, 3, 4, 5, 6, 7, 8]
+                              .map(
+                                (value) => DropdownMenuItem<int>(
+                                  value: value,
+                                  child: Text('$value'),
+                                ),
+                              )
+                              .toList(growable: false),
+                          onChanged: (value) {
+                            if (value == null) {
+                              return;
+                            }
+                            _applyAnchorLoop(
+                              _anchorLoop.copyWith(cycleLengthBars: value),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        SwitchListTile.adaptive(
+                          key: const ValueKey('anchor-loop-vary-toggle'),
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(l10n.anchorLoopVaryNonAnchorSlots),
+                          subtitle: Text(l10n.anchorLoopVaryNonAnchorSlotsHelp),
+                          value: _anchorLoop.varyNonAnchorSlots,
+                          onChanged: (value) {
+                            _applyAnchorLoop(
+                              _anchorLoop.copyWith(varyNonAnchorSlots: value),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        for (
+                          var barOffset = 0;
+                          barOffset < _anchorLoop.clampedCycleLengthBars;
+                          barOffset += 1
+                        ) ...[
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: colorScheme.surfaceContainerLow,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: colorScheme.outlineVariant,
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n.anchorLoopBarLabel(barOffset + 1),
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  for (final timing in _anchorSlotTimingsForBar(
+                                    barOffset,
+                                  )) ...[
+                                    Builder(
+                                      builder: (context) {
+                                        final slot = _anchorLoop
+                                            .slotForPosition(
+                                              barOffset: timing.barOffset,
+                                              slotIndexWithinBar:
+                                                  timing.slotIndexWithinBar,
+                                            );
+                                        return ListTile(
+                                          key: ValueKey(
+                                            'anchor-slot-${timing.barOffset}-${timing.slotIndexWithinBar}',
+                                          ),
+                                          contentPadding: EdgeInsets.zero,
+                                          title: Text(
+                                            l10n.anchorLoopBeatLabel(
+                                              timing.changeBeat + 1,
+                                            ),
+                                          ),
+                                          subtitle: Text(
+                                            slot
+                                                        ?.trimmedChordSymbol
+                                                        .isNotEmpty ==
+                                                    true
+                                                ? slot!.trimmedChordSymbol
+                                                : l10n.anchorLoopSlotEmpty,
+                                          ),
+                                          onTap: () => _openAnchorSlotEditor(
+                                            context,
+                                            timing: timing,
+                                          ),
+                                          trailing: Switch.adaptive(
+                                            value: slot?.enabled ?? false,
+                                            onChanged: (selected) =>
+                                                _toggleAnchorSlot(
+                                                  context,
+                                                  timing: timing,
+                                                  selected: selected,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                          if (barOffset + 1 <
+                              _anchorLoop.clampedCycleLengthBars)
+                            const SizedBox(height: 12),
+                        ],
+                        const SizedBox(height: 24),
                         if (_usesKeyMode && _settings.smartGeneratorMode) ...[
                           _AdvancedSectionTitle(
                             text: l10n.advancedSmartGenerator,
@@ -304,6 +1247,36 @@ class _PracticeAdvancedSettingsPageState
                         _AdvancedSectionTitle(
                           text: l10n.voicingSuggestionsTitle,
                         ),
+                        DropdownButtonFormField<VoicingDisplayMode>(
+                          key: const ValueKey('voicing-display-mode-dropdown'),
+                          initialValue: _settings.voicingDisplayMode,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: l10n.voicingDisplayMode,
+                            helperText: l10n.voicingDisplayModeHelp,
+                          ),
+                          items: VoicingDisplayMode.values
+                              .map(
+                                (value) => DropdownMenuItem<VoicingDisplayMode>(
+                                  value: value,
+                                  child: Text(
+                                    _voicingDisplayModeLabel(l10n, value),
+                                  ),
+                                ),
+                              )
+                              .toList(growable: false),
+                          onChanged: (value) {
+                            if (value == null) {
+                              return;
+                            }
+                            dispatcher.apply(
+                              (current) =>
+                                  current.copyWith(voicingDisplayMode: value),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
                         DropdownButtonFormField<VoicingComplexity>(
                           key: const ValueKey('voicing-complexity-dropdown'),
                           initialValue: _settings.voicingComplexity,
@@ -561,6 +1534,354 @@ class _AdvancedSectionTitle extends StatelessWidget {
   }
 }
 
+class _AdvancedSliderTile extends StatelessWidget {
+  const _AdvancedSliderTile({
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.divisions,
+    required this.valueLabel,
+    required this.onChanged,
+  });
+
+  final String title;
+  final String subtitle;
+  final double value;
+  final double min;
+  final double max;
+  final int divisions;
+  final String valueLabel;
+  final ValueChanged<double> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Text(
+                  valueLabel,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            Slider.adaptive(
+              value: value,
+              min: min,
+              max: max,
+              divisions: divisions,
+              label: valueLabel,
+              onChanged: onChanged,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MetronomeSourceEditor extends StatelessWidget {
+  const _MetronomeSourceEditor({
+    required this.title,
+    required this.kind,
+    required this.builtInSound,
+    required this.localFilePath,
+    required this.localFileLabel,
+    required this.localFileHelp,
+    required this.onKindChanged,
+    required this.onBuiltInSoundChanged,
+    required this.onLocalFileSubmitted,
+  });
+
+  final String title;
+  final MetronomeSourceKind kind;
+  final MetronomeSound builtInSound;
+  final String localFilePath;
+  final String localFileLabel;
+  final String localFileHelp;
+  final ValueChanged<MetronomeSourceKind> onKindChanged;
+  final ValueChanged<MetronomeSound> onBuiltInSoundChanged;
+  final ValueChanged<String> onLocalFileSubmitted;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<MetronomeSourceKind>(
+              initialValue: kind,
+              isExpanded: true,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                labelText: l10n.metronomeSourceKind,
+              ),
+              items: MetronomeSourceKind.values
+                  .map(
+                    (value) => DropdownMenuItem<MetronomeSourceKind>(
+                      value: value,
+                      child: Text(value.localizedLabel(l10n)),
+                    ),
+                  )
+                  .toList(growable: false),
+              onChanged: (value) {
+                if (value == null) {
+                  return;
+                }
+                onKindChanged(value);
+              },
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<MetronomeSound>(
+              initialValue: builtInSound,
+              isExpanded: true,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                labelText: l10n.metronomeSound,
+              ),
+              items: MetronomeSound.values
+                  .map(
+                    (value) => DropdownMenuItem<MetronomeSound>(
+                      value: value,
+                      child: Text(value.localizedLabel(l10n)),
+                    ),
+                  )
+                  .toList(growable: false),
+              onChanged: (value) {
+                if (value == null) {
+                  return;
+                }
+                onBuiltInSoundChanged(value);
+              },
+            ),
+            if (kind == MetronomeSourceKind.localFile) ...[
+              const SizedBox(height: 12),
+              TextFormField(
+                key: ValueKey('$title-local-file'),
+                initialValue: localFilePath,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  labelText: localFileLabel,
+                  helperText: localFileHelp,
+                ),
+                onFieldSubmitted: onLocalFileSubmitted,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AnchorEditorSlotTiming {
+  const _AnchorEditorSlotTiming({
+    required this.barOffset,
+    required this.slotIndexWithinBar,
+    required this.changeBeat,
+  });
+
+  final int barOffset;
+  final int slotIndexWithinBar;
+  final int changeBeat;
+}
+
+class _AnchorSlotEditorResult {
+  const _AnchorSlotEditorResult({
+    required this.chordSymbol,
+    required this.enabled,
+  }) : clear = false;
+
+  const _AnchorSlotEditorResult.clear()
+    : chordSymbol = '',
+      enabled = false,
+      clear = true;
+
+  final String chordSymbol;
+  final bool enabled;
+  final bool clear;
+}
+
+class _AnchorSlotEditorSheet extends StatefulWidget {
+  const _AnchorSlotEditorSheet({
+    required this.timing,
+    required this.existingSlot,
+    required this.planner,
+  });
+
+  final _AnchorEditorSlotTiming timing;
+  final ChordAnchorSlot? existingSlot;
+  final AnchorLoopPlanner planner;
+
+  @override
+  State<_AnchorSlotEditorSheet> createState() => _AnchorSlotEditorSheetState();
+}
+
+class _AnchorSlotEditorSheetState extends State<_AnchorSlotEditorSheet> {
+  late final TextEditingController _controller;
+  late bool _enabled;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(
+      text: widget.existingSlot?.trimmedChordSymbol ?? '',
+    );
+    _controller.addListener(_handleControllerChanged);
+    _enabled = widget.existingSlot?.enabled ?? true;
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_handleControllerChanged);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleControllerChanged() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final materialL10n = MaterialLocalizations.of(context);
+    final trimmed = _controller.text.trim();
+    final parsedChord = trimmed.isEmpty
+        ? null
+        : widget.planner.tryParseChordSymbol(trimmed);
+    final hasValidSymbol = trimmed.isEmpty || parsedChord != null;
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          12,
+          20,
+          24 + MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.anchorLoopEditTitle(
+                widget.timing.barOffset + 1,
+                widget.timing.changeBeat + 1,
+              ),
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 12),
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              title: Text(l10n.enabled),
+              value: _enabled,
+              onChanged: (value) {
+                setState(() {
+                  _enabled = value;
+                });
+              },
+            ),
+            const SizedBox(height: 8),
+            ChordInputEditor(
+              controller: _controller,
+              labelText: l10n.anchorLoopChordSymbol,
+              hintText: l10n.anchorLoopChordHint,
+              helperText: trimmed.isEmpty
+                  ? l10n.anchorLoopChordHint
+                  : hasValidSymbol
+                  ? l10n.anchorLoopChordHint
+                  : l10n.anchorLoopInvalidChord,
+              onAnalyze: () {
+                setState(() {});
+              },
+              minLines: 1,
+              maxLines: 1,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    FocusScope.of(context).unfocus();
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(materialL10n.cancelButtonLabel),
+                ),
+                const SizedBox(width: 8),
+                FilledButton(
+                  onPressed: hasValidSymbol
+                      ? () {
+                          FocusScope.of(context).unfocus();
+                          Navigator.of(context).pop(
+                            trimmed.isEmpty
+                                ? const _AnchorSlotEditorResult.clear()
+                                : _AnchorSlotEditorResult(
+                                    chordSymbol: trimmed,
+                                    enabled: _enabled,
+                                  ),
+                          );
+                        }
+                      : null,
+                  child: Text(materialL10n.saveButtonLabel),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 String _modulationIntensityLabel(
   AppLocalizations l10n,
   ModulationIntensity value,
@@ -596,6 +1917,13 @@ String _voicingComplexityLabel(AppLocalizations l10n, VoicingComplexity value) {
   };
 }
 
+String _voicingDisplayModeLabel(
+  AppLocalizations l10n,
+  VoicingDisplayMode value,
+) {
+  return value.localizedLabel(l10n);
+}
+
 String _voicingTopNotePreferenceLabel(
   AppLocalizations l10n,
   VoicingTopNotePreference value,
@@ -603,4 +1931,12 @@ String _voicingTopNotePreferenceLabel(
   return value == VoicingTopNotePreference.auto
       ? l10n.voicingTopNotePreferenceAuto
       : value.noteLabel;
+}
+
+String _percentLabel(double value) {
+  return '${(value * 100).round()}%';
+}
+
+String _speedLabel(double value) {
+  return '${value.toStringAsFixed(2)}x';
 }
