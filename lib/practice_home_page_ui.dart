@@ -1189,10 +1189,9 @@ class _ChordSwipeSurface extends StatefulWidget {
 class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
     with TickerProviderStateMixin {
   static const Duration _swipeDuration = Duration(milliseconds: 260);
-  static const Duration _momentumSwipeDuration = Duration(milliseconds: 180);
+  static const Duration _momentumSwipeDuration = Duration(milliseconds: 220);
   static const Duration _snapBackDuration = Duration(milliseconds: 190);
   static const Duration _edgeRevealDuration = Duration(milliseconds: 170);
-  static const double _momentumCarryFraction = 0.16;
 
   late final AnimationController _swipeController;
   late final AnimationController _edgeRevealController;
@@ -1203,6 +1202,9 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
   _ChordSwipeTransition? _sequenceDirection;
   var _remainingSequenceSteps = 0;
   var _sequenceUsesMomentum = false;
+  var _momentumSequenceCommittedSteps = 0;
+  var _momentumSequenceTotalSteps = 0;
+  var _momentumSequenceActive = false;
   double _dragOffset = 0;
   double _surfaceWidth = 0;
   late String _displayPreviousLabel;
@@ -1210,7 +1212,19 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
   late String _displayNextLabel;
 
   bool get _canGoBack => widget.availableBackSteps > 0;
-  double get _effectiveOffset => _swipeOffsetAnimation?.value ?? _dragOffset;
+  double get _effectiveOffset {
+    final rawOffset = _swipeOffsetAnimation?.value ?? _dragOffset;
+    if (!_momentumSequenceActive || _sequenceDirection == null) {
+      return rawOffset;
+    }
+    final width = _surfaceWidth > 0 ? _surfaceWidth : 260.0;
+    final committedTravel = width * _momentumSequenceCommittedSteps;
+    return rawOffset +
+        (_sequenceDirection == _ChordSwipeTransition.advance
+            ? committedTravel
+            : -committedTravel);
+  }
+
   double get _edgeRevealProgress =>
       _edgeRevealController.isAnimating ? _edgeRevealController.value : 1;
   bool get isTransitioning =>
@@ -1227,9 +1241,13 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
     _displayNextLabel = widget.nextLabel;
     _swipeController =
         AnimationController(vsync: this, duration: _swipeDuration)
-          ..addListener(() => setState(() {}))
+          ..addListener(_handleSwipeAnimationTick)
           ..addStatusListener((status) {
             if (status != AnimationStatus.completed) {
+              return;
+            }
+            if (_momentumSequenceActive) {
+              _finishMomentumSequence();
               return;
             }
             final callback = _sequenceCallback;
@@ -1291,6 +1309,9 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
       _sequenceCallback = null;
       _remainingSequenceSteps = 0;
       _sequenceUsesMomentum = false;
+      _momentumSequenceCommittedSteps = 0;
+      _momentumSequenceTotalSteps = 0;
+      _momentumSequenceActive = false;
       _dragOffset = 0;
       _displayPreviousLabel = widget.previousLabel;
       _displayCurrentLabel = widget.currentLabel;
@@ -1330,11 +1351,125 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
     if (steps <= 0 || isTransitioning) {
       return;
     }
+    if (usesMomentum) {
+      _startMomentumSequence(direction, steps: steps, callback: callback);
+      return;
+    }
     _sequenceDirection = direction;
     _sequenceCallback = callback;
     _remainingSequenceSteps = steps;
     _sequenceUsesMomentum = usesMomentum;
     _startNextQueuedStepIfNeeded();
+  }
+
+  void _handleSwipeAnimationTick() {
+    if (_momentumSequenceActive) {
+      _consumeMomentumCommits();
+    }
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Duration _momentumDurationForSteps(int steps) {
+    final additionalMilliseconds = (steps - 1).clamp(0, 6) * 110;
+    return Duration(
+      milliseconds:
+          _momentumSwipeDuration.inMilliseconds + additionalMilliseconds,
+    );
+  }
+
+  void _startMomentumSequence(
+    _ChordSwipeTransition direction, {
+    required int steps,
+    required VoidCallback callback,
+  }) {
+    final width = _surfaceWidth > 0 ? _surfaceWidth : 260.0;
+    final directionSign = direction == _ChordSwipeTransition.advance
+        ? -1.0
+        : 1.0;
+    _sequenceDirection = direction;
+    _sequenceCallback = callback;
+    _sequenceUsesMomentum = true;
+    _momentumSequenceActive = true;
+    _momentumSequenceCommittedSteps = 0;
+    _momentumSequenceTotalSteps = steps;
+    _remainingSequenceSteps = 0;
+    _activeTransition = direction;
+    _animateSwipeTo(
+      directionSign * width * steps,
+      duration: _momentumDurationForSteps(steps),
+      curve: Curves.easeOutCubic,
+    );
+    _sequenceCallback = callback;
+  }
+
+  void _consumeMomentumCommits() {
+    if (!_momentumSequenceActive ||
+        _sequenceDirection == null ||
+        _sequenceCallback == null) {
+      return;
+    }
+    final width = _surfaceWidth > 0 ? _surfaceWidth : 260.0;
+    final rawOffset = _swipeOffsetAnimation?.value ?? _dragOffset;
+    final direction = _sequenceDirection!;
+    final advances = direction == _ChordSwipeTransition.advance;
+    while (_momentumSequenceCommittedSteps < _momentumSequenceTotalSteps) {
+      final nextBoundary = width * (_momentumSequenceCommittedSteps + 1);
+      final crossed = advances
+          ? rawOffset <= -nextBoundary
+          : rawOffset >= nextBoundary;
+      if (!crossed) {
+        break;
+      }
+      _momentumSequenceCommittedSteps += 1;
+      _applyMomentumDisplayShift(direction);
+      _sequenceCallback!.call();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_momentumSequenceActive) {
+          return;
+        }
+        setState(() {
+          _displayPreviousLabel = widget.previousLabel;
+          _displayCurrentLabel = widget.currentLabel;
+          _displayNextLabel = widget.nextLabel;
+        });
+      });
+    }
+  }
+
+  void _applyMomentumDisplayShift(_ChordSwipeTransition direction) {
+    final previousLabel = _displayPreviousLabel;
+    final currentLabel = _displayCurrentLabel;
+    final nextLabel = _displayNextLabel;
+    if (direction == _ChordSwipeTransition.advance) {
+      _displayPreviousLabel = currentLabel;
+      _displayCurrentLabel = nextLabel;
+      _displayNextLabel = '';
+      return;
+    }
+    _displayPreviousLabel = '';
+    _displayCurrentLabel = previousLabel;
+    _displayNextLabel = currentLabel;
+  }
+
+  void _finishMomentumSequence() {
+    _swipeOffsetAnimation = null;
+    setState(() {
+      _activeTransition = null;
+      _sequenceCallback = null;
+      _sequenceDirection = null;
+      _sequenceUsesMomentum = false;
+      _momentumSequenceActive = false;
+      _momentumSequenceCommittedSteps = 0;
+      _momentumSequenceTotalSteps = 0;
+      _remainingSequenceSteps = 0;
+      _dragOffset = 0;
+      _edgeRevealTransition = null;
+      _displayPreviousLabel = widget.previousLabel;
+      _displayCurrentLabel = widget.currentLabel;
+      _displayNextLabel = widget.nextLabel;
+    });
   }
 
   void _startNextQueuedStepIfNeeded() {
@@ -1362,34 +1497,19 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
 
   void _syncLabelsAfterCommittedTransition() {
     final revealTransition = _activeTransition;
-    final continuesMomentumSequence =
-        _sequenceUsesMomentum &&
-        _remainingSequenceSteps > 0 &&
-        revealTransition != null;
-    final nextDragOffset = continuesMomentumSequence
-        ? _momentumCarryOffsetFor(revealTransition)
-        : 0.0;
     setState(() {
       _activeTransition = null;
-      _dragOffset = nextDragOffset;
+      _dragOffset = 0;
       _displayPreviousLabel = widget.previousLabel;
       _displayCurrentLabel = widget.currentLabel;
       _displayNextLabel = widget.nextLabel;
-      _edgeRevealTransition = continuesMomentumSequence
-          ? null
-          : revealTransition;
+      _edgeRevealTransition = revealTransition;
     });
-    if (revealTransition == null || continuesMomentumSequence) {
+    if (revealTransition == null) {
       _startNextQueuedStepIfNeeded();
       return;
     }
     _edgeRevealController.forward(from: 0);
-  }
-
-  double _momentumCarryOffsetFor(_ChordSwipeTransition direction) {
-    final width = _surfaceWidth > 0 ? _surfaceWidth : 260.0;
-    final carry = width * _momentumCarryFraction;
-    return direction == _ChordSwipeTransition.advance ? -carry : carry;
   }
 
   void animateAdvance({
@@ -1506,6 +1626,7 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
     final accentGlow = theme.colorScheme.primary.withValues(
       alpha: theme.brightness == Brightness.dark ? 0.18 : 0.1,
     );
+    final hasStatusLabel = widget.statusLabel.trim().isNotEmpty;
 
     return Material(
       color: Colors.transparent,
@@ -1556,31 +1677,34 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
                       padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
                       child: Column(
                         children: [
-                          Center(
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primaryContainer,
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
+                          if (hasStatusLabel) ...[
+                            Center(
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primaryContainer,
+                                  borderRadius: BorderRadius.circular(999),
                                 ),
-                                child: Text(
-                                  key: const ValueKey('current-status-label'),
-                                  widget.statusLabel,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.labelLarge?.copyWith(
-                                    color: theme.colorScheme.onPrimaryContainer,
-                                    fontWeight: FontWeight.w700,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  child: Text(
+                                    key: const ValueKey('current-status-label'),
+                                    widget.statusLabel,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.labelLarge?.copyWith(
+                                      color:
+                                          theme.colorScheme.onPrimaryContainer,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 18),
+                            const SizedBox(height: 18),
+                          ],
                           SizedBox(
                             height: 154,
                             child: Stack(

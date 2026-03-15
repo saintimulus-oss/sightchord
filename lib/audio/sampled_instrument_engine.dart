@@ -3,20 +3,24 @@ import 'dart:collection';
 import 'dart:developer' as developer;
 import 'dart:math' as math;
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart';
 
+import 'sample_player_voice.dart';
+import 'sample_player_voice_platform.dart';
 import 'sampled_instrument_manifest.dart';
+
+export 'audio_asset_path_utils.dart' show normalizeAssetPathForAudioPlayer;
+export 'sample_player_voice.dart'
+    show
+        AudioPlayerBackend,
+        AudioPlayerBackendFactory,
+        SamplePlayerVoice,
+        SamplePlayerVoiceFactory;
+export 'sample_player_voice_native.dart'
+    show AudioPlayerVoiceFactory, AudioplayersAudioPlayerBackend;
 
 typedef InstrumentWarningLogger =
     void Function(String message, {Object? error, StackTrace? stackTrace});
-
-String normalizeAssetPathForAudioPlayer(String assetPath) {
-  const assetsPrefix = 'assets/';
-  return assetPath.startsWith(assetsPrefix)
-      ? assetPath.substring(assetsPrefix.length)
-      : assetPath;
-}
 
 class SampledInstrumentAssetBundle {
   const SampledInstrumentAssetBundle({
@@ -56,101 +60,12 @@ class InstrumentNoteRequest {
   final String? toneLabel;
 }
 
-abstract class SamplePlayerVoiceFactory {
-  Future<SamplePlayerVoice> createVoice();
-}
-
-abstract class SamplePlayerVoice {
-  Future<void> configure();
-
-  Future<void> prepare({
-    required String assetPath,
-    required double playbackRate,
-  });
-
-  Future<void> start({required double volume});
-
-  Future<void> setVolume(double volume);
-
-  Future<void> stop();
-
-  Future<void> dispose();
-}
-
-typedef AudioPlayerBackendFactory = AudioPlayerBackend Function();
-
-abstract class AudioPlayerBackend {
-  Future<void> setPlayerMode(PlayerMode mode);
-
-  Future<void> setReleaseMode(ReleaseMode mode);
-
-  Future<void> setSourceAsset(String path);
-
-  Future<void> setPlaybackRate(double playbackRate);
-
-  Future<void> setVolume(double volume);
-
-  Future<void> resume();
-
-  Future<void> stop();
-
-  Future<void> dispose();
-}
-
-class AudioplayersAudioPlayerBackend implements AudioPlayerBackend {
-  AudioplayersAudioPlayerBackend() : _player = AudioPlayer();
-
-  final AudioPlayer _player;
-
-  @override
-  Future<void> setPlayerMode(PlayerMode mode) => _player.setPlayerMode(mode);
-
-  @override
-  Future<void> setReleaseMode(ReleaseMode mode) => _player.setReleaseMode(mode);
-
-  @override
-  Future<void> setSourceAsset(String path) => _player.setSourceAsset(path);
-
-  @override
-  Future<void> setPlaybackRate(double playbackRate) =>
-      _player.setPlaybackRate(playbackRate);
-
-  @override
-  Future<void> setVolume(double volume) => _player.setVolume(volume);
-
-  @override
-  Future<void> resume() => _player.resume();
-
-  @override
-  Future<void> stop() => _player.stop();
-
-  @override
-  Future<void> dispose() => _player.dispose();
-}
-
-AudioPlayerBackend _defaultAudioPlayerBackendFactory() =>
-    AudioplayersAudioPlayerBackend();
-
-class AudioPlayerVoiceFactory implements SamplePlayerVoiceFactory {
-  const AudioPlayerVoiceFactory({AudioPlayerBackendFactory? backendFactory})
-    : _backendFactory = backendFactory ?? _defaultAudioPlayerBackendFactory;
-
-  final AudioPlayerBackendFactory _backendFactory;
-
-  @override
-  Future<SamplePlayerVoice> createVoice() async {
-    final voice = _AudioPlayerVoice(player: _backendFactory());
-    await voice.configure();
-    return voice;
-  }
-}
-
 class SampledInstrumentEngine {
   SampledInstrumentEngine({
     required this.bundle,
     SamplePlayerVoiceFactory? voiceFactory,
     InstrumentWarningLogger? logWarning,
-  }) : _voiceFactory = voiceFactory ?? const AudioPlayerVoiceFactory(),
+  }) : _voiceFactory = voiceFactory ?? createDefaultSamplePlayerVoiceFactory(),
        _logWarning = logWarning ?? _defaultLogWarning;
 
   final SampledInstrumentAssetBundle bundle;
@@ -189,6 +104,22 @@ class SampledInstrumentEngine {
     int velocity = 88,
     double gain = 1.0,
   }) async {
+    final prepared = await _prepareNote(
+      midiNote: midiNote,
+      velocity: velocity,
+      gain: gain,
+    );
+    if (prepared == null) {
+      return null;
+    }
+    return _startPreparedNote(prepared);
+  }
+
+  Future<_PreparedInstrumentNote?> _prepareNote({
+    required int midiNote,
+    required int velocity,
+    required double gain,
+  }) async {
     await prepare();
     final manifest = _manifest;
     if (manifest == null) {
@@ -222,25 +153,46 @@ class SampledInstrumentEngine {
         assetPath: assetPath,
         playbackRate: resolved.playbackRate,
       );
-      await slot.voice.start(volume: effectiveVolume);
-      slot
-        ..lastStartedAt = DateTime.now()
-        ..activeNoteId = noteId;
-
-      final note = ActiveInstrumentNote(
-        id: noteId,
-        midiNote: resolved.resolvedMidi,
-        velocity: resolved.velocity,
+      return _PreparedInstrumentNote(
+        note: ActiveInstrumentNote(
+          id: noteId,
+          midiNote: resolved.resolvedMidi,
+          velocity: resolved.velocity,
+        ),
+        slot: slot,
+        volume: effectiveVolume,
       );
-      _activeNotes[noteId] = _ActiveVoiceLease(note: note, slot: slot);
-      return note;
     } catch (error, stackTrace) {
       _logWarning(
-        'Instrument note-on failed for ${bundle.id}.',
+        'Preparing instrument note-on failed for ${bundle.id}.',
         error: error,
         stackTrace: stackTrace,
       );
       await _releaseSlot(slot);
+      return null;
+    }
+  }
+
+  Future<ActiveInstrumentNote?> _startPreparedNote(
+    _PreparedInstrumentNote prepared,
+  ) async {
+    try {
+      await prepared.slot.voice.start(volume: prepared.volume);
+      prepared.slot
+        ..lastStartedAt = DateTime.now()
+        ..activeNoteId = prepared.note.id;
+      _activeNotes[prepared.note.id] = _ActiveVoiceLease(
+        note: prepared.note,
+        slot: prepared.slot,
+      );
+      return prepared.note;
+    } catch (error, stackTrace) {
+      _logWarning(
+        'Starting instrument note-on failed for ${bundle.id}.',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      await _releaseSlot(prepared.slot);
       return null;
     }
   }
@@ -267,17 +219,23 @@ class SampledInstrumentEngine {
     if (manifest == null) {
       return;
     }
-    final activeNotes = <ActiveInstrumentNote>[];
+    final preparedNotes = <_PreparedInstrumentNote>[];
     for (final note in notes) {
-      final active = await noteOn(
+      final prepared = await _prepareNote(
         midiNote: note.midiNote,
         velocity: note.velocity,
         gain: note.gain,
       );
-      if (active != null) {
-        activeNotes.add(active);
+      if (prepared != null) {
+        preparedNotes.add(prepared);
       }
     }
+    final startedNotes = await Future.wait<ActiveInstrumentNote?>(
+      preparedNotes.map(_startPreparedNote),
+    );
+    final activeNotes = startedNotes.whereType<ActiveInstrumentNote>().toList(
+      growable: false,
+    );
     await Future<void>.delayed(
       hold ?? Duration(milliseconds: manifest.defaults.defaultChordHoldMs),
     );
@@ -301,13 +259,21 @@ class SampledInstrumentEngine {
         step ?? Duration(milliseconds: manifest.defaults.defaultArpeggioStepMs);
     final effectiveHold =
         hold ?? Duration(milliseconds: manifest.defaults.defaultArpeggioHoldMs);
+    final preparedNotes = <_PreparedInstrumentNote>[];
 
     for (final note in notes) {
-      final active = await noteOn(
+      final prepared = await _prepareNote(
         midiNote: note.midiNote,
         velocity: note.velocity,
         gain: note.gain,
       );
+      if (prepared != null) {
+        preparedNotes.add(prepared);
+      }
+    }
+
+    for (final prepared in preparedNotes) {
+      final active = await _startPreparedNote(prepared);
       if (active != null) {
         activeNotes.add(active);
       }
@@ -485,60 +451,6 @@ class SampledInstrumentEngine {
   }
 }
 
-class _AudioPlayerVoice implements SamplePlayerVoice {
-  _AudioPlayerVoice({AudioPlayerBackend? player})
-    : _player = player ?? AudioplayersAudioPlayerBackend();
-
-  final AudioPlayerBackend _player;
-  String? _currentAssetPath;
-  double _targetPlaybackRate = 1.0;
-  bool _playbackRateDirty = false;
-
-  @override
-  Future<void> configure() async {
-    await _player.setPlayerMode(PlayerMode.mediaPlayer);
-    await _player.setReleaseMode(ReleaseMode.stop);
-  }
-
-  @override
-  Future<void> prepare({
-    required String assetPath,
-    required double playbackRate,
-  }) async {
-    if (_currentAssetPath != assetPath) {
-      await _player.setSourceAsset(normalizeAssetPathForAudioPlayer(assetPath));
-      _currentAssetPath = assetPath;
-      _playbackRateDirty = true;
-    }
-    if ((_targetPlaybackRate - playbackRate).abs() > 0.0001) {
-      _targetPlaybackRate = playbackRate;
-      _playbackRateDirty = true;
-    }
-  }
-
-  @override
-  Future<void> start({required double volume}) async {
-    final startVolume = _playbackRateDirty ? 0.0 : volume;
-    await _player.setVolume(startVolume);
-    await _player.resume();
-    if (_playbackRateDirty) {
-      // audioplayers expects playback rate changes after playback starts.
-      await _player.setPlaybackRate(_targetPlaybackRate);
-      _playbackRateDirty = false;
-      await _player.setVolume(volume);
-    }
-  }
-
-  @override
-  Future<void> setVolume(double volume) => _player.setVolume(volume);
-
-  @override
-  Future<void> stop() => _player.stop();
-
-  @override
-  Future<void> dispose() => _player.dispose();
-}
-
 class _VoiceSlot {
   _VoiceSlot({required this.voice});
 
@@ -552,4 +464,16 @@ class _ActiveVoiceLease {
 
   final ActiveInstrumentNote note;
   final _VoiceSlot slot;
+}
+
+class _PreparedInstrumentNote {
+  const _PreparedInstrumentNote({
+    required this.note,
+    required this.slot,
+    required this.volume,
+  });
+
+  final ActiveInstrumentNote note;
+  final _VoiceSlot slot;
+  final double volume;
 }

@@ -173,6 +173,137 @@ SmartDecisionTrace buildTrace({
   );
 }
 
+SmartSimulationSummary aggregateSimulationSummaries(
+  List<SmartSimulationSummary> summaries,
+) {
+  assert(summaries.isNotEmpty);
+  final first = summaries.first;
+
+  int sumInt(int Function(SmartSimulationSummary summary) selector) =>
+      summaries.fold<int>(0, (sum, summary) => sum + selector(summary));
+
+  double weightedAverage(
+    double Function(SmartSimulationSummary summary) selector,
+  ) {
+    final totalSteps = sumInt((summary) => summary.steps);
+    if (totalSteps == 0) {
+      return 0;
+    }
+    return summaries.fold<double>(
+          0,
+          (sum, summary) => sum + selector(summary) * summary.steps,
+        ) /
+        totalSteps;
+  }
+
+  Map<K, int> mergeHistogram<K>(
+    Map<K, int> Function(SmartSimulationSummary summary) selector,
+  ) {
+    final merged = <K, int>{};
+    for (final summary in summaries) {
+      for (final entry in selector(summary).entries) {
+        merged.update(
+          entry.key,
+          (value) => value + entry.value,
+          ifAbsent: () => entry.value,
+        );
+      }
+    }
+    return merged;
+  }
+
+  return SmartSimulationSummary(
+    jazzPreset: first.jazzPreset,
+    sourceProfile: first.sourceProfile,
+    modulationIntensity: first.modulationIntensity,
+    steps: sumInt((summary) => summary.steps),
+    modulationAttemptCount: sumInt((summary) => summary.modulationAttemptCount),
+    modulationSuccessCount: sumInt((summary) => summary.modulationSuccessCount),
+    blockedReasonHistogram: mergeHistogram(
+      (summary) => summary.blockedReasonHistogram,
+    ),
+    modalBranchCount: sumInt((summary) => summary.modalBranchCount),
+    appliedDominantInsertionCount: sumInt(
+      (summary) => summary.appliedDominantInsertionCount,
+    ),
+    fallbackCount: sumInt((summary) => summary.fallbackCount),
+    familyHistogram: mergeHistogram((summary) => summary.familyHistogram),
+    familyLengthHistogram: mergeHistogram(
+      (summary) => summary.familyLengthHistogram,
+    ),
+    cadenceHistogram: mergeHistogram((summary) => summary.cadenceHistogram),
+    tonicizationCount: sumInt((summary) => summary.tonicizationCount),
+    realModulationCount: sumInt((summary) => summary.realModulationCount),
+    modulationRelationHistogram: mergeHistogram(
+      (summary) => summary.modulationRelationHistogram,
+    ),
+    phraseRoleModulationHistogram: mergeHistogram(
+      (summary) => summary.phraseRoleModulationHistogram,
+    ),
+    relatedIiAppliedCount: sumInt((summary) => summary.relatedIiAppliedCount),
+    nakedAppliedCount: sumInt((summary) => summary.nakedAppliedCount),
+    dominantIntentHistogram: mergeHistogram(
+      (summary) => summary.dominantIntentHistogram,
+    ),
+    susReleaseCount: sumInt((summary) => summary.susReleaseCount),
+    susResolutionOpportunities: sumInt(
+      (summary) => summary.susResolutionOpportunities,
+    ),
+    bridgeIvSectionHistogram: mergeHistogram(
+      (summary) => summary.bridgeIvSectionHistogram,
+    ),
+    bridgeIvStabilizationSuccessCount: sumInt(
+      (summary) => summary.bridgeIvStabilizationSuccessCount,
+    ),
+    bridgeIvFallbackCount: sumInt((summary) => summary.bridgeIvFallbackCount),
+    bridgeReturnSectionHistogram: mergeHistogram(
+      (summary) => summary.bridgeReturnSectionHistogram,
+    ),
+    chromaticMediantStartCount: sumInt(
+      (summary) => summary.chromaticMediantStartCount,
+    ),
+    chromaticMediantDensity: weightedAverage(
+      (summary) => summary.chromaticMediantDensity,
+    ),
+    chromaticMediantPayoffCount: sumInt(
+      (summary) => summary.chromaticMediantPayoffCount,
+    ),
+    chromaticMediantFailedPayoffCount: sumInt(
+      (summary) => summary.chromaticMediantFailedPayoffCount,
+    ),
+    returnHomeDebtOpenCount: sumInt(
+      (summary) => summary.returnHomeDebtOpenCount,
+    ),
+    returnHomeDebtPayoffCount: sumInt(
+      (summary) => summary.returnHomeDebtPayoffCount,
+    ),
+    returnHomeOpportunityCount: sumInt(
+      (summary) => summary.returnHomeOpportunityCount,
+    ),
+    returnHomeSelectionCount: sumInt(
+      (summary) => summary.returnHomeSelectionCount,
+    ),
+    v7SurfaceHistogram: mergeHistogram((summary) => summary.v7SurfaceHistogram),
+    returnHomeMissedOpportunityReasons: mergeHistogram(
+      (summary) => summary.returnHomeMissedOpportunityReasons,
+    ),
+    returnHomeMissedOpportunityFamilies: mergeHistogram(
+      (summary) => summary.returnHomeMissedOpportunityFamilies,
+    ),
+    minorCenterOccupancy: weightedAverage(
+      (summary) => summary.minorCenterOccupancy,
+    ),
+    directAppliedToNewTonicViolations: sumInt(
+      (summary) => summary.directAppliedToNewTonicViolations,
+    ),
+    rareColorUsage: mergeHistogram((summary) => summary.rareColorUsage),
+    rareColorDebtOpenCount: sumInt((summary) => summary.rareColorDebtOpenCount),
+    rareColorPayoffCount: sumInt((summary) => summary.rareColorPayoffCount),
+    qaChecks: const <SmartQaCheck>[],
+    traces: const <SmartDecisionTrace>[],
+  );
+}
+
 SmartCandidateComparison compareVoiceLeading({
   required List<SmartRenderCandidate> candidates,
   GeneratedChord? previousChord,
@@ -734,7 +865,6 @@ void main() {
     expect(summary.modulationSuccessCount, greaterThan(0));
     expect(summary.modalBranchCount, greaterThan(0));
   });
-
 
   test(
     'modal branch selection reports modalBranchChosen when modulation candidates exist',
@@ -3282,26 +3412,33 @@ void main() {
   );
 
   test('preset comparison QA reports modulation lift over standardsCore', () {
-    final standardsCore = SmartGeneratorHelper.simulateSteps(
-      random: Random(20),
-      steps: 1600,
-      request: buildStartRequest(
-        activeKeys: const ['C', 'G', 'A'],
-        jazzPreset: JazzPreset.standardsCore,
-        sourceProfile: SourceProfile.recordingInspired,
-        modulationIntensity: ModulationIntensity.high,
-      ),
-    );
-    final modulationStudy = SmartGeneratorHelper.simulateSteps(
-      random: Random(20),
-      steps: 1600,
-      request: buildStartRequest(
-        activeKeys: const ['C', 'G', 'A'],
-        jazzPreset: JazzPreset.modulationStudy,
-        sourceProfile: SourceProfile.recordingInspired,
-        modulationIntensity: ModulationIntensity.high,
-      ),
-    );
+    const seeds = <int>[20, 21, 22, 23];
+    final standardsCore = aggregateSimulationSummaries([
+      for (final seed in seeds)
+        SmartGeneratorHelper.simulateSteps(
+          random: Random(seed),
+          steps: 1600,
+          request: buildStartRequest(
+            activeKeys: const ['C', 'G', 'A'],
+            jazzPreset: JazzPreset.standardsCore,
+            sourceProfile: SourceProfile.recordingInspired,
+            modulationIntensity: ModulationIntensity.high,
+          ),
+        ),
+    ]);
+    final modulationStudy = aggregateSimulationSummaries([
+      for (final seed in seeds)
+        SmartGeneratorHelper.simulateSteps(
+          random: Random(seed),
+          steps: 1600,
+          request: buildStartRequest(
+            activeKeys: const ['C', 'G', 'A'],
+            jazzPreset: JazzPreset.modulationStudy,
+            sourceProfile: SourceProfile.recordingInspired,
+            modulationIntensity: ModulationIntensity.high,
+          ),
+        ),
+    ]);
 
     final comparison = SmartGeneratorHelper.compareSimulationSummaries(
       baseline: standardsCore,
@@ -3637,4 +3774,3 @@ void main() {
     },
   );
 }
-

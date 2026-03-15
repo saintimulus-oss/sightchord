@@ -287,6 +287,7 @@ void main() {
         )
         .icon!;
   }
+
   Future<void> advanceChord(WidgetTester tester) async {
     await tester.drag(
       find.byKey(const ValueKey('chord-swipe-surface')),
@@ -708,6 +709,14 @@ void main() {
         .widget<Text>(find.byKey(const ValueKey('current-status-label')))
         .data!;
     expect(status, contains('A minor:'));
+  });
+
+  testWidgets('initial generator surface hides the start status label', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(tester, PracticeSettings());
+
+    expect(find.byKey(const ValueKey('current-status-label')), findsNothing);
   });
 
   testWidgets('classical key label style uses lowercase tonic for minor', (
