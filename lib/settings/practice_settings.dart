@@ -15,7 +15,15 @@ enum AppLanguage { system, en, es, zh, zhHans, ja, ko }
 
 enum AppThemeMode { system, light, dark }
 
-enum PracticeTimeSignature { twoFour, threeFour, fourFour }
+enum PracticeTimeSignature {
+  twoFour,
+  threeFour,
+  fourFour,
+  fiveFour,
+  sixEight,
+  sevenEight,
+  twelveEight,
+}
 
 enum HarmonicRhythmPreset {
   onePerBar,
@@ -27,6 +35,8 @@ enum HarmonicRhythmPreset {
 enum MelodyDensity { sparse, balanced, active }
 
 enum MelodyStyle { safe, bebop, lyrical, colorful }
+
+enum MelodyQuickPreset { guideLine, songLine, colorLine }
 
 enum MelodyPlaybackMode { chordsOnly, melodyOnly, both }
 
@@ -160,6 +170,46 @@ extension PracticeTimeSignatureX on PracticeTimeSignature {
       PracticeTimeSignature.twoFour => 2,
       PracticeTimeSignature.threeFour => 3,
       PracticeTimeSignature.fourFour => 4,
+      PracticeTimeSignature.fiveFour => 5,
+      PracticeTimeSignature.sixEight => 6,
+      PracticeTimeSignature.sevenEight => 7,
+      PracticeTimeSignature.twelveEight => 12,
+    };
+  }
+
+  int get denominator {
+    return switch (this) {
+      PracticeTimeSignature.twoFour ||
+      PracticeTimeSignature.threeFour ||
+      PracticeTimeSignature.fourFour ||
+      PracticeTimeSignature.fiveFour => 4,
+      PracticeTimeSignature.sixEight ||
+      PracticeTimeSignature.sevenEight ||
+      PracticeTimeSignature.twelveEight => 8,
+    };
+  }
+
+  int? get splitChangeBeat {
+    return switch (this) {
+      PracticeTimeSignature.twoFour => 1,
+      PracticeTimeSignature.threeFour => 2,
+      PracticeTimeSignature.fourFour => 2,
+      PracticeTimeSignature.fiveFour => 3,
+      PracticeTimeSignature.sixEight => 3,
+      PracticeTimeSignature.sevenEight => 4,
+      PracticeTimeSignature.twelveEight => 6,
+    };
+  }
+
+  List<int> get structuralAccentBeats {
+    return switch (this) {
+      PracticeTimeSignature.twoFour => const <int>[0],
+      PracticeTimeSignature.threeFour => const <int>[0],
+      PracticeTimeSignature.fourFour => const <int>[0, 2],
+      PracticeTimeSignature.fiveFour => const <int>[0, 3],
+      PracticeTimeSignature.sixEight => const <int>[0, 3],
+      PracticeTimeSignature.sevenEight => const <int>[0, 4],
+      PracticeTimeSignature.twelveEight => const <int>[0, 3, 6, 9],
     };
   }
 
@@ -168,6 +218,10 @@ extension PracticeTimeSignatureX on PracticeTimeSignature {
       PracticeTimeSignature.twoFour => l10n.practiceTimeSignatureTwoFour,
       PracticeTimeSignature.threeFour => l10n.practiceTimeSignatureThreeFour,
       PracticeTimeSignature.fourFour => l10n.practiceTimeSignatureFourFour,
+      PracticeTimeSignature.fiveFour => '5/4',
+      PracticeTimeSignature.sixEight => '6/8',
+      PracticeTimeSignature.sevenEight => '7/8',
+      PracticeTimeSignature.twelveEight => '12/8',
     };
   }
 
@@ -240,6 +294,41 @@ extension MelodyStyleX on MelodyStyle {
   }
 }
 
+extension MelodyQuickPresetX on MelodyQuickPreset {
+  String get storageKey => name;
+
+  MelodyQuickPreset get next {
+    return switch (this) {
+      MelodyQuickPreset.guideLine => MelodyQuickPreset.songLine,
+      MelodyQuickPreset.songLine => MelodyQuickPreset.colorLine,
+      MelodyQuickPreset.colorLine => MelodyQuickPreset.guideLine,
+    };
+  }
+
+  String localizedLabel(AppLocalizations l10n) {
+    return switch (this) {
+      MelodyQuickPreset.guideLine => 'Guide Line',
+      MelodyQuickPreset.songLine => 'Song Line',
+      MelodyQuickPreset.colorLine => 'Color Line',
+    };
+  }
+
+  String shortDescription() {
+    return switch (this) {
+      MelodyQuickPreset.guideLine => 'steady guide notes',
+      MelodyQuickPreset.songLine => 'singable contour',
+      MelodyQuickPreset.colorLine => 'color-forward line',
+    };
+  }
+
+  static MelodyQuickPreset fromStorageKey(String? value) {
+    return MelodyQuickPreset.values.firstWhere(
+      (preset) => preset.storageKey == value,
+      orElse: () => MelodyQuickPreset.guideLine,
+    );
+  }
+}
+
 extension MelodyPlaybackModeX on MelodyPlaybackMode {
   String get storageKey => name;
 
@@ -254,13 +343,21 @@ extension MelodyPlaybackModeX on MelodyPlaybackMode {
   static MelodyPlaybackMode fromStorageKey(String? value) {
     return MelodyPlaybackMode.values.firstWhere(
       (mode) => mode.storageKey == value,
-      orElse: () => MelodyPlaybackMode.both,
+      orElse: () => MelodyPlaybackMode.chordsOnly,
     );
   }
 }
 
 extension SettingsComplexityModeX on SettingsComplexityMode {
   String get storageKey => name;
+
+  String localizedLabel(AppLocalizations l10n) {
+    return switch (this) {
+      SettingsComplexityMode.guided => l10n.setupAssistantModeGuided,
+      SettingsComplexityMode.standard => l10n.setupAssistantModeStandard,
+      SettingsComplexityMode.advanced => l10n.setupAssistantModeAdvanced,
+    };
+  }
 
   static SettingsComplexityMode fromStorageKey(String? value) {
     return SettingsComplexityMode.values.firstWhere(
@@ -393,6 +490,8 @@ class PracticeSettings {
   static const double maxMelodyMotifStrength = 1;
   static const double minMelodyApproachToneDensity = 0;
   static const double maxMelodyApproachToneDensity = 1;
+  static const double minMelodyBias = 0;
+  static const double maxMelodyBias = 1;
   static const int minMelodyRangeMidi = 48;
   static const int maxMelodyRangeMidi = 90;
   static const int minMelodyRangeSpan = 7;
@@ -436,7 +535,14 @@ class PracticeSettings {
     int melodyRangeHigh = 84,
     this.melodyStyle = MelodyStyle.safe,
     this.allowChromaticApproaches = false,
-    this.melodyPlaybackMode = MelodyPlaybackMode.both,
+    double syncopationBias = 0.24,
+    double colorRealizationBias = 0.22,
+    double noveltyTarget = 0.42,
+    double motifVariationBias = 0.58,
+    double anticipationProbability = 0.18,
+    double colorToneTarget = 0.22,
+    double exactRepeatTarget = 0.04,
+    this.melodyPlaybackMode = MelodyPlaybackMode.chordsOnly,
     double harmonyMasterVolume = 1,
     double harmonyPreviewHoldFactor = 1,
     double harmonyArpeggioStepSpeed = 1,
@@ -495,10 +601,28 @@ class PracticeSettings {
            .clamp(minMelodyMotifStrength, maxMelodyMotifStrength)
            .toDouble(),
        approachToneDensity = approachToneDensity
-           .clamp(
-             minMelodyApproachToneDensity,
-             maxMelodyApproachToneDensity,
-           )
+           .clamp(minMelodyApproachToneDensity, maxMelodyApproachToneDensity)
+           .toDouble(),
+       syncopationBias = syncopationBias
+           .clamp(minMelodyBias, maxMelodyBias)
+           .toDouble(),
+       colorRealizationBias = colorRealizationBias
+           .clamp(minMelodyBias, maxMelodyBias)
+           .toDouble(),
+       noveltyTarget = noveltyTarget
+           .clamp(minMelodyBias, maxMelodyBias)
+           .toDouble(),
+       motifVariationBias = motifVariationBias
+           .clamp(minMelodyBias, maxMelodyBias)
+           .toDouble(),
+       anticipationProbability = anticipationProbability
+           .clamp(minMelodyBias, maxMelodyBias)
+           .toDouble(),
+       colorToneTarget = colorToneTarget
+           .clamp(minMelodyBias, maxMelodyBias)
+           .toDouble(),
+       exactRepeatTarget = exactRepeatTarget
+           .clamp(minMelodyBias, maxMelodyBias)
            .toDouble(),
        melodyRangeLow = _clampMelodyRangeLow(melodyRangeLow),
        melodyRangeHigh = _clampMelodyRangeHigh(
@@ -577,6 +701,13 @@ class PracticeSettings {
   final int melodyRangeHigh;
   final MelodyStyle melodyStyle;
   final bool allowChromaticApproaches;
+  final double syncopationBias;
+  final double colorRealizationBias;
+  final double noveltyTarget;
+  final double motifVariationBias;
+  final double anticipationProbability;
+  final double colorToneTarget;
+  final double exactRepeatTarget;
   final MelodyPlaybackMode melodyPlaybackMode;
   final double harmonyMasterVolume;
   final double harmonyPreviewHoldFactor;
@@ -663,6 +794,13 @@ class PracticeSettings {
     int? melodyRangeHigh,
     MelodyStyle? melodyStyle,
     bool? allowChromaticApproaches,
+    double? syncopationBias,
+    double? colorRealizationBias,
+    double? noveltyTarget,
+    double? motifVariationBias,
+    double? anticipationProbability,
+    double? colorToneTarget,
+    double? exactRepeatTarget,
     MelodyPlaybackMode? melodyPlaybackMode,
     double? harmonyMasterVolume,
     double? harmonyPreviewHoldFactor,
@@ -748,6 +886,14 @@ class PracticeSettings {
       melodyStyle: melodyStyle ?? this.melodyStyle,
       allowChromaticApproaches:
           allowChromaticApproaches ?? this.allowChromaticApproaches,
+      syncopationBias: syncopationBias ?? this.syncopationBias,
+      colorRealizationBias: colorRealizationBias ?? this.colorRealizationBias,
+      noveltyTarget: noveltyTarget ?? this.noveltyTarget,
+      motifVariationBias: motifVariationBias ?? this.motifVariationBias,
+      anticipationProbability:
+          anticipationProbability ?? this.anticipationProbability,
+      colorToneTarget: colorToneTarget ?? this.colorToneTarget,
+      exactRepeatTarget: exactRepeatTarget ?? this.exactRepeatTarget,
       melodyPlaybackMode: melodyPlaybackMode ?? this.melodyPlaybackMode,
       harmonyMasterVolume: harmonyMasterVolume ?? this.harmonyMasterVolume,
       harmonyPreviewHoldFactor:
@@ -831,14 +977,8 @@ class PracticeSettings {
     );
   }
 
-  static int _clampMelodyRangeHigh({
-    required int low,
-    required int high,
-  }) {
+  static int _clampMelodyRangeHigh({required int low, required int high}) {
     final normalizedLow = _clampMelodyRangeLow(low);
-    return high.clamp(
-      normalizedLow + minMelodyRangeSpan,
-      maxMelodyRangeMidi,
-    );
+    return high.clamp(normalizedLow + minMelodyRangeSpan, maxMelodyRangeMidi);
   }
 }

@@ -36,38 +36,35 @@ void main() {
     expect(secondTiming.durationBeats, 2);
   });
 
-  test(
-    'cadence compression allows a beat-three pickup in 3/4 near cadence',
-    () {
-      final settings = PracticeSettings(
-        timeSignature: PracticeTimeSignature.threeFour,
-        harmonicRhythmPreset: HarmonicRhythmPreset.cadenceCompression,
-      );
-      final previousBarEvent = GeneratedChordEvent(
-        chord: _buildChord('previous'),
-        timing: const ChordTimingSpec(
-          barIndex: 6,
-          changeBeat: 0,
-          durationBeats: 3,
-          beatsPerBar: 3,
-          eventIndexInBar: 0,
-          eventsInBar: 1,
-        ),
-      );
+  test('cadence compression keeps a full 3/4 bar intact near cadence', () {
+    final settings = PracticeSettings(
+      timeSignature: PracticeTimeSignature.threeFour,
+      harmonicRhythmPreset: HarmonicRhythmPreset.cadenceCompression,
+    );
+    final previousBarEvent = GeneratedChordEvent(
+      chord: _buildChord('previous'),
+      timing: const ChordTimingSpec(
+        barIndex: 6,
+        changeBeat: 0,
+        durationBeats: 3,
+        beatsPerBar: 3,
+        eventIndexInBar: 0,
+        eventsInBar: 1,
+      ),
+    );
 
-      final nextTiming = HarmonicRhythmPlanner.nextTiming(
-        settings: settings,
-        currentEvent: previousBarEvent,
-      );
+    final nextTiming = HarmonicRhythmPlanner.nextTiming(
+      settings: settings,
+      currentEvent: previousBarEvent,
+    );
 
-      expect(nextTiming.barIndex, 7);
-      expect(nextTiming.changeBeat, 0);
-      expect(nextTiming.durationBeats, 2);
-      expect(nextTiming.eventsInBar, 2);
-    },
-  );
+    expect(nextTiming.barIndex, 7);
+    expect(nextTiming.changeBeat, 0);
+    expect(nextTiming.durationBeats, 3);
+    expect(nextTiming.eventsInBar, 1);
+  });
 
-  test('cadence compression allows a beat-two pickup in 2/4 near cadence', () {
+  test('cadence compression keeps a full 2/4 bar intact near cadence', () {
     final settings = PracticeSettings(
       timeSignature: PracticeTimeSignature.twoFour,
       harmonicRhythmPreset: HarmonicRhythmPreset.cadenceCompression,
@@ -91,8 +88,8 @@ void main() {
 
     expect(nextTiming.barIndex, 7);
     expect(nextTiming.changeBeat, 0);
-    expect(nextTiming.durationBeats, 1);
-    expect(nextTiming.eventsInBar, 2);
+    expect(nextTiming.durationBeats, 2);
+    expect(nextTiming.eventsInBar, 1);
   });
 }
 

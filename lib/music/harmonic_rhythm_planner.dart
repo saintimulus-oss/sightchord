@@ -182,8 +182,8 @@ class HarmonicRhythmPlanner {
     required bool cadenceWindow,
     required bool turnaroundWindow,
   }) {
+    final splitBeat = timeSignature.splitChangeBeat;
     return switch (timeSignature) {
-      PracticeTimeSignature.fourFour => const _BarRhythmTemplate([0, 2]),
       PracticeTimeSignature.threeFour =>
         cadenceWindow || turnaroundWindow
             ? const _BarRhythmTemplate([0, 2])
@@ -192,6 +192,10 @@ class HarmonicRhythmPlanner {
         cadenceWindow || turnaroundWindow
             ? const _BarRhythmTemplate([0, 1])
             : const _BarRhythmTemplate([0]),
+      _ =>
+        splitBeat == null
+            ? const _BarRhythmTemplate([0])
+            : _BarRhythmTemplate([0, splitBeat]),
     };
   }
 
@@ -201,11 +205,12 @@ class HarmonicRhythmPlanner {
     required bool turnaroundWindow,
     required bool bridgeFlow,
   }) {
+    final splitBeat = timeSignature.splitChangeBeat;
+    final allowSplit =
+        cadenceWindow ||
+        turnaroundWindow ||
+        (bridgeFlow && timeSignature.beatsPerBar >= 4);
     return switch (timeSignature) {
-      PracticeTimeSignature.fourFour =>
-        cadenceWindow || turnaroundWindow || bridgeFlow
-            ? const _BarRhythmTemplate([0, 2])
-            : const _BarRhythmTemplate([0]),
       PracticeTimeSignature.threeFour =>
         cadenceWindow || turnaroundWindow
             ? const _BarRhythmTemplate([0, 2])
@@ -213,6 +218,10 @@ class HarmonicRhythmPlanner {
       PracticeTimeSignature.twoFour =>
         cadenceWindow || turnaroundWindow
             ? const _BarRhythmTemplate([0, 1])
+            : const _BarRhythmTemplate([0]),
+      _ =>
+        allowSplit && splitBeat != null
+            ? _BarRhythmTemplate([0, splitBeat])
             : const _BarRhythmTemplate([0]),
     };
   }
@@ -223,22 +232,7 @@ class HarmonicRhythmPlanner {
     required bool turnaroundWindow,
     required bool bridgeFlow,
   }) {
-    return switch (timeSignature) {
-      PracticeTimeSignature.fourFour =>
-        turnaroundWindow || cadenceWindow
-            ? const _BarRhythmTemplate([0, 3])
-            : bridgeFlow
-            ? const _BarRhythmTemplate([0, 2])
-            : const _BarRhythmTemplate([0]),
-      PracticeTimeSignature.threeFour =>
-        cadenceWindow || turnaroundWindow
-            ? const _BarRhythmTemplate([0, 2])
-            : const _BarRhythmTemplate([0]),
-      PracticeTimeSignature.twoFour =>
-        cadenceWindow || turnaroundWindow
-            ? const _BarRhythmTemplate([0, 1])
-            : const _BarRhythmTemplate([0]),
-    };
+    return const _BarRhythmTemplate([0]);
   }
 }
 

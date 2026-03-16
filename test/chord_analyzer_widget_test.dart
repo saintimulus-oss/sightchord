@@ -53,6 +53,27 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> closeResultDialogIfOpen(WidgetTester tester) async {
+    final dialog = find.byKey(const ValueKey('analyzer-result-dialog'));
+    if (dialog.evaluate().isEmpty) {
+      return;
+    }
+
+    await tester.tap(find.descendant(of: dialog, matching: find.text('Close')));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> openDesktopChordPad(WidgetTester tester) async {
+    final toggle = find.byKey(
+      const ValueKey('chord-editor-toggle-desktop-pad'),
+    );
+    if (toggle.evaluate().isEmpty) {
+      return;
+    }
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+  }
+
   VoidCallback? insertButtonAction(WidgetTester tester, String id) {
     return tester
         .widget<FilledButton>(find.byKey(ValueKey('analyzer-key-$id')))
@@ -104,6 +125,7 @@ void main() {
 
       await tester.tap(find.byKey(const ValueKey('analyzer-input-field')));
       await tester.pump();
+      await openDesktopChordPad(tester);
       await tester.tap(find.byKey(const ValueKey('analyzer-key-d')));
       await tester.pump();
       await tester.tap(find.byKey(const ValueKey('analyzer-key-minor')));
@@ -133,6 +155,15 @@ void main() {
         findsOneWidget,
       );
       expect(
+        find.byKey(const ValueKey('analyzer-result-input-card')),
+        findsOneWidget,
+      );
+      expect(find.text('Chord progression'), findsWidgets);
+      final dialogInput = tester.widget<SelectableText>(
+        find.byKey(const ValueKey('analyzer-result-input')),
+      );
+      expect(dialogInput.data, 'Dm7 G7 Cmaj7');
+      expect(
         find.byKey(const ValueKey('analyzer-play-progression-button')),
         findsOneWidget,
       );
@@ -156,6 +187,15 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('analyzer-input-field')));
       await tester.pump();
 
+      expect(
+        find.byKey(const ValueKey('analyzer-keyboard-panel')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('chord-editor-toggle-desktop-pad')),
+        findsOneWidget,
+      );
+      await openDesktopChordPad(tester);
       expect(
         find.byKey(const ValueKey('analyzer-keyboard-panel')),
         findsOneWidget,
@@ -210,7 +250,7 @@ void main() {
     await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
 
     await tester.tap(find.text('Db7(#11), Cmaj7'));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     final field = tester.widget<TextField>(
       find.byKey(const ValueKey('analyzer-input-field')),
@@ -291,6 +331,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
     await tester.pump();
     await tester.pumpAndSettle();
+    await closeResultDialogIfOpen(tester);
 
     expect(
       find.byKey(const ValueKey('analyzer-generate-variations-button')),
@@ -333,6 +374,7 @@ void main() {
 
       await tester.tap(find.byKey(const ValueKey('analyzer-input-field')));
       await tester.pump();
+      await openDesktopChordPad(tester);
 
       expect(find.byKey(const ValueKey('analyzer-key-major')), findsOneWidget);
       expect(
@@ -416,6 +458,7 @@ void main() {
 
       await tester.tap(find.byKey(const ValueKey('analyzer-input-field')));
       await tester.pump();
+      await openDesktopChordPad(tester);
 
       expect(insertButtonAction(tester, 'openParen'), isNull);
       expect(insertButtonAction(tester, 'closeParen'), isNull);
@@ -442,6 +485,7 @@ void main() {
 
       await tester.tap(find.byKey(const ValueKey('analyzer-input-field')));
       await tester.pump();
+      await openDesktopChordPad(tester);
 
       await tester.tap(find.byKey(const ValueKey('analyzer-key-c')));
       await tester.pump();
@@ -486,28 +530,15 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.byKey(const ValueKey('analyzer-result-dialog')),
+        find.byKey(const ValueKey('analyzer-results-card')),
         findsOneWidget,
       );
-      expect(
-        find.descendant(
-          of: find.byKey(const ValueKey('analyzer-result-dialog')),
-          matching: find.text('Cmaj7'),
-        ),
-        findsOneWidget,
-      );
+      expect(find.text('Suggested fill: Cmaj7'), findsOneWidget);
       expect(find.text('Suggested fill: Cmaj7'), findsOneWidget);
       expect(
         find.text('This ? was inferred from the surrounding harmonic context.'),
         findsWidgets,
       );
-      await tester.tap(
-        find.descendant(
-          of: find.byKey(const ValueKey('analyzer-result-dialog')),
-          matching: find.text('Close'),
-        ),
-      );
-      await tester.pumpAndSettle();
 
       await tester.tap(
         find.byKey(const ValueKey('analyzer-generate-variations-button')),
@@ -539,6 +570,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
     await tester.pump();
     await tester.pumpAndSettle();
+    await closeResultDialogIfOpen(tester);
 
     expect(find.text('Confidence'), findsWidgets);
     expect(find.text('Ambiguity'), findsOneWidget);
@@ -560,6 +592,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
       await tester.pump();
       await tester.pumpAndSettle();
+      await closeResultDialogIfOpen(tester);
 
       expect(find.text('Backdoor / subdominant minor'), findsWidgets);
       expect(find.text('Borrowed color'), findsWidgets);
@@ -579,6 +612,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
     await tester.pump();
     await tester.pumpAndSettle();
+    await closeResultDialogIfOpen(tester);
 
     expect(find.textContaining('Ignored modifiers'), findsOneWidget);
     expect(find.textContaining('C7(foo): foo'), findsOneWidget);
@@ -597,6 +631,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
       await tester.pump();
       await tester.pumpAndSettle();
+      await closeResultDialogIfOpen(tester);
 
       expect(find.text('Measure 2'), findsOneWidget);
       expect(

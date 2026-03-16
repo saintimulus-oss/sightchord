@@ -74,6 +74,14 @@ class SmartPhraseContext {
       (phraseRole == PhraseRole.preCadence ||
           phraseRole == PhraseRole.cadence ||
           phraseRole == PhraseRole.release);
+  bool get isCadentialWindow =>
+      phraseRole == PhraseRole.preCadence ||
+      phraseRole == PhraseRole.cadence ||
+      phraseRole == PhraseRole.release;
+  bool get isPhraseBoundaryWindow =>
+      isCadentialWindow ||
+      sectionRole == SectionRole.turnaroundTail ||
+      sectionRole == SectionRole.tag;
 
   static SmartPhraseContext rollingForm(
     int stepIndex, {
@@ -139,15 +147,10 @@ class SmartPhraseContext {
         resolvedEventsInBar > 1
             ? HarmonicDensity.twoChordsPerBar
             : sectionRole == SectionRole.bridgeLike &&
-                  timeSignature == PracticeTimeSignature.fourFour
+                  timeSignature.beatsPerBar >= 4
             ? HarmonicDensity.twoChordsPerBar
             : HarmonicDensity.oneChordPerBar,
-      HarmonicRhythmPreset.cadenceCompression =>
-        resolvedEventsInBar > 1 && resolvedChangeBeat >= resolvedBeatsPerBar - 1
-            ? HarmonicDensity.turnaroundSplit
-            : resolvedEventsInBar > 1
-            ? HarmonicDensity.twoChordsPerBar
-            : HarmonicDensity.oneChordPerBar,
+      HarmonicRhythmPreset.cadenceCompression => HarmonicDensity.oneChordPerBar,
     };
     return SmartPhraseContext(
       phraseRole: phraseRole,

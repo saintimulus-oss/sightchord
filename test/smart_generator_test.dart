@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/settings/practice_settings.dart';
 import 'package:chordest/smart_generator.dart';
 
 class _FixedRandom implements Random {
@@ -387,6 +388,65 @@ SmartSimulationSummary? findChromaticMediantSummary({
 void main() {
   setUp(() {
     SmartDiagnosticsStore.clear();
+  });
+
+  test(
+    'phrase-aware presets allow consecutive repeats at phrase boundaries',
+    () {
+      const cadenceContext = SmartPhraseContext(
+        phraseRole: PhraseRole.cadence,
+        sectionRole: SectionRole.turnaroundTail,
+        harmonicDensity: HarmonicDensity.oneChordPerBar,
+        barInPhrase: 2,
+        barsToBoundary: 1,
+        phraseLength: 4,
+        eventIndexInBar: 0,
+        eventsInBar: 1,
+      );
+
+      expect(
+        SmartGeneratorHelper.allowsConsecutiveRepeat(
+          harmonicRhythmPreset: HarmonicRhythmPreset.phraseAwareJazz,
+          phraseContext: cadenceContext,
+        ),
+        isTrue,
+      );
+      expect(
+        SmartGeneratorHelper.allowsConsecutiveRepeat(
+          harmonicRhythmPreset: HarmonicRhythmPreset.cadenceCompression,
+          phraseContext: cadenceContext,
+        ),
+        isTrue,
+      );
+    },
+  );
+
+  test('regular fixed-grid presets keep consecutive-repeat guardrails', () {
+    const continuationContext = SmartPhraseContext(
+      phraseRole: PhraseRole.continuation,
+      sectionRole: SectionRole.aLike,
+      harmonicDensity: HarmonicDensity.twoChordsPerBar,
+      barInPhrase: 1,
+      barsToBoundary: 6,
+      phraseLength: 8,
+      eventIndexInBar: 0,
+      eventsInBar: 2,
+    );
+
+    expect(
+      SmartGeneratorHelper.allowsConsecutiveRepeat(
+        harmonicRhythmPreset: HarmonicRhythmPreset.onePerBar,
+        phraseContext: continuationContext,
+      ),
+      isFalse,
+    );
+    expect(
+      SmartGeneratorHelper.allowsConsecutiveRepeat(
+        harmonicRhythmPreset: HarmonicRhythmPreset.twoPerBar,
+        phraseContext: continuationContext,
+      ),
+      isFalse,
+    );
   });
 
   test('runWithGeneratedPriorsEnabled keeps async scopes isolated', () async {
@@ -3589,6 +3649,31 @@ void main() {
         ),
         isFalse,
       );
+    },
+  );
+
+  test(
+    'voice-leading ties stay deterministic by preserving candidate source order',
+    () {
+      const center = KeyCenter(tonicName: 'C', mode: KeyMode.major);
+      final comparison = compareVoiceLeading(
+        candidates: const [
+          SmartRenderCandidate(
+            keyCenter: center,
+            romanNumeralId: RomanNumeralId.iiMin7,
+            renderQualityOverride: ChordQuality.minor7,
+          ),
+          SmartRenderCandidate(
+            keyCenter: center,
+            romanNumeralId: RomanNumeralId.iiiMin7,
+            renderQualityOverride: ChordQuality.minor7,
+          ),
+        ],
+      );
+
+      expect(comparison.selected.chord.romanNumeralId, RomanNumeralId.iiMin7);
+      expect(comparison.rankedCandidates.first.voiceLeading.total, 0);
+      expect(comparison.rankedCandidates[1].voiceLeading.total, 0);
     },
   );
 

@@ -41,8 +41,14 @@ class PracticeSettingsStore {
   static const String melodyRangeLowKey = 'melodyRangeLow';
   static const String melodyRangeHighKey = 'melodyRangeHigh';
   static const String melodyStyleKey = 'melodyStyle';
-  static const String allowChromaticApproachesKey =
-      'allowChromaticApproaches';
+  static const String allowChromaticApproachesKey = 'allowChromaticApproaches';
+  static const String syncopationBiasKey = 'syncopationBias';
+  static const String colorRealizationBiasKey = 'colorRealizationBias';
+  static const String noveltyTargetKey = 'noveltyTarget';
+  static const String motifVariationBiasKey = 'motifVariationBias';
+  static const String anticipationProbabilityKey = 'anticipationProbability';
+  static const String colorToneTargetKey = 'colorToneTarget';
+  static const String exactRepeatTargetKey = 'exactRepeatTarget';
   static const String melodyPlaybackModeKey = 'melodyPlaybackMode';
   static const String harmonyMasterVolumeKey = 'harmonyMasterVolume';
   static const String harmonyPreviewHoldFactorKey = 'harmonyPreviewHoldFactor';
@@ -113,6 +119,13 @@ class PracticeSettingsStore {
     melodyRangeHighKey,
     melodyStyleKey,
     allowChromaticApproachesKey,
+    syncopationBiasKey,
+    colorRealizationBiasKey,
+    noveltyTargetKey,
+    motifVariationBiasKey,
+    anticipationProbabilityKey,
+    colorToneTargetKey,
+    exactRepeatTargetKey,
     melodyPlaybackModeKey,
     harmonyMasterVolumeKey,
     harmonyPreviewHoldFactorKey,
@@ -333,6 +346,27 @@ class PracticeSettingsStore {
       allowChromaticApproaches:
           preferences.getBool(allowChromaticApproachesKey) ??
           fallbackSettings.allowChromaticApproaches,
+      syncopationBias:
+          preferences.getDouble(syncopationBiasKey) ??
+          fallbackSettings.syncopationBias,
+      colorRealizationBias:
+          preferences.getDouble(colorRealizationBiasKey) ??
+          fallbackSettings.colorRealizationBias,
+      noveltyTarget:
+          preferences.getDouble(noveltyTargetKey) ??
+          fallbackSettings.noveltyTarget,
+      motifVariationBias:
+          preferences.getDouble(motifVariationBiasKey) ??
+          fallbackSettings.motifVariationBias,
+      anticipationProbability:
+          preferences.getDouble(anticipationProbabilityKey) ??
+          fallbackSettings.anticipationProbability,
+      colorToneTarget:
+          preferences.getDouble(colorToneTargetKey) ??
+          fallbackSettings.colorToneTarget,
+      exactRepeatTarget:
+          preferences.getDouble(exactRepeatTargetKey) ??
+          fallbackSettings.exactRepeatTarget,
       melodyPlaybackMode: storedMelodyPlaybackMode == null
           ? fallbackSettings.melodyPlaybackMode
           : MelodyPlaybackModeX.fromStorageKey(storedMelodyPlaybackMode),
@@ -564,10 +598,32 @@ class PracticeSettingsStore {
     );
     await preferences.setInt(melodyRangeLowKey, settings.melodyRangeLow);
     await preferences.setInt(melodyRangeHighKey, settings.melodyRangeHigh);
-    await preferences.setString(melodyStyleKey, settings.melodyStyle.storageKey);
+    await preferences.setString(
+      melodyStyleKey,
+      settings.melodyStyle.storageKey,
+    );
     await preferences.setBool(
       allowChromaticApproachesKey,
       settings.allowChromaticApproaches,
+    );
+    await preferences.setDouble(syncopationBiasKey, settings.syncopationBias);
+    await preferences.setDouble(
+      colorRealizationBiasKey,
+      settings.colorRealizationBias,
+    );
+    await preferences.setDouble(noveltyTargetKey, settings.noveltyTarget);
+    await preferences.setDouble(
+      motifVariationBiasKey,
+      settings.motifVariationBias,
+    );
+    await preferences.setDouble(
+      anticipationProbabilityKey,
+      settings.anticipationProbability,
+    );
+    await preferences.setDouble(colorToneTargetKey, settings.colorToneTarget);
+    await preferences.setDouble(
+      exactRepeatTargetKey,
+      settings.exactRepeatTarget,
     );
     await preferences.setString(
       melodyPlaybackModeKey,

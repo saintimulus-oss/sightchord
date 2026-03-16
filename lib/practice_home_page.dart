@@ -127,8 +127,9 @@ class _MyHomePageState extends State<MyHomePage> {
   int _nextScheduledMetronomeSequence = 0;
   int _scheduledMetronomeBeatSeed = 0;
   bool _autoRunning = false;
+  bool _metronomePatternEditing = false;
   bool _practiceSessionInitialized = false;
-  bool _setupAssistantScheduled = false;
+  bool _showFirstRunWelcomeCard = false;
   double? _scheduledMetronomeBaseTimeSeconds;
   bool _requestedHarmonyAudioWarmUp = false;
   HarmonyAudioService? _harmonyAudio;
@@ -174,6 +175,15 @@ class _MyHomePageState extends State<MyHomePage> {
       _settings.settingsComplexityMode == SettingsComplexityMode.guided;
   bool get _isSetupAssistantRequired => !_settings.guidedSetupCompleted;
   int get _nextChangeBeat => _nextChordEvent?.timing.changeBeat ?? 0;
+
+  void _setMetronomePatternEditing(bool value) {
+    if (!mounted || _metronomePatternEditing == value) {
+      return;
+    }
+    setState(() {
+      _metronomePatternEditing = value;
+    });
+  }
 
   KeyCenter? get _resolvedAnchorLoopSeedKeyCenter {
     final cachedSeed = _anchorLoopSeedKeyCenter;
@@ -248,7 +258,12 @@ class _MyHomePageState extends State<MyHomePage> {
     _bpmController = TextEditingController(text: '${_settings.bpm}');
     unawaited(_initAudio());
     if (_isSetupAssistantRequired) {
-      _scheduleFirstRunSetupAssistant();
+      _showFirstRunWelcomeCard = true;
+      _applySettings(
+        PracticeSettingsFactory.beginnerSafePreset(baseSettings: _settings),
+        reseed: true,
+        syncBpmText: true,
+      );
     } else {
       _initializePracticeSession();
     }
@@ -258,16 +273,6 @@ class _MyHomePageState extends State<MyHomePage> {
     _practiceSessionInitialized = true;
     _ensureChordQueueInitialized();
     _recomputeVoicingSuggestions();
-  }
-
-  void _scheduleFirstRunSetupAssistant() {
-    if (_setupAssistantScheduled) {
-      return;
-    }
-    _setupAssistantScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      unawaited(_runSetupAssistant(mandatory: true));
-    });
   }
 
   Future<void> _runSetupAssistant({required bool mandatory}) async {
@@ -297,6 +302,15 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
     _applySettings(resolvedSettings, reseed: true, syncBpmText: true);
+  }
+
+  void _dismissFirstRunWelcomeCard() {
+    if (!mounted || !_showFirstRunWelcomeCard) {
+      return;
+    }
+    setState(() {
+      _showFirstRunWelcomeCard = false;
+    });
   }
 
   @override
@@ -696,18 +710,56 @@ class _MyHomePageState extends State<MyHomePage> {
     required GeneratedChordEvent chordEvent,
     GeneratedChordEvent? previousChordEvent,
     GeneratedChordEvent? nextChordEvent,
+    GeneratedChordEvent? lookAheadChordEvent,
     GeneratedMelodyEvent? previousMelodyEvent,
+    List<GeneratedMelodyEvent>? recentMelodyEvents,
+    List<GeneratedChordEvent>? phraseChordWindow,
+    int? phraseWindowIndex,
   }) {
     return MelodyGenerator.generateEvent(
       request: MelodyGenerationRequest(
         chordEvent: chordEvent,
         previousChordEvent: previousChordEvent,
         nextChordEvent: nextChordEvent,
+        lookAheadChordEvent: lookAheadChordEvent,
         previousMelodyEvent: previousMelodyEvent,
+        recentMelodyEvents:
+            recentMelodyEvents ?? const <GeneratedMelodyEvent>[],
+        phraseChordWindow: phraseChordWindow ?? const <GeneratedChordEvent>[],
+        phraseWindowIndex: phraseWindowIndex,
         settings: _settings,
         seed: _melodyGenerationSeed,
       ),
     );
+  }
+
+  ({List<GeneratedChordEvent> events, int currentIndex}) _phraseWindowFor({
+    GeneratedChordEvent? previousChordEvent,
+    required GeneratedChordEvent chordEvent,
+    GeneratedChordEvent? nextChordEvent,
+    GeneratedChordEvent? lookAheadChordEvent,
+  }) {
+    final events = <GeneratedChordEvent>[
+      ?previousChordEvent,
+      chordEvent,
+      ?nextChordEvent,
+      ?lookAheadChordEvent,
+    ];
+    final currentIndex = previousChordEvent == null ? 0 : 1;
+    return (events: events, currentIndex: currentIndex);
+  }
+
+  List<GeneratedMelodyEvent> _recentMelodyHistory({int limit = 4}) {
+    final history = <GeneratedMelodyEvent>[
+      for (final entry in _practiceHistory)
+        if (entry.melodyState.currentEvent
+            case final GeneratedMelodyEvent event)
+          event,
+    ];
+    if (history.length <= limit) {
+      return history;
+    }
+    return history.sublist(history.length - limit);
   }
 
   void _rebuildMelodyQueue() {
@@ -720,39 +772,90 @@ class _MyHomePageState extends State<MyHomePage> {
       GeneratedChordEvent? chordEvent, {
       GeneratedChordEvent? previousChordEvent,
       GeneratedChordEvent? nextChordEvent,
+      GeneratedChordEvent? lookAheadChordEvent,
       GeneratedMelodyEvent? previousMelodyEvent,
+      List<GeneratedMelodyEvent>? recentMelodyEvents,
     }) {
       if (chordEvent == null) {
         return null;
       }
+      final phraseWindow = _phraseWindowFor(
+        previousChordEvent: previousChordEvent,
+        chordEvent: chordEvent,
+        nextChordEvent: nextChordEvent,
+        lookAheadChordEvent: lookAheadChordEvent,
+      );
       return _generateMelodyEvent(
         chordEvent: chordEvent,
         previousChordEvent: previousChordEvent,
         nextChordEvent: nextChordEvent,
+        lookAheadChordEvent: lookAheadChordEvent,
         previousMelodyEvent: previousMelodyEvent,
+        recentMelodyEvents: recentMelodyEvents,
+        phraseChordWindow: phraseWindow.events,
+        phraseWindowIndex: phraseWindow.currentIndex,
       );
     }
 
+    List<GeneratedMelodyEvent> appendRecent(
+      List<GeneratedMelodyEvent> recent,
+      GeneratedMelodyEvent? event,
+    ) {
+      if (event == null) {
+        return recent;
+      }
+      final next = <GeneratedMelodyEvent>[
+        ...recent.where(
+          (candidate) => candidate.signatureHash != event.signatureHash,
+        ),
+        event,
+      ];
+      if (next.length <= 4) {
+        return next;
+      }
+      return next.sublist(next.length - 4);
+    }
+
+    final baseRecentMelodies = _recentMelodyHistory();
     final previousMelody = build(
       _queueState.previousEvent,
+      recentMelodyEvents: baseRecentMelodies,
       nextChordEvent: _queueState.currentEvent,
+      lookAheadChordEvent: _queueState.nextEvent,
+    );
+    final currentRecentMelodies = appendRecent(
+      baseRecentMelodies,
+      previousMelody,
     );
     final currentMelody = build(
       _currentChordEvent,
       previousChordEvent: _queueState.previousEvent,
       nextChordEvent: _nextChordEvent,
+      lookAheadChordEvent: _lookAheadChordEvent,
       previousMelodyEvent: previousMelody,
+      recentMelodyEvents: currentRecentMelodies,
+    );
+    final nextRecentMelodies = appendRecent(
+      currentRecentMelodies,
+      currentMelody,
     );
     final nextMelody = build(
       _nextChordEvent,
       previousChordEvent: _currentChordEvent,
       nextChordEvent: _lookAheadChordEvent,
+      lookAheadChordEvent: null,
       previousMelodyEvent: currentMelody ?? previousMelody,
+      recentMelodyEvents: nextRecentMelodies,
+    );
+    final lookAheadRecentMelodies = appendRecent(
+      nextRecentMelodies,
+      nextMelody,
     );
     final lookAheadMelody = build(
       _lookAheadChordEvent,
       previousChordEvent: _nextChordEvent,
       previousMelodyEvent: nextMelody ?? currentMelody ?? previousMelody,
+      recentMelodyEvents: lookAheadRecentMelodies,
     );
     _melodyState = PracticeMelodyQueueState(
       previousEvent: previousMelody,
@@ -784,9 +887,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final beatMicros = _beatInterval().inMicroseconds;
 
     Duration durationFromBeats(double beats) {
-      return Duration(
-        microseconds: max(1, (beatMicros * beats).round()),
-      );
+      return Duration(microseconds: max(1, (beatMicros * beats).round()));
     }
 
     return HarmonyMelodyClip(
@@ -825,8 +926,7 @@ class _MyHomePageState extends State<MyHomePage> {
         : null;
     final compositeClip = HarmonyCompositeClip(
       chordClip: chordClip,
-      melodyClip:
-          _playbackModeUsesMelody(playbackMode) && melodyEvent != null
+      melodyClip: _playbackModeUsesMelody(playbackMode) && melodyEvent != null
           ? _melodyClipForEvent(melodyEvent)
           : null,
       label: _displaySymbolForEvent(event),
@@ -850,6 +950,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (currentEvent == null) {
       return;
     }
+    _dismissFirstRunWelcomeCard();
     await _playEventPreview(
       event: currentEvent,
       pattern: pattern,
@@ -875,7 +976,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _ensureChordQueueInitialized() {
-    _queueState = _queueState.ensureNextEvent(_generateChordEvent());
+    final currentEvent = _queueState.currentEvent ?? _generateChordEvent();
+    final nextEvent =
+        _queueState.nextEvent ??
+        _generateChordEvent(currentEvent: currentEvent);
+    _queueState = _queueState.copyWith(
+      currentEvent: currentEvent,
+      nextEvent: nextEvent,
+    );
     _refreshLookAheadChord();
     _rebuildMelodyQueue();
   }
@@ -917,7 +1025,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _restorePreviousChord() {
+  void _restorePreviousChord({bool playAutoPreview = false}) {
     if (!mounted || _practiceHistory.isEmpty) {
       return;
     }
@@ -932,6 +1040,14 @@ class _MyHomePageState extends State<MyHomePage> {
           ? null
           : _normalizeBeatForSettings(_settings, snapshot.currentBeat);
     });
+    if (playAutoPreview) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        unawaited(_playAutoChordChangeForCurrentEvent());
+      });
+    }
     if (shouldRestartAutoLoop) {
       _startAutoLoop(immediateFirstBeat: false);
     }
@@ -941,6 +1057,9 @@ class _MyHomePageState extends State<MyHomePage> {
     GeneratedChordEvent? currentEvent,
     Set<String> displayedSymbols = const <String>{},
   }) {
+    final nextTiming = currentEvent == null
+        ? _initialTimingSpec()
+        : _nextTimingSpec(currentEvent: currentEvent);
     final nextRenderedSymbols = <String>{...displayedSymbols};
     final repeatGuardKeys = <String>{};
     final harmonicComparisonKeys = <String>{};
@@ -954,6 +1073,17 @@ class _MyHomePageState extends State<MyHomePage> {
       renderedSymbols: nextRenderedSymbols,
       repeatGuardKeys: repeatGuardKeys,
       harmonicComparisonKeys: harmonicComparisonKeys,
+      allowConsecutiveRepeat: _allowsConsecutiveRepeatForTiming(nextTiming),
+    );
+  }
+
+  bool _allowsConsecutiveRepeatForTiming(ChordTimingSpec timing) {
+    return SmartGeneratorHelper.allowsConsecutiveRepeat(
+      harmonicRhythmPreset: _settings.harmonicRhythmPreset,
+      phraseContext: _phraseContextForTiming(
+        stepIndex: timing.barIndex,
+        timing: timing,
+      ),
     );
   }
 
@@ -1133,16 +1263,26 @@ class _MyHomePageState extends State<MyHomePage> {
     GeneratedChord candidate,
     ChordExclusionContext exclusionContext,
   ) {
-    return exclusionContext.renderedSymbols.contains(
-          ChordRenderingHelper.renderedSymbol(
-            candidate,
-            _settings.chordSymbolStyle,
-          ),
-        ) ||
-        exclusionContext.repeatGuardKeys.contains(candidate.repeatGuardKey) ||
-        exclusionContext.harmonicComparisonKeys.contains(
-          candidate.harmonicComparisonKey,
-        );
+    final blockedByRenderedSymbol = exclusionContext.renderedSymbols.contains(
+      ChordRenderingHelper.renderedSymbol(
+        candidate,
+        _settings.chordSymbolStyle,
+      ),
+    );
+    final blockedByRepeatGuard = exclusionContext.repeatGuardKeys.contains(
+      candidate.repeatGuardKey,
+    );
+    final blockedByHarmonicComparison = exclusionContext.harmonicComparisonKeys
+        .contains(candidate.harmonicComparisonKey);
+    if (exclusionContext.allowConsecutiveRepeat &&
+        (blockedByRenderedSymbol ||
+            blockedByRepeatGuard ||
+            blockedByHarmonicComparison)) {
+      return false;
+    }
+    return blockedByRenderedSymbol ||
+        blockedByRepeatGuard ||
+        blockedByHarmonicComparison;
   }
 
   AppliedType? _appliedTypeForSourceKind(ChordSourceKind sourceKind) {
@@ -2001,17 +2141,20 @@ class _MyHomePageState extends State<MyHomePage> {
     swipeSurfaceState.animateAdvance();
   }
 
-  void _performManualAdvanceChord() {
+  void _performManualAdvanceChord({bool playAutoPreview = true}) {
     if (!mounted || !_practiceSessionInitialized) {
       return;
     }
+    _dismissFirstRunWelcomeCard();
     final shouldRestartAutoLoop = _autoRunning;
     _recordPracticeHistory();
     setState(() {
       _promoteChordQueue();
       _currentBeat = _manualBeatStateForEvent(_currentChordEvent);
     });
-    unawaited(_playAutoChordChangeForCurrentEvent());
+    if (playAutoPreview) {
+      unawaited(_playAutoChordChangeForCurrentEvent());
+    }
     if (shouldRestartAutoLoop) {
       _startAutoLoop(immediateFirstBeat: false);
     }
@@ -2253,11 +2396,30 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!_practiceSessionInitialized && !_autoRunning) {
       return;
     }
+    _dismissFirstRunWelcomeCard();
     if (_autoRunning) {
       _stopAutoPlay(resetBeat: false);
       return;
     }
     _startAutoPlay();
+  }
+
+  void _resetGeneratedChords() {
+    if (!_practiceSessionInitialized) {
+      return;
+    }
+    _chordSwipeSurfaceKey.currentState?.cancelTransition();
+    if (_autoRunning) {
+      _stopAutoPlay();
+    }
+    final harmonyAudio = _harmonyAudio;
+    if (harmonyAudio != null) {
+      unawaited(harmonyAudio.stopAll());
+    }
+    setState(() {
+      _currentBeat = null;
+      _reseedChordQueue();
+    });
   }
 
   bool _isEditableTextFocused() {

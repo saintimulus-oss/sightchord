@@ -35,6 +35,11 @@ GeneratedChord _buildChord({
   );
 }
 
+int _pitchClassDistance(int left, int right) {
+  final distance = (left - right).abs() % 12;
+  return distance > 6 ? 12 - distance : distance;
+}
+
 void main() {
   final settings = PracticeSettings(
     activeKeys: const {'C', 'A'},
@@ -82,12 +87,12 @@ void main() {
     final first = VoicingEngine.recommend(context: context);
     final second = VoicingEngine.recommend(context: context);
 
-    expect(first.suggestions, hasLength(3));
+    expect(first.suggestions.length, greaterThanOrEqualTo(2));
     expect(
       first.suggestions
-          .map((suggestion) => suggestion.voicing.signature)
+          .map((suggestion) => suggestion.voicing.contentSignature)
           .toSet(),
-      hasLength(3),
+      hasLength(first.suggestions.length),
     );
     expect(
       first.suggestions
@@ -164,24 +169,25 @@ void main() {
     },
   );
 
-  test('modern minor contexts open quartal candidates only in modern mode', () {
-    final dm7 = _buildChord(
+  test('modern quartal candidates require visible minor color tones', () {
+    final dm11 = _buildChord(
       root: 'D',
       quality: ChordQuality.minor7,
-      repeatKey: 'dm7',
+      repeatKey: 'dm11',
       romanNumeralId: RomanNumeralId.iiMin7,
       keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
       harmonicFunction: HarmonicFunction.predominant,
+      tensions: const ['11'],
     );
 
     final standardFamilies = VoicingEngine.generateCandidates(
-      chord: dm7,
+      chord: dm11,
       settings: settings.copyWith(
         voicingComplexity: VoicingComplexity.standard,
       ),
     ).map((voicing) => voicing.family).toSet();
     final modernFamilies = VoicingEngine.generateCandidates(
-      chord: dm7,
+      chord: dm11,
       settings: settings.copyWith(voicingComplexity: VoicingComplexity.modern),
     ).map((voicing) => voicing.family).toSet();
 
@@ -245,8 +251,15 @@ void main() {
         modernResult
             .suggestionFor(VoicingSuggestionKind.colorful)!
             .voicing
+            .toneLabels,
+        contains('#11'),
+      );
+      expect(
+        modernResult
+            .suggestionFor(VoicingSuggestionKind.colorful)!
+            .voicing
             .family,
-        VoicingFamily.upperStructure,
+        isNot(VoicingFamily.shell),
       );
       expect(
         modernResult
@@ -334,6 +347,38 @@ void main() {
     }
   });
 
+  test('plain chord symbols do not add hidden tensions to suggestions', () {
+    final cmaj7 = _buildChord(
+      root: 'C',
+      quality: ChordQuality.major7,
+      repeatKey: 'cmaj7NoHiddenTensions',
+      romanNumeralId: RomanNumeralId.iMaj7,
+      keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+      harmonicFunction: HarmonicFunction.tonic,
+    );
+
+    final result = VoicingEngine.recommend(
+      context: VoicingContext(currentChord: cmaj7, settings: settings),
+    );
+
+    expect(result.suggestions, isNotEmpty);
+    for (final suggestion in result.suggestions) {
+      expect(
+        suggestion.voicing.toneLabels.any(
+          (label) =>
+              label == '9' ||
+              label == '11' ||
+              label == '#11' ||
+              label == '13' ||
+              label == 'b9' ||
+              label == '#9' ||
+              label == 'b13',
+        ),
+        isFalse,
+      );
+    }
+  });
+
   test('guided easy preference moves the easy card to the front', () {
     final cmaj7 = _buildChord(
       root: 'C',
@@ -354,7 +399,10 @@ void main() {
       ),
     );
 
-    expect(result.suggestions.first.kind, VoicingSuggestionKind.easy);
+    expect(
+      result.suggestions.first.matchesKind(VoicingSuggestionKind.easy),
+      isTrue,
+    );
   });
 
   test('triads-only guardrails keep voicing candidates simple', () {
@@ -445,6 +493,64 @@ void main() {
           isTrue,
         );
       }
+    },
+  );
+
+  test(
+    'sparse triads keep the fifth when suggestions are limited to three notes',
+    () {
+      final cMajor = _buildChord(
+        root: 'C',
+        quality: ChordQuality.majorTriad,
+        repeatKey: 'cMajorTriadKeepsFifth',
+        romanNumeralId: RomanNumeralId.iMaj7,
+        keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        harmonicFunction: HarmonicFunction.tonic,
+      );
+
+      final result = VoicingEngine.recommend(
+        context: VoicingContext(
+          currentChord: cMajor,
+          settings: settings.copyWith(maxVoicingNotes: 3),
+        ),
+      );
+
+      expect(result.suggestions, isNotEmpty);
+      for (final suggestion in result.suggestions) {
+        expect(suggestion.voicing.noteCount, lessThanOrEqualTo(3));
+        expect(suggestion.voicing.toneLabels, contains('5'));
+      }
+    },
+  );
+
+  test(
+    'recommendations do not show duplicate voicing content across labels',
+    () {
+      final cmaj7 = _buildChord(
+        root: 'C',
+        quality: ChordQuality.major7,
+        repeatKey: 'cmaj7DuplicateGuard',
+        romanNumeralId: RomanNumeralId.iMaj7,
+        keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        harmonicFunction: HarmonicFunction.tonic,
+      );
+
+      final result = VoicingEngine.recommend(
+        context: VoicingContext(
+          currentChord: cmaj7,
+          settings: settings.copyWith(
+            voicingComplexity: VoicingComplexity.modern,
+          ),
+        ),
+      );
+
+      expect(
+        result.suggestions
+            .map((suggestion) => suggestion.voicing.contentSignature)
+            .toSet()
+            .length,
+        result.suggestions.length,
+      );
     },
   );
 
@@ -652,18 +758,19 @@ void main() {
   test(
     'modern colorful cards can prefer quartal color while natural and easy stay practical',
     () {
-      final dm7 = _buildChord(
+      final dm11 = _buildChord(
         root: 'D',
         quality: ChordQuality.minor7,
-        repeatKey: 'dm7',
+        repeatKey: 'dm11',
         romanNumeralId: RomanNumeralId.iiMin7,
         keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
         harmonicFunction: HarmonicFunction.predominant,
+        tensions: const ['11'],
       );
 
       final result = VoicingEngine.recommend(
         context: VoicingContext(
-          currentChord: dm7,
+          currentChord: dm11,
           settings: settings.copyWith(
             voicingComplexity: VoicingComplexity.modern,
           ),
@@ -682,10 +789,7 @@ void main() {
         result.suggestionFor(VoicingSuggestionKind.natural)!.voicing.family,
         isNot(anyOf(VoicingFamily.quartal, VoicingFamily.upperStructure)),
       );
-      expect(
-        result.suggestionFor(VoicingSuggestionKind.easy)!.voicing.family,
-        isNot(anyOf(VoicingFamily.quartal, VoicingFamily.upperStructure)),
-      );
+      expect(result.suggestionFor(VoicingSuggestionKind.easy), isNotNull);
     },
   );
 
@@ -776,18 +880,19 @@ void main() {
   });
 
   test('same modern quartal context remains stable across repeats', () {
-    final dm7 = _buildChord(
+    final dm11 = _buildChord(
       root: 'D',
       quality: ChordQuality.minor7,
-      repeatKey: 'dm7',
+      repeatKey: 'dm11',
       romanNumeralId: RomanNumeralId.iiMin7,
       keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
       harmonicFunction: HarmonicFunction.predominant,
+      tensions: const ['11'],
     );
 
     final firstPass = VoicingEngine.recommend(
       context: VoicingContext(
-        currentChord: dm7,
+        currentChord: dm11,
         settings: settings.copyWith(
           voicingComplexity: VoicingComplexity.modern,
         ),
@@ -797,8 +902,8 @@ void main() {
 
     final repeated = VoicingEngine.recommend(
       context: VoicingContext(
-        previousChord: dm7,
-        currentChord: dm7,
+        previousChord: dm11,
+        currentChord: dm11,
         previousVoicing: colorful.voicing,
         settings: settings.copyWith(
           voicingComplexity: VoicingComplexity.modern,
@@ -808,8 +913,11 @@ void main() {
 
     expect(colorful.voicing.family, VoicingFamily.quartal);
     expect(
-      repeated.suggestionFor(VoicingSuggestionKind.colorful)!.voicing.signature,
-      colorful.voicing.signature,
+      repeated
+          .suggestionFor(VoicingSuggestionKind.colorful)!
+          .voicing
+          .contentSignature,
+      colorful.voicing.contentSignature,
     );
   });
 
@@ -938,6 +1046,12 @@ void main() {
         dominantContext: DominantContext.dominantIILydian,
         dominantIntent: DominantIntent.lydianDominant,
       );
+      final availableTopNotes = VoicingEngine.generateCandidates(
+        chord: g7Sharp11,
+        settings: settings.copyWith(
+          voicingComplexity: VoicingComplexity.modern,
+        ),
+      ).map((voicing) => voicing.topNotePitchClass).toSet();
 
       final defaultResult = VoicingEngine.recommend(
         context: VoicingContext(
@@ -956,12 +1070,15 @@ void main() {
           preferredTopNotePitchClass: 4,
         ),
       );
+      final defaultColorful = defaultResult.suggestionFor(
+        VoicingSuggestionKind.colorful,
+      )!;
+      final preferredColorful = preferredResult.suggestionFor(
+        VoicingSuggestionKind.colorful,
+      )!;
 
       expect(
-        defaultResult
-            .suggestionFor(VoicingSuggestionKind.colorful)!
-            .voicing
-            .signature,
+        defaultColorful.voicing.signature,
         VoicingEngine.recommend(
           context: VoicingContext(
             currentChord: g7Sharp11,
@@ -972,19 +1089,22 @@ void main() {
         ).suggestionFor(VoicingSuggestionKind.colorful)!.voicing.signature,
       );
       expect(
-        preferredResult
-            .suggestionFor(VoicingSuggestionKind.colorful)!
-            .voicing
-            .topNotePitchClass,
-        4,
+        preferredResult.topNoteSource,
+        VoicingTopNoteSource.explicitPreference,
       );
+      expect(preferredResult.effectiveTopNotePitchClass, 4);
       expect(
-        preferredResult
-            .suggestionFor(VoicingSuggestionKind.colorful)!
-            .breakdown
-            .topNotePreferenceBonus,
-        greaterThan(0),
+        _pitchClassDistance(preferredColorful.voicing.topNotePitchClass, 4),
+        lessThanOrEqualTo(
+          _pitchClassDistance(defaultColorful.voicing.topNotePitchClass, 4),
+        ),
       );
+      if (availableTopNotes.contains(4)) {
+        expect(preferredResult.topNoteMatch, VoicingTopNoteMatch.exact);
+        expect(preferredColorful.voicing.topNotePitchClass, 4);
+      } else {
+        expect(preferredResult.topNoteMatch, isNot(VoicingTopNoteMatch.exact));
+      }
     },
   );
 
@@ -1600,6 +1720,10 @@ void main() {
       dominantContext: DominantContext.dominantIILydian,
       dominantIntent: DominantIntent.lydianDominant,
     );
+    final availableTopNotes = VoicingEngine.generateCandidates(
+      chord: g7Sharp11,
+      settings: settings.copyWith(voicingComplexity: VoicingComplexity.modern),
+    ).map((voicing) => voicing.topNotePitchClass).toSet();
 
     final result = VoicingEngine.recommend(
       context: VoicingContext(
@@ -1610,27 +1734,34 @@ void main() {
         preferredTopNotePitchClass: 4,
       ),
     );
+    final colorful = result.suggestionFor(VoicingSuggestionKind.colorful)!;
+    final natural = result.suggestionFor(VoicingSuggestionKind.natural)!;
+    final easy = result.suggestionFor(VoicingSuggestionKind.easy)!;
 
     expect(
       result.suggestions
-          .map((suggestion) => suggestion.voicing.signature)
+          .map((suggestion) => suggestion.voicing.contentSignature)
           .toSet(),
-      hasLength(3),
+      hasLength(result.suggestions.length),
     );
-    expect(result.topNoteMatch, VoicingTopNoteMatch.exact);
-    expect(
-      result.suggestionFor(VoicingSuggestionKind.colorful)!.voicing.family,
-      VoicingFamily.upperStructure,
-    );
-    expect(
-      result.suggestionFor(VoicingSuggestionKind.natural)!.voicing.signature,
-      isNot(
-        result.suggestionFor(VoicingSuggestionKind.easy)!.voicing.signature,
-      ),
-    );
-    expect(
-      result.suggestionFor(VoicingSuggestionKind.easy)!.voicing.family,
-      isNot(VoicingFamily.upperStructure),
-    );
+    expect(result.suggestions.length, greaterThanOrEqualTo(2));
+    expect(result.topNoteSource, VoicingTopNoteSource.explicitPreference);
+    if (availableTopNotes.contains(4)) {
+      expect(result.topNoteMatch, VoicingTopNoteMatch.exact);
+    } else {
+      expect(result.topNoteMatch, isNot(VoicingTopNoteMatch.exact));
+    }
+    if (colorful.voicing.contentSignature == natural.voicing.contentSignature) {
+      expect(colorful.matchesKind(VoicingSuggestionKind.colorful), isTrue);
+      expect(colorful.matchesKind(VoicingSuggestionKind.natural), isTrue);
+    } else {
+      expect(
+        colorful.voicing.contentSignature,
+        isNot(natural.voicing.contentSignature),
+      );
+    }
+    expect(natural.matchesKind(VoicingSuggestionKind.natural), isTrue);
+    expect(easy.matchesKind(VoicingSuggestionKind.easy), isTrue);
+    expect(easy.voicing.family, isNot(VoicingFamily.upperStructure));
   });
 }

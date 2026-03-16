@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 
 import 'practice_settings.dart';
 import 'practice_settings_store.dart';
@@ -14,17 +15,18 @@ class AppSettingsController extends ChangeNotifier {
   PracticeSettings _settings;
   Future<void> _saveQueue = Future<void>.value();
   PracticeSettings? _pendingSaveSnapshot;
+  bool _notifyScheduled = false;
 
   PracticeSettings get settings => _settings;
 
   Future<void> load() async {
     _settings = await _store.load(fallbackSettings: _settings);
-    notifyListeners();
+    _notifySafely();
   }
 
   Future<void> update(PracticeSettings nextSettings) async {
     _settings = nextSettings;
-    notifyListeners();
+    _notifySafely();
     _pendingSaveSnapshot = nextSettings;
     _saveQueue = _saveQueue.catchError((_) {}).then((_) async {
       final snapshot = _pendingSaveSnapshot;
@@ -41,5 +43,33 @@ class AppSettingsController extends ChangeNotifier {
     PracticeSettings Function(PracticeSettings current) updater,
   ) async {
     await update(updater(_settings));
+  }
+
+  void _notifySafely() {
+    SchedulerBinding binding;
+    try {
+      binding = SchedulerBinding.instance;
+    } catch (_) {
+      _notifyScheduled = false;
+      notifyListeners();
+      return;
+    }
+    final phase = binding.schedulerPhase;
+    final canNotifyImmediately =
+        phase == SchedulerPhase.idle ||
+        phase == SchedulerPhase.postFrameCallbacks;
+    if (canNotifyImmediately) {
+      _notifyScheduled = false;
+      notifyListeners();
+      return;
+    }
+    if (_notifyScheduled) {
+      return;
+    }
+    _notifyScheduled = true;
+    binding.addPostFrameCallback((_) {
+      _notifyScheduled = false;
+      notifyListeners();
+    });
   }
 }

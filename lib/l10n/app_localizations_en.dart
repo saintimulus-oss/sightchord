@@ -420,6 +420,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get practiceTimeSignatureFourFour => '4/4';
 
   @override
+  String get practiceTimeSignatureFiveFour => '5/4';
+
+  @override
+  String get practiceTimeSignatureSixEight => '6/8';
+
+  @override
+  String get practiceTimeSignatureSevenEight => '7/8';
+
+  @override
+  String get practiceTimeSignatureTwelveEight => '12/8';
+
+  @override
   String get harmonicRhythm => 'Harmonic Rhythm';
 
   @override
@@ -658,7 +670,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get keyboardShortcutHelp =>
-      'Space: next chord  Enter: start or stop autoplay  Up/Down: adjust BPM';
+      'Space: next chord  Enter: start or pause autoplay  Up/Down: adjust BPM';
 
   @override
   String get nextChord => 'Next Chord';
@@ -679,7 +691,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get startAutoplay => 'Start Autoplay';
 
   @override
+  String get pauseAutoplay => 'Pause Autoplay';
+
+  @override
   String get stopAutoplay => 'Stop Autoplay';
+
+  @override
+  String get resetGeneratedChords => 'Reset Generated Chords';
 
   @override
   String get decreaseBpm => 'Decrease BPM';

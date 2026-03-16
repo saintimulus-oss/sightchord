@@ -1,0 +1,299 @@
+{
+    "reportVersion":  2,
+    "seed":  90210,
+    "trackedMetrics":  [
+                           "adjacentSamePitchRatio",
+                           "singleEventMonotoneRatio",
+                           "exactPreviousEventRepeat",
+                           "sameIntervalVectorRepeatInWindow4",
+                           "colorToneUptakeOnColorChords",
+                           "offbeatOnsetRatio",
+                           "resolutionWithin2Semitones",
+                           "intervalsAbove7SemitonesRatio",
+                           "phraseFinalLongNoteRatio",
+                           "motifTransformDistribution",
+                           "syncopationByPosition",
+                           "intervalDistributionByMode",
+                           "exactSameEventStreakLength",
+                           "colorToneUsageByChordClass"
+                       ],
+    "sequenceLengths":  {
+                            "guided":  12,
+                            "standard":  12,
+                            "advanced":  12
+                        },
+    "metricsByMode":  {
+                          "guided":  {
+                                         "eventCount":  12,
+                                         "noteCount":  34,
+                                         "intervalCount":  22,
+                                         "adjacentSamePitchRatio":  0.515152,
+                                         "singleEventMonotoneRatio":  0.0,
+                                         "exactPreviousEventRepeat":  0.0,
+                                         "sameIntervalVectorRepeatInWindow4":  0.090909,
+                                         "colorToneUptakeOnColorChords":  1.0,
+                                         "offbeatOnsetRatio":  0.235294,
+                                         "resolutionWithin2Semitones":  1.0,
+                                         "intervalsAbove7SemitonesRatio":  0.0,
+                                         "phraseFinalLongNoteRatio":  0.25,
+                                         "cadenceLongFinalRatio":  1.0,
+                                         "cadenceResolutionQuality":  0.935,
+                                         "apexAlignmentRatio":  0.25,
+                                         "phraseMetadataCoverage":  1.0,
+                                         "centerMidiSpan":  5,
+                                         "apexMidiSpan":  5,
+                                         "apexPosBucketCount":  2,
+                                         "exactSameEventStreakLength":  1,
+                                         "entropy":  2.265929,
+                                         "colorToneUsageByChordClass":  {
+                                                                            "maj7#11":  1.0
+                                                                        },
+                                         "phraseRoleDistribution":  {
+                                                                        "cadence":  0.166667,
+                                                                        "continuation":  0.5,
+                                                                        "opening":  0.083333,
+                                                                        "preCadence":  0.25
+                                                                    },
+                                         "motifTransformDistribution":  {
+                                                                            "fresh":  0.583333,
+                                                                            "rhythmVar@d2":  0.083333,
+                                                                            "rhythmVar@d3":  0.083333,
+                                                                            "sequence@d2":  0.083333,
+                                                                            "tailChange@d5":  0.083333,
+                                                                            "truncateExtend@d3":  0.083333
+                                                                        },
+                                         "syncopationByPosition":  {
+                                                                       "\u00261":  0.0,
+                                                                       "\u00262":  0.75,
+                                                                       "\u00263":  0.0,
+                                                                       "\u00264":  0.25
+                                                                   },
+                                         "intervalDistribution":  {
+                                                                      "0":  0.272727,
+                                                                      "1":  0.181818,
+                                                                      "2":  0.454545,
+                                                                      "3":  0.090909
+                                                                  },
+                                         "strongSlotCategoryUsage":  {
+                                                                         "chord":  1.0
+                                                                     },
+                                         "weakSlotCategoryUsage":  {
+                                                                       "chord":  0.5,
+                                                                       "diatonic":  0.5
+                                                                   }
+                                     },
+                          "standard":  {
+                                           "eventCount":  12,
+                                           "noteCount":  37,
+                                           "intervalCount":  25,
+                                           "adjacentSamePitchRatio":  0.305556,
+                                           "singleEventMonotoneRatio":  0.0,
+                                           "exactPreviousEventRepeat":  0.0,
+                                           "sameIntervalVectorRepeatInWindow4":  0.0,
+                                           "colorToneUptakeOnColorChords":  0.6,
+                                           "offbeatOnsetRatio":  0.324324,
+                                           "resolutionWithin2Semitones":  1.0,
+                                           "intervalsAbove7SemitonesRatio":  0.0,
+                                           "phraseFinalLongNoteRatio":  0.25,
+                                           "cadenceLongFinalRatio":  1.0,
+                                           "cadenceResolutionQuality":  0.685,
+                                           "apexAlignmentRatio":  0.75,
+                                           "phraseMetadataCoverage":  1.0,
+                                           "centerMidiSpan":  7,
+                                           "apexMidiSpan":  9,
+                                           "apexPosBucketCount":  3,
+                                           "exactSameEventStreakLength":  1,
+                                           "entropy":  2.768811,
+                                           "colorToneUsageByChordClass":  {
+                                                                              "borrowedIv":  0.666667,
+                                                                              "dom7alt":  0.333333,
+                                                                              "dominant7":  0.333333,
+                                                                              "halfDim":  1.0,
+                                                                              "maj7#11":  0.5,
+                                                                              "minor13":  1.0
+                                                                          },
+                                           "phraseRoleDistribution":  {
+                                                                          "cadence":  0.166667,
+                                                                          "continuation":  0.5,
+                                                                          "opening":  0.083333,
+                                                                          "preCadence":  0.25
+                                                                      },
+                                           "motifTransformDistribution":  {
+                                                                              "fresh":  0.5,
+                                                                              "sequence@d2":  0.083333,
+                                                                              "sequence@d4":  0.083333,
+                                                                              "tailChange@d2":  0.083333,
+                                                                              "tailChange@d4":  0.166667,
+                                                                              "tailChange@d5":  0.083333
+                                                                          },
+                                           "syncopationByPosition":  {
+                                                                         "\u00261":  0.083333,
+                                                                         "\u00262":  0.333333,
+                                                                         "\u00263":  0.083333,
+                                                                         "\u00264":  0.5
+                                                                     },
+                                           "intervalDistribution":  {
+                                                                        "0":  0.04,
+                                                                        "1":  0.32,
+                                                                        "2":  0.4,
+                                                                        "3":  0.16,
+                                                                        "4":  0.04,
+                                                                        "5":  0.04
+                                                                    },
+                                           "strongSlotCategoryUsage":  {
+                                                                           "chord":  0.75,
+                                                                           "tension":  0.25
+                                                                       },
+                                           "weakSlotCategoryUsage":  {
+                                                                         "chord":  0.333333,
+                                                                         "chromatic":  0.444444,
+                                                                         "diatonic":  0.111111,
+                                                                         "tension":  0.111111
+                                                                     }
+                                       },
+                          "advanced":  {
+                                           "eventCount":  12,
+                                           "noteCount":  46,
+                                           "intervalCount":  34,
+                                           "adjacentSamePitchRatio":  0.177778,
+                                           "singleEventMonotoneRatio":  0.0,
+                                           "exactPreviousEventRepeat":  0.0,
+                                           "sameIntervalVectorRepeatInWindow4":  0.0,
+                                           "colorToneUptakeOnColorChords":  0.869565,
+                                           "offbeatOnsetRatio":  0.456522,
+                                           "resolutionWithin2Semitones":  0.909091,
+                                           "intervalsAbove7SemitonesRatio":  0.029412,
+                                           "phraseFinalLongNoteRatio":  0.25,
+                                           "cadenceLongFinalRatio":  1.0,
+                                           "cadenceResolutionQuality":  0.725,
+                                           "apexAlignmentRatio":  0.857143,
+                                           "phraseMetadataCoverage":  1.0,
+                                           "centerMidiSpan":  8,
+                                           "apexMidiSpan":  9,
+                                           "apexPosBucketCount":  2,
+                                           "exactSameEventStreakLength":  1,
+                                           "entropy":  2.793831,
+                                           "colorToneUsageByChordClass":  {
+                                                                              "borrowedIv":  1.0,
+                                                                              "dom7alt":  0.875,
+                                                                              "halfDim":  1.0,
+                                                                              "lydianDom":  1.0,
+                                                                              "maj7#11":  0.444444,
+                                                                              "minor13":  1.0
+                                                                          },
+                                           "phraseRoleDistribution":  {
+                                                                          "cadence":  0.166667,
+                                                                          "continuation":  0.5,
+                                                                          "opening":  0.083333,
+                                                                          "preCadence":  0.25
+                                                                      },
+                                           "motifTransformDistribution":  {
+                                                                              "fresh":  0.25,
+                                                                              "rhythmVar@d2":  0.083333,
+                                                                              "sequence@d4":  0.083333,
+                                                                              "tailChange@d2":  0.083333,
+                                                                              "tailChange@d3":  0.166667,
+                                                                              "transpose@d2":  0.083333,
+                                                                              "truncateExtend@d2":  0.083333,
+                                                                              "truncateExtend@d3":  0.083333,
+                                                                              "truncateExtend@d4":  0.083333
+                                                                          },
+                                           "syncopationByPosition":  {
+                                                                         "\u00261":  0.238095,
+                                                                         "\u00262":  0.333333,
+                                                                         "\u00263":  0.0,
+                                                                         "\u00264":  0.428571
+                                                                     },
+                                           "intervalDistribution":  {
+                                                                        "0":  0.058824,
+                                                                        "1":  0.323529,
+                                                                        "10":  0.029412,
+                                                                        "2":  0.5,
+                                                                        "3":  0.058824,
+                                                                        "4":  0.029412
+                                                                    },
+                                           "strongSlotCategoryUsage":  {
+                                                                           "chord":  0.454545,
+                                                                           "tension":  0.545455
+                                                                       },
+                                           "weakSlotCategoryUsage":  {
+                                                                         "chromatic":  0.846154,
+                                                                         "diatonic":  0.076923,
+                                                                         "tension":  0.076923
+                                                                     }
+                                       }
+                      },
+    "intervalDistributionByMode":  {
+                                       "guided":  {
+                                                      "0":  0.272727,
+                                                      "1":  0.181818,
+                                                      "2":  0.454545,
+                                                      "3":  0.090909
+                                                  },
+                                       "standard":  {
+                                                        "0":  0.04,
+                                                        "1":  0.32,
+                                                        "2":  0.4,
+                                                        "3":  0.16,
+                                                        "4":  0.04,
+                                                        "5":  0.04
+                                                    },
+                                       "advanced":  {
+                                                        "0":  0.058824,
+                                                        "1":  0.323529,
+                                                        "10":  0.029412,
+                                                        "2":  0.5,
+                                                        "3":  0.058824,
+                                                        "4":  0.029412
+                                                    }
+                                   },
+    "syncopationByMode":  {
+                              "guided":  {
+                                             "\u00261":  0.0,
+                                             "\u00262":  0.75,
+                                             "\u00263":  0.0,
+                                             "\u00264":  0.25
+                                         },
+                              "standard":  {
+                                               "\u00261":  0.083333,
+                                               "\u00262":  0.333333,
+                                               "\u00263":  0.083333,
+                                               "\u00264":  0.5
+                                           },
+                              "advanced":  {
+                                               "\u00261":  0.238095,
+                                               "\u00262":  0.333333,
+                                               "\u00263":  0.0,
+                                               "\u00264":  0.428571
+                                           }
+                          },
+    "motifTransformDistributionByMode":  {
+                                             "guided":  {
+                                                            "fresh":  0.583333,
+                                                            "rhythmVar@d2":  0.083333,
+                                                            "rhythmVar@d3":  0.083333,
+                                                            "sequence@d2":  0.083333,
+                                                            "tailChange@d5":  0.083333,
+                                                            "truncateExtend@d3":  0.083333
+                                                        },
+                                             "standard":  {
+                                                              "fresh":  0.5,
+                                                              "sequence@d2":  0.083333,
+                                                              "sequence@d4":  0.083333,
+                                                              "tailChange@d2":  0.083333,
+                                                              "tailChange@d4":  0.166667,
+                                                              "tailChange@d5":  0.083333
+                                                          },
+                                             "advanced":  {
+                                                              "fresh":  0.25,
+                                                              "rhythmVar@d2":  0.083333,
+                                                              "sequence@d4":  0.083333,
+                                                              "tailChange@d2":  0.083333,
+                                                              "tailChange@d3":  0.166667,
+                                                              "transpose@d2":  0.083333,
+                                                              "truncateExtend@d2":  0.083333,
+                                                              "truncateExtend@d3":  0.083333,
+                                                              "truncateExtend@d4":  0.083333
+                                                          }
+                                         }
+}

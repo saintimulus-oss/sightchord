@@ -293,6 +293,17 @@ void main() {
     expect(loaded.voicingTopNotePreference, VoicingTopNotePreference.bb);
   });
 
+  test(
+    'store uses chords-only playback mode by default for empty storage',
+    () async {
+      const store = PracticeSettingsStore();
+
+      final loaded = await store.load(fallbackSettings: PracticeSettings());
+
+      expect(loaded.melodyPlaybackMode, MelodyPlaybackMode.chordsOnly);
+    },
+  );
+
   test('store saves and restores analyzer display settings', () async {
     const store = PracticeSettingsStore();
     final settings = PracticeSettings(

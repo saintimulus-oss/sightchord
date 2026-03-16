@@ -18,6 +18,7 @@ class ChordInputEditor extends StatefulWidget {
     this.fieldKey,
     this.minLines = 3,
     this.maxLines = 5,
+    this.showDesktopKeyboardOnFocus = true,
   });
 
   final TextEditingController controller;
@@ -29,6 +30,7 @@ class ChordInputEditor extends StatefulWidget {
   final Key? fieldKey;
   final int minLines;
   final int maxLines;
+  final bool showDesktopKeyboardOnFocus;
 
   @override
   State<ChordInputEditor> createState() => _ChordInputEditorState();
@@ -39,6 +41,7 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
 
   bool _showKeyboard = false;
   bool _rawInputMode = false;
+  bool _desktopKeyboardVisible = false;
 
   bool get _usesTouchKeyboard {
     if (kIsWeb) {
@@ -88,6 +91,18 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
       return;
     }
     setState(() {});
+  }
+
+  void _toggleDesktopKeyboardVisible() {
+    if (_usesTouchKeyboard || widget.showDesktopKeyboardOnFocus) {
+      return;
+    }
+    setState(() {
+      _desktopKeyboardVisible = !_desktopKeyboardVisible;
+    });
+    if (_desktopKeyboardVisible) {
+      _focusNode.requestFocus();
+    }
   }
 
   void _ensureValidSelection() {
@@ -218,33 +233,63 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
     final editorContext = _EditorTokenContext.fromValue(
       widget.controller.value,
     );
+    final showKeyboardPanel = _usesTouchKeyboard
+        ? _showKeyboard
+        : (widget.showDesktopKeyboardOnFocus
+              ? _showKeyboard
+              : _desktopKeyboardVisible);
 
     return TextFieldTapRegion(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextField(
-            key: widget.fieldKey,
-            controller: widget.controller,
-            focusNode: _focusNode,
-            minLines: widget.minLines,
-            maxLines: widget.maxLines,
-            readOnly: _usesTouchKeyboard && !_rawInputMode,
-            showCursor: true,
-            onTap: _ensureValidSelection,
-            onTapOutside: (_) => _focusNode.unfocus(),
-            decoration: InputDecoration(
-              labelText: widget.labelText,
-              hintText: widget.hintText,
-              helperText: widget.helperText?.isEmpty ?? true
-                  ? null
-                  : widget.helperText,
-              border: const OutlineInputBorder(),
+          CallbackShortcuts(
+            bindings: {
+              const SingleActivator(LogicalKeyboardKey.enter, control: true):
+                  widget.onAnalyze,
+              const SingleActivator(LogicalKeyboardKey.enter, meta: true):
+                  widget.onAnalyze,
+            },
+            child: TextField(
+              key: widget.fieldKey,
+              controller: widget.controller,
+              focusNode: _focusNode,
+              minLines: widget.minLines,
+              maxLines: widget.maxLines,
+              readOnly: _usesTouchKeyboard && !_rawInputMode,
+              showCursor: true,
+              onTap: _ensureValidSelection,
+              onTapOutside: (_) => _focusNode.unfocus(),
+              decoration: InputDecoration(
+                labelText: widget.labelText,
+                hintText: widget.hintText,
+                helperText: widget.helperText?.isEmpty ?? true
+                    ? null
+                    : widget.helperText,
+                border: const OutlineInputBorder(),
+              ),
             ),
           ),
+          if (!_usesTouchKeyboard && !widget.showDesktopKeyboardOnFocus)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  key: const ValueKey('chord-editor-toggle-desktop-pad'),
+                  onPressed: _toggleDesktopKeyboardVisible,
+                  icon: Icon(
+                    showKeyboardPanel
+                        ? Icons.expand_less_rounded
+                        : Icons.keyboard_alt_outlined,
+                  ),
+                  label: Text(l10n.chordAnalyzerChordPad),
+                ),
+              ),
+            ),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 180),
-            child: !_showKeyboard
+            child: !showKeyboardPanel
                 ? const SizedBox.shrink()
                 : Padding(
                     padding: const EdgeInsets.only(top: 12),

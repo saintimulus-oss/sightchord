@@ -93,7 +93,14 @@ class PracticeSettingsEffects {
         previous.melodyRangeLow != next.melodyRangeLow ||
         previous.melodyRangeHigh != next.melodyRangeHigh ||
         previous.melodyStyle != next.melodyStyle ||
-        previous.allowChromaticApproaches != next.allowChromaticApproaches;
+        previous.allowChromaticApproaches != next.allowChromaticApproaches ||
+        previous.syncopationBias != next.syncopationBias ||
+        previous.colorRealizationBias != next.colorRealizationBias ||
+        previous.noveltyTarget != next.noveltyTarget ||
+        previous.motifVariationBias != next.motifVariationBias ||
+        previous.anticipationProbability != next.anticipationProbability ||
+        previous.colorToneTarget != next.colorToneTarget ||
+        previous.exactRepeatTarget != next.exactRepeatTarget;
   }
 
   static bool _setEquals<T>(Set<T> left, Set<T> right) {

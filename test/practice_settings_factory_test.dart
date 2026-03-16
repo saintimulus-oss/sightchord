@@ -6,19 +6,22 @@ import 'package:chordest/settings/practice_settings_factory.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('profileFromSettings infers guided beginner answers from safe preset', () {
-    final settings = PracticeSettingsFactory.beginnerSafePreset();
+  test(
+    'profileFromSettings infers guided beginner answers from safe preset',
+    () {
+      final settings = PracticeSettingsFactory.beginnerSafePreset();
 
-    final profile = PracticeSettingsFactory.profileFromSettings(settings);
+      final profile = PracticeSettingsFactory.profileFromSettings(settings);
 
-    expect(profile.harmonyLiteracy, HarmonyLiteracy.absoluteBeginner);
-    expect(profile.handComfort, HandComfort.threeNotes);
-    expect(profile.chordSymbolStyle, ChordSymbolStyle.majText);
-    expect(
-      profile.startingKeyCenter,
-      const KeyCenter(tonicName: 'C', mode: KeyMode.major),
-    );
-  });
+      expect(profile.harmonyLiteracy, HarmonyLiteracy.absoluteBeginner);
+      expect(profile.handComfort, HandComfort.threeNotes);
+      expect(profile.chordSymbolStyle, ChordSymbolStyle.majText);
+      expect(
+        profile.startingKeyCenter,
+        const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+      );
+    },
+  );
 
   test('nudgeTowardEasier steps preview settings toward safer defaults', () {
     final current = PracticeSettings(
@@ -49,9 +52,7 @@ void main() {
 
   test('nudgeTowardJazzier adds safe color without enabling rootless', () {
     final current = PracticeSettingsFactory.fromGeneratorProfile(
-      const GeneratorProfile(
-        harmonyLiteracy: HarmonyLiteracy.basicChordReader,
-      ),
+      const GeneratorProfile(harmonyLiteracy: HarmonyLiteracy.basicChordReader),
       baseSettings: PracticeSettings(),
     );
 
@@ -83,9 +84,113 @@ void main() {
 
     expect(first.chords, hasLength(4));
     expect(first.chordSymbols(), second.chordSymbols());
+    expect(first.chordSymbols(), everyElement(isNot(isEmpty)));
+  });
+
+  test('complexity melody presets diverge in bias values', () {
+    final guided = PracticeSettingsFactory.applyComplexityModeMelodyPreset(
+      PracticeSettings(),
+      SettingsComplexityMode.guided,
+    );
+    final standard = PracticeSettingsFactory.applyComplexityModeMelodyPreset(
+      PracticeSettings(),
+      SettingsComplexityMode.standard,
+    );
+    final advanced = PracticeSettingsFactory.applyComplexityModeMelodyPreset(
+      PracticeSettings(),
+      SettingsComplexityMode.advanced,
+    );
+
+    expect(guided.melodyStyle, MelodyStyle.safe);
+    expect(standard.melodyStyle, isNot(guided.melodyStyle));
+    expect(advanced.melodyStyle, MelodyStyle.colorful);
+    expect(guided.syncopationBias, lessThan(standard.syncopationBias));
+    expect(standard.syncopationBias, lessThan(advanced.syncopationBias));
     expect(
-      first.chordSymbols(),
-      everyElement(isNot(isEmpty)),
+      guided.colorRealizationBias,
+      lessThan(standard.colorRealizationBias),
+    );
+    expect(
+      standard.colorRealizationBias,
+      lessThan(advanced.colorRealizationBias),
+    );
+    expect(guided.noveltyTarget, lessThan(standard.noveltyTarget));
+    expect(standard.noveltyTarget, lessThan(advanced.noveltyTarget));
+    expect(guided.motifVariationBias, lessThan(advanced.motifVariationBias));
+  });
+
+  test('quick melody presets map to distinct user-facing line profiles', () {
+    final guideLine = PracticeSettingsFactory.applyQuickMelodyPreset(
+      PracticeSettings(),
+      MelodyQuickPreset.guideLine,
+    );
+    final songLine = PracticeSettingsFactory.applyQuickMelodyPreset(
+      PracticeSettings(),
+      MelodyQuickPreset.songLine,
+    );
+    final colorLine = PracticeSettingsFactory.applyQuickMelodyPreset(
+      PracticeSettings(),
+      MelodyQuickPreset.colorLine,
+    );
+
+    expect(guideLine.melodyGenerationEnabled, isTrue);
+    expect(guideLine.allowChromaticApproaches, isFalse);
+    expect(songLine.allowChromaticApproaches, isTrue);
+    expect(colorLine.melodyDensity, MelodyDensity.active);
+    expect(guideLine.syncopationBias, lessThan(songLine.syncopationBias));
+    expect(songLine.syncopationBias, lessThan(colorLine.syncopationBias));
+    expect(
+      guideLine.colorRealizationBias,
+      lessThan(songLine.colorRealizationBias),
+    );
+    expect(
+      songLine.colorRealizationBias,
+      lessThan(colorLine.colorRealizationBias),
+    );
+    expect(guideLine.noveltyTarget, lessThan(songLine.noveltyTarget));
+    expect(songLine.noveltyTarget, lessThan(colorLine.noveltyTarget));
+    expect(
+      PracticeSettingsFactory.quickMelodyPresetForSettings(guideLine),
+      MelodyQuickPreset.guideLine,
+    );
+    expect(
+      PracticeSettingsFactory.quickMelodyPresetForSettings(songLine),
+      MelodyQuickPreset.songLine,
+    );
+    expect(
+      PracticeSettingsFactory.quickMelodyPresetForSettings(colorLine),
+      MelodyQuickPreset.colorLine,
+    );
+  });
+
+  test('effective melody mode follows quick preset biases', () {
+    final guidedBase = PracticeSettings(
+      settingsComplexityMode: SettingsComplexityMode.guided,
+    );
+    final guideLine = PracticeSettingsFactory.applyQuickMelodyPreset(
+      guidedBase,
+      MelodyQuickPreset.guideLine,
+    );
+    final songLine = PracticeSettingsFactory.applyQuickMelodyPreset(
+      guidedBase,
+      MelodyQuickPreset.songLine,
+    );
+    final colorLine = PracticeSettingsFactory.applyQuickMelodyPreset(
+      guidedBase,
+      MelodyQuickPreset.colorLine,
+    );
+
+    expect(
+      PracticeSettingsFactory.effectiveMelodyModeForSettings(guideLine),
+      SettingsComplexityMode.guided,
+    );
+    expect(
+      PracticeSettingsFactory.effectiveMelodyModeForSettings(songLine),
+      SettingsComplexityMode.standard,
+    );
+    expect(
+      PracticeSettingsFactory.effectiveMelodyModeForSettings(colorLine),
+      SettingsComplexityMode.advanced,
     );
   });
 }
