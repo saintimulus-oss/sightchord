@@ -41,6 +41,15 @@ void main() {
     expect(promoted.lookAheadChord, isNull);
   });
 
+  test('withLookAheadEvent(null) clears an existing look-ahead event', () {
+    final stateWithLookAhead = PracticeChordQueueState(
+      lookAheadEvent: _buildEvent('lookAhead'),
+    );
+
+    final cleared = stateWithLookAhead.withLookAheadEvent(null);
+
+    expect(cleared.lookAheadChord, isNull);
+  });
   test('planned smart queue updates stay immutable', () {
     const queued = QueuedSmartChord(
       keyCenter: KeyCenter(tonicName: 'C', mode: KeyMode.major),
@@ -85,3 +94,4 @@ GeneratedChordEvent _buildEvent(String key, {GeneratedChord? chord}) {
     ),
   );
 }
+

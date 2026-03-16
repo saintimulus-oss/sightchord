@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
@@ -95,9 +96,7 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
       setState(() {
         _analysis = analysis;
       });
-      if (analysis.inferredChordCount > 0) {
-        _queueResultDialog(analysis: analysis);
-      }
+      _queueResultDialog(analysis: analysis);
     } on ProgressionAnalysisException catch (error) {
       if (!mounted) {
         return;
@@ -377,6 +376,223 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     await harmonyAudio.playParsedChord(chord, pattern: pattern);
   }
 
+  List<Widget> _buildAnalysisSections(
+    AppLocalizations l10n,
+    ThemeData theme, {
+    required ProgressionAnalysis analysis,
+    required List<ProgressionVariation> variations,
+    bool includeInputSection = false,
+    bool includeResultsCardKey = false,
+  }) {
+    final summary = _explainer.buildSummary(
+      l10n,
+      analysis,
+      detailLevel: _detailLevel,
+    );
+    final warnings = _warningTexts(l10n, analysis);
+    final keyCandidates = analysis.keyCandidates.take(5).toList();
+    final groupedMeasures = analysis.groupedMeasures;
+    final sections = <Widget>[];
+
+    void addSection(Widget section) {
+      if (sections.isNotEmpty) {
+        sections.add(const SizedBox(height: 12));
+      }
+      sections.add(section);
+    }
+
+    if (includeInputSection) {
+      addSection(
+        _SectionCard(
+          key: const ValueKey('analyzer-result-input-card'),
+          title: l10n.chordAnalyzerInputLabel,
+          child: SelectableText(
+            analysis.input,
+            key: const ValueKey('analyzer-result-input'),
+            style: theme.textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              height: 1.45,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (analysis.confidence < 0.55) {
+      addSection(
+        _LowConfidenceBanner(
+          title: l10n.chordAnalyzerLowConfidenceTitle,
+          body: l10n.chordAnalyzerLowConfidenceBody,
+        ),
+      );
+    }
+
+    addSection(
+      _SectionCard(
+        key: includeResultsCardKey
+            ? const ValueKey('analyzer-results-card')
+            : null,
+        title: l10n.chordAnalyzerDetectedKeys,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _MetricMeter(
+              label: l10n.chordAnalyzerConfidenceLabel,
+              value: analysis.confidence,
+            ),
+            const SizedBox(height: 10),
+            _MetricMeter(
+              label: l10n.chordAnalyzerAmbiguityLabel,
+              value: analysis.ambiguity,
+              invertColor: true,
+            ),
+            const SizedBox(height: 14),
+            for (var index = 0; index < keyCandidates.length; index += 1) ...[
+              _KeyCandidateRow(
+                label: _candidateLabel(l10n, index),
+                value: _explainer.keyLabel(
+                  l10n,
+                  keyCandidates[index].keyCenter,
+                ),
+                confidence: keyCandidates[index].confidence,
+              ),
+              if (index != keyCandidates.length - 1) const SizedBox(height: 8),
+            ],
+          ],
+        ),
+      ),
+    );
+
+    addSection(
+      _SectionCard(
+        title: l10n.chordAnalyzerChordAnalysis,
+        child: Column(
+          children: [
+            for (
+              var measureIndex = 0;
+              measureIndex < groupedMeasures.length;
+              measureIndex += 1
+            ) ...[
+              _buildMeasureSection(l10n, theme, groupedMeasures[measureIndex]),
+              if (measureIndex != groupedMeasures.length - 1)
+                const SizedBox(height: 16),
+            ],
+          ],
+        ),
+      ),
+    );
+
+    addSection(
+      _SectionCard(
+        title: l10n.chordAnalyzerProgressionSummary,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (analysis.highlightCategories.isNotEmpty) ...[
+              _AnalyzerLegendWrap(
+                categories: ProgressionHighlightCategory.values
+                    .where(analysis.highlightCategories.contains)
+                    .toList(growable: false),
+                highlightTheme: _highlightTheme,
+              ),
+              const SizedBox(height: 12),
+            ],
+            if (analysis.tags.isNotEmpty) ...[
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final tag in analysis.tags)
+                    (() {
+                      final category = _highlightCategoryForTag(tag);
+                      final color = category == null
+                          ? null
+                          : _highlightTheme.colorFor(category);
+                      return Chip(
+                        backgroundColor: color == null
+                            ? theme.colorScheme.surfaceContainerHighest
+                            : _softHighlightBackground(color),
+                        side: BorderSide(
+                          color: color == null
+                              ? theme.colorScheme.outlineVariant
+                              : color.withValues(alpha: 0.45),
+                        ),
+                        label: Text(_explainer.tagLabel(l10n, tag)),
+                        visualDensity: VisualDensity.compact,
+                      );
+                    })(),
+                ],
+              ),
+              const SizedBox(height: 12),
+            ],
+            for (final line in summary) ...[
+              Text(line),
+              const SizedBox(height: 8),
+            ],
+            if (analysis.alternativeKey != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                '${l10n.chordAnalyzerCompetingReadings}: '
+                '${_explainer.keyLabel(l10n, analysis.alternativeKey!.keyCenter)}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+
+    if (variations.isNotEmpty) {
+      addSection(
+        _SectionCard(
+          title: l10n.chordAnalyzerVariationsTitle,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.chordAnalyzerVariationsBody,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 12),
+              for (var index = 0; index < variations.length; index += 1) ...[
+                _VariationSuggestionCard(
+                  variation: variations[index],
+                  title: _variationTitle(l10n, variations[index].kind),
+                  body: _variationBody(l10n, variations[index].kind),
+                  onApply: () => _applyVariation(variations[index]),
+                ),
+                if (index != variations.length - 1) const SizedBox(height: 12),
+              ],
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (warnings.isNotEmpty) {
+      addSection(
+        _SectionCard(
+          title: l10n.chordAnalyzerWarnings,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var index = 0; index < warnings.length; index += 1) ...[
+                Text(warnings[index]),
+                if (index != warnings.length - 1) const SizedBox(height: 8),
+              ],
+            ],
+          ),
+        ),
+      );
+    }
+
+    return sections;
+  }
+
   void _queueResultDialog({ProgressionAnalysis? analysis, String? errorKey}) {
     if ((analysis == null && errorKey == null) || _isResultDialogVisible) {
       return;
@@ -399,200 +615,82 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
       return;
     }
 
-    final l10n = AppLocalizations.of(context)!;
-    final materialL10n = MaterialLocalizations.of(context);
-    final theme = Theme.of(context);
-    final summary = analysis == null
-        ? const <String>[]
-        : _explainer.buildSummary(l10n, analysis, detailLevel: _detailLevel);
-    final warnings = analysis == null
-        ? const <String>[]
-        : _warningTexts(l10n, analysis);
-    final keyCandidates = analysis == null
-        ? const <ProgressionKeyCandidate>[]
-        : analysis.keyCandidates.take(2).toList();
-    final inferredChords = analysis == null
-        ? const <AnalyzedChord>[]
-        : analysis.chordAnalyses.where((item) => item.isInferred).toList();
-
-    Widget buildSection(String title, List<Widget> children) {
-      return DecoratedBox(
-        decoration: _analyzerPanelDecoration(theme.colorScheme),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 10),
-              ...children,
-            ],
-          ),
-        ),
-      );
-    }
-
     _isResultDialogVisible = true;
     try {
       await showDialog<void>(
         context: context,
-        builder: (dialogContext) => AlertDialog(
-          key: const ValueKey('analyzer-result-dialog'),
-          title: Text(l10n.chordAnalyzerTitle),
-          content: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (errorKey != null)
-                    buildSection(l10n.chordAnalyzerWarnings, [
-                      Text(_errorTextForKey(l10n, errorKey)),
-                    ])
-                  else if (analysis != null) ...[
-                    buildSection(l10n.chordAnalyzerDetectedKeys, [
-                      Text(
-                        _explainer.keyLabel(
-                          l10n,
-                          analysis.primaryKey.keyCenter,
-                        ),
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '${l10n.chordAnalyzerConfidenceLabel} '
-                        '${(analysis.confidence * 100).round()}%',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      if (keyCandidates.length > 1) ...[
-                        const SizedBox(height: 10),
-                        for (final candidate in keyCandidates.skip(1))
-                          Text(
-                            '${l10n.chordAnalyzerAlternativeReading}: '
-                            '${_explainer.keyLabel(l10n, candidate.keyCenter)}',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                      ],
-                    ]),
-                    if (inferredChords.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      buildSection(l10n.chordAnalyzerPlaceholderExplanation, [
-                        for (
-                          var index = 0;
-                          index < inferredChords.length;
-                          index += 1
-                        ) ...[
-                          DecoratedBox(
-                            decoration: _analyzerPanelDecoration(
-                              theme.colorScheme,
-                              accent: true,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          l10n.chordAnalyzerMeasureLabel(
-                                            inferredChords[index]
-                                                    .chord
-                                                    .measureIndex +
-                                                1,
-                                          ),
-                                          style: theme.textTheme.labelLarge
-                                              ?.copyWith(
-                                                color:
-                                                    theme.colorScheme.primary,
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          inferredChords[index]
-                                              .chord
-                                              .sourceSymbol,
-                                          style: theme.textTheme.titleLarge
-                                              ?.copyWith(
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.arrow_forward_rounded,
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    inferredChords[index].resolvedSymbol,
-                                    style: theme.textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.w800,
-                                      color: theme.colorScheme.primary,
-                                    ),
-                                  ),
-                                ],
+        builder: (dialogContext) {
+          final l10n = AppLocalizations.of(dialogContext)!;
+          final materialL10n = MaterialLocalizations.of(dialogContext);
+          final theme = Theme.of(dialogContext);
+          final size = MediaQuery.sizeOf(dialogContext);
+          final maxDialogWidth = math.min(
+            760.0,
+            math.max(320.0, size.width - 48),
+          );
+          final maxDialogHeight = math.min(
+            720.0,
+            math.max(240.0, size.height * 0.78),
+          );
+          final trimmedInput = _controller.text.trim();
+
+          return AlertDialog(
+            key: const ValueKey('analyzer-result-dialog'),
+            title: Text(l10n.chordAnalyzerTitle),
+            content: SizedBox(
+              width: maxDialogWidth,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: maxDialogHeight),
+                child: Scrollbar(
+                  child: SingleChildScrollView(
+                    key: const ValueKey('analyzer-result-dialog-scroll'),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (analysis != null)
+                          ..._buildAnalysisSections(
+                            l10n,
+                            theme,
+                            analysis: analysis,
+                            variations: _variations,
+                            includeInputSection: true,
+                          )
+                        else if (errorKey != null) ...[
+                          if (trimmedInput.isNotEmpty)
+                            _SectionCard(
+                              key: const ValueKey('analyzer-result-input-card'),
+                              title: l10n.chordAnalyzerInputLabel,
+                              child: SelectableText(
+                                trimmedInput,
+                                key: const ValueKey('analyzer-result-input'),
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.45,
+                                ),
                               ),
                             ),
+                          if (trimmedInput.isNotEmpty)
+                            const SizedBox(height: 12),
+                          _SectionCard(
+                            title: l10n.chordAnalyzerWarnings,
+                            child: Text(_errorTextForKey(l10n, errorKey)),
                           ),
-                          if (index != inferredChords.length - 1)
-                            const SizedBox(height: 10),
                         ],
-                      ]),
-                    ],
-                    if (summary.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      buildSection(l10n.chordAnalyzerProgressionSummary, [
-                        for (var index = 0; index < summary.length; index += 1)
-                          Padding(
-                            padding: EdgeInsets.only(
-                              bottom: index == summary.length - 1 ? 0 : 8,
-                            ),
-                            child: Text(summary[index]),
-                          ),
-                      ]),
-                    ],
-                    if (warnings.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      buildSection(l10n.chordAnalyzerWarnings, [
-                        for (var index = 0; index < warnings.length; index += 1)
-                          Padding(
-                            padding: EdgeInsets.only(
-                              bottom: index == warnings.length - 1 ? 0 : 8,
-                            ),
-                            child: Text(warnings[index]),
-                          ),
-                      ]),
-                    ],
-                  ],
-                ],
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(materialL10n.closeButtonLabel),
-            ),
-          ],
-        ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(materialL10n.closeButtonLabel),
+              ),
+            ],
+          );
+        },
       );
     } finally {
       _isResultDialogVisible = false;
@@ -605,18 +703,182 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final summary = _analysis == null
-        ? const <String>[]
-        : _explainer.buildSummary(l10n, _analysis!, detailLevel: _detailLevel);
-    final warnings = _analysis == null
-        ? const <String>[]
-        : _warningTexts(l10n, _analysis!);
-    final keyCandidates = _analysis == null
-        ? const <ProgressionKeyCandidate>[]
-        : _analysis!.keyCandidates.take(5).toList();
-    final groupedMeasures =
-        _analysis?.groupedMeasures ?? const <AnalyzedMeasure>[];
+    final size = MediaQuery.sizeOf(context);
+    final compactLayout = size.width < 720 && size.height < 980;
+    final analysis = _analysis;
     final variations = _variations;
+    final showsInitialState =
+        !_isAnalyzing && _errorKey == null && analysis == null;
+
+    final heroCard = DecoratedBox(
+      decoration: _analyzerPanelDecoration(colorScheme, accent: true),
+      child: Padding(
+        padding: EdgeInsets.all(compactLayout ? 16 : 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.chordAnalyzerSubtitle,
+                    style:
+                        (compactLayout
+                                ? theme.textTheme.titleLarge
+                                : theme.textTheme.headlineSmall)
+                            ?.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Tooltip(
+                  message: l10n.chordAnalyzerInputHelpTitle,
+                  child: IconButton.filledTonal(
+                    key: const ValueKey('analyzer-help-button'),
+                    onPressed: _showInputHelp,
+                    icon: Text(
+                      '?',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: compactLayout ? 10 : 12),
+            ChordInputEditor(
+              fieldKey: const ValueKey('analyzer-input-field'),
+              controller: _controller,
+              labelText: l10n.chordAnalyzerInputLabel,
+              hintText: l10n.chordAnalyzerInputHint,
+              platformOverride: widget.inputPlatformOverride,
+              minLines: compactLayout ? 2 : 3,
+              maxLines: compactLayout ? 3 : 5,
+              onAnalyze: _isAnalyzing ? () {} : _analyze,
+            ),
+            SizedBox(height: compactLayout ? 10 : 12),
+            Text(
+              l10n.chordAnalyzerExamplesTitle,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (compactLayout)
+              SizedBox(
+                height: 38,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, index) {
+                    final example = _exampleProgressions[index];
+                    return ActionChip(
+                      key: ValueKey('analyzer-example-$example'),
+                      label: Text(example),
+                      onPressed: () => _applyExample(example),
+                    );
+                  },
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
+                  itemCount: _exampleProgressions.length,
+                ),
+              )
+            else
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final example in _exampleProgressions)
+                    ActionChip(
+                      key: ValueKey('analyzer-example-$example'),
+                      label: Text(example),
+                      onPressed: () => _applyExample(example),
+                    ),
+                ],
+              ),
+            SizedBox(height: compactLayout ? 12 : 16),
+            Align(
+              alignment: Alignment.centerRight,
+              child: OverflowBar(
+                spacing: 10,
+                overflowSpacing: 10,
+                alignment: MainAxisAlignment.end,
+                children: [
+                  if (analysis != null) ...[
+                    OutlinedButton.icon(
+                      key: const ValueKey('analyzer-play-progression-button'),
+                      onPressed: () =>
+                          _playAnalysis(pattern: HarmonyPlaybackPattern.block),
+                      icon: const Icon(Icons.music_note_rounded),
+                      label: Text(l10n.audioPlayProgression),
+                    ),
+                    OutlinedButton.icon(
+                      key: const ValueKey(
+                        'analyzer-play-progression-arpeggio-button',
+                      ),
+                      onPressed: () => _playAnalysis(
+                        pattern: HarmonyPlaybackPattern.arpeggio,
+                      ),
+                      icon: const Icon(Icons.multitrack_audio_rounded),
+                      label: Text(l10n.audioPlayArpeggio),
+                    ),
+                  ],
+                  FilledButton.icon(
+                    key: const ValueKey('analyzer-analyze-button'),
+                    onPressed: _isAnalyzing ? null : _analyze,
+                    icon: const Icon(Icons.insights_rounded),
+                    label: Text(l10n.chordAnalyzerAnalyze),
+                  ),
+                  if (analysis != null)
+                    OutlinedButton.icon(
+                      key: const ValueKey(
+                        'analyzer-generate-variations-button',
+                      ),
+                      onPressed: _generateVariations,
+                      icon: const Icon(Icons.auto_fix_high_rounded),
+                      label: Text(l10n.chordAnalyzerGenerateVariations),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    final resultsBody = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        heroCard,
+        const SizedBox(height: 12),
+        if (_isAnalyzing)
+          _SectionCard(
+            title: l10n.chordAnalyzerAnalyzing,
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          )
+        else if (_errorKey != null)
+          _SectionCard(
+            title: l10n.chordAnalyzerWarnings,
+            child: Text(_errorText(l10n)),
+          )
+        else if (analysis == null)
+          _SectionCard(
+            title: l10n.chordAnalyzerInitialTitle,
+            child: Text(l10n.chordAnalyzerInitialBody),
+          )
+        else
+          ..._buildAnalysisSections(
+            l10n,
+            theme,
+            analysis: analysis,
+            variations: variations,
+            includeResultsCardKey: true,
+          ),
+      ],
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -677,373 +939,31 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
           ),
           SafeArea(
             child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 760),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      DecoratedBox(
-                        decoration: _analyzerPanelDecoration(
-                          colorScheme,
-                          accent: true,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      l10n.chordAnalyzerSubtitle,
-                                      style: theme.textTheme.headlineSmall
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Tooltip(
-                                    message: l10n.chordAnalyzerInputHelpTitle,
-                                    child: IconButton.filledTonal(
-                                      key: const ValueKey(
-                                        'analyzer-help-button',
-                                      ),
-                                      onPressed: _showInputHelp,
-                                      icon: Text(
-                                        '?',
-                                        style: theme.textTheme.titleMedium
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w800,
-                                            ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              ChordInputEditor(
-                                fieldKey: const ValueKey(
-                                  'analyzer-input-field',
-                                ),
-                                controller: _controller,
-                                labelText: l10n.chordAnalyzerInputLabel,
-                                hintText: l10n.chordAnalyzerInputHint,
-                                platformOverride: widget.inputPlatformOverride,
-                                onAnalyze: _isAnalyzing ? () {} : _analyze,
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                l10n.chordAnalyzerExamplesTitle,
-                                style: theme.textTheme.labelLarge?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: [
-                                  for (final example in _exampleProgressions)
-                                    ActionChip(
-                                      key: ValueKey(
-                                        'analyzer-example-$example',
-                                      ),
-                                      label: Text(example),
-                                      onPressed: () => _applyExample(example),
-                                    ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: Wrap(
-                                  spacing: 10,
-                                  runSpacing: 10,
-                                  alignment: WrapAlignment.end,
-                                  children: [
-                                    if (_analysis != null) ...[
-                                      OutlinedButton.icon(
-                                        key: const ValueKey(
-                                          'analyzer-play-progression-button',
-                                        ),
-                                        onPressed: () => _playAnalysis(
-                                          pattern: HarmonyPlaybackPattern.block,
-                                        ),
-                                        icon: const Icon(
-                                          Icons.music_note_rounded,
-                                        ),
-                                        label: Text(l10n.audioPlayProgression),
-                                      ),
-                                      OutlinedButton.icon(
-                                        key: const ValueKey(
-                                          'analyzer-play-progression-arpeggio-button',
-                                        ),
-                                        onPressed: () => _playAnalysis(
-                                          pattern:
-                                              HarmonyPlaybackPattern.arpeggio,
-                                        ),
-                                        icon: const Icon(
-                                          Icons.multitrack_audio_rounded,
-                                        ),
-                                        label: Text(l10n.audioPlayArpeggio),
-                                      ),
-                                    ],
-                                    FilledButton.icon(
-                                      key: const ValueKey(
-                                        'analyzer-analyze-button',
-                                      ),
-                                      onPressed: _isAnalyzing ? null : _analyze,
-                                      icon: const Icon(Icons.insights_rounded),
-                                      label: Text(l10n.chordAnalyzerAnalyze),
-                                    ),
-                                    if (_analysis != null)
-                                      OutlinedButton.icon(
-                                        key: const ValueKey(
-                                          'analyzer-generate-variations-button',
-                                        ),
-                                        onPressed: _generateVariations,
-                                        icon: const Icon(
-                                          Icons.auto_fix_high_rounded,
-                                        ),
-                                        label: Text(
-                                          l10n.chordAnalyzerGenerateVariations,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
+              child: showsInitialState && compactLayout
+                  ? Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 760),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            heroCard,
+                            const SizedBox(height: 12),
+                            _SectionCard(
+                              title: l10n.chordAnalyzerInitialTitle,
+                              child: Text(l10n.chordAnalyzerInitialBody),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      if (_isAnalyzing)
-                        _SectionCard(
-                          title: l10n.chordAnalyzerAnalyzing,
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            child: Center(child: CircularProgressIndicator()),
-                          ),
-                        )
-                      else if (_errorKey != null)
-                        _SectionCard(
-                          title: l10n.chordAnalyzerWarnings,
-                          child: Text(_errorText(l10n)),
-                        )
-                      else if (_analysis == null)
-                        _SectionCard(
-                          title: l10n.chordAnalyzerInitialTitle,
-                          child: Text(l10n.chordAnalyzerInitialBody),
-                        )
-                      else ...[
-                        if (_analysis!.confidence < 0.55) ...[
-                          _LowConfidenceBanner(
-                            title: l10n.chordAnalyzerLowConfidenceTitle,
-                            body: l10n.chordAnalyzerLowConfidenceBody,
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-                        _SectionCard(
-                          key: const ValueKey('analyzer-results-card'),
-                          title: l10n.chordAnalyzerDetectedKeys,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _MetricMeter(
-                                label: l10n.chordAnalyzerConfidenceLabel,
-                                value: _analysis!.confidence,
-                              ),
-                              const SizedBox(height: 10),
-                              _MetricMeter(
-                                label: l10n.chordAnalyzerAmbiguityLabel,
-                                value: _analysis!.ambiguity,
-                                invertColor: true,
-                              ),
-                              const SizedBox(height: 14),
-                              for (
-                                var index = 0;
-                                index < keyCandidates.length;
-                                index += 1
-                              ) ...[
-                                _KeyCandidateRow(
-                                  label: _candidateLabel(l10n, index),
-                                  value: _explainer.keyLabel(
-                                    l10n,
-                                    keyCandidates[index].keyCenter,
-                                  ),
-                                  confidence: keyCandidates[index].confidence,
-                                ),
-                                if (index != keyCandidates.length - 1)
-                                  const SizedBox(height: 8),
-                              ],
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _SectionCard(
-                          title: l10n.chordAnalyzerChordAnalysis,
-                          child: Column(
-                            children: [
-                              for (
-                                var measureIndex = 0;
-                                measureIndex < groupedMeasures.length;
-                                measureIndex += 1
-                              ) ...[
-                                _buildMeasureSection(
-                                  l10n,
-                                  theme,
-                                  groupedMeasures[measureIndex],
-                                ),
-                                if (measureIndex != groupedMeasures.length - 1)
-                                  const SizedBox(height: 16),
-                              ],
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _SectionCard(
-                          title: l10n.chordAnalyzerProgressionSummary,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (_analysis!
-                                  .highlightCategories
-                                  .isNotEmpty) ...[
-                                _AnalyzerLegendWrap(
-                                  categories: ProgressionHighlightCategory
-                                      .values
-                                      .where(
-                                        _analysis!.highlightCategories.contains,
-                                      )
-                                      .toList(growable: false),
-                                  highlightTheme: _highlightTheme,
-                                ),
-                                const SizedBox(height: 12),
-                              ],
-                              if (_analysis!.tags.isNotEmpty) ...[
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: [
-                                    for (final tag in _analysis!.tags)
-                                      (() {
-                                        final category =
-                                            _highlightCategoryForTag(tag);
-                                        final color = category == null
-                                            ? null
-                                            : _highlightTheme.colorFor(
-                                                category,
-                                              );
-                                        return Chip(
-                                          backgroundColor: color == null
-                                              ? theme
-                                                    .colorScheme
-                                                    .surfaceContainerHighest
-                                              : _softHighlightBackground(color),
-                                          side: BorderSide(
-                                            color: color == null
-                                                ? theme
-                                                      .colorScheme
-                                                      .outlineVariant
-                                                : color.withValues(alpha: 0.45),
-                                          ),
-                                          label: Text(
-                                            _explainer.tagLabel(l10n, tag),
-                                          ),
-                                          visualDensity: VisualDensity.compact,
-                                        );
-                                      })(),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                              ],
-                              for (final line in summary) ...[
-                                Text(line),
-                                const SizedBox(height: 8),
-                              ],
-                              if (_analysis!.alternativeKey != null) ...[
-                                const SizedBox(height: 4),
-                                Text(
-                                  '${l10n.chordAnalyzerCompetingReadings}: '
-                                  '${_explainer.keyLabel(l10n, _analysis!.alternativeKey!.keyCenter)}',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        if (variations.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          _SectionCard(
-                            title: l10n.chordAnalyzerVariationsTitle,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  l10n.chordAnalyzerVariationsBody,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                for (
-                                  var index = 0;
-                                  index < variations.length;
-                                  index += 1
-                                ) ...[
-                                  _VariationSuggestionCard(
-                                    variation: variations[index],
-                                    title: _variationTitle(
-                                      l10n,
-                                      variations[index].kind,
-                                    ),
-                                    body: _variationBody(
-                                      l10n,
-                                      variations[index].kind,
-                                    ),
-                                    onApply: () =>
-                                        _applyVariation(variations[index]),
-                                  ),
-                                  if (index != variations.length - 1)
-                                    const SizedBox(height: 12),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
-                        if (warnings.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          _SectionCard(
-                            title: l10n.chordAnalyzerWarnings,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                for (
-                                  var index = 0;
-                                  index < warnings.length;
-                                  index += 1
-                                ) ...[
-                                  Text(warnings[index]),
-                                  if (index != warnings.length - 1)
-                                    const SizedBox(height: 8),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ],
-                  ),
-                ),
-              ),
+                    )
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(20),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 760),
+                        child: resultsBody,
+                      ),
+                    ),
             ),
           ),
         ],

@@ -53,6 +53,16 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> closeResultDialogIfOpen(WidgetTester tester) async {
+    final dialog = find.byKey(const ValueKey('analyzer-result-dialog'));
+    if (dialog.evaluate().isEmpty) {
+      return;
+    }
+
+    await tester.tap(find.descendant(of: dialog, matching: find.text('Close')));
+    await tester.pumpAndSettle();
+  }
+
   VoidCallback? insertButtonAction(WidgetTester tester, String id) {
     return tester
         .widget<FilledButton>(find.byKey(ValueKey('analyzer-key-$id')))
@@ -128,6 +138,40 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle();
 
+      final resultDialog = find.byKey(const ValueKey('analyzer-result-dialog'));
+      expect(resultDialog, findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('analyzer-result-dialog-scroll')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: resultDialog,
+          matching: find.text('Chord progression'),
+        ),
+        findsOneWidget,
+      );
+      final dialogInput = tester.widget<SelectableText>(
+        find.byKey(const ValueKey('analyzer-result-input')),
+      );
+      expect(dialogInput.data, 'Dm7 G7 Cmaj7');
+      expect(
+        find.descendant(
+          of: resultDialog,
+          matching: find.text('Chord-by-chord analysis'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: resultDialog,
+          matching: find.text('Progression summary'),
+        ),
+        findsOneWidget,
+      );
+
+      await closeResultDialogIfOpen(tester);
+
       expect(
         find.byKey(const ValueKey('analyzer-results-card')),
         findsOneWidget,
@@ -174,6 +218,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
       await tester.pump();
       await tester.pumpAndSettle();
+      await closeResultDialogIfOpen(tester);
 
       expect(
         find.byKey(const ValueKey('analyzer-results-card')),
@@ -291,6 +336,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
     await tester.pump();
     await tester.pumpAndSettle();
+    await closeResultDialogIfOpen(tester);
 
     expect(
       find.byKey(const ValueKey('analyzer-generate-variations-button')),
@@ -492,11 +538,17 @@ void main() {
       expect(
         find.descendant(
           of: find.byKey(const ValueKey('analyzer-result-dialog')),
-          matching: find.text('Cmaj7'),
+          matching: find.textContaining('Cmaj7'),
         ),
         findsOneWidget,
       );
-      expect(find.text('Suggested fill: Cmaj7'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('analyzer-result-dialog')),
+          matching: find.text('Suggested fill: Cmaj7'),
+        ),
+        findsOneWidget,
+      );
       expect(
         find.text('This ? was inferred from the surrounding harmonic context.'),
         findsWidgets,
@@ -539,6 +591,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
     await tester.pump();
     await tester.pumpAndSettle();
+    await closeResultDialogIfOpen(tester);
 
     expect(find.text('Confidence'), findsWidgets);
     expect(find.text('Ambiguity'), findsOneWidget);
@@ -560,6 +613,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
       await tester.pump();
       await tester.pumpAndSettle();
+      await closeResultDialogIfOpen(tester);
 
       expect(find.text('Backdoor / subdominant minor'), findsWidgets);
       expect(find.text('Borrowed color'), findsWidgets);
@@ -579,6 +633,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
     await tester.pump();
     await tester.pumpAndSettle();
+    await closeResultDialogIfOpen(tester);
 
     expect(find.textContaining('Ignored modifiers'), findsOneWidget);
     expect(find.textContaining('C7(foo): foo'), findsOneWidget);
@@ -597,6 +652,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
       await tester.pump();
       await tester.pumpAndSettle();
+      await closeResultDialogIfOpen(tester);
 
       expect(find.text('Measure 2'), findsOneWidget);
       expect(

@@ -1,7 +1,59 @@
+import '../music/melody_generation_config.dart';
 import '../music/chord_theory.dart';
 import 'inversion_settings.dart';
 import 'practice_setup_models.dart';
 import 'practice_settings.dart';
+
+class MelodyPresetDescriptor {
+  const MelodyPresetDescriptor({
+    required this.label,
+    required this.summary,
+    required this.differenceReason,
+    required this.density,
+    required this.style,
+    required this.motifRepetitionStrength,
+    required this.approachToneDensity,
+    required this.allowChromaticApproaches,
+    required this.syncopationBias,
+    required this.colorRealizationBias,
+    required this.noveltyTarget,
+    required this.motifVariationBias,
+    required this.anticipationProbability,
+    required this.colorToneTarget,
+    required this.exactRepeatTarget,
+  });
+
+  final String label;
+  final String summary;
+  final String differenceReason;
+  final MelodyDensity density;
+  final MelodyStyle style;
+  final double motifRepetitionStrength;
+  final double approachToneDensity;
+  final bool allowChromaticApproaches;
+  final double syncopationBias;
+  final double colorRealizationBias;
+  final double noveltyTarget;
+  final double motifVariationBias;
+  final double anticipationProbability;
+  final double colorToneTarget;
+  final double exactRepeatTarget;
+
+  String get syncopationBand => _biasBand(syncopationBias);
+  String get colorBand => _biasBand(colorRealizationBias);
+  String get noveltyBand => _biasBand(noveltyTarget);
+  String get motifBand => _biasBand(motifVariationBias);
+
+  static String _biasBand(double value) {
+    if (value < 0.34) {
+      return 'Low';
+    }
+    if (value < 0.67) {
+      return 'Mid';
+    }
+    return 'High';
+  }
+}
 
 class PracticeSettingsFactory {
   const PracticeSettingsFactory._();
@@ -53,48 +105,241 @@ class PracticeSettingsFactory {
     ChordQuality.major69,
   };
 
+  static PracticeSettings applyComplexityModeMelodyPreset(
+    PracticeSettings settings,
+    SettingsComplexityMode mode,
+  ) {
+    final profile = MelodyGenerationConfig.profileFor(mode);
+    return settings.copyWith(
+      settingsComplexityMode: mode,
+      melodyDensity: profile.defaultDensity,
+      melodyStyle: profile.defaultStyle,
+      motifRepetitionStrength: profile.motifRepetitionStrength,
+      approachToneDensity: profile.approachToneDensity,
+      allowChromaticApproaches: profile.allowChromaticApproaches,
+      syncopationBias: profile.syncopationBias,
+      colorRealizationBias: profile.colorRealizationBias,
+      noveltyTarget: profile.noveltyTarget,
+      motifVariationBias: profile.motifVariationBias,
+      anticipationProbability: profile.anticipationProbability,
+      colorToneTarget: profile.softColorExposureTarget,
+      exactRepeatTarget: profile.exactRepeatTarget,
+    );
+  }
+
+  static PracticeSettings applyQuickMelodyPreset(
+    PracticeSettings settings,
+    MelodyQuickPreset preset,
+  ) {
+    final profile = MelodyGenerationConfig.quickPresetFor(preset);
+    return settings.copyWith(
+      melodyGenerationEnabled: true,
+      melodyDensity: profile.density,
+      melodyStyle: profile.style,
+      motifRepetitionStrength: profile.motifRepetitionStrength,
+      approachToneDensity: profile.approachToneDensity,
+      allowChromaticApproaches: profile.allowChromaticApproaches,
+      syncopationBias: profile.syncopationBias,
+      colorRealizationBias: profile.colorRealizationBias,
+      noveltyTarget: profile.noveltyTarget,
+      motifVariationBias: profile.motifVariationBias,
+      anticipationProbability: profile.anticipationProbability,
+      colorToneTarget: profile.colorToneTarget,
+      exactRepeatTarget: profile.exactRepeatTarget,
+    );
+  }
+
+  static MelodyQuickPreset quickMelodyPresetForSettings(
+    PracticeSettings settings,
+  ) {
+    if (settings.melodyStyle == MelodyStyle.colorful ||
+        settings.melodyDensity == MelodyDensity.active ||
+        settings.colorRealizationBias >= 0.72 ||
+        settings.syncopationBias >= 0.66 ||
+        settings.colorToneTarget >= 0.34 ||
+        settings.motifVariationBias >= 0.84 ||
+        settings.exactRepeatTarget <= 0.025) {
+      return MelodyQuickPreset.colorLine;
+    }
+    if (settings.melodyStyle == MelodyStyle.lyrical ||
+        settings.melodyStyle == MelodyStyle.bebop ||
+        settings.allowChromaticApproaches ||
+        settings.syncopationBias >= 0.34 ||
+        settings.colorRealizationBias >= 0.30 ||
+        settings.noveltyTarget >= 0.46 ||
+        settings.motifVariationBias >= 0.60 ||
+        settings.exactRepeatTarget <= 0.05) {
+      return MelodyQuickPreset.songLine;
+    }
+    return MelodyQuickPreset.guideLine;
+  }
+
+  static MelodyPresetDescriptor describeComplexityModeMelodyPreset(
+    SettingsComplexityMode mode,
+  ) {
+    final profile = MelodyGenerationConfig.profileFor(mode);
+    return MelodyPresetDescriptor(
+      label: mode.name,
+      summary: switch (mode) {
+        SettingsComplexityMode.guided =>
+          'steady rhythm, safer pitch targets, low color demand',
+        SettingsComplexityMode.standard =>
+          'balanced contour, more offbeat motion, moderate color uptake',
+        SettingsComplexityMode.advanced =>
+          'active rhythm, strong color realization, high novelty',
+      },
+      differenceReason: switch (mode) {
+        SettingsComplexityMode.guided =>
+          'leans on stable chord tones and predictable rhythm',
+        SettingsComplexityMode.standard =>
+          'adds lyrical motion, chromatic access, and fresher motif turns',
+        SettingsComplexityMode.advanced =>
+          'pushes syncopation, tension use, and motif variation much harder',
+      },
+      density: profile.defaultDensity,
+      style: profile.defaultStyle,
+      motifRepetitionStrength: profile.motifRepetitionStrength,
+      approachToneDensity: profile.approachToneDensity,
+      allowChromaticApproaches: profile.allowChromaticApproaches,
+      syncopationBias: profile.syncopationBias,
+      colorRealizationBias: profile.colorRealizationBias,
+      noveltyTarget: profile.noveltyTarget,
+      motifVariationBias: profile.motifVariationBias,
+      anticipationProbability: profile.anticipationProbability,
+      colorToneTarget: profile.softColorExposureTarget,
+      exactRepeatTarget: profile.exactRepeatTarget,
+    );
+  }
+
+  static MelodyPresetDescriptor describeQuickMelodyPreset(
+    MelodyQuickPreset preset,
+  ) {
+    final profile = MelodyGenerationConfig.quickPresetFor(preset);
+    return MelodyPresetDescriptor(
+      label: switch (preset) {
+        MelodyQuickPreset.guideLine => 'Guide Line',
+        MelodyQuickPreset.songLine => 'Song Line',
+        MelodyQuickPreset.colorLine => 'Color Line',
+      },
+      summary: switch (preset) {
+        MelodyQuickPreset.guideLine =>
+          'guide-focused line with steady rhythm and low surprise',
+        MelodyQuickPreset.songLine =>
+          'singable phrase line with medium syncopation and motif movement',
+        MelodyQuickPreset.colorLine =>
+          'color-forward line with active rhythm and strong tension uptake',
+      },
+      differenceReason: switch (preset) {
+        MelodyQuickPreset.guideLine =>
+          'keeps syncopation and color low so the line supports the harmony',
+        MelodyQuickPreset.songLine =>
+          'opens rhythmic lift, chromatic approach tones, and phrase variation',
+        MelodyQuickPreset.colorLine =>
+          'raises syncopation, color realization, novelty, and motif variation together',
+      },
+      density: profile.density,
+      style: profile.style,
+      motifRepetitionStrength: profile.motifRepetitionStrength,
+      approachToneDensity: profile.approachToneDensity,
+      allowChromaticApproaches: profile.allowChromaticApproaches,
+      syncopationBias: profile.syncopationBias,
+      colorRealizationBias: profile.colorRealizationBias,
+      noveltyTarget: profile.noveltyTarget,
+      motifVariationBias: profile.motifVariationBias,
+      anticipationProbability: profile.anticipationProbability,
+      colorToneTarget: profile.colorToneTarget,
+      exactRepeatTarget: profile.exactRepeatTarget,
+    );
+  }
+
+  static MelodyPresetDescriptor describeActiveMelodySettings(
+    PracticeSettings settings,
+  ) {
+    final inferredPreset = quickMelodyPresetForSettings(settings);
+    final base = describeQuickMelodyPreset(inferredPreset);
+    return MelodyPresetDescriptor(
+      label: base.label,
+      summary: _activeSummaryFor(settings),
+      differenceReason: base.differenceReason,
+      density: settings.melodyDensity,
+      style: settings.melodyStyle,
+      motifRepetitionStrength: settings.motifRepetitionStrength,
+      approachToneDensity: settings.approachToneDensity,
+      allowChromaticApproaches: settings.allowChromaticApproaches,
+      syncopationBias: settings.syncopationBias,
+      colorRealizationBias: settings.colorRealizationBias,
+      noveltyTarget: settings.noveltyTarget,
+      motifVariationBias: settings.motifVariationBias,
+      anticipationProbability: settings.anticipationProbability,
+      colorToneTarget: settings.colorToneTarget,
+      exactRepeatTarget: settings.exactRepeatTarget,
+    );
+  }
+
+  static String _activeSummaryFor(PracticeSettings settings) {
+    final rhythm = settings.syncopationBias < 0.34
+        ? 'steady rhythm'
+        : settings.syncopationBias < 0.67
+        ? 'lifted offbeat rhythm'
+        : 'syncopated rhythm';
+    final color = settings.colorRealizationBias < 0.30
+        ? 'guide-tone focus'
+        : settings.colorRealizationBias < 0.67
+        ? 'balanced color pickup'
+        : 'strong color-tone pickup';
+    final motif = settings.motifVariationBias < 0.45
+        ? 'clear repeat'
+        : settings.motifVariationBias < 0.75
+        ? 'varied repeat'
+        : 'heavy motif variation';
+    return '$rhythm, $color, $motif';
+  }
+
   static PracticeSettings beginnerSafePreset({PracticeSettings? baseSettings}) {
     final base = baseSettings ?? PracticeSettings();
-    return base.copyWith(
-      guidedSetupCompleted: true,
-      settingsComplexityMode: SettingsComplexityMode.guided,
-      preferredSuggestionKind: DefaultVoicingSuggestionKind.easy,
-      chordLanguageLevel: ChordLanguageLevel.triadsOnly,
-      romanPoolPreset: RomanPoolPreset.corePrimary,
-      metronomeEnabled: true,
-      metronomeVolume: 0.4,
-      metronomeSound: MetronomeSound.tick,
-      timeSignature: base.timeSignature,
-      harmonicRhythmPreset: base.harmonicRhythmPreset,
-      bpm: 60,
-      activeKeyCenters: {_defaultBeginnerCenter},
-      smartGeneratorMode: true,
-      secondaryDominantEnabled: false,
-      substituteDominantEnabled: false,
-      modalInterchangeEnabled: false,
-      modulationIntensity: ModulationIntensity.off,
-      jazzPreset: JazzPreset.standardsCore,
-      sourceProfile: SourceProfile.fakebookStandard,
-      smartDiagnosticsEnabled: false,
-      chordSymbolStyle: ChordSymbolStyle.majText,
-      allowV7sus4: false,
-      allowTensions: false,
-      enabledChordQualities: _beginnerChordQualities,
-      selectedTensionOptions: _safeTensions,
-      inversionSettings: const InversionSettings(
-        enabled: false,
-        firstInversionEnabled: false,
-        secondInversionEnabled: false,
-        thirdInversionEnabled: false,
+    return applyComplexityModeMelodyPreset(
+      base.copyWith(
+        guidedSetupCompleted: true,
+        settingsComplexityMode: SettingsComplexityMode.guided,
+        preferredSuggestionKind: DefaultVoicingSuggestionKind.easy,
+        chordLanguageLevel: ChordLanguageLevel.triadsOnly,
+        romanPoolPreset: RomanPoolPreset.corePrimary,
+        metronomeEnabled: true,
+        metronomeVolume: 0.4,
+        metronomeSound: MetronomeSound.tick,
+        timeSignature: base.timeSignature,
+        harmonicRhythmPreset: base.harmonicRhythmPreset,
+        bpm: 60,
+        activeKeyCenters: {_defaultBeginnerCenter},
+        smartGeneratorMode: true,
+        secondaryDominantEnabled: false,
+        substituteDominantEnabled: false,
+        modalInterchangeEnabled: false,
+        modulationIntensity: ModulationIntensity.off,
+        jazzPreset: JazzPreset.standardsCore,
+        sourceProfile: SourceProfile.fakebookStandard,
+        smartDiagnosticsEnabled: false,
+        chordSymbolStyle: ChordSymbolStyle.majText,
+        allowV7sus4: false,
+        allowTensions: false,
+        enabledChordQualities: _beginnerChordQualities,
+        selectedTensionOptions: _safeTensions,
+        inversionSettings: const InversionSettings(
+          enabled: false,
+          firstInversionEnabled: false,
+          secondInversionEnabled: false,
+          thirdInversionEnabled: false,
+        ),
+        voicingSuggestionsEnabled: true,
+        voicingComplexity: VoicingComplexity.basic,
+        voicingTopNotePreference: VoicingTopNotePreference.auto,
+        allowRootlessVoicings: false,
+        maxVoicingNotes: 3,
+        lookAheadDepth: 1,
+        showVoicingReasons: true,
+        keyCenterLabelStyle: KeyCenterLabelStyle.modeText,
       ),
-      voicingSuggestionsEnabled: true,
-      voicingComplexity: VoicingComplexity.basic,
-      voicingTopNotePreference: VoicingTopNotePreference.auto,
-      allowRootlessVoicings: false,
-      maxVoicingNotes: 3,
-      lookAheadDepth: 1,
-      showVoicingReasons: true,
-      keyCenterLabelStyle: KeyCenterLabelStyle.modeText,
+      SettingsComplexityMode.guided,
     );
   }
 
@@ -112,15 +357,18 @@ class PracticeSettingsFactory {
     settings = _applyExploration(settings, profile);
     settings = _applyGoal(settings, profile);
 
-    return settings.copyWith(
-      guidedSetupCompleted: true,
-      chordSymbolStyle: profile.chordSymbolStyle,
-      activeKeyCenters: {profile.startingKeyCenter},
-      timeSignature: settings.timeSignature,
-      harmonicRhythmPreset: settings.harmonicRhythmPreset,
-      keyCenterLabelStyle: KeyCenterLabelStyle.modeText,
-      smartDiagnosticsEnabled: false,
-      showVoicingReasons: true,
+    return applyComplexityModeMelodyPreset(
+      settings.copyWith(
+        guidedSetupCompleted: true,
+        chordSymbolStyle: profile.chordSymbolStyle,
+        activeKeyCenters: {profile.startingKeyCenter},
+        timeSignature: settings.timeSignature,
+        harmonicRhythmPreset: settings.harmonicRhythmPreset,
+        keyCenterLabelStyle: KeyCenterLabelStyle.modeText,
+        smartDiagnosticsEnabled: false,
+        showVoicingReasons: true,
+      ),
+      settings.settingsComplexityMode,
     );
   }
 
@@ -148,27 +396,30 @@ class PracticeSettingsFactory {
         ? 3
         : settings.maxVoicingNotes - 1;
 
-    return _applyLanguagePreset(
-      settings.copyWith(
-        settingsComplexityMode: SettingsComplexityMode.guided,
-        preferredSuggestionKind: DefaultVoicingSuggestionKind.easy,
-        chordLanguageLevel: nextLanguageLevel,
-        romanPoolPreset: nextRomanPool,
-        allowRootlessVoicings: false,
-        maxVoicingNotes: maxVoicingNotes,
-        lookAheadDepth: 1,
-        voicingComplexity: VoicingComplexity.basic,
-        secondaryDominantEnabled:
-            nextRomanPool == RomanPoolPreset.functionalJazz
-            ? settings.secondaryDominantEnabled
-            : false,
-        substituteDominantEnabled: false,
-        modalInterchangeEnabled: false,
-        modulationIntensity: ModulationIntensity.off,
-        jazzPreset: JazzPreset.standardsCore,
-        sourceProfile: SourceProfile.fakebookStandard,
+    return applyComplexityModeMelodyPreset(
+      _applyLanguagePreset(
+        settings.copyWith(
+          settingsComplexityMode: SettingsComplexityMode.guided,
+          preferredSuggestionKind: DefaultVoicingSuggestionKind.easy,
+          chordLanguageLevel: nextLanguageLevel,
+          romanPoolPreset: nextRomanPool,
+          allowRootlessVoicings: false,
+          maxVoicingNotes: maxVoicingNotes,
+          lookAheadDepth: 1,
+          voicingComplexity: VoicingComplexity.basic,
+          secondaryDominantEnabled:
+              nextRomanPool == RomanPoolPreset.functionalJazz
+              ? settings.secondaryDominantEnabled
+              : false,
+          substituteDominantEnabled: false,
+          modalInterchangeEnabled: false,
+          modulationIntensity: ModulationIntensity.off,
+          jazzPreset: JazzPreset.standardsCore,
+          sourceProfile: SourceProfile.fakebookStandard,
+        ),
+        nextLanguageLevel,
       ),
-      nextLanguageLevel,
+      SettingsComplexityMode.guided,
     );
   }
 
@@ -222,12 +473,17 @@ class PracticeSettingsFactory {
       nextLanguageLevel,
     );
 
-    return nextLanguageLevel.index >= ChordLanguageLevel.safeExtensions.index
+    final resolved =
+        nextLanguageLevel.index >= ChordLanguageLevel.safeExtensions.index
         ? nextSettings.copyWith(
             allowTensions: true,
             selectedTensionOptions: _safeTensions,
           )
         : nextSettings;
+    return applyComplexityModeMelodyPreset(
+      resolved,
+      resolved.settingsComplexityMode,
+    );
   }
 
   static PracticeSettings _applyLiteracy(

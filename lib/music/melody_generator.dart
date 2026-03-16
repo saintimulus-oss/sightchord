@@ -1,1135 +1,774 @@
 import 'dart:math';
 
 import '../settings/practice_settings.dart';
-import 'chord_theory.dart';
-import 'chord_timing_models.dart';
+import 'melody_candidate_builder.dart';
+import 'melody_generation_config.dart';
 import 'melody_models.dart';
-import 'voicing_engine.dart';
-import 'voicing_models.dart';
+import 'melody_scoring.dart';
+import 'melody_seed_util.dart';
+import 'motif_transformer.dart';
+import 'phrase_planner.dart';
+import 'rhythm_template_sampler.dart';
 
 class MelodyGenerator {
   const MelodyGenerator._();
 
-  static const Map<String, int> _toneSemitones = {
-    '1': 0,
-    'b9': 1,
-    '9': 2,
-    '#9': 3,
-    'b3': 3,
-    '3': 4,
-    '4': 5,
-    '11': 5,
-    '#11': 6,
-    'b5': 6,
-    '5': 7,
-    '#5': 8,
-    'b13': 8,
-    '6': 9,
-    '13': 9,
-    'b7': 10,
-    '7': 11,
-  };
-
   static GeneratedMelodyEvent generateEvent({
     required MelodyGenerationRequest request,
   }) {
-    final random = Random(_seedForRequest(request));
-    final palette = _buildPalette(
+    final planningSeed = _seedForRequest(request);
+    final phrasePlan = PhrasePlanner.plan(
+      request: request,
+      random: Random(planningSeed),
+    );
+    final decodeSeed = _seedForRequest(
+      request,
+      phraseVariantNonce: phrasePlan.phraseVariantNonce,
+    );
+    final palette = MelodyHarmonyPalette.fromChord(
       chord: request.chordEvent.chord,
       settings: request.settings,
     );
+    final previousPalette = request.previousChordEvent == null
+        ? null
+        : MelodyHarmonyPalette.fromChord(
+            chord: request.previousChordEvent!.chord,
+            settings: request.settings,
+          );
     final nextPalette = request.nextChordEvent == null
         ? null
-        : _buildPalette(
+        : MelodyHarmonyPalette.fromChord(
             chord: request.nextChordEvent!.chord,
             settings: request.settings,
           );
-    final skeleton = _buildGuideToneSkeleton(
+    final effectiveDensity = _sampleEffectiveDensity(
+      request.settings,
+      seed: MelodySeedUtil.stableHashAll(<Object?>[decodeSeed, 'density']),
+    );
+    final effectiveStyle = _sampleEffectiveStyle(
+      request.settings,
+      seed: MelodySeedUtil.stableHashAll(<Object?>[decodeSeed, 'style']),
+    );
+    final rhythm = RhythmTemplateSampler.sample(
       request: request,
-      random: random,
+      phrasePlan: phrasePlan,
+      density: effectiveDensity,
+      style: effectiveStyle,
+      random: Random(
+        MelodySeedUtil.stableHashAll(<Object?>[decodeSeed, 'rhythm']),
+      ),
+    );
+    final motifPlan = MotifTransformer.plan(
+      previousEvent: request.previousMelodyEvent,
+      recentEvents: request.recentMelodyEvents,
+      rhythm: rhythm,
+      settings: request.settings,
+      style: effectiveStyle,
+      phrasePlan: phrasePlan,
+      random: Random(
+        MelodySeedUtil.stableHashAll(<Object?>[decodeSeed, 'motif']),
+      ),
+    );
+    final anchors = _planAnchors(
+      request: request,
       palette: palette,
       nextPalette: nextPalette,
+      phrasePlan: phrasePlan,
+      effectiveStyle: effectiveStyle,
     );
-    final motif = _buildMotifPlan(
+    if (rhythm.slots.isEmpty) {
+      return _buildGeneratedEvent(
+        request: request,
+        notes: const <GeneratedMelodyNote>[],
+        motifSignature: motifPlan.signature,
+        contourSignature: motifPlan.contourSignature,
+        anchors: anchors,
+        phrasePlan: phrasePlan,
+      );
+    }
+    final context = MelodyDecodeContext(
       request: request,
-      random: random,
-      skeleton: skeleton,
-    );
-    final notes = _embellishLine(
-      request: request,
-      random: random,
       palette: palette,
+      previousPalette: previousPalette,
       nextPalette: nextPalette,
-      skeleton: skeleton,
-      motif: motif,
+      phrasePlan: phrasePlan,
+      anchors: anchors,
+      rhythmSample: rhythm,
+      motifPlan: motifPlan,
+      effectiveDensity: effectiveDensity,
+      effectiveStyle: effectiveStyle,
+      seed: decodeSeed,
     );
+    final notes = _decodePhrase(context);
+    return _buildGeneratedEvent(
+      request: request,
+      notes: notes,
+      motifSignature: motifPlan.signature,
+      contourSignature: _intervalVector(notes),
+      anchors: anchors,
+      phrasePlan: phrasePlan,
+    );
+  }
+
+  static GeneratedMelodyEvent _buildGeneratedEvent({
+    required MelodyGenerationRequest request,
+    required List<GeneratedMelodyNote> notes,
+    required String motifSignature,
+    required List<int> contourSignature,
+    required PhraseAnchors anchors,
+    required PhrasePlan phrasePlan,
+  }) {
     return GeneratedMelodyEvent(
       chordEvent: request.chordEvent,
       notes: notes,
-      motifSignature: motif.signature,
-      contourSignature: motif.contourSignature,
-      anchorMidiNote: skeleton.start.midiNote,
-      arrivalMidiNote: skeleton.nextTarget?.midiNote,
-    );
-  }
-
-  static int _seedForRequest(MelodyGenerationRequest request) {
-    final timing = request.chordEvent.timing;
-    return Object.hash(
-          request.seed,
-          request.chordEvent.chord.harmonicComparisonKey,
-          timing.barIndex,
-          timing.changeBeat,
-          timing.durationBeats,
-          request.settings.melodyDensity.name,
-          request.settings.melodyStyle.name,
-        ) &
-        0x3fffffff;
-  }
-
-  static _MelodyPalette _buildPalette({
-    required GeneratedChord chord,
-    required PracticeSettings settings,
-  }) {
-    final interpretation = VoicingEngine.interpretChord(
-      chord: chord,
-      settings: settings,
-    );
-    final style = settings.melodyStyle;
-    return _MelodyPalette(
-      chord: chord,
-      interpretation: interpretation,
-      structuralLabels: _orderedStructuralLabels(
-        chord: chord,
-        interpretation: interpretation,
-        style: style,
-      ),
-      weakStableLabels: _orderedWeakStableLabels(
-        chord: chord,
-        interpretation: interpretation,
-        style: style,
-      ),
-      scalePitchClasses: {
-        for (final relative in _relativeScaleSemitonesFor(
-          chord: chord,
-          interpretation: interpretation,
-          style: style,
-        ))
-          (interpretation.rootSemitone + relative) % 12,
-      },
-      preferFlat: interpretation.preferFlatSpelling,
-    );
-  }
-
-  static _GuideToneSkeleton _buildGuideToneSkeleton({
-    required MelodyGenerationRequest request,
-    required Random random,
-    required _MelodyPalette palette,
-    required _MelodyPalette? nextPalette,
-  }) {
-    final start = _chooseStructuralTone(
-      random: random,
-      palette: palette,
-      nextPalette: nextPalette,
-      previousMidiHint: request.previousMelodyEvent?.lastMidiNote,
-      targetMidiHint: request.settings.melodyRangeCenter,
-      settings: request.settings,
-    );
-    final nextTarget = request.nextChordEvent == null || nextPalette == null
-        ? null
-        : _chooseStructuralTone(
-            random: random,
-            palette: nextPalette,
-            nextPalette: null,
-            previousMidiHint: start.midiNote,
-            targetMidiHint: start.midiNote,
-            settings: request.settings,
-          );
-    return _GuideToneSkeleton(start: start, nextTarget: nextTarget);
-  }
-
-  static _MotifPlan _buildMotifPlan({
-    required MelodyGenerationRequest request,
-    required Random random,
-    required _GuideToneSkeleton skeleton,
-  }) {
-    final slots = _buildRhythmSlots(
-      settings: request.settings,
-      timing: request.chordEvent.timing,
-    );
-    final previousMotif = request.previousMelodyEvent;
-    final reusesPreviousMotif =
-        previousMotif != null &&
-        previousMotif.notes.length >= 2 &&
-        random.nextDouble() < request.settings.motifRepetitionStrength;
-    final contourSignature = reusesPreviousMotif
-        ? _adaptContourSignature(
-            previousMotif.contourSignature,
-            targetLength: max(0, slots.length - 1),
-          )
-        : _buildFreshContourSignature(
-            random: random,
-            style: request.settings.melodyStyle,
-            targetLength: max(0, slots.length - 1),
-          );
-    return _MotifPlan(
-      slots: slots,
+      motifSignature: motifSignature,
       contourSignature: contourSignature,
-      signature:
-          '${request.chordEvent.timing.durationBeats}:${slots.map((slot) => slot.startBeatOffset.toStringAsFixed(2)).join(',')}:${contourSignature.join(',')}',
-      reusesPreviousMotif: reusesPreviousMotif,
-      skeleton: skeleton,
+      anchorMidiNote: anchors.startMidi,
+      arrivalMidiNote: anchors.endMidi,
+      phraseRole: phrasePlan.role,
+      phraseCenterMidi: phrasePlan.centerMidi,
+      phraseApexMidi: phrasePlan.apexMidi,
+      phraseApexPos01: phrasePlan.apexPos01,
+      phraseEventStartPos01: phrasePlan.eventStartPos01,
+      phraseEventEndPos01: phrasePlan.eventEndPos01,
+      phraseEndingDegreePriority: phrasePlan.endingDegreePriority,
+      phraseCadenceHoldMultiplier: phrasePlan.cadenceHoldMultiplier,
+      phraseTargetNovelty01: phrasePlan.targetNovelty01,
+      phraseTargetColorExposure01: phrasePlan.targetColorExposure01,
     );
   }
 
-  static List<GeneratedMelodyNote> _embellishLine({
-    required MelodyGenerationRequest request,
-    required Random random,
-    required _MelodyPalette palette,
-    required _MelodyPalette? nextPalette,
-    required _GuideToneSkeleton skeleton,
-    required _MotifPlan motif,
-  }) {
-    if (motif.slots.isEmpty) {
-      return const <GeneratedMelodyNote>[];
-    }
-
-    final anchors = <int, _ResolvedTone>{0: skeleton.start};
-    for (var index = 1; index < motif.slots.length; index += 1) {
-      final slot = motif.slots[index];
-      if (!slot.structural) {
-        continue;
-      }
-      anchors[index] = _chooseStructuralTone(
-        random: random,
-        palette: palette,
-        nextPalette: nextPalette,
-        previousMidiHint: anchors[index - 1]?.midiNote ?? skeleton.start.midiNote,
-        targetMidiHint: _interpolatedMidiTarget(
-          from: skeleton.start.midiNote,
-          to: skeleton.nextTarget?.midiNote ?? skeleton.start.midiNote,
-          t: slot.startBeatOffset / request.chordEvent.timing.durationBeats,
-        ),
-        settings: request.settings,
-      );
-    }
-
-    final notes = <_ResolvedNoteBuilder>[];
-    for (var index = 0; index < motif.slots.length; index += 1) {
-      final slot = motif.slots[index];
-      final anchored = anchors[index];
-      if (anchored != null) {
-        notes.add(
-          _ResolvedNoteBuilder(
-            midiNote: anchored.midiNote,
-            toneLabel: anchored.toneLabel,
-            role: _roleForResolvedTone(anchored),
-            structural: true,
-            startBeatOffset: slot.startBeatOffset,
-          ),
-        );
-        continue;
-      }
-
-      final previous = notes.isEmpty ? skeleton.start : notes.last.asTone();
-      final nextAnchor = _nextAnchorAfter(index, anchors) ?? skeleton.nextTarget;
-      final contourStep = motif.contourSignature[index - 1];
-      final targetMidi = nextAnchor == null
-          ? previous.midiNote + (contourStep * 2)
-          : _interpolatedMidiTarget(
-              from: previous.midiNote,
-              to: nextAnchor.midiNote,
-              t: 1 / max(1, motif.slots.length - index),
-            );
-      final resolved = _chooseWeakTone(
-        random: random,
-        palette: palette,
-        nextPalette: nextPalette,
-        previousTone: previous,
-        nextTarget: nextAnchor,
-        slot: slot,
-        targetMidiHint: targetMidi + (contourStep * 2),
-        settings: request.settings,
-        isLastSlot: index == motif.slots.length - 1,
-      );
-      notes.add(
-        _ResolvedNoteBuilder(
-          midiNote: resolved.midiNote,
-          toneLabel: resolved.toneLabel,
-          role: resolved.role ?? MelodyNoteRole.passing,
-          structural: false,
-          startBeatOffset: slot.startBeatOffset,
-        ),
-      );
-    }
-
-    _applyLeapCompensation(
-      notes,
-      palette,
-      settings: request.settings,
-    );
-    _applyNeighborCompression(
-      notes: notes,
-      palette: palette,
-      nextTarget: skeleton.nextTarget,
-      settings: request.settings,
-    );
-
-    return [
-      for (var index = 0; index < notes.length; index += 1)
+  static List<GeneratedMelodyNote> _decodePhrase(MelodyDecodeContext context) {
+    final slots = context.rhythmSample.slots;
+    if (slots.length == 1) {
+      final slot = slots.first;
+      final midi = context.phrasePlan.isCadential
+          ? context.anchors.endMidi
+          : context.anchors.startMidi;
+      final toneLabel =
+          context.palette.labelForPitchClass(midi % 12) ??
+          context.anchors.startToneLabel;
+      return [
         GeneratedMelodyNote(
-          midiNote: notes[index].midiNote,
-          startBeatOffset: notes[index].startBeatOffset,
-          durationBeats: _durationForIndex(
-            notes: notes,
-            index: index,
-            totalDurationBeats:
-                request.chordEvent.timing.durationBeats.toDouble(),
-          ),
-          role: notes[index].role,
-          toneLabel: notes[index].toneLabel,
-          structural: notes[index].structural,
-          velocity: notes[index].velocity,
-          gain: notes[index].gain,
+          midiNote: midi,
+          startBeatOffset: slot.startBeatOffset,
+          durationBeats: slot.durationBeats,
+          role: _roleForLabel(toneLabel),
+          toneLabel: toneLabel,
+          structural: true,
+          sourceCategoryKey: MelodyCandidateCategory.chord.name,
+          strongSlot: slot.isStrong,
         ),
-    ];
-  }
+      ];
+    }
 
-  static List<_MelodySlot> _buildRhythmSlots({
-    required PracticeSettings settings,
-    required ChordTimingSpec timing,
-  }) {
-    final duration = timing.durationBeats.toDouble();
-    final baseOffsets = switch (settings.melodyDensity) {
-      MelodyDensity.sparse => _sparseOffsets(duration),
-      MelodyDensity.balanced => _balancedOffsets(duration),
-      MelodyDensity.active => _activeOffsets(duration),
-    };
-    final effectiveOffsets = switch (settings.melodyStyle) {
-      MelodyStyle.lyrical => baseOffsets.length <= 2
-          ? baseOffsets
-          : baseOffsets
-                .where(
-                  (offset) => offset == 0 || offset >= duration - 1,
-                )
-                .toList(growable: false),
-      MelodyStyle.bebop => _bebopOffsets(duration, baseOffsets),
-      MelodyStyle.colorful => _colorfulOffsets(duration, baseOffsets),
-      MelodyStyle.safe => baseOffsets,
-    };
-    final uniqueOffsets = effectiveOffsets.toSet().toList(growable: false)
-      ..sort();
-    return [
-      for (final offset in uniqueOffsets)
-        if (offset >= 0 && offset < duration)
-          _MelodySlot(
-            startBeatOffset: offset,
-            structural: _isStructuralMelodyBeat(
-                  timing: timing,
-                  startBeatOffset: offset,
-                ) ||
-                offset == 0,
-          ),
-    ];
-  }
-
-  static List<double> _sparseOffsets(double duration) {
-    if (duration <= 1) {
-      return const [0];
-    }
-    if (duration <= 2) {
-      return const [0, 1];
-    }
-    return [0, max(1.5, duration - 1)];
-  }
-
-  static List<double> _balancedOffsets(double duration) {
-    if (duration <= 1) {
-      return const [0, 0.5];
-    }
-    if (duration <= 2) {
-      return const [0, 1];
-    }
-    if (duration <= 3) {
-      return const [0, 1, 2];
-    }
-    return const [0, 1, 2, 3];
-  }
-
-  static List<double> _activeOffsets(double duration) {
-    if (duration <= 1) {
-      return const [0, 0.5];
-    }
-    if (duration <= 2) {
-      return const [0, 0.5, 1, 1.5];
-    }
-    if (duration <= 3) {
-      return const [0, 0.5, 1.5, 2, 2.5];
-    }
-    return const [0, 0.5, 1.5, 2, 3, 3.5];
-  }
-
-  static List<double> _bebopOffsets(double duration, List<double> baseOffsets) {
-    if (duration < 2) {
-      return baseOffsets;
-    }
-    final offsets = <double>{...baseOffsets, duration - 0.5};
-    if (duration >= 4) {
-      offsets.add(1.5);
-    }
-    final ordered = offsets.toList(growable: false)..sort();
-    return ordered;
-  }
-
-  static List<double> _colorfulOffsets(
-    double duration,
-    List<double> baseOffsets,
-  ) {
-    if (duration < 2) {
-      return baseOffsets;
-    }
-    final offsets = <double>{...baseOffsets, duration - 0.5};
-    if (duration >= 3) {
-      offsets.add(1.5);
-    }
-    final ordered = offsets.toList(growable: false)..sort();
-    return ordered;
-  }
-
-  static bool _isStructuralMelodyBeat({
-    required ChordTimingSpec timing,
-    required double startBeatOffset,
-  }) {
-    final absoluteBeat = timing.changeBeat + startBeatOffset.floor();
-    return switch (timing.beatsPerBar) {
-      4 => absoluteBeat == 0 || absoluteBeat == 2,
-      3 => absoluteBeat == 0,
-      2 => absoluteBeat == 0,
-      _ => absoluteBeat == 0,
-    };
-  }
-
-  static List<int> _adaptContourSignature(
-    List<int> previousSignature, {
-    required int targetLength,
-  }) {
-    if (targetLength <= 0) {
-      return const <int>[];
-    }
-    if (previousSignature.isEmpty) {
-      return List<int>.filled(targetLength, 0, growable: false);
-    }
-    return [
-      for (var index = 0; index < targetLength; index += 1)
-        previousSignature[index % previousSignature.length],
-    ];
-  }
-
-  static List<int> _buildFreshContourSignature({
-    required Random random,
-    required MelodyStyle style,
-    required int targetLength,
-  }) {
-    if (targetLength <= 0) {
-      return const <int>[];
-    }
-    final libraries = switch (style) {
-      MelodyStyle.safe => const [
-          [1, -1],
-          [1, 0, -1],
-          [0, 1, -1],
-          [-1, 1],
-        ],
-      MelodyStyle.bebop => const [
-          [1, 1, -1, -1],
-          [1, -1, 1, -1],
-          [2, -1, 1, -1],
-          [-1, 1, -1, 1],
-        ],
-      MelodyStyle.lyrical => const [
-          [1, 0, -1],
-          [1, -1],
-          [0, 1, 0, -1],
-          [-1, 1],
-        ],
-      MelodyStyle.colorful => const [
-          [1, 2, -1, -1],
-          [2, -1, 1, -2],
-          [1, -1, 2, -2],
-          [-1, 2, -1, 1],
-        ],
-    };
-    return _adaptContourSignature(
-      libraries[random.nextInt(libraries.length)],
-      targetLength: targetLength,
+    final startSlot = slots.first;
+    final startToneLabel =
+        context.anchors.startToneLabel ??
+        context.palette.labelForPitchClass(context.anchors.startMidi % 12);
+    final startNote = BeamNote(
+      note: GeneratedMelodyNote(
+        midiNote: context.anchors.startMidi,
+        startBeatOffset: startSlot.startBeatOffset,
+        durationBeats: startSlot.durationBeats,
+        role: _roleForLabel(startToneLabel),
+        toneLabel: startToneLabel,
+        structural: true,
+        sourceCategoryKey: MelodyCandidateCategory.chord.name,
+        strongSlot: startSlot.isStrong,
+      ),
+      category: MelodyCandidateCategory.chord,
+      metricStrength: startSlot.metricStrength,
+      anticipatory: startSlot.anticipatory,
     );
-  }
 
-  static _ResolvedTone _chooseStructuralTone({
-    required Random random,
-    required _MelodyPalette palette,
-    required _MelodyPalette? nextPalette,
-    required int? previousMidiHint,
-    required int targetMidiHint,
-    required PracticeSettings settings,
-  }) {
-    final candidateLabels = palette.structuralLabels.isEmpty
-        ? palette.weakStableLabels
-        : palette.structuralLabels;
-    var bestTone = _resolvedRootTone(
-      palette,
-      targetMidiHint,
-      low: settings.melodyRangeLow,
-      high: settings.melodyRangeHigh,
-    );
-    var bestScore = double.negativeInfinity;
-    for (var index = 0; index < candidateLabels.length; index += 1) {
-      final label = candidateLabels[index];
-      final relative = _toneSemitones[label];
-      if (relative == null) {
+    var beams = <_MelodyBeam>[
+      _MelodyBeam(notes: <BeamNote>[startNote], score: 0),
+    ];
+
+    for (var slotIndex = 1; slotIndex < slots.length; slotIndex += 1) {
+      final slot = slots[slotIndex];
+      final expanded = <_MelodyBeam>[];
+      for (final beam in beams) {
+        final candidates = MelodyCandidateBuilder.build(
+          slot: slot,
+          slotIndex: slotIndex,
+          beamNotes: beam.notes,
+          context: context,
+        );
+        for (final candidate in candidates) {
+          final score = MelodyScoring.scoreCandidate(
+            candidate: candidate,
+            beamNotes: beam.notes,
+            slot: slot,
+            slotIndex: slotIndex,
+            context: context,
+          );
+          expanded.add(
+            beam.extend(
+              BeamNote(
+                note: GeneratedMelodyNote(
+                  midiNote: candidate.midiNote,
+                  startBeatOffset: slot.startBeatOffset,
+                  durationBeats: slot.durationBeats,
+                  role: candidate.role,
+                  toneLabel: candidate.toneLabel,
+                  structural: slot.structural,
+                  sourceCategoryKey: candidate.category.name,
+                  strongSlot: slot.isStrong,
+                ),
+                category: candidate.category,
+                metricStrength: slot.metricStrength,
+                anticipatory: slot.anticipatory,
+              ),
+              score,
+            ),
+          );
+        }
+      }
+      if (expanded.isEmpty) {
         continue;
       }
-      final pitchClass =
-          (palette.interpretation.rootSemitone + relative) % 12;
-      for (final midi in _midiCandidatesForPitchClass(
-        pitchClass,
-        low: settings.melodyRangeLow,
-        high: settings.melodyRangeHigh,
-      )) {
-        var score = 10.0 - index;
-        score -= (midi - targetMidiHint).abs() * 0.16;
-        if (previousMidiHint != null) {
-          final leap = (midi - previousMidiHint).abs();
-          score += leap <= 2 ? 2.3 : 0;
-          score -= leap * 0.12;
-          if (leap > 9) {
-            score -= 2.4;
-          }
-        }
-        if (_isGuideToneLabel(label)) {
-          score += 2.6;
-        }
-        if (_isStableTensionLabel(label)) {
-          score += switch (settings.melodyStyle) {
-            MelodyStyle.safe => 0.1,
-            MelodyStyle.lyrical => 0.65,
-            MelodyStyle.bebop => 0.45,
-            MelodyStyle.colorful => 1.1,
-          };
-        }
-        if (nextPalette != null) {
-          score += _nextResolutionBonus(
-            midi: midi,
-            nextPalette: nextPalette,
-            settings: settings,
-          );
-        }
-        score += (random.nextDouble() - 0.5) * 0.18;
-        if (score > bestScore) {
-          bestScore = score;
-          bestTone = _ResolvedTone(
-            midiNote: midi,
-            toneLabel: label,
-            stable: true,
-          );
-        }
-      }
-    }
-    return bestTone;
-  }
-
-  static _ResolvedTone _chooseWeakTone({
-    required Random random,
-    required _MelodyPalette palette,
-    required _MelodyPalette? nextPalette,
-    required _ResolvedTone previousTone,
-    required _ResolvedTone? nextTarget,
-    required _MelodySlot slot,
-    required int targetMidiHint,
-    required PracticeSettings settings,
-    required bool isLastSlot,
-  }) {
-    final shouldApproach =
-        nextTarget != null &&
-        isLastSlot &&
-        random.nextDouble() < settings.approachToneDensity;
-    if (shouldApproach) {
-      final useAnticipation =
-          settings.melodyStyle != MelodyStyle.safe &&
-          random.nextDouble() <
-              (settings.melodyStyle == MelodyStyle.colorful ? 0.3 : 0.16);
-      if (useAnticipation) {
-        return _ResolvedTone(
-          midiNote: nextTarget.midiNote,
-          toneLabel: nextTarget.toneLabel,
-          stable: true,
-          role: MelodyNoteRole.anticipation,
-        );
-      }
-      final chromatic =
-          settings.allowChromaticApproaches &&
-          random.nextDouble() < settings.approachToneDensity;
-      return _ResolvedTone(
-        midiNote: _approachMidiToward(
-          targetMidi: nextTarget.midiNote,
-          fromMidi: previousTone.midiNote,
-          chromatic: chromatic,
-          low: settings.melodyRangeLow,
-          high: settings.melodyRangeHigh,
-        ),
-        toneLabel: null,
-        stable: false,
-        role: chromatic ? MelodyNoteRole.approach : MelodyNoteRole.passing,
+      beams = _prune(
+        expanded,
+        width:
+            MelodyGenerationConfig.beamWidth[context
+                .request
+                .settings
+                .settingsComplexityMode] ??
+            12,
       );
     }
 
-    final candidatePitchClasses = {
-      ...palette.scalePitchClasses,
-      if (nextTarget != null && settings.allowChromaticApproaches)
-        (nextTarget.midiNote + 11) % 12,
-      if (nextTarget != null && settings.allowChromaticApproaches)
-        (nextTarget.midiNote + 1) % 12,
-    };
-    var best = _ResolvedTone(
-      midiNote: previousTone.midiNote,
-      toneLabel: previousTone.toneLabel,
-      stable: false,
-      role: MelodyNoteRole.passing,
-    );
-    var bestScore = double.negativeInfinity;
-    for (final pitchClass in candidatePitchClasses) {
-      for (final midi in _midiCandidatesForPitchClass(
-        pitchClass,
-        low: settings.melodyRangeLow,
-        high: settings.melodyRangeHigh,
-      )) {
-        final motion = (midi - previousTone.midiNote).abs();
-        var score = 0.0;
-        score -= motion * 0.18;
-        score -= (midi - targetMidiHint).abs() * 0.12;
-        if (motion <= 2) {
-          score += 1.7;
-        }
-        if (nextTarget != null) {
-          score += max(0, 2.1 - ((midi - nextTarget.midiNote).abs() * 0.22));
-        }
-        final label = _bestToneLabelForPitchClass(
-          pitchClass: pitchClass,
-          palette: palette,
-        );
-        final stable = label != null && palette.weakStableLabels.contains(label);
-        if (!slot.structural && stable) {
-          score += 0.25;
-        }
-        if (motion > 7) {
-          score -= 2.8;
-        }
-        score += (random.nextDouble() - 0.5) * 0.12;
-        if (score > bestScore) {
-          bestScore = score;
-          best = _ResolvedTone(
-            midiNote: midi,
-            toneLabel: label,
-            stable: stable,
-            role: stable ? MelodyNoteRole.neighbor : MelodyNoteRole.passing,
+    beams.sort((left, right) {
+      final rightTotal =
+          right.score +
+          MelodyScoring.finalRerankAdjustment(
+            beamNotes: right.notes,
+            context: context,
           );
-        }
-      }
-    }
-    return best;
+      final leftTotal =
+          left.score +
+          MelodyScoring.finalRerankAdjustment(
+            beamNotes: left.notes,
+            context: context,
+          );
+      return rightTotal.compareTo(leftTotal);
+    });
+    final best = beams.first;
+    return [for (final beamNote in best.notes) beamNote.note];
   }
 
-  static void _applyLeapCompensation(
-    List<_ResolvedNoteBuilder> notes,
-    _MelodyPalette palette, {
-    required PracticeSettings settings,
+  static PhraseAnchors _planAnchors({
+    required MelodyGenerationRequest request,
+    required MelodyHarmonyPalette palette,
+    required MelodyHarmonyPalette? nextPalette,
+    required PhrasePlan phrasePlan,
+    required MelodyStyle effectiveStyle,
   }) {
-    for (var index = 1; index < notes.length; index += 1) {
-      final leap = notes[index].midiNote - notes[index - 1].midiNote;
-      if (leap.abs() <= 8) {
-        continue;
-      }
-      final direction = leap.isNegative ? -1 : 1;
-      final compensatedMidi = notes[index - 1].midiNote + (direction * 5);
-      final resolved = _nearestPaletteMidi(
-        pitchClass: compensatedMidi % 12,
-        targetMidi: compensatedMidi,
-        low: settings.melodyRangeLow,
-        high: settings.melodyRangeHigh,
-      );
-      if (resolved != null) {
-        notes[index] = notes[index].copyWith(
-          midiNote: resolved,
-          role: MelodyNoteRole.passing,
-          toneLabel: _bestToneLabelForPitchClass(
-            pitchClass: resolved % 12,
-            palette: palette,
-          ),
-        );
-      }
-    }
-  }
-
-  static void _applyNeighborCompression({
-    required List<_ResolvedNoteBuilder> notes,
-    required _MelodyPalette palette,
-    required _ResolvedTone? nextTarget,
-    required PracticeSettings settings,
-  }) {
-    if (notes.length < 3 ||
-        nextTarget == null ||
-        !settings.allowChromaticApproaches ||
-        settings.melodyStyle == MelodyStyle.safe ||
-        settings.approachToneDensity < 0.45) {
-      return;
-    }
-    final lastIndex = notes.length - 1;
-    if (notes[lastIndex].role == MelodyNoteRole.approach ||
-        notes[lastIndex].role == MelodyNoteRole.anticipation) {
-      return;
-    }
-    final upper = _clampMidi(
-      nextTarget.midiNote + 1,
-      low: settings.melodyRangeLow,
-      high: settings.melodyRangeHigh,
-    );
-    final lower = _clampMidi(
-      nextTarget.midiNote - 1,
-      low: settings.melodyRangeLow,
-      high: settings.melodyRangeHigh,
-    );
-    notes[lastIndex - 1] = notes[lastIndex - 1].copyWith(
-      midiNote: upper,
-      role: MelodyNoteRole.enclosure,
-      toneLabel: _bestToneLabelForPitchClass(
-        pitchClass: upper % 12,
-        palette: palette,
-      ),
-    );
-    notes[lastIndex] = notes[lastIndex].copyWith(
-      midiNote: lower,
-      role: MelodyNoteRole.enclosure,
-      toneLabel: _bestToneLabelForPitchClass(
-        pitchClass: lower % 12,
-        palette: palette,
-      ),
-    );
-  }
-
-  static double _durationForIndex({
-    required List<_ResolvedNoteBuilder> notes,
-    required int index,
-    required double totalDurationBeats,
-  }) {
-    final currentStart = notes[index].startBeatOffset;
-    final nextStart = index + 1 < notes.length
-        ? notes[index + 1].startBeatOffset
-        : totalDurationBeats;
-    return max(0.25, nextStart - currentStart);
-  }
-
-  static int _interpolatedMidiTarget({
-    required int from,
-    required int to,
-    required double t,
-  }) {
-    return (from + ((to - from) * t)).round();
-  }
-
-  static _ResolvedTone? _nextAnchorAfter(
-    int index,
-    Map<int, _ResolvedTone> anchors,
-  ) {
-    final orderedEntries = anchors.entries.toList(growable: false)
-      ..sort((left, right) => left.key.compareTo(right.key));
-    for (final entry in orderedEntries) {
-      if (entry.key > index) {
-        return entry.value;
-      }
-    }
-    return null;
-  }
-
-  static _ResolvedTone _resolvedRootTone(
-    _MelodyPalette palette,
-    int targetMidiHint, {
-    required int low,
-    required int high,
-  }) {
-    final rootMidi = _nearestPaletteMidi(
-      pitchClass: palette.interpretation.rootSemitone,
-      targetMidi: targetMidiHint,
+    final low = request.settings.melodyRangeLow;
+    final high = request.settings.melodyRangeHigh;
+    final recentEndingLabels = _recentCadenceEndingLabels(request);
+    final previousMidiHint =
+        request.previousMelodyEvent?.lastMidiNote ?? phrasePlan.centerMidi;
+    final startTargetMidi = _startTargetMidiForRole(
+      phrasePlan,
+      previousMidiHint: previousMidiHint,
       low: low,
       high: high,
     );
-    return _ResolvedTone(
-      midiNote: rootMidi ?? targetMidiHint,
-      toneLabel: '1',
-      stable: true,
+    final carryOverMidi = request.previousMelodyEvent?.lastMidiNote;
+    final carryOverPitchClass = carryOverMidi == null
+        ? null
+        : carryOverMidi % 12;
+    final canCarryOver =
+        carryOverMidi != null &&
+        carryOverPitchClass != null &&
+        carryOverMidi >= low &&
+        carryOverMidi <= high &&
+        (palette.chordPitchClasses.contains(carryOverPitchClass) ||
+            palette.scalePitchClasses.contains(carryOverPitchClass) ||
+            (palette.isColorChord &&
+                palette.featuredPitchClasses.contains(carryOverPitchClass)));
+    final startCandidates = <String>[
+      ..._startLabelsForRole(
+        palette,
+        phrasePlan,
+        effectiveStyle: effectiveStyle,
+      ),
+      if (request.previousChordEvent?.chord.harmonicComparisonKey ==
+          request.chordEvent.chord.harmonicComparisonKey)
+        ...(request.previousMelodyEvent?.lastNote?.toneLabel == null
+            ? const <String>[]
+            : <String>[request.previousMelodyEvent!.lastNote!.toneLabel!]),
+      if (request.previousMelodyEvent?.lastNote?.toneLabel != null)
+        request.previousMelodyEvent!.lastNote!.toneLabel!,
+      if (palette.isColorChord && request.settings.colorRealizationBias >= 0.55)
+        ...palette.featuredLabels.take(2),
+      ...palette.chordToneLabels.take(3),
+      ...palette.featuredLabels.take(2),
+    ];
+    final start = canCarryOver
+        ? _AnchorChoice(
+            carryOverMidi,
+            palette.labelForPitchClass(carryOverPitchClass) ??
+                request.previousMelodyEvent?.lastNote?.toneLabel ??
+                (palette.chordToneLabels.isEmpty
+                    ? '1'
+                    : palette.chordToneLabels.first),
+          )
+        : _nearestMidiForLabels(
+            palette,
+            startCandidates,
+            targetMidi: startTargetMidi,
+            low: low,
+            high: high,
+          );
+    final endTargetPalette =
+        phrasePlan.role == PhraseRole.preCadence && nextPalette != null
+        ? nextPalette
+        : palette;
+    final endTargetMidi = _endTargetMidiForRole(
+      phrasePlan,
+      startMidi: start.midiNote,
+      low: low,
+      high: high,
+    );
+    final endCandidates =
+        phrasePlan.role == PhraseRole.preCadence && nextPalette != null
+        ? _resolutionLabelsFor(
+            nextPalette,
+            phrasePlan,
+            recentCadenceLabels: recentEndingLabels,
+          )
+        : _endingLabelsFor(
+            palette,
+            phrasePlan,
+            effectiveStyle,
+            recentCadenceLabels: recentEndingLabels,
+          );
+    final end = _nearestMidiForLabels(
+      endTargetPalette,
+      endCandidates,
+      targetMidi: endTargetMidi,
+      low: low,
+      high: high,
+    );
+    final apexMidi = max(
+      phrasePlan.apexMidi,
+      max(start.midiNote, end.midiNote) + 1,
+    ).clamp(low, high);
+    return PhraseAnchors(
+      startMidi: start.midiNote,
+      endMidi: end.midiNote,
+      apexMidi: apexMidi,
+      startToneLabel: start.toneLabel,
+      endToneLabel: end.toneLabel,
     );
   }
 
-  static double _nextResolutionBonus({
-    required int midi,
-    required _MelodyPalette nextPalette,
-    required PracticeSettings settings,
-  }) {
-    var best = 0.0;
-    for (var index = 0; index < nextPalette.structuralLabels.length; index += 1) {
-      final label = nextPalette.structuralLabels[index];
-      final relative = _toneSemitones[label];
-      if (relative == null) {
-        continue;
-      }
-      final pitchClass =
-          (nextPalette.interpretation.rootSemitone + relative) % 12;
-      final closest = _nearestPaletteMidi(
-        pitchClass: pitchClass,
-        targetMidi: midi,
-        low: settings.melodyRangeLow,
-        high: settings.melodyRangeHigh,
-      );
-      if (closest == null) {
-        continue;
-      }
-      final distance = (closest - midi).abs();
-      final score = max(0.0, 2.4 - (distance * 0.55));
-      if (score > best) {
-        best = score;
-      }
-    }
-    return best;
-  }
-
-  static List<int> _relativeScaleSemitonesFor({
-    required GeneratedChord chord,
-    required ChordVoicingInterpretation interpretation,
-    required MelodyStyle style,
-  }) {
-    if (interpretation.isDominantFamily) {
-      if (interpretation.isSusFamily) {
-        return const [0, 2, 5, 7, 9, 10];
-      }
-      if (chord.symbolData.renderQuality == ChordQuality.dominant7Alt &&
-          style != MelodyStyle.safe) {
-        return const [0, 1, 3, 4, 6, 8, 10];
-      }
-      if (chord.appliedType == AppliedType.substitute ||
-          chord.dominantIntent == DominantIntent.tritoneSub ||
-          chord.dominantIntent == DominantIntent.lydianDominant ||
-          chord.dominantIntent == DominantIntent.backdoor ||
-          chord.symbolData.renderQuality == ChordQuality.dominant7Sharp11) {
-        return const [0, 2, 4, 6, 7, 9, 10];
-      }
-      if (style == MelodyStyle.bebop) {
-        return const [0, 2, 4, 5, 7, 9, 10, 11];
-      }
-      return const [0, 2, 4, 5, 7, 9, 10];
-    }
-    if (interpretation.isHalfDiminishedFamily) {
-      return const [0, 1, 3, 5, 6, 8, 10];
-    }
-    if (chord.symbolData.renderQuality == ChordQuality.diminished7) {
-      return const [0, 2, 3, 5, 6, 8, 9, 11];
-    }
-    if (chord.romanNumeralId == RomanNumeralId.borrowedIvMin7) {
-      return const [0, 2, 3, 5, 7, 8, 10];
-    }
-    if (interpretation.isMinorFamily) {
-      return const [0, 2, 3, 5, 7, 9, 10];
-    }
-    if (chord.symbolData.renderQuality == ChordQuality.augmentedTriad &&
-        style == MelodyStyle.colorful) {
-      return const [0, 2, 4, 6, 8, 9, 11];
-    }
-    return const [0, 2, 4, 5, 7, 9, 11];
-  }
-
-  static List<String> _orderedStructuralLabels({
-    required GeneratedChord chord,
-    required ChordVoicingInterpretation interpretation,
-    required MelodyStyle style,
-  }) {
-    if (interpretation.isDominantFamily) {
-      if (interpretation.isSusFamily) {
-        return const ['4', 'b7', '9', '13', '1', '5'];
-      }
-      if (chord.symbolData.renderQuality == ChordQuality.dominant7Alt &&
-          style != MelodyStyle.safe) {
-        return const ['3', 'b7', 'b9', '#9', 'b13', '#11'];
-      }
-      if (chord.appliedType == AppliedType.substitute ||
-          chord.dominantIntent == DominantIntent.tritoneSub ||
-          chord.dominantIntent == DominantIntent.lydianDominant ||
-          chord.dominantIntent == DominantIntent.backdoor ||
-          chord.symbolData.renderQuality == ChordQuality.dominant7Sharp11) {
-        return const ['3', 'b7', '#11', '9', '13', '1'];
-      }
-      return const ['3', 'b7', '9', '13', '1', '5'];
-    }
-    if (interpretation.isHalfDiminishedFamily) {
-      return const ['b3', 'b7', 'b5', '11', '1'];
-    }
-    if (interpretation.isMinorFamily) {
-      final labels = <String>['b3', 'b7', '9', '11', '1', '5'];
-      if (style != MelodyStyle.safe) {
-        labels.add('13');
-      }
-      return labels;
-    }
-    final labels = <String>['3', '7', '9', '1', '5'];
-    if (chord.symbolData.renderQuality == ChordQuality.major69 ||
-        style != MelodyStyle.safe) {
-      labels.insert(2, '13');
-    }
-    return labels;
-  }
-
-  static List<String> _orderedWeakStableLabels({
-    required GeneratedChord chord,
-    required ChordVoicingInterpretation interpretation,
-    required MelodyStyle style,
-  }) {
-    final labels = <String>[
-      ..._orderedStructuralLabels(
-        chord: chord,
-        interpretation: interpretation,
-        style: style,
-      ),
-    ];
-    if (interpretation.isMinorFamily && style == MelodyStyle.colorful) {
-      labels.add('6');
-    }
-    if (interpretation.isDominantFamily &&
-        !interpretation.isSusFamily &&
-        style == MelodyStyle.bebop) {
-      labels.add('7');
-    }
-    if (!labels.contains('5')) {
-      labels.add('5');
-    }
-    return labels;
-  }
-
-  static List<int> _midiCandidatesForPitchClass(
-    int pitchClass, {
-    required int low,
-    required int high,
-  }) {
-    final candidates = <int>[];
-    for (var midi = low; midi <= high; midi += 1) {
-      if (midi % 12 == pitchClass) {
-        candidates.add(midi);
-      }
-    }
-    return candidates;
-  }
-
-  static int? _nearestPaletteMidi({
-    required int pitchClass,
+  static _AnchorChoice _nearestMidiForLabels(
+    MelodyHarmonyPalette palette,
+    Iterable<String> labels, {
     required int targetMidi,
     required int low,
     required int high,
   }) {
-    int? best;
-    var bestDistance = 1 << 30;
-    for (final midi in _midiCandidatesForPitchClass(
-      pitchClass,
-      low: low,
-      high: high,
-    )) {
-      final distance = (midi - targetMidi).abs();
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        best = midi;
-      }
-    }
-    return best;
-  }
-
-  static String? _bestToneLabelForPitchClass({
-    required int pitchClass,
-    required _MelodyPalette palette,
-  }) {
-    for (final label in [
-      ...palette.structuralLabels,
-      ...palette.weakStableLabels,
-    ]) {
-      final relative = _toneSemitones[label];
-      if (relative == null) {
+    _AnchorChoice? best;
+    for (final label in labels) {
+      if (!MelodyCandidateBuilder.toneSemitones.containsKey(label)) {
         continue;
       }
-      if ((palette.interpretation.rootSemitone + relative) % 12 == pitchClass) {
-        return label;
+      final pitchClass = palette.pitchClassForLabel(label);
+      final midis = palette.nearestMidisForPitchClass(
+        pitchClass,
+        targetMidi: targetMidi,
+        low: low,
+        high: high,
+        count: 1,
+      );
+      if (midis.isEmpty) {
+        continue;
+      }
+      final choice = _AnchorChoice(midis.first, label);
+      if (best == null ||
+          (choice.midiNote - targetMidi).abs() <
+              (best.midiNote - targetMidi).abs()) {
+        best = choice;
       }
     }
-    return null;
+    if (best != null) {
+      return best;
+    }
+    final fallback = palette.nearestMidisForPitchClass(
+      palette.chordPitchClasses.isEmpty
+          ? targetMidi % 12
+          : palette.chordPitchClasses.first,
+      targetMidi: targetMidi,
+      low: low,
+      high: high,
+      count: 1,
+    );
+    return _AnchorChoice(
+      fallback.isEmpty ? targetMidi.clamp(low, high) : fallback.first,
+      palette.chordToneLabels.isEmpty ? '1' : palette.chordToneLabels.first,
+    );
   }
 
-  static MelodyNoteRole _roleForResolvedTone(_ResolvedTone tone) {
-    if (tone.role != null) {
-      return tone.role!;
+  static List<String> _resolutionLabelsFor(
+    MelodyHarmonyPalette palette,
+    PhrasePlan phrasePlan, {
+    List<String> recentCadenceLabels = const <String>[],
+  }) {
+    final priority = switch (phrasePlan.endingDegreePriority) {
+      1 => <String>['1', '3', '7', '9'],
+      3 => <String>['3', 'b3', '1', '5'],
+      5 => <String>['5', '3', '1'],
+      7 => <String>['7', 'b7', '3', '1'],
+      _ => <String>['1', '3', '5'],
+    };
+    final labels = <String>[
+      for (final label in priority)
+        if (palette.featuredLabels.contains(label) ||
+            palette.chordToneLabels.contains(label))
+          label,
+      ...palette.featuredLabels.take(3),
+    ];
+    return _rotateRepeatedEndingLabels(
+      labels,
+      recentCadenceLabels: recentCadenceLabels,
+    );
+  }
+
+  static List<String> _endingLabelsFor(
+    MelodyHarmonyPalette palette,
+    PhrasePlan phrasePlan,
+    MelodyStyle effectiveStyle, {
+    List<String> recentCadenceLabels = const <String>[],
+  }) {
+    final priorityLabel = switch (phrasePlan.endingDegreePriority) {
+      1 => '1',
+      3 => palette.interpretation.isMinorFamily ? 'b3' : '3',
+      5 => '5',
+      7 => palette.interpretation.isDominantFamily ? 'b7' : '7',
+      _ => '1',
+    };
+    final roleLabels = switch (phrasePlan.role) {
+      PhraseRole.opening => <String>[
+        priorityLabel,
+        '3',
+        ...palette.chordToneLabels.take(3),
+      ],
+      PhraseRole.continuation => <String>[
+        priorityLabel,
+        ...palette.featuredLabels.take(2),
+        ...palette.chordToneLabels.take(3),
+      ],
+      PhraseRole.preCadence => <String>[
+        if (palette.featuredLabels.contains('7') ||
+            palette.chordToneLabels.contains('7'))
+          '7',
+        if (palette.featuredLabels.contains('b7') ||
+            palette.chordToneLabels.contains('b7'))
+          'b7',
+        ...palette.featuredLabels.take(3),
+        ...palette.chordToneLabels.take(3),
+      ],
+      PhraseRole.cadence => <String>[
+        priorityLabel,
+        palette.interpretation.isMinorFamily ? 'b3' : '3',
+        '1',
+        ..._cadentialColorReleaseLabels(palette),
+        ...palette.chordToneLabels.take(4),
+      ],
+    };
+    final labels = <String>[
+      switch (phrasePlan.endingDegreePriority) {
+        1 => '1',
+        3 => palette.interpretation.isMinorFamily ? 'b3' : '3',
+        5 => '5',
+        7 => palette.interpretation.isDominantFamily ? 'b7' : '7',
+        _ => '1',
+      },
+      ...roleLabels,
+      if (effectiveStyle == MelodyStyle.colorful)
+        ...palette.featuredLabels.take(3),
+      ...palette.chordToneLabels.take(4),
+    ];
+    return _rotateRepeatedEndingLabels(
+      labels,
+      recentCadenceLabels: recentCadenceLabels,
+    );
+  }
+
+  static List<String> _startLabelsForRole(
+    MelodyHarmonyPalette palette,
+    PhrasePlan phrasePlan, {
+    required MelodyStyle effectiveStyle,
+  }) {
+    return switch (phrasePlan.role) {
+      PhraseRole.opening => <String>[
+        if (palette.chordToneLabels.contains('3')) '3',
+        '1',
+        ...palette.chordToneLabels.take(3),
+      ],
+      PhraseRole.continuation => <String>[
+        ...palette.chordToneLabels.take(3),
+        ...palette.featuredLabels.take(2),
+      ],
+      PhraseRole.preCadence => <String>[
+        ...palette.featuredLabels.take(2),
+        if (palette.chordToneLabels.contains('5')) '5',
+        ...palette.chordToneLabels.take(3),
+      ],
+      PhraseRole.cadence => <String>[
+        if (effectiveStyle == MelodyStyle.colorful)
+          ..._cadentialColorReleaseLabels(palette).take(1),
+        ...palette.chordToneLabels.take(3),
+      ],
+    };
+  }
+
+  static int _startTargetMidiForRole(
+    PhrasePlan phrasePlan, {
+    required int previousMidiHint,
+    required int low,
+    required int high,
+  }) {
+    final target = switch (phrasePlan.role) {
+      PhraseRole.opening =>
+        ((phrasePlan.centerMidi + previousMidiHint) / 2).round(),
+      PhraseRole.continuation => previousMidiHint,
+      PhraseRole.preCadence => max(previousMidiHint, phrasePlan.centerMidi - 1),
+      PhraseRole.cadence => min(previousMidiHint, phrasePlan.centerMidi + 1),
+    };
+    return target.clamp(low, high);
+  }
+
+  static int _endTargetMidiForRole(
+    PhrasePlan phrasePlan, {
+    required int startMidi,
+    required int low,
+    required int high,
+  }) {
+    final target = switch (phrasePlan.role) {
+      PhraseRole.opening => phrasePlan.centerMidi,
+      PhraseRole.continuation =>
+        ((phrasePlan.centerMidi + startMidi) / 2).round(),
+      PhraseRole.preCadence => max(phrasePlan.centerMidi + 1, startMidi),
+      PhraseRole.cadence => min(phrasePlan.centerMidi, startMidi + 2),
+    };
+    return target.clamp(low, high);
+  }
+
+  static List<String> _cadentialColorReleaseLabels(
+    MelodyHarmonyPalette palette,
+  ) {
+    return [
+      for (final label in palette.featuredLabels)
+        if (!palette.chordToneLabels.contains(label) ||
+            label == '9' ||
+            label == '13' ||
+            label == '11' ||
+            label == '#11')
+          label,
+    ].toSet().toList(growable: false);
+  }
+
+  static List<String> _rotateRepeatedEndingLabels(
+    List<String> labels, {
+    required List<String> recentCadenceLabels,
+  }) {
+    final ordered = labels.toSet().toList(growable: false);
+    if (recentCadenceLabels.isEmpty) {
+      return ordered;
     }
-    if (_isGuideToneLabel(tone.toneLabel)) {
+    final repeated = recentCadenceLabels.take(2).toSet();
+    return [
+      for (final label in ordered)
+        if (!repeated.contains(label)) label,
+      for (final label in ordered)
+        if (repeated.contains(label)) label,
+    ];
+  }
+
+  static List<String> _recentCadenceEndingLabels(
+    MelodyGenerationRequest request,
+  ) {
+    final labels = <String>[
+      for (final event in request.recentMelodyEvents.reversed)
+        if (event.phraseRole == PhraseRole.cadence &&
+            event.lastNote?.toneLabel != null)
+          event.lastNote!.toneLabel!,
+      if (request.previousMelodyEvent?.phraseRole == PhraseRole.cadence &&
+          request.previousMelodyEvent?.lastNote?.toneLabel != null)
+        request.previousMelodyEvent!.lastNote!.toneLabel!,
+    ];
+    return labels.toSet().toList(growable: false);
+  }
+
+  static MelodyDensity _sampleEffectiveDensity(
+    PracticeSettings settings, {
+    required int seed,
+  }) {
+    final profile = MelodyGenerationConfig.profileFor(
+      settings.settingsComplexityMode,
+    );
+    final weights = <MelodyDensity, double>{
+      ...profile.densityWeights,
+      settings.melodyDensity:
+          (profile.densityWeights[settings.melodyDensity] ?? 0.0) + 0.35,
+    };
+    return _pickWeightedDensity(
+      weights,
+      seed: seed,
+      fallback: settings.melodyDensity,
+    );
+  }
+
+  static MelodyStyle _sampleEffectiveStyle(
+    PracticeSettings settings, {
+    required int seed,
+  }) {
+    final profile = MelodyGenerationConfig.profileFor(
+      settings.settingsComplexityMode,
+    );
+    final weights = <MelodyStyle, double>{
+      ...profile.styleWeights,
+      settings.melodyStyle:
+          (profile.styleWeights[settings.melodyStyle] ?? 0.0) + 0.40,
+    };
+    return _pickWeightedStyle(
+      weights,
+      seed: seed,
+      fallback: settings.melodyStyle,
+    );
+  }
+
+  static MelodyDensity _pickWeightedDensity(
+    Map<MelodyDensity, double> weights, {
+    required int seed,
+    required MelodyDensity fallback,
+  }) {
+    var total = 0.0;
+    for (final value in weights.values) {
+      total += value;
+    }
+    if (total <= 0) {
+      return fallback;
+    }
+    final random = Random(seed & 0x3fffffff);
+    final roll = random.nextDouble() * total;
+    var cursor = 0.0;
+    for (final entry in weights.entries) {
+      cursor += entry.value;
+      if (roll <= cursor) {
+        return entry.key;
+      }
+    }
+    return fallback;
+  }
+
+  static MelodyStyle _pickWeightedStyle(
+    Map<MelodyStyle, double> weights, {
+    required int seed,
+    required MelodyStyle fallback,
+  }) {
+    var total = 0.0;
+    for (final value in weights.values) {
+      total += value;
+    }
+    if (total <= 0) {
+      return fallback;
+    }
+    final random = Random(seed & 0x3fffffff);
+    final roll = random.nextDouble() * total;
+    var cursor = 0.0;
+    for (final entry in weights.entries) {
+      cursor += entry.value;
+      if (roll <= cursor) {
+        return entry.key;
+      }
+    }
+    return fallback;
+  }
+
+  static List<_MelodyBeam> _prune(
+    List<_MelodyBeam> beams, {
+    required int width,
+  }) {
+    beams.sort((left, right) => right.score.compareTo(left.score));
+    return beams.take(width).toList(growable: false);
+  }
+
+  static MelodyNoteRole _roleForLabel(String? label) {
+    if (label == '3' ||
+        label == 'b3' ||
+        label == '7' ||
+        label == 'b7' ||
+        label == '4') {
       return MelodyNoteRole.guideTone;
     }
-    if (_isStableTensionLabel(tone.toneLabel)) {
+    if (label == '9' ||
+        label == '11' ||
+        label == '#11' ||
+        label == '13' ||
+        label == 'b13' ||
+        label == 'b9' ||
+        label == '#9') {
       return MelodyNoteRole.stableTension;
     }
     return MelodyNoteRole.chordTone;
   }
 
-  static bool _isGuideToneLabel(String? label) {
-    return label == '3' ||
-        label == 'b3' ||
-        label == '7' ||
-        label == 'b7' ||
-        label == '4';
+  static List<int> _intervalVector(List<GeneratedMelodyNote> notes) {
+    if (notes.length < 2) {
+      return const <int>[];
+    }
+    return [
+      for (var index = 1; index < notes.length; index += 1)
+        notes[index].midiNote - notes[index - 1].midiNote,
+    ];
   }
 
-  static bool _isStableTensionLabel(String? label) {
-    return label == '9' ||
-        label == '11' ||
-        label == '#11' ||
-        label == '13' ||
-        label == '6' ||
-        label == 'b13';
-  }
-
-  static int _approachMidiToward({
-    required int targetMidi,
-    required int fromMidi,
-    required bool chromatic,
-    required int low,
-    required int high,
+  static int _seedForRequest(
+    MelodyGenerationRequest request, {
+    int phraseVariantNonce = 0,
   }) {
-    final direction = fromMidi <= targetMidi ? -1 : 1;
-    final step = chromatic ? 1 : 2;
-    return _clampMidi(targetMidi + (direction * step), low: low, high: high);
+    final previousMelody = request.previousMelodyEvent;
+    return MelodySeedUtil.stableHashAll(<Object?>[
+      request.seed,
+      request.settings.settingsComplexityMode.name,
+      request.chordEvent.chord.harmonicComparisonKey,
+      request.previousChordEvent?.chord.harmonicComparisonKey,
+      request.nextChordEvent?.chord.harmonicComparisonKey,
+      previousMelody?.signatureHash,
+      previousMelody?.lastMidiNoteBucket,
+      request.chordEvent.timing.barIndex,
+      request.chordEvent.timing.changeBeat,
+      request.chordEvent.timing.durationBeats,
+      request.phraseWindowIndex,
+      for (final event in request.phraseChordWindow)
+        event.chord.harmonicComparisonKey,
+      phraseVariantNonce,
+    ]);
   }
+}
 
-  static int _clampMidi(
-    int midi, {
-    required int low,
-    required int high,
-  }) {
-    return midi.clamp(low, high);
+class _MelodyBeam {
+  const _MelodyBeam({required this.notes, required this.score});
+
+  final List<BeamNote> notes;
+  final double score;
+
+  _MelodyBeam extend(BeamNote note, double delta) {
+    return _MelodyBeam(notes: [...notes, note], score: score + delta);
   }
 }
 
-class _MelodyPalette {
-  const _MelodyPalette({
-    required this.chord,
-    required this.interpretation,
-    required this.structuralLabels,
-    required this.weakStableLabels,
-    required this.scalePitchClasses,
-    required this.preferFlat,
-  });
-
-  final GeneratedChord chord;
-  final ChordVoicingInterpretation interpretation;
-  final List<String> structuralLabels;
-  final List<String> weakStableLabels;
-  final Set<int> scalePitchClasses;
-  final bool preferFlat;
-}
-
-class _GuideToneSkeleton {
-  const _GuideToneSkeleton({
-    required this.start,
-    required this.nextTarget,
-  });
-
-  final _ResolvedTone start;
-  final _ResolvedTone? nextTarget;
-}
-
-class _MotifPlan {
-  const _MotifPlan({
-    required this.slots,
-    required this.contourSignature,
-    required this.signature,
-    required this.reusesPreviousMotif,
-    required this.skeleton,
-  });
-
-  final List<_MelodySlot> slots;
-  final List<int> contourSignature;
-  final String signature;
-  final bool reusesPreviousMotif;
-  final _GuideToneSkeleton skeleton;
-}
-
-class _MelodySlot {
-  const _MelodySlot({
-    required this.startBeatOffset,
-    required this.structural,
-  });
-
-  final double startBeatOffset;
-  final bool structural;
-}
-
-class _ResolvedTone {
-  const _ResolvedTone({
-    required this.midiNote,
-    required this.toneLabel,
-    required this.stable,
-    this.role,
-  });
+class _AnchorChoice {
+  const _AnchorChoice(this.midiNote, this.toneLabel);
 
   final int midiNote;
-  final String? toneLabel;
-  final bool stable;
-  final MelodyNoteRole? role;
-}
-
-class _ResolvedNoteBuilder {
-  const _ResolvedNoteBuilder({
-    required this.midiNote,
-    required this.startBeatOffset,
-    required this.role,
-    required this.structural,
-    this.velocity = 92,
-    this.gain = 1.0,
-    this.toneLabel,
-  });
-
-  final int midiNote;
-  final double startBeatOffset;
-  final MelodyNoteRole role;
-  final bool structural;
-  final int velocity;
-  final double gain;
-  final String? toneLabel;
-
-  _ResolvedTone asTone() {
-    return _ResolvedTone(
-      midiNote: midiNote,
-      toneLabel: toneLabel,
-      stable: structural,
-      role: role,
-    );
-  }
-
-  _ResolvedNoteBuilder copyWith({
-    int? midiNote,
-    double? startBeatOffset,
-    MelodyNoteRole? role,
-    bool? structural,
-    int? velocity,
-    double? gain,
-    String? toneLabel,
-  }) {
-    return _ResolvedNoteBuilder(
-      midiNote: midiNote ?? this.midiNote,
-      startBeatOffset: startBeatOffset ?? this.startBeatOffset,
-      role: role ?? this.role,
-      structural: structural ?? this.structural,
-      velocity: velocity ?? this.velocity,
-      gain: gain ?? this.gain,
-      toneLabel: toneLabel ?? this.toneLabel,
-    );
-  }
+  final String toneLabel;
 }

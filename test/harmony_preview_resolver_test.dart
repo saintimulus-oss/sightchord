@@ -54,7 +54,7 @@ void main() {
     expect(clip.notes.first.midiNote % 12, 0);
   });
 
-  test('audition clips add bass support to rootless voicing suggestions', () {
+  test('audition clips keep bass support without adding hidden tensions', () {
     final clip = HarmonyPreviewResolver.auditionClipForGeneratedChord(
       const GeneratedChord(
         symbolData: ChordSymbolData(
@@ -89,8 +89,10 @@ void main() {
     expect(clip.notes.map((note) => note.toneLabel), contains('1'));
     expect(
       clip.notes.map((note) => note.toneLabel),
-      containsAll(<String>['3', '7', '9', '13']),
+      containsAll(<String>['3', '7']),
     );
+    expect(clip.notes.map((note) => note.toneLabel), isNot(contains('9')));
+    expect(clip.notes.map((note) => note.toneLabel), isNot(contains('13')));
   });
 
   test('keeps inversion basses close to the previous bass context', () {

@@ -27,11 +27,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
   }
 
   String _settingsComplexityModeLabel(AppLocalizations l10n) {
-    return switch (_settings.settingsComplexityMode) {
-      SettingsComplexityMode.guided => l10n.setupAssistantModeGuided,
-      SettingsComplexityMode.standard => l10n.setupAssistantModeStandard,
-      SettingsComplexityMode.advanced => l10n.setupAssistantModeAdvanced,
-    };
+    return _settings.settingsComplexityMode.localizedLabel(l10n);
   }
 
   Future<void> _openAdvancedSettings() async {
@@ -47,6 +43,114 @@ extension _PracticeHomePageUi on _MyHomePageState {
           },
         ),
       ),
+    );
+  }
+
+  bool _usesCompactMobileLayout(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    return size.width < 720;
+  }
+
+  List<MetronomeBeatState> _resolvedMetronomeBeatStates() {
+    return _settings.metronomePattern.resolve(beatsPerBar: _beatsPerBar);
+  }
+
+  MetronomeBeatState _nextMetronomeBeatState(MetronomeBeatState current) {
+    return switch (current) {
+      MetronomeBeatState.normal => MetronomeBeatState.accent,
+      MetronomeBeatState.accent => MetronomeBeatState.mute,
+      MetronomeBeatState.mute => MetronomeBeatState.normal,
+    };
+  }
+
+  void _toggleMetronomePatternEditor() {
+    _setMetronomePatternEditing(!_metronomePatternEditing);
+  }
+
+  void _cycleMetronomeBeatState(int beatIndex) {
+    final nextStates = List<MetronomeBeatState>.from(
+      _resolvedMetronomeBeatStates(),
+    );
+    nextStates[beatIndex] = _nextMetronomeBeatState(nextStates[beatIndex]);
+    _applySettings(
+      _settings.copyWith(
+        metronomePattern: _settings.metronomePattern.copyWith(
+          preset: MetronomePatternPreset.custom,
+          customBeatStates: nextStates,
+        ),
+      ),
+    );
+  }
+
+  void _togglePreviewAutoPlay(HarmonyPlaybackPattern pattern) {
+    final isAlreadyPinned =
+        _settings.autoPlayChordChanges && _settings.autoPlayPattern == pattern;
+    _applySettings(
+      _settings.copyWith(
+        autoPlayChordChanges: !isAlreadyPinned,
+        autoPlayPattern: pattern,
+      ),
+    );
+  }
+
+  Future<void> _openTimeSignaturePicker() async {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.practiceMeter,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.practiceMeterHelp,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    for (final signature in PracticeTimeSignature.values)
+                      ChoiceChip(
+                        key: ValueKey(
+                          'practice-time-signature-${signature.name}',
+                        ),
+                        label: Text(signature.localizedLabel(l10n)),
+                        selected: _settings.timeSignature == signature,
+                        onSelected: (selected) {
+                          if (!selected) {
+                            return;
+                          }
+                          Navigator.of(sheetContext).pop();
+                          _setMetronomePatternEditing(false);
+                          _applySettings(
+                            _settings.copyWith(timeSignature: signature),
+                            reseed: true,
+                          );
+                        },
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -382,8 +486,236 @@ extension _PracticeHomePageUi on _MyHomePageState {
     _applySettings(_settings.copyWith(voicingSuggestionsEnabled: selected));
   }
 
-  void _toggleQuickMelodyGeneration(bool selected) {
-    _applySettings(_settings.copyWith(melodyGenerationEnabled: selected));
+  MelodyQuickPreset get _currentQuickMelodyPreset =>
+      PracticeSettingsFactory.quickMelodyPresetForSettings(_settings);
+
+  MelodyPresetDescriptor get _currentModeMelodyDescriptor =>
+      PracticeSettingsFactory.describeComplexityModeMelodyPreset(
+        _settings.settingsComplexityMode,
+      );
+
+  MelodyPresetDescriptor? get _currentQuickMelodyDescriptor =>
+      !_settings.melodyGenerationEnabled
+      ? null
+      : PracticeSettingsFactory.describeActiveMelodySettings(_settings);
+
+  String _quickMelodyToggleLabel(
+    AppLocalizations l10n, {
+    bool compact = false,
+  }) {
+    final value = !_settings.melodyGenerationEnabled
+        ? 'Off'
+        : _currentQuickMelodyPreset.localizedLabel(l10n);
+    if (compact) {
+      return !_settings.melodyGenerationEnabled ? 'Line Off' : value;
+    }
+    return '${l10n.melodyGenerationTitle}: $value';
+  }
+
+  void _applyQuickMelodyPresetSelection(MelodyQuickPreset preset) {
+    _applySettings(
+      PracticeSettingsFactory.applyQuickMelodyPreset(_settings, preset),
+    );
+  }
+
+  void _disableQuickMelodyPreset() {
+    _applySettings(_settings.copyWith(melodyGenerationEnabled: false));
+  }
+
+  void _toggleQuickMelodyGeneration(bool _) {
+    if (!_settings.melodyGenerationEnabled) {
+      _applyQuickMelodyPresetSelection(MelodyQuickPreset.guideLine);
+      return;
+    }
+    if (_currentQuickMelodyPreset == MelodyQuickPreset.colorLine) {
+      _disableQuickMelodyPreset();
+      return;
+    }
+    _applyQuickMelodyPresetSelection(_currentQuickMelodyPreset.next);
+  }
+
+  Widget _buildMelodyPresetSelector(
+    BuildContext context, {
+    required bool compact,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final modeDescriptor = _currentModeMelodyDescriptor;
+    final quickDescriptor = _currentQuickMelodyDescriptor;
+    final summary = compact
+        ? quickDescriptor == null
+              ? '${modeDescriptor.label} default line. Pick a preset to change rhythm, color, and motif feel.'
+              : '${quickDescriptor.label}: ${quickDescriptor.summary}.'
+        : quickDescriptor == null
+        ? '${modeDescriptor.label}: ${modeDescriptor.summary}. Tap a line preset to hear the difference.'
+        : '${quickDescriptor.label}: ${quickDescriptor.summary}. ${modeDescriptor.differenceReason}.';
+    final densityLabel = quickDescriptor?.density.localizedLabel(l10n);
+    final styleLabel = quickDescriptor?.style.localizedLabel(l10n);
+    final compactMetrics = quickDescriptor == null
+        ? null
+        : '${densityLabel!} / ${styleLabel!} / Sync ${quickDescriptor.syncopationBand} / Color ${quickDescriptor.colorBand} / Novelty ${quickDescriptor.noveltyBand} / Motif ${quickDescriptor.motifBand}';
+
+    final card = DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLow.withValues(alpha: 0.82),
+        borderRadius: BorderRadius.circular(compact ? 18 : 22),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          compact ? 12 : 14,
+          compact ? 10 : 12,
+          compact ? 12 : 14,
+          compact ? 10 : 12,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (compact) ...[
+              Row(
+                children: [
+                  Icon(
+                    Icons.tune_rounded,
+                    size: 16,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Line Presets',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Base mode: ${_settings.settingsComplexityMode.localizedLabel(l10n)}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ] else
+              Row(
+                children: [
+                  Icon(
+                    Icons.tune_rounded,
+                    size: 18,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Melody Line Presets',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  Chip(
+                    label: Text(
+                      _settings.settingsComplexityMode.localizedLabel(l10n),
+                    ),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ],
+              ),
+            const SizedBox(height: 6),
+            Text(
+              summary,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                height: 1.25,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ChoiceChip(
+                  key: const ValueKey('melody-preset-off'),
+                  label: const Text('Off'),
+                  selected: !_settings.melodyGenerationEnabled,
+                  onSelected: (_) => _disableQuickMelodyPreset(),
+                ),
+                for (final preset in MelodyQuickPreset.values)
+                  ChoiceChip(
+                    key: ValueKey('melody-preset-${preset.name}'),
+                    label: Text(
+                      compact
+                          ? switch (preset) {
+                              MelodyQuickPreset.guideLine => 'Guide',
+                              MelodyQuickPreset.songLine => 'Song',
+                              MelodyQuickPreset.colorLine => 'Color',
+                            }
+                          : preset.localizedLabel(l10n),
+                    ),
+                    selected:
+                        _settings.melodyGenerationEnabled &&
+                        _currentQuickMelodyPreset == preset,
+                    onSelected: (selected) {
+                      if (!selected &&
+                          _settings.melodyGenerationEnabled &&
+                          _currentQuickMelodyPreset == preset) {
+                        return;
+                      }
+                      _applyQuickMelodyPresetSelection(preset);
+                    },
+                  ),
+              ],
+            ),
+            if (quickDescriptor != null) ...[
+              const SizedBox(height: 10),
+              if (compact)
+                Text(
+                  compactMetrics!,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w700,
+                    height: 1.35,
+                  ),
+                )
+              else
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _MelodyMetricChip(label: 'Density', value: densityLabel!),
+                    _MelodyMetricChip(label: 'Style', value: styleLabel!),
+                    _MelodyMetricChip(
+                      label: 'Sync',
+                      value: quickDescriptor.syncopationBand,
+                    ),
+                    _MelodyMetricChip(
+                      label: 'Color',
+                      value: quickDescriptor.colorBand,
+                    ),
+                    _MelodyMetricChip(
+                      label: 'Novelty',
+                      value: quickDescriptor.noveltyBand,
+                    ),
+                    _MelodyMetricChip(
+                      label: 'Motif',
+                      value: quickDescriptor.motifBand,
+                    ),
+                    _MelodyMetricChip(
+                      label: 'Chromatic',
+                      value: quickDescriptor.allowChromaticApproaches
+                          ? 'On'
+                          : 'Off',
+                    ),
+                  ],
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
+    return card;
   }
 
   void _toggleQuickInversions(bool selected) {
@@ -397,12 +729,425 @@ extension _PracticeHomePageUi on _MyHomePageState {
     );
   }
 
+  Future<void> _openVoicingSuggestionsSheet() async {
+    final recommendations = _voicingRecommendations;
+    if (recommendations == null || recommendations.suggestions.isEmpty) {
+      return;
+    }
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              16,
+              8,
+              16,
+              16 + MediaQuery.viewInsetsOf(sheetContext).bottom,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  l10n.voicingSuggestionsTitle,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: VoicingSuggestionsSection(
+                      recommendations: recommendations,
+                      displayMode: _settings.voicingDisplayMode,
+                      selectedSignature: _displayedVoicingSignature(),
+                      showReasons: _settings.showVoicingReasons,
+                      onSelectSuggestion: (suggestion) {
+                        Navigator.of(sheetContext).pop();
+                        _handleVoicingSelected(suggestion);
+                      },
+                      onToggleLock: _handleVoicingLockToggle,
+                      onPlaySuggestion: _playVoicingSuggestionPreview,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMelodyPlaybackModeSelector(
+    BuildContext context, {
+    required bool compact,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    if (!compact) {
+      return Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final mode in MelodyPlaybackMode.values)
+            ChoiceChip(
+              key: ValueKey('melody-playback-mode-${mode.name}'),
+              label: Text(mode.localizedLabel(l10n)),
+              selected: _settings.melodyPlaybackMode == mode,
+              onSelected: (selected) {
+                if (!selected) {
+                  return;
+                }
+                _applySettings(_settings.copyWith(melodyPlaybackMode: mode));
+              },
+            ),
+        ],
+      );
+    }
+
+    IconData iconForMode(MelodyPlaybackMode mode) {
+      return switch (mode) {
+        MelodyPlaybackMode.chordsOnly => Icons.piano_rounded,
+        MelodyPlaybackMode.melodyOnly => Icons.graphic_eq_rounded,
+        MelodyPlaybackMode.both => Icons.layers_rounded,
+      };
+    }
+
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final mode in MelodyPlaybackMode.values)
+          _CompactQuickToggleButton(
+            buttonKey: ValueKey('melody-playback-mode-${mode.name}'),
+            icon: iconForMode(mode),
+            label: mode.localizedLabel(l10n),
+            selected: _settings.melodyPlaybackMode == mode,
+            onPressed: () =>
+                _applySettings(_settings.copyWith(melodyPlaybackMode: mode)),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTransportStrip(BuildContext context, {required bool compact}) {
+    final l10n = AppLocalizations.of(context)!;
+    final materialL10n = MaterialLocalizations.of(context);
+    final theme = Theme.of(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final effectiveCompact = compact || constraints.maxWidth < 360;
+        final beatRow = BeatIndicatorRow(
+          beatCount: _beatsPerBar,
+          activeBeat: _currentBeat,
+          beatStates: _resolvedMetronomeBeatStates(),
+          expanded: _metronomePatternEditing,
+          onPressed: !_metronomePatternEditing
+              ? _toggleMetronomePatternEditor
+              : null,
+          onBeatPressed: _metronomePatternEditing
+              ? _cycleMetronomeBeatState
+              : null,
+          animationDuration: _beatIndicatorAnimationDuration(),
+        );
+        final editDoneButton = _metronomePatternEditing
+            ? Padding(
+                padding: EdgeInsets.only(left: effectiveCompact ? 8 : 10),
+                child: IconButton(
+                  tooltip: materialL10n.okButtonLabel,
+                  onPressed: _toggleMetronomePatternEditor,
+                  style: IconButton.styleFrom(
+                    minimumSize: Size.square(effectiveCompact ? 34 : 38),
+                    backgroundColor: theme.colorScheme.primaryContainer,
+                    foregroundColor: theme.colorScheme.primary,
+                  ),
+                  icon: Icon(
+                    Icons.check_rounded,
+                    size: effectiveCompact ? 18 : 20,
+                  ),
+                ),
+              )
+            : const SizedBox.shrink();
+
+        final meterButton = _TransportMeterButton(
+          label: _settings.timeSignature.localizedLabel(l10n),
+          tooltip: l10n.practiceMeter,
+          compact: effectiveCompact,
+          onPressed: _openTimeSignaturePicker,
+        );
+
+        final transportButtons = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _TransportToggleButton(
+              running: _autoRunning,
+              startTooltip: l10n.startAutoplay,
+              pauseTooltip: l10n.pauseAutoplay,
+              compact: effectiveCompact,
+              onPressed: _toggleAutoPlay,
+            ),
+            const SizedBox(width: 8),
+            _TransportResetButton(
+              tooltip: l10n.resetGeneratedChords,
+              compact: effectiveCompact,
+              onPressed: _resetGeneratedChords,
+            ),
+          ],
+        );
+
+        final stackedLayout =
+            _metronomePatternEditing ||
+            _beatsPerBar > 7 ||
+            constraints.maxWidth < 360;
+
+        return Center(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface.withValues(alpha: 0.84),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: theme.colorScheme.outlineVariant),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: effectiveCompact ? 10 : 16,
+                vertical: effectiveCompact ? 8 : 10,
+              ),
+              child: stackedLayout
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: [meterButton, transportButtons],
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: effectiveCompact ? 8 : 10,
+                          runSpacing: effectiveCompact ? 8 : 10,
+                          children: [
+                            beatRow,
+                            if (_metronomePatternEditing) editDoneButton,
+                          ],
+                        ),
+                      ],
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        meterButton,
+                        const SizedBox(width: 12),
+                        beatRow,
+                        editDoneButton,
+                        const SizedBox(width: 12),
+                        transportButtons,
+                      ],
+                    ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCompactGeneratorQuickSettingsPanel(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final showExpandedGeneratorControls = !_usesGuidedSettingsMode;
+
+    return DecoratedBox(
+      key: const ValueKey('practice-quick-settings-panel'),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.tune_rounded,
+                        size: 18,
+                        color: theme.colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          l10n.settings,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Chip(
+                        visualDensity: VisualDensity.compact,
+                        label: Text(_settingsComplexityModeLabel(l10n)),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _CompactQuickActionTile(
+                    buttonKey: const ValueKey('practice-key-selector-button'),
+                    icon: Icons.library_music_rounded,
+                    label: l10n.keys,
+                    value: _selectedKeySummary(l10n),
+                    onPressed: _openKeyCenterPicker,
+                  ),
+                ),
+                if (showExpandedGeneratorControls) ...[
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _CompactQuickActionTile(
+                      buttonKey: const ValueKey(
+                        'practice-chord-quality-button',
+                      ),
+                      icon: Icons.tune_rounded,
+                      label: l10n.chordTypeFilters,
+                      value: '${_settings.enabledChordQualities.length}',
+                      onPressed: _openChordQualityPicker,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _CompactQuickToggleButton(
+                  buttonKey: const ValueKey('smart-generator-mode-toggle'),
+                  icon: Icons.auto_awesome_rounded,
+                  label: l10n.smartGeneratorMode,
+                  selected: _settings.smartGeneratorMode,
+                  onPressed: _usesKeyMode
+                      ? () => _toggleQuickSmartGenerator(
+                          !_settings.smartGeneratorMode,
+                        )
+                      : null,
+                ),
+                _CompactQuickToggleButton(
+                  buttonKey: const ValueKey('voicing-suggestions-toggle'),
+                  icon: Icons.piano_rounded,
+                  label: l10n.voicingSuggestionsTitle,
+                  selected: _settings.voicingSuggestionsEnabled,
+                  onPressed: () => _toggleQuickVoicingSuggestions(
+                    !_settings.voicingSuggestionsEnabled,
+                  ),
+                ),
+                _CompactQuickToggleButton(
+                  buttonKey: const ValueKey('melody-generation-toggle'),
+                  icon: Icons.music_note_rounded,
+                  label: _quickMelodyToggleLabel(l10n, compact: true),
+                  selected: _settings.melodyGenerationEnabled,
+                  onPressed: () => _toggleQuickMelodyGeneration(true),
+                ),
+                if (showExpandedGeneratorControls)
+                  _CompactQuickToggleButton(
+                    buttonKey: const ValueKey('non-diatonic-toggle'),
+                    icon: Icons.shuffle_rounded,
+                    label: l10n.nonDiatonic,
+                    selected: _hasEnabledNonDiatonicOptions,
+                    onPressed: _usesKeyMode
+                        ? () => _toggleQuickNonDiatonic(
+                            !_hasEnabledNonDiatonicOptions,
+                          )
+                        : null,
+                  ),
+                if (showExpandedGeneratorControls)
+                  _CompactQuickToggleButton(
+                    buttonKey: const ValueKey('allow-tensions-toggle'),
+                    icon: Icons.add_circle_outline_rounded,
+                    label: l10n.allowTensions,
+                    selected: _settings.allowTensions,
+                    onPressed: _usesKeyMode
+                        ? () => _toggleQuickTensions(!_settings.allowTensions)
+                        : null,
+                  ),
+                if (showExpandedGeneratorControls)
+                  _CompactQuickToggleButton(
+                    buttonKey: const ValueKey('enable-inversions-toggle'),
+                    icon: Icons.swap_vert_rounded,
+                    label: l10n.inversions,
+                    selected: _settings.inversionSettings.enabled,
+                    onPressed: () => _toggleQuickInversions(
+                      !_settings.inversionSettings.enabled,
+                    ),
+                  ),
+              ],
+            ),
+            if (_settings.melodyGenerationEnabled) ...[
+              const SizedBox(height: 10),
+              _buildMelodyPresetSelector(context, compact: true),
+            ] else ...[
+              const SizedBox(height: 10),
+              Text(
+                'Tap the melody button to cycle Guide, Song, and Color lines.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.25,
+                ),
+              ),
+            ],
+            if (!_usesKeyMode) ...[
+              const SizedBox(height: 8),
+              Text(
+                l10n.keyModeRequiredForSmartGenerator,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildGeneratorQuickSettingsPanel(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final previewLabels = _selectedKeyPreviewLabels(l10n);
     final chordQualityPreviewLabels = _selectedChordQualityPreviewLabels();
     final showExpandedGeneratorControls = !_usesGuidedSettingsMode;
+
+    if (_usesCompactMobileLayout(context)) {
+      return _buildCompactGeneratorQuickSettingsPanel(context);
+    }
 
     return DecoratedBox(
       key: const ValueKey('practice-quick-settings-panel'),
@@ -529,7 +1274,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
                 ),
                 _GeneratorQuickSettingChip(
                   chipKey: const ValueKey('melody-generation-toggle'),
-                  label: l10n.melodyGenerationTitle,
+                  label: _quickMelodyToggleLabel(l10n),
                   selected: _settings.melodyGenerationEnabled,
                   onSelected: _toggleQuickMelodyGeneration,
                 ),
@@ -556,6 +1301,8 @@ extension _PracticeHomePageUi on _MyHomePageState {
                   ),
               ],
             ),
+            const SizedBox(height: 14),
+            _buildMelodyPresetSelector(context, compact: false),
             if (!_usesKeyMode) ...[
               const SizedBox(height: 10),
               Text(
@@ -615,6 +1362,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
     final previousDisplay = _displaySymbolForEvent(_queueState.previousEvent);
     final currentDisplay = _displaySymbolForEvent(_currentChordEvent);
     final nextDisplay = _displaySymbolForEvent(_nextChordEvent);
+    final compactLayout = _usesCompactMobileLayout(context);
 
     return CallbackShortcuts(
       bindings: {
@@ -676,60 +1424,43 @@ extension _PracticeHomePageUi on _MyHomePageState {
                           minHeight: constraints.maxHeight,
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+                          padding: EdgeInsets.fromLTRB(
+                            compactLayout ? 14 : 20,
+                            compactLayout ? 12 : 18,
+                            compactLayout ? 14 : 20,
+                            compactLayout ? 18 : 28,
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               if (_practiceSessionInitialized) ...[
-                                Center(
-                                  child: DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.surface
-                                          .withValues(alpha: 0.82),
-                                      borderRadius: BorderRadius.circular(999),
-                                      border: Border.all(
-                                        color: theme.colorScheme.outlineVariant,
-                                      ),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 10,
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          BeatIndicatorRow(
-                                            beatCount: _beatsPerBar,
-                                            activeBeat: _currentBeat,
-                                            animationDuration:
-                                                _beatIndicatorAnimationDuration(),
-                                          ),
-                                          const SizedBox(width: 14),
-                                          _TransportToggleButton(
-                                            running: _autoRunning,
-                                            startTooltip: l10n.startAutoplay,
-                                            stopTooltip: l10n.stopAutoplay,
-                                            onPressed: _toggleAutoPlay,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
+                                _buildTransportStrip(
+                                  context,
+                                  compact: compactLayout,
                                 ),
-                                const SizedBox(height: 20),
+                                SizedBox(height: compactLayout ? 14 : 20),
                                 _ChordSwipeSurface(
                                   key: _chordSwipeSurfaceKey,
                                   previousLabel: previousDisplay,
                                   currentLabel: currentDisplay,
                                   nextLabel: nextDisplay,
+                                  compact: compactLayout,
                                   performanceMode:
                                       _settings.voicingDisplayMode ==
                                       VoicingDisplayMode.performance,
                                   statusLabel: _currentStatusLabel(l10n),
                                   availableBackSteps: _practiceHistory.length,
-                                  onAdvance: _performManualAdvanceChord,
-                                  onGoBack: _restorePreviousChord,
+                                  onTapAdvance: _performManualAdvanceChord,
+                                  onTapGoBack: () => _restorePreviousChord(
+                                    playAutoPreview: true,
+                                  ),
+                                  onSwipeAdvance: () =>
+                                      _performManualAdvanceChord(
+                                        playAutoPreview: false,
+                                      ),
+                                  onSwipeGoBack: () => _restorePreviousChord(
+                                    playAutoPreview: false,
+                                  ),
                                   controls: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -743,6 +1474,15 @@ extension _PracticeHomePageUi on _MyHomePageState {
                                             ),
                                             icon: Icons.volume_up_rounded,
                                             tooltip: l10n.audioPlayChord,
+                                            compact: compactLayout,
+                                            badgeIcon:
+                                                _settings
+                                                        .autoPlayChordChanges &&
+                                                    _settings.autoPlayPattern ==
+                                                        HarmonyPlaybackPattern
+                                                            .block
+                                                ? Icons.autorenew_rounded
+                                                : null,
                                             onPressed: _currentChord == null
                                                 ? null
                                                 : () => _playCurrentChordPreview(
@@ -750,8 +1490,16 @@ extension _PracticeHomePageUi on _MyHomePageState {
                                                         HarmonyPlaybackPattern
                                                             .block,
                                                   ),
+                                            onLongPress: _currentChord == null
+                                                ? null
+                                                : () => _togglePreviewAutoPlay(
+                                                    HarmonyPlaybackPattern
+                                                        .block,
+                                                  ),
                                           ),
-                                          const SizedBox(width: 12),
+                                          SizedBox(
+                                            width: compactLayout ? 8 : 12,
+                                          ),
                                           _PreviewControlButton(
                                             buttonKey: const ValueKey(
                                               'practice-play-arpeggio-button',
@@ -759,6 +1507,15 @@ extension _PracticeHomePageUi on _MyHomePageState {
                                             icon:
                                                 Icons.multitrack_audio_rounded,
                                             tooltip: l10n.audioPlayArpeggio,
+                                            compact: compactLayout,
+                                            badgeIcon:
+                                                _settings
+                                                        .autoPlayChordChanges &&
+                                                    _settings.autoPlayPattern ==
+                                                        HarmonyPlaybackPattern
+                                                            .arpeggio
+                                                ? Icons.autorenew_rounded
+                                                : null,
                                             onPressed: _currentChord == null
                                                 ? null
                                                 : () => _playCurrentChordPreview(
@@ -766,61 +1523,47 @@ extension _PracticeHomePageUi on _MyHomePageState {
                                                         HarmonyPlaybackPattern
                                                             .arpeggio,
                                                   ),
+                                            onLongPress: _currentChord == null
+                                                ? null
+                                                : () => _togglePreviewAutoPlay(
+                                                    HarmonyPlaybackPattern
+                                                        .arpeggio,
+                                                  ),
                                           ),
                                           if (_settings
                                               .melodyGenerationEnabled) ...[
-                                            const SizedBox(width: 12),
+                                            SizedBox(
+                                              width: compactLayout ? 8 : 12,
+                                            ),
                                             _PreviewControlButton(
                                               buttonKey: const ValueKey(
                                                 'practice-regenerate-melody-button',
                                               ),
-                                              icon:
-                                                  Icons.auto_fix_high_rounded,
-                                              tooltip:
-                                                  l10n.regenerateMelody,
-                                              onPressed: _regenerateCurrentMelody,
+                                              icon: Icons.auto_fix_high_rounded,
+                                              tooltip: l10n.regenerateMelody,
+                                              compact: compactLayout,
+                                              onPressed:
+                                                  _regenerateCurrentMelody,
                                             ),
                                           ],
                                         ],
                                       ),
-                                      if (_settings.melodyGenerationEnabled) ...[
-                                        const SizedBox(height: 10),
-                                        Wrap(
-                                          alignment: WrapAlignment.center,
-                                          spacing: 8,
-                                          runSpacing: 8,
-                                          children: [
-                                            for (final mode
-                                                in MelodyPlaybackMode.values)
-                                              ChoiceChip(
-                                                key: ValueKey(
-                                                  'melody-playback-mode-${mode.name}',
-                                                ),
-                                                label: Text(
-                                                  mode.localizedLabel(l10n),
-                                                ),
-                                                selected:
-                                                    _settings
-                                                        .melodyPlaybackMode ==
-                                                    mode,
-                                                onSelected: (selected) {
-                                                  if (!selected) {
-                                                    return;
-                                                  }
-                                                  _applySettings(
-                                                    _settings.copyWith(
-                                                      melodyPlaybackMode: mode,
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                          ],
+                                      if (_settings
+                                          .melodyGenerationEnabled) ...[
+                                        SizedBox(
+                                          height: compactLayout ? 8 : 10,
+                                        ),
+                                        _buildMelodyPlaybackModeSelector(
+                                          context,
+                                          compact: compactLayout,
                                         ),
                                         if (_currentMelodyEvent != null &&
                                             _previewTextForMelodyEvent(
                                               _currentMelodyEvent,
                                             ).isNotEmpty) ...[
-                                          const SizedBox(height: 10),
+                                          SizedBox(
+                                            height: compactLayout ? 8 : 10,
+                                          ),
                                           _MelodyPreviewStrip(
                                             currentText:
                                                 _previewTextForMelodyEvent(
@@ -832,41 +1575,61 @@ extension _PracticeHomePageUi on _MyHomePageState {
                                                 ),
                                             currentLabel:
                                                 l10n.melodyPreviewCurrent,
-                                            nextLabel:
-                                                l10n.melodyPreviewNext,
+                                            nextLabel: l10n.melodyPreviewNext,
+                                            compact: compactLayout,
                                           ),
                                         ],
                                       ],
                                     ],
                                   ),
                                 ),
-                                const SizedBox(height: 18),
+                                SizedBox(height: compactLayout ? 12 : 18),
                                 _buildGeneratorQuickSettingsPanel(context),
                                 if (_settings.voicingSuggestionsEnabled &&
                                     _voicingRecommendations != null &&
                                     _voicingRecommendations!
                                         .suggestions
                                         .isNotEmpty) ...[
-                                  const SizedBox(height: 18),
-                                  VoicingSuggestionsSection(
-                                    recommendations: _voicingRecommendations!,
-                                    displayMode: _settings.voicingDisplayMode,
-                                    selectedSignature:
-                                        _displayedVoicingSignature(),
-                                    showReasons: _settings.showVoicingReasons,
-                                    onSelectSuggestion: _handleVoicingSelected,
-                                    onToggleLock: _handleVoicingLockToggle,
-                                    onPlaySuggestion:
-                                        _playVoicingSuggestionPreview,
-                                  ),
+                                  SizedBox(height: compactLayout ? 12 : 18),
+                                  if (compactLayout)
+                                    SizedBox(
+                                      key: const ValueKey(
+                                        'voicing-suggestions-section',
+                                      ),
+                                      width: double.infinity,
+                                      child: _CompactQuickActionTile(
+                                        buttonKey: const ValueKey(
+                                          'open-voicing-suggestions-sheet',
+                                        ),
+                                        icon: Icons.piano_rounded,
+                                        label: l10n.voicingSuggestionsTitle,
+                                        value:
+                                            '${_voicingRecommendations!.suggestions.length}',
+                                        onPressed: _openVoicingSuggestionsSheet,
+                                      ),
+                                    )
+                                  else
+                                    VoicingSuggestionsSection(
+                                      recommendations: _voicingRecommendations!,
+                                      displayMode: _settings.voicingDisplayMode,
+                                      selectedSignature:
+                                          _displayedVoicingSignature(),
+                                      showReasons: _settings.showVoicingReasons,
+                                      onSelectSuggestion:
+                                          _handleVoicingSelected,
+                                      onToggleLock: _handleVoicingLockToggle,
+                                      onPlaySuggestion:
+                                          _playVoicingSuggestionPreview,
+                                    ),
                                 ],
-                                const SizedBox(height: 18),
+                                SizedBox(height: compactLayout ? 12 : 18),
                                 Center(
                                   child: _BpmControlCluster(
                                     bpmController: _bpmController,
                                     bpmLabel: l10n.bpmLabel,
                                     decreaseTooltip: l10n.decreaseBpm,
                                     increaseTooltip: l10n.increaseBpm,
+                                    compact: compactLayout,
                                     onAdjust: _adjustBpm,
                                     onChanged: _handleBpmChanged,
                                     onSubmitted: (_) => _normalizeBpm(),
@@ -895,13 +1658,15 @@ class _TransportToggleButton extends StatelessWidget {
   const _TransportToggleButton({
     required this.running,
     required this.startTooltip,
-    required this.stopTooltip,
+    required this.pauseTooltip,
+    this.compact = false,
     required this.onPressed,
   });
 
   final bool running;
   final String startTooltip;
-  final String stopTooltip;
+  final String pauseTooltip;
+  final bool compact;
   final VoidCallback onPressed;
 
   @override
@@ -909,7 +1674,7 @@ class _TransportToggleButton extends StatelessWidget {
     final theme = Theme.of(context);
     return IconButton(
       key: const ValueKey('practice-autoplay-button'),
-      tooltip: running ? stopTooltip : startTooltip,
+      tooltip: running ? pauseTooltip : startTooltip,
       onPressed: onPressed,
       style: IconButton.styleFrom(
         backgroundColor: running
@@ -918,14 +1683,87 @@ class _TransportToggleButton extends StatelessWidget {
         foregroundColor: running
             ? theme.colorScheme.onPrimary
             : theme.colorScheme.onSurface,
-        minimumSize: const Size.square(46),
+        minimumSize: Size.square(compact ? 40 : 46),
         side: BorderSide(
           color: running
               ? theme.colorScheme.primary
               : theme.colorScheme.outlineVariant,
         ),
       ),
-      icon: Icon(running ? Icons.stop_rounded : Icons.play_arrow_rounded),
+      icon: Icon(
+        running ? Icons.pause_rounded : Icons.play_arrow_rounded,
+        size: compact ? 22 : 24,
+      ),
+    );
+  }
+}
+
+class _TransportResetButton extends StatelessWidget {
+  const _TransportResetButton({
+    required this.tooltip,
+    this.compact = false,
+    required this.onPressed,
+  });
+
+  final String tooltip;
+  final bool compact;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return IconButton(
+      key: const ValueKey('practice-reset-generated-chords-button'),
+      tooltip: tooltip,
+      onPressed: onPressed,
+      style: IconButton.styleFrom(
+        backgroundColor: theme.colorScheme.surfaceContainerLow,
+        foregroundColor: theme.colorScheme.onSurface,
+        minimumSize: Size.square(compact ? 40 : 46),
+        side: BorderSide(color: theme.colorScheme.outlineVariant),
+      ),
+      icon: Icon(Icons.stop_rounded, size: compact ? 22 : 24),
+    );
+  }
+}
+
+class _TransportMeterButton extends StatelessWidget {
+  const _TransportMeterButton({
+    required this.label,
+    required this.tooltip,
+    this.compact = false,
+    required this.onPressed,
+  });
+
+  final String label;
+  final String tooltip;
+  final bool compact;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Tooltip(
+      message: tooltip,
+      child: OutlinedButton.icon(
+        key: const ValueKey('practice-time-signature-button'),
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          minimumSize: Size(0, compact ? 40 : 46),
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 8 : 12,
+            vertical: compact ? 8 : 10,
+          ),
+          side: BorderSide(color: theme.colorScheme.outlineVariant),
+        ),
+        icon: Icon(Icons.music_note_rounded, size: compact ? 16 : 20),
+        label: Text(
+          label,
+          style: theme.textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -936,29 +1774,76 @@ class _PreviewControlButton extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     required this.onPressed,
+    this.onLongPress,
+    this.badgeIcon,
+    this.compact = false,
   });
 
   final Key buttonKey;
   final IconData icon;
   final String tooltip;
   final VoidCallback? onPressed;
+  final VoidCallback? onLongPress;
+  final IconData? badgeIcon;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return IconButton(
-      key: buttonKey,
-      tooltip: tooltip,
-      onPressed: onPressed,
-      style: IconButton.styleFrom(
-        backgroundColor: theme.colorScheme.surface,
-        foregroundColor: theme.colorScheme.onSurface,
-        disabledBackgroundColor: theme.colorScheme.surfaceContainerLow,
-        disabledForegroundColor: theme.colorScheme.onSurfaceVariant,
-        minimumSize: const Size.square(54),
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
+    final enabled = onPressed != null || onLongPress != null;
+    final size = compact ? 46.0 : 54.0;
+    final backgroundColor = enabled
+        ? theme.colorScheme.surface
+        : theme.colorScheme.surfaceContainerLow;
+    final foregroundColor = enabled
+        ? theme.colorScheme.onSurface
+        : theme.colorScheme.onSurfaceVariant;
+
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        key: buttonKey,
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          onLongPress: onLongPress,
+          borderRadius: BorderRadius.circular(compact ? 18 : 20),
+          child: Ink(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(compact ? 18 : 20),
+              border: Border.all(color: theme.colorScheme.outlineVariant),
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(icon, size: compact ? 24 : 28, color: foregroundColor),
+                if (badgeIcon != null)
+                  Positioned(
+                    top: compact ? 5 : 6,
+                    right: compact ? 5 : 6,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(compact ? 2 : 2.5),
+                        child: Icon(
+                          badgeIcon,
+                          size: compact ? 10 : 12,
+                          color: theme.colorScheme.onPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
       ),
-      icon: Icon(icon, size: 28),
     );
   }
 }
@@ -969,12 +1854,14 @@ class _MelodyPreviewStrip extends StatelessWidget {
     required this.nextText,
     required this.currentLabel,
     required this.nextLabel,
+    this.compact = false,
   });
 
   final String currentText;
   final String nextText;
   final String currentLabel;
   final String nextLabel;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -987,19 +1874,25 @@ class _MelodyPreviewStrip extends StatelessWidget {
           children: [
             Text(
               label,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-              ),
+              style:
+                  (compact
+                          ? theme.textTheme.labelSmall
+                          : theme.textTheme.labelMedium)
+                      ?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                      ),
             ),
             const SizedBox(height: 4),
             Text(
               text.isEmpty ? '...' : text,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style:
+                  (compact
+                          ? theme.textTheme.bodySmall
+                          : theme.textTheme.bodyMedium)
+                      ?.copyWith(fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -1013,11 +1906,16 @@ class _MelodyPreviewStrip extends StatelessWidget {
         border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        padding: EdgeInsets.fromLTRB(
+          compact ? 12 : 14,
+          compact ? 10 : 12,
+          compact ? 12 : 14,
+          compact ? 10 : 12,
+        ),
         child: Row(
           children: [
             buildColumn(currentLabel, currentText),
-            const SizedBox(width: 12),
+            SizedBox(width: compact ? 10 : 12),
             buildColumn(nextLabel, nextText),
           ],
         ),
@@ -1032,6 +1930,7 @@ class _BpmControlCluster extends StatefulWidget {
     required this.bpmLabel,
     required this.decreaseTooltip,
     required this.increaseTooltip,
+    this.compact = false,
     required this.onAdjust,
     required this.onChanged,
     required this.onSubmitted,
@@ -1042,6 +1941,7 @@ class _BpmControlCluster extends StatefulWidget {
   final String bpmLabel;
   final String decreaseTooltip;
   final String increaseTooltip;
+  final bool compact;
   final ValueChanged<int> onAdjust;
   final ValueChanged<String> onChanged;
   final ValueChanged<String> onSubmitted;
@@ -1131,6 +2031,7 @@ class _BpmControlClusterState extends State<_BpmControlCluster> {
               buttonKey: const ValueKey('bpm-decrease-button'),
               icon: Icons.remove_rounded,
               tooltip: widget.decreaseTooltip,
+              compact: widget.compact,
               onPressStart: () => _startContinuousAdjust(-5),
               onPressEnd: _stopContinuousAdjust,
             ),
@@ -1152,9 +2053,9 @@ class _BpmControlClusterState extends State<_BpmControlCluster> {
                     border: Border.all(color: theme.colorScheme.outlineVariant),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 6,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: widget.compact ? 12 : 14,
+                      vertical: widget.compact ? 4 : 6,
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -1162,11 +2063,11 @@ class _BpmControlClusterState extends State<_BpmControlCluster> {
                         Icon(
                           Icons.speed_rounded,
                           color: theme.colorScheme.onSurfaceVariant,
-                          size: 18,
+                          size: widget.compact ? 16 : 18,
                         ),
                         const SizedBox(width: 10),
                         SizedBox(
-                          width: 84,
+                          width: widget.compact ? 68 : 84,
                           child: TextField(
                             key: const ValueKey('bpm-input'),
                             controller: widget.bpmController,
@@ -1176,10 +2077,14 @@ class _BpmControlClusterState extends State<_BpmControlCluster> {
                             ),
                             textInputAction: TextInputAction.done,
                             textAlign: TextAlign.center,
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.8,
-                            ),
+                            style:
+                                (widget.compact
+                                        ? theme.textTheme.titleLarge
+                                        : theme.textTheme.headlineSmall)
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: -0.8,
+                                    ),
                             onChanged: widget.onChanged,
                             onSubmitted: widget.onSubmitted,
                             onTapOutside: widget.onTapOutside,
@@ -1192,7 +2097,7 @@ class _BpmControlClusterState extends State<_BpmControlCluster> {
                               border: InputBorder.none,
                               contentPadding: EdgeInsets.symmetric(
                                 horizontal: 0,
-                                vertical: 8,
+                                vertical: 6,
                               ),
                             ),
                           ),
@@ -1208,6 +2113,7 @@ class _BpmControlClusterState extends State<_BpmControlCluster> {
               buttonKey: const ValueKey('bpm-increase-button'),
               icon: Icons.add_rounded,
               tooltip: widget.increaseTooltip,
+              compact: widget.compact,
               onPressStart: () => _startContinuousAdjust(5),
               onPressEnd: _stopContinuousAdjust,
             ),
@@ -1223,6 +2129,7 @@ class _BpmAdjustButton extends StatelessWidget {
     required this.buttonKey,
     required this.icon,
     required this.tooltip,
+    this.compact = false,
     required this.onPressStart,
     required this.onPressEnd,
   });
@@ -1230,6 +2137,7 @@ class _BpmAdjustButton extends StatelessWidget {
   final Key buttonKey;
   final IconData icon;
   final String tooltip;
+  final bool compact;
   final VoidCallback onPressStart;
   final VoidCallback onPressEnd;
 
@@ -1252,7 +2160,11 @@ class _BpmAdjustButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
               border: Border.all(color: theme.colorScheme.outlineVariant),
             ),
-            child: SizedBox(width: 46, height: 46, child: Icon(icon)),
+            child: SizedBox(
+              width: compact ? 40 : 46,
+              height: compact ? 40 : 46,
+              child: Icon(icon, size: compact ? 20 : 24),
+            ),
           ),
         ),
       ),
@@ -1299,28 +2211,187 @@ class _GeneratorQuickSettingChip extends StatelessWidget {
   }
 }
 
+class _MelodyMetricChip extends StatelessWidget {
+  const _MelodyMetricChip({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Text(
+          '$label $value',
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CompactQuickActionTile extends StatelessWidget {
+  const _CompactQuickActionTile({
+    required this.buttonKey,
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.onPressed,
+  });
+
+  final Key buttonKey;
+  final IconData icon;
+  final String label;
+  final String value;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        key: buttonKey,
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(18),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: theme.colorScheme.outlineVariant),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+            child: Row(
+              children: [
+                Icon(icon, size: 18, color: theme.colorScheme.primary),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CompactQuickToggleButton extends StatelessWidget {
+  const _CompactQuickToggleButton({
+    this.buttonKey,
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onPressed,
+  });
+
+  final Key? buttonKey;
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final backgroundColor = selected
+        ? colorScheme.primaryContainer
+        : colorScheme.surfaceContainerLow;
+    final foregroundColor = selected
+        ? colorScheme.primary
+        : colorScheme.onSurfaceVariant;
+
+    return Tooltip(
+      message: label,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          key: buttonKey,
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(16),
+          child: Ink(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: selected
+                    ? colorScheme.primary.withValues(alpha: 0.25)
+                    : colorScheme.outlineVariant,
+              ),
+            ),
+            child: Icon(icon, size: 20, color: foregroundColor),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ChordSwipeSurface extends StatefulWidget {
   const _ChordSwipeSurface({
     super.key,
     required this.previousLabel,
     required this.currentLabel,
     required this.nextLabel,
+    this.compact = false,
     this.performanceMode = false,
     required this.statusLabel,
     required this.availableBackSteps,
-    required this.onAdvance,
-    required this.onGoBack,
+    required this.onTapAdvance,
+    required this.onTapGoBack,
+    required this.onSwipeAdvance,
+    required this.onSwipeGoBack,
     required this.controls,
   });
 
   final String previousLabel;
   final String currentLabel;
   final String nextLabel;
+  final bool compact;
   final bool performanceMode;
   final String statusLabel;
   final int availableBackSteps;
-  final VoidCallback onAdvance;
-  final VoidCallback onGoBack;
+  final VoidCallback onTapAdvance;
+  final VoidCallback onTapGoBack;
+  final VoidCallback onSwipeAdvance;
+  final VoidCallback onSwipeGoBack;
   final Widget controls;
 
   @override
@@ -1373,6 +2444,30 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
       _edgeRevealController.isAnimating ||
       _activeTransition != null ||
       _remainingSequenceSteps > 0;
+
+  void cancelTransition() {
+    _swipeController.stop();
+    _edgeRevealController.stop();
+    _swipeOffsetAnimation = null;
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _activeTransition = null;
+      _edgeRevealTransition = null;
+      _sequenceDirection = null;
+      _sequenceCallback = null;
+      _remainingSequenceSteps = 0;
+      _sequenceUsesMomentum = false;
+      _momentumSequenceCommittedSteps = 0;
+      _momentumSequenceTotalSteps = 0;
+      _momentumSequenceActive = false;
+      _dragOffset = 0;
+      _displayPreviousLabel = widget.previousLabel;
+      _displayCurrentLabel = widget.currentLabel;
+      _displayNextLabel = widget.nextLabel;
+    });
+  }
 
   @override
   void initState() {
@@ -1440,24 +2535,7 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
     if (_activeTransition != null) {
       return;
     }
-    _swipeController.stop();
-    _edgeRevealController.stop();
-    _swipeOffsetAnimation = null;
-    setState(() {
-      _activeTransition = null;
-      _edgeRevealTransition = null;
-      _sequenceDirection = null;
-      _sequenceCallback = null;
-      _remainingSequenceSteps = 0;
-      _sequenceUsesMomentum = false;
-      _momentumSequenceCommittedSteps = 0;
-      _momentumSequenceTotalSteps = 0;
-      _momentumSequenceActive = false;
-      _dragOffset = 0;
-      _displayPreviousLabel = widget.previousLabel;
-      _displayCurrentLabel = widget.currentLabel;
-      _displayNextLabel = widget.nextLabel;
-    });
+    cancelTransition();
   }
 
   @override
@@ -1658,7 +2736,7 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
     int steps = 1,
     bool useMomentum = false,
   }) {
-    final completion = onCompleted ?? widget.onAdvance;
+    final completion = onCompleted ?? widget.onTapAdvance;
     if (_surfaceWidth <= 0) {
       for (var index = 0; index < steps; index += 1) {
         completion();
@@ -1681,7 +2759,7 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
     if (!_canGoBack) {
       return;
     }
-    final completion = onCompleted ?? widget.onGoBack;
+    final completion = onCompleted ?? widget.onTapGoBack;
     if (_surfaceWidth <= 0) {
       final safeSteps = steps.clamp(0, widget.availableBackSteps);
       for (var index = 0; index < safeSteps; index += 1) {
@@ -1739,6 +2817,7 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
 
     if (projectedOffset <= -threshold || velocity <= -720) {
       animateAdvance(
+        onCompleted: widget.onSwipeAdvance,
         steps: _stepCountForFling(velocity),
         useMomentum: prefersMomentum,
       );
@@ -1746,6 +2825,7 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
     }
     if ((projectedOffset >= threshold || velocity >= 720) && _canGoBack) {
       animateGoBack(
+        onCompleted: widget.onSwipeGoBack,
         steps: _stepCountForFling(velocity).clamp(1, widget.availableBackSteps),
         useMomentum: prefersMomentum,
       );
@@ -1768,7 +2848,6 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
       alpha: theme.brightness == Brightness.dark ? 0.18 : 0.1,
     );
     final hasStatusLabel = widget.statusLabel.trim().isNotEmpty;
-
     return Material(
       color: Colors.transparent,
       child: LayoutBuilder(
@@ -1815,7 +2894,12 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+                      padding: EdgeInsets.fromLTRB(
+                        widget.compact ? 14 : 18,
+                        widget.compact ? 14 : 18,
+                        widget.compact ? 14 : 18,
+                        widget.compact ? 14 : 18,
+                      ),
                       child: Column(
                         children: [
                           if (hasStatusLabel) ...[
@@ -1835,19 +2919,26 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
                                     widget.statusLabel,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.labelLarge?.copyWith(
-                                      color:
-                                          theme.colorScheme.onPrimaryContainer,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                    style:
+                                        (widget.compact
+                                                ? theme.textTheme.labelMedium
+                                                : theme.textTheme.labelLarge)
+                                            ?.copyWith(
+                                              color: theme
+                                                  .colorScheme
+                                                  .onPrimaryContainer,
+                                              fontWeight: FontWeight.w700,
+                                            ),
                                   ),
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 18),
+                            SizedBox(height: widget.compact ? 12 : 18),
                           ],
                           SizedBox(
-                            height: widget.performanceMode ? 136 : 154,
+                            height: widget.compact
+                                ? (widget.performanceMode ? 118 : 132)
+                                : (widget.performanceMode ? 136 : 154),
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
@@ -1885,7 +2976,7 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
                               ],
                             ),
                           ),
-                          const SizedBox(height: 18),
+                          SizedBox(height: widget.compact ? 12 : 18),
                           widget.controls,
                         ],
                       ),

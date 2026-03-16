@@ -75,16 +75,20 @@ class HarmonyPreviewResolver {
     if (preferredVoicing == null) {
       return baseClip;
     }
+    final allowedToneLabels = _orderedToneLabelsForSymbolData(
+      chord.symbolData,
+    ).toSet();
 
     final mergedNotes = <HarmonyPreviewNote>[
       for (final note in baseClip.notes)
         if (note.toneLabel == 'bass') note,
       for (var index = 0; index < preferredVoicing.midiNotes.length; index += 1)
-        HarmonyPreviewNote(
-          midiNote: preferredVoicing.midiNotes[index],
-          gain: _gainForToneLabel(preferredVoicing.toneLabels[index]),
-          toneLabel: preferredVoicing.toneLabels[index],
-        ),
+        if (allowedToneLabels.contains(preferredVoicing.toneLabels[index]))
+          HarmonyPreviewNote(
+            midiNote: preferredVoicing.midiNotes[index],
+            gain: _gainForToneLabel(preferredVoicing.toneLabels[index]),
+            toneLabel: preferredVoicing.toneLabels[index],
+          ),
     ];
     final mergedToneLabels = {for (final note in mergedNotes) ?note.toneLabel};
     for (final note in baseClip.notes) {

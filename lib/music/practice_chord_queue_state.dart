@@ -32,7 +32,7 @@ class PracticeChordQueueState {
   }
 
   PracticeChordQueueState withLookAheadEvent(GeneratedChordEvent? event) {
-    return copyWith(lookAheadEvent: event);
+    return copyWith(lookAheadEvent: event ?? _clearField);
   }
 
   PracticeChordQueueState withPlannedSmartChordQueue(
@@ -114,3 +114,4 @@ class _Sentinel {
 class _ClearField {
   const _ClearField();
 }
+

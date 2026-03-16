@@ -139,6 +139,18 @@ class SmartGeneratorHelper {
     return chord.resolutionTargetRomanId ?? chord.resolutionRomanNumeralId;
   }
 
+  static bool allowsConsecutiveRepeat({
+    required HarmonicRhythmPreset harmonicRhythmPreset,
+    required SmartPhraseContext phraseContext,
+  }) {
+    if (harmonicRhythmPreset != HarmonicRhythmPreset.phraseAwareJazz &&
+        harmonicRhythmPreset != HarmonicRhythmPreset.cadenceCompression) {
+      return false;
+    }
+    return phraseContext.eventsInBar <= 2 &&
+        phraseContext.isPhraseBoundaryWindow;
+  }
+
   static SmartCandidateComparison compareVoiceLeadingCandidates({
     required Random random,
     required List<SmartRenderCandidate> candidates,
@@ -1258,6 +1270,12 @@ class SmartGeneratorHelper {
     required _FamilyPlan familyPlan,
   }) {
     final phraseContext = _phraseContextForRequest(request);
+    if (allowsConsecutiveRepeat(
+      harmonicRhythmPreset: request.harmonicRhythmPreset,
+      phraseContext: phraseContext,
+    )) {
+      return familyPlan;
+    }
     if (familyPlan.queue.length < 3 ||
         phraseContext.phraseRole == PhraseRole.opener) {
       return familyPlan;
@@ -2026,6 +2044,12 @@ class SmartGeneratorHelper {
         _patternStepStreak(patternTag) < 2) {
       return false;
     }
+    if (allowsConsecutiveRepeat(
+      harmonicRhythmPreset: request.harmonicRhythmPreset,
+      phraseContext: _phraseContextForRequest(request),
+    )) {
+      return false;
+    }
     final queueSensitivePattern =
         patternTag == 'turnaround_i_vi_ii_v' ||
         patternTag == 'dominant_chain_bridge_style' ||
@@ -2116,6 +2140,10 @@ class SmartGeneratorHelper {
         }
 
         plannedQueue = plan.remainingQueuedChords;
+        final allowConsecutiveRepeat = allowsConsecutiveRepeat(
+          harmonicRhythmPreset: request.harmonicRhythmPreset,
+          phraseContext: plan.debug.phraseContext,
+        );
         final exclusionContext = currentChord == null
             ? const ChordExclusionContext()
             : ChordExclusionContext(
@@ -2127,6 +2155,7 @@ class SmartGeneratorHelper {
                 },
                 repeatGuardKeys: {currentChord.repeatGuardKey},
                 harmonicComparisonKeys: {currentChord.harmonicComparisonKey},
+                allowConsecutiveRepeat: allowConsecutiveRepeat,
               );
         final primaryComparison = compareVoiceLeadingCandidates(
           random: random,
@@ -3323,16 +3352,23 @@ class SmartGeneratorHelper {
     GeneratedChord candidate,
     ChordExclusionContext exclusionContext,
   ) {
-    return exclusionContext.renderedSymbols.contains(
-          ChordRenderingHelper.renderedSymbol(
-            candidate,
-            ChordSymbolStyle.majText,
-          ),
-        ) ||
-        exclusionContext.repeatGuardKeys.contains(candidate.repeatGuardKey) ||
-        exclusionContext.harmonicComparisonKeys.contains(
-          candidate.harmonicComparisonKey,
-        );
+    final blockedByRenderedSymbol = exclusionContext.renderedSymbols.contains(
+      ChordRenderingHelper.renderedSymbol(candidate, ChordSymbolStyle.majText),
+    );
+    final blockedByRepeatGuard = exclusionContext.repeatGuardKeys.contains(
+      candidate.repeatGuardKey,
+    );
+    final blockedByHarmonicComparison = exclusionContext.harmonicComparisonKeys
+        .contains(candidate.harmonicComparisonKey);
+    if (exclusionContext.allowConsecutiveRepeat &&
+        (blockedByRenderedSymbol ||
+            blockedByRepeatGuard ||
+            blockedByHarmonicComparison)) {
+      return false;
+    }
+    return blockedByRenderedSymbol ||
+        blockedByRepeatGuard ||
+        blockedByHarmonicComparison;
   }
 
   static SmartStepPlan _resolveDanglingAppliedChord({

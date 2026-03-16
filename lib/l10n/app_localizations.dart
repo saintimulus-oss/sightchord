@@ -825,6 +825,30 @@ abstract class AppLocalizations {
   /// **'4/4'**
   String get practiceTimeSignatureFourFour;
 
+  /// No description provided for @practiceTimeSignatureFiveFour.
+  ///
+  /// In en, this message translates to:
+  /// **'5/4'**
+  String get practiceTimeSignatureFiveFour;
+
+  /// No description provided for @practiceTimeSignatureSixEight.
+  ///
+  /// In en, this message translates to:
+  /// **'6/8'**
+  String get practiceTimeSignatureSixEight;
+
+  /// No description provided for @practiceTimeSignatureSevenEight.
+  ///
+  /// In en, this message translates to:
+  /// **'7/8'**
+  String get practiceTimeSignatureSevenEight;
+
+  /// No description provided for @practiceTimeSignatureTwelveEight.
+  ///
+  /// In en, this message translates to:
+  /// **'12/8'**
+  String get practiceTimeSignatureTwelveEight;
+
   /// No description provided for @harmonicRhythm.
   ///
   /// In en, this message translates to:
@@ -1266,7 +1290,7 @@ abstract class AppLocalizations {
   /// No description provided for @keyboardShortcutHelp.
   ///
   /// In en, this message translates to:
-  /// **'Space: next chord  Enter: start or stop autoplay  Up/Down: adjust BPM'**
+  /// **'Space: next chord  Enter: start or pause autoplay  Up/Down: adjust BPM'**
   String get keyboardShortcutHelp;
 
   /// No description provided for @nextChord.
@@ -1305,11 +1329,23 @@ abstract class AppLocalizations {
   /// **'Start Autoplay'**
   String get startAutoplay;
 
+  /// No description provided for @pauseAutoplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause Autoplay'**
+  String get pauseAutoplay;
+
   /// No description provided for @stopAutoplay.
   ///
   /// In en, this message translates to:
   /// **'Stop Autoplay'**
   String get stopAutoplay;
+
+  /// No description provided for @resetGeneratedChords.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Generated Chords'**
+  String get resetGeneratedChords;
 
   /// No description provided for @decreaseBpm.
   ///

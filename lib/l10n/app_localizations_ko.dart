@@ -387,6 +387,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get practiceTimeSignatureFourFour => '4/4';
 
   @override
+  String get practiceTimeSignatureFiveFour => '5/4';
+
+  @override
+  String get practiceTimeSignatureSixEight => '6/8';
+
+  @override
+  String get practiceTimeSignatureSevenEight => '7/8';
+
+  @override
+  String get practiceTimeSignatureTwelveEight => '12/8';
+
+  @override
   String get harmonicRhythm => '화성 리듬';
 
   @override
@@ -616,7 +628,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get keyboardShortcutHelp =>
-      'Space: 다음 코드  Enter: 자동 재생 시작/정지  위/아래: BPM 조절';
+      'Space: 다음 코드  Enter: 자동 재생 시작/일시정지  위/아래: BPM 조절';
 
   @override
   String get nextChord => '다음 코드';
@@ -637,7 +649,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get startAutoplay => '자동 재생 시작';
 
   @override
+  String get pauseAutoplay => '자동 재생 일시정지';
+
+  @override
   String get stopAutoplay => '자동 재생 중지';
+
+  @override
+  String get resetGeneratedChords => '생성된 코드 초기화';
 
   @override
   String get decreaseBpm => 'BPM 낮추기';

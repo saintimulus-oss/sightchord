@@ -8,19 +8,12 @@ class AnchorLoopLayout {
     required PracticeTimeSignature timeSignature,
     required HarmonicRhythmPreset harmonicRhythmPreset,
   }) {
+    final splitBeat = timeSignature.splitChangeBeat;
     return switch (harmonicRhythmPreset) {
       HarmonicRhythmPreset.onePerBar => const <int>[0],
-      HarmonicRhythmPreset.twoPerBar ||
-      HarmonicRhythmPreset.phraseAwareJazz => switch (timeSignature) {
-        PracticeTimeSignature.fourFour => const <int>[0, 2],
-        PracticeTimeSignature.threeFour => const <int>[0, 2],
-        PracticeTimeSignature.twoFour => const <int>[0, 1],
-      },
-      HarmonicRhythmPreset.cadenceCompression => switch (timeSignature) {
-        PracticeTimeSignature.fourFour => const <int>[0, 3],
-        PracticeTimeSignature.threeFour => const <int>[0, 2],
-        PracticeTimeSignature.twoFour => const <int>[0, 1],
-      },
+      HarmonicRhythmPreset.twoPerBar || HarmonicRhythmPreset.phraseAwareJazz =>
+        splitBeat == null ? const <int>[0] : <int>[0, splitBeat],
+      HarmonicRhythmPreset.cadenceCompression => const <int>[0],
     };
   }
 

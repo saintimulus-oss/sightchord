@@ -285,6 +285,7 @@ class VoicingEngine {
       score: candidate.breakdown.total,
       voicing: candidate.voicing,
       breakdown: candidate.breakdown,
+      kinds: const [VoicingSuggestionKind.natural],
       reasonTags: _orderedReasonTagsForKind(
         VoicingSuggestionKind.natural,
         candidate.reasonTags,
@@ -441,27 +442,12 @@ class VoicingEngine {
         chord.keyCenter?.prefersFlatSpelling == true ||
         MusicTheory.prefersFlatSpellingForRoot(symbol.root);
 
-    final prioritizedTensions =
-        ChordRenderingHelper.prioritizedTensionOptionsFor(
-          romanNumeralId: chord.romanNumeralId,
-          plannedChordKind: chord.plannedChordKind,
-          allowTensions: settings.allowTensions,
-          selectedTensionOptions: settings.selectedTensionOptions,
-          suppressTensions: false,
-          renderQuality: symbol.renderQuality,
-          chordLanguageLevel: settings.chordLanguageLevel,
-          dominantContext: chord.dominantContext,
-          dominantIntent: chord.dominantIntent,
-        );
     final explicitTensions = _dedupeLabels(symbol.tensions);
-    final prioritizedLabels = _dedupeLabels([
-      ...explicitTensions,
-      ...prioritizedTensions,
-    ]);
     final protectedTensionLabels = _protectedTensionLabelsForChord(
       symbol: symbol,
       explicitTensions: explicitTensions,
     );
+    final displayedToneLabels = _displayedToneLabelsForSymbol(symbol);
 
     List<String> essentialLabels;
     final optionalLabels = <String>[];
@@ -492,38 +478,28 @@ class VoicingEngine {
         break;
       case ChordQuality.dominant7:
         essentialLabels = const ['3', 'b7'];
-        optionalLabels.addAll(
-          _dedupeLabels([...prioritizedLabels, '9', '13', '5', '1']),
-        );
+        optionalLabels.addAll(_dedupeLabels([...explicitTensions, '5', '1']));
         isDominantFamily = true;
         break;
       case ChordQuality.major7:
         essentialLabels = const ['3', '7'];
-        optionalLabels.addAll(
-          _dedupeLabels([...prioritizedLabels, '9', '13', '5', '1']),
-        );
+        optionalLabels.addAll(_dedupeLabels([...explicitTensions, '5', '1']));
         avoidLabels.add('11');
         isMajorFamily = true;
         break;
       case ChordQuality.minor7:
         essentialLabels = const ['b3', 'b7'];
-        optionalLabels.addAll(
-          _dedupeLabels([...prioritizedLabels, '9', '11', '13', '5', '1']),
-        );
+        optionalLabels.addAll(_dedupeLabels([...explicitTensions, '5', '1']));
         isMinorFamily = true;
         break;
       case ChordQuality.minorMajor7:
         essentialLabels = const ['b3', '7'];
-        optionalLabels.addAll(
-          _dedupeLabels([...prioritizedLabels, '9', '11', '5', '1']),
-        );
+        optionalLabels.addAll(_dedupeLabels([...explicitTensions, '5', '1']));
         isMinorFamily = true;
         break;
       case ChordQuality.halfDiminished7:
         essentialLabels = const ['b3', 'b5', 'b7'];
-        optionalLabels.addAll(
-          _dedupeLabels([...prioritizedLabels, '11', 'b13', '1']),
-        );
+        optionalLabels.addAll(_dedupeLabels([...explicitTensions, '1']));
         isMinorFamily = true;
         isHalfDiminishedFamily = true;
         break;
@@ -542,12 +518,12 @@ class VoicingEngine {
         break;
       case ChordQuality.six:
         essentialLabels = const ['3', '6'];
-        optionalLabels.addAll(const ['5', '9', '1']);
+        optionalLabels.addAll(_dedupeLabels([...explicitTensions, '5', '1']));
         isMajorFamily = true;
         break;
       case ChordQuality.minor6:
         essentialLabels = const ['b3', '6'];
-        optionalLabels.addAll(const ['5', '9', '11', '1']);
+        optionalLabels.addAll(_dedupeLabels([...explicitTensions, '5', '1']));
         isMinorFamily = true;
         break;
       case ChordQuality.major69:
@@ -562,7 +538,7 @@ class VoicingEngine {
         essentialLabels = const ['3', 'b7'];
         optionalLabels.addAll(
           _dedupeLabels([
-            for (final tension in [...prioritizedLabels, ..._alteredLabels])
+            for (final tension in [...explicitTensions, ..._alteredLabels])
               if (_isAlteredLabel(tension)) tension,
             '1',
             '5',
@@ -579,29 +555,38 @@ class VoicingEngine {
         break;
       case ChordQuality.dominant7Sharp11:
         essentialLabels = const ['3', 'b7', '#11'];
-        optionalLabels.addAll(
-          _dedupeLabels([...prioritizedLabels, '9', '13', '1', '5']),
-        );
+        optionalLabels.addAll(_dedupeLabels([...explicitTensions, '1', '5']));
         isDominantFamily = true;
         qualityImpliesColor = true;
         break;
       case ChordQuality.dominant13sus4:
-        essentialLabels = const ['4', 'b7'];
-        optionalLabels.addAll(
-          _dedupeLabels(['13', ...prioritizedLabels, '9', '1', '5']),
-        );
+        essentialLabels = const ['4', 'b7', '13'];
+        optionalLabels.addAll(_dedupeLabels([...explicitTensions, '1', '5']));
         isDominantFamily = true;
         isSusFamily = true;
         qualityImpliesColor = true;
         break;
       case ChordQuality.dominant7sus4:
         essentialLabels = const ['4', 'b7'];
-        optionalLabels.addAll(
-          _dedupeLabels([...prioritizedLabels, '9', '13', '1', '5']),
-        );
+        optionalLabels.addAll(_dedupeLabels([...explicitTensions, '1', '5']));
         isDominantFamily = true;
         isSusFamily = true;
         break;
+    }
+
+    if (displayedToneLabels.length <= 3) {
+      final requiredSparseChordFifths = [
+        for (final label in optionalLabels)
+          if (_isFifthLabel(label) && displayedToneLabels.contains(label))
+            label,
+      ];
+      if (requiredSparseChordFifths.isNotEmpty) {
+        essentialLabels = _dedupeLabels([
+          ...essentialLabels,
+          ...requiredSparseChordFifths,
+        ]);
+        optionalLabels.removeWhere(requiredSparseChordFifths.contains);
+      }
     }
 
     final bassAnchorSemitone = symbol.bass == null
@@ -630,8 +615,6 @@ class VoicingEngine {
         priorityOverrides: {
           for (var index = 0; index < explicitTensions.length; index += 1)
             explicitTensions[index]: 92 - index,
-          for (var index = 0; index < prioritizedTensions.length; index += 1)
-            prioritizedTensions[index]: 78 - index,
         },
         startPriority: 64,
       ),
@@ -1570,7 +1553,7 @@ class VoicingEngine {
     final usedSignatures = <String>{};
     final usedFamilies = <VoicingFamily>{};
     final selectedVoicings = <ConcreteVoicing>[];
-    return [
+    return _mergeSuggestionsByVoicing([
       _pickSuggestion(
         rankedCandidates: rankedCandidates,
         kind: VoicingSuggestionKind.natural,
@@ -1609,7 +1592,7 @@ class VoicingEngine {
         allowContinuityReuse: false,
         progressionContext: progressionContext,
       ),
-    ];
+    ]);
   }
 
   static List<VoicingSuggestion> _orderSuggestionsForPreference({
@@ -1632,11 +1615,72 @@ class VoicingEngine {
         if (kind != preferredKind && kind != VoicingSuggestionKind.natural)
           kind,
     ];
-    return [
-      for (final kind in orderedKinds)
-        for (final suggestion in suggestions)
-          if (suggestion.kind == kind) suggestion,
-    ];
+    final ordered = <VoicingSuggestion>[];
+    final seenVoicings = <String>{};
+    for (final kind in orderedKinds) {
+      for (final suggestion in suggestions) {
+        if (!suggestion.matchesKind(kind) ||
+            !seenVoicings.add(suggestion.voicing.signature)) {
+          continue;
+        }
+        ordered.add(suggestion);
+      }
+    }
+    for (final suggestion in suggestions) {
+      if (seenVoicings.add(suggestion.voicing.signature)) {
+        ordered.add(suggestion);
+      }
+    }
+    return ordered;
+  }
+
+  static List<VoicingSuggestion> _mergeSuggestionsByVoicing(
+    List<VoicingSuggestion> suggestions,
+  ) {
+    final merged = <VoicingSuggestion>[];
+    final indexByContentSignature = <String, int>{};
+    for (final suggestion in suggestions) {
+      final contentSignature = suggestion.voicing.contentSignature;
+      final existingIndex = indexByContentSignature[contentSignature];
+      if (existingIndex == null) {
+        indexByContentSignature[contentSignature] = merged.length;
+        merged.add(
+          suggestion.copyWith(
+            kinds: suggestion.matchedKinds,
+            label: _joinedSuggestionLabel(suggestion.matchedKinds),
+          ),
+        );
+        continue;
+      }
+
+      final existing = merged[existingIndex];
+      final mergedKinds = <VoicingSuggestionKind>[
+        ...existing.matchedKinds,
+        for (final kind in suggestion.matchedKinds)
+          if (!existing.matchedKinds.contains(kind)) kind,
+      ];
+      final mergedReasonTags = <VoicingReasonTag>[
+        ...existing.reasonTags,
+        for (final tag in suggestion.reasonTags)
+          if (!existing.reasonTags.contains(tag)) tag,
+      ];
+      final mergedShortReasons = <String>[
+        ...existing.shortReasons,
+        for (final reason in suggestion.shortReasons)
+          if (!existing.shortReasons.contains(reason)) reason,
+      ];
+      merged[existingIndex] = existing.copyWith(
+        kinds: mergedKinds,
+        label: _joinedSuggestionLabel(mergedKinds),
+        shortReasons: mergedShortReasons,
+        score: existing.score >= suggestion.score
+            ? existing.score
+            : suggestion.score,
+        reasonTags: mergedReasonTags,
+        locked: existing.locked || suggestion.locked,
+      );
+    }
+    return merged;
   }
 
   static VoicingSuggestion _pickSuggestion({
@@ -1755,6 +1799,7 @@ class VoicingEngine {
       score: scoreFor(selected),
       voicing: selected.voicing,
       breakdown: selected.breakdown,
+      kinds: <VoicingSuggestionKind>[kind],
       reasonTags: orderedReasonTags,
       locked: lockedVoicing?.signature == selected.voicing.signature,
     );
@@ -2416,6 +2461,10 @@ class VoicingEngine {
     };
   }
 
+  static String _joinedSuggestionLabel(List<VoicingSuggestionKind> kinds) {
+    return kinds.map(_defaultSuggestionLabel).join(' & ');
+  }
+
   static String _defaultReasonLabel(VoicingReasonTag tag) {
     return switch (tag) {
       VoicingReasonTag.essentialCore => 'Essential tones covered',
@@ -2456,6 +2505,16 @@ class VoicingEngine {
     ];
     final templates = <_VoicingTemplate>[];
 
+    List<String> availableOptionals(Iterable<String> preferredOrder) {
+      final preferredLabels = preferredOrder.toList(growable: false);
+      return _dedupeLabels([
+        for (final label in preferredLabels)
+          if (optionalLabels.contains(label)) label,
+        for (final label in optionalLabels)
+          if (!preferredLabels.contains(label)) label,
+      ]);
+    }
+
     void addTemplate(_VoicingTemplate template) {
       if (!_isFamilyAllowedForSettings(
         family: template.family,
@@ -2481,7 +2540,7 @@ class VoicingEngine {
         _VoicingTemplate(
           family: VoicingFamily.sus,
           coreLabels: const ['1', 'b7', '4'],
-          optionalLabels: _dedupeLabels(['13', '9', ...supportLabels]),
+          optionalLabels: availableOptionals(['13', '9', ...supportLabels]),
           targetMidis: const [41, 50, 57, 62, 67],
           registerShifts: const [0, 2],
         ),
@@ -2490,7 +2549,7 @@ class VoicingEngine {
         _VoicingTemplate(
           family: VoicingFamily.shell,
           coreLabels: const ['1', '4', 'b7'],
-          optionalLabels: _dedupeLabels(['9', '13', ...supportLabels]),
+          optionalLabels: availableOptionals(['9', '13', ...supportLabels]),
           targetMidis: const [42, 49, 56, 61, 66],
         ),
       );
@@ -2499,7 +2558,7 @@ class VoicingEngine {
           _VoicingTemplate(
             family: VoicingFamily.rootlessA,
             coreLabels: const ['4', 'b7'],
-            optionalLabels: _dedupeLabels(['9', '13', ...supportLabels]),
+            optionalLabels: availableOptionals(['9', '13', ...supportLabels]),
             targetMidis: const [47, 53, 58, 63, 68],
           ),
         );
@@ -2508,7 +2567,7 @@ class VoicingEngine {
         _VoicingTemplate(
           family: VoicingFamily.spread,
           coreLabels: const ['1', 'b7', '4'],
-          optionalLabels: _dedupeLabels(['13', '9', ...supportLabels]),
+          optionalLabels: availableOptionals(['13', '9', ...supportLabels]),
           targetMidis: const [38, 50, 58, 64, 69],
           registerShifts: const [0, 3],
         ),
@@ -2517,8 +2576,8 @@ class VoicingEngine {
         addTemplate(
           _VoicingTemplate(
             family: VoicingFamily.quartal,
-            coreLabels: const ['1', '4', 'b7', '9'],
-            optionalLabels: _dedupeLabels(['13', ...colorLabels]),
+            coreLabels: const ['1', '4', 'b7'],
+            optionalLabels: availableOptionals(['9', '13', ...colorLabels]),
             targetMidis: const [38, 43, 48, 53, 58],
           ),
         );
@@ -2531,7 +2590,7 @@ class VoicingEngine {
         _VoicingTemplate(
           family: VoicingFamily.shell,
           coreLabels: const ['1', 'b7', '3'],
-          optionalLabels: _dedupeLabels([
+          optionalLabels: availableOptionals([
             ...colorLabels,
             '13',
             '9',
@@ -2546,7 +2605,7 @@ class VoicingEngine {
           _VoicingTemplate(
             family: VoicingFamily.rootlessA,
             coreLabels: const ['3', 'b7'],
-            optionalLabels: _dedupeLabels([
+            optionalLabels: availableOptionals([
               ...colorLabels,
               '9',
               '13',
@@ -2559,7 +2618,7 @@ class VoicingEngine {
           _VoicingTemplate(
             family: VoicingFamily.rootlessB,
             coreLabels: const ['b7', '3'],
-            optionalLabels: _dedupeLabels([
+            optionalLabels: availableOptionals([
               ...colorLabels,
               '13',
               '9',
@@ -2573,7 +2632,7 @@ class VoicingEngine {
         _VoicingTemplate(
           family: VoicingFamily.spread,
           coreLabels: const ['1', 'b7', '3'],
-          optionalLabels: _dedupeLabels([
+          optionalLabels: availableOptionals([
             '13',
             ...colorLabels,
             '9',
@@ -2603,14 +2662,14 @@ class VoicingEngine {
             family: VoicingFamily.upperStructure,
             coreLabels: const ['3', 'b7'],
             optionalLabels: interpretation.isAlteredFamily
-                ? _dedupeLabels([
+                ? availableOptionals([
                     ...colorLabels.where(_isAlteredLabel),
                     'b13',
                     '#9',
                     'b9',
                     '#11',
                   ])
-                : _dedupeLabels(['#11', '13', '9', ...colorLabels]),
+                : availableOptionals(['#11', '13', '9', ...colorLabels]),
             targetMidis: const [47, 53, 61, 64, 69],
           ),
         );
@@ -2622,15 +2681,15 @@ class VoicingEngine {
           _VoicingTemplate(
             family: VoicingFamily.upperStructure,
             coreLabels: const ['3', 'b7', '#11'],
-            optionalLabels: _dedupeLabels(['13', '9']),
+            optionalLabels: availableOptionals(['13', '9']),
             targetMidis: const [47, 53, 59, 64, 69],
           ),
         );
         addTemplate(
           _VoicingTemplate(
             family: VoicingFamily.upperStructure,
-            coreLabels: const ['3', 'b7', '#11', '13'],
-            optionalLabels: _dedupeLabels(['9']),
+            coreLabels: const ['3', 'b7', '#11'],
+            optionalLabels: availableOptionals(['13', '9']),
             targetMidis: const [46, 52, 58, 63, 68],
           ),
         );
@@ -2645,7 +2704,7 @@ class VoicingEngine {
           _VoicingTemplate(
             family: VoicingFamily.altered,
             coreLabels: const ['3', 'b7'],
-            optionalLabels: _dedupeLabels([
+            optionalLabels: availableOptionals([
               ...colorLabels.where(_isAlteredLabel),
               ...colorLabels,
               '13',
@@ -2660,7 +2719,7 @@ class VoicingEngine {
             _VoicingTemplate(
               family: VoicingFamily.altered,
               coreLabels: const ['3', 'b7'],
-              optionalLabels: _dedupeLabels(['b9', 'b13', '#9', '#11']),
+              optionalLabels: availableOptionals(['b9', 'b13', '#9', '#11']),
               targetMidis: const [47, 53, 58, 64, 69],
             ),
           );
@@ -2668,7 +2727,7 @@ class VoicingEngine {
             _VoicingTemplate(
               family: VoicingFamily.altered,
               coreLabels: const ['3', 'b7', 'b9'],
-              optionalLabels: _dedupeLabels(['b13', '#9']),
+              optionalLabels: availableOptionals(['b13', '#9']),
               targetMidis: const [46, 52, 57, 62, 67],
             ),
           );
@@ -2682,7 +2741,12 @@ class VoicingEngine {
         _VoicingTemplate(
           family: VoicingFamily.shell,
           coreLabels: const ['1', 'b7', 'b3'],
-          optionalLabels: _dedupeLabels(['b5', ...colorLabels, '11', 'b13']),
+          optionalLabels: availableOptionals([
+            'b5',
+            ...colorLabels,
+            '11',
+            'b13',
+          ]),
           targetMidis: const [41, 49, 56, 61, 66],
         ),
       );
@@ -2691,7 +2755,7 @@ class VoicingEngine {
           _VoicingTemplate(
             family: VoicingFamily.rootlessA,
             coreLabels: const ['b3', 'b7'],
-            optionalLabels: _dedupeLabels(['11', 'b13', 'b5']),
+            optionalLabels: availableOptionals(['11', 'b13', 'b5']),
             targetMidis: const [46, 52, 58, 63, 68],
           ),
         );
@@ -2700,7 +2764,7 @@ class VoicingEngine {
         _VoicingTemplate(
           family: VoicingFamily.spread,
           coreLabels: const ['1', 'b7', 'b3'],
-          optionalLabels: _dedupeLabels(['11', 'b5', 'b13']),
+          optionalLabels: availableOptionals(['11', 'b5', 'b13']),
           targetMidis: const [38, 49, 57, 63, 68],
           registerShifts: const [0, 3],
         ),
@@ -2713,7 +2777,7 @@ class VoicingEngine {
         _VoicingTemplate(
           family: VoicingFamily.shell,
           coreLabels: const ['1', 'b7', 'b3'],
-          optionalLabels: _dedupeLabels([
+          optionalLabels: availableOptionals([
             ...colorLabels,
             '11',
             '9',
@@ -2729,7 +2793,12 @@ class VoicingEngine {
           _VoicingTemplate(
             family: VoicingFamily.rootlessA,
             coreLabels: const ['b3', 'b7'],
-            optionalLabels: _dedupeLabels(['9', '11', '13', ...supportLabels]),
+            optionalLabels: availableOptionals([
+              '9',
+              '11',
+              '13',
+              ...supportLabels,
+            ]),
             targetMidis: const [46, 52, 58, 63, 68],
           ),
         );
@@ -2737,7 +2806,12 @@ class VoicingEngine {
           _VoicingTemplate(
             family: VoicingFamily.rootlessB,
             coreLabels: const ['b7', 'b3'],
-            optionalLabels: _dedupeLabels(['11', '9', '13', ...supportLabels]),
+            optionalLabels: availableOptionals([
+              '11',
+              '9',
+              '13',
+              ...supportLabels,
+            ]),
             targetMidis: const [44, 51, 57, 62, 67],
           ),
         );
@@ -2746,7 +2820,7 @@ class VoicingEngine {
         _VoicingTemplate(
           family: VoicingFamily.spread,
           coreLabels: const ['1', 'b7', 'b3'],
-          optionalLabels: _dedupeLabels([
+          optionalLabels: availableOptionals([
             '11',
             ...colorLabels,
             '9',
@@ -2763,8 +2837,14 @@ class VoicingEngine {
         addTemplate(
           _VoicingTemplate(
             family: VoicingFamily.quartal,
-            coreLabels: const ['11', 'b7', 'b3'],
-            optionalLabels: _dedupeLabels(['13', '9', '1', ...colorLabels]),
+            coreLabels: const ['b7', 'b3'],
+            optionalLabels: availableOptionals([
+              '11',
+              '13',
+              '9',
+              '1',
+              ...colorLabels,
+            ]),
             targetMidis: const [43, 48, 53, 58, 63],
           ),
         );
@@ -2780,7 +2860,7 @@ class VoicingEngine {
         _VoicingTemplate(
           family: VoicingFamily.shell,
           coreLabels: ['1', guideLabel, '3'],
-          optionalLabels: _dedupeLabels([
+          optionalLabels: availableOptionals([
             ...colorLabels,
             '9',
             '13',
@@ -2795,7 +2875,7 @@ class VoicingEngine {
         _VoicingTemplate(
           family: VoicingFamily.shell,
           coreLabels: ['1', '3', guideLabel],
-          optionalLabels: _dedupeLabels([
+          optionalLabels: availableOptionals([
             '9',
             ...colorLabels,
             '13',
@@ -2810,7 +2890,12 @@ class VoicingEngine {
           _VoicingTemplate(
             family: VoicingFamily.rootlessA,
             coreLabels: ['3', guideLabel],
-            optionalLabels: _dedupeLabels(['9', '13', '5', ...supportLabels]),
+            optionalLabels: availableOptionals([
+              '9',
+              '13',
+              '5',
+              ...supportLabels,
+            ]),
             targetMidis: const [47, 53, 58, 63, 68],
           ),
         );
@@ -2818,7 +2903,12 @@ class VoicingEngine {
           _VoicingTemplate(
             family: VoicingFamily.rootlessB,
             coreLabels: [guideLabel, '3'],
-            optionalLabels: _dedupeLabels(['13', '9', '5', ...supportLabels]),
+            optionalLabels: availableOptionals([
+              '13',
+              '9',
+              '5',
+              ...supportLabels,
+            ]),
             targetMidis: const [45, 51, 57, 62, 67],
           ),
         );
@@ -2827,7 +2917,7 @@ class VoicingEngine {
         _VoicingTemplate(
           family: VoicingFamily.spread,
           coreLabels: ['1', guideLabel, '3'],
-          optionalLabels: _dedupeLabels([
+          optionalLabels: availableOptionals([
             '9',
             ...colorLabels,
             '13',
@@ -3480,6 +3570,29 @@ class VoicingEngine {
     return tones;
   }
 
+  static List<String> _displayedToneLabelsForSymbol(ChordSymbolData symbol) {
+    final baseLabels = switch (symbol.renderQuality) {
+      ChordQuality.majorTriad => const <String>['1', '3', '5'],
+      ChordQuality.minorTriad => const <String>['1', 'b3', '5'],
+      ChordQuality.dominant7 => const <String>['1', '3', 'b7', '5'],
+      ChordQuality.major7 => const <String>['1', '3', '7', '5'],
+      ChordQuality.minor7 => const <String>['1', 'b3', 'b7', '5'],
+      ChordQuality.minorMajor7 => const <String>['1', 'b3', '7', '5'],
+      ChordQuality.halfDiminished7 => const <String>['1', 'b3', 'b5', 'b7'],
+      ChordQuality.diminishedTriad => const <String>['1', 'b3', 'b5'],
+      ChordQuality.diminished7 => const <String>['1', 'b3', 'b5', '6'],
+      ChordQuality.augmentedTriad => const <String>['1', '3', '#5'],
+      ChordQuality.six => const <String>['1', '3', '6', '5'],
+      ChordQuality.minor6 => const <String>['1', 'b3', '6', '5'],
+      ChordQuality.major69 => const <String>['1', '3', '6', '9'],
+      ChordQuality.dominant7Alt => const <String>['1', '3', 'b7'],
+      ChordQuality.dominant7Sharp11 => const <String>['1', '3', 'b7', '#11'],
+      ChordQuality.dominant13sus4 => const <String>['1', '4', 'b7', '13'],
+      ChordQuality.dominant7sus4 => const <String>['1', '4', 'b7', '5'],
+    };
+    return _dedupeLabels([...baseLabels, ...symbol.tensions]);
+  }
+
   static Set<String> _protectedTensionLabelsForChord({
     required ChordSymbolData symbol,
     required List<String> explicitTensions,
@@ -3515,6 +3628,10 @@ class VoicingEngine {
       for (final label in labels)
         if (_tensionLabels.contains(label) || _isAlteredLabel(label)) label,
     };
+  }
+
+  static bool _isFifthLabel(String label) {
+    return label == '5' || label == 'b5' || label == '#5';
   }
 
   static String _bestLabelForRelativeSemitone({

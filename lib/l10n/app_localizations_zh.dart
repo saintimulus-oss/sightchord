@@ -419,6 +419,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get practiceTimeSignatureFourFour => '4/4';
 
   @override
+  String get practiceTimeSignatureFiveFour => '5/4';
+
+  @override
+  String get practiceTimeSignatureSixEight => '6/8';
+
+  @override
+  String get practiceTimeSignatureSevenEight => '7/8';
+
+  @override
+  String get practiceTimeSignatureTwelveEight => '12/8';
+
+  @override
   String get harmonicRhythm => 'Harmonic Rhythm';
 
   @override
@@ -642,7 +654,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get keyPracticeDescription => '使用選定的按鍵並啟用 羅馬數字 產生 調內 練習材料。';
 
   @override
-  String get keyboardShortcutHelp => '空格：下一個和弦 輸入：開始或停止自動播放 向上/向下：調整 BPM';
+  String get keyboardShortcutHelp => '空格：下一個和弦 輸入：開始或暫停自動播放 向上/向下：調整 BPM';
 
   @override
   String get nextChord => '下一個和弦';
@@ -663,7 +675,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get startAutoplay => '開始自動播放';
 
   @override
+  String get pauseAutoplay => '暫停自動播放';
+
+  @override
   String get stopAutoplay => '停止自動播放';
+
+  @override
+  String get resetGeneratedChords => '重設已生成的和弦';
 
   @override
   String get decreaseBpm => '降低 BPM';
@@ -4203,6 +4221,18 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get practiceTimeSignatureFourFour => '4/4';
 
   @override
+  String get practiceTimeSignatureFiveFour => '5/4';
+
+  @override
+  String get practiceTimeSignatureSixEight => '6/8';
+
+  @override
+  String get practiceTimeSignatureSevenEight => '7/8';
+
+  @override
+  String get practiceTimeSignatureTwelveEight => '12/8';
+
+  @override
   String get harmonicRhythm => 'Harmonic Rhythm';
 
   @override
@@ -4426,7 +4456,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get keyPracticeDescription => '使用选定的按键并启用 罗马数字 产生 调内 练习材料。';
 
   @override
-  String get keyboardShortcutHelp => '空格：下一个和弦 输入：开始或停止自动播放 向上/向下：调整 BPM';
+  String get keyboardShortcutHelp => '空格：下一个和弦 输入：开始或暂停自动播放 向上/向下：调整 BPM';
 
   @override
   String get nextChord => '下一个和弦';
@@ -4447,7 +4477,13 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get startAutoplay => '开始自动播放';
 
   @override
+  String get pauseAutoplay => '暂停自动播放';
+
+  @override
   String get stopAutoplay => '停止自动播放';
+
+  @override
+  String get resetGeneratedChords => '重置已生成的和弦';
 
   @override
   String get decreaseBpm => '降低 BPM';

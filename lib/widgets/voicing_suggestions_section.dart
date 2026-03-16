@@ -109,7 +109,7 @@ class _VoicingSuggestionsSectionState extends State<VoicingSuggestionsSection> {
                 for (final suggestion
                     in widget.recommendations.suggestions) ...[
                   () {
-                    final expansionKey = suggestion.kind.name;
+                    final expansionKey = suggestion.cardKey;
                     return _SuggestionCard(
                       suggestion: suggestion,
                       selected:
@@ -117,7 +117,7 @@ class _VoicingSuggestionsSectionState extends State<VoicingSuggestionsSection> {
                           suggestion.voicing.signature,
                       expanded: _expandedKey == expansionKey,
                       showReasons: widget.showReasons,
-                      suggestionLabel: _suggestionLabel(l10n, suggestion.kind),
+                      suggestionLabel: _suggestionLabel(l10n, suggestion),
                       suggestionSubtitle: _suggestionSubtitle(l10n, suggestion),
                       familyLabel: _familyLabel(
                         l10n,
@@ -231,12 +231,16 @@ class _VoicingSuggestionsSectionState extends State<VoicingSuggestionsSection> {
     );
   }
 
-  String _suggestionLabel(AppLocalizations l10n, VoicingSuggestionKind kind) {
-    return switch (kind) {
-      VoicingSuggestionKind.natural => l10n.voicingSuggestionNatural,
-      VoicingSuggestionKind.colorful => l10n.voicingSuggestionColorful,
-      VoicingSuggestionKind.easy => l10n.voicingSuggestionEasy,
-    };
+  String _suggestionLabel(AppLocalizations l10n, VoicingSuggestion suggestion) {
+    String localizedLabel(VoicingSuggestionKind kind) {
+      return switch (kind) {
+        VoicingSuggestionKind.natural => l10n.voicingSuggestionNatural,
+        VoicingSuggestionKind.colorful => l10n.voicingSuggestionColorful,
+        VoicingSuggestionKind.easy => l10n.voicingSuggestionEasy,
+      };
+    }
+
+    return suggestion.matchedKinds.map(localizedLabel).join(' & ');
   }
 
   String _sectionSubtitle(AppLocalizations l10n) {
@@ -408,7 +412,7 @@ class _SuggestionCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        key: ValueKey('voicing-suggestion-card-${suggestion.kind.name}'),
+        key: ValueKey('voicing-suggestion-card-${suggestion.cardKey}'),
         borderRadius: BorderRadius.circular(24),
         onTap: onSelect,
         child: AnimatedContainer(
@@ -438,117 +442,156 @@ class _SuggestionCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Container(
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final stackHeader = constraints.maxWidth < 336;
+                    final indicator = selected
+                        ? Container(
+                            key: ValueKey(
+                              'voicing-selected-badge-${suggestion.cardKey}',
+                            ),
+                            width: 22,
+                            height: 22,
+                            decoration: BoxDecoration(
+                              color: activeAccent,
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.check,
+                              size: 14,
+                              color: theme.colorScheme.onPrimary,
+                            ),
+                          )
+                        : Container(
                             width: 10,
                             height: 10,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: selected ? activeAccent : activeFill,
+                              color: activeFill,
+                            ),
+                          );
+                    final titleRow = Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        indicator,
+                        SizedBox(width: selected ? 8 : 10),
+                        Expanded(
+                          child: Text(
+                            suggestionLabel,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              height: 1.15,
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              suggestionLabel,
-                              style: theme.textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w800,
-                              ),
+                        ),
+                      ],
+                    );
+                    final actionRow = Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          key: ValueKey('voicing-play-${suggestion.cardKey}'),
+                          visualDensity: VisualDensity.compact,
+                          tooltip: l10n.audioPlayChord,
+                          onPressed: onPlay,
+                          style: IconButton.styleFrom(
+                            backgroundColor: theme.colorScheme.surface,
+                            foregroundColor: theme.colorScheme.onSurfaceVariant,
+                            minimumSize: const Size(36, 36),
+                            padding: EdgeInsets.zero,
+                            side: BorderSide(
+                              color: theme.colorScheme.outlineVariant,
                             ),
+                          ),
+                          icon: const Icon(Icons.volume_up_rounded, size: 18),
+                        ),
+                        const SizedBox(width: 4),
+                        IconButton(
+                          key: ValueKey('voicing-lock-${suggestion.cardKey}'),
+                          visualDensity: VisualDensity.compact,
+                          tooltip: suggestion.locked
+                              ? l10n.voicingUnlockSuggestion
+                              : l10n.voicingLockSuggestion,
+                          onPressed: onToggleLock,
+                          style: IconButton.styleFrom(
+                            backgroundColor: suggestion.locked
+                                ? activeFill
+                                : theme.colorScheme.surface,
+                            foregroundColor: suggestion.locked
+                                ? theme.colorScheme.onPrimaryContainer
+                                : theme.colorScheme.onSurfaceVariant,
+                            minimumSize: const Size(36, 36),
+                            padding: EdgeInsets.zero,
+                            side: BorderSide(
+                              color: suggestion.locked
+                                  ? activeAccent
+                                  : theme.colorScheme.outlineVariant,
+                            ),
+                          ),
+                          icon: Icon(
+                            suggestion.locked ? Icons.lock : Icons.lock_open,
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          expanded
+                              ? Icons.keyboard_arrow_up_rounded
+                              : Icons.keyboard_arrow_down_rounded,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ],
+                    );
+
+                    if (stackHeader) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          titleRow,
+                          const SizedBox(height: 10),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: actionRow,
                           ),
                         ],
-                      ),
-                    ),
-                    IconButton(
-                      key: ValueKey('voicing-play-${suggestion.kind.name}'),
-                      visualDensity: VisualDensity.compact,
-                      tooltip: l10n.audioPlayChord,
-                      onPressed: onPlay,
-                      style: IconButton.styleFrom(
-                        backgroundColor: theme.colorScheme.surface,
-                        foregroundColor: theme.colorScheme.onSurfaceVariant,
-                        minimumSize: const Size(36, 36),
-                        padding: EdgeInsets.zero,
-                        side: BorderSide(
-                          color: theme.colorScheme.outlineVariant,
-                        ),
-                      ),
-                      icon: const Icon(Icons.volume_up_rounded, size: 18),
-                    ),
-                    const SizedBox(width: 4),
-                    IconButton(
-                      key: ValueKey('voicing-lock-${suggestion.kind.name}'),
-                      visualDensity: VisualDensity.compact,
-                      tooltip: suggestion.locked
-                          ? l10n.voicingUnlockSuggestion
-                          : l10n.voicingLockSuggestion,
-                      onPressed: onToggleLock,
-                      style: IconButton.styleFrom(
-                        backgroundColor: suggestion.locked
-                            ? activeFill
-                            : theme.colorScheme.surface,
-                        foregroundColor: suggestion.locked
-                            ? theme.colorScheme.onPrimaryContainer
-                            : theme.colorScheme.onSurfaceVariant,
-                        minimumSize: const Size(36, 36),
-                        padding: EdgeInsets.zero,
-                        side: BorderSide(
-                          color: suggestion.locked
-                              ? activeAccent
-                              : theme.colorScheme.outlineVariant,
-                        ),
-                      ),
-                      icon: Icon(
-                        suggestion.locked ? Icons.lock : Icons.lock_open,
-                        size: 18,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      expanded
-                          ? Icons.keyboard_arrow_up_rounded
-                          : Icons.keyboard_arrow_down_rounded,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ],
+                      );
+                    }
+
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: titleRow),
+                        const SizedBox(width: 8),
+                        actionRow,
+                      ],
+                    );
+                  },
                 ),
-                if (selected || suggestion.locked) ...[
+                if (suggestion.locked) ...[
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 6,
                     runSpacing: 6,
                     children: [
-                      if (selected)
-                        _StatePill(
-                          key: ValueKey(
-                            'voicing-selected-badge-${suggestion.kind.name}',
-                          ),
-                          icon: Icons.check_circle,
-                          label: l10n.voicingSelected,
-                          backgroundColor: activeAccent,
-                          foregroundColor: theme.colorScheme.onPrimary,
+                      _StatePill(
+                        key: ValueKey(
+                          'voicing-locked-badge-${suggestion.cardKey}',
                         ),
-                      if (suggestion.locked)
-                        _StatePill(
-                          key: ValueKey(
-                            'voicing-locked-badge-${suggestion.kind.name}',
-                          ),
-                          icon: Icons.lock,
-                          label: l10n.voicingLocked,
-                          backgroundColor: activeFill,
-                          foregroundColor: theme.colorScheme.onPrimaryContainer,
-                        ),
+                        icon: Icons.lock,
+                        label: l10n.voicingLocked,
+                        backgroundColor: activeFill,
+                        foregroundColor: theme.colorScheme.onPrimaryContainer,
+                      ),
                     ],
                   ),
                 ],
                 const SizedBox(height: 12),
                 _NoteNameStrip(
-                  key: ValueKey('voicing-notes-${suggestion.kind.name}'),
-                  slotId: suggestion.kind.name,
+                  key: ValueKey('voicing-notes-${suggestion.cardKey}'),
+                  slotId: suggestion.cardKey,
                   noteNames: suggestion.voicing.noteNames,
                   slotCount: noteSlotCount,
                 ),
@@ -581,7 +624,7 @@ class _SuggestionCard extends StatelessWidget {
                                 children: [
                                   _TopNotePill(
                                     key: ValueKey(
-                                      'voicing-top-note-${suggestion.kind.name}',
+                                      'voicing-top-note-${suggestion.cardKey}',
                                     ),
                                     label: topNoteLabel,
                                     highlighted: highlightsTopTarget,
@@ -597,9 +640,9 @@ class _SuggestionCard extends StatelessWidget {
                               const SizedBox(height: 10),
                               _ToneLabelStrip(
                                 key: ValueKey(
-                                  'voicing-tones-${suggestion.kind.name}',
+                                  'voicing-tones-${suggestion.cardKey}',
                                 ),
-                                slotId: suggestion.kind.name,
+                                slotId: suggestion.cardKey,
                                 toneLabels: suggestion.voicing.toneLabels,
                                 tensions: suggestion.voicing.tensions,
                                 slotCount: noteSlotCount,

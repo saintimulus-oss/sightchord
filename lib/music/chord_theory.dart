@@ -509,11 +509,13 @@ class ChordExclusionContext {
     this.renderedSymbols = const <String>{},
     this.repeatGuardKeys = const <String>{},
     this.harmonicComparisonKeys = const <String>{},
+    this.allowConsecutiveRepeat = false,
   });
 
   final Set<String> renderedSymbols;
   final Set<String> repeatGuardKeys;
   final Set<String> harmonicComparisonKeys;
+  final bool allowConsecutiveRepeat;
 }
 
 class ChordToneFormulaLibrary {

@@ -202,6 +202,8 @@ class ConcreteVoicing {
   bool get hasGuideToneCore => containsThird && containsSeventh;
   int get topNotePitchClass => topNote % 12;
   String get topNoteName => noteNames.last;
+  String get contentSignature =>
+      '${midiNotes.join('-')}:${toneLabels.join(',')}';
 
   ConcreteVoicing copyWith({
     List<int>? midiNotes,
@@ -417,6 +419,7 @@ class VoicingSuggestion {
     required this.score,
     required this.voicing,
     required this.breakdown,
+    this.kinds = const [],
     this.reasonTags = const [],
     this.locked = false,
   });
@@ -427,8 +430,18 @@ class VoicingSuggestion {
   final double score;
   final ConcreteVoicing voicing;
   final VoicingBreakdown breakdown;
+  final List<VoicingSuggestionKind> kinds;
   final List<VoicingReasonTag> reasonTags;
   final bool locked;
+
+  List<VoicingSuggestionKind> get matchedKinds =>
+      kinds.isEmpty ? <VoicingSuggestionKind>[kind] : kinds;
+
+  bool matchesKind(VoicingSuggestionKind candidateKind) {
+    return matchedKinds.contains(candidateKind);
+  }
+
+  String get cardKey => matchedKinds.first.name;
 
   VoicingSuggestion copyWith({
     VoicingSuggestionKind? kind,
@@ -437,6 +450,7 @@ class VoicingSuggestion {
     double? score,
     ConcreteVoicing? voicing,
     VoicingBreakdown? breakdown,
+    List<VoicingSuggestionKind>? kinds,
     List<VoicingReasonTag>? reasonTags,
     bool? locked,
   }) {
@@ -447,6 +461,7 @@ class VoicingSuggestion {
       score: score ?? this.score,
       voicing: voicing ?? this.voicing,
       breakdown: breakdown ?? this.breakdown,
+      kinds: kinds ?? this.kinds,
       reasonTags: reasonTags ?? this.reasonTags,
       locked: locked ?? this.locked,
     );
@@ -592,7 +607,7 @@ class VoicingRecommendationSet {
 
   VoicingSuggestion? suggestionFor(VoicingSuggestionKind kind) {
     for (final suggestion in suggestions) {
-      if (suggestion.kind == kind) {
+      if (suggestion.matchesKind(kind)) {
         return suggestion;
       }
     }

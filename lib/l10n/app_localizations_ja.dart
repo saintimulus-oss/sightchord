@@ -419,6 +419,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get practiceTimeSignatureFourFour => '4/4';
 
   @override
+  String get practiceTimeSignatureFiveFour => '5/4';
+
+  @override
+  String get practiceTimeSignatureSixEight => '6/8';
+
+  @override
+  String get practiceTimeSignatureSevenEight => '7/8';
+
+  @override
+  String get practiceTimeSignatureTwelveEight => '12/8';
+
+  @override
   String get harmonicRhythm => 'Harmonic Rhythm';
 
   @override
@@ -651,7 +663,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get keyboardShortcutHelp =>
-      'スペース: 次のコード Enter: 自動再生の開始または停止 Up/Down: BPM の調整';
+      'スペース: 次のコード Enter: 自動再生の開始/一時停止 Up/Down: BPM の調整';
 
   @override
   String get nextChord => '次のコード';
@@ -672,7 +684,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get startAutoplay => '自動再生の開始';
 
   @override
+  String get pauseAutoplay => '自動再生を一時停止';
+
+  @override
   String get stopAutoplay => '自動再生を停止する';
+
+  @override
+  String get resetGeneratedChords => '生成コードをリセット';
 
   @override
   String get decreaseBpm => 'BPMを下げる';
