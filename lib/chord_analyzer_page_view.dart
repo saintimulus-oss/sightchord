@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import 'audio/harmony_audio_models.dart';
@@ -48,7 +46,6 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   String? _errorKey;
   bool _isAnalyzing = false;
   bool _requestedHarmonyAudioWarmUp = false;
-  bool _isResultDialogVisible = false;
   HarmonyAudioService? _harmonyAudio;
   List<ProgressionVariation> _variations = const [];
   late ProgressionExplanationDetailLevel _localExplanationDetailLevel;
@@ -96,7 +93,6 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
       setState(() {
         _analysis = analysis;
       });
-      _queueResultDialog(analysis: analysis);
     } on ProgressionAnalysisException catch (error) {
       if (!mounted) {
         return;
@@ -144,6 +140,22 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
       _errorKey = null;
       _variations = const [];
     });
+  }
+
+  Future<void> _applyExampleAndAnalyze(String progression) async {
+    _applyExample(progression);
+    await _analyze();
+  }
+
+  bool _usesKoreanUiCopy(BuildContext context) {
+    return Localizations.localeOf(context).languageCode == 'ko';
+  }
+
+  String _analyzerQuickStartHint(BuildContext context) {
+    if (_usesKoreanUiCopy(context)) {
+      return '예시를 누르면 바로 결과를 볼 수 있고, 데스크톱에서는 Ctrl+Enter로도 분석할 수 있어요.';
+    }
+    return 'Tap an example to see instant results, or press Ctrl+Enter on desktop to analyze.';
   }
 
   void _generateVariations() {
@@ -593,110 +605,6 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     return sections;
   }
 
-  void _queueResultDialog({ProgressionAnalysis? analysis, String? errorKey}) {
-    if ((analysis == null && errorKey == null) || _isResultDialogVisible) {
-      return;
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || _isResultDialogVisible) {
-        return;
-      }
-      unawaited(
-        _showAnalysisResultDialog(analysis: analysis, errorKey: errorKey),
-      );
-    });
-  }
-
-  Future<void> _showAnalysisResultDialog({
-    ProgressionAnalysis? analysis,
-    String? errorKey,
-  }) async {
-    if (_isResultDialogVisible || !mounted) {
-      return;
-    }
-
-    _isResultDialogVisible = true;
-    try {
-      await showDialog<void>(
-        context: context,
-        builder: (dialogContext) {
-          final l10n = AppLocalizations.of(dialogContext)!;
-          final materialL10n = MaterialLocalizations.of(dialogContext);
-          final theme = Theme.of(dialogContext);
-          final size = MediaQuery.sizeOf(dialogContext);
-          final maxDialogWidth = math.min(
-            760.0,
-            math.max(320.0, size.width - 48),
-          );
-          final maxDialogHeight = math.min(
-            720.0,
-            math.max(240.0, size.height * 0.78),
-          );
-          final trimmedInput = _controller.text.trim();
-
-          return AlertDialog(
-            key: const ValueKey('analyzer-result-dialog'),
-            title: Text(l10n.chordAnalyzerTitle),
-            content: SizedBox(
-              width: maxDialogWidth,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: maxDialogHeight),
-                child: Scrollbar(
-                  child: SingleChildScrollView(
-                    key: const ValueKey('analyzer-result-dialog-scroll'),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (analysis != null)
-                          ..._buildAnalysisSections(
-                            l10n,
-                            theme,
-                            analysis: analysis,
-                            variations: _variations,
-                            includeInputSection: true,
-                          )
-                        else if (errorKey != null) ...[
-                          if (trimmedInput.isNotEmpty)
-                            _SectionCard(
-                              key: const ValueKey('analyzer-result-input-card'),
-                              title: l10n.chordAnalyzerInputLabel,
-                              child: SelectableText(
-                                trimmedInput,
-                                key: const ValueKey('analyzer-result-input'),
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.45,
-                                ),
-                              ),
-                            ),
-                          if (trimmedInput.isNotEmpty)
-                            const SizedBox(height: 12),
-                          _SectionCard(
-                            title: l10n.chordAnalyzerWarnings,
-                            child: Text(_errorTextForKey(l10n, errorKey)),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: Text(materialL10n.closeButtonLabel),
-              ),
-            ],
-          );
-        },
-      );
-    } finally {
-      _isResultDialogVisible = false;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -752,9 +660,11 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
               controller: _controller,
               labelText: l10n.chordAnalyzerInputLabel,
               hintText: l10n.chordAnalyzerInputHint,
+              helperText: _analyzerQuickStartHint(context),
               platformOverride: widget.inputPlatformOverride,
               minLines: compactLayout ? 2 : 3,
               maxLines: compactLayout ? 3 : 5,
+              showDesktopKeyboardOnFocus: false,
               onAnalyze: _isAnalyzing ? () {} : _analyze,
             ),
             SizedBox(height: compactLayout ? 10 : 12),
@@ -776,7 +686,9 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
                     return ActionChip(
                       key: ValueKey('analyzer-example-$example'),
                       label: Text(example),
-                      onPressed: () => _applyExample(example),
+                      onPressed: _isAnalyzing
+                          ? null
+                          : () => unawaited(_applyExampleAndAnalyze(example)),
                     );
                   },
                   separatorBuilder: (_, _) => const SizedBox(width: 8),
@@ -792,7 +704,9 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
                     ActionChip(
                       key: ValueKey('analyzer-example-$example'),
                       label: Text(example),
-                      onPressed: () => _applyExample(example),
+                      onPressed: _isAnalyzing
+                          ? null
+                          : () => unawaited(_applyExampleAndAnalyze(example)),
                     ),
                 ],
               ),
@@ -875,6 +789,7 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
             theme,
             analysis: analysis,
             variations: variations,
+            includeInputSection: true,
             includeResultsCardKey: true,
           ),
       ],

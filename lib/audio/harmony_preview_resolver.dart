@@ -33,8 +33,11 @@ class HarmonyPreviewResolver {
     ConcreteVoicing voicing, {
     String? label,
   }) {
+    final pairedCount = voicing.midiNotes.length < voicing.toneLabels.length
+        ? voicing.midiNotes.length
+        : voicing.toneLabels.length;
     final notes = <HarmonyPreviewNote>[
-      for (var index = 0; index < voicing.midiNotes.length; index += 1)
+      for (var index = 0; index < pairedCount; index += 1)
         HarmonyPreviewNote(
           midiNote: voicing.midiNotes[index],
           gain: _gainForToneLabel(voicing.toneLabels[index]),
@@ -78,11 +81,15 @@ class HarmonyPreviewResolver {
     final allowedToneLabels = _orderedToneLabelsForSymbolData(
       chord.symbolData,
     ).toSet();
+    final pairedCount =
+        preferredVoicing.midiNotes.length < preferredVoicing.toneLabels.length
+        ? preferredVoicing.midiNotes.length
+        : preferredVoicing.toneLabels.length;
 
     final mergedNotes = <HarmonyPreviewNote>[
       for (final note in baseClip.notes)
         if (note.toneLabel == 'bass') note,
-      for (var index = 0; index < preferredVoicing.midiNotes.length; index += 1)
+      for (var index = 0; index < pairedCount; index += 1)
         if (allowedToneLabels.contains(preferredVoicing.toneLabels[index]))
           HarmonyPreviewNote(
             midiNote: preferredVoicing.midiNotes[index],

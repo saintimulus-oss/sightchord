@@ -129,7 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _autoRunning = false;
   bool _metronomePatternEditing = false;
   bool _practiceSessionInitialized = false;
-  bool _setupAssistantScheduled = false;
+  bool _showFirstRunWelcomeCard = false;
   double? _scheduledMetronomeBaseTimeSeconds;
   bool _requestedHarmonyAudioWarmUp = false;
   HarmonyAudioService? _harmonyAudio;
@@ -258,7 +258,12 @@ class _MyHomePageState extends State<MyHomePage> {
     _bpmController = TextEditingController(text: '${_settings.bpm}');
     unawaited(_initAudio());
     if (_isSetupAssistantRequired) {
-      _scheduleFirstRunSetupAssistant();
+      _showFirstRunWelcomeCard = true;
+      _applySettings(
+        PracticeSettingsFactory.beginnerSafePreset(baseSettings: _settings),
+        reseed: true,
+        syncBpmText: true,
+      );
     } else {
       _initializePracticeSession();
     }
@@ -268,16 +273,6 @@ class _MyHomePageState extends State<MyHomePage> {
     _practiceSessionInitialized = true;
     _ensureChordQueueInitialized();
     _recomputeVoicingSuggestions();
-  }
-
-  void _scheduleFirstRunSetupAssistant() {
-    if (_setupAssistantScheduled) {
-      return;
-    }
-    _setupAssistantScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      unawaited(_runSetupAssistant(mandatory: true));
-    });
   }
 
   Future<void> _runSetupAssistant({required bool mandatory}) async {
@@ -307,6 +302,15 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
     _applySettings(resolvedSettings, reseed: true, syncBpmText: true);
+  }
+
+  void _dismissFirstRunWelcomeCard() {
+    if (!mounted || !_showFirstRunWelcomeCard) {
+      return;
+    }
+    setState(() {
+      _showFirstRunWelcomeCard = false;
+    });
   }
 
   @override
@@ -736,10 +740,10 @@ class _MyHomePageState extends State<MyHomePage> {
     GeneratedChordEvent? lookAheadChordEvent,
   }) {
     final events = <GeneratedChordEvent>[
-      if (previousChordEvent != null) previousChordEvent,
+      ?previousChordEvent,
       chordEvent,
-      if (nextChordEvent != null) nextChordEvent,
-      if (lookAheadChordEvent != null) lookAheadChordEvent,
+      ?nextChordEvent,
+      ?lookAheadChordEvent,
     ];
     final currentIndex = previousChordEvent == null ? 0 : 1;
     return (events: events, currentIndex: currentIndex);
@@ -946,6 +950,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (currentEvent == null) {
       return;
     }
+    _dismissFirstRunWelcomeCard();
     await _playEventPreview(
       event: currentEvent,
       pattern: pattern,
@@ -971,7 +976,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _ensureChordQueueInitialized() {
-    _queueState = _queueState.ensureNextEvent(_generateChordEvent());
+    final currentEvent = _queueState.currentEvent ?? _generateChordEvent();
+    final nextEvent =
+        _queueState.nextEvent ??
+        _generateChordEvent(currentEvent: currentEvent);
+    _queueState = _queueState.copyWith(
+      currentEvent: currentEvent,
+      nextEvent: nextEvent,
+    );
     _refreshLookAheadChord();
     _rebuildMelodyQueue();
   }
@@ -2133,6 +2145,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!mounted || !_practiceSessionInitialized) {
       return;
     }
+    _dismissFirstRunWelcomeCard();
     final shouldRestartAutoLoop = _autoRunning;
     _recordPracticeHistory();
     setState(() {
@@ -2383,6 +2396,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!_practiceSessionInitialized && !_autoRunning) {
       return;
     }
+    _dismissFirstRunWelcomeCard();
     if (_autoRunning) {
       _stopAutoPlay(resetBeat: false);
       return;

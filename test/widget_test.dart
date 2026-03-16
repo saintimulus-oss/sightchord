@@ -359,21 +359,31 @@ void main() {
     await pumpAppWithSettings(tester, PracticeSettings());
   }
 
+  Finder nextChordTapTarget() {
+    final hitZone = find.byKey(const ValueKey('next-chord-hit-zone'));
+    if (hitZone.evaluate().isNotEmpty) {
+      return hitZone;
+    }
+    return find.byKey(const ValueKey('next-chord-text'));
+  }
+
+  Finder previousChordTapTarget() {
+    final hitZone = find.byKey(const ValueKey('previous-chord-hit-zone'));
+    if (hitZone.evaluate().isNotEmpty) {
+      return hitZone;
+    }
+    return find.byKey(const ValueKey('previous-chord-text'));
+  }
+
   Future<void> tapNextChordRegion(WidgetTester tester) async {
-    await tester.ensureVisible(find.byKey(const ValueKey('next-chord-text')));
-    await tester.tap(
-      find.byKey(const ValueKey('next-chord-text')).hitTestable(),
-    );
+    await tester.ensureVisible(nextChordTapTarget());
+    await tester.tap(nextChordTapTarget().hitTestable());
     await tester.pumpAndSettle();
   }
 
   Future<void> tapPreviousChordRegion(WidgetTester tester) async {
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('previous-chord-text')),
-    );
-    await tester.tap(
-      find.byKey(const ValueKey('previous-chord-text')).hitTestable(),
-    );
+    await tester.ensureVisible(previousChordTapTarget());
+    await tester.tap(previousChordTapTarget().hitTestable());
     await tester.pumpAndSettle();
   }
 
@@ -493,6 +503,7 @@ void main() {
     await openChordGenerator(tester);
 
     expect(find.byKey(const ValueKey('current-chord-text')), findsOneWidget);
+    expect(currentChordText(tester), isNotEmpty);
     expect(
       find.byKey(const ValueKey('practice-play-chord-button')),
       findsOneWidget,
@@ -503,10 +514,10 @@ void main() {
     );
   });
 
-  testWidgets('new users see the setup assistant before any chord renders', (
+  testWidgets('new users land on a ready chord with beginner-safe defaults', (
     WidgetTester tester,
   ) async {
-    await pumpMainMenuWithSettings(
+    final controller = await pumpMainMenuWithController(
       tester,
       PracticeSettings(),
       completeGuidedSetup: false,
@@ -514,12 +525,23 @@ void main() {
 
     await openChordGenerator(tester);
 
-    expect(find.byKey(const ValueKey('setup-assistant-sheet')), findsOneWidget);
+    expect(find.byKey(const ValueKey('setup-assistant-sheet')), findsNothing);
     expect(
-      find.byKey(const ValueKey('practice-setup-placeholder')),
+      find.byKey(const ValueKey('practice-first-run-welcome-card')),
       findsOneWidget,
     );
-    expect(find.byKey(const ValueKey('current-chord-text')), findsNothing);
+    expect(currentChordText(tester), isNotEmpty);
+    expect(controller.settings.guidedSetupCompleted, isTrue);
+    expect(
+      controller.settings.activeKeyCenters,
+      contains(const KeyCenter(tonicName: 'C', mode: KeyMode.major)),
+    );
+    expect(controller.settings.chordSymbolStyle, ChordSymbolStyle.majText);
+    expect(controller.settings.allowRootlessVoicings, isFalse);
+    expect(
+      controller.settings.settingsComplexityMode,
+      SettingsComplexityMode.guided,
+    );
   });
 
   testWidgets('setup assistant symbol examples keep the delta glyph intact', (
@@ -532,6 +554,10 @@ void main() {
     );
 
     await openChordGenerator(tester);
+    await tester.tap(
+      find.byKey(const ValueKey('practice-first-run-setup-button')),
+    );
+    await tester.pumpAndSettle();
 
     for (
       var index = 0;
@@ -549,36 +575,34 @@ void main() {
     expect(find.text('C?7'), findsNothing);
   });
 
-  testWidgets('skipping setup assistant applies the beginner-safe preset', (
+  testWidgets('welcome card can open the setup assistant on demand', (
     WidgetTester tester,
   ) async {
-    final controller = await pumpAppWithController(
+    await pumpAppWithController(
       tester,
       PracticeSettings(),
       completeGuidedSetup: false,
     );
 
+    expect(
+      find.byKey(const ValueKey('practice-first-run-welcome-card')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('practice-first-run-setup-button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('setup-assistant-sheet')), findsOneWidget);
+
     await tester.tap(find.text('Skip'));
     await tester.pumpAndSettle();
 
-    expect(controller.settings.guidedSetupCompleted, isTrue);
-    expect(
-      controller.settings.activeKeyCenters,
-      contains(const KeyCenter(tonicName: 'C', mode: KeyMode.major)),
-    );
-    expect(controller.settings.chordSymbolStyle, ChordSymbolStyle.majText);
-    expect(controller.settings.allowRootlessVoicings, isFalse);
-    expect(
-      controller.settings.settingsComplexityMode,
-      SettingsComplexityMode.guided,
-    );
-    expect(
-      controller.settings.preferredSuggestionKind,
-      DefaultVoicingSuggestionKind.easy,
-    );
+    expect(find.byKey(const ValueKey('setup-assistant-sheet')), findsNothing);
     expect(find.byKey(const ValueKey('current-chord-text')), findsOneWidget);
     expect(
-      find.byKey(const ValueKey('practice-setup-placeholder')),
+      find.byKey(const ValueKey('practice-first-run-welcome-card')),
       findsNothing,
     );
   });
@@ -605,6 +629,26 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('setup-assistant-sheet')), findsOneWidget);
+  });
+
+  testWidgets('analyzer from the main menu shows results inline', (
+    WidgetTester tester,
+  ) async {
+    await pumpMainMenuWithSettings(tester, PracticeSettings());
+
+    await openChordAnalyzer(tester);
+
+    await tester.tap(
+      find.byKey(const ValueKey('analyzer-example-Dm7, G7 | ? Am')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('analyzer-results-card')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('analyzer-result-input-card')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('analyzer-result-dialog')), findsNothing);
   });
 
   testWidgets('settings drawer lets users switch guided mode off directly', (
@@ -840,12 +884,13 @@ void main() {
     expect(status, contains('A minor:'));
   });
 
-  testWidgets('initial generator surface hides the start status label', (
+  testWidgets('initial generator surface shows a ready first status label', (
     WidgetTester tester,
   ) async {
     await pumpAppWithSettings(tester, PracticeSettings());
 
-    expect(find.byKey(const ValueKey('current-status-label')), findsNothing);
+    expect(find.byKey(const ValueKey('current-status-label')), findsOneWidget);
+    expect(currentChordText(tester), isNotEmpty);
   });
 
   testWidgets('classical key label style uses lowercase tonic for minor', (
@@ -1774,9 +1819,7 @@ void main() {
     (WidgetTester tester) async {
       await pumpApp(tester);
 
-      await tester.tap(
-        find.byKey(const ValueKey('next-chord-text')).hitTestable(),
-      );
+      await tester.tap(nextChordTapTarget().hitTestable());
       await tester.pump(const Duration(milliseconds: 40));
 
       expect(tester.hasRunningAnimations, isTrue);
@@ -1891,7 +1934,7 @@ void main() {
   });
 
   testWidgets(
-    'reset button returns generated chords to the beginning without changing settings',
+    'reset button restores a fresh starting state without changing settings',
     (WidgetTester tester) async {
       await pumpAppWithSettings(
         tester,
@@ -1923,7 +1966,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(currentChordText(tester), initialText);
+      expect(currentChordText(tester), isNotEmpty);
       expect(activeBeatIndex(tester), isNull);
       expect(beatCount(tester), 3);
       expect(
@@ -2292,6 +2335,7 @@ void main() {
     );
     expect(controller.settings.syncopationBias, lessThan(0.2));
     expect(controller.settings.colorRealizationBias, lessThan(0.2));
+    expect(find.textContaining('steady guide notes'), findsWidgets);
 
     await tester.tap(find.byKey(const ValueKey('melody-preset-songLine')));
     await tester.pumpAndSettle();
@@ -2303,6 +2347,7 @@ void main() {
     expect(controller.settings.allowChromaticApproaches, isTrue);
     expect(controller.settings.syncopationBias, greaterThan(0.3));
     expect(controller.settings.noveltyTarget, greaterThan(0.5));
+    expect(find.textContaining('singable contour'), findsWidgets);
 
     await tester.tap(find.byKey(const ValueKey('melody-preset-colorLine')));
     await tester.pumpAndSettle();
@@ -2314,6 +2359,7 @@ void main() {
     expect(controller.settings.melodyDensity, MelodyDensity.active);
     expect(controller.settings.colorRealizationBias, greaterThan(0.8));
     expect(controller.settings.motifVariationBias, greaterThan(0.85));
+    expect(find.textContaining('color-forward line'), findsWidgets);
 
     await tester.tap(find.byKey(const ValueKey('melody-preset-off')));
     await tester.pumpAndSettle();

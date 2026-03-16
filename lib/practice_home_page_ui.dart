@@ -489,11 +489,6 @@ extension _PracticeHomePageUi on _MyHomePageState {
   MelodyQuickPreset get _currentQuickMelodyPreset =>
       PracticeSettingsFactory.quickMelodyPresetForSettings(_settings);
 
-  MelodyPresetDescriptor get _currentModeMelodyDescriptor =>
-      PracticeSettingsFactory.describeComplexityModeMelodyPreset(
-        _settings.settingsComplexityMode,
-      );
-
   MelodyPresetDescriptor? get _currentQuickMelodyDescriptor =>
       !_settings.melodyGenerationEnabled
       ? null
@@ -504,10 +499,16 @@ extension _PracticeHomePageUi on _MyHomePageState {
     bool compact = false,
   }) {
     final value = !_settings.melodyGenerationEnabled
-        ? 'Off'
-        : _currentQuickMelodyPreset.localizedLabel(l10n);
+        ? _melodyPresetOffLabel(context)
+        : _localizedQuickMelodyPresetLabel(
+            context,
+            l10n,
+            _currentQuickMelodyPreset,
+          );
     if (compact) {
-      return !_settings.melodyGenerationEnabled ? 'Line Off' : value;
+      return !_settings.melodyGenerationEnabled
+          ? _compactMelodyOffLabel(context)
+          : value;
     }
     return '${l10n.melodyGenerationTitle}: $value';
   }
@@ -534,26 +535,157 @@ extension _PracticeHomePageUi on _MyHomePageState {
     _applyQuickMelodyPresetSelection(_currentQuickMelodyPreset.next);
   }
 
+  bool _usesKoreanUiCopy(BuildContext context) {
+    return Localizations.localeOf(context).languageCode == 'ko';
+  }
+
+  String _melodyPresetOffLabel(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '끔' : 'Off';
+  }
+
+  String _compactMelodyOffLabel(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '라인 끔' : 'Line Off';
+  }
+
+  String _localizedQuickMelodyPresetLabel(
+    BuildContext context,
+    AppLocalizations l10n,
+    MelodyQuickPreset preset, {
+    bool compact = false,
+  }) {
+    if (_usesKoreanUiCopy(context)) {
+      return switch ((preset, compact)) {
+        (MelodyQuickPreset.guideLine, true) => '가이드',
+        (MelodyQuickPreset.songLine, true) => '송',
+        (MelodyQuickPreset.colorLine, true) => '컬러',
+        (MelodyQuickPreset.guideLine, false) => '가이드 라인',
+        (MelodyQuickPreset.songLine, false) => '송 라인',
+        (MelodyQuickPreset.colorLine, false) => '컬러 라인',
+      };
+    }
+    if (compact) {
+      return switch (preset) {
+        MelodyQuickPreset.guideLine => 'Guide',
+        MelodyQuickPreset.songLine => 'Song',
+        MelodyQuickPreset.colorLine => 'Color',
+      };
+    }
+    return preset.localizedLabel(l10n);
+  }
+
+  String _localizedQuickMelodyShortDescription(
+    BuildContext context,
+    MelodyQuickPreset preset,
+  ) {
+    if (_usesKoreanUiCopy(context)) {
+      return switch (preset) {
+        MelodyQuickPreset.guideLine => '안정적인 가이드 음과 차분한 리듬',
+        MelodyQuickPreset.songLine => '따라 부르기 쉬운 선율과 적당한 움직임',
+        MelodyQuickPreset.colorLine => '컬러 음을 적극적으로 쓰는 역동적인 라인',
+      };
+    }
+    return preset.shortDescription();
+  }
+
+  String _melodyPresetPanelTitle(
+    BuildContext context, {
+    required bool compact,
+  }) {
+    if (_usesKoreanUiCopy(context)) {
+      return compact ? '라인 프리셋' : '멜로디 프리셋';
+    }
+    return compact ? 'Line Presets' : 'Melody Presets';
+  }
+
+  String _melodyPresetSummary(
+    BuildContext context,
+    AppLocalizations l10n, {
+    required bool compact,
+    required MelodyPresetDescriptor? quickDescriptor,
+  }) {
+    final modeLabel = _settings.settingsComplexityMode.localizedLabel(l10n);
+    if (quickDescriptor == null) {
+      if (_usesKoreanUiCopy(context)) {
+        return compact
+            ? '$modeLabel 기본 라인입니다. 프리셋을 눌러 리듬과 색감을 바꿔 보세요.'
+            : '$modeLabel 기본 라인입니다. 프리셋을 눌러 리듬, 색감, 모티프 성향을 빠르게 바꿔 보세요.';
+      }
+      return compact
+          ? '$modeLabel default line. Pick a preset to change rhythm, color, and motif feel.'
+          : '$modeLabel default line. Pick a preset to quickly change rhythm, color, and motif feel.';
+    }
+
+    final presetLabel = _localizedQuickMelodyPresetLabel(
+      context,
+      l10n,
+      _currentQuickMelodyPreset,
+    );
+    final shortDescription = _localizedQuickMelodyShortDescription(
+      context,
+      _currentQuickMelodyPreset,
+    );
+    if (_usesKoreanUiCopy(context)) {
+      return compact
+          ? '$presetLabel: $shortDescription.'
+          : '$presetLabel은 $shortDescription을 중심으로 현재 화성을 따라갑니다.';
+    }
+    return compact
+        ? '$presetLabel: $shortDescription.'
+        : '$presetLabel focuses on $shortDescription.';
+  }
+
+  String _melodyMetricLabel(BuildContext context, String label) {
+    if (!_usesKoreanUiCopy(context)) {
+      return label;
+    }
+    return switch (label) {
+      'Density' => '밀도',
+      'Style' => '스타일',
+      'Sync' => '싱코페이션',
+      'Color' => '컬러',
+      'Novelty' => '새로움',
+      'Motif' => '모티프',
+      'Chromatic' => '반음계',
+      _ => label,
+    };
+  }
+
+  String _melodyOnOffLabel(BuildContext context, bool value) {
+    if (_usesKoreanUiCopy(context)) {
+      return value ? '켜짐' : '끔';
+    }
+    return value ? 'On' : 'Off';
+  }
+
+  String _compactMelodyToggleHint(BuildContext context) {
+    if (_usesKoreanUiCopy(context)) {
+      return '멜로디 버튼을 눌러 가이드, 송, 컬러 라인을 빠르게 바꿔 보세요.';
+    }
+    return 'Tap the melody button to cycle Guide, Song, and Color lines.';
+  }
+
   Widget _buildMelodyPresetSelector(
     BuildContext context, {
     required bool compact,
   }) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final modeDescriptor = _currentModeMelodyDescriptor;
     final quickDescriptor = _currentQuickMelodyDescriptor;
-    final summary = compact
-        ? quickDescriptor == null
-              ? '${modeDescriptor.label} default line. Pick a preset to change rhythm, color, and motif feel.'
-              : '${quickDescriptor.label}: ${quickDescriptor.summary}.'
-        : quickDescriptor == null
-        ? '${modeDescriptor.label}: ${modeDescriptor.summary}. Tap a line preset to hear the difference.'
-        : '${quickDescriptor.label}: ${quickDescriptor.summary}. ${modeDescriptor.differenceReason}.';
+    final summary = _melodyPresetSummary(
+      context,
+      l10n,
+      compact: compact,
+      quickDescriptor: quickDescriptor,
+    );
     final densityLabel = quickDescriptor?.density.localizedLabel(l10n);
     final styleLabel = quickDescriptor?.style.localizedLabel(l10n);
     final compactMetrics = quickDescriptor == null
         ? null
-        : '${densityLabel!} / ${styleLabel!} / Sync ${quickDescriptor.syncopationBand} / Color ${quickDescriptor.colorBand} / Novelty ${quickDescriptor.noveltyBand} / Motif ${quickDescriptor.motifBand}';
+        : '${densityLabel!} / ${styleLabel!} / '
+              '${_melodyMetricLabel(context, 'Sync')} ${quickDescriptor.syncopationBand} / '
+              '${_melodyMetricLabel(context, 'Color')} ${quickDescriptor.colorBand} / '
+              '${_melodyMetricLabel(context, 'Novelty')} ${quickDescriptor.noveltyBand} / '
+              '${_melodyMetricLabel(context, 'Motif')} ${quickDescriptor.motifBand}';
 
     final card = DecoratedBox(
       decoration: BoxDecoration(
@@ -582,7 +714,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Line Presets',
+                      _melodyPresetPanelTitle(context, compact: true),
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -592,36 +724,58 @@ extension _PracticeHomePageUi on _MyHomePageState {
               ),
               const SizedBox(height: 6),
               Text(
-                'Base mode: ${_settings.settingsComplexityMode.localizedLabel(l10n)}',
+                _usesKoreanUiCopy(context)
+                    ? '기본 모드: ${_settings.settingsComplexityMode.localizedLabel(l10n)}'
+                    : 'Base mode: ${_settings.settingsComplexityMode.localizedLabel(l10n)}',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ] else
-              Row(
-                children: [
-                  Icon(
-                    Icons.tune_rounded,
-                    size: 18,
-                    color: theme.colorScheme.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Melody Line Presets',
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final titleRow = Row(
+                    children: [
+                      Icon(
+                        Icons.tune_rounded,
+                        size: 18,
+                        color: theme.colorScheme.primary,
                       ),
-                    ),
-                  ),
-                  Chip(
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _melodyPresetPanelTitle(context, compact: false),
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                  final modeChip = Chip(
                     label: Text(
                       _settings.settingsComplexityMode.localizedLabel(l10n),
                     ),
                     visualDensity: VisualDensity.compact,
-                  ),
-                ],
+                  );
+
+                  if (constraints.maxWidth < 320) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [titleRow, const SizedBox(height: 8), modeChip],
+                    );
+                  }
+
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: titleRow),
+                      const SizedBox(width: 8),
+                      modeChip,
+                    ],
+                  );
+                },
               ),
             const SizedBox(height: 6),
             Text(
@@ -636,35 +790,43 @@ extension _PracticeHomePageUi on _MyHomePageState {
               spacing: 8,
               runSpacing: 8,
               children: [
-                ChoiceChip(
-                  key: const ValueKey('melody-preset-off'),
-                  label: const Text('Off'),
-                  selected: !_settings.melodyGenerationEnabled,
-                  onSelected: (_) => _disableQuickMelodyPreset(),
+                Tooltip(
+                  message: _melodyPresetOffLabel(context),
+                  child: ChoiceChip(
+                    key: const ValueKey('melody-preset-off'),
+                    label: Text(_melodyPresetOffLabel(context)),
+                    selected: !_settings.melodyGenerationEnabled,
+                    onSelected: (_) => _disableQuickMelodyPreset(),
+                  ),
                 ),
                 for (final preset in MelodyQuickPreset.values)
-                  ChoiceChip(
-                    key: ValueKey('melody-preset-${preset.name}'),
-                    label: Text(
-                      compact
-                          ? switch (preset) {
-                              MelodyQuickPreset.guideLine => 'Guide',
-                              MelodyQuickPreset.songLine => 'Song',
-                              MelodyQuickPreset.colorLine => 'Color',
-                            }
-                          : preset.localizedLabel(l10n),
+                  Tooltip(
+                    message: _localizedQuickMelodyShortDescription(
+                      context,
+                      preset,
                     ),
-                    selected:
-                        _settings.melodyGenerationEnabled &&
-                        _currentQuickMelodyPreset == preset,
-                    onSelected: (selected) {
-                      if (!selected &&
+                    child: ChoiceChip(
+                      key: ValueKey('melody-preset-${preset.name}'),
+                      label: Text(
+                        _localizedQuickMelodyPresetLabel(
+                          context,
+                          l10n,
+                          preset,
+                          compact: compact,
+                        ),
+                      ),
+                      selected:
                           _settings.melodyGenerationEnabled &&
-                          _currentQuickMelodyPreset == preset) {
-                        return;
-                      }
-                      _applyQuickMelodyPresetSelection(preset);
-                    },
+                          _currentQuickMelodyPreset == preset,
+                      onSelected: (selected) {
+                        if (!selected &&
+                            _settings.melodyGenerationEnabled &&
+                            _currentQuickMelodyPreset == preset) {
+                          return;
+                        }
+                        _applyQuickMelodyPresetSelection(preset);
+                      },
+                    ),
                   ),
               ],
             ),
@@ -684,29 +846,36 @@ extension _PracticeHomePageUi on _MyHomePageState {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _MelodyMetricChip(label: 'Density', value: densityLabel!),
-                    _MelodyMetricChip(label: 'Style', value: styleLabel!),
                     _MelodyMetricChip(
-                      label: 'Sync',
+                      label: _melodyMetricLabel(context, 'Density'),
+                      value: densityLabel!,
+                    ),
+                    _MelodyMetricChip(
+                      label: _melodyMetricLabel(context, 'Style'),
+                      value: styleLabel!,
+                    ),
+                    _MelodyMetricChip(
+                      label: _melodyMetricLabel(context, 'Sync'),
                       value: quickDescriptor.syncopationBand,
                     ),
                     _MelodyMetricChip(
-                      label: 'Color',
+                      label: _melodyMetricLabel(context, 'Color'),
                       value: quickDescriptor.colorBand,
                     ),
                     _MelodyMetricChip(
-                      label: 'Novelty',
+                      label: _melodyMetricLabel(context, 'Novelty'),
                       value: quickDescriptor.noveltyBand,
                     ),
                     _MelodyMetricChip(
-                      label: 'Motif',
+                      label: _melodyMetricLabel(context, 'Motif'),
                       value: quickDescriptor.motifBand,
                     ),
                     _MelodyMetricChip(
-                      label: 'Chromatic',
-                      value: quickDescriptor.allowChromaticApproaches
-                          ? 'On'
-                          : 'Off',
+                      label: _melodyMetricLabel(context, 'Chromatic'),
+                      value: _melodyOnOffLabel(
+                        context,
+                        quickDescriptor.allowChromaticApproaches,
+                      ),
                     ),
                   ],
                 ),
@@ -1116,7 +1285,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
             ] else ...[
               const SizedBox(height: 10),
               Text(
-                'Tap the melody button to cycle Guide, Song, and Color lines.',
+                _compactMelodyToggleHint(context),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                   height: 1.25,
@@ -1356,6 +1525,113 @@ extension _PracticeHomePageUi on _MyHomePageState {
     );
   }
 
+  String _firstRunWelcomeTitle(BuildContext context) {
+    return _usesKoreanUiCopy(context)
+        ? '첫 코드가 바로 준비됐어요'
+        : 'Your first chord is ready';
+  }
+
+  String _firstRunWelcomeBody(BuildContext context, String chordLabel) {
+    if (_usesKoreanUiCopy(context)) {
+      if (chordLabel.isEmpty) {
+        return '지금은 쉬운 시작 프로필이 적용돼 있어요. 코드 재생으로 먼저 들어보고, 카드를 좌우로 넘겨 다음 코드를 살펴보세요.';
+      }
+      return '$chordLabel 코드가 바로 준비됐어요. 먼저 들어보고, 카드를 좌우로 넘겨 다음 코드를 살펴보세요. 더 내 취향에 맞게 시작하고 싶다면 설정 도우미를 열어도 됩니다.';
+    }
+    if (chordLabel.isEmpty) {
+      return 'A beginner-friendly starting profile is already applied. Listen first, then swipe the card to explore the next chord.';
+    }
+    return '$chordLabel is ready to go. Listen first, then swipe the card to explore what comes next. You can still open the setup assistant to personalize the start.';
+  }
+
+  String _firstRunSetupButtonLabel(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '맞춤 설정' : 'Personalize';
+  }
+
+  Widget _buildFirstRunWelcomeCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final currentLabel = _displaySymbolForEvent(_currentChordEvent);
+
+    return DecoratedBox(
+      key: const ValueKey('practice-first-run-welcome-card'),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.waving_hand_rounded,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _firstRunWelcomeTitle(context),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  key: const ValueKey('dismiss-first-run-welcome-card'),
+                  onPressed: _dismissFirstRunWelcomeCard,
+                  icon: const Icon(Icons.close_rounded),
+                  tooltip: l10n.closeSettings,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _firstRunWelcomeBody(context, currentLabel),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                FilledButton.icon(
+                  key: const ValueKey('practice-first-run-play-button'),
+                  onPressed: _currentChordEvent == null
+                      ? null
+                      : () => _playCurrentChordPreview(
+                          pattern: HarmonyPlaybackPattern.block,
+                        ),
+                  icon: const Icon(Icons.volume_up_rounded),
+                  label: Text(l10n.audioPlayChord),
+                ),
+                OutlinedButton.icon(
+                  key: const ValueKey('practice-first-run-setup-button'),
+                  onPressed: () {
+                    _dismissFirstRunWelcomeCard();
+                    unawaited(_runSetupAssistant(mandatory: false));
+                  },
+                  icon: const Icon(Icons.auto_awesome_rounded),
+                  label: Text(_firstRunSetupButtonLabel(context)),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildPracticeHomePage(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
@@ -1438,6 +1714,10 @@ extension _PracticeHomePageUi on _MyHomePageState {
                                   context,
                                   compact: compactLayout,
                                 ),
+                                if (_showFirstRunWelcomeCard) ...[
+                                  SizedBox(height: compactLayout ? 12 : 16),
+                                  _buildFirstRunWelcomeCard(context),
+                                ],
                                 SizedBox(height: compactLayout ? 14 : 20),
                                 _ChordSwipeSurface(
                                   key: _chordSwipeSurfaceKey,
@@ -2972,6 +3252,48 @@ class _ChordSwipeSurfaceState extends State<_ChordSwipeSurface>
                                           _displayNextLabel.isNotEmpty
                                       ? animateAdvance
                                       : null,
+                                ),
+                                Positioned.fill(
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: FractionallySizedBox(
+                                      widthFactor: 0.34,
+                                      heightFactor: 1,
+                                      alignment: Alignment.centerLeft,
+                                      child: GestureDetector(
+                                        key: const ValueKey(
+                                          'previous-chord-hit-zone',
+                                        ),
+                                        behavior: HitTestBehavior.translucent,
+                                        onTap: _canGoBack && !isTransitioning
+                                            ? animateGoBack
+                                            : null,
+                                        child: const SizedBox.expand(),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Positioned.fill(
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: FractionallySizedBox(
+                                      widthFactor: 0.34,
+                                      heightFactor: 1,
+                                      alignment: Alignment.centerRight,
+                                      child: GestureDetector(
+                                        key: const ValueKey(
+                                          'next-chord-hit-zone',
+                                        ),
+                                        behavior: HitTestBehavior.translucent,
+                                        onTap:
+                                            !isTransitioning &&
+                                                _displayNextLabel.isNotEmpty
+                                            ? animateAdvance
+                                            : null,
+                                        child: const SizedBox.expand(),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),

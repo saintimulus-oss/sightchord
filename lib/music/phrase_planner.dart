@@ -25,6 +25,10 @@ class PhrasePlan {
     required this.phraseDurationBeats,
     required this.cadenceHoldMultiplier,
     required this.phraseVariantNonce,
+    required this.sectionArcIndex,
+    required this.sectionArcSpan,
+    required this.sectionCenterLiftSemitones,
+    required this.sectionApexLiftSemitones,
   });
 
   final PhraseRole role;
@@ -42,6 +46,10 @@ class PhrasePlan {
   final double phraseDurationBeats;
   final double cadenceHoldMultiplier;
   final int phraseVariantNonce;
+  final int sectionArcIndex;
+  final int sectionArcSpan;
+  final int sectionCenterLiftSemitones;
+  final int sectionApexLiftSemitones;
 
   bool get isCadential =>
       role == PhraseRole.preCadence || role == PhraseRole.cadence;
@@ -71,25 +79,38 @@ class PhrasePlanner {
     required Random random,
   }) {
     final window = _resolvePhraseWindow(request);
-    final mode = request.settings.settingsComplexityMode;
+    final mode = MelodyGenerationConfig.effectiveModeForSettings(
+      request.settings,
+    );
     final modeProfile = MelodyGenerationConfig.profileFor(mode);
     final range =
         MelodyGenerationConfig.modePitchRanges[mode] ??
         MelodyGenerationConfig.modePitchRanges[SettingsComplexityMode.guided]!;
     final role = _resolveRole(request, window);
+    final sectionArc = _resolveSectionArc(request, role);
     final centerMin = max(request.settings.melodyRangeLow, range.centerMin);
     final centerMax = min(request.settings.melodyRangeHigh, range.centerMax);
-    final centerMidi = centerMin >= centerMax
+    final rawCenterMidi = centerMin >= centerMax
         ? request.settings.melodyRangeCenter
         : centerMin + random.nextInt((centerMax - centerMin) + 1);
+    final centerMidi = (rawCenterMidi + sectionArc.centerLiftSemitones).clamp(
+      request.settings.melodyRangeLow,
+      request.settings.melodyRangeHigh,
+    );
     final apexDelta =
         range.apexMinDelta +
         random.nextInt((range.apexMaxDelta - range.apexMinDelta) + 1);
     final apexMidi = min(
       request.settings.melodyRangeHigh,
-      max(centerMidi + 2, centerMidi + apexDelta),
+      max(
+        centerMidi + 2,
+        centerMidi + apexDelta + sectionArc.apexLiftSemitones,
+      ),
     );
-    final apexPos01 = _resolveApexPos01(role, window, random);
+    final apexPos01 = ( _resolveApexPos01(role, window, random) +
+            sectionArc.apexShift01)
+        .clamp(0.40, 0.70)
+        .toDouble();
     final phraseLengthBars = _estimatePhraseLengthBars(window);
     final hardColor =
         _isHardColorChord(request.chordEvent.chord) ||
@@ -147,6 +168,10 @@ class PhrasePlanner {
       phraseDurationBeats: window.totalBeats,
       cadenceHoldMultiplier: cadenceHoldMultiplier,
       phraseVariantNonce: random.nextInt(1 << 20),
+      sectionArcIndex: sectionArc.index,
+      sectionArcSpan: sectionArc.span,
+      sectionCenterLiftSemitones: sectionArc.centerLiftSemitones,
+      sectionApexLiftSemitones: sectionArc.apexLiftSemitones,
     );
   }
 
@@ -210,7 +235,10 @@ class PhrasePlanner {
           ? null
           : recentCadenceLabels.first;
       if (lastCadenceLabel == '1') {
-        return chord.symbolData.tensions.contains('9') ? 3 : 3;
+        return chord.symbolData.tensions.contains('9') ||
+                chord.symbolData.tensions.contains('13')
+            ? 5
+            : 3;
       }
       if (lastCadenceLabel == '3' || lastCadenceLabel == 'b3') {
         return 1;
@@ -322,6 +350,64 @@ class PhrasePlanner {
     return base.clamp(0.40, 0.70).toDouble();
   }
 
+  static _SectionArcPlan _resolveSectionArc(
+    MelodyGenerationRequest request,
+    PhraseRole role,
+  ) {
+    final priorEvents = <GeneratedMelodyEvent>[
+      ...request.recentMelodyEvents,
+      if (request.previousMelodyEvent != null) request.previousMelodyEvent!,
+    ];
+    final deduped = <GeneratedMelodyEvent>[];
+    final seen = <int>{};
+    for (final event in priorEvents) {
+      if (seen.add(event.signatureHash)) {
+        deduped.add(event);
+      }
+    }
+    final completedCadences = deduped
+        .where((event) => event.phraseRole == PhraseRole.cadence)
+        .length;
+    const span = 4;
+    final index = completedCadences % span;
+    final centerLift = switch ((index, role)) {
+      (0, PhraseRole.opening) => -1,
+      (0, _) => 0,
+      (1, PhraseRole.cadence) => 0,
+      (1, _) => 1,
+      (2, PhraseRole.cadence) => 1,
+      (2, _) => 2,
+      (3, PhraseRole.cadence) => -2,
+      (3, _) => -1,
+      _ => 0,
+    };
+    final apexLift = switch ((index, role)) {
+      (0, PhraseRole.opening) => 0,
+      (1, _) => 1,
+      (2, PhraseRole.preCadence) => 3,
+      (2, _) => 2,
+      (3, PhraseRole.cadence) => -1,
+      (3, _) => 0,
+      _ => 0,
+    };
+    final apexShift01 = switch ((index, role)) {
+      (0, PhraseRole.opening) => -0.02,
+      (1, _) => 0.01,
+      (2, PhraseRole.preCadence) => 0.03,
+      (2, _) => 0.02,
+      (3, PhraseRole.cadence) => -0.03,
+      (3, _) => -0.01,
+      _ => 0.0,
+    };
+    return _SectionArcPlan(
+      index: index,
+      span: span,
+      centerLiftSemitones: centerLift,
+      apexLiftSemitones: apexLift,
+      apexShift01: apexShift01,
+    );
+  }
+
   static _PhraseWindow _resolvePhraseWindow(MelodyGenerationRequest request) {
     final rawEvents = request.phraseChordWindow.isNotEmpty
         ? request.phraseChordWindow
@@ -408,4 +494,20 @@ class _PhraseWindow {
   final double totalBeats;
   final double eventStartPos01;
   final double eventEndPos01;
+}
+
+class _SectionArcPlan {
+  const _SectionArcPlan({
+    required this.index,
+    required this.span,
+    required this.centerLiftSemitones,
+    required this.apexLiftSemitones,
+    required this.apexShift01,
+  });
+
+  final int index;
+  final int span;
+  final int centerLiftSemitones;
+  final int apexLiftSemitones;
+  final double apexShift01;
 }

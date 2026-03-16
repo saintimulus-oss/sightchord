@@ -16,6 +16,9 @@ class MelodyGenerator {
   static GeneratedMelodyEvent generateEvent({
     required MelodyGenerationRequest request,
   }) {
+    final effectiveMode = MelodyGenerationConfig.effectiveModeForSettings(
+      request.settings,
+    );
     final planningSeed = _seedForRequest(request);
     final phrasePlan = PhrasePlanner.plan(
       request: request,
@@ -43,10 +46,12 @@ class MelodyGenerator {
           );
     final effectiveDensity = _sampleEffectiveDensity(
       request.settings,
+      effectiveMode: effectiveMode,
       seed: MelodySeedUtil.stableHashAll(<Object?>[decodeSeed, 'density']),
     );
     final effectiveStyle = _sampleEffectiveStyle(
       request.settings,
+      effectiveMode: effectiveMode,
       seed: MelodySeedUtil.stableHashAll(<Object?>[decodeSeed, 'style']),
     );
     final rhythm = RhythmTemplateSampler.sample(
@@ -88,6 +93,7 @@ class MelodyGenerator {
     }
     final context = MelodyDecodeContext(
       request: request,
+      effectiveMode: effectiveMode,
       palette: palette,
       previousPalette: previousPalette,
       nextPalette: nextPalette,
@@ -135,6 +141,10 @@ class MelodyGenerator {
       phraseCadenceHoldMultiplier: phrasePlan.cadenceHoldMultiplier,
       phraseTargetNovelty01: phrasePlan.targetNovelty01,
       phraseTargetColorExposure01: phrasePlan.targetColorExposure01,
+      sectionArcIndex: phrasePlan.sectionArcIndex,
+      sectionArcSpan: phrasePlan.sectionArcSpan,
+      sectionCenterLiftSemitones: phrasePlan.sectionCenterLiftSemitones,
+      sectionApexLiftSemitones: phrasePlan.sectionApexLiftSemitones,
     );
   }
 
@@ -232,10 +242,7 @@ class MelodyGenerator {
       beams = _prune(
         expanded,
         width:
-            MelodyGenerationConfig.beamWidth[context
-                .request
-                .settings
-                .settingsComplexityMode] ??
+            MelodyGenerationConfig.beamWidth[context.effectiveMode] ??
             12,
       );
     }
@@ -564,7 +571,7 @@ class MelodyGenerator {
   static List<String> _cadentialColorReleaseLabels(
     MelodyHarmonyPalette palette,
   ) {
-    return [
+    final labels = <String>{
       for (final label in palette.featuredLabels)
         if (!palette.chordToneLabels.contains(label) ||
             label == '9' ||
@@ -572,7 +579,8 @@ class MelodyGenerator {
             label == '11' ||
             label == '#11')
           label,
-    ].toSet().toList(growable: false);
+    };
+    return labels.toList(growable: false);
   }
 
   static List<String> _rotateRepeatedEndingLabels(
@@ -609,11 +617,10 @@ class MelodyGenerator {
 
   static MelodyDensity _sampleEffectiveDensity(
     PracticeSettings settings, {
+    required SettingsComplexityMode effectiveMode,
     required int seed,
   }) {
-    final profile = MelodyGenerationConfig.profileFor(
-      settings.settingsComplexityMode,
-    );
+    final profile = MelodyGenerationConfig.profileFor(effectiveMode);
     final weights = <MelodyDensity, double>{
       ...profile.densityWeights,
       settings.melodyDensity:
@@ -628,11 +635,10 @@ class MelodyGenerator {
 
   static MelodyStyle _sampleEffectiveStyle(
     PracticeSettings settings, {
+    required SettingsComplexityMode effectiveMode,
     required int seed,
   }) {
-    final profile = MelodyGenerationConfig.profileFor(
-      settings.settingsComplexityMode,
-    );
+    final profile = MelodyGenerationConfig.profileFor(effectiveMode);
     final weights = <MelodyStyle, double>{
       ...profile.styleWeights,
       settings.melodyStyle:
@@ -736,9 +742,19 @@ class MelodyGenerator {
     int phraseVariantNonce = 0,
   }) {
     final previousMelody = request.previousMelodyEvent;
+    final effectiveMode = MelodyGenerationConfig.effectiveModeForSettings(
+      request.settings,
+    );
     return MelodySeedUtil.stableHashAll(<Object?>[
       request.seed,
       request.settings.settingsComplexityMode.name,
+      effectiveMode.name,
+      _biasBucket(request.settings.syncopationBias),
+      _biasBucket(request.settings.colorRealizationBias),
+      _biasBucket(request.settings.noveltyTarget),
+      _biasBucket(request.settings.motifVariationBias),
+      _biasBucket(request.settings.approachToneDensity),
+      request.settings.allowChromaticApproaches,
       request.chordEvent.chord.harmonicComparisonKey,
       request.previousChordEvent?.chord.harmonicComparisonKey,
       request.nextChordEvent?.chord.harmonicComparisonKey,
@@ -753,6 +769,8 @@ class MelodyGenerator {
       phraseVariantNonce,
     ]);
   }
+
+  static int _biasBucket(double value) => (value.clamp(0.0, 1.0) * 100).round();
 }
 
 class _MelodyBeam {

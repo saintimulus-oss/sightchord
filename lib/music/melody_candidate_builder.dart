@@ -272,37 +272,6 @@ class MelodyHarmonyPalette {
     return resolved.toList(growable: false);
   }
 
-  static List<String> _fallbackIdentityLabels(
-    String chordClassKey,
-    List<String> featuredLabels,
-    List<String> chordToneLabels,
-  ) {
-    final explicit = switch (chordClassKey) {
-      'dom7alt' => const <String>['b9', '#9', '#11', 'b13', '3', 'b7'],
-      'lydianDom' => const <String>['#11', '9', '13', '3', 'b7'],
-      'maj7#11' => const <String>['#11', '9', '7'],
-      'minor11' => const <String>['11', '9', 'b3', 'b7'],
-      'minor13' => const <String>['13', '11', '9', 'b3', 'b7'],
-      'halfDim' => const <String>['b5', '11', 'b3'],
-      'borrowedIv' => const <String>['b3', '11', '9', 'b7'],
-      _ => <String>[
-        for (final label in featuredLabels)
-          if (!chordToneLabels.contains(label) || !_isCoreChordLabel(label))
-            label,
-      ],
-    };
-    final resolved = <String>{
-      for (final label in explicit)
-        if (MelodyCandidateBuilder.toneSemitones.containsKey(label)) label,
-    };
-    if (resolved.isEmpty) {
-      resolved.addAll(
-        featuredLabels.where(MelodyCandidateBuilder.toneSemitones.containsKey),
-      );
-    }
-    return resolved.toList(growable: false);
-  }
-
   static List<String> _chordToneLabels(
     GeneratedChord chord,
     ChordVoicingInterpretation interpretation,
@@ -380,6 +349,7 @@ class MelodyHarmonyPalette {
 class MelodyDecodeContext {
   const MelodyDecodeContext({
     required this.request,
+    required this.effectiveMode,
     required this.palette,
     required this.previousPalette,
     required this.nextPalette,
@@ -393,6 +363,7 @@ class MelodyDecodeContext {
   });
 
   final MelodyGenerationRequest request;
+  final SettingsComplexityMode effectiveMode;
   final MelodyHarmonyPalette palette;
   final MelodyHarmonyPalette? previousPalette;
   final MelodyHarmonyPalette? nextPalette;
@@ -403,6 +374,12 @@ class MelodyDecodeContext {
   final MelodyDensity effectiveDensity;
   final MelodyStyle effectiveStyle;
   final int seed;
+
+  bool get guidedCadentialChromaticOverride =>
+      !request.settings.allowChromaticApproaches &&
+      effectiveMode == SettingsComplexityMode.guided &&
+      phrasePlan.isCadential &&
+      (palette.interpretation.isDominantFamily || nextPalette != null);
 
   int targetMidiFor(double phrasePos01) {
     final clamped = phrasePos01.clamp(0.0, 1.0);
@@ -508,6 +485,15 @@ class MelodyCandidateBuilder {
     candidates.addAll(
       _apexLeapCandidates(slot: slot, beamNotes: beamNotes, context: context),
     );
+    candidates.addAll(
+      _approachCandidates(
+        slot: slot,
+        slotIndex: slotIndex,
+        beamNotes: beamNotes,
+        targetMidi: targetMidi,
+        context: context,
+      ),
+    );
     final byMidi = <int, MelodyCandidate>{};
     for (final candidate in candidates) {
       final existing = byMidi[candidate.midiNote];
@@ -518,11 +504,7 @@ class MelodyCandidateBuilder {
     final ordered = byMidi.values.toList(growable: false)
       ..sort((left, right) => right.preScore.compareTo(left.preScore));
     final limit =
-        MelodyGenerationConfig.candidateLimit[context
-            .request
-            .settings
-            .settingsComplexityMode] ??
-        10;
+        MelodyGenerationConfig.candidateLimit[context.effectiveMode] ?? 10;
     return ordered.take(limit).toList(growable: false);
   }
 
@@ -540,7 +522,7 @@ class MelodyCandidateBuilder {
         !context.palette.chordPitchClasses.contains(pitchClass)) {
       return const <MelodyCandidate>[];
     }
-    final mode = context.request.settings.settingsComplexityMode;
+    final mode = context.effectiveMode;
     final preferred = switch (mode) {
       SettingsComplexityMode.guided => slot.isStrong ? 6.4 : 5.6,
       SettingsComplexityMode.standard => slot.isStrong ? 5.1 : 4.4,
@@ -576,10 +558,9 @@ class MelodyCandidateBuilder {
     required List<BeamNote> beamNotes,
     required MelodyDecodeContext context,
   }) {
-    if (context.request.settings.settingsComplexityMode !=
-            SettingsComplexityMode.advanced ||
+    if (context.effectiveMode != SettingsComplexityMode.advanced ||
         beamNotes.isEmpty ||
-        (slot.phrasePos01 - context.phrasePlan.apexPos01).abs() > 0.14) {
+        (slot.phrasePos01 - context.phrasePlan.apexPos01).abs() > 0.18) {
       return const <MelodyCandidate>[];
     }
     final leapGate =
@@ -589,7 +570,8 @@ class MelodyCandidateBuilder {
           slot.index,
         ]) &
         0x7fffffff;
-    if (leapGate % 3 != 0) {
+    if (leapGate % 2 != 0 &&
+        context.request.settings.motifVariationBias < 0.90) {
       return const <MelodyCandidate>[];
     }
     final previousMidi = beamNotes.last.note.midiNote;
@@ -601,6 +583,7 @@ class MelodyCandidateBuilder {
     );
     final leapMidis = <int>{};
     final labelPool = <String>{
+      ...context.palette.identityLabels.take(4),
       ...context.palette.featuredLabels.take(4),
       ...context.palette.chordToneLabels.take(2),
     };
@@ -620,7 +603,7 @@ class MelodyCandidateBuilder {
         for (final displacement in const <int>[0, 12, -12]) {
           final midi = baseMidi + displacement;
           final interval = (midi - previousMidi).abs();
-          if (midi < low || midi > high || interval < 8 || interval > 12) {
+          if (midi < low || midi > high || interval < 7 || interval > 12) {
             continue;
           }
           leapMidis.add(midi);
@@ -629,7 +612,7 @@ class MelodyCandidateBuilder {
     }
     return [
       for (final midi in leapMidis)
-        if ((midi - previousMidi).abs() >= 8)
+        if ((midi - previousMidi).abs() >= 7)
           MelodyCandidate(
             midiNote: midi,
             toneLabel: context.palette.labelForPitchClass(midi % 12),
@@ -649,13 +632,106 @@ class MelodyCandidateBuilder {
                 context.palette.colorLabels.contains(
                   context.palette.labelForPitchClass(midi % 12),
                 )
-                ? 2.45
-                : 2.1,
+                ? 2.95
+                : 2.55,
             targetsColor: context.palette.colorLabels.contains(
               context.palette.labelForPitchClass(midi % 12),
             ),
           ),
     ];
+  }
+
+  static List<MelodyCandidate> _approachCandidates({
+    required RhythmSlot slot,
+    required int slotIndex,
+    required List<BeamNote> beamNotes,
+    required int targetMidi,
+    required MelodyDecodeContext context,
+  }) {
+    final density = context.request.settings.approachToneDensity;
+    if (slot.isStrong || density <= 0.08) {
+      return const <MelodyCandidate>[];
+    }
+    final chromaticAllowed = _chromaticApproachesEnabled(
+      slot: slot,
+      context: context,
+    );
+    final low = context.request.settings.melodyRangeLow;
+    final high = context.request.settings.melodyRangeHigh;
+    final approachTargets = <int>{
+      context.anchors.endMidi,
+      targetMidi,
+      if (context.nextPalette != null)
+        for (final pitchClass in context.nextPalette!.identityPitchClasses)
+          ...context.nextPalette!.nearestMidisForPitchClass(
+            pitchClass,
+            targetMidi: context.anchors.endMidi,
+            low: low,
+            high: high,
+            count: 1,
+          ),
+      if (context.nextPalette != null &&
+          (slot.anticipatory ||
+              slotIndex >= context.rhythmSample.slots.length - 2))
+        for (final pitchClass in context.nextPalette!.chordPitchClasses)
+          ...context.nextPalette!.nearestMidisForPitchClass(
+            pitchClass,
+            targetMidi: targetMidi,
+            low: low,
+            high: high,
+            count: 1,
+          ),
+    };
+    final candidates = <MelodyCandidate>[];
+    for (final destination in approachTargets) {
+      for (final direction in const <int>[-1, 1]) {
+        final chromaticMidi = destination + direction;
+        if (chromaticAllowed &&
+            chromaticMidi >= low &&
+            chromaticMidi <= high &&
+            chromaticMidi != destination) {
+          candidates.add(
+            _candidate(
+              chromaticMidi,
+              toneLabel: context.palette.labelForPitchClass(chromaticMidi % 12),
+              category: MelodyCandidateCategory.chromatic,
+              slot: slot,
+              previousMidi: beamNotes.isEmpty
+                  ? context.anchors.startMidi
+                  : beamNotes.last.note.midiNote,
+              targetMidi: targetMidi,
+              context: context,
+            ),
+          );
+        }
+        final diatonicMidi = _nearestScaleStepAround(
+          destination,
+          direction: direction,
+          context: context,
+        );
+        if (diatonicMidi != null &&
+            diatonicMidi >= low &&
+            diatonicMidi <= high &&
+            diatonicMidi != destination) {
+          candidates.add(
+            _candidate(
+              diatonicMidi,
+              toneLabel: context.palette.labelForPitchClass(diatonicMidi % 12),
+              category: MelodyCandidateCategory.diatonic,
+              slot: slot,
+              previousMidi: beamNotes.isEmpty
+                  ? context.anchors.startMidi
+                  : beamNotes.last.note.midiNote,
+              targetMidi: targetMidi,
+              context: context,
+            ),
+          );
+        }
+      }
+    }
+    candidates.sort((left, right) => right.preScore.compareTo(left.preScore));
+    final limit = density >= 0.70 ? 6 : density >= 0.35 ? 4 : 2;
+    return candidates.take(limit).toList(growable: false);
   }
 
   static List<MelodyCandidateCategory> _categoryOrder({
@@ -666,15 +742,9 @@ class MelodyCandidateBuilder {
   }) {
     final baseMap = Map<String, double>.from(
       slot.isStrong
-          ? MelodyGenerationConfig.strongSlotCategoryProb[context
-                    .request
-                    .settings
-                    .settingsComplexityMode] ??
+          ? MelodyGenerationConfig.strongSlotCategoryProb[context.effectiveMode] ??
                 const <String, double>{}
-          : MelodyGenerationConfig.weakSlotCategoryProb[context
-                    .request
-                    .settings
-                    .settingsComplexityMode] ??
+          : MelodyGenerationConfig.weakSlotCategoryProb[context.effectiveMode] ??
                 const <String, double>{},
     );
     final outstandingColor = _outstandingColorNeed(
@@ -684,7 +754,7 @@ class MelodyCandidateBuilder {
     );
     if (context.palette.isColorChord && outstandingColor > 0.0) {
       final key = slot.isStrong ? 'tension' : 'tension';
-      final mode = context.request.settings.settingsComplexityMode;
+      final mode = context.effectiveMode;
       final colorPressure =
           switch (mode) {
             SettingsComplexityMode.guided => 0.06,
@@ -714,6 +784,32 @@ class MelodyCandidateBuilder {
           'chromatic',
           (value) => value + (context.palette.isHardColorChord ? 0.06 : 0.02),
           ifAbsent: () => context.palette.isHardColorChord ? 0.06 : 0.02,
+        );
+      }
+    }
+    final chromaticAllowed = _chromaticApproachesEnabled(
+      slot: slot,
+      context: context,
+    );
+    if (!chromaticAllowed) {
+      baseMap.remove('chromatic');
+      if (!slot.isStrong) {
+        baseMap.update('diatonic', (value) => value + 0.10, ifAbsent: () => 0.10);
+        baseMap.update('chord', (value) => value + 0.04, ifAbsent: () => 0.04);
+      }
+    }
+    final approachDensity = context.request.settings.approachToneDensity;
+    if (!slot.isStrong) {
+      baseMap.update(
+        'diatonic',
+        (value) => value + (approachDensity * 0.10),
+        ifAbsent: () => approachDensity * 0.10,
+      );
+      if (chromaticAllowed) {
+        baseMap.update(
+          'chromatic',
+          (value) => value + (approachDensity * 0.18),
+          ifAbsent: () => approachDensity * 0.18,
         );
       }
     }
@@ -876,6 +972,9 @@ class MelodyCandidateBuilder {
           );
         }
       case MelodyCandidateCategory.chromatic:
+        if (!_chromaticApproachesEnabled(slot: slot, context: context)) {
+          return const <MelodyCandidate>[];
+        }
         final chromaticPitchClasses = <int>{
           (previousMidi + 1) % 12,
           (previousMidi + 11) % 12,
@@ -992,11 +1091,12 @@ class MelodyCandidateBuilder {
     final interval = (midiNote - previousMidi).abs().toDouble();
     final targetsColor = context.palette.containsIdentityLabel(toneLabel);
     var preScore = 2.2 - (distanceToTarget * 0.16) - (interval * 0.08);
+    final approachDensity = context.request.settings.approachToneDensity;
     final identityPriority = context.palette.identityPriorityFor(toneLabel);
     final featuredPriority = context.palette.featuredPriorityFor(toneLabel);
     if (targetsColor) {
       final modeColorBonus =
-          switch (context.request.settings.settingsComplexityMode) {
+          switch (context.effectiveMode) {
             SettingsComplexityMode.guided => 0.06,
             SettingsComplexityMode.standard => 0.12,
             SettingsComplexityMode.advanced => 0.20,
@@ -1015,11 +1115,23 @@ class MelodyCandidateBuilder {
           0.08 +
           (context.request.settings.colorRealizationBias * 0.10) +
           (context.palette.isHardColorChord
-              ? (context.request.settings.settingsComplexityMode ==
-                        SettingsComplexityMode.advanced
+              ? (context.effectiveMode == SettingsComplexityMode.advanced
                     ? 0.08
                     : 0.03)
               : 0.0);
+    }
+    if (category == MelodyCandidateCategory.chromatic ||
+        category == MelodyCandidateCategory.nonChord ||
+        (!slot.isStrong && category == MelodyCandidateCategory.diatonic)) {
+      if (slot.isStrong) {
+        preScore -= 0.20;
+      } else {
+        preScore +=
+            (approachDensity * (category == MelodyCandidateCategory.chromatic
+                ? 0.38
+                : 0.22)) +
+            (slot.anticipatory ? 0.12 : 0.04);
+      }
     }
     if (context.palette.isColorChord &&
         !targetsColor &&
@@ -1035,6 +1147,12 @@ class MelodyCandidateBuilder {
       if (nextPitchClasses.contains(midiNote % 12)) {
         preScore += 0.42;
       }
+    }
+    if (context.effectiveMode == SettingsComplexityMode.advanced &&
+        (slot.phrasePos01 - context.phrasePlan.apexPos01).abs() <= 0.18 &&
+        interval >= 7 &&
+        interval <= 12) {
+      preScore += targetsColor ? 0.48 : 0.30;
     }
     preScore += _boundaryPreScore(
       midiNote,
@@ -1082,6 +1200,41 @@ class MelodyCandidateBuilder {
       labels.addAll(palette.featuredLabels);
     }
     return labels.toSet().toList(growable: false);
+  }
+
+  static bool _chromaticApproachesEnabled({
+    required RhythmSlot slot,
+    required MelodyDecodeContext context,
+  }) {
+    if (context.request.settings.allowChromaticApproaches) {
+      return true;
+    }
+    if (!context.guidedCadentialChromaticOverride) {
+      return false;
+    }
+    return !slot.isStrong &&
+        (slot.anticipatory ||
+            slot.index >= context.rhythmSample.slots.length - 2);
+  }
+
+  static int? _nearestScaleStepAround(
+    int destination, {
+    required int direction,
+    required MelodyDecodeContext context,
+  }) {
+    for (var distance = 1; distance <= 2; distance += 1) {
+      final midi = destination + (direction.sign * distance);
+      final pitchClass = midi % 12;
+      if (context.palette.scalePitchClasses.contains(pitchClass) &&
+          !context.palette.chordPitchClasses.contains(pitchClass)) {
+        return midi;
+      }
+      if (context.nextPalette != null &&
+          context.nextPalette!.scalePitchClasses.contains(pitchClass)) {
+        return midi;
+      }
+    }
+    return null;
   }
 
   static double _boundaryPreScore(
@@ -1175,6 +1328,11 @@ class MelodyCandidateBuilder {
       }
     }
     if (category == MelodyCandidateCategory.chromatic) {
+      return MelodyNoteRole.approach;
+    }
+    if (!slot.isStrong &&
+        context.request.settings.approachToneDensity >= 0.45 &&
+        category == MelodyCandidateCategory.diatonic) {
       return MelodyNoteRole.approach;
     }
     if (toneLabel == '3' ||

@@ -91,7 +91,7 @@ class MelodyScoring {
       return double.negativeInfinity;
     }
     final notes = [for (final beamNote in beamNotes) beamNote.note];
-    final mode = context.request.settings.settingsComplexityMode;
+    final mode = context.effectiveMode;
     final recentEvents = _recentWindowEvents(context);
     var score = 0.0;
     for (var distance = 1; distance <= recentEvents.length; distance += 1) {
@@ -151,11 +151,12 @@ class MelodyScoring {
           ((realized - context.phrasePlan.targetColorExposure01) * 3.2) +
           (distinctCoverage * (context.palette.isHardColorChord ? 0.8 : 0.45));
     }
-    if (context.request.settings.settingsComplexityMode ==
-        SettingsComplexityMode.advanced) {
+    if (context.effectiveMode == SettingsComplexityMode.advanced) {
       final largeLeaps = _largeLeapCount(notes);
       if (largeLeaps == 1) {
-        score += 0.15;
+        score += 0.22;
+      } else if (largeLeaps == 2) {
+        score += 0.10;
       } else if (largeLeaps > 2) {
         score -= (largeLeaps - 2) * 0.45;
       }
@@ -198,13 +199,13 @@ class MelodyScoring {
       final priority = context.palette.identityPriorityFor(candidate.toneLabel);
       final identityBonus = max(0.0, 0.26 - (priority * 0.05));
       final modeBase =
-          switch (context.request.settings.settingsComplexityMode) {
+          switch (context.effectiveMode) {
             SettingsComplexityMode.guided => 0.16,
             SettingsComplexityMode.standard => 0.24,
             SettingsComplexityMode.advanced => 0.34,
           };
       final biasFactor =
-          switch (context.request.settings.settingsComplexityMode) {
+          switch (context.effectiveMode) {
             SettingsComplexityMode.guided => 0.24,
             SettingsComplexityMode.standard => 0.40,
             SettingsComplexityMode.advanced => 0.58,
@@ -246,7 +247,7 @@ class MelodyScoring {
         MelodyGenerationConfig.intervalBase[absSemitones] ??
         (-2.0 - ((absSemitones - 9) * 0.4));
     if (absSemitones == 0) {
-      score += switch (context.request.settings.settingsComplexityMode) {
+      score += switch (context.effectiveMode) {
         SettingsComplexityMode.guided => 0.78,
         SettingsComplexityMode.standard => 0.42,
         SettingsComplexityMode.advanced => 0.28,
@@ -259,10 +260,10 @@ class MelodyScoring {
     if (durMs < 350 && absSemitones > 4) {
       score -= 0.35 * (absSemitones - 4);
     }
-    if (context.request.settings.settingsComplexityMode ==
+    if (context.effectiveMode ==
             SettingsComplexityMode.advanced &&
         (slot.phrasePos01 - context.phrasePlan.apexPos01).abs() <= 0.14 &&
-        absSemitones >= 8 &&
+        absSemitones >= 7 &&
         absSemitones <= 12) {
       score += candidate.targetsColor ? 2.0 : 1.8;
     }
@@ -281,7 +282,7 @@ class MelodyScoring {
     final previousMidi = beamNotes.last.note.midiNote;
     final currentInterval = candidate.midiNote - previousMidi;
     if (currentInterval == 0) {
-      return switch (context.request.settings.settingsComplexityMode) {
+      return switch (context.effectiveMode) {
         SettingsComplexityMode.guided => 0.32,
         SettingsComplexityMode.standard => 0.12,
         SettingsComplexityMode.advanced => 0.18,
@@ -291,10 +292,10 @@ class MelodyScoring {
         context.targetMidiFor(min(1.0, slot.phrasePos01 + 0.18)) -
         context.targetMidiFor(slot.phrasePos01);
     var score = currentInterval.sign == desiredDirection.sign ? 0.35 : -0.10;
-    if (context.request.settings.settingsComplexityMode ==
+    if (context.effectiveMode ==
             SettingsComplexityMode.advanced &&
         (slot.phrasePos01 - context.phrasePlan.apexPos01).abs() <= 0.14 &&
-        currentInterval.abs() >= 8 &&
+        currentInterval.abs() >= 7 &&
         currentInterval.abs() <= 12) {
       score += candidate.targetsColor ? 0.55 : 0.42;
     }
@@ -316,7 +317,7 @@ class MelodyScoring {
           currentInterval.sign == previousInterval.sign &&
           currentInterval.abs() <= 2) {
         score += 0.25;
-      } else if (context.request.settings.settingsComplexityMode !=
+      } else if (context.effectiveMode !=
               SettingsComplexityMode.guided &&
           currentInterval.sign != previousInterval.sign &&
           currentInterval.abs() <= 2) {
@@ -332,6 +333,7 @@ class MelodyScoring {
     required MelodyDecodeContext context,
   }) {
     var score = slot.metricStrength - 0.4;
+    final approachDensity = context.request.settings.approachToneDensity;
     if (slot.isStrong &&
         (candidate.category == MelodyCandidateCategory.chord ||
             candidate.category == MelodyCandidateCategory.tension)) {
@@ -347,6 +349,16 @@ class MelodyScoring {
     }
     if (slot.anticipatory) {
       score += context.request.settings.anticipationProbability * 0.22;
+    }
+    if (candidate.role == MelodyNoteRole.approach) {
+      score += (approachDensity - 0.18) * 0.36;
+      if (slot.isStrong) {
+        score -= 0.18;
+      } else if (slot.anticipatory ||
+          slot.syncopationKey == '&2' ||
+          slot.syncopationKey == '&4') {
+        score += 0.10 + (approachDensity * 0.12);
+      }
     }
     return score;
   }
@@ -492,7 +504,7 @@ class MelodyScoring {
     }
     if (context.motifPlan.transformName == 'exact' &&
         context.request.settings.exactRepeatTarget <= 0.04) {
-      score -= switch (context.request.settings.settingsComplexityMode) {
+      score -= switch (context.effectiveMode) {
         SettingsComplexityMode.guided => 0.22,
         SettingsComplexityMode.standard => 0.30,
         SettingsComplexityMode.advanced => 0.38,
@@ -540,13 +552,13 @@ class MelodyScoring {
     );
     if (candidate.targetsColor) {
       final modeBase =
-          switch (context.request.settings.settingsComplexityMode) {
+          switch (context.effectiveMode) {
             SettingsComplexityMode.guided => 0.04,
             SettingsComplexityMode.standard => 0.10,
             SettingsComplexityMode.advanced => 0.18,
           };
       final modeBonus =
-          switch (context.request.settings.settingsComplexityMode) {
+          switch (context.effectiveMode) {
             SettingsComplexityMode.guided => 0.0,
             SettingsComplexityMode.standard => 0.03,
             SettingsComplexityMode.advanced => 0.08,
@@ -554,14 +566,14 @@ class MelodyScoring {
       final missingIdentityBonus =
           candidate.toneLabel != null &&
               !identityHitLabels.contains(candidate.toneLabel)
-          ? switch (context.request.settings.settingsComplexityMode) {
+          ? switch (context.effectiveMode) {
               SettingsComplexityMode.guided => 0.06,
               SettingsComplexityMode.standard => 0.12,
               SettingsComplexityMode.advanced => 0.18,
             }
           : 0.03;
       final hardColorBonus = context.palette.isHardColorChord
-          ? (context.request.settings.settingsComplexityMode ==
+          ? (context.effectiveMode ==
                     SettingsComplexityMode.advanced
                 ? 0.16
                 : 0.08)
@@ -575,9 +587,7 @@ class MelodyScoring {
               (0.52 + (context.request.settings.colorRealizationBias * 0.42)));
     }
     if (slot.isStrong && outstanding > 0.0) {
-      final penalty =
-          context.request.settings.settingsComplexityMode ==
-              SettingsComplexityMode.advanced
+      final penalty = context.effectiveMode == SettingsComplexityMode.advanced
           ? 0.16
           : 0.10;
       return -penalty -
@@ -585,7 +595,7 @@ class MelodyScoring {
     }
     if (!slot.isStrong &&
         outstanding > 0.0 &&
-        context.request.settings.settingsComplexityMode ==
+        context.effectiveMode ==
             SettingsComplexityMode.advanced) {
       return -0.08 - (outstanding * 0.18);
     }
@@ -599,7 +609,7 @@ class MelodyScoring {
     required int slotIndex,
     required MelodyDecodeContext context,
   }) {
-    final mode = context.request.settings.settingsComplexityMode;
+    final mode = context.effectiveMode;
     final previousNote = beamNotes.isEmpty ? null : beamNotes.last.note;
     final sameRhythmPenalty = switch (mode) {
       SettingsComplexityMode.guided => -0.40,
@@ -725,7 +735,7 @@ class MelodyScoring {
     List<GeneratedMelodyNote> notes, {
     required MelodyDecodeContext context,
   }) {
-    final mode = context.request.settings.settingsComplexityMode;
+    final mode = context.effectiveMode;
     final recentEvents = _recentWindowEvents(context);
     var score = 0.0;
     for (var distance = 1; distance <= recentEvents.length; distance += 1) {
@@ -873,6 +883,7 @@ class MelodyScoring {
   }) {
     var score = 0.0;
     final pitchClass = candidate.midiNote % 12;
+    final approachDensity = context.request.settings.approachToneDensity;
     if (context.previousPalette != null &&
         context.request.previousChordEvent?.chord.harmonicComparisonKey !=
             context.request.chordEvent.chord.harmonicComparisonKey &&
@@ -909,12 +920,22 @@ class MelodyScoring {
       if (candidate.targetsColor && nextDistance <= 2) {
         score += 0.26;
       }
+      if (candidate.role == MelodyNoteRole.approach) {
+        score += (0.12 + (approachDensity * 0.24)) +
+            max(0.0, 0.20 - (nextDistance * 0.08));
+      }
+    }
+    if (candidate.role == MelodyNoteRole.approach &&
+        context.nextPalette == null &&
+        !slot.anticipatory &&
+        slot.index < context.rhythmSample.slots.length - 2) {
+      score -= 0.10 - (approachDensity * 0.04);
     }
     if (context.palette.isColorChord &&
         candidate.targetsColor &&
         beamNotes.isNotEmpty &&
         slot.index <= 2 &&
-        context.request.settings.settingsComplexityMode ==
+        context.effectiveMode ==
             SettingsComplexityMode.advanced) {
       score += 0.10;
     }

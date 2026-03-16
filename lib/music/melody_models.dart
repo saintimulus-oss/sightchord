@@ -93,6 +93,10 @@ class GeneratedMelodyEvent {
     this.phraseCadenceHoldMultiplier,
     this.phraseTargetNovelty01,
     this.phraseTargetColorExposure01,
+    this.sectionArcIndex,
+    this.sectionArcSpan,
+    this.sectionCenterLiftSemitones,
+    this.sectionApexLiftSemitones,
   });
 
   final GeneratedChordEvent chordEvent;
@@ -111,6 +115,10 @@ class GeneratedMelodyEvent {
   final double? phraseCadenceHoldMultiplier;
   final double? phraseTargetNovelty01;
   final double? phraseTargetColorExposure01;
+  final int? sectionArcIndex;
+  final int? sectionArcSpan;
+  final int? sectionCenterLiftSemitones;
+  final int? sectionApexLiftSemitones;
 
   bool get isEmpty => notes.isEmpty;
   GeneratedMelodyNote? get firstNote => notes.isEmpty ? null : notes.first;
@@ -162,6 +170,10 @@ class GeneratedMelodyEvent {
     double? phraseCadenceHoldMultiplier,
     double? phraseTargetNovelty01,
     double? phraseTargetColorExposure01,
+    int? sectionArcIndex,
+    int? sectionArcSpan,
+    int? sectionCenterLiftSemitones,
+    int? sectionApexLiftSemitones,
   }) {
     return GeneratedMelodyEvent(
       chordEvent: chordEvent ?? this.chordEvent,
@@ -185,6 +197,12 @@ class GeneratedMelodyEvent {
           phraseTargetNovelty01 ?? this.phraseTargetNovelty01,
       phraseTargetColorExposure01:
           phraseTargetColorExposure01 ?? this.phraseTargetColorExposure01,
+      sectionArcIndex: sectionArcIndex ?? this.sectionArcIndex,
+      sectionArcSpan: sectionArcSpan ?? this.sectionArcSpan,
+      sectionCenterLiftSemitones:
+          sectionCenterLiftSemitones ?? this.sectionCenterLiftSemitones,
+      sectionApexLiftSemitones:
+          sectionApexLiftSemitones ?? this.sectionApexLiftSemitones,
     );
   }
 }

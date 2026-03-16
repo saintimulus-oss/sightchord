@@ -156,8 +156,11 @@ class RhythmTemplateSampler {
     required Random random,
   }) {
     final timing = request.chordEvent.timing;
+    final effectiveMode = MelodyGenerationConfig.effectiveModeForSettings(
+      request.settings,
+    );
     final templates = _templatesFor(
-      mode: request.settings.settingsComplexityMode,
+      mode: effectiveMode,
       density: density,
     );
     final targetOffbeatRatio = _targetOffbeatOnsetRatio(
@@ -171,6 +174,7 @@ class RhythmTemplateSampler {
       phrasePlan: phrasePlan,
       density: density,
       style: style,
+      effectiveMode: effectiveMode,
       targetOffbeatRatio: targetOffbeatRatio,
       random: random,
     );
@@ -184,6 +188,7 @@ class RhythmTemplateSampler {
       phrasePlan: phrasePlan,
       density: density,
       style: style,
+      effectiveMode: effectiveMode,
       targetOffbeatRatio: targetOffbeatRatio,
       random: random,
     );
@@ -191,12 +196,14 @@ class RhythmTemplateSampler {
       offsets,
       request: request,
       phrasePlan: phrasePlan,
+      effectiveMode: effectiveMode,
       random: random,
     );
     _applyCadentialHold(
       offsets,
       request: request,
       phrasePlan: phrasePlan,
+      effectiveMode: effectiveMode,
       random: random,
     );
     _rebalanceOffbeatDistribution(
@@ -204,6 +211,7 @@ class RhythmTemplateSampler {
       request: request,
       phrasePlan: phrasePlan,
       density: density,
+      effectiveMode: effectiveMode,
       targetOffbeatRatio: targetOffbeatRatio,
       random: random,
     );
@@ -289,6 +297,7 @@ class RhythmTemplateSampler {
     required PhrasePlan phrasePlan,
     required MelodyDensity density,
     required MelodyStyle style,
+    required SettingsComplexityMode effectiveMode,
     required double targetOffbeatRatio,
     required Random random,
   }) {
@@ -309,10 +318,7 @@ class RhythmTemplateSampler {
         PhraseRole.continuation => containsTwoAnd ? 0.06 : 0.0,
         PhraseRole.preCadence =>
           containsFourAnd
-              ? _modeWeightedSyncBonus(
-                  request.settings.settingsComplexityMode,
-                  fourAnd: true,
-                )
+              ? _modeWeightedSyncBonus(effectiveMode, fourAnd: true)
               : (containsTwoAnd ? 0.05 : -0.03),
         PhraseRole.cadence => lastOffset <= 2.5 ? 0.14 : -0.12,
       };
@@ -373,7 +379,9 @@ class RhythmTemplateSampler {
     required PhrasePlan phrasePlan,
     required MelodyDensity density,
   }) {
-    final mode = request.settings.settingsComplexityMode;
+    final mode = MelodyGenerationConfig.effectiveModeForSettings(
+      request.settings,
+    );
     var target = switch ((mode, density)) {
       (SettingsComplexityMode.guided, MelodyDensity.sparse) => 0.12,
       (SettingsComplexityMode.guided, MelodyDensity.balanced) => 0.18,
@@ -401,6 +409,7 @@ class RhythmTemplateSampler {
     required PhrasePlan phrasePlan,
     required MelodyDensity density,
     required MelodyStyle style,
+    required SettingsComplexityMode effectiveMode,
     required double targetOffbeatRatio,
     required Random random,
   }) {
@@ -408,7 +417,7 @@ class RhythmTemplateSampler {
       return;
     }
     final currentRatio = _offbeatRatioOfOffsets(offsets);
-    var probability = switch (request.settings.settingsComplexityMode) {
+    var probability = switch (effectiveMode) {
       SettingsComplexityMode.guided => 0.10,
       SettingsComplexityMode.standard => 0.22,
       SettingsComplexityMode.advanced => 0.34,
@@ -448,13 +457,15 @@ class RhythmTemplateSampler {
     required MelodyGenerationRequest request,
     required PhrasePlan phrasePlan,
   }) {
+    final effectiveMode = MelodyGenerationConfig.effectiveModeForSettings(
+      request.settings,
+    );
     final candidates =
         <double>[
           1.5,
           if (phrasePlan.role != PhraseRole.opening) 3.5,
           2.5,
-          if (request.settings.settingsComplexityMode !=
-              SettingsComplexityMode.guided)
+          if (effectiveMode != SettingsComplexityMode.guided)
             0.5,
         ]..sort(
           (left, right) =>
@@ -496,6 +507,7 @@ class RhythmTemplateSampler {
     List<double> offsets, {
     required MelodyGenerationRequest request,
     required PhrasePlan phrasePlan,
+    required SettingsComplexityMode effectiveMode,
     required Random random,
   }) {
     if (offsets.isEmpty || request.nextChordEvent == null) {
@@ -503,9 +515,7 @@ class RhythmTemplateSampler {
     }
     final base = max(
       request.settings.anticipationProbability,
-      MelodyGenerationConfig.profileFor(
-        request.settings.settingsComplexityMode,
-      ).anticipationProbability,
+      MelodyGenerationConfig.profileFor(effectiveMode).anticipationProbability,
     );
     final lastOffset = offsets.last;
     final currentStrength = _metricStrength(
@@ -547,6 +557,7 @@ class RhythmTemplateSampler {
     List<double> offsets, {
     required MelodyGenerationRequest request,
     required PhrasePlan phrasePlan,
+    required SettingsComplexityMode effectiveMode,
     required Random random,
   }) {
     if (offsets.length <= 1) {
@@ -554,11 +565,7 @@ class RhythmTemplateSampler {
     }
     if (phrasePlan.role == PhraseRole.preCadence &&
         request.nextChordEvent != null) {
-      final target =
-          request.settings.settingsComplexityMode ==
-              SettingsComplexityMode.guided
-          ? 3.0
-          : 3.5;
+      final target = effectiveMode == SettingsComplexityMode.guided ? 3.0 : 3.5;
       final replacementIndex = offsets.length - 1;
       final previous = replacementIndex > 0
           ? offsets[replacementIndex - 1]
@@ -583,7 +590,11 @@ class RhythmTemplateSampler {
         offsets.insert(max(1, offsets.length - 1), inserted);
       }
     }
-    _compressCadentialTexture(offsets, request: request);
+    _compressCadentialTexture(
+      offsets,
+      request: request,
+      effectiveMode: effectiveMode,
+    );
     while (offsets.length > 2 && offsets[offsets.length - 2] > 1.0) {
       offsets.removeAt(offsets.length - 2);
     }
@@ -607,7 +618,7 @@ class RhythmTemplateSampler {
     final previousStart = offsets.length > 1
         ? offsets[offsets.length - 2]
         : 0.0;
-    final cappedLastStart = switch (request.settings.settingsComplexityMode) {
+    final cappedLastStart = switch (effectiveMode) {
       SettingsComplexityMode.guided => desiredLastStart.clamp(1.25, 1.55),
       SettingsComplexityMode.standard => desiredLastStart.clamp(1.25, 1.60),
       SettingsComplexityMode.advanced => desiredLastStart.clamp(1.35, 1.75),
@@ -621,13 +632,14 @@ class RhythmTemplateSampler {
     required MelodyGenerationRequest request,
     required PhrasePlan phrasePlan,
     required MelodyDensity density,
+    required SettingsComplexityMode effectiveMode,
     required double targetOffbeatRatio,
     required Random random,
   }) {
     if (request.chordEvent.timing.beatsPerBar != 4 || offsets.length <= 1) {
       return;
     }
-    final mode = request.settings.settingsComplexityMode;
+    final mode = effectiveMode;
     final highMargin = switch (mode) {
       SettingsComplexityMode.guided => 0.04,
       SettingsComplexityMode.standard => 0.06,
@@ -695,6 +707,7 @@ class RhythmTemplateSampler {
   static void _compressCadentialTexture(
     List<double> offsets, {
     required MelodyGenerationRequest request,
+    required SettingsComplexityMode effectiveMode,
   }) {
     offsets.removeWhere(
       (offset) =>
@@ -702,7 +715,7 @@ class RhythmTemplateSampler {
           offset >= 2.5 &&
           offset < request.chordEvent.timing.durationBeats.toDouble(),
     );
-    final maxSlots = switch (request.settings.settingsComplexityMode) {
+    final maxSlots = switch (effectiveMode) {
       SettingsComplexityMode.guided => 3,
       SettingsComplexityMode.standard => 3,
       SettingsComplexityMode.advanced => 3,
@@ -798,6 +811,9 @@ class RhythmTemplateSampler {
     required MelodyGenerationRequest request,
     required PhrasePlan phrasePlan,
   }) {
+    final effectiveMode = MelodyGenerationConfig.effectiveModeForSettings(
+      request.settings,
+    );
     var score = switch (_gridKey(offset)) {
       1 => 0.22,
       3 => 0.54,
@@ -815,7 +831,7 @@ class RhythmTemplateSampler {
       },
       PhraseRole.cadence => -0.18,
     };
-    score += switch (request.settings.settingsComplexityMode) {
+    score += switch (effectiveMode) {
       SettingsComplexityMode.guided => -0.06,
       SettingsComplexityMode.standard => 0.0,
       SettingsComplexityMode.advanced => switch (_gridKey(offset)) {

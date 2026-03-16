@@ -47,6 +47,34 @@ GeneratedChordEvent _event({
 }
 
 void main() {
+  GeneratedMelodyEvent cadenceEvent(int barIndex, String label) {
+    final chordEvent = _event(
+      chord: _chord(
+        root: 'C',
+        quality: ChordQuality.major7,
+        roman: RomanNumeralId.iMaj7,
+        function: HarmonicFunction.tonic,
+      ),
+      barIndex: barIndex,
+    );
+    return GeneratedMelodyEvent(
+      chordEvent: chordEvent,
+      notes: <GeneratedMelodyNote>[
+        GeneratedMelodyNote(
+          midiNote: 72,
+          startBeatOffset: 0,
+          durationBeats: 4,
+          role: MelodyNoteRole.chordTone,
+          toneLabel: label,
+        ),
+      ],
+      phraseRole: PhraseRole.cadence,
+      phraseCenterMidi: 71,
+      phraseApexMidi: 76,
+      phraseApexPos01: 0.55,
+    );
+  }
+
   test('phrase planner uses multi-event window for continuation position', () {
     final window = <GeneratedChordEvent>[
       _event(
@@ -181,5 +209,61 @@ void main() {
     expect(plan.eventsInPhrase, 3);
     expect(plan.eventIndexInPhrase, 1);
     expect(plan.eventEndPos01, closeTo(2 / 3, 0.15));
+  });
+
+  test('phrase planner derives a section arc from prior cadence history', () {
+    final window = <GeneratedChordEvent>[
+      _event(
+        chord: _chord(
+          root: 'C',
+          quality: ChordQuality.major7,
+          roman: RomanNumeralId.iMaj7,
+          function: HarmonicFunction.tonic,
+        ),
+        barIndex: 8,
+      ),
+      _event(
+        chord: _chord(
+          root: 'D',
+          quality: ChordQuality.minor7,
+          roman: RomanNumeralId.iiMin7,
+          function: HarmonicFunction.predominant,
+        ),
+        barIndex: 9,
+      ),
+      _event(
+        chord: _chord(
+          root: 'G',
+          quality: ChordQuality.dominant7,
+          roman: RomanNumeralId.vDom7,
+          function: HarmonicFunction.dominant,
+        ),
+        barIndex: 10,
+      ),
+    ];
+
+    final request = MelodyGenerationRequest(
+      chordEvent: window[0],
+      nextChordEvent: window[1],
+      lookAheadChordEvent: window[2],
+      phraseChordWindow: window,
+      phraseWindowIndex: 0,
+      recentMelodyEvents: <GeneratedMelodyEvent>[
+        cadenceEvent(0, '1'),
+        cadenceEvent(2, '3'),
+        cadenceEvent(4, '5'),
+      ],
+      settings: PracticeSettings(
+        melodyGenerationEnabled: true,
+        settingsComplexityMode: SettingsComplexityMode.advanced,
+      ),
+      seed: 123,
+    );
+
+    final plan = PhrasePlanner.plan(request: request, random: Random(123));
+
+    expect(plan.sectionArcIndex, 3);
+    expect(plan.sectionArcSpan, 4);
+    expect(plan.sectionCenterLiftSemitones, lessThanOrEqualTo(0));
   });
 }

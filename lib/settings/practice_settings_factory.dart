@@ -152,26 +152,39 @@ class PracticeSettingsFactory {
   static MelodyQuickPreset quickMelodyPresetForSettings(
     PracticeSettings settings,
   ) {
-    if (settings.melodyStyle == MelodyStyle.colorful ||
-        settings.melodyDensity == MelodyDensity.active ||
-        settings.colorRealizationBias >= 0.72 ||
-        settings.syncopationBias >= 0.66 ||
-        settings.colorToneTarget >= 0.34 ||
-        settings.motifVariationBias >= 0.84 ||
-        settings.exactRepeatTarget <= 0.025) {
+    final effectiveMode = MelodyGenerationConfig.effectiveModeForSettings(
+      settings,
+    );
+    if (effectiveMode == SettingsComplexityMode.advanced &&
+        (settings.melodyStyle == MelodyStyle.colorful ||
+            settings.melodyDensity == MelodyDensity.active ||
+            settings.colorRealizationBias >= 0.72 ||
+            settings.syncopationBias >= 0.66 ||
+            settings.colorToneTarget >= 0.34 ||
+            settings.motifVariationBias >= 0.84 ||
+            settings.approachToneDensity >= 0.38 ||
+            settings.exactRepeatTarget <= 0.025)) {
       return MelodyQuickPreset.colorLine;
     }
-    if (settings.melodyStyle == MelodyStyle.lyrical ||
+    if (effectiveMode == SettingsComplexityMode.standard ||
+        settings.melodyStyle == MelodyStyle.lyrical ||
         settings.melodyStyle == MelodyStyle.bebop ||
         settings.allowChromaticApproaches ||
         settings.syncopationBias >= 0.34 ||
         settings.colorRealizationBias >= 0.30 ||
         settings.noveltyTarget >= 0.46 ||
         settings.motifVariationBias >= 0.60 ||
+        settings.approachToneDensity >= 0.22 ||
         settings.exactRepeatTarget <= 0.05) {
       return MelodyQuickPreset.songLine;
     }
     return MelodyQuickPreset.guideLine;
+  }
+
+  static SettingsComplexityMode effectiveMelodyModeForSettings(
+    PracticeSettings settings,
+  ) {
+    return MelodyGenerationConfig.effectiveModeForSettings(settings);
   }
 
   static MelodyPresetDescriptor describeComplexityModeMelodyPreset(
@@ -257,9 +270,10 @@ class PracticeSettingsFactory {
   ) {
     final inferredPreset = quickMelodyPresetForSettings(settings);
     final base = describeQuickMelodyPreset(inferredPreset);
+    final effectiveMode = effectiveMelodyModeForSettings(settings);
     return MelodyPresetDescriptor(
-      label: base.label,
-      summary: _activeSummaryFor(settings),
+      label: '${base.label} / ${effectiveMode.name}',
+      summary: _activeSummaryFor(settings, effectiveMode: effectiveMode),
       differenceReason: base.differenceReason,
       density: settings.melodyDensity,
       style: settings.melodyStyle,
@@ -276,7 +290,10 @@ class PracticeSettingsFactory {
     );
   }
 
-  static String _activeSummaryFor(PracticeSettings settings) {
+  static String _activeSummaryFor(
+    PracticeSettings settings, {
+    required SettingsComplexityMode effectiveMode,
+  }) {
     final rhythm = settings.syncopationBias < 0.34
         ? 'steady rhythm'
         : settings.syncopationBias < 0.67
@@ -292,7 +309,7 @@ class PracticeSettingsFactory {
         : settings.motifVariationBias < 0.75
         ? 'varied repeat'
         : 'heavy motif variation';
-    return '$rhythm, $color, $motif';
+    return '$rhythm, $color, $motif, ${effectiveMode.name} engine';
   }
 
   static PracticeSettings beginnerSafePreset({PracticeSettings? baseSettings}) {

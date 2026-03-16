@@ -84,6 +84,9 @@ class MotifTransformer {
     required Random random,
   }) {
     final targetLength = _maxInt(0, rhythm.slots.length - 1);
+    final effectiveMode = MelodyGenerationConfig.effectiveModeForSettings(
+      settings,
+    );
     final sources = _collectSources(
       previousEvent: previousEvent,
       recentEvents: recentEvents,
@@ -91,16 +94,56 @@ class MotifTransformer {
     final computedReuseChance =
         settings.motifRepetitionStrength +
         (settings.motifVariationBias * 0.22) +
-        (settings.noveltyTarget * 0.10);
+        (settings.noveltyTarget * 0.10) +
+        switch (effectiveMode) {
+          SettingsComplexityMode.guided => 0.00,
+          SettingsComplexityMode.standard => 0.03,
+          SettingsComplexityMode.advanced => 0.06,
+        };
+    final roleReuseFloor = switch ((effectiveMode, phrasePlan.role)) {
+      (SettingsComplexityMode.guided, PhraseRole.opening) => 0.28,
+      (SettingsComplexityMode.guided, _) => 0.34,
+      (SettingsComplexityMode.standard, PhraseRole.opening) => 0.42,
+      (SettingsComplexityMode.standard, PhraseRole.continuation) => 0.50,
+      (SettingsComplexityMode.standard, _) => 0.56,
+      (SettingsComplexityMode.advanced, PhraseRole.opening) => 0.48,
+      (SettingsComplexityMode.advanced, PhraseRole.continuation) => 0.58,
+      (SettingsComplexityMode.advanced, _) => 0.66,
+    };
+    final sourceStrengthFloor =
+        roleReuseFloor + min(0.08, sources.length * 0.02);
     final reuseChance = settings.motifRepetitionStrength >= 0.95
         ? 0.95
-        : computedReuseChance.clamp(0.28, 0.62);
+        : switch (effectiveMode) {
+            SettingsComplexityMode.guided => max(
+              computedReuseChance,
+              sourceStrengthFloor,
+            ).clamp(
+              0.28,
+              0.62,
+            ),
+            SettingsComplexityMode.standard => max(
+              computedReuseChance,
+              sourceStrengthFloor,
+            ).clamp(
+              0.42,
+              0.76,
+            ),
+            SettingsComplexityMode.advanced => max(
+              computedReuseChance,
+              sourceStrengthFloor,
+            ).clamp(
+              0.48,
+              0.84,
+            ),
+          };
     if (sources.isEmpty || random.nextDouble() > reuseChance) {
       final fresh = _freshMemory(
         targetLength: targetLength,
         rhythm: rhythm,
         style: style,
         phrasePlan: phrasePlan,
+        allowExtendedLeaps: effectiveMode == SettingsComplexityMode.advanced,
         random: random,
       );
       return MotifTransformPlan(
@@ -114,7 +157,7 @@ class MotifTransformer {
 
     final source = _pickSource(sources, random);
     var transform = _pickTransform(
-      settings.settingsComplexityMode,
+      effectiveMode,
       settings.motifVariationBias,
       source.memory,
       recentEvents,
@@ -133,6 +176,7 @@ class MotifTransformer {
       targetLength: targetLength,
       rhythm: rhythm,
       phrasePlan: phrasePlan,
+      allowExtendedLeaps: effectiveMode == SettingsComplexityMode.advanced,
       random: random,
     );
     return MotifTransformPlan(
@@ -177,7 +221,9 @@ class MotifTransformer {
     final seen = <int>{};
     final candidates = <GeneratedMelodyEvent>[
       ...recentEvents,
-      if (previousEvent != null) previousEvent,
+      ...(previousEvent == null
+          ? const <GeneratedMelodyEvent>[]
+          : <GeneratedMelodyEvent>[previousEvent]),
     ];
     for (var index = 0; index < candidates.length; index += 1) {
       final event = candidates[index];
@@ -250,27 +296,69 @@ class MotifTransformer {
     final exactReduction =
         (variationBias * 0.08) +
         (recentVectorRepeats * 0.05) +
-        (sourceMemory.isMonotoneContour ? 0.06 : 0.0);
-    base.update('exact', (value) => max(0.02, value - exactReduction));
+        (sourceMemory.isMonotoneContour ? 0.06 : 0.0) +
+        switch (mode) {
+          SettingsComplexityMode.guided => 0.00,
+          SettingsComplexityMode.standard => 0.03,
+          SettingsComplexityMode.advanced => 0.05,
+        };
+    base.update(
+      'exact',
+      (value) => max(mode == SettingsComplexityMode.guided ? 0.02 : 0.01,
+          value - exactReduction),
+    );
     base.update(
       'tailChange',
-      (value) => value + 0.04 + (phrasePlan.isCadential ? 0.04 : 0.0),
+      (value) =>
+          value +
+          0.05 +
+          (phrasePlan.isCadential ? 0.06 : 0.0) +
+          (mode == SettingsComplexityMode.guided ? 0.0 : 0.03),
       ifAbsent: () => 0.10,
     );
     base.update(
       'rhythmVar',
-      (value) => value + 0.04 + (variationBias * 0.04),
+      (value) =>
+          value +
+          0.05 +
+          (variationBias * 0.05) +
+          (mode == SettingsComplexityMode.guided ? 0.0 : 0.04),
       ifAbsent: () => 0.12,
     );
     base.update(
       'sequence',
-      (value) => value + 0.03 + (variationBias * 0.03),
+      (value) =>
+          value +
+          0.04 +
+          (variationBias * 0.04) +
+          (phrasePlan.role == PhraseRole.continuation ? 0.04 : 0.0),
       ifAbsent: () => 0.10,
     );
     base.update(
       'transpose',
-      (value) => value + (sourceMemory.isMonotoneContour ? 0.04 : 0.0),
+      (value) =>
+          value +
+          (sourceMemory.isMonotoneContour ? 0.04 : 0.0) -
+          (mode == SettingsComplexityMode.advanced ? 0.02 : 0.0),
       ifAbsent: () => 0.12,
+    );
+    base.update(
+      'truncateExtend',
+      (value) =>
+          value +
+          0.03 +
+          (phrasePlan.role == PhraseRole.preCadence ? 0.02 : 0.0),
+      ifAbsent: () => 0.12,
+    );
+    base.update(
+      'inversionLite',
+      (value) =>
+          value +
+          (mode == SettingsComplexityMode.guided ? 0.0 : 0.05) +
+          (sourceMemory.zeroIntervalCount > sourceMemory.intervalVector.length ~/ 3
+              ? 0.03
+              : 0.0),
+      ifAbsent: () => mode == SettingsComplexityMode.guided ? 0.04 : 0.12,
     );
     var total = 0.0;
     for (final value in base.values) {
@@ -293,6 +381,7 @@ class MotifTransformer {
     required int targetLength,
     required RhythmTemplateSample rhythm,
     required PhrasePlan phrasePlan,
+    required bool allowExtendedLeaps,
     required Random random,
   }) {
     final baseIntervals = _fitLength(source.intervalVector, targetLength);
@@ -336,8 +425,14 @@ class MotifTransformer {
       'sequence' => _sequenceRhythmVector(baseRhythm, rhythm),
       _ => rhythm.rhythmVector,
     };
+    final shapedIntervals = _ensureExpressiveContour(
+      intervals,
+      phrasePlan: phrasePlan,
+      allowExtendedLeaps: allowExtendedLeaps,
+      random: random,
+    );
     return _buildMemory(
-      intervalVector: intervals,
+      intervalVector: shapedIntervals,
       rhythmVector: rhythmVector,
       toneLabels: toneLabels,
     );
@@ -348,6 +443,7 @@ class MotifTransformer {
     required RhythmTemplateSample rhythm,
     required MelodyStyle style,
     required PhrasePlan phrasePlan,
+    required bool allowExtendedLeaps,
     required Random random,
   }) {
     final libraries = switch (style) {
@@ -390,6 +486,7 @@ class MotifTransformer {
       intervalVector: _ensureExpressiveContour(
         adjusted,
         phrasePlan: phrasePlan,
+        allowExtendedLeaps: allowExtendedLeaps,
         random: random,
       ),
       rhythmVector: rhythm.rhythmVector,
@@ -652,16 +749,18 @@ class MotifTransformer {
   static List<int> _ensureExpressiveContour(
     List<int> intervals, {
     PhrasePlan? phrasePlan,
+    bool allowExtendedLeaps = false,
     required Random random,
   }) {
     if (intervals.isEmpty) {
       return intervals;
     }
     final result = List<int>.from(intervals, growable: false);
+    final maxAbsInterval = allowExtendedLeaps ? 7 : 5;
     for (var index = 0; index < result.length; index += 1) {
       final value = result[index];
-      if (value.abs() > 5) {
-        result[index] = value.sign * 5;
+      if (value.abs() > maxAbsInterval) {
+        result[index] = value.sign * maxAbsInterval;
       }
       if (index > 0 && result[index] == 0 && result[index - 1] == 0) {
         result[index] = index.isEven ? 1 : -1;

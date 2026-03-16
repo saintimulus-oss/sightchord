@@ -162,4 +162,35 @@ void main() {
       MelodyQuickPreset.colorLine,
     );
   });
+
+  test('effective melody mode follows quick preset biases', () {
+    final guidedBase = PracticeSettings(
+      settingsComplexityMode: SettingsComplexityMode.guided,
+    );
+    final guideLine = PracticeSettingsFactory.applyQuickMelodyPreset(
+      guidedBase,
+      MelodyQuickPreset.guideLine,
+    );
+    final songLine = PracticeSettingsFactory.applyQuickMelodyPreset(
+      guidedBase,
+      MelodyQuickPreset.songLine,
+    );
+    final colorLine = PracticeSettingsFactory.applyQuickMelodyPreset(
+      guidedBase,
+      MelodyQuickPreset.colorLine,
+    );
+
+    expect(
+      PracticeSettingsFactory.effectiveMelodyModeForSettings(guideLine),
+      SettingsComplexityMode.guided,
+    );
+    expect(
+      PracticeSettingsFactory.effectiveMelodyModeForSettings(songLine),
+      SettingsComplexityMode.standard,
+    );
+    expect(
+      PracticeSettingsFactory.effectiveMelodyModeForSettings(colorLine),
+      SettingsComplexityMode.advanced,
+    );
+  });
 }

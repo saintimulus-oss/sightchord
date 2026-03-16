@@ -286,6 +286,36 @@ class MelodyGenerationConfig {
     return modeProfiles[mode] ?? modeProfiles[SettingsComplexityMode.guided]!;
   }
 
+  static SettingsComplexityMode effectiveModeForSettings(
+    PracticeSettings settings,
+  ) {
+    if (settings.melodyStyle == MelodyStyle.colorful ||
+        settings.melodyDensity == MelodyDensity.active ||
+        settings.syncopationBias >= 0.66 ||
+        settings.colorRealizationBias >= 0.72 ||
+        settings.colorToneTarget >= 0.34 ||
+        settings.noveltyTarget >= 0.72 ||
+        settings.motifVariationBias >= 0.82 ||
+        settings.approachToneDensity >= 0.38 ||
+        settings.exactRepeatTarget <= 0.03) {
+      return SettingsComplexityMode.advanced;
+    }
+    if (settings.melodyStyle == MelodyStyle.lyrical ||
+        settings.melodyStyle == MelodyStyle.bebop ||
+        settings.allowChromaticApproaches ||
+        settings.syncopationBias >= 0.34 ||
+        settings.colorRealizationBias >= 0.30 ||
+        settings.colorToneTarget >= 0.18 ||
+        settings.noveltyTarget >= 0.46 ||
+        settings.motifVariationBias >= 0.60 ||
+        settings.approachToneDensity >= 0.22 ||
+        settings.anticipationProbability >= 0.12 ||
+        settings.exactRepeatTarget <= 0.05) {
+      return SettingsComplexityMode.standard;
+    }
+    return SettingsComplexityMode.guided;
+  }
+
   static MelodyQuickPresetProfile quickPresetFor(MelodyQuickPreset preset) {
     return quickPresetProfiles[preset] ??
         quickPresetProfiles[MelodyQuickPreset.guideLine]!;
