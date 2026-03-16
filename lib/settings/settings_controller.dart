@@ -58,6 +58,9 @@ class AppSettingsController extends ChangeNotifier {
       if (!_isDisposed) {
         notifyListeners();
       }
+      if (!_isDisposed) {
+        notifyListeners();
+      }
       return;
     }
     final phase = binding.schedulerPhase;
@@ -66,6 +69,9 @@ class AppSettingsController extends ChangeNotifier {
         phase == SchedulerPhase.postFrameCallbacks;
     if (canNotifyImmediately) {
       _notifyScheduled = false;
+      if (!_isDisposed) {
+        notifyListeners();
+      }
       if (!_isDisposed) {
         notifyListeners();
       }
