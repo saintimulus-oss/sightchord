@@ -16,6 +16,7 @@ class AppSettingsController extends ChangeNotifier {
   Future<void> _saveQueue = Future<void>.value();
   PracticeSettings? _pendingSaveSnapshot;
   bool _notifyScheduled = false;
+  bool _isDisposed = false;
 
   PracticeSettings get settings => _settings;
 
@@ -46,12 +47,17 @@ class AppSettingsController extends ChangeNotifier {
   }
 
   void _notifySafely() {
+    if (_isDisposed) {
+      return;
+    }
     SchedulerBinding binding;
     try {
       binding = SchedulerBinding.instance;
     } catch (_) {
       _notifyScheduled = false;
-      notifyListeners();
+      if (!_isDisposed) {
+        notifyListeners();
+      }
       return;
     }
     final phase = binding.schedulerPhase;
@@ -60,7 +66,9 @@ class AppSettingsController extends ChangeNotifier {
         phase == SchedulerPhase.postFrameCallbacks;
     if (canNotifyImmediately) {
       _notifyScheduled = false;
-      notifyListeners();
+      if (!_isDisposed) {
+        notifyListeners();
+      }
       return;
     }
     if (_notifyScheduled) {
@@ -69,7 +77,16 @@ class AppSettingsController extends ChangeNotifier {
     _notifyScheduled = true;
     binding.addPostFrameCallback((_) {
       _notifyScheduled = false;
-      notifyListeners();
+      if (!_isDisposed) {
+        notifyListeners();
+      }
     });
   }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
 }
+
