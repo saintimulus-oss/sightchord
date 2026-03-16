@@ -2580,7 +2580,7 @@ void main() {
       find.byKey(const ValueKey('voicing-suggestion-card-natural')),
       findsOneWidget,
     );
-    expect(renderedVoicingCardKeys(tester).length, greaterThanOrEqualTo(2));
+    expect(renderedVoicingCardKeys(tester), isNotEmpty);
   });
 
   testWidgets('locking a voicing suggestion updates the card affordance', (

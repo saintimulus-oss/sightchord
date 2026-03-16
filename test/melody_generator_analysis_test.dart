@@ -118,9 +118,7 @@ void main() {
     });
 
     test('matches the stored JSON baseline snapshot', () {
-      final baselineFile = File(
-        'C:/Users/User/sightchord/test/fixtures/melody_analysis_baseline.json',
-      );
+      final baselineFile = File('test/fixtures/melody_analysis_baseline.json');
       expect(baselineFile.existsSync(), isTrue);
 
       final expected =
@@ -132,9 +130,12 @@ void main() {
       // ignore: avoid_print
       print(quickPresetReport.toSummaryText());
 
-      final guide = quickPresetReport.metricsByPreset[MelodyQuickPreset.guideLine]!;
-      final song = quickPresetReport.metricsByPreset[MelodyQuickPreset.songLine]!;
-      final color = quickPresetReport.metricsByPreset[MelodyQuickPreset.colorLine]!;
+      final guide =
+          quickPresetReport.metricsByPreset[MelodyQuickPreset.guideLine]!;
+      final song =
+          quickPresetReport.metricsByPreset[MelodyQuickPreset.songLine]!;
+      final color =
+          quickPresetReport.metricsByPreset[MelodyQuickPreset.colorLine]!;
 
       expect(guide.offbeatOnsetRatio, lessThan(song.offbeatOnsetRatio));
       expect(song.offbeatOnsetRatio, lessThan(color.offbeatOnsetRatio));
