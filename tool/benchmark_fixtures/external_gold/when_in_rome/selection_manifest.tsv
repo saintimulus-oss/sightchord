@@ -1,0 +1,11 @@
+source_id	relative_analysis_path	measure_start	measure_end	selection_note
+mozart_k279_1	Corpus/Piano_Sonatas/Mozart,_Wolfgang_Amadeus/K279/1/analysis.txt	9	16	c-major opening cadence loop with viio7 of vi and cadential 64
+mozart_k279_1	Corpus/Piano_Sonatas/Mozart,_Wolfgang_Amadeus/K279/1/analysis.txt	17	27	g-major second-theme window with repeated applied dominant turns
+mozart_k279_1	Corpus/Piano_Sonatas/Mozart,_Wolfgang_Amadeus/K279/1/analysis.txt	39	49	development window with local key shifts, neapolitan color, and applied dominants
+mozart_k279_1	Corpus/Piano_Sonatas/Mozart,_Wolfgang_Amadeus/K279/1/analysis.txt	62	69	recap transition with applied leading-tone chains and modal-color pivoting
+mozart_k279_1	Corpus/Piano_Sonatas/Mozart,_Wolfgang_Amadeus/K279/1/analysis.txt	70	81	recap second-theme window with applied dominant circulation and predominant returns
+mozart_k279_2	Corpus/Piano_Sonatas/Mozart,_Wolfgang_Amadeus/K279/2/analysis.txt	0	10	f-major opening with cadential 64, V2 of IV, and viio of IV
+mozart_k279_2	Corpus/Piano_Sonatas/Mozart,_Wolfgang_Amadeus/K279/2/analysis.txt	11	20	c-major excursion with vii half-diminished color and applied leading-tone to vi
+mozart_k279_3	Corpus/Piano_Sonatas/Mozart,_Wolfgang_Amadeus/K279/3/analysis.txt	14	25	g-major episode with repeated cadential toggles and applied dominant
+mozart_k280_1	Corpus/Piano_Sonatas/Mozart,_Wolfgang_Amadeus/K280/1/analysis.txt	1	15	f-major opening phrase with alternating dominant inversions and cadential 64
+mozart_k280_1	Corpus/Piano_Sonatas/Mozart,_Wolfgang_Amadeus/K280/1/analysis.txt	27	43	c-major middle section with V43, V65/IV, V65/V, and cadential support
