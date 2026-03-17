@@ -442,6 +442,7 @@ class StudyHarmonyProgressController extends ChangeNotifier {
   StudyHarmonyProgressSnapshot _snapshot;
   Future<void> _saveQueue = Future<void>.value();
   StudyHarmonyProgressSnapshot? _pendingSaveSnapshot;
+  bool _isDisposed = false;
 
   StudyHarmonyProgressSnapshot get snapshot => _snapshot;
   StudyHarmonyLessonId? get lastPlayedLessonId => _snapshot.lastPlayedLessonId;
@@ -451,6 +452,9 @@ class StudyHarmonyProgressController extends ChangeNotifier {
 
   Future<void> load() async {
     final loaded = await _store.load(fallbackSnapshot: _snapshot);
+    if (_isDisposed) {
+      return;
+    }
     _snapshot = _normalizedSnapshot(loaded);
     notifyListeners();
     if (loaded.encode() != _snapshot.encode()) {
@@ -1765,6 +1769,9 @@ class StudyHarmonyProgressController extends ChangeNotifier {
   Future<void> _updateSnapshotIfChanged(
     StudyHarmonyProgressSnapshot nextSnapshot,
   ) async {
+    if (_isDisposed) {
+      return;
+    }
     nextSnapshot = _normalizedSnapshot(nextSnapshot);
     if (_snapshot.encode() == nextSnapshot.encode()) {
       return;
@@ -1783,6 +1790,12 @@ class StudyHarmonyProgressController extends ChangeNotifier {
       await _store.save(snapshotToSave);
     });
     await _saveQueue;
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
   }
 
   StudyHarmonyProgressSnapshot _applyUnlockRulesToRegisteredCourses(

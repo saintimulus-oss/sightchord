@@ -1,20 +1,22 @@
-## Issue
-Recent smart-generator and rendering updates introduced new control-flow around sus-dominant gating. Two paths in changed code were at risk of regressions without direct assertions: (1) resolving `susDelay` intent when `allowV7sus4` is disabled, and (2) handling explicit sus render-quality overrides when candidate comparison is run with sus disabled.
+## Summary
+This changeset closes a focused test gap in recently introduced melody generation internals by adding deterministic coverage for the new stable hashing utility used by phrase/rhythm/motif seeding.
 
 ## User impact
-If these paths regress, users can still see suspended dominant surfaces even after disabling V7sus4, which breaks expected settings behavior and causes simulation/voice-leading output to contradict configuration.
+Without direct tests around seed hashing behavior, regressions in hashing logic could silently alter generated melody output patterns, making generated phrases less repeatable for the same musical input and seed.
 
 ## Root cause
-Coverage existed for broad simulation behavior and many rendering branches, but there was no focused test directly pinning the fallback behavior for the newly changed branches in `resolveRenderQuality` and candidate override handling.
+`MelodySeedUtil` was newly introduced and immediately used in generation pipelines, but there was no dedicated test suite validating type handling (null, bool, numeric, enum, iterables), deterministic output, and order sensitivity.
 
 ## Fix
-Added two focused tests only in changed areas:
-- `test/chord_rendering_test.dart`: verifies `resolveRenderQuality` returns `dominant7` for `susDelay` context/intent when `allowV7sus4: false`.
-- `test/smart_generator_test.dart`: verifies a candidate with `renderQualityOverride: dominant13sus4` is downgraded during `compareVoiceLeadingCandidates` when `allowV7sus4: false`, and no sus candidates remain.
+- Added `test/melody_seed_util_test.dart` with focused unit coverage for:
+  - deterministic hashing for primitive and enum values
+  - branch differentiation for bool/double/enum variants
+  - deterministic and order-sensitive behavior of `stableHashAll`
+  - output range contract (`0..0x3fffffff`) for aggregated hashes
 
 ## Validation
-Attempted targeted checks in this environment:
-- `dart format test/chord_rendering_test.dart test/smart_generator_test.dart` (timed out)
-- `flutter test test/chord_rendering_test.dart test/smart_generator_test.dart --plain-name "falls back to dominant7 for sus-delay intent when disabled"` (timed out)
+Attempted to run targeted local checks in this sandbox:
+- `dart format test/melody_seed_util_test.dart` (timed out)
+- `flutter test test/melody_seed_util_test.dart` (timed out)
 
-Given sandbox constraints, tests were validated by code-path targeting and deterministic assertions.
+The new test is intentionally isolated and does not broaden scope beyond changed melody seeding logic.

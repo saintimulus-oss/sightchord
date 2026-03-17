@@ -1,4 +1,5 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'dart:async';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:chordest/study_harmony/application/study_harmony_progress_controller.dart';
 import 'package:chordest/study_harmony/data/study_harmony_progress_store.dart';
 import 'package:chordest/study_harmony/domain/study_harmony_progress_models.dart';
@@ -259,6 +260,48 @@ void main() {
     },
   );
 
+  test('load becomes a no-op after dispose while waiting for store', () async {
+    final initialSnapshot = StudyHarmonyProgressSnapshot.initial();
+    final loadedSnapshot = initialSnapshot.copyWith(lastPlayedLessonId: 'lesson-1');
+    final store = _DelayedLoadProgressStore(loadedSnapshot);
+    final controller = StudyHarmonyProgressController(
+      store: store,
+      initialSnapshot: initialSnapshot,
+    );
+    var notifications = 0;
+    controller.addListener(() {
+      notifications += 1;
+    });
+
+    final loadFuture = controller.load();
+    controller.dispose();
+    store.completeLoad();
+    await loadFuture;
+
+    expect(controller.snapshot.encode(), initialSnapshot.encode());
+    expect(notifications, 0);
+    expect(store.savedSnapshots, isEmpty);
+  });
+
+  test('markLessonStarted after dispose does not mutate or save', () async {
+    final store = _MemoryProgressStore();
+    final initialSnapshot = StudyHarmonyProgressSnapshot.initial();
+    final controller = StudyHarmonyProgressController(
+      store: store,
+      initialSnapshot: initialSnapshot,
+    );
+
+    controller.dispose();
+    await controller.markLessonStarted(
+      trackId: 'track-1',
+      chapterId: 'chapter-1',
+      lessonId: 'lesson-1',
+    );
+
+    expect(controller.snapshot.encode(), initialSnapshot.encode());
+    expect(store.savedSnapshots, isEmpty);
+  });
+
   test(
     'recordLessonResult stores completion and unlocks the next lesson',
     () async {
@@ -365,3 +408,33 @@ class _MemoryProgressStore implements StudyHarmonyProgressStore {
   }
 }
 
+
+
+
+class _DelayedLoadProgressStore implements StudyHarmonyProgressStore {
+  _DelayedLoadProgressStore(this._loadedSnapshot);
+
+  final StudyHarmonyProgressSnapshot _loadedSnapshot;
+  final Completer<void> _loadCompleter = Completer<void>();
+  final List<StudyHarmonyProgressSnapshot> savedSnapshots =
+      <StudyHarmonyProgressSnapshot>[];
+
+  void completeLoad() {
+    if (!_loadCompleter.isCompleted) {
+      _loadCompleter.complete();
+    }
+  }
+
+  @override
+  Future<StudyHarmonyProgressSnapshot> load({
+    required StudyHarmonyProgressSnapshot fallbackSnapshot,
+  }) async {
+    await _loadCompleter.future;
+    return _loadedSnapshot;
+  }
+
+  @override
+  Future<void> save(StudyHarmonyProgressSnapshot snapshot) async {
+    savedSnapshots.add(snapshot);
+  }
+}

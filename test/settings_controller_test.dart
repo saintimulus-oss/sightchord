@@ -9,6 +9,22 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
+  test('load and update notify listeners once per call', () async {
+    final controller = AppSettingsController();
+    var notifications = 0;
+    controller.addListener(() {
+      notifications += 1;
+    });
+
+    await controller.load();
+    expect(notifications, 1);
+
+    await controller.update(
+      controller.settings.copyWith(appThemeMode: AppThemeMode.dark),
+    );
+    expect(notifications, 2);
+  });
+
   test('serializes rapid saves using the update snapshot', () async {
     final controller = AppSettingsController(
       initialSettings: PracticeSettings(activeKeys: const {'C'}),
@@ -220,3 +236,4 @@ void main() {
     },
   );
 }
+

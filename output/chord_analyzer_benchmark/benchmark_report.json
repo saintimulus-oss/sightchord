@@ -1,0 +1,1545 @@
+{
+  "generatedAtUtc": "2026-03-17T04:49:15.807969Z",
+  "workbookSourcePath": null,
+  "benchmarkCaseCount": 81,
+  "workbookTracks": [
+    {
+      "sheetLabel": "S-tier Gold core",
+      "goal": "Measure accuracy with balanced, high-confidence reference material",
+      "recommendedSources": [
+        "McGill Billboard",
+        "Isophonics",
+        "JAAH",
+        "JHT",
+        "ABC",
+        "BPS-FH",
+        "Mozart",
+        "Romantic Piano Corpus",
+        "TAVERN",
+        "Winterreise",
+        "DLC"
+      ],
+      "note": "The repository does not bundle those external corpora yet, so this run uses an internal proxy corpus aligned to that track."
+    },
+    {
+      "sheetLabel": "Ambiguity validation",
+      "goal": "Measure ambiguous readings, partial parses, and placeholder inference separately",
+      "recommendedSources": [
+        "CASD",
+        "community charts comparison"
+      ],
+      "note": "Exact-pass status is paired with detailed failure reasons because these cases can support multiple plausible readings."
+    },
+    {
+      "sheetLabel": "Stress / robustness",
+      "goal": "Measure throughput, long-sequence latency, and symbol normalization robustness",
+      "recommendedSources": [
+        "Chordonomicon",
+        "PARC",
+        "ChoCo",
+        "TheoryTab"
+      ],
+      "note": "This run includes both mixed-corpus throughput and long-sequence latency."
+    }
+  ],
+  "curatedGoldLoad": {
+    "manifestPath": "output/chord_analyzer_benchmark\\curated_gold\\abc_external_gold_manifest.json",
+    "loadedCaseCount": 3,
+    "status": "loaded",
+    "corpusId": "dcml_abc_excerpt",
+    "corpusName": "DCML Annotated Beethoven Corpus Excerpts",
+    "licenseNote": "Source excerpts from DCMLab ABC (CC BY-NC-SA 4.0). Fixture provenance is documented in tool/benchmark_fixtures/external_gold/abc/README.md.",
+    "adapterId": "abc_external_gold_adapter",
+    "fixtureDirectory": "tool/benchmark_fixtures/external_gold/abc",
+    "skippedRecordCount": 0,
+    "skippedSegmentCount": 0
+  },
+  "accuracy": {
+    "overall": {
+      "caseCount": 81,
+      "exactProgressionPasses": 79,
+      "exactProgressionPassRate": 0.9753086419753086,
+      "keyAccuracy": 0.9753086419753086,
+      "relaxedKeyAccuracy": 0.9753086419753086,
+      "modeAccuracy": 1.0,
+      "partialFailureExpectationAccuracy": 1.0,
+      "romanTokenAccuracy": 0.8974358974358975,
+      "relaxedRomanTokenAccuracy": 0.9358974358974359,
+      "functionTokenAccuracy": 0.9375,
+      "tagRecall": 1.0,
+      "remarkRecall": 1.0,
+      "evidenceRecall": 1.0,
+      "modulationDiagnosticAccuracy": 1.0,
+      "meanLatencyMilliseconds": 1.3929876543209878,
+      "totals": {
+        "romanTokens": 78,
+        "relaxedRomanTokens": 78,
+        "functionTokens": 80,
+        "tags": 46,
+        "remarks": 38,
+        "evidence": 37,
+        "modulationSensitiveCases": 1
+      }
+    },
+    "proxyVsExternal": {
+      "internalProxy": {
+        "caseCount": 78,
+        "exactProgressionPasses": 77,
+        "exactProgressionPassRate": 0.9871794871794872,
+        "keyAccuracy": 0.9871794871794872,
+        "relaxedKeyAccuracy": 0.9871794871794872,
+        "modeAccuracy": 1.0,
+        "partialFailureExpectationAccuracy": 1.0,
+        "romanTokenAccuracy": 1.0,
+        "relaxedRomanTokenAccuracy": 1.0,
+        "functionTokenAccuracy": 1.0,
+        "tagRecall": 1.0,
+        "remarkRecall": 1.0,
+        "evidenceRecall": 1.0,
+        "modulationDiagnosticAccuracy": 1.0,
+        "meanLatencyMilliseconds": 1.3795256410256411,
+        "totals": {
+          "romanTokens": 51,
+          "relaxedRomanTokens": 51,
+          "functionTokens": 53,
+          "tags": 46,
+          "remarks": 38,
+          "evidence": 37,
+          "modulationSensitiveCases": 1
+        }
+      },
+      "externalGold": {
+        "caseCount": 3,
+        "exactProgressionPasses": 2,
+        "exactProgressionPassRate": 0.6666666666666666,
+        "keyAccuracy": 0.6666666666666666,
+        "relaxedKeyAccuracy": 0.6666666666666666,
+        "modeAccuracy": 1.0,
+        "partialFailureExpectationAccuracy": 1.0,
+        "romanTokenAccuracy": 0.7037037037037037,
+        "relaxedRomanTokenAccuracy": 0.8148148148148148,
+        "functionTokenAccuracy": 0.8148148148148148,
+        "tagRecall": null,
+        "remarkRecall": null,
+        "evidenceRecall": null,
+        "modulationDiagnosticAccuracy": null,
+        "meanLatencyMilliseconds": 1.743,
+        "totals": {
+          "romanTokens": 27,
+          "relaxedRomanTokens": 27,
+          "functionTokens": 27,
+          "tags": 0,
+          "remarks": 0,
+          "evidence": 0,
+          "modulationSensitiveCases": 0
+        }
+      }
+    },
+    "byClass": {
+      "Curated gold": {
+        "caseCount": 3,
+        "exactProgressionPasses": 2,
+        "exactProgressionPassRate": 0.6666666666666666,
+        "keyAccuracy": 0.6666666666666666,
+        "relaxedKeyAccuracy": 0.6666666666666666,
+        "modeAccuracy": 1.0,
+        "partialFailureExpectationAccuracy": 1.0,
+        "romanTokenAccuracy": 0.7037037037037037,
+        "relaxedRomanTokenAccuracy": 0.8148148148148148,
+        "functionTokenAccuracy": 0.8148148148148148,
+        "tagRecall": null,
+        "remarkRecall": null,
+        "evidenceRecall": null,
+        "modulationDiagnosticAccuracy": null,
+        "meanLatencyMilliseconds": 1.743,
+        "totals": {
+          "romanTokens": 27,
+          "relaxedRomanTokens": 27,
+          "functionTokens": 27,
+          "tags": 0,
+          "remarks": 0,
+          "evidence": 0,
+          "modulationSensitiveCases": 0
+        }
+      },
+      "Dirty input": {
+        "caseCount": 5,
+        "exactProgressionPasses": 5,
+        "exactProgressionPassRate": 1.0,
+        "keyAccuracy": 1.0,
+        "relaxedKeyAccuracy": 1.0,
+        "modeAccuracy": 1.0,
+        "partialFailureExpectationAccuracy": 1.0,
+        "romanTokenAccuracy": 1.0,
+        "relaxedRomanTokenAccuracy": 1.0,
+        "functionTokenAccuracy": 1.0,
+        "tagRecall": null,
+        "remarkRecall": null,
+        "evidenceRecall": 1.0,
+        "modulationDiagnosticAccuracy": null,
+        "meanLatencyMilliseconds": 1.0794000000000001,
+        "totals": {
+          "romanTokens": 13,
+          "relaxedRomanTokens": 13,
+          "functionTokens": 15,
+          "tags": 0,
+          "remarks": 0,
+          "evidence": 2,
+          "modulationSensitiveCases": 0
+        }
+      },
+      "Workbook proxy": {
+        "caseCount": 73,
+        "exactProgressionPasses": 72,
+        "exactProgressionPassRate": 0.9863013698630136,
+        "keyAccuracy": 0.9863013698630136,
+        "relaxedKeyAccuracy": 0.9863013698630136,
+        "modeAccuracy": 1.0,
+        "partialFailureExpectationAccuracy": 1.0,
+        "romanTokenAccuracy": 1.0,
+        "relaxedRomanTokenAccuracy": 1.0,
+        "functionTokenAccuracy": 1.0,
+        "tagRecall": 1.0,
+        "remarkRecall": 1.0,
+        "evidenceRecall": 1.0,
+        "modulationDiagnosticAccuracy": 1.0,
+        "meanLatencyMilliseconds": 1.400082191780822,
+        "totals": {
+          "romanTokens": 38,
+          "relaxedRomanTokens": 38,
+          "functionTokens": 38,
+          "tags": 46,
+          "remarks": 38,
+          "evidence": 35,
+          "modulationSensitiveCases": 1
+        }
+      }
+    },
+    "byTrack": {
+      "Ambiguity validation": {
+        "caseCount": 20,
+        "exactProgressionPasses": 20,
+        "exactProgressionPassRate": 1.0,
+        "keyAccuracy": 1.0,
+        "relaxedKeyAccuracy": 1.0,
+        "modeAccuracy": 1.0,
+        "partialFailureExpectationAccuracy": 1.0,
+        "romanTokenAccuracy": 1.0,
+        "relaxedRomanTokenAccuracy": 1.0,
+        "functionTokenAccuracy": 1.0,
+        "tagRecall": 1.0,
+        "remarkRecall": 1.0,
+        "evidenceRecall": 1.0,
+        "modulationDiagnosticAccuracy": null,
+        "meanLatencyMilliseconds": 1.03135,
+        "totals": {
+          "romanTokens": 14,
+          "relaxedRomanTokens": 14,
+          "functionTokens": 16,
+          "tags": 6,
+          "remarks": 1,
+          "evidence": 2,
+          "modulationSensitiveCases": 0
+        }
+      },
+      "S-tier Gold core": {
+        "caseCount": 61,
+        "exactProgressionPasses": 59,
+        "exactProgressionPassRate": 0.9672131147540983,
+        "keyAccuracy": 0.9672131147540983,
+        "relaxedKeyAccuracy": 0.9672131147540983,
+        "modeAccuracy": 1.0,
+        "partialFailureExpectationAccuracy": 1.0,
+        "romanTokenAccuracy": 0.875,
+        "relaxedRomanTokenAccuracy": 0.921875,
+        "functionTokenAccuracy": 0.921875,
+        "tagRecall": 1.0,
+        "remarkRecall": 1.0,
+        "evidenceRecall": 1.0,
+        "modulationDiagnosticAccuracy": 1.0,
+        "meanLatencyMilliseconds": 1.5115573770491804,
+        "totals": {
+          "romanTokens": 64,
+          "relaxedRomanTokens": 64,
+          "functionTokens": 64,
+          "tags": 40,
+          "remarks": 37,
+          "evidence": 35,
+          "modulationSensitiveCases": 1
+        }
+      }
+    },
+    "byGenre": {
+      "classical": {
+        "caseCount": 7,
+        "exactProgressionPasses": 5,
+        "exactProgressionPassRate": 0.7142857142857143,
+        "keyAccuracy": 0.7142857142857143,
+        "relaxedKeyAccuracy": 0.7142857142857143,
+        "modeAccuracy": 1.0,
+        "partialFailureExpectationAccuracy": 1.0,
+        "romanTokenAccuracy": 0.7419354838709677,
+        "relaxedRomanTokenAccuracy": 0.8387096774193549,
+        "functionTokenAccuracy": 0.8387096774193549,
+        "tagRecall": 1.0,
+        "remarkRecall": 1.0,
+        "evidenceRecall": null,
+        "modulationDiagnosticAccuracy": 1.0,
+        "meanLatencyMilliseconds": 1.5914285714285714,
+        "totals": {
+          "romanTokens": 31,
+          "relaxedRomanTokens": 31,
+          "functionTokens": 31,
+          "tags": 3,
+          "remarks": 2,
+          "evidence": 0,
+          "modulationSensitiveCases": 1
+        }
+      },
+      "jazz": {
+        "caseCount": 41,
+        "exactProgressionPasses": 41,
+        "exactProgressionPassRate": 1.0,
+        "keyAccuracy": 1.0,
+        "relaxedKeyAccuracy": 1.0,
+        "modeAccuracy": 1.0,
+        "partialFailureExpectationAccuracy": 1.0,
+        "romanTokenAccuracy": 1.0,
+        "relaxedRomanTokenAccuracy": 1.0,
+        "functionTokenAccuracy": 1.0,
+        "tagRecall": 1.0,
+        "remarkRecall": 1.0,
+        "evidenceRecall": 1.0,
+        "modulationDiagnosticAccuracy": null,
+        "meanLatencyMilliseconds": 1.6124146341463415,
+        "totals": {
+          "romanTokens": 30,
+          "relaxedRomanTokens": 30,
+          "functionTokens": 30,
+          "tags": 31,
+          "remarks": 24,
+          "evidence": 23,
+          "modulationSensitiveCases": 0
+        }
+      },
+      "mixed": {
+        "caseCount": 13,
+        "exactProgressionPasses": 13,
+        "exactProgressionPassRate": 1.0,
+        "keyAccuracy": 1.0,
+        "relaxedKeyAccuracy": 1.0,
+        "modeAccuracy": 1.0,
+        "partialFailureExpectationAccuracy": 1.0,
+        "romanTokenAccuracy": 1.0,
+        "relaxedRomanTokenAccuracy": 1.0,
+        "functionTokenAccuracy": 1.0,
+        "tagRecall": null,
+        "remarkRecall": null,
+        "evidenceRecall": 1.0,
+        "modulationDiagnosticAccuracy": null,
+        "meanLatencyMilliseconds": 1.0802307692307693,
+        "totals": {
+          "romanTokens": 13,
+          "relaxedRomanTokens": 13,
+          "functionTokens": 15,
+          "tags": 0,
+          "remarks": 0,
+          "evidence": 2,
+          "modulationSensitiveCases": 0
+        }
+      },
+      "pop": {
+        "caseCount": 20,
+        "exactProgressionPasses": 20,
+        "exactProgressionPassRate": 1.0,
+        "keyAccuracy": 1.0,
+        "relaxedKeyAccuracy": 1.0,
+        "modeAccuracy": 1.0,
+        "partialFailureExpectationAccuracy": 1.0,
+        "romanTokenAccuracy": 1.0,
+        "relaxedRomanTokenAccuracy": 1.0,
+        "functionTokenAccuracy": 1.0,
+        "tagRecall": 1.0,
+        "remarkRecall": 1.0,
+        "evidenceRecall": 1.0,
+        "modulationDiagnosticAccuracy": null,
+        "meanLatencyMilliseconds": 1.077,
+        "totals": {
+          "romanTokens": 4,
+          "relaxedRomanTokens": 4,
+          "functionTokens": 4,
+          "tags": 12,
+          "remarks": 12,
+          "evidence": 12,
+          "modulationSensitiveCases": 0
+        }
+      }
+    },
+    "byDifficulty": {
+      "Ambiguous": {
+        "caseCount": 17,
+        "exactProgressionPasses": 17,
+        "exactProgressionPassRate": 1.0,
+        "keyAccuracy": 1.0,
+        "relaxedKeyAccuracy": 1.0,
+        "modeAccuracy": 1.0,
+        "partialFailureExpectationAccuracy": 1.0,
+        "romanTokenAccuracy": 1.0,
+        "relaxedRomanTokenAccuracy": 1.0,
+        "functionTokenAccuracy": 1.0,
+        "tagRecall": 1.0,
+        "remarkRecall": 1.0,
+        "evidenceRecall": null,
+        "modulationDiagnosticAccuracy": null,
+        "meanLatencyMilliseconds": 0.9891764705882352,
+        "totals": {
+          "romanTokens": 8,
+          "relaxedRomanTokens": 8,
+          "functionTokens": 8,
+          "tags": 6,
+          "remarks": 1,
+          "evidence": 0,
+          "modulationSensitiveCases": 0
+        }
+      },
+      "Easy": {
+        "caseCount": 10,
+        "exactProgressionPasses": 10,
+        "exactProgressionPassRate": 1.0,
+        "keyAccuracy": 1.0,
+        "relaxedKeyAccuracy": 1.0,
+        "modeAccuracy": 1.0,
+        "partialFailureExpectationAccuracy": 1.0,
+        "romanTokenAccuracy": 1.0,
+        "relaxedRomanTokenAccuracy": 1.0,
+        "functionTokenAccuracy": 1.0,
+        "tagRecall": 1.0,
+        "remarkRecall": null,
+        "evidenceRecall": 1.0,
+        "modulationDiagnosticAccuracy": null,
+        "meanLatencyMilliseconds": 3.2487,
+        "totals": {
+          "romanTokens": 32,
+          "relaxedRomanTokens": 32,
+          "functionTokens": 32,
+          "tags": 8,
+          "remarks": 0,
+          "evidence": 8,
+          "modulationSensitiveCases": 0
+        }
+      },
+      "Hard": {
+        "caseCount": 22,
+        "exactProgressionPasses": 20,
+        "exactProgressionPassRate": 0.9090909090909091,
+        "keyAccuracy": 0.9090909090909091,
+        "relaxedKeyAccuracy": 0.9090909090909091,
+        "modeAccuracy": 1.0,
+        "partialFailureExpectationAccuracy": 1.0,
+        "romanTokenAccuracy": 0.7241379310344828,
+        "relaxedRomanTokenAccuracy": 0.8275862068965517,
+        "functionTokenAccuracy": 0.8387096774193549,
+        "tagRecall": 1.0,
+        "remarkRecall": 1.0,
+        "evidenceRecall": 1.0,
+        "modulationDiagnosticAccuracy": 1.0,
+        "meanLatencyMilliseconds": 1.3107272727272727,
+        "totals": {
+          "romanTokens": 29,
+          "relaxedRomanTokens": 29,
+          "functionTokens": 31,
+          "tags": 4,
+          "remarks": 17,
+          "evidence": 15,
+          "modulationSensitiveCases": 1
+        }
+      },
+      "Medium": {
+        "caseCount": 32,
+        "exactProgressionPasses": 32,
+        "exactProgressionPassRate": 1.0,
+        "keyAccuracy": 1.0,
+        "relaxedKeyAccuracy": 1.0,
+        "modeAccuracy": 1.0,
+        "partialFailureExpectationAccuracy": 1.0,
+        "romanTokenAccuracy": 1.0,
+        "relaxedRomanTokenAccuracy": 1.0,
+        "functionTokenAccuracy": 1.0,
+        "tagRecall": 1.0,
+        "remarkRecall": 1.0,
+        "evidenceRecall": 1.0,
+        "modulationDiagnosticAccuracy": null,
+        "meanLatencyMilliseconds": 1.08415625,
+        "totals": {
+          "romanTokens": 9,
+          "relaxedRomanTokens": 9,
+          "functionTokens": 9,
+          "tags": 28,
+          "remarks": 20,
+          "evidence": 14,
+          "modulationSensitiveCases": 0
+        }
+      }
+    },
+    "failureTaxonomyCounts": {
+      "ambiguous_key_center": 2,
+      "modulation_vs_tonicization": 1,
+      "ending_bias": 1,
+      "secondary_dominant_notation_gap": 1
+    },
+    "externalGold": {
+      "overall": {
+        "caseCount": 3,
+        "exactProgressionPasses": 2,
+        "exactProgressionPassRate": 0.6666666666666666,
+        "keyAccuracy": 0.6666666666666666,
+        "relaxedKeyAccuracy": 0.6666666666666666,
+        "modeAccuracy": 1.0,
+        "partialFailureExpectationAccuracy": 1.0,
+        "romanTokenAccuracy": 0.7037037037037037,
+        "relaxedRomanTokenAccuracy": 0.8148148148148148,
+        "functionTokenAccuracy": 0.8148148148148148,
+        "tagRecall": null,
+        "remarkRecall": null,
+        "evidenceRecall": null,
+        "modulationDiagnosticAccuracy": null,
+        "meanLatencyMilliseconds": 1.743,
+        "totals": {
+          "romanTokens": 27,
+          "relaxedRomanTokens": 27,
+          "functionTokens": 27,
+          "tags": 0,
+          "remarks": 0,
+          "evidence": 0,
+          "modulationSensitiveCases": 0
+        }
+      },
+      "byCorpus": {
+        "dcml_abc_excerpt": {
+          "caseCount": 3,
+          "exactProgressionPasses": 2,
+          "exactProgressionPassRate": 0.6666666666666666,
+          "keyAccuracy": 0.6666666666666666,
+          "relaxedKeyAccuracy": 0.6666666666666666,
+          "modeAccuracy": 1.0,
+          "partialFailureExpectationAccuracy": 1.0,
+          "romanTokenAccuracy": 0.7037037037037037,
+          "relaxedRomanTokenAccuracy": 0.8148148148148148,
+          "functionTokenAccuracy": 0.8148148148148148,
+          "tagRecall": null,
+          "remarkRecall": null,
+          "evidenceRecall": null,
+          "modulationDiagnosticAccuracy": null,
+          "meanLatencyMilliseconds": 1.743,
+          "totals": {
+            "romanTokens": 27,
+            "relaxedRomanTokens": 27,
+            "functionTokens": 27,
+            "tags": 0,
+            "remarks": 0,
+            "evidence": 0,
+            "modulationSensitiveCases": 0
+          }
+        }
+      },
+      "bySourceId": {
+        "n01op18-1_01": {
+          "caseCount": 1,
+          "exactProgressionPasses": 1,
+          "exactProgressionPassRate": 1.0,
+          "keyAccuracy": 1.0,
+          "relaxedKeyAccuracy": 1.0,
+          "modeAccuracy": 1.0,
+          "partialFailureExpectationAccuracy": 1.0,
+          "romanTokenAccuracy": 1.0,
+          "relaxedRomanTokenAccuracy": 1.0,
+          "functionTokenAccuracy": 1.0,
+          "tagRecall": null,
+          "remarkRecall": null,
+          "evidenceRecall": null,
+          "modulationDiagnosticAccuracy": null,
+          "meanLatencyMilliseconds": 1.997,
+          "totals": {
+            "romanTokens": 11,
+            "relaxedRomanTokens": 11,
+            "functionTokens": 11,
+            "tags": 0,
+            "remarks": 0,
+            "evidence": 0,
+            "modulationSensitiveCases": 0
+          }
+        },
+        "n04op18-4_02": {
+          "caseCount": 1,
+          "exactProgressionPasses": 0,
+          "exactProgressionPassRate": 0.0,
+          "keyAccuracy": 0.0,
+          "relaxedKeyAccuracy": 0.0,
+          "modeAccuracy": 1.0,
+          "partialFailureExpectationAccuracy": 1.0,
+          "romanTokenAccuracy": 0.0,
+          "relaxedRomanTokenAccuracy": 0.375,
+          "functionTokenAccuracy": 0.375,
+          "tagRecall": null,
+          "remarkRecall": null,
+          "evidenceRecall": null,
+          "modulationDiagnosticAccuracy": null,
+          "meanLatencyMilliseconds": 1.284,
+          "totals": {
+            "romanTokens": 8,
+            "relaxedRomanTokens": 8,
+            "functionTokens": 8,
+            "tags": 0,
+            "remarks": 0,
+            "evidence": 0,
+            "modulationSensitiveCases": 0
+          }
+        },
+        "n13op130_04": {
+          "caseCount": 1,
+          "exactProgressionPasses": 1,
+          "exactProgressionPassRate": 1.0,
+          "keyAccuracy": 1.0,
+          "relaxedKeyAccuracy": 1.0,
+          "modeAccuracy": 1.0,
+          "partialFailureExpectationAccuracy": 1.0,
+          "romanTokenAccuracy": 1.0,
+          "relaxedRomanTokenAccuracy": 1.0,
+          "functionTokenAccuracy": 1.0,
+          "tagRecall": null,
+          "remarkRecall": null,
+          "evidenceRecall": null,
+          "modulationDiagnosticAccuracy": null,
+          "meanLatencyMilliseconds": 1.948,
+          "totals": {
+            "romanTokens": 8,
+            "relaxedRomanTokens": 8,
+            "functionTokens": 8,
+            "tags": 0,
+            "remarks": 0,
+            "evidence": 0,
+            "modulationSensitiveCases": 0
+          }
+        }
+      },
+      "byAnnotationLevel": {
+        "functional": {
+          "caseCount": 3,
+          "exactProgressionPasses": 2,
+          "exactProgressionPassRate": 0.6666666666666666,
+          "keyAccuracy": 0.6666666666666666,
+          "relaxedKeyAccuracy": 0.6666666666666666,
+          "modeAccuracy": 1.0,
+          "partialFailureExpectationAccuracy": 1.0,
+          "romanTokenAccuracy": 0.7037037037037037,
+          "relaxedRomanTokenAccuracy": 0.8148148148148148,
+          "functionTokenAccuracy": 0.8148148148148148,
+          "tagRecall": null,
+          "remarkRecall": null,
+          "evidenceRecall": null,
+          "modulationDiagnosticAccuracy": null,
+          "meanLatencyMilliseconds": 1.743,
+          "totals": {
+            "romanTokens": 27,
+            "relaxedRomanTokens": 27,
+            "functionTokens": 27,
+            "tags": 0,
+            "remarks": 0,
+            "evidence": 0,
+            "modulationSensitiveCases": 0
+          }
+        }
+      },
+      "failures": [
+        {
+          "id": "curated-abc-n04op18-4_02-mc6-09",
+          "description": "String Quartet Op18 No4 (mc 6-9)",
+          "progression": "D D7 | G | C/E C Am | D7/F# D",
+          "benchmarkClass": "Curated gold",
+          "track": "S-tier Gold core",
+          "genre": "classical",
+          "difficulty": "Hard",
+          "sourceId": "n04op18-4_02",
+          "sourceLabel": "String Quartet Op18 No4 (mc 6-9)",
+          "corpusId": "dcml_abc_excerpt",
+          "corpusName": "DCML Annotated Beethoven Corpus Excerpts",
+          "annotationLevel": "functional",
+          "expected": {
+            "key": "G",
+            "mode": "major",
+            "romans": [],
+            "segments": [
+              {
+                "index": 0,
+                "expectedRoman": "V",
+                "expectedFunction": "dominant",
+                "expectedResolvedSymbol": "D",
+                "note": "sourceChord=V; localKey=G major; measure=6; sourceLabel=V.V",
+                "comparisonProfile": {
+                  "allowEnharmonicKeyMatch": true,
+                  "allowSlashBassTolerance": true,
+                  "allowRomanFunctionRelaxation": true
+                }
+              },
+              {
+                "index": 1,
+                "expectedRoman": "V7",
+                "expectedFunction": "dominant",
+                "expectedResolvedSymbol": "D7",
+                "note": "sourceChord=V7; localKey=G major; measure=6; sourceLabel=V7",
+                "comparisonProfile": {
+                  "allowEnharmonicKeyMatch": true,
+                  "allowSlashBassTolerance": true,
+                  "allowRomanFunctionRelaxation": true
+                }
+              },
+              {
+                "index": 2,
+                "expectedRoman": "I",
+                "expectedFunction": "tonic",
+                "expectedResolvedSymbol": "G",
+                "note": "sourceChord=I; localKey=G major; measure=7; sourceLabel=I",
+                "comparisonProfile": {
+                  "allowEnharmonicKeyMatch": true,
+                  "allowSlashBassTolerance": true,
+                  "allowRomanFunctionRelaxation": true
+                }
+              },
+              {
+                "index": 3,
+                "expectedRoman": "IV",
+                "expectedFunction": "predominant",
+                "expectedResolvedSymbol": "C/E",
+                "note": "sourceChord=IV6; localKey=G major; measure=8; sourceLabel=IV6",
+                "comparisonProfile": {
+                  "allowEnharmonicKeyMatch": true,
+                  "allowSlashBassTolerance": true,
+                  "allowRomanFunctionRelaxation": true
+                }
+              },
+              {
+                "index": 4,
+                "expectedRoman": "IV",
+                "expectedFunction": "predominant",
+                "expectedResolvedSymbol": "C",
+                "note": "sourceChord=IV; localKey=G major; measure=8; sourceLabel=IV",
+                "comparisonProfile": {
+                  "allowEnharmonicKeyMatch": true,
+                  "allowSlashBassTolerance": true,
+                  "allowRomanFunctionRelaxation": true
+                }
+              },
+              {
+                "index": 5,
+                "expectedRoman": "IIm",
+                "expectedFunction": "predominant",
+                "expectedResolvedSymbol": "Am",
+                "note": "sourceChord=ii; localKey=G major; measure=8; sourceLabel=ii",
+                "comparisonProfile": {
+                  "allowEnharmonicKeyMatch": true,
+                  "allowSlashBassTolerance": true,
+                  "allowRomanFunctionRelaxation": true
+                }
+              },
+              {
+                "index": 6,
+                "expectedRoman": "V7",
+                "expectedFunction": "dominant",
+                "expectedResolvedSymbol": "D7/F#",
+                "note": "sourceChord=V65; localKey=G major; measure=9; sourceLabel=V65",
+                "comparisonProfile": {
+                  "allowEnharmonicKeyMatch": true,
+                  "allowSlashBassTolerance": true,
+                  "allowRomanFunctionRelaxation": true
+                }
+              },
+              {
+                "index": 7,
+                "expectedRoman": "V",
+                "expectedFunction": "dominant",
+                "expectedResolvedSymbol": "D",
+                "note": "sourceChord=V; localKey=G major; measure=9; sourceLabel=V",
+                "comparisonProfile": {
+                  "allowEnharmonicKeyMatch": true,
+                  "allowSlashBassTolerance": true,
+                  "allowRomanFunctionRelaxation": true
+                }
+              }
+            ],
+            "tags": [],
+            "remarks": [],
+            "evidence": [],
+            "partialFailure": false,
+            "comparisonProfile": {
+              "allowEnharmonicKeyMatch": true,
+              "allowSlashBassTolerance": true,
+              "allowRomanFunctionRelaxation": true
+            },
+            "failureHints": [],
+            "notes": [
+              "annotationLevel=functional",
+              "alignmentType=symbolic",
+              "splitTag=external_eval",
+              "licenseNotes=Source excerpts from DCMLab ABC (CC BY-NC-SA 4.0). Fixture provenance is documented in tool/benchmark_fixtures/external_gold/abc/README.md.",
+              "globalKey=C major",
+              "localKey=G major"
+            ]
+          },
+          "actual": {
+            "key": "D",
+            "mode": "major",
+            "romans": [
+              "I",
+              "V7/IV",
+              "IV",
+              "bVII",
+              "bVII",
+              "II/IVm",
+              "V7/IV",
+              "I"
+            ],
+            "tags": [
+              "iiVI",
+              "dominantResolution",
+              "turnaround",
+              "tonicization",
+              "chromaticLine"
+            ],
+            "partialFailure": false
+          },
+          "elapsedMicroseconds": 1284,
+          "checks": {
+            "keyMatch": false,
+            "relaxedKeyMatch": false,
+            "modeMatch": true,
+            "partialFailureMatch": true,
+            "romanTokenMatch": {
+              "matched": 0,
+              "total": 8
+            },
+            "relaxedRomanTokenMatch": {
+              "matched": 3,
+              "total": 8
+            },
+            "functionTokenMatch": {
+              "matched": 3,
+              "total": 8
+            },
+            "tagMatch": {
+              "matched": 0,
+              "total": 0
+            },
+            "remarkMatch": {
+              "matched": 0,
+              "total": 0
+            },
+            "evidenceMatch": {
+              "matched": 0,
+              "total": 0
+            },
+            "modulationDiagnosticMatch": false,
+            "modulationSensitiveCase": false,
+            "exactPass": false
+          },
+          "segmentComparisons": [
+            {
+              "index": 0,
+              "expectedRoman": "V",
+              "actualRoman": "I",
+              "expectedFunction": "dominant",
+              "actualFunction": "tonic",
+              "expectedResolvedSymbol": "D",
+              "actualResolvedSymbol": "D",
+              "exactRomanMatch": false,
+              "relaxedRomanMatch": false,
+              "functionMatch": false,
+              "resolvedSymbolMatch": true,
+              "mismatchReasons": [
+                "roman_exact_mismatch",
+                "roman_relaxed_mismatch",
+                "function_mismatch"
+              ]
+            },
+            {
+              "index": 1,
+              "expectedRoman": "V7",
+              "actualRoman": "V7/IV",
+              "expectedFunction": "dominant",
+              "actualFunction": "dominant",
+              "expectedResolvedSymbol": "D7",
+              "actualResolvedSymbol": "D7",
+              "exactRomanMatch": false,
+              "relaxedRomanMatch": true,
+              "functionMatch": true,
+              "resolvedSymbolMatch": true,
+              "mismatchReasons": [
+                "roman_exact_mismatch"
+              ]
+            },
+            {
+              "index": 2,
+              "expectedRoman": "I",
+              "actualRoman": "IV",
+              "expectedFunction": "tonic",
+              "actualFunction": "predominant",
+              "expectedResolvedSymbol": "G",
+              "actualResolvedSymbol": "G",
+              "exactRomanMatch": false,
+              "relaxedRomanMatch": false,
+              "functionMatch": false,
+              "resolvedSymbolMatch": true,
+              "mismatchReasons": [
+                "roman_exact_mismatch",
+                "roman_relaxed_mismatch",
+                "function_mismatch"
+              ]
+            },
+            {
+              "index": 3,
+              "expectedRoman": "IV",
+              "actualRoman": "bVII",
+              "expectedFunction": "predominant",
+              "actualFunction": "dominant",
+              "expectedResolvedSymbol": "C/E",
+              "actualResolvedSymbol": "C/E",
+              "exactRomanMatch": false,
+              "relaxedRomanMatch": false,
+              "functionMatch": false,
+              "resolvedSymbolMatch": true,
+              "mismatchReasons": [
+                "roman_exact_mismatch",
+                "roman_relaxed_mismatch",
+                "function_mismatch"
+              ]
+            },
+            {
+              "index": 4,
+              "expectedRoman": "IV",
+              "actualRoman": "bVII",
+              "expectedFunction": "predominant",
+              "actualFunction": "dominant",
+              "expectedResolvedSymbol": "C",
+              "actualResolvedSymbol": "C",
+              "exactRomanMatch": false,
+              "relaxedRomanMatch": false,
+              "functionMatch": false,
+              "resolvedSymbolMatch": true,
+              "mismatchReasons": [
+                "roman_exact_mismatch",
+                "roman_relaxed_mismatch",
+                "function_mismatch"
+              ]
+            },
+            {
+              "index": 5,
+              "expectedRoman": "IIm",
+              "actualRoman": "II/IVm",
+              "expectedFunction": "predominant",
+              "actualFunction": "predominant",
+              "expectedResolvedSymbol": "Am",
+              "actualResolvedSymbol": "Am",
+              "exactRomanMatch": false,
+              "relaxedRomanMatch": true,
+              "functionMatch": true,
+              "resolvedSymbolMatch": true,
+              "mismatchReasons": [
+                "roman_exact_mismatch"
+              ]
+            },
+            {
+              "index": 6,
+              "expectedRoman": "V7",
+              "actualRoman": "V7/IV",
+              "expectedFunction": "dominant",
+              "actualFunction": "dominant",
+              "expectedResolvedSymbol": "D7/F#",
+              "actualResolvedSymbol": "D7/F#",
+              "exactRomanMatch": false,
+              "relaxedRomanMatch": true,
+              "functionMatch": true,
+              "resolvedSymbolMatch": true,
+              "mismatchReasons": [
+                "roman_exact_mismatch"
+              ]
+            },
+            {
+              "index": 7,
+              "expectedRoman": "V",
+              "actualRoman": "I",
+              "expectedFunction": "dominant",
+              "actualFunction": "tonic",
+              "expectedResolvedSymbol": "D",
+              "actualResolvedSymbol": "D",
+              "exactRomanMatch": false,
+              "relaxedRomanMatch": false,
+              "functionMatch": false,
+              "resolvedSymbolMatch": true,
+              "mismatchReasons": [
+                "roman_exact_mismatch",
+                "roman_relaxed_mismatch",
+                "function_mismatch"
+              ]
+            }
+          ],
+          "modulationDiagnostics": {
+            "evaluated": false,
+            "expectedTags": [],
+            "actualTags": [
+              "tonicization"
+            ],
+            "primaryKey": "D",
+            "alternativeKey": null,
+            "confidence": 0.9297222222222223,
+            "ambiguity": 0.07027777777777766,
+            "matched": false
+          },
+          "failureCategories": [
+            "ambiguous_key_center",
+            "secondary_dominant_notation_gap"
+          ],
+          "likelyRootCauses": [
+            "Multiple key centers remain plausible after scoring, so the winner is sensitive to small cadence and weighting changes.",
+            "Applied-dominant function is present, but the displayed Roman token diverges from the annotation style expected by the benchmark."
+          ],
+          "failures": [
+            "expected key G, got D",
+            "segment[0] expected V, got I",
+            "segment[1] expected V7, got V7/IV",
+            "segment[2] expected I, got IV",
+            "segment[3] expected IV, got bVII",
+            "segment[4] expected IV, got bVII",
+            "segment[5] expected IIm, got II/IVm",
+            "segment[6] expected V7, got V7/IV",
+            "segment[7] expected V, got I"
+          ]
+        }
+      ]
+    },
+    "failures": [
+      {
+        "id": "gold-classical-c-real-modulation",
+        "description": "real modulation stays distinct from tonicization",
+        "progression": "Cmaj7 Dm7 G7 Cmaj7 | Em7 A7 | Dmaj7 Gmaj7 | A7 Dmaj7 | G7 Cmaj7",
+        "benchmarkClass": "Workbook proxy",
+        "track": "S-tier Gold core",
+        "genre": "classical",
+        "difficulty": "Hard",
+        "sourceId": "internal_proxy",
+        "sourceLabel": "internal_proxy",
+        "corpusId": null,
+        "corpusName": null,
+        "annotationLevel": null,
+        "expected": {
+          "key": "C",
+          "mode": "major",
+          "romans": [],
+          "segments": [],
+          "tags": [
+            "realModulation"
+          ],
+          "remarks": [],
+          "evidence": [],
+          "partialFailure": false,
+          "comparisonProfile": {
+            "allowEnharmonicKeyMatch": false,
+            "allowSlashBassTolerance": false,
+            "allowRomanFunctionRelaxation": true
+          },
+          "failureHints": [
+            "modulation_vs_tonicization",
+            "ambiguous_key_center",
+            "ending_bias"
+          ],
+          "notes": []
+        },
+        "actual": {
+          "key": "G",
+          "mode": "major",
+          "romans": [
+            "IVmaj7",
+            "II/IVm7",
+            "V7/IV",
+            "IVmaj7",
+            "VIm7",
+            "V7/V",
+            "Vmaj7",
+            "Imaj7",
+            "V7/V",
+            "Vmaj7",
+            "V7/IV",
+            "IVmaj7"
+          ],
+          "tags": [
+            "dominantResolution",
+            "tonicization",
+            "realModulation"
+          ],
+          "partialFailure": false
+        },
+        "elapsedMicroseconds": 4345,
+        "checks": {
+          "keyMatch": false,
+          "relaxedKeyMatch": false,
+          "modeMatch": true,
+          "partialFailureMatch": true,
+          "romanTokenMatch": {
+            "matched": 0,
+            "total": 0
+          },
+          "relaxedRomanTokenMatch": {
+            "matched": 0,
+            "total": 0
+          },
+          "functionTokenMatch": {
+            "matched": 0,
+            "total": 0
+          },
+          "tagMatch": {
+            "matched": 1,
+            "total": 1
+          },
+          "remarkMatch": {
+            "matched": 0,
+            "total": 0
+          },
+          "evidenceMatch": {
+            "matched": 0,
+            "total": 0
+          },
+          "modulationDiagnosticMatch": true,
+          "modulationSensitiveCase": true,
+          "exactPass": false
+        },
+        "segmentComparisons": [],
+        "modulationDiagnostics": {
+          "evaluated": true,
+          "expectedTags": [
+            "realModulation"
+          ],
+          "actualTags": [
+            "tonicization",
+            "realModulation"
+          ],
+          "primaryKey": "G",
+          "alternativeKey": null,
+          "confidence": 0.98,
+          "ambiguity": 0.020000000000000018,
+          "matched": true
+        },
+        "failureCategories": [
+          "modulation_vs_tonicization",
+          "ambiguous_key_center",
+          "ending_bias"
+        ],
+        "likelyRootCauses": [
+          "The analyzer is detecting local key motion, but its global summary boundary between tonicization and true modulation is still too soft.",
+          "Multiple key centers remain plausible after scoring, so the winner is sensitive to small cadence and weighting changes.",
+          "Late cadential material appears to outweigh earlier home-key evidence in the primary key summary."
+        ],
+        "failures": [
+          "expected key C, got G"
+        ]
+      },
+      {
+        "id": "curated-abc-n04op18-4_02-mc6-09",
+        "description": "String Quartet Op18 No4 (mc 6-9)",
+        "progression": "D D7 | G | C/E C Am | D7/F# D",
+        "benchmarkClass": "Curated gold",
+        "track": "S-tier Gold core",
+        "genre": "classical",
+        "difficulty": "Hard",
+        "sourceId": "n04op18-4_02",
+        "sourceLabel": "String Quartet Op18 No4 (mc 6-9)",
+        "corpusId": "dcml_abc_excerpt",
+        "corpusName": "DCML Annotated Beethoven Corpus Excerpts",
+        "annotationLevel": "functional",
+        "expected": {
+          "key": "G",
+          "mode": "major",
+          "romans": [],
+          "segments": [
+            {
+              "index": 0,
+              "expectedRoman": "V",
+              "expectedFunction": "dominant",
+              "expectedResolvedSymbol": "D",
+              "note": "sourceChord=V; localKey=G major; measure=6; sourceLabel=V.V",
+              "comparisonProfile": {
+                "allowEnharmonicKeyMatch": true,
+                "allowSlashBassTolerance": true,
+                "allowRomanFunctionRelaxation": true
+              }
+            },
+            {
+              "index": 1,
+              "expectedRoman": "V7",
+              "expectedFunction": "dominant",
+              "expectedResolvedSymbol": "D7",
+              "note": "sourceChord=V7; localKey=G major; measure=6; sourceLabel=V7",
+              "comparisonProfile": {
+                "allowEnharmonicKeyMatch": true,
+                "allowSlashBassTolerance": true,
+                "allowRomanFunctionRelaxation": true
+              }
+            },
+            {
+              "index": 2,
+              "expectedRoman": "I",
+              "expectedFunction": "tonic",
+              "expectedResolvedSymbol": "G",
+              "note": "sourceChord=I; localKey=G major; measure=7; sourceLabel=I",
+              "comparisonProfile": {
+                "allowEnharmonicKeyMatch": true,
+                "allowSlashBassTolerance": true,
+                "allowRomanFunctionRelaxation": true
+              }
+            },
+            {
+              "index": 3,
+              "expectedRoman": "IV",
+              "expectedFunction": "predominant",
+              "expectedResolvedSymbol": "C/E",
+              "note": "sourceChord=IV6; localKey=G major; measure=8; sourceLabel=IV6",
+              "comparisonProfile": {
+                "allowEnharmonicKeyMatch": true,
+                "allowSlashBassTolerance": true,
+                "allowRomanFunctionRelaxation": true
+              }
+            },
+            {
+              "index": 4,
+              "expectedRoman": "IV",
+              "expectedFunction": "predominant",
+              "expectedResolvedSymbol": "C",
+              "note": "sourceChord=IV; localKey=G major; measure=8; sourceLabel=IV",
+              "comparisonProfile": {
+                "allowEnharmonicKeyMatch": true,
+                "allowSlashBassTolerance": true,
+                "allowRomanFunctionRelaxation": true
+              }
+            },
+            {
+              "index": 5,
+              "expectedRoman": "IIm",
+              "expectedFunction": "predominant",
+              "expectedResolvedSymbol": "Am",
+              "note": "sourceChord=ii; localKey=G major; measure=8; sourceLabel=ii",
+              "comparisonProfile": {
+                "allowEnharmonicKeyMatch": true,
+                "allowSlashBassTolerance": true,
+                "allowRomanFunctionRelaxation": true
+              }
+            },
+            {
+              "index": 6,
+              "expectedRoman": "V7",
+              "expectedFunction": "dominant",
+              "expectedResolvedSymbol": "D7/F#",
+              "note": "sourceChord=V65; localKey=G major; measure=9; sourceLabel=V65",
+              "comparisonProfile": {
+                "allowEnharmonicKeyMatch": true,
+                "allowSlashBassTolerance": true,
+                "allowRomanFunctionRelaxation": true
+              }
+            },
+            {
+              "index": 7,
+              "expectedRoman": "V",
+              "expectedFunction": "dominant",
+              "expectedResolvedSymbol": "D",
+              "note": "sourceChord=V; localKey=G major; measure=9; sourceLabel=V",
+              "comparisonProfile": {
+                "allowEnharmonicKeyMatch": true,
+                "allowSlashBassTolerance": true,
+                "allowRomanFunctionRelaxation": true
+              }
+            }
+          ],
+          "tags": [],
+          "remarks": [],
+          "evidence": [],
+          "partialFailure": false,
+          "comparisonProfile": {
+            "allowEnharmonicKeyMatch": true,
+            "allowSlashBassTolerance": true,
+            "allowRomanFunctionRelaxation": true
+          },
+          "failureHints": [],
+          "notes": [
+            "annotationLevel=functional",
+            "alignmentType=symbolic",
+            "splitTag=external_eval",
+            "licenseNotes=Source excerpts from DCMLab ABC (CC BY-NC-SA 4.0). Fixture provenance is documented in tool/benchmark_fixtures/external_gold/abc/README.md.",
+            "globalKey=C major",
+            "localKey=G major"
+          ]
+        },
+        "actual": {
+          "key": "D",
+          "mode": "major",
+          "romans": [
+            "I",
+            "V7/IV",
+            "IV",
+            "bVII",
+            "bVII",
+            "II/IVm",
+            "V7/IV",
+            "I"
+          ],
+          "tags": [
+            "iiVI",
+            "dominantResolution",
+            "turnaround",
+            "tonicization",
+            "chromaticLine"
+          ],
+          "partialFailure": false
+        },
+        "elapsedMicroseconds": 1284,
+        "checks": {
+          "keyMatch": false,
+          "relaxedKeyMatch": false,
+          "modeMatch": true,
+          "partialFailureMatch": true,
+          "romanTokenMatch": {
+            "matched": 0,
+            "total": 8
+          },
+          "relaxedRomanTokenMatch": {
+            "matched": 3,
+            "total": 8
+          },
+          "functionTokenMatch": {
+            "matched": 3,
+            "total": 8
+          },
+          "tagMatch": {
+            "matched": 0,
+            "total": 0
+          },
+          "remarkMatch": {
+            "matched": 0,
+            "total": 0
+          },
+          "evidenceMatch": {
+            "matched": 0,
+            "total": 0
+          },
+          "modulationDiagnosticMatch": false,
+          "modulationSensitiveCase": false,
+          "exactPass": false
+        },
+        "segmentComparisons": [
+          {
+            "index": 0,
+            "expectedRoman": "V",
+            "actualRoman": "I",
+            "expectedFunction": "dominant",
+            "actualFunction": "tonic",
+            "expectedResolvedSymbol": "D",
+            "actualResolvedSymbol": "D",
+            "exactRomanMatch": false,
+            "relaxedRomanMatch": false,
+            "functionMatch": false,
+            "resolvedSymbolMatch": true,
+            "mismatchReasons": [
+              "roman_exact_mismatch",
+              "roman_relaxed_mismatch",
+              "function_mismatch"
+            ]
+          },
+          {
+            "index": 1,
+            "expectedRoman": "V7",
+            "actualRoman": "V7/IV",
+            "expectedFunction": "dominant",
+            "actualFunction": "dominant",
+            "expectedResolvedSymbol": "D7",
+            "actualResolvedSymbol": "D7",
+            "exactRomanMatch": false,
+            "relaxedRomanMatch": true,
+            "functionMatch": true,
+            "resolvedSymbolMatch": true,
+            "mismatchReasons": [
+              "roman_exact_mismatch"
+            ]
+          },
+          {
+            "index": 2,
+            "expectedRoman": "I",
+            "actualRoman": "IV",
+            "expectedFunction": "tonic",
+            "actualFunction": "predominant",
+            "expectedResolvedSymbol": "G",
+            "actualResolvedSymbol": "G",
+            "exactRomanMatch": false,
+            "relaxedRomanMatch": false,
+            "functionMatch": false,
+            "resolvedSymbolMatch": true,
+            "mismatchReasons": [
+              "roman_exact_mismatch",
+              "roman_relaxed_mismatch",
+              "function_mismatch"
+            ]
+          },
+          {
+            "index": 3,
+            "expectedRoman": "IV",
+            "actualRoman": "bVII",
+            "expectedFunction": "predominant",
+            "actualFunction": "dominant",
+            "expectedResolvedSymbol": "C/E",
+            "actualResolvedSymbol": "C/E",
+            "exactRomanMatch": false,
+            "relaxedRomanMatch": false,
+            "functionMatch": false,
+            "resolvedSymbolMatch": true,
+            "mismatchReasons": [
+              "roman_exact_mismatch",
+              "roman_relaxed_mismatch",
+              "function_mismatch"
+            ]
+          },
+          {
+            "index": 4,
+            "expectedRoman": "IV",
+            "actualRoman": "bVII",
+            "expectedFunction": "predominant",
+            "actualFunction": "dominant",
+            "expectedResolvedSymbol": "C",
+            "actualResolvedSymbol": "C",
+            "exactRomanMatch": false,
+            "relaxedRomanMatch": false,
+            "functionMatch": false,
+            "resolvedSymbolMatch": true,
+            "mismatchReasons": [
+              "roman_exact_mismatch",
+              "roman_relaxed_mismatch",
+              "function_mismatch"
+            ]
+          },
+          {
+            "index": 5,
+            "expectedRoman": "IIm",
+            "actualRoman": "II/IVm",
+            "expectedFunction": "predominant",
+            "actualFunction": "predominant",
+            "expectedResolvedSymbol": "Am",
+            "actualResolvedSymbol": "Am",
+            "exactRomanMatch": false,
+            "relaxedRomanMatch": true,
+            "functionMatch": true,
+            "resolvedSymbolMatch": true,
+            "mismatchReasons": [
+              "roman_exact_mismatch"
+            ]
+          },
+          {
+            "index": 6,
+            "expectedRoman": "V7",
+            "actualRoman": "V7/IV",
+            "expectedFunction": "dominant",
+            "actualFunction": "dominant",
+            "expectedResolvedSymbol": "D7/F#",
+            "actualResolvedSymbol": "D7/F#",
+            "exactRomanMatch": false,
+            "relaxedRomanMatch": true,
+            "functionMatch": true,
+            "resolvedSymbolMatch": true,
+            "mismatchReasons": [
+              "roman_exact_mismatch"
+            ]
+          },
+          {
+            "index": 7,
+            "expectedRoman": "V",
+            "actualRoman": "I",
+            "expectedFunction": "dominant",
+            "actualFunction": "tonic",
+            "expectedResolvedSymbol": "D",
+            "actualResolvedSymbol": "D",
+            "exactRomanMatch": false,
+            "relaxedRomanMatch": false,
+            "functionMatch": false,
+            "resolvedSymbolMatch": true,
+            "mismatchReasons": [
+              "roman_exact_mismatch",
+              "roman_relaxed_mismatch",
+              "function_mismatch"
+            ]
+          }
+        ],
+        "modulationDiagnostics": {
+          "evaluated": false,
+          "expectedTags": [],
+          "actualTags": [
+            "tonicization"
+          ],
+          "primaryKey": "D",
+          "alternativeKey": null,
+          "confidence": 0.9297222222222223,
+          "ambiguity": 0.07027777777777766,
+          "matched": false
+        },
+        "failureCategories": [
+          "ambiguous_key_center",
+          "secondary_dominant_notation_gap"
+        ],
+        "likelyRootCauses": [
+          "Multiple key centers remain plausible after scoring, so the winner is sensitive to small cadence and weighting changes.",
+          "Applied-dominant function is present, but the displayed Roman token diverges from the annotation style expected by the benchmark."
+        ],
+        "failures": [
+          "expected key G, got D",
+          "segment[0] expected V, got I",
+          "segment[1] expected V7, got V7/IV",
+          "segment[2] expected I, got IV",
+          "segment[3] expected IV, got bVII",
+          "segment[4] expected IV, got bVII",
+          "segment[5] expected IIm, got II/IVm",
+          "segment[6] expected V7, got V7/IV",
+          "segment[7] expected V, got I"
+        ]
+      }
+    ]
+  },
+  "performance": {
+    "mixedCorpus": {
+      "label": "mixed-corpus",
+      "runs": 400,
+      "warmupRuns": 40,
+      "analysisCount": 32400,
+      "chordCount": 120800,
+      "totalElapsedMicroseconds": 8771606,
+      "minMicroseconds": 97,
+      "maxMicroseconds": 2214,
+      "meanMicroseconds": 269.8695061728395,
+      "p50Microseconds": 235.0,
+      "p95Microseconds": 535.0,
+      "p99Microseconds": 837.0399999999936,
+      "analysesPerSecond": 3693.736357971391,
+      "chordsPerSecond": 13771.708396387161,
+      "inputChordCount": null,
+      "inputLengthCharacters": null
+    },
+    "longSequence": {
+      "label": "long-sequence",
+      "runs": 180,
+      "warmupRuns": 40,
+      "analysisCount": 180,
+      "chordCount": 92340,
+      "totalElapsedMicroseconds": 8543966,
+      "minMicroseconds": 40375,
+      "maxMicroseconds": 65786,
+      "meanMicroseconds": 47462.10555555556,
+      "p50Microseconds": 46892.5,
+      "p95Microseconds": 54789.45,
+      "p99Microseconds": 60464.930000000044,
+      "analysesPerSecond": 21.067499566360635,
+      "chordsPerSecond": 10807.627277543004,
+      "inputChordCount": 515,
+      "inputLengthCharacters": 2979
+    }
+  }
+}
