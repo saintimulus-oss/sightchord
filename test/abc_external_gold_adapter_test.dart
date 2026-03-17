@@ -4,10 +4,18 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../tool/benchmark/adapters/abc_external_gold_adapter.dart';
 
+String _joinPath(Iterable<String> segments) =>
+    segments.join(Platform.pathSeparator);
+
 void main() {
   const adapter = AbcExternalGoldAdapter();
-  final fixtureDir =
-      '${Directory.current.path}\\tool\\benchmark_fixtures\\external_gold\\abc';
+  final fixtureDir = _joinPath(<String>[
+    Directory.current.path,
+    'tool',
+    'benchmark_fixtures',
+    'external_gold',
+    'abc',
+  ]);
 
   test('imports ABC external-gold excerpts into canonical manifest', () {
     final result = adapter.importExcerptDirectory(fixtureDir);
@@ -61,23 +69,34 @@ void main() {
         }
       });
 
-      final sourceRoot = Directory('${tempDir.path}\\source')
+      final sourceRoot = Directory(_joinPath(<String>[tempDir.path, 'source']))
         ..createSync(recursive: true);
-      final sourceHarmonyDir = Directory('${sourceRoot.path}\\harmonies')
-        ..createSync(recursive: true);
+      final sourceHarmonyDir = Directory(
+        _joinPath(<String>[sourceRoot.path, 'harmonies']),
+      )..createSync(recursive: true);
       final metadataSource = File(
-        '$fixtureDir\\metadata.tsv',
+        _joinPath(<String>[fixtureDir, 'metadata.tsv']),
       ).readAsLinesSync();
       File(
-        '${sourceRoot.path}\\metadata.tsv',
+        _joinPath(<String>[sourceRoot.path, 'metadata.tsv']),
       ).writeAsStringSync('${metadataSource.first}\n${metadataSource[1]}\n');
       final excerptSource = File(
-        '$fixtureDir\\harmonies\\n01op18-1_01__mm03-11.harmonies.tsv',
+        _joinPath(<String>[
+          fixtureDir,
+          'harmonies',
+          'n01op18-1_01__mm03-11.harmonies.tsv',
+        ]),
       ).readAsStringSync();
       File(
-        '${sourceHarmonyDir.path}\\n01op18-1_01.harmonies.tsv',
+        _joinPath(<String>[
+          sourceHarmonyDir.path,
+          'n01op18-1_01.harmonies.tsv',
+        ]),
       ).writeAsStringSync(excerptSource);
-      final selectionPath = '${tempDir.path}\\selection_manifest.tsv';
+      final selectionPath = _joinPath(<String>[
+        tempDir.path,
+        'selection_manifest.tsv',
+      ]);
       File(selectionPath).writeAsStringSync(
         'source_id\tmeasure_start\tmeasure_end\tselection_note\n'
         'n01op18-1_01\t3\t11\ttest selection\n',

@@ -4,10 +4,17 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../tool/benchmark/chord_analyzer_external_gold_schema.dart';
 
+String _joinPath(Iterable<String> segments) =>
+    segments.join(Platform.pathSeparator);
+
 void main() {
   const loader = ExternalGoldLoader();
-  final fixturePath =
-      '${Directory.current.path}\\tool\\benchmark_fixtures\\curated_gold_schema_example.json';
+  final fixturePath = _joinPath(<String>[
+    Directory.current.path,
+    'tool',
+    'benchmark_fixtures',
+    'curated_gold_schema_example.json',
+  ]);
 
   test('loads curated gold schema example manifest', () {
     final manifest = loader.loadManifest(fixturePath);
