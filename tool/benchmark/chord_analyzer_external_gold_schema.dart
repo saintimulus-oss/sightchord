@@ -3,9 +3,26 @@ import 'dart:io';
 
 import 'package:chordest/music/chord_theory.dart';
 
-enum ExternalGoldAnnotationLevel { surface, functional, hierarchical }
+enum ExternalGoldAnnotationLevel {
+  surface,
+  functional,
+  roman,
+  mixed,
+  hierarchical,
+}
 
 enum ExternalGoldAlignmentType { symbolic, audioAligned, sectionOnly }
+
+enum ExternalGoldKeyScope { localExcerpt, globalMovement, unknown }
+
+enum ExternalGoldSegmentationScope {
+  measureWindow,
+  sectionExcerpt,
+  fullMovement,
+  unknown,
+}
+
+enum ExternalGoldSegmentRole { harmonic, noChord }
 
 class ExternalGoldCorpusManifest {
   const ExternalGoldCorpusManifest({
@@ -62,6 +79,8 @@ class ExternalGoldRecord {
     required this.primaryMode,
     required this.annotationLevel,
     required this.alignmentType,
+    required this.keyScope,
+    required this.segmentationScope,
     required this.splitTag,
     required this.licenseNotes,
     required this.segments,
@@ -84,6 +103,8 @@ class ExternalGoldRecord {
   final KeyMode primaryMode;
   final ExternalGoldAnnotationLevel annotationLevel;
   final ExternalGoldAlignmentType alignmentType;
+  final ExternalGoldKeyScope keyScope;
+  final ExternalGoldSegmentationScope segmentationScope;
   final String splitTag;
   final String licenseNotes;
   final List<ExternalGoldSegment> segments;
@@ -107,6 +128,10 @@ class ExternalGoldRecord {
       primaryMode: _parseKeyMode(json['primaryMode'] as String),
       annotationLevel: _parseAnnotationLevel(json['annotationLevel'] as String),
       alignmentType: _parseAlignmentType(json['alignmentType'] as String),
+      keyScope: _parseKeyScope((json['keyScope'] as String?) ?? 'unknown'),
+      segmentationScope: _parseSegmentationScope(
+        (json['segmentationScope'] as String?) ?? 'unknown',
+      ),
       splitTag: json['splitTag'] as String,
       licenseNotes: json['licenseNotes'] as String,
       segments: [
@@ -139,6 +164,8 @@ class ExternalGoldRecord {
       'primaryMode': primaryMode.name,
       'annotationLevel': annotationLevel.name,
       'alignmentType': alignmentType.name,
+      'keyScope': keyScope.jsonValue,
+      'segmentationScope': segmentationScope.jsonValue,
       'splitTag': splitTag,
       'licenseNotes': licenseNotes,
       'segments': [for (final segment in segments) segment.toJson()],
@@ -158,9 +185,11 @@ class ExternalGoldSegment {
     required this.index,
     required this.chordRaw,
     required this.chordNormHarte,
+    this.segmentRole = ExternalGoldSegmentRole.harmonic,
     this.expectedKey,
     this.expectedMode,
-    this.expectedRoman,
+    this.surfaceRomanLabel,
+    this.canonicalRomanLabel,
     this.expectedFunction,
     this.expectedResolvedSymbol,
     this.bassOrInversion,
@@ -170,24 +199,42 @@ class ExternalGoldSegment {
   final int index;
   final String chordRaw;
   final String chordNormHarte;
+  final ExternalGoldSegmentRole segmentRole;
   final String? expectedKey;
   final KeyMode? expectedMode;
-  final String? expectedRoman;
+  final String? surfaceRomanLabel;
+  final String? canonicalRomanLabel;
   final String? expectedFunction;
   final String? expectedResolvedSymbol;
   final String? bassOrInversion;
   final String? note;
 
+  String? get expectedRoman => canonicalRomanLabel;
+
+  bool get isHarmonic => segmentRole == ExternalGoldSegmentRole.harmonic;
+
+  bool get isNoChord => segmentRole == ExternalGoldSegmentRole.noChord;
+
+  String get progressionToken =>
+      isNoChord ? 'N.C.' : expectedResolvedSymbol ?? chordRaw;
+
   factory ExternalGoldSegment.fromJson(Map<String, Object?> json) {
+    final segmentRoleValue =
+        (json['segmentRole'] as String?) ??
+        ((json['isNoChord'] as bool?) == true ? 'noChord' : 'harmonic');
     return ExternalGoldSegment(
       index: json['index'] as int,
       chordRaw: json['chordRaw'] as String,
       chordNormHarte: json['chordNormHarte'] as String,
+      segmentRole: _parseSegmentRole(segmentRoleValue),
       expectedKey: json['expectedKey'] as String?,
       expectedMode: json['expectedMode'] == null
           ? null
           : _parseKeyMode(json['expectedMode'] as String),
-      expectedRoman: json['expectedRoman'] as String?,
+      surfaceRomanLabel: json['surfaceRomanLabel'] as String?,
+      canonicalRomanLabel:
+          (json['canonicalRomanLabel'] as String?) ??
+          (json['expectedRoman'] as String?),
       expectedFunction: json['expectedFunction'] as String?,
       expectedResolvedSymbol: json['expectedResolvedSymbol'] as String?,
       bassOrInversion: json['bassOrInversion'] as String?,
@@ -200,9 +247,14 @@ class ExternalGoldSegment {
       'index': index,
       'chordRaw': chordRaw,
       'chordNormHarte': chordNormHarte,
+      'segmentRole': segmentRole.name,
+      'isNoChord': isNoChord,
+      'progressionToken': progressionToken,
       'expectedKey': expectedKey,
       'expectedMode': expectedMode?.name,
-      'expectedRoman': expectedRoman,
+      'surfaceRomanLabel': surfaceRomanLabel,
+      'canonicalRomanLabel': canonicalRomanLabel,
+      'expectedRoman': canonicalRomanLabel,
       'expectedFunction': expectedFunction,
       'expectedResolvedSymbol': expectedResolvedSymbol,
       'bassOrInversion': bassOrInversion,
@@ -225,6 +277,8 @@ ExternalGoldAnnotationLevel _parseAnnotationLevel(String value) {
   return switch (value) {
     'surface' => ExternalGoldAnnotationLevel.surface,
     'functional' => ExternalGoldAnnotationLevel.functional,
+    'roman' => ExternalGoldAnnotationLevel.roman,
+    'mixed' => ExternalGoldAnnotationLevel.mixed,
     'hierarchical' => ExternalGoldAnnotationLevel.hierarchical,
     _ => throw FormatException('Unknown annotationLevel: $value'),
   };
@@ -245,4 +299,52 @@ KeyMode _parseKeyMode(String value) {
     'minor' => KeyMode.minor,
     _ => throw FormatException('Unknown key mode: $value'),
   };
+}
+
+ExternalGoldKeyScope _parseKeyScope(String value) {
+  return switch (value) {
+    'local_excerpt' => ExternalGoldKeyScope.localExcerpt,
+    'global_movement' => ExternalGoldKeyScope.globalMovement,
+    'unknown' => ExternalGoldKeyScope.unknown,
+    _ => throw FormatException('Unknown keyScope: $value'),
+  };
+}
+
+ExternalGoldSegmentationScope _parseSegmentationScope(String value) {
+  return switch (value) {
+    'measure_window' => ExternalGoldSegmentationScope.measureWindow,
+    'section_excerpt' => ExternalGoldSegmentationScope.sectionExcerpt,
+    'full_movement' => ExternalGoldSegmentationScope.fullMovement,
+    'unknown' => ExternalGoldSegmentationScope.unknown,
+    _ => throw FormatException('Unknown segmentationScope: $value'),
+  };
+}
+
+ExternalGoldSegmentRole _parseSegmentRole(String value) {
+  return switch (value) {
+    'harmonic' => ExternalGoldSegmentRole.harmonic,
+    'noChord' => ExternalGoldSegmentRole.noChord,
+    _ => throw FormatException('Unknown segmentRole: $value'),
+  };
+}
+
+extension ExternalGoldKeyScopeJson on ExternalGoldKeyScope {
+  String get jsonValue {
+    return switch (this) {
+      ExternalGoldKeyScope.localExcerpt => 'local_excerpt',
+      ExternalGoldKeyScope.globalMovement => 'global_movement',
+      ExternalGoldKeyScope.unknown => 'unknown',
+    };
+  }
+}
+
+extension ExternalGoldSegmentationScopeJson on ExternalGoldSegmentationScope {
+  String get jsonValue {
+    return switch (this) {
+      ExternalGoldSegmentationScope.measureWindow => 'measure_window',
+      ExternalGoldSegmentationScope.sectionExcerpt => 'section_excerpt',
+      ExternalGoldSegmentationScope.fullMovement => 'full_movement',
+      ExternalGoldSegmentationScope.unknown => 'unknown',
+    };
+  }
 }

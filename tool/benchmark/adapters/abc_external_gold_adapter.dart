@@ -17,21 +17,91 @@ class AbcExternalGoldImportResult {
     required this.manifest,
     required this.skippedRecords,
     required this.skippedSegments,
+    required this.rawRecordCount,
+    required this.rawSegmentCount,
+    required this.keptSegmentCount,
+    required this.coverageBySourceId,
+    required this.importMode,
+    this.fixtureDirectory,
+    this.selectionManifestPath,
+    this.sourceCorpusRootPath,
   });
 
   final ExternalGoldCorpusManifest manifest;
   final List<AbcSkippedItem> skippedRecords;
   final List<AbcSkippedItem> skippedSegments;
+  final int rawRecordCount;
+  final int rawSegmentCount;
+  final int keptSegmentCount;
+  final Map<String, AbcSourceCoverage> coverageBySourceId;
+  final String importMode;
+  final String? fixtureDirectory;
+  final String? selectionManifestPath;
+  final String? sourceCorpusRootPath;
+
+  int get loadedRecordCount => manifest.records.length;
 
   int get skippedRecordCount => skippedRecords.length;
 
-  int get skippedSegmentCount => skippedSegments.length;
+  int get skippedSegmentCount => rawSegmentCount - keptSegmentCount;
+
+  Map<String, int> get skipReasonCounts =>
+      _countReasons(skippedSegments.map((item) => item.reason));
+
+  Map<String, int> get recordDropReasonCounts =>
+      _countReasons(skippedRecords.map((item) => item.reason));
+
+  double? get recordCoverageRatio =>
+      rawRecordCount == 0 ? null : loadedRecordCount / rawRecordCount;
+
+  double? get segmentCoverageRatio =>
+      rawSegmentCount == 0 ? null : keptSegmentCount / rawSegmentCount;
 
   void writeManifest(String path) {
     final file = File(path)..createSync(recursive: true);
     file.writeAsStringSync(
       '${const JsonEncoder.withIndent('  ').convert(manifest.toJson())}\n',
     );
+  }
+}
+
+class AbcSourceCoverage {
+  const AbcSourceCoverage({
+    required this.sourceId,
+    required this.rawRecordCount,
+    required this.loadedRecordCount,
+    required this.skippedRecordCount,
+    required this.rawSegmentCount,
+    required this.keptSegmentCount,
+  });
+
+  final String sourceId;
+  final int rawRecordCount;
+  final int loadedRecordCount;
+  final int skippedRecordCount;
+  final int rawSegmentCount;
+  final int keptSegmentCount;
+
+  int get skippedSegmentCount => rawSegmentCount - keptSegmentCount;
+
+  double? get recordCoverageRatio =>
+      rawRecordCount == 0 ? null : loadedRecordCount / rawRecordCount;
+
+  double? get segmentCoverageRatio =>
+      rawSegmentCount == 0 ? null : keptSegmentCount / rawSegmentCount;
+
+  Map<String, Object?> toJson() {
+    return <String, Object?>{
+      'sourceId': sourceId,
+      'rawRecordCount': rawRecordCount,
+      'loadedRecordCount': loadedRecordCount,
+      'skippedRecordCount': skippedRecordCount,
+      'rawSegmentCount': rawSegmentCount,
+      'keptSegmentCount': keptSegmentCount,
+      'skippedSegmentCount': skippedSegmentCount,
+      'recordCoverageRatio': recordCoverageRatio,
+      'segmentCoverageRatio': segmentCoverageRatio,
+    };
   }
 }
 
@@ -77,34 +147,34 @@ class AbcExternalGoldAdapter {
     );
 
     if (!metadataFile.existsSync()) {
-      throw FileSystemException('ABC metadata.tsv fixture not found', metadataFile.path);
+      throw FileSystemException(
+        'ABC metadata.tsv fixture not found',
+        metadataFile.path,
+      );
     }
     if (!harmonyDir.existsSync()) {
-      throw FileSystemException('ABC harmonies fixture folder not found', harmonyDir.path);
+      throw FileSystemException(
+        'ABC harmonies fixture folder not found',
+        harmonyDir.path,
+      );
     }
 
-    final metadataByPiece = <String, _AbcMetadataRow>{
-      for (final row in _readTsv(metadataFile.path))
-        if ((row['piece'] ?? '').isNotEmpty)
-          row['piece']!: _AbcMetadataRow.fromTsv(row),
-    };
+    final metadataByPiece = _metadataByPiece(metadataFile.path);
+    final inputs = <_ExcerptImportInput>[];
 
-    final skippedRecords = <AbcSkippedItem>[];
-    final skippedSegments = <AbcSkippedItem>[];
-    final records = <ExternalGoldRecord>[];
-
-    final harmonyFiles = harmonyDir
-        .listSync()
-        .whereType<File>()
-        .where((file) => file.path.endsWith('.harmonies.tsv'))
-        .toList()
-      ..sort((left, right) => left.path.compareTo(right.path));
+    final harmonyFiles =
+        harmonyDir
+            .listSync()
+            .whereType<File>()
+            .where((file) => file.path.endsWith('.harmonies.tsv'))
+            .toList()
+          ..sort((left, right) => left.path.compareTo(right.path));
 
     for (final file in harmonyFiles) {
       final excerpt = _ExcerptFileName.tryParse(file.path);
       if (excerpt == null) {
-        skippedRecords.add(
-          AbcSkippedItem(
+        inputs.add(
+          _ExcerptImportInput.invalid(
             sourceId: file.uri.pathSegments.isEmpty
                 ? file.path
                 : file.uri.pathSegments.last,
@@ -113,6 +183,161 @@ class AbcExternalGoldAdapter {
         );
         continue;
       }
+      inputs.add(
+        _ExcerptImportInput(
+          excerpt: excerpt,
+          rawRows: [
+            for (final row in _readTsv(file.path)) _AbcHarmonyRow.fromTsv(row),
+          ],
+          sourcePath: 'harmonies/${excerpt.sourceId}.harmonies.tsv',
+          fixturePath: file.path,
+        ),
+      );
+    }
+
+    return _importPreparedInputs(
+      metadataByPiece: metadataByPiece,
+      inputs: inputs,
+      manifestOutputPath: manifestOutputPath,
+      importMode: 'excerpt_directory',
+      fixtureDirectory: root.path,
+    );
+  }
+
+  AbcExternalGoldImportResult importSelectionManifest({
+    required String sourceCorpusRoot,
+    required String selectionManifestPath,
+    String? manifestOutputPath,
+  }) {
+    final root = Directory(sourceCorpusRoot);
+    final metadataFile = File(
+      '${root.path}${Platform.pathSeparator}metadata.tsv',
+    );
+    final harmonyDir = Directory(
+      '${root.path}${Platform.pathSeparator}harmonies',
+    );
+    final selectionFile = File(selectionManifestPath);
+
+    if (!metadataFile.existsSync()) {
+      throw FileSystemException(
+        'ABC metadata.tsv source not found',
+        metadataFile.path,
+      );
+    }
+    if (!harmonyDir.existsSync()) {
+      throw FileSystemException(
+        'ABC harmonies source folder not found',
+        harmonyDir.path,
+      );
+    }
+    if (!selectionFile.existsSync()) {
+      throw FileSystemException(
+        'ABC selection manifest not found',
+        selectionFile.path,
+      );
+    }
+
+    final metadataByPiece = _metadataByPiece(metadataFile.path);
+    final inputs = <_ExcerptImportInput>[];
+
+    for (final row in _readTsv(selectionFile.path)) {
+      final selection = _AbcSelectionRow.fromTsv(row);
+      final excerpt = _ExcerptFileName(
+        sourceId: selection.sourceId,
+        measureStart: selection.measureStart,
+        measureEnd: selection.measureEnd,
+      );
+      final harmonyFile = File(
+        '${harmonyDir.path}${Platform.pathSeparator}${selection.sourceId}.harmonies.tsv',
+      );
+      if (!harmonyFile.existsSync()) {
+        inputs.add(
+          _ExcerptImportInput.invalid(
+            sourceId: selection.sourceId,
+            recordId: excerpt.recordId,
+            reason: 'missing_source_harmony_file',
+          ),
+        );
+        continue;
+      }
+
+      final rawRows =
+          [
+                for (final row in _readTsv(harmonyFile.path))
+                  _AbcHarmonyRow.fromTsv(row),
+              ]
+              .where((row) {
+                return row.measureNumber >= selection.measureStart &&
+                    row.measureNumber <= selection.measureEnd;
+              })
+              .toList(growable: false);
+
+      inputs.add(
+        _ExcerptImportInput(
+          excerpt: excerpt,
+          rawRows: rawRows,
+          sourcePath: 'harmonies/${selection.sourceId}.harmonies.tsv',
+          fixturePath: selectionFile.path,
+          selectionNote: selection.selectionNote,
+        ),
+      );
+    }
+
+    return _importPreparedInputs(
+      metadataByPiece: metadataByPiece,
+      inputs: inputs,
+      manifestOutputPath: manifestOutputPath,
+      importMode: 'selection_manifest',
+      fixtureDirectory: selectionFile.parent.path,
+      selectionManifestPath: selectionFile.path,
+      sourceCorpusRootPath: root.path,
+    );
+  }
+
+  AbcExternalGoldImportResult _importPreparedInputs({
+    required Map<String, _AbcMetadataRow> metadataByPiece,
+    required List<_ExcerptImportInput> inputs,
+    required String importMode,
+    String? manifestOutputPath,
+    String? fixtureDirectory,
+    String? selectionManifestPath,
+    String? sourceCorpusRootPath,
+  }) {
+    final skippedRecords = <AbcSkippedItem>[];
+    final skippedSegments = <AbcSkippedItem>[];
+    final records = <ExternalGoldRecord>[];
+    final coverageBuilders = <String, _MutableCoverage>{};
+    var rawSegmentCount = 0;
+    var keptSegmentCount = 0;
+
+    for (final input in inputs) {
+      if (input.invalidReason != null) {
+        skippedRecords.add(
+          AbcSkippedItem(
+            sourceId: input.sourceId,
+            recordId: input.recordId,
+            reason: input.invalidReason!,
+          ),
+        );
+        coverageBuilders
+                .putIfAbsent(
+                  input.sourceId,
+                  () => _MutableCoverage(input.sourceId),
+                )
+                .rawRecordCount +=
+            1;
+        coverageBuilders[input.sourceId]!.skippedRecordCount += 1;
+        continue;
+      }
+
+      final excerpt = input.excerpt!;
+      final sourceCoverage = coverageBuilders.putIfAbsent(
+        excerpt.sourceId,
+        () => _MutableCoverage(excerpt.sourceId),
+      );
+      sourceCoverage.rawRecordCount += 1;
+      sourceCoverage.rawSegmentCount += input.rawRows.length;
+      rawSegmentCount += input.rawRows.length;
 
       final metadata = metadataByPiece[excerpt.sourceId];
       if (metadata == null) {
@@ -123,14 +348,11 @@ class AbcExternalGoldAdapter {
             reason: 'missing_metadata_row',
           ),
         );
+        sourceCoverage.skippedRecordCount += 1;
         continue;
       }
 
-      final rawRows = [
-        for (final row in _readTsv(file.path))
-          _AbcHarmonyRow.fromTsv(row),
-      ];
-      if (rawRows.isEmpty) {
+      if (input.rawRows.isEmpty) {
         skippedRecords.add(
           AbcSkippedItem(
             sourceId: excerpt.sourceId,
@@ -138,12 +360,13 @@ class AbcExternalGoldAdapter {
             reason: 'empty_excerpt',
           ),
         );
+        sourceCoverage.skippedRecordCount += 1;
         continue;
       }
 
       final preparedSegments = <_PreparedSegment>[];
-      for (var index = 0; index < rawRows.length; index += 1) {
-        final row = rawRows[index];
+      for (var index = 0; index < input.rawRows.length; index += 1) {
+        final row = input.rawRows[index];
         final prepared = _convertRow(
           recordId: excerpt.recordId,
           segmentIndex: index,
@@ -164,6 +387,7 @@ class AbcExternalGoldAdapter {
             reason: 'insufficient_supported_segments',
           ),
         );
+        sourceCoverage.skippedRecordCount += 1;
         continue;
       }
 
@@ -171,49 +395,65 @@ class AbcExternalGoldAdapter {
       final recordTitleBase = metadata.displayTitle.isNotEmpty
           ? metadata.displayTitle
           : excerpt.sourceId;
-      final movementSection = 'mc ${excerpt.measureStart}-${excerpt.measureEnd}';
+      final movementSection =
+          'mc ${excerpt.measureStart}-${excerpt.measureEnd}';
+      final rowLevelSkippedCount = skippedSegments
+          .where((item) => item.recordId == excerpt.recordId)
+          .length;
+
       final metadataMap = <String, Object?>{
         'sourceRepository': _abcSourceUrl,
-        'sourcePath': 'harmonies/${excerpt.sourceId}.harmonies.tsv',
-        'fixturePath': file.path,
-        'globalKeyToken': rawRows.first.globalKey,
-        'initialLocalKeyToken': rawRows.first.localKey,
+        'sourcePath': input.sourcePath,
+        'fixturePath': input.fixturePath,
+        'globalKeyToken': input.rawRows.first.globalKey,
+        'initialLocalKeyToken': input.rawRows.first.localKey,
         'sourceMeasures': movementSection,
-        'skippedSegmentCount': skippedSegments
-            .where((item) => item.recordId == excerpt.recordId)
-            .length,
+        'rawSegmentCount': input.rawRows.length,
+        'keptSegmentCount': preparedSegments.length,
+        'rowLevelSkippedSegmentCount': rowLevelSkippedCount,
+        if (input.selectionNote != null && input.selectionNote!.isNotEmpty)
+          'selectionNote': input.selectionNote,
+        'selectionManifestPath': selectionManifestPath,
+        'sourceCorpusRootPath': sourceCorpusRootPath,
       };
 
-      final record = ExternalGoldRecord(
-        recordId: excerpt.recordId,
-        sourceId: excerpt.sourceId,
-        genreFamily: 'classical',
-        workId: excerpt.sourceId,
-        title: '$recordTitleBase ($movementSection)',
-        composerOrArtist: metadata.composer,
-        movementOrSection: movementSection,
-        progressionInput: _buildProgressionInput(preparedSegments),
-        primaryKey: firstKey.tonicName,
-        primaryMode: firstKey.mode,
-        annotationLevel: ExternalGoldAnnotationLevel.functional,
-        alignmentType: ExternalGoldAlignmentType.symbolic,
-        splitTag: 'external_eval',
-        licenseNotes: _abcLicenseNote,
-        globalKey: _parseAbsoluteKeyToken(rawRows.first.globalKey).displayName,
-        localKey: firstKey.displayName,
-        confidenceOrAgreement: 'expert annotation',
-        segments: [
-          for (final prepared in preparedSegments) prepared.segment,
-        ],
-        metadata: metadataMap,
+      records.add(
+        ExternalGoldRecord(
+          recordId: excerpt.recordId,
+          sourceId: excerpt.sourceId,
+          genreFamily: 'classical',
+          workId: excerpt.sourceId,
+          title: '$recordTitleBase ($movementSection)',
+          composerOrArtist: metadata.composer,
+          movementOrSection: movementSection,
+          progressionInput: _buildProgressionInput(preparedSegments),
+          primaryKey: firstKey.tonicName,
+          primaryMode: firstKey.mode,
+          annotationLevel: ExternalGoldAnnotationLevel.functional,
+          alignmentType: ExternalGoldAlignmentType.symbolic,
+          keyScope: ExternalGoldKeyScope.localExcerpt,
+          segmentationScope: ExternalGoldSegmentationScope.measureWindow,
+          splitTag: 'external_eval',
+          licenseNotes: _abcLicenseNote,
+          globalKey: _parseAbsoluteKeyToken(
+            input.rawRows.first.globalKey,
+          ).displayName,
+          localKey: firstKey.displayName,
+          confidenceOrAgreement: 'expert annotation',
+          segments: [for (final prepared in preparedSegments) prepared.segment],
+          metadata: metadataMap,
+        ),
       );
-      records.add(record);
+
+      sourceCoverage.loadedRecordCount += 1;
+      sourceCoverage.keptSegmentCount += preparedSegments.length;
+      keptSegmentCount += preparedSegments.length;
     }
 
     final manifest = ExternalGoldCorpusManifest(
       corpusId: _abcCorpusId,
       corpusName: _abcCorpusName,
-      adapterVersion: '0.1.0',
+      adapterVersion: '0.2.0',
       sourceUrl: _abcSourceUrl,
       licenseNote: _abcLicenseNote,
       records: records,
@@ -222,6 +462,19 @@ class AbcExternalGoldAdapter {
       manifest: manifest,
       skippedRecords: skippedRecords,
       skippedSegments: skippedSegments,
+      rawRecordCount: inputs.length,
+      rawSegmentCount: rawSegmentCount,
+      keptSegmentCount: keptSegmentCount,
+      coverageBySourceId: {
+        for (final entry
+            in (coverageBuilders.entries.toList()
+              ..sort((left, right) => left.key.compareTo(right.key))))
+          entry.key: entry.value.build(),
+      },
+      importMode: importMode,
+      fixtureDirectory: fixtureDirectory,
+      selectionManifestPath: selectionManifestPath,
+      sourceCorpusRootPath: sourceCorpusRootPath,
     );
 
     if (manifestOutputPath != null) {
@@ -267,7 +520,9 @@ class AbcExternalGoldAdapter {
       globalKeyToken: row.globalKey,
       localKeyToken: row.localKey,
     );
-    final rootNote = _noteFromFifths(localKeyCenter.fifths + row.rootCoordinate!);
+    final rootNote = _noteFromFifths(
+      localKeyCenter.fifths + row.rootCoordinate!,
+    );
     final bassNote = row.bassCoordinate == null
         ? null
         : _noteFromFifths(localKeyCenter.fifths + row.bassCoordinate!);
@@ -280,7 +535,8 @@ class AbcExternalGoldAdapter {
           recordId: recordId,
           measureNumber: row.measureNumber,
           label: row.label,
-          reason: 'unsupported_spelling:$rootNote${bassNote == null ? '' : '/$bassNote'}',
+          reason:
+              'unsupported_spelling:$rootNote${bassNote == null ? '' : '/$bassNote'}',
         ),
       );
       return null;
@@ -291,7 +547,7 @@ class AbcExternalGoldAdapter {
       bassNote: bassNote,
       chordType: row.chordType,
     );
-    final expectedRoman = _canonicalRomanToken(row);
+    final canonicalRoman = _canonicalRomanToken(row);
     final expectedFunction = _expectedFunction(row.numeral);
 
     return _PreparedSegment(
@@ -307,7 +563,8 @@ class AbcExternalGoldAdapter {
         ),
         expectedKey: localKeyCenter.tonicName,
         expectedMode: localKeyCenter.mode,
-        expectedRoman: expectedRoman,
+        surfaceRomanLabel: row.chord,
+        canonicalRomanLabel: canonicalRoman,
         expectedFunction: expectedFunction,
         expectedResolvedSymbol: resolvedSymbol,
         bassOrInversion: bassNote,
@@ -315,6 +572,89 @@ class AbcExternalGoldAdapter {
             'sourceChord=${row.chord}; localKey=${localKeyCenter.displayName}; '
             'measure=${row.measureNumber}; sourceLabel=${row.label}',
       ),
+    );
+  }
+}
+
+class _ExcerptImportInput {
+  _ExcerptImportInput({
+    required this.excerpt,
+    required this.rawRows,
+    required this.sourcePath,
+    required this.fixturePath,
+    this.selectionNote,
+  }) : invalidReason = null,
+       sourceId = excerpt!.sourceId,
+       recordId = excerpt.recordId;
+
+  _ExcerptImportInput.invalid({
+    required this.sourceId,
+    required String reason,
+    this.recordId,
+  }) : excerpt = null,
+       rawRows = const <_AbcHarmonyRow>[],
+       sourcePath = '',
+       fixturePath = '',
+       selectionNote = null,
+       invalidReason = reason;
+
+  final _ExcerptFileName? excerpt;
+  final List<_AbcHarmonyRow> rawRows;
+  final String sourcePath;
+  final String fixturePath;
+  final String? selectionNote;
+  final String sourceId;
+  final String? recordId;
+  final String? invalidReason;
+}
+
+class _MutableCoverage {
+  _MutableCoverage(this.sourceId);
+
+  final String sourceId;
+  int rawRecordCount = 0;
+  int loadedRecordCount = 0;
+  int skippedRecordCount = 0;
+  int rawSegmentCount = 0;
+  int keptSegmentCount = 0;
+
+  AbcSourceCoverage build() {
+    return AbcSourceCoverage(
+      sourceId: sourceId,
+      rawRecordCount: rawRecordCount,
+      loadedRecordCount: loadedRecordCount,
+      skippedRecordCount: skippedRecordCount,
+      rawSegmentCount: rawSegmentCount,
+      keptSegmentCount: keptSegmentCount,
+    );
+  }
+}
+
+class _AbcSelectionRow {
+  const _AbcSelectionRow({
+    required this.sourceId,
+    required this.measureStart,
+    required this.measureEnd,
+    this.selectionNote,
+  });
+
+  final String sourceId;
+  final int measureStart;
+  final int measureEnd;
+  final String? selectionNote;
+
+  factory _AbcSelectionRow.fromTsv(Map<String, String> row) {
+    final sourceId = row['source_id'] ?? '';
+    final measureStart = int.parse(row['measure_start'] ?? '');
+    final measureEnd = int.parse(row['measure_end'] ?? '');
+    if (sourceId.isEmpty) {
+      throw FormatException('ABC selection row is missing source_id');
+    }
+    return _AbcSelectionRow(
+      sourceId: sourceId,
+      measureStart: measureStart,
+      measureEnd: measureEnd,
+      selectionNote: row['selection_note'],
     );
   }
 }
@@ -477,6 +817,25 @@ const Map<String, int> _noteLetterFifths = <String, int>{
   'B': 5,
 };
 
+Map<String, _AbcMetadataRow> _metadataByPiece(String metadataPath) {
+  return <String, _AbcMetadataRow>{
+    for (final row in _readTsv(metadataPath))
+      if ((row['piece'] ?? '').isNotEmpty)
+        row['piece']!: _AbcMetadataRow.fromTsv(row),
+  };
+}
+
+Map<String, int> _countReasons(Iterable<String> reasons) {
+  final counts = <String, int>{};
+  for (final reason in reasons) {
+    counts.update(reason, (count) => count + 1, ifAbsent: () => 1);
+  }
+  return Map<String, int>.fromEntries(
+    counts.entries.toList()
+      ..sort((left, right) => right.value.compareTo(left.value)),
+  );
+}
+
 List<Map<String, String>> _readTsv(String path) {
   final lines = File(path)
       .readAsLinesSync()
@@ -491,7 +850,10 @@ List<Map<String, String>> _readTsv(String path) {
     final values = line.split('\t');
     final padded = values.length >= header.length
         ? values
-        : [...values, ...List<String>.filled(header.length - values.length, '')];
+        : [
+            ...values,
+            ...List<String>.filled(header.length - values.length, ''),
+          ];
     rows.add(<String, String>{
       for (var index = 0; index < header.length; index += 1)
         header[index]: index < padded.length ? padded[index] : '',
@@ -629,8 +991,9 @@ String _renderChordSymbol({
     '+7' => '7#5',
     _ => '',
   };
-  final bassSuffix =
-      bassNote == null || bassNote == rootNote ? '' : '/$bassNote';
+  final bassSuffix = bassNote == null || bassNote == rootNote
+      ? ''
+      : '/$bassNote';
   return '$rootNote$suffix$bassSuffix';
 }
 
@@ -652,8 +1015,9 @@ String _renderHarteSymbol({
     '+7' => 'aug7',
     _ => 'maj',
   };
-  final bassSuffix =
-      bassNote == null || bassNote == rootNote ? '' : '/$bassNote';
+  final bassSuffix = bassNote == null || bassNote == rootNote
+      ? ''
+      : '/$bassNote';
   return '$rootNote:$quality$bassSuffix';
 }
 
@@ -687,7 +1051,9 @@ String _normalizeRomanBase(String token) {
 }
 
 String _expectedFunction(String numeralToken) {
-  final base = _normalizeRomanBase(numeralToken).replaceAll(RegExp(r'^[#b]+'), '');
+  final base = _normalizeRomanBase(
+    numeralToken,
+  ).replaceAll(RegExp(r'^[#b]+'), '');
   return switch (base) {
     'I' || 'III' || 'VI' => 'tonic',
     'II' || 'IV' => 'predominant',

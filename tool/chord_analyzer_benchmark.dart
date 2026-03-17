@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'benchmark/adapters/abc_external_gold_adapter.dart';
+import 'benchmark/adapters/isophonics_choco_external_gold_adapter.dart';
+import 'benchmark/adapters/jaah_choco_external_gold_adapter.dart';
+import 'benchmark/adapters/when_in_rome_external_gold_adapter.dart';
 import 'benchmark/chord_analyzer_external_gold_schema.dart';
 import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/music/progression_analysis_models.dart';
@@ -13,8 +16,21 @@ const int _defaultRounds = 400;
 const int _defaultWarmupRounds = 40;
 const int _defaultLongRuns = 180;
 const int _defaultLongChordTarget = 512;
-const String _defaultExternalGoldFixtureDir =
+const String _defaultAbcExternalGoldFixtureDir =
     'tool/benchmark_fixtures/external_gold/abc';
+const String _defaultAbcExternalGoldSelectionManifestPath =
+    'tool/benchmark_fixtures/external_gold/abc/selection_manifest.tsv';
+const String _defaultAbcExternalGoldSourceRoot = '.codex_tmp/ABC';
+const String _defaultWhenInRomeExternalGoldFixtureDir =
+    'tool/benchmark_fixtures/external_gold/when_in_rome';
+const String _defaultWhenInRomeExternalGoldSelectionManifestPath =
+    'tool/benchmark_fixtures/external_gold/when_in_rome/selection_manifest.tsv';
+const String _defaultWhenInRomeExternalGoldSourceRoot =
+    '.codex_tmp/When-in-Rome';
+const String _defaultIsophonicsChocoExternalGoldFixtureDir =
+    'tool/benchmark_fixtures/external_gold/isophonics_choco';
+const String _defaultJaahChocoExternalGoldFixtureDir =
+    'tool/benchmark_fixtures/external_gold/jaah_choco';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +43,8 @@ void main() {
     final curatedGoldLoad = _loadCuratedGoldCases(
       manifestPath: parsed.curatedGoldManifestPath,
       outputDir: outputDirectory.path,
+      abcSourceRootPath: parsed.abcSourceRootPath,
+      whenInRomeSourceRootPath: parsed.whenInRomeSourceRootPath,
     );
     benchmarkCases.addAll(curatedGoldLoad.cases);
 
@@ -101,6 +119,14 @@ void main() {
         externalGoldResults,
         (result) =>
             result.benchmarkCase.annotationLevel ?? 'unknown_annotation_level',
+      ),
+      externalGoldByKeyScope: _aggregateBy(
+        externalGoldResults,
+        (result) => result.benchmarkCase.keyScope ?? 'unknown',
+      ),
+      externalGoldBySegmentationScope: _aggregateBy(
+        externalGoldResults,
+        (result) => result.benchmarkCase.segmentationScope ?? 'unknown',
       ),
       failures: accuracyResults.where((result) => !result.exactPass).toList(),
       externalGoldFailures: externalGoldResults
@@ -291,24 +317,33 @@ class _ComparisonProfile {
 class _SegmentExpectation {
   const _SegmentExpectation({
     required this.index,
-    this.expectedRoman,
+    int? analysisIndex,
+    this.expectedSurfaceRoman,
+    this.expectedCanonicalRoman,
     this.expectedFunction,
     this.expectedResolvedSymbol,
     this.note,
     this.comparisonProfile = const _ComparisonProfile(),
-  });
+  }) : analysisIndex = analysisIndex ?? index;
 
   final int index;
-  final String? expectedRoman;
+  final int analysisIndex;
+  final String? expectedSurfaceRoman;
+  final String? expectedCanonicalRoman;
   final String? expectedFunction;
   final String? expectedResolvedSymbol;
   final String? note;
   final _ComparisonProfile comparisonProfile;
 
+  String? get expectedRoman => expectedCanonicalRoman;
+
   Map<String, Object?> toJson() {
     return <String, Object?>{
       'index': index,
-      'expectedRoman': expectedRoman,
+      'analysisIndex': analysisIndex,
+      'expectedSurfaceRoman': expectedSurfaceRoman,
+      'expectedCanonicalRoman': expectedCanonicalRoman,
+      'expectedRoman': expectedCanonicalRoman,
       'expectedFunction': expectedFunction,
       'expectedResolvedSymbol': expectedResolvedSymbol,
       'note': note,
@@ -320,13 +355,16 @@ class _SegmentExpectation {
 class _SegmentComparison {
   const _SegmentComparison({
     required this.index,
-    required this.expectedRoman,
+    required this.analysisIndex,
+    required this.expectedSurfaceRoman,
+    required this.expectedCanonicalRoman,
     required this.actualRoman,
     required this.expectedFunction,
     required this.actualFunction,
     required this.expectedResolvedSymbol,
     required this.actualResolvedSymbol,
-    required this.exactRomanMatch,
+    required this.surfaceRomanExactMatch,
+    required this.canonicalRomanExactMatch,
     required this.relaxedRomanMatch,
     required this.functionMatch,
     required this.resolvedSymbolMatch,
@@ -334,30 +372,42 @@ class _SegmentComparison {
   });
 
   final int index;
-  final String? expectedRoman;
+  final int analysisIndex;
+  final String? expectedSurfaceRoman;
+  final String? expectedCanonicalRoman;
   final String? actualRoman;
   final String? expectedFunction;
   final String? actualFunction;
   final String? expectedResolvedSymbol;
   final String? actualResolvedSymbol;
-  final bool exactRomanMatch;
+  final bool surfaceRomanExactMatch;
+  final bool canonicalRomanExactMatch;
   final bool relaxedRomanMatch;
   final bool functionMatch;
   final bool resolvedSymbolMatch;
   final List<String> mismatchReasons;
+
+  String? get expectedRoman => expectedCanonicalRoman;
+
+  bool get exactRomanMatch => canonicalRomanExactMatch;
 
   bool get hasMismatch => mismatchReasons.isNotEmpty;
 
   Map<String, Object?> toJson() {
     return <String, Object?>{
       'index': index,
-      'expectedRoman': expectedRoman,
+      'analysisIndex': analysisIndex,
+      'expectedSurfaceRoman': expectedSurfaceRoman,
+      'expectedCanonicalRoman': expectedCanonicalRoman,
+      'expectedRoman': expectedCanonicalRoman,
       'actualRoman': actualRoman,
       'expectedFunction': expectedFunction,
       'actualFunction': actualFunction,
       'expectedResolvedSymbol': expectedResolvedSymbol,
       'actualResolvedSymbol': actualResolvedSymbol,
-      'exactRomanMatch': exactRomanMatch,
+      'surfaceRomanExactMatch': surfaceRomanExactMatch,
+      'canonicalRomanExactMatch': canonicalRomanExactMatch,
+      'exactRomanMatch': canonicalRomanExactMatch,
       'relaxedRomanMatch': relaxedRomanMatch,
       'functionMatch': functionMatch,
       'resolvedSymbolMatch': resolvedSymbolMatch,
@@ -401,6 +451,266 @@ class _ModulationDiagnostics {
   }
 }
 
+class _KeyCandidateDiagnostic {
+  const _KeyCandidateDiagnostic({
+    required this.key,
+    required this.mode,
+    required this.score,
+    required this.confidence,
+  });
+
+  final String key;
+  final String mode;
+  final double score;
+  final double confidence;
+
+  Map<String, Object?> toJson() {
+    return <String, Object?>{
+      'key': key,
+      'mode': mode,
+      'score': score,
+      'confidence': confidence,
+    };
+  }
+}
+
+class _KeyDiagnostics {
+  const _KeyDiagnostics({
+    required this.topCandidates,
+    required this.topTwoScoreGap,
+    required this.expectedKeyRank,
+    required this.expectedKeyGapFromTop,
+    required this.selectedKeyIsDominantOfExpected,
+    required this.overallDominantRatio,
+    required this.endingDominantRatio,
+    required this.dominantBiasOverhang,
+    required this.endingDominantCount,
+    required this.endingPredominantCount,
+    required this.endingTonicCount,
+    required this.endingCadentialResolutions,
+    required this.endingWindowSize,
+    required this.appliedDominantChordCount,
+    required this.appliedDominantRemarkCount,
+    required this.tonicizationRemarkCount,
+    required this.realModulationRemarkCount,
+    required this.summary,
+  });
+
+  final List<_KeyCandidateDiagnostic> topCandidates;
+  final double? topTwoScoreGap;
+  final int? expectedKeyRank;
+  final double? expectedKeyGapFromTop;
+  final bool selectedKeyIsDominantOfExpected;
+  final double overallDominantRatio;
+  final double endingDominantRatio;
+  final double dominantBiasOverhang;
+  final int endingDominantCount;
+  final int endingPredominantCount;
+  final int endingTonicCount;
+  final int endingCadentialResolutions;
+  final int endingWindowSize;
+  final int appliedDominantChordCount;
+  final int appliedDominantRemarkCount;
+  final int tonicizationRemarkCount;
+  final int realModulationRemarkCount;
+  final String summary;
+
+  Map<String, Object?> toJson() {
+    return <String, Object?>{
+      'topCandidates': [
+        for (final candidate in topCandidates) candidate.toJson(),
+      ],
+      'topTwoScoreGap': topTwoScoreGap,
+      'expectedKeyRank': expectedKeyRank,
+      'expectedKeyGapFromTop': expectedKeyGapFromTop,
+      'selectedKeyIsDominantOfExpected': selectedKeyIsDominantOfExpected,
+      'overallDominantRatio': overallDominantRatio,
+      'endingDominantRatio': endingDominantRatio,
+      'dominantBiasOverhang': dominantBiasOverhang,
+      'endingDominantCount': endingDominantCount,
+      'endingPredominantCount': endingPredominantCount,
+      'endingTonicCount': endingTonicCount,
+      'endingCadentialResolutions': endingCadentialResolutions,
+      'endingWindowSize': endingWindowSize,
+      'appliedDominantChordCount': appliedDominantChordCount,
+      'appliedDominantRemarkCount': appliedDominantRemarkCount,
+      'tonicizationRemarkCount': tonicizationRemarkCount,
+      'realModulationRemarkCount': realModulationRemarkCount,
+      'summary': summary,
+    };
+  }
+}
+
+class _CoverageBreakdown {
+  const _CoverageBreakdown({
+    required this.rawRecordCount,
+    required this.loadedRecordCount,
+    required this.skippedRecordCount,
+    required this.rawSegmentCount,
+    required this.keptSegmentCount,
+    required this.skippedSegmentCount,
+    required this.rawHarmonicSegmentCount,
+    required this.keptHarmonicSegmentCount,
+    required this.rawNonHarmonicSegmentCount,
+    required this.keptNonHarmonicSegmentCount,
+  });
+
+  final int rawRecordCount;
+  final int loadedRecordCount;
+  final int skippedRecordCount;
+  final int rawSegmentCount;
+  final int keptSegmentCount;
+  final int skippedSegmentCount;
+  final int rawHarmonicSegmentCount;
+  final int keptHarmonicSegmentCount;
+  final int rawNonHarmonicSegmentCount;
+  final int keptNonHarmonicSegmentCount;
+
+  double? get recordCoverageRatio =>
+      rawRecordCount == 0 ? null : loadedRecordCount / rawRecordCount;
+
+  double? get segmentCoverageRatio =>
+      rawSegmentCount == 0 ? null : keptSegmentCount / rawSegmentCount;
+
+  double? get harmonicCoverageRatio => rawHarmonicSegmentCount == 0
+      ? null
+      : keptHarmonicSegmentCount / rawHarmonicSegmentCount;
+
+  double? get nonHarmonicRetentionRatio => rawNonHarmonicSegmentCount == 0
+      ? null
+      : keptNonHarmonicSegmentCount / rawNonHarmonicSegmentCount;
+
+  Map<String, Object?> toJson() {
+    return <String, Object?>{
+      'rawRecordCount': rawRecordCount,
+      'loadedRecordCount': loadedRecordCount,
+      'skippedRecordCount': skippedRecordCount,
+      'rawSegmentCount': rawSegmentCount,
+      'keptSegmentCount': keptSegmentCount,
+      'skippedSegmentCount': skippedSegmentCount,
+      'rawHarmonicSegmentCount': rawHarmonicSegmentCount,
+      'keptHarmonicSegmentCount': keptHarmonicSegmentCount,
+      'rawNonHarmonicSegmentCount': rawNonHarmonicSegmentCount,
+      'keptNonHarmonicSegmentCount': keptNonHarmonicSegmentCount,
+      'recordCoverageRatio': recordCoverageRatio,
+      'segmentCoverageRatio': segmentCoverageRatio,
+      'harmonicCoverageRatio': harmonicCoverageRatio,
+      'nonHarmonicRetentionRatio': nonHarmonicRetentionRatio,
+    };
+  }
+}
+
+class _CuratedGoldCorpusLoad {
+  const _CuratedGoldCorpusLoad({
+    required this.corpusId,
+    required this.corpusName,
+    required this.loadedCaseCount,
+    required this.manifestPath,
+    this.licenseNote,
+    this.adapterId,
+    this.fixtureDirectory,
+    this.selectionManifestPath,
+    this.sourceCorpusRootPath,
+    this.importMode,
+    this.skippedRecordCount = 0,
+    this.skippedSegmentCount = 0,
+    this.rawRecordCount = 0,
+    this.rawSegmentCount = 0,
+    this.keptSegmentCount = 0,
+    this.rawHarmonicSegmentCount = 0,
+    this.keptHarmonicSegmentCount = 0,
+    this.rawNonHarmonicSegmentCount = 0,
+    this.keptNonHarmonicSegmentCount = 0,
+    this.skipReasonCounts = const <String, int>{},
+    this.recordDropReasonCounts = const <String, int>{},
+    this.coverageBySourceId = const <String, _CoverageBreakdown>{},
+  });
+
+  final String corpusId;
+  final String corpusName;
+  final int loadedCaseCount;
+  final String? manifestPath;
+  final String? licenseNote;
+  final String? adapterId;
+  final String? fixtureDirectory;
+  final String? selectionManifestPath;
+  final String? sourceCorpusRootPath;
+  final String? importMode;
+  final int skippedRecordCount;
+  final int skippedSegmentCount;
+  final int rawRecordCount;
+  final int rawSegmentCount;
+  final int keptSegmentCount;
+  final int rawHarmonicSegmentCount;
+  final int keptHarmonicSegmentCount;
+  final int rawNonHarmonicSegmentCount;
+  final int keptNonHarmonicSegmentCount;
+  final Map<String, int> skipReasonCounts;
+  final Map<String, int> recordDropReasonCounts;
+  final Map<String, _CoverageBreakdown> coverageBySourceId;
+
+  double? get recordCoverageRatio =>
+      rawRecordCount == 0 ? null : loadedCaseCount / rawRecordCount;
+
+  double? get segmentCoverageRatio =>
+      rawSegmentCount == 0 ? null : keptSegmentCount / rawSegmentCount;
+
+  double? get harmonicCoverageRatio => rawHarmonicSegmentCount == 0
+      ? null
+      : keptHarmonicSegmentCount / rawHarmonicSegmentCount;
+
+  double? get nonHarmonicRetentionRatio => rawNonHarmonicSegmentCount == 0
+      ? null
+      : keptNonHarmonicSegmentCount / rawNonHarmonicSegmentCount;
+
+  _CoverageBreakdown get coverageBreakdown => _CoverageBreakdown(
+    rawRecordCount: rawRecordCount,
+    loadedRecordCount: loadedCaseCount,
+    skippedRecordCount: skippedRecordCount,
+    rawSegmentCount: rawSegmentCount,
+    keptSegmentCount: keptSegmentCount,
+    skippedSegmentCount: skippedSegmentCount,
+    rawHarmonicSegmentCount: rawHarmonicSegmentCount,
+    keptHarmonicSegmentCount: keptHarmonicSegmentCount,
+    rawNonHarmonicSegmentCount: rawNonHarmonicSegmentCount,
+    keptNonHarmonicSegmentCount: keptNonHarmonicSegmentCount,
+  );
+
+  Map<String, Object?> toJson() {
+    return <String, Object?>{
+      'corpusId': corpusId,
+      'corpusName': corpusName,
+      'manifestPath': manifestPath,
+      'loadedCaseCount': loadedCaseCount,
+      'licenseNote': licenseNote,
+      'adapterId': adapterId,
+      'fixtureDirectory': fixtureDirectory,
+      'selectionManifestPath': selectionManifestPath,
+      'sourceCorpusRootPath': sourceCorpusRootPath,
+      'importMode': importMode,
+      'skippedRecordCount': skippedRecordCount,
+      'skippedSegmentCount': skippedSegmentCount,
+      'rawRecordCount': rawRecordCount,
+      'rawSegmentCount': rawSegmentCount,
+      'keptSegmentCount': keptSegmentCount,
+      'rawHarmonicSegmentCount': rawHarmonicSegmentCount,
+      'keptHarmonicSegmentCount': keptHarmonicSegmentCount,
+      'rawNonHarmonicSegmentCount': rawNonHarmonicSegmentCount,
+      'keptNonHarmonicSegmentCount': keptNonHarmonicSegmentCount,
+      'recordCoverageRatio': recordCoverageRatio,
+      'segmentCoverageRatio': segmentCoverageRatio,
+      'harmonicCoverageRatio': harmonicCoverageRatio,
+      'nonHarmonicRetentionRatio': nonHarmonicRetentionRatio,
+      'skipReasonCounts': skipReasonCounts,
+      'recordDropReasonCounts': recordDropReasonCounts,
+      'coverageBySourceId': {
+        for (final entry in coverageBySourceId.entries)
+          entry.key: entry.value.toJson(),
+      },
+    };
+  }
+}
+
 class _CuratedGoldLoadResult {
   const _CuratedGoldLoadResult({
     required this.manifestPath,
@@ -411,8 +721,22 @@ class _CuratedGoldLoadResult {
     this.licenseNote,
     this.adapterId,
     this.fixtureDirectory,
+    this.selectionManifestPath,
+    this.sourceCorpusRootPath,
+    this.importMode,
     this.skippedRecordCount = 0,
     this.skippedSegmentCount = 0,
+    this.rawRecordCount = 0,
+    this.rawSegmentCount = 0,
+    this.keptSegmentCount = 0,
+    this.rawHarmonicSegmentCount = 0,
+    this.keptHarmonicSegmentCount = 0,
+    this.rawNonHarmonicSegmentCount = 0,
+    this.keptNonHarmonicSegmentCount = 0,
+    this.skipReasonCounts = const <String, int>{},
+    this.recordDropReasonCounts = const <String, int>{},
+    this.coverageBySourceId = const <String, _CoverageBreakdown>{},
+    this.corpusLoads = const <_CuratedGoldCorpusLoad>[],
   });
 
   final String? manifestPath;
@@ -423,8 +747,82 @@ class _CuratedGoldLoadResult {
   final String? licenseNote;
   final String? adapterId;
   final String? fixtureDirectory;
+  final String? selectionManifestPath;
+  final String? sourceCorpusRootPath;
+  final String? importMode;
   final int skippedRecordCount;
   final int skippedSegmentCount;
+  final int rawRecordCount;
+  final int rawSegmentCount;
+  final int keptSegmentCount;
+  final int rawHarmonicSegmentCount;
+  final int keptHarmonicSegmentCount;
+  final int rawNonHarmonicSegmentCount;
+  final int keptNonHarmonicSegmentCount;
+  final Map<String, int> skipReasonCounts;
+  final Map<String, int> recordDropReasonCounts;
+  final Map<String, _CoverageBreakdown> coverageBySourceId;
+  final List<_CuratedGoldCorpusLoad> corpusLoads;
+
+  double? get recordCoverageRatio =>
+      rawRecordCount == 0 ? null : loadedCaseCount / rawRecordCount;
+
+  double? get segmentCoverageRatio =>
+      rawSegmentCount == 0 ? null : keptSegmentCount / rawSegmentCount;
+
+  double? get harmonicCoverageRatio => rawHarmonicSegmentCount == 0
+      ? null
+      : keptHarmonicSegmentCount / rawHarmonicSegmentCount;
+
+  double? get nonHarmonicRetentionRatio => rawNonHarmonicSegmentCount == 0
+      ? null
+      : keptNonHarmonicSegmentCount / rawNonHarmonicSegmentCount;
+
+  List<_CuratedGoldCorpusLoad> get effectiveCorpusLoads {
+    if (corpusLoads.isNotEmpty) {
+      return corpusLoads;
+    }
+    if ((corpusId ?? '').isEmpty || (corpusName ?? '').isEmpty) {
+      return const <_CuratedGoldCorpusLoad>[];
+    }
+    return <_CuratedGoldCorpusLoad>[
+      _CuratedGoldCorpusLoad(
+        corpusId: corpusId!,
+        corpusName: corpusName!,
+        loadedCaseCount: loadedCaseCount,
+        manifestPath: manifestPath,
+        licenseNote: licenseNote,
+        adapterId: adapterId,
+        fixtureDirectory: fixtureDirectory,
+        selectionManifestPath: selectionManifestPath,
+        sourceCorpusRootPath: sourceCorpusRootPath,
+        importMode: importMode,
+        skippedRecordCount: skippedRecordCount,
+        skippedSegmentCount: skippedSegmentCount,
+        rawRecordCount: rawRecordCount,
+        rawSegmentCount: rawSegmentCount,
+        keptSegmentCount: keptSegmentCount,
+        rawHarmonicSegmentCount: rawHarmonicSegmentCount,
+        keptHarmonicSegmentCount: keptHarmonicSegmentCount,
+        rawNonHarmonicSegmentCount: rawNonHarmonicSegmentCount,
+        keptNonHarmonicSegmentCount: keptNonHarmonicSegmentCount,
+        skipReasonCounts: skipReasonCounts,
+        recordDropReasonCounts: recordDropReasonCounts,
+        coverageBySourceId: coverageBySourceId,
+      ),
+    ];
+  }
+
+  List<String> get manifestPaths => [
+    for (final load in effectiveCorpusLoads)
+      if (load.manifestPath != null && load.manifestPath!.isNotEmpty)
+        load.manifestPath!,
+  ];
+
+  Map<String, _CoverageBreakdown> get coverageByCorpus => {
+    for (final load in effectiveCorpusLoads)
+      load.corpusId: load.coverageBreakdown,
+  };
 
   factory _CuratedGoldLoadResult.notLoaded({String? manifestPath}) {
     return _CuratedGoldLoadResult(
@@ -434,9 +832,101 @@ class _CuratedGoldLoadResult {
     );
   }
 
+  factory _CuratedGoldLoadResult.combine(
+    List<_CuratedGoldCorpusLoad> corpusLoads,
+  ) {
+    if (corpusLoads.isEmpty) {
+      return _CuratedGoldLoadResult.notLoaded();
+    }
+    if (corpusLoads.length == 1) {
+      final load = corpusLoads.single;
+      return _CuratedGoldLoadResult(
+        manifestPath: load.manifestPath,
+        loadedCaseCount: load.loadedCaseCount,
+        status: 'loaded',
+        corpusId: load.corpusId,
+        corpusName: load.corpusName,
+        licenseNote: load.licenseNote,
+        adapterId: load.adapterId,
+        fixtureDirectory: load.fixtureDirectory,
+        selectionManifestPath: load.selectionManifestPath,
+        sourceCorpusRootPath: load.sourceCorpusRootPath,
+        importMode: load.importMode,
+        skippedRecordCount: load.skippedRecordCount,
+        skippedSegmentCount: load.skippedSegmentCount,
+        rawRecordCount: load.rawRecordCount,
+        rawSegmentCount: load.rawSegmentCount,
+        keptSegmentCount: load.keptSegmentCount,
+        rawHarmonicSegmentCount: load.rawHarmonicSegmentCount,
+        keptHarmonicSegmentCount: load.keptHarmonicSegmentCount,
+        rawNonHarmonicSegmentCount: load.rawNonHarmonicSegmentCount,
+        keptNonHarmonicSegmentCount: load.keptNonHarmonicSegmentCount,
+        skipReasonCounts: load.skipReasonCounts,
+        recordDropReasonCounts: load.recordDropReasonCounts,
+        coverageBySourceId: load.coverageBySourceId,
+        corpusLoads: corpusLoads,
+      );
+    }
+
+    return _CuratedGoldLoadResult(
+      manifestPath: null,
+      loadedCaseCount: corpusLoads.fold<int>(
+        0,
+        (sum, load) => sum + load.loadedCaseCount,
+      ),
+      status: 'loaded',
+      corpusName: '${corpusLoads.length} corpora',
+      rawRecordCount: corpusLoads.fold<int>(
+        0,
+        (sum, load) => sum + load.rawRecordCount,
+      ),
+      skippedRecordCount: corpusLoads.fold<int>(
+        0,
+        (sum, load) => sum + load.skippedRecordCount,
+      ),
+      rawSegmentCount: corpusLoads.fold<int>(
+        0,
+        (sum, load) => sum + load.rawSegmentCount,
+      ),
+      keptSegmentCount: corpusLoads.fold<int>(
+        0,
+        (sum, load) => sum + load.keptSegmentCount,
+      ),
+      rawHarmonicSegmentCount: corpusLoads.fold<int>(
+        0,
+        (sum, load) => sum + load.rawHarmonicSegmentCount,
+      ),
+      keptHarmonicSegmentCount: corpusLoads.fold<int>(
+        0,
+        (sum, load) => sum + load.keptHarmonicSegmentCount,
+      ),
+      rawNonHarmonicSegmentCount: corpusLoads.fold<int>(
+        0,
+        (sum, load) => sum + load.rawNonHarmonicSegmentCount,
+      ),
+      keptNonHarmonicSegmentCount: corpusLoads.fold<int>(
+        0,
+        (sum, load) => sum + load.keptNonHarmonicSegmentCount,
+      ),
+      skippedSegmentCount: corpusLoads.fold<int>(
+        0,
+        (sum, load) => sum + load.skippedSegmentCount,
+      ),
+      skipReasonCounts: _mergeReasonCounts(
+        corpusLoads.map((load) => load.skipReasonCounts),
+      ),
+      recordDropReasonCounts: _mergeReasonCounts(
+        corpusLoads.map((load) => load.recordDropReasonCounts),
+      ),
+      coverageBySourceId: _mergeCoverageBySourceId(corpusLoads),
+      corpusLoads: corpusLoads,
+    );
+  }
+
   Map<String, Object?> toJson() {
     return <String, Object?>{
       'manifestPath': manifestPath,
+      'manifestPaths': manifestPaths,
       'loadedCaseCount': loadedCaseCount,
       'status': status,
       'corpusId': corpusId,
@@ -444,10 +934,81 @@ class _CuratedGoldLoadResult {
       'licenseNote': licenseNote,
       'adapterId': adapterId,
       'fixtureDirectory': fixtureDirectory,
+      'selectionManifestPath': selectionManifestPath,
+      'sourceCorpusRootPath': sourceCorpusRootPath,
+      'importMode': importMode,
       'skippedRecordCount': skippedRecordCount,
       'skippedSegmentCount': skippedSegmentCount,
+      'rawRecordCount': rawRecordCount,
+      'rawSegmentCount': rawSegmentCount,
+      'keptSegmentCount': keptSegmentCount,
+      'rawHarmonicSegmentCount': rawHarmonicSegmentCount,
+      'keptHarmonicSegmentCount': keptHarmonicSegmentCount,
+      'rawNonHarmonicSegmentCount': rawNonHarmonicSegmentCount,
+      'keptNonHarmonicSegmentCount': keptNonHarmonicSegmentCount,
+      'recordCoverageRatio': recordCoverageRatio,
+      'segmentCoverageRatio': segmentCoverageRatio,
+      'harmonicCoverageRatio': harmonicCoverageRatio,
+      'nonHarmonicRetentionRatio': nonHarmonicRetentionRatio,
+      'skipReasonCounts': skipReasonCounts,
+      'recordDropReasonCounts': recordDropReasonCounts,
+      'coverageByCorpus': {
+        for (final entry in coverageByCorpus.entries)
+          entry.key: entry.value.toJson(),
+      },
+      'coverageBySourceId': {
+        for (final entry in coverageBySourceId.entries)
+          entry.key: entry.value.toJson(),
+      },
+      'corpusLoads': [for (final load in effectiveCorpusLoads) load.toJson()],
     };
   }
+}
+
+Map<String, int> _mergeReasonCounts(Iterable<Map<String, int>> maps) {
+  final merged = <String, int>{};
+  for (final counts in maps) {
+    for (final entry in counts.entries) {
+      merged.update(
+        entry.key,
+        (value) => value + entry.value,
+        ifAbsent: () => entry.value,
+      );
+    }
+  }
+  return Map<String, int>.fromEntries(
+    merged.entries.toList()..sort((left, right) {
+      final byCount = right.value.compareTo(left.value);
+      if (byCount != 0) {
+        return byCount;
+      }
+      return left.key.compareTo(right.key);
+    }),
+  );
+}
+
+Map<String, _CoverageBreakdown> _mergeCoverageBySourceId(
+  List<_CuratedGoldCorpusLoad> corpusLoads,
+) {
+  final merged = <String, _CoverageBreakdown>{};
+  final seenKeys = <String, int>{};
+  for (final load in corpusLoads) {
+    for (final entry in load.coverageBySourceId.entries) {
+      final count = seenKeys.update(
+        entry.key,
+        (value) => value + 1,
+        ifAbsent: () => 1,
+      );
+      final mergedKey = count == 1
+          ? entry.key
+          : '${load.corpusId}::${entry.key}';
+      merged[mergedKey] = entry.value;
+    }
+  }
+  return Map<String, _CoverageBreakdown>.fromEntries(
+    merged.entries.toList()
+      ..sort((left, right) => left.key.compareTo(right.key)),
+  );
 }
 
 class _LoadedCuratedGoldCases {
@@ -534,12 +1095,15 @@ class _BenchmarkCase {
     this.requiredRemarks = const [],
     this.requiredEvidence = const [],
     this.expectedPartialFailure = false,
+    this.expectedNoChordEventCount = 0,
     this.benchmarkClass = _BenchmarkClass.workbookProxy,
     this.sourceId = 'internal_proxy',
     this.sourceLabel = 'internal_proxy',
     this.corpusId,
     this.corpusName,
     this.annotationLevel,
+    this.keyScope,
+    this.segmentationScope,
     this.comparisonProfile = const _ComparisonProfile(),
     this.failureHints = const [],
     this.notes = const [],
@@ -559,12 +1123,15 @@ class _BenchmarkCase {
   final List<(int, ProgressionRemarkKind)> requiredRemarks;
   final List<(int, ProgressionEvidenceKind)> requiredEvidence;
   final bool expectedPartialFailure;
+  final int expectedNoChordEventCount;
   final _BenchmarkClass benchmarkClass;
   final String sourceId;
   final String sourceLabel;
   final String? corpusId;
   final String? corpusName;
   final String? annotationLevel;
+  final String? keyScope;
+  final String? segmentationScope;
   final _ComparisonProfile comparisonProfile;
   final List<_FailureTaxonomy> failureHints;
   final List<String> notes;
@@ -578,9 +1145,16 @@ class _CaseResult {
     required this.relaxedKeyMatch,
     required this.modeMatch,
     required this.partialFailureMatch,
+    required this.noChordEventMatch,
+    required this.noChordSensitiveCase,
     required this.exactPass,
-    required this.matchedRomanTokens,
-    required this.totalRomanTokens,
+    required this.matchedNoChordEvents,
+    required this.totalNoChordEvents,
+    required this.actualNoChordEventCount,
+    required this.matchedSurfaceRomanTokens,
+    required this.totalSurfaceRomanTokens,
+    required this.matchedCanonicalRomanTokens,
+    required this.totalCanonicalRomanTokens,
     required this.matchedRelaxedRomanTokens,
     required this.totalRelaxedRomanTokens,
     required this.matchedFunctionTokens,
@@ -600,6 +1174,7 @@ class _CaseResult {
     required this.actualPartialFailure,
     required this.segmentComparisons,
     required this.modulationDiagnostics,
+    required this.keyDiagnostics,
     required this.failureCategories,
     required this.likelyRootCauses,
     required this.failures,
@@ -611,9 +1186,16 @@ class _CaseResult {
   final bool relaxedKeyMatch;
   final bool modeMatch;
   final bool partialFailureMatch;
+  final bool noChordEventMatch;
+  final bool noChordSensitiveCase;
   final bool exactPass;
-  final int matchedRomanTokens;
-  final int totalRomanTokens;
+  final int matchedNoChordEvents;
+  final int totalNoChordEvents;
+  final int actualNoChordEventCount;
+  final int matchedSurfaceRomanTokens;
+  final int totalSurfaceRomanTokens;
+  final int matchedCanonicalRomanTokens;
+  final int totalCanonicalRomanTokens;
   final int matchedRelaxedRomanTokens;
   final int totalRelaxedRomanTokens;
   final int matchedFunctionTokens;
@@ -633,9 +1215,12 @@ class _CaseResult {
   final bool actualPartialFailure;
   final List<_SegmentComparison> segmentComparisons;
   final _ModulationDiagnostics modulationDiagnostics;
+  final _KeyDiagnostics keyDiagnostics;
   final List<_FailureTaxonomy> failureCategories;
   final List<String> likelyRootCauses;
   final List<String> failures;
+
+  bool get notationOnlyKeyMiss => !keyMatch && relaxedKeyMatch;
 
   Map<String, Object?> toJson() {
     return <String, Object?>{
@@ -651,6 +1236,8 @@ class _CaseResult {
       'corpusId': benchmarkCase.corpusId,
       'corpusName': benchmarkCase.corpusName,
       'annotationLevel': benchmarkCase.annotationLevel,
+      'keyScope': benchmarkCase.keyScope,
+      'segmentationScope': benchmarkCase.segmentationScope,
       'expected': {
         'key': benchmarkCase.expectedKey,
         'mode': benchmarkCase.expectedMode.name,
@@ -669,6 +1256,7 @@ class _CaseResult {
             {'index': requirement.$1, 'kind': requirement.$2.name},
         ],
         'partialFailure': benchmarkCase.expectedPartialFailure,
+        'noChordEventCount': benchmarkCase.expectedNoChordEventCount,
         'comparisonProfile': benchmarkCase.comparisonProfile.toJson(),
         'failureHints': [
           for (final category in benchmarkCase.failureHints) category.label,
@@ -681,16 +1269,33 @@ class _CaseResult {
         'romans': actualRomans,
         'tags': actualTags,
         'partialFailure': actualPartialFailure,
+        'noChordEventCount': actualNoChordEventCount,
       },
       'elapsedMicroseconds': elapsedMicroseconds,
       'checks': {
         'keyMatch': keyMatch,
         'relaxedKeyMatch': relaxedKeyMatch,
+        'notationOnlyKeyMiss': notationOnlyKeyMiss,
         'modeMatch': modeMatch,
         'partialFailureMatch': partialFailureMatch,
+        'noChordEventMatch': noChordEventMatch,
+        'noChordSensitiveCase': noChordSensitiveCase,
+        'noChordEvents': {
+          'matched': matchedNoChordEvents,
+          'total': totalNoChordEvents,
+          'actual': actualNoChordEventCount,
+        },
+        'romanSurfaceExact': {
+          'matched': matchedSurfaceRomanTokens,
+          'total': totalSurfaceRomanTokens,
+        },
         'romanTokenMatch': {
-          'matched': matchedRomanTokens,
-          'total': totalRomanTokens,
+          'matched': matchedCanonicalRomanTokens,
+          'total': totalCanonicalRomanTokens,
+        },
+        'romanCanonicalExact': {
+          'matched': matchedCanonicalRomanTokens,
+          'total': totalCanonicalRomanTokens,
         },
         'relaxedRomanTokenMatch': {
           'matched': matchedRelaxedRomanTokens,
@@ -711,6 +1316,7 @@ class _CaseResult {
         for (final comparison in segmentComparisons) comparison.toJson(),
       ],
       'modulationDiagnostics': modulationDiagnostics.toJson(),
+      'keyDiagnostics': keyDiagnostics.toJson(),
       'failureCategories': [
         for (final category in failureCategories) category.label,
       ],
@@ -728,8 +1334,14 @@ class _AggregateMetrics {
     required this.relaxedKeyMatches,
     required this.modeMatches,
     required this.partialFailureMatches,
-    required this.matchedRomanTokens,
-    required this.totalRomanTokens,
+    required this.noChordEventMatches,
+    required this.totalNoChordSensitiveCases,
+    required this.matchedNoChordEvents,
+    required this.totalNoChordEvents,
+    required this.matchedSurfaceRomanTokens,
+    required this.totalSurfaceRomanTokens,
+    required this.matchedCanonicalRomanTokens,
+    required this.totalCanonicalRomanTokens,
     required this.matchedRelaxedRomanTokens,
     required this.totalRelaxedRomanTokens,
     required this.matchedFunctionTokens,
@@ -751,8 +1363,14 @@ class _AggregateMetrics {
   final int relaxedKeyMatches;
   final int modeMatches;
   final int partialFailureMatches;
-  final int matchedRomanTokens;
-  final int totalRomanTokens;
+  final int noChordEventMatches;
+  final int totalNoChordSensitiveCases;
+  final int matchedNoChordEvents;
+  final int totalNoChordEvents;
+  final int matchedSurfaceRomanTokens;
+  final int totalSurfaceRomanTokens;
+  final int matchedCanonicalRomanTokens;
+  final int totalCanonicalRomanTokens;
   final int matchedRelaxedRomanTokens;
   final int totalRelaxedRomanTokens;
   final int matchedFunctionTokens;
@@ -779,8 +1397,19 @@ class _AggregateMetrics {
   double get partialFailureExpectationAccuracy =>
       _safeDivide(partialFailureMatches, caseCount);
 
-  double get romanTokenAccuracy =>
-      _safeDivide(matchedRomanTokens, totalRomanTokens);
+  double get noChordCaseAccuracy =>
+      _safeDivide(noChordEventMatches, totalNoChordSensitiveCases);
+
+  double get noChordEventAccuracy =>
+      _safeDivide(matchedNoChordEvents, totalNoChordEvents);
+
+  double get romanSurfaceExactAccuracy =>
+      _safeDivide(matchedSurfaceRomanTokens, totalSurfaceRomanTokens);
+
+  double get romanCanonicalExactAccuracy =>
+      _safeDivide(matchedCanonicalRomanTokens, totalCanonicalRomanTokens);
+
+  double get romanTokenAccuracy => romanCanonicalExactAccuracy;
 
   double get relaxedRomanTokenAccuracy =>
       _safeDivide(matchedRelaxedRomanTokens, totalRelaxedRomanTokens);
@@ -806,9 +1435,25 @@ class _AggregateMetrics {
       'relaxedKeyAccuracy': relaxedKeyAccuracy,
       'modeAccuracy': modeAccuracy,
       'partialFailureExpectationAccuracy': partialFailureExpectationAccuracy,
+      'noChordCaseAccuracy': _nullableDivide(
+        noChordEventMatches,
+        totalNoChordSensitiveCases,
+      ),
+      'noChordEventAccuracy': _nullableDivide(
+        matchedNoChordEvents,
+        totalNoChordEvents,
+      ),
+      'romanSurfaceExactAccuracy': _nullableDivide(
+        matchedSurfaceRomanTokens,
+        totalSurfaceRomanTokens,
+      ),
+      'romanCanonicalExactAccuracy': _nullableDivide(
+        matchedCanonicalRomanTokens,
+        totalCanonicalRomanTokens,
+      ),
       'romanTokenAccuracy': _nullableDivide(
-        matchedRomanTokens,
-        totalRomanTokens,
+        matchedCanonicalRomanTokens,
+        totalCanonicalRomanTokens,
       ),
       'relaxedRomanTokenAccuracy': _nullableDivide(
         matchedRelaxedRomanTokens,
@@ -827,9 +1472,13 @@ class _AggregateMetrics {
       ),
       'meanLatencyMilliseconds': meanLatencyMilliseconds,
       'totals': {
-        'romanTokens': totalRomanTokens,
+        'surfaceRomanTokens': totalSurfaceRomanTokens,
+        'canonicalRomanTokens': totalCanonicalRomanTokens,
+        'romanTokens': totalCanonicalRomanTokens,
         'relaxedRomanTokens': totalRelaxedRomanTokens,
         'functionTokens': totalFunctionTokens,
+        'noChordSensitiveCases': totalNoChordSensitiveCases,
+        'noChordEvents': totalNoChordEvents,
         'tags': totalTags,
         'remarks': totalRemarks,
         'evidence': totalEvidence,
@@ -934,6 +1583,8 @@ class _BenchmarkReport {
     required this.externalGoldByCorpus,
     required this.externalGoldBySourceId,
     required this.externalGoldByAnnotationLevel,
+    required this.externalGoldByKeyScope,
+    required this.externalGoldBySegmentationScope,
     required this.failures,
     required this.externalGoldFailures,
     required this.curatedGoldLoad,
@@ -955,6 +1606,8 @@ class _BenchmarkReport {
   final Map<String, _AggregateMetrics> externalGoldByCorpus;
   final Map<String, _AggregateMetrics> externalGoldBySourceId;
   final Map<String, _AggregateMetrics> externalGoldByAnnotationLevel;
+  final Map<String, _AggregateMetrics> externalGoldByKeyScope;
+  final Map<String, _AggregateMetrics> externalGoldBySegmentationScope;
   final List<_CaseResult> failures;
   final List<_CaseResult> externalGoldFailures;
   final _CuratedGoldLoadResult curatedGoldLoad;
@@ -1005,6 +1658,40 @@ class _BenchmarkReport {
             for (final entry in externalGoldByAnnotationLevel.entries)
               entry.key: entry.value.toJson(),
           },
+          'byKeyScope': {
+            for (final entry in externalGoldByKeyScope.entries)
+              entry.key: entry.value.toJson(),
+          },
+          'bySegmentationScope': {
+            for (final entry in externalGoldBySegmentationScope.entries)
+              entry.key: entry.value.toJson(),
+          },
+          'majorFailureClusters': _majorFailureClusters(
+            failures: externalGoldFailures,
+            bySource: externalGoldBySourceId,
+          ),
+          'surfaceNotationGapCases': [
+            for (final entry in _surfaceNotationGapEntries(
+              externalGoldBySourceId,
+            ))
+              {
+                'bucket': entry.key,
+                'matchedSurfaceRomanTokens':
+                    entry.value.matchedSurfaceRomanTokens,
+                'totalSurfaceRomanTokens': entry.value.totalSurfaceRomanTokens,
+                'matchedCanonicalRomanTokens':
+                    entry.value.matchedCanonicalRomanTokens,
+                'totalCanonicalRomanTokens':
+                    entry.value.totalCanonicalRomanTokens,
+                'surfaceRomanExactAccuracy':
+                    entry.value.romanSurfaceExactAccuracy,
+                'canonicalRomanExactAccuracy':
+                    entry.value.romanCanonicalExactAccuracy,
+                'accuracyGap':
+                    entry.value.romanCanonicalExactAccuracy -
+                    entry.value.romanSurfaceExactAccuracy,
+              },
+          ],
           'failures': [
             for (final failure in externalGoldFailures) failure.toJson(),
           ],
@@ -1040,8 +1727,22 @@ class _BenchmarkReport {
         '- External gold headline: '
         '${_formatPercent(externalGoldOverall.exactProgressionPassRate)} exact pass, '
         '${_formatPercent(externalGoldOverall.keyAccuracy)} key accuracy, '
-        '${_formatConditionalPercent(externalGoldOverall.matchedRomanTokens, externalGoldOverall.totalRomanTokens)} Roman exact.',
+        '${_formatConditionalPercent(externalGoldOverall.matchedCanonicalRomanTokens, externalGoldOverall.totalCanonicalRomanTokens)} Roman canonical exact.',
       );
+      if (externalGoldOverall.relaxedKeyAccuracy >
+          externalGoldOverall.keyAccuracy) {
+        buffer.writeln(
+          '- Relaxed key accuracy is ${_formatPercent(externalGoldOverall.relaxedKeyAccuracy)}, which separates notation-only key spelling gaps from true key-center misses.',
+        );
+      }
+      if (curatedGoldLoad.rawNonHarmonicSegmentCount > 0) {
+        buffer.writeln(
+          '- External no-chord handling: '
+          '${curatedGoldLoad.keptNonHarmonicSegmentCount}/${curatedGoldLoad.rawNonHarmonicSegmentCount} non-harmonic segments retained '
+          '(${_formatOptionalPercent(curatedGoldLoad.nonHarmonicRetentionRatio)}), with harmonic coverage at '
+          '${_formatOptionalPercent(curatedGoldLoad.harmonicCoverageRatio)}.',
+        );
+      }
     } else {
       buffer.writeln(
         '- Important note: the workbook is a source inventory and test-plan document, not a bundled labeled corpus. '
@@ -1053,8 +1754,33 @@ class _BenchmarkReport {
       '- External gold status: ${curatedGoldLoad.status} '
       '(${curatedGoldLoad.loadedCaseCount} cases loaded)',
     );
-    if (curatedGoldLoad.corpusName != null && curatedGoldLoad.corpusName!.isNotEmpty) {
+    if (curatedGoldLoad.effectiveCorpusLoads.length == 1 &&
+        curatedGoldLoad.corpusName != null &&
+        curatedGoldLoad.corpusName!.isNotEmpty) {
       buffer.writeln('- External gold corpus: ${curatedGoldLoad.corpusName}');
+    } else if (curatedGoldLoad.effectiveCorpusLoads.length > 1) {
+      buffer.writeln(
+        '- External gold corpora: ${curatedGoldLoad.effectiveCorpusLoads.map((load) => load.corpusName).join('; ')}',
+      );
+    }
+    if (curatedGoldLoad.rawRecordCount > 0 ||
+        curatedGoldLoad.rawSegmentCount > 0) {
+      buffer.writeln(
+        '- External gold coverage: '
+        '${curatedGoldLoad.loadedCaseCount}/${curatedGoldLoad.rawRecordCount} records kept '
+        '(${_formatOptionalPercent(curatedGoldLoad.recordCoverageRatio)}), '
+        '${curatedGoldLoad.keptSegmentCount}/${curatedGoldLoad.rawSegmentCount} segments kept '
+        '(${_formatOptionalPercent(curatedGoldLoad.segmentCoverageRatio)})',
+      );
+      if (curatedGoldLoad.rawNonHarmonicSegmentCount > 0) {
+        buffer.writeln(
+          '- External harmonic/non-harmonic split: '
+          '${curatedGoldLoad.keptHarmonicSegmentCount}/${curatedGoldLoad.rawHarmonicSegmentCount} harmonic segments kept '
+          '(${_formatOptionalPercent(curatedGoldLoad.harmonicCoverageRatio)}), '
+          '${curatedGoldLoad.keptNonHarmonicSegmentCount}/${curatedGoldLoad.rawNonHarmonicSegmentCount} non-harmonic segments retained '
+          '(${_formatOptionalPercent(curatedGoldLoad.nonHarmonicRetentionRatio)}).',
+        );
+      }
     }
     if (curatedGoldLoad.skippedRecordCount > 0 ||
         curatedGoldLoad.skippedSegmentCount > 0) {
@@ -1070,11 +1796,16 @@ class _BenchmarkReport {
       '- The workbook proxy benchmark measures internal consistency, regression stability, and coverage of known harmonic situations.',
     );
     buffer.writeln(
-      '- It does not by itself prove external generalization across McGill Billboard, Isophonics, JAAH, When in Rome, or DCML-style annotations.',
+      '- Even with these external slices, this run still does not by itself prove generalization across full McGill Billboard, JAAH, WJazzD, or full-scale Isophonics/When in Rome/DCML coverage.',
     );
     buffer.writeln(
       '- Exact progression pass is intentionally preserved, but it is now paired with relaxed Roman/function comparison, modulation diagnostics, and segment-level mismatch reporting.',
     );
+    if (curatedGoldLoad.loadedCaseCount > 0) {
+      buffer.writeln(
+        '- The current external layer mixes local-excerpt symbolic classical gold with global-movement audio-aligned pop gold, so metrics must be read with annotation scope in mind.',
+      );
+    }
     buffer.writeln(
       '- The `gold-classical-c-real-modulation` miss matters because it suggests ending bias and a soft boundary between local tonicization evidence and true modulation when the global key summary is chosen.',
     );
@@ -1092,25 +1823,81 @@ class _BenchmarkReport {
     if (curatedGoldLoad.loadedCaseCount == 0) {
       buffer.writeln('- No external gold cases were loaded in this run.');
     } else {
-      buffer.writeln('- Manifest path: `${curatedGoldLoad.manifestPath}`');
-      buffer.writeln('- Corpus id: `${curatedGoldLoad.corpusId}`');
-      buffer.writeln('- Corpus name: ${curatedGoldLoad.corpusName}');
-      if (curatedGoldLoad.fixtureDirectory != null &&
-          curatedGoldLoad.fixtureDirectory!.isNotEmpty) {
+      if (curatedGoldLoad.manifestPaths.isNotEmpty) {
         buffer.writeln(
-          '- Fixture/import directory: `${curatedGoldLoad.fixtureDirectory}`',
+          '- Manifest paths: ${curatedGoldLoad.manifestPaths.map((path) => '`$path`').join(', ')}',
         );
       }
-      if (curatedGoldLoad.adapterId != null &&
-          curatedGoldLoad.adapterId!.isNotEmpty) {
-        buffer.writeln('- Adapter: `${curatedGoldLoad.adapterId}`');
+      if (curatedGoldLoad.effectiveCorpusLoads.isNotEmpty) {
+        buffer.writeln(
+          '- Corpora loaded: ${curatedGoldLoad.effectiveCorpusLoads.map((load) => '`${load.corpusId}` (${load.corpusName})').join(', ')}',
+        );
       }
       buffer.writeln(
-        '- Loaded cases: ${curatedGoldLoad.loadedCaseCount}; skipped records: '
-        '${curatedGoldLoad.skippedRecordCount}; skipped segments: '
+        '- Raw records: ${curatedGoldLoad.rawRecordCount}; loaded records: '
+        '${curatedGoldLoad.loadedCaseCount}; skipped records: '
+        '${curatedGoldLoad.skippedRecordCount}',
+      );
+      buffer.writeln(
+        '- Raw segments: ${curatedGoldLoad.rawSegmentCount}; kept segments: '
+        '${curatedGoldLoad.keptSegmentCount}; skipped segments: '
         '${curatedGoldLoad.skippedSegmentCount}',
       );
-      if (curatedGoldLoad.licenseNote != null &&
+      if (curatedGoldLoad.rawNonHarmonicSegmentCount > 0) {
+        buffer.writeln(
+          '- Harmonic/non-harmonic segments: '
+          '${curatedGoldLoad.rawHarmonicSegmentCount} harmonic raw, '
+          '${curatedGoldLoad.keptHarmonicSegmentCount} harmonic kept; '
+          '${curatedGoldLoad.rawNonHarmonicSegmentCount} non-harmonic raw, '
+          '${curatedGoldLoad.keptNonHarmonicSegmentCount} non-harmonic kept',
+        );
+      }
+      buffer.writeln(
+        '- Coverage ratio: records ${_formatOptionalPercent(curatedGoldLoad.recordCoverageRatio)}, '
+        'segments ${_formatOptionalPercent(curatedGoldLoad.segmentCoverageRatio)}'
+        '${curatedGoldLoad.rawNonHarmonicSegmentCount > 0 ? ', harmonic ${_formatOptionalPercent(curatedGoldLoad.harmonicCoverageRatio)}, non-harmonic ${_formatOptionalPercent(curatedGoldLoad.nonHarmonicRetentionRatio)}' : ''}',
+      );
+      if (curatedGoldLoad.effectiveCorpusLoads.isNotEmpty) {
+        for (final load in curatedGoldLoad.effectiveCorpusLoads) {
+          buffer.writeln(
+            '- `${load.corpusId}`: ${load.loadedCaseCount}/${load.rawRecordCount} records '
+            '(${_formatOptionalPercent(load.recordCoverageRatio)}), '
+            '${load.keptSegmentCount}/${load.rawSegmentCount} segments '
+            '(${_formatOptionalPercent(load.segmentCoverageRatio)})'
+            '${load.rawNonHarmonicSegmentCount > 0 ? '; harmonic ${load.keptHarmonicSegmentCount}/${load.rawHarmonicSegmentCount} (${_formatOptionalPercent(load.harmonicCoverageRatio)}), non-harmonic ${load.keptNonHarmonicSegmentCount}/${load.rawNonHarmonicSegmentCount} (${_formatOptionalPercent(load.nonHarmonicRetentionRatio)})' : ''}',
+          );
+          if (load.adapterId != null && load.adapterId!.isNotEmpty) {
+            buffer.writeln('  Adapter: `${load.adapterId}`');
+          }
+          if (load.importMode != null && load.importMode!.isNotEmpty) {
+            buffer.writeln('  Import mode: `${load.importMode}`');
+          }
+          if (load.manifestPath != null && load.manifestPath!.isNotEmpty) {
+            buffer.writeln('  Manifest: `${load.manifestPath}`');
+          }
+          if (load.selectionManifestPath != null &&
+              load.selectionManifestPath!.isNotEmpty) {
+            buffer.writeln(
+              '  Selection manifest: `${load.selectionManifestPath}`',
+            );
+          }
+          if (load.sourceCorpusRootPath != null &&
+              load.sourceCorpusRootPath!.isNotEmpty) {
+            buffer.writeln(
+              '  Source corpus root: `${load.sourceCorpusRootPath}`',
+            );
+          }
+          if (load.fixtureDirectory != null &&
+              load.fixtureDirectory!.isNotEmpty) {
+            buffer.writeln(
+              '  Fixture/import directory: `${load.fixtureDirectory}`',
+            );
+          }
+          if (load.licenseNote != null && load.licenseNote!.isNotEmpty) {
+            buffer.writeln('  License note: ${load.licenseNote}');
+          }
+        }
+      } else if (curatedGoldLoad.licenseNote != null &&
           curatedGoldLoad.licenseNote!.isNotEmpty) {
         buffer.writeln('- License note: ${curatedGoldLoad.licenseNote}');
       }
@@ -1122,6 +1909,44 @@ class _BenchmarkReport {
       if (externalGoldByAnnotationLevel.isNotEmpty) {
         buffer.writeln(
           '- Annotation levels: ${externalGoldByAnnotationLevel.keys.join(', ')}',
+        );
+      }
+      if (externalGoldByAnnotationLevel.containsKey('surface')) {
+        buffer.writeln(
+          '- Surface-only corpora contribute to key/mode/resolved-symbol evaluation, but Roman/function metrics remain `n/a` when the source annotation does not include those labels.',
+        );
+      }
+      if (externalGoldByKeyScope.isNotEmpty) {
+        buffer.writeln(
+          '- Key scopes: ${externalGoldByKeyScope.keys.join(', ')}',
+        );
+      }
+      if (curatedGoldLoad.recordDropReasonCounts.isNotEmpty) {
+        buffer.writeln(
+          '- Record drop reasons: ${_reasonSummary(curatedGoldLoad.recordDropReasonCounts)}',
+        );
+      }
+      if (curatedGoldLoad.skipReasonCounts.isNotEmpty) {
+        buffer.writeln(
+          '- Segment skip reasons: ${_reasonSummary(curatedGoldLoad.skipReasonCounts)}',
+        );
+      }
+      if (curatedGoldLoad.rawRecordCount > 0) {
+        buffer.writeln('');
+        if (curatedGoldLoad.coverageByCorpus.isNotEmpty) {
+          buffer.writeln(
+            _coverageTable(
+              'Coverage By Corpus',
+              curatedGoldLoad.coverageByCorpus,
+            ),
+          );
+          buffer.writeln('');
+        }
+        buffer.writeln(
+          _coverageTable(
+            'Coverage By Source Id',
+            curatedGoldLoad.coverageBySourceId,
+          ),
         );
       }
     }
@@ -1175,9 +2000,61 @@ class _BenchmarkReport {
       );
       buffer.writeln('');
       buffer.writeln(
+        _aggregateTable('External Gold By Key Scope', externalGoldByKeyScope),
+      );
+      buffer.writeln('');
+      buffer.writeln(
+        _aggregateTable(
+          'External Gold By Segmentation Scope',
+          externalGoldBySegmentationScope,
+        ),
+      );
+      buffer.writeln('');
+      buffer.writeln(
+        _breakdownTable('External Gold Key/Mode/Function', {
+          'External gold': externalGoldOverall,
+        }),
+      );
+      buffer.writeln('');
+      buffer.writeln(
         _breakdownTable(
-          'External Gold Key/Mode/Function',
-          {'External gold': externalGoldOverall},
+          'External Gold By Corpus Raw/Canonical',
+          externalGoldByCorpus,
+        ),
+      );
+      buffer.writeln('');
+      buffer.writeln(
+        _breakdownTable(
+          'External Gold By Source Id Raw/Canonical',
+          externalGoldBySourceId,
+        ),
+      );
+      buffer.writeln('');
+      buffer.writeln(
+        _breakdownTable(
+          'External Gold By Annotation Level Raw/Canonical',
+          externalGoldByAnnotationLevel,
+        ),
+      );
+      buffer.writeln('');
+      buffer.writeln(
+        _breakdownTable(
+          'External Gold By Key Scope Raw/Canonical',
+          externalGoldByKeyScope,
+        ),
+      );
+      buffer.writeln('');
+      buffer.writeln(
+        _breakdownTable(
+          'External Gold By Segmentation Scope Raw/Canonical',
+          externalGoldBySegmentationScope,
+        ),
+      );
+      buffer.writeln('');
+      buffer.writeln(
+        _surfaceNotationGapTable(
+          'External Gold Surface-vs-Canonical Gaps',
+          externalGoldBySourceId,
         ),
       );
       buffer.writeln('');
@@ -1187,6 +2064,22 @@ class _BenchmarkReport {
     buffer.writeln(_breakdownTable('Overall', {'Overall': overall}));
     buffer.writeln('');
     buffer.writeln(_breakdownTable('By Benchmark Class', byClass));
+    buffer.writeln('');
+    buffer.writeln('## Major Failure Clusters');
+    buffer.writeln('');
+    final externalMajorFailureClusters = _majorFailureClusters(
+      failures: externalGoldFailures,
+      bySource: externalGoldBySourceId,
+    );
+    if (externalMajorFailureClusters.isEmpty) {
+      buffer.writeln(
+        '- No external-gold failure clusters were large enough to summarize in this run.',
+      );
+    } else {
+      for (final entry in externalMajorFailureClusters.entries) {
+        buffer.writeln('- `${entry.key}`: ${entry.value} external cases');
+      }
+    }
     buffer.writeln('');
     if (failures.isEmpty) {
       buffer.writeln('## Failure Cases');
@@ -1202,8 +2095,18 @@ class _BenchmarkReport {
         buffer.writeln('  Progression: `${failure.benchmarkCase.progression}`');
         buffer.writeln('  Issues: ${failure.failures.join('; ')}');
         buffer.writeln(
-          '  Failure taxonomy: ${failure.failureCategories.map((item) => item.label).join(', ')}',
+          '  Key verdict: strict=${failure.keyMatch ? 'match' : 'mismatch'}, '
+          'relaxed=${failure.relaxedKeyMatch ? 'match' : 'mismatch'}',
         );
+        buffer.writeln(
+          '  Failure taxonomy: ${_taxonomySummary(failure.failureCategories)}',
+        );
+        buffer.writeln('  Key diagnostics: ${failure.keyDiagnostics.summary}');
+        if (failure.noChordSensitiveCase) {
+          buffer.writeln(
+            '  No-chord events: expected ${failure.totalNoChordEvents}, got ${failure.actualNoChordEventCount}',
+          );
+        }
         if (failure.segmentComparisons.any(
           (comparison) => comparison.hasMismatch,
         )) {
@@ -1212,7 +2115,7 @@ class _BenchmarkReport {
           )) {
             buffer.writeln(
               '  Segment ${comparison.index}: expected '
-              '${comparison.expectedRoman ?? comparison.expectedResolvedSymbol ?? '<unspecified>'} '
+              '${comparison.expectedCanonicalRoman ?? comparison.expectedResolvedSymbol ?? '<unspecified>'} '
               'but got ${comparison.actualRoman ?? comparison.actualResolvedSymbol ?? '<missing>'} '
               '(${comparison.mismatchReasons.join(', ')})',
             );
@@ -1225,9 +2128,13 @@ class _BenchmarkReport {
     buffer.writeln('');
     if (externalGoldFailures.isEmpty) {
       if (externalGoldOverall.caseCount == 0) {
-        buffer.writeln('No external gold cases were loaded, so no external gold failures were evaluated.');
+        buffer.writeln(
+          'No external gold cases were loaded, so no external gold failures were evaluated.',
+        );
       } else {
-        buffer.writeln('No external gold exact-pass failures were observed in this run.');
+        buffer.writeln(
+          'No external gold exact-pass failures were observed in this run.',
+        );
       }
     } else {
       for (final failure in externalGoldFailures) {
@@ -1238,8 +2145,33 @@ class _BenchmarkReport {
         buffer.writeln('  Progression: `${failure.benchmarkCase.progression}`');
         buffer.writeln('  Issues: ${failure.failures.join('; ')}');
         buffer.writeln(
-          '  Failure taxonomy: ${failure.failureCategories.map((item) => item.label).join(', ')}',
+          '  Key verdict: strict=${failure.keyMatch ? 'match' : 'mismatch'}, '
+          'relaxed=${failure.relaxedKeyMatch ? 'match' : 'mismatch'}',
         );
+        buffer.writeln(
+          '  Failure taxonomy: ${_taxonomySummary(failure.failureCategories)}',
+        );
+        buffer.writeln('  Key diagnostics: ${failure.keyDiagnostics.summary}');
+        if (failure.noChordSensitiveCase) {
+          buffer.writeln(
+            '  No-chord events: expected ${failure.totalNoChordEvents}, got ${failure.actualNoChordEventCount}',
+          );
+        }
+        if (failure.segmentComparisons.any(
+          (comparison) => comparison.hasMismatch,
+        )) {
+          for (final comparison in failure.segmentComparisons.where(
+            (comparison) => comparison.hasMismatch,
+          )) {
+            buffer.writeln(
+              '  Segment ${comparison.index}: surface='
+              '${comparison.expectedSurfaceRoman ?? '<n/a>'}, canonical='
+              '${comparison.expectedCanonicalRoman ?? '<n/a>'}, analyzer='
+              '${comparison.actualRoman ?? '<missing>'} '
+              '(${comparison.mismatchReasons.join(', ')})',
+            );
+          }
+        }
       }
     }
     buffer.writeln('');
@@ -1282,6 +2214,8 @@ class _Args {
     required this.longRuns,
     required this.longChordTarget,
     required this.curatedGoldManifestPath,
+    this.abcSourceRootPath,
+    this.whenInRomeSourceRootPath,
     this.sourceWorkbookPath,
   });
 
@@ -1291,6 +2225,8 @@ class _Args {
   final int longRuns;
   final int longChordTarget;
   final String? curatedGoldManifestPath;
+  final String? abcSourceRootPath;
+  final String? whenInRomeSourceRootPath;
   final String? sourceWorkbookPath;
 
   static _Args parseEnvironment(Map<String, String> environment) {
@@ -1317,6 +2253,10 @@ class _Args {
           _defaultLongChordTarget,
       curatedGoldManifestPath:
           environment['CHORD_ANALYZER_BENCHMARK_CURATED_GOLD_MANIFEST'],
+      abcSourceRootPath:
+          environment['CHORD_ANALYZER_BENCHMARK_ABC_SOURCE_ROOT'],
+      whenInRomeSourceRootPath:
+          environment['CHORD_ANALYZER_BENCHMARK_WIR_SOURCE_ROOT'],
       sourceWorkbookPath: environment['CHORD_ANALYZER_BENCHMARK_SOURCE_XLSX'],
     );
   }
@@ -1370,13 +2310,23 @@ _CaseResult _evaluateCase(
         fallbackProfile: benchmarkCase.comparisonProfile,
       ),
   ];
-  final matchedRomanTokens = segmentComparisons
+  final matchedSurfaceRomanTokens = segmentComparisons
+      .where(
+        (comparison) =>
+            comparison.expectedSurfaceRoman != null &&
+            comparison.surfaceRomanExactMatch,
+      )
+      .length;
+  final totalSurfaceRomanTokens = segmentComparisons
+      .where((comparison) => comparison.expectedSurfaceRoman != null)
+      .length;
+  final matchedCanonicalRomanTokens = segmentComparisons
       .where(
         (comparison) =>
             comparison.expectedRoman != null && comparison.exactRomanMatch,
       )
       .length;
-  final totalRomanTokens = segmentComparisons
+  final totalCanonicalRomanTokens = segmentComparisons
       .where((comparison) => comparison.expectedRoman != null)
       .length;
   final matchedRelaxedRomanTokens = segmentComparisons
@@ -1385,7 +2335,7 @@ _CaseResult _evaluateCase(
             comparison.expectedRoman != null && comparison.relaxedRomanMatch,
       )
       .length;
-  final totalRelaxedRomanTokens = totalRomanTokens;
+  final totalRelaxedRomanTokens = totalCanonicalRomanTokens;
   final matchedFunctionTokens = segmentComparisons
       .where(
         (comparison) =>
@@ -1456,6 +2406,20 @@ _CaseResult _evaluateCase(
       '${analysis.parseResult.hasPartialFailure}',
     );
   }
+  final actualNoChordEventCount = _countNoChordParseIssues(analysis);
+  final noChordSensitiveCase = benchmarkCase.expectedNoChordEventCount > 0;
+  final noChordEventMatch =
+      actualNoChordEventCount == benchmarkCase.expectedNoChordEventCount;
+  final matchedNoChordEvents =
+      actualNoChordEventCount < benchmarkCase.expectedNoChordEventCount
+      ? actualNoChordEventCount
+      : benchmarkCase.expectedNoChordEventCount;
+  if (noChordSensitiveCase && !noChordEventMatch) {
+    failures.add(
+      'expected noChordEvents=${benchmarkCase.expectedNoChordEventCount}, got '
+      '$actualNoChordEventCount',
+    );
+  }
 
   final modulationDiagnostics = _buildModulationDiagnostics(
     benchmarkCase: benchmarkCase,
@@ -1477,10 +2441,16 @@ _CaseResult _evaluateCase(
           segmentComparisons: segmentComparisons,
           modulationDiagnostics: modulationDiagnostics,
           analysis: analysis,
+          keyMatch: keyMatch,
+          relaxedKeyMatch: relaxedKeyMatch,
         );
   final likelyRootCauses = [
     for (final category in failureCategories) category.rootCause,
   ];
+  final keyDiagnostics = _buildKeyDiagnostics(
+    benchmarkCase: benchmarkCase,
+    analysis: analysis,
+  );
 
   return _CaseResult(
     benchmarkCase: benchmarkCase,
@@ -1489,9 +2459,16 @@ _CaseResult _evaluateCase(
     relaxedKeyMatch: relaxedKeyMatch,
     modeMatch: modeMatch,
     partialFailureMatch: partialFailureMatch,
+    noChordEventMatch: noChordEventMatch,
+    noChordSensitiveCase: noChordSensitiveCase,
     exactPass: failures.isEmpty,
-    matchedRomanTokens: matchedRomanTokens,
-    totalRomanTokens: totalRomanTokens,
+    matchedNoChordEvents: matchedNoChordEvents,
+    totalNoChordEvents: benchmarkCase.expectedNoChordEventCount,
+    actualNoChordEventCount: actualNoChordEventCount,
+    matchedSurfaceRomanTokens: matchedSurfaceRomanTokens,
+    totalSurfaceRomanTokens: totalSurfaceRomanTokens,
+    matchedCanonicalRomanTokens: matchedCanonicalRomanTokens,
+    totalCanonicalRomanTokens: totalCanonicalRomanTokens,
     matchedRelaxedRomanTokens: matchedRelaxedRomanTokens,
     totalRelaxedRomanTokens: totalRelaxedRomanTokens,
     matchedFunctionTokens: matchedFunctionTokens,
@@ -1511,6 +2488,7 @@ _CaseResult _evaluateCase(
     actualPartialFailure: analysis.parseResult.hasPartialFailure,
     segmentComparisons: segmentComparisons,
     modulationDiagnostics: modulationDiagnostics,
+    keyDiagnostics: keyDiagnostics,
     failureCategories: failureCategories,
     likelyRootCauses: likelyRootCauses,
     failures: failures,
@@ -1532,13 +2510,37 @@ _AggregateMetrics _aggregateResults(Iterable<_CaseResult> results) {
     partialFailureMatches: items
         .where((result) => result.partialFailureMatch)
         .length,
-    matchedRomanTokens: items.fold<int>(
+    noChordEventMatches: items
+        .where(
+          (result) => result.noChordSensitiveCase && result.noChordEventMatch,
+        )
+        .length,
+    totalNoChordSensitiveCases: items
+        .where((result) => result.noChordSensitiveCase)
+        .length,
+    matchedNoChordEvents: items.fold<int>(
       0,
-      (sum, result) => sum + result.matchedRomanTokens,
+      (sum, result) => sum + result.matchedNoChordEvents,
     ),
-    totalRomanTokens: items.fold<int>(
+    totalNoChordEvents: items.fold<int>(
       0,
-      (sum, result) => sum + result.totalRomanTokens,
+      (sum, result) => sum + result.totalNoChordEvents,
+    ),
+    matchedSurfaceRomanTokens: items.fold<int>(
+      0,
+      (sum, result) => sum + result.matchedSurfaceRomanTokens,
+    ),
+    totalSurfaceRomanTokens: items.fold<int>(
+      0,
+      (sum, result) => sum + result.totalSurfaceRomanTokens,
+    ),
+    matchedCanonicalRomanTokens: items.fold<int>(
+      0,
+      (sum, result) => sum + result.matchedCanonicalRomanTokens,
+    ),
+    totalCanonicalRomanTokens: items.fold<int>(
+      0,
+      (sum, result) => sum + result.totalCanonicalRomanTokens,
     ),
     matchedRelaxedRomanTokens: items.fold<int>(
       0,
@@ -2279,17 +3281,15 @@ List<_BenchmarkCase> _specialBenchmarkCases() {
       benchmarkClass: _BenchmarkClass.dirtyInput,
       sourceId: 'dirty_input_regression',
       sourceLabel: 'dirty_input_regression',
-      comparisonProfile: const _ComparisonProfile(
-        allowSlashBassTolerance: true,
-      ),
+      comparisonProfile: _ComparisonProfile(allowSlashBassTolerance: true),
       segmentExpectations: [
-        const _SegmentExpectation(
+        _SegmentExpectation(
           index: 0,
           expectedResolvedSymbol: 'C/E',
           expectedFunction: 'tonic',
           comparisonProfile: _ComparisonProfile(allowSlashBassTolerance: true),
         ),
-        const _SegmentExpectation(
+        _SegmentExpectation(
           index: 3,
           expectedResolvedSymbol: 'G7/B',
           expectedFunction: 'dominant',
@@ -2310,25 +3310,60 @@ String _aggregateTable(String title, Map<String, _AggregateMetrics> rows) {
   buffer.writeln('### $title');
   buffer.writeln('');
   buffer.writeln(
-    '| Bucket | Cases | Exact Pass | Key | Mode | Roman | Tags | Remarks | Evidence | Parse Expectation | Mean Latency |',
+    '| Bucket | Cases | Exact Pass | Key | Mode | Roman Canonical | Tags | Remarks | Evidence | Parse Expectation | N.C. Cases | Mean Latency |',
   );
   buffer.writeln(
-    '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+    '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
   );
   for (final entry in rows.entries) {
     final metrics = entry.value;
     buffer.writeln(
       '| ${entry.key} | ${metrics.caseCount} | ${_formatPercent(metrics.exactProgressionPassRate)} | '
       '${_formatPercent(metrics.keyAccuracy)} | ${_formatPercent(metrics.modeAccuracy)} | '
-      '${_formatConditionalPercent(metrics.matchedRomanTokens, metrics.totalRomanTokens)} | '
+      '${_formatConditionalPercent(metrics.matchedCanonicalRomanTokens, metrics.totalCanonicalRomanTokens)} | '
       '${_formatConditionalPercent(metrics.matchedTags, metrics.totalTags)} | '
       '${_formatConditionalPercent(metrics.matchedRemarks, metrics.totalRemarks)} | '
       '${_formatConditionalPercent(metrics.matchedEvidence, metrics.totalEvidence)} | '
       '${_formatPercent(metrics.partialFailureExpectationAccuracy)} | '
+      '${_formatConditionalPercent(metrics.noChordEventMatches, metrics.totalNoChordSensitiveCases)} | '
       '${metrics.meanLatencyMilliseconds.toStringAsFixed(3)} ms |',
     );
   }
   return buffer.toString().trimRight();
+}
+
+String _coverageTable(String title, Map<String, _CoverageBreakdown> rows) {
+  final buffer = StringBuffer();
+  buffer.writeln('### $title');
+  buffer.writeln('');
+  buffer.writeln(
+    '| Bucket | Raw Records | Loaded | Raw Segments | Kept | Raw Harmonic | Kept Harmonic | Raw Non-Harmonic | Kept Non-Harmonic | Record Coverage | Segment Coverage | Harmonic Coverage |',
+  );
+  buffer.writeln(
+    '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+  );
+  for (final entry in rows.entries) {
+    final coverage = entry.value;
+    buffer.writeln(
+      '| ${entry.key} | ${coverage.rawRecordCount} | ${coverage.loadedRecordCount} | '
+      '${coverage.rawSegmentCount} | ${coverage.keptSegmentCount} | '
+      '${coverage.rawHarmonicSegmentCount} | ${coverage.keptHarmonicSegmentCount} | '
+      '${coverage.rawNonHarmonicSegmentCount} | ${coverage.keptNonHarmonicSegmentCount} | '
+      '${_formatOptionalPercent(coverage.recordCoverageRatio)} | '
+      '${_formatOptionalPercent(coverage.segmentCoverageRatio)} | '
+      '${_formatOptionalPercent(coverage.harmonicCoverageRatio)} |',
+    );
+  }
+  return buffer.toString().trimRight();
+}
+
+String _reasonSummary(Map<String, int> counts) {
+  if (counts.isEmpty) {
+    return 'none';
+  }
+  return counts.entries
+      .map((entry) => '${entry.key}=${entry.value}')
+      .join(', ');
 }
 
 String _performanceSummary(_PerformanceMetrics metrics) {
@@ -2372,11 +3407,33 @@ String _slug(String value) {
 
 String _formatPercent(double value) => '${(value * 100).toStringAsFixed(1)}%';
 
+String _formatOptionalPercent(double? value) {
+  if (value == null) {
+    return 'n/a';
+  }
+  return _formatPercent(value);
+}
+
 String _formatConditionalPercent(int numerator, int denominator) {
   if (denominator == 0) {
     return 'n/a';
   }
   return _formatPercent(_safeDivide(numerator, denominator));
+}
+
+int _countNoChordParseIssues(ProgressionAnalysis analysis) {
+  return analysis.parseResult.issues
+      .where((issue) => _isNoChordToken(issue.rawText))
+      .length;
+}
+
+bool _isNoChordToken(String value) {
+  final normalized = value
+      .trim()
+      .toUpperCase()
+      .replaceAll('.', '')
+      .replaceAll(RegExp(r'\s+'), '');
+  return normalized == 'NC' || normalized == 'N';
 }
 
 double _safeDivide(num numerator, num denominator) {
@@ -2426,7 +3483,7 @@ List<_SegmentExpectation> _effectiveSegmentExpectations(
     for (var index = 0; index < benchmarkCase.expectedRomans.length; index += 1)
       _SegmentExpectation(
         index: index,
-        expectedRoman: benchmarkCase.expectedRomans[index],
+        expectedCanonicalRoman: benchmarkCase.expectedRomans[index],
         expectedFunction: _expectedFunctionForRoman(
           benchmarkCase.expectedRomans[index],
         ),
@@ -2441,21 +3498,24 @@ _SegmentComparison _compareSegment({
   required _ComparisonProfile fallbackProfile,
 }) {
   final profile = expectation.comparisonProfile;
-  final actualChord = expectation.index < analysis.chordAnalyses.length
-      ? analysis.chordAnalyses[expectation.index]
+  final actualChord = expectation.analysisIndex < analysis.chordAnalyses.length
+      ? analysis.chordAnalyses[expectation.analysisIndex]
       : null;
   final actualRoman = actualChord?.romanNumeral;
   final actualFunction = actualChord == null
       ? null
       : _harmonicFunctionLabel(actualChord.harmonicFunction);
   final actualResolvedSymbol = actualChord?.resolvedSymbol;
-  final exactRomanMatch =
-      expectation.expectedRoman == null ||
-      expectation.expectedRoman == actualRoman;
+  final surfaceRomanExactMatch =
+      expectation.expectedSurfaceRoman == null ||
+      expectation.expectedSurfaceRoman == actualRoman;
+  final canonicalRomanExactMatch =
+      expectation.expectedCanonicalRoman == null ||
+      expectation.expectedCanonicalRoman == actualRoman;
   final relaxedRomanMatch =
-      expectation.expectedRoman == null ||
+      expectation.expectedCanonicalRoman == null ||
       _matchesRelaxedRoman(
-        expectedRoman: expectation.expectedRoman!,
+        expectedRoman: expectation.expectedCanonicalRoman!,
         actualRoman: actualRoman,
         expectedFunction: expectation.expectedFunction,
         actualFunction: actualFunction,
@@ -2474,10 +3534,13 @@ _SegmentComparison _compareSegment({
       );
 
   final mismatchReasons = <String>[];
-  if (!exactRomanMatch && expectation.expectedRoman != null) {
-    mismatchReasons.add('roman_exact_mismatch');
+  if (!surfaceRomanExactMatch && expectation.expectedSurfaceRoman != null) {
+    mismatchReasons.add('roman_surface_mismatch');
   }
-  if (!relaxedRomanMatch && expectation.expectedRoman != null) {
+  if (!canonicalRomanExactMatch && expectation.expectedCanonicalRoman != null) {
+    mismatchReasons.add('roman_canonical_mismatch');
+  }
+  if (!relaxedRomanMatch && expectation.expectedCanonicalRoman != null) {
     mismatchReasons.add('roman_relaxed_mismatch');
   }
   if (!functionMatch && expectation.expectedFunction != null) {
@@ -2489,13 +3552,16 @@ _SegmentComparison _compareSegment({
 
   return _SegmentComparison(
     index: expectation.index,
-    expectedRoman: expectation.expectedRoman,
+    analysisIndex: expectation.analysisIndex,
+    expectedSurfaceRoman: expectation.expectedSurfaceRoman,
+    expectedCanonicalRoman: expectation.expectedCanonicalRoman,
     actualRoman: actualRoman,
     expectedFunction: expectation.expectedFunction,
     actualFunction: actualFunction,
     expectedResolvedSymbol: expectation.expectedResolvedSymbol,
     actualResolvedSymbol: actualResolvedSymbol,
-    exactRomanMatch: exactRomanMatch,
+    surfaceRomanExactMatch: surfaceRomanExactMatch,
+    canonicalRomanExactMatch: canonicalRomanExactMatch,
     relaxedRomanMatch: relaxedRomanMatch,
     functionMatch: functionMatch,
     resolvedSymbolMatch: resolvedSymbolMatch,
@@ -2614,11 +3680,43 @@ bool _resolvedSymbolsMatch({
 }
 
 bool _keysAreEnharmonicallyEquivalent(String expected, String actual) {
-  final expectedSemitone = MusicTheory.noteToSemitone[expected];
-  final actualSemitone = MusicTheory.noteToSemitone[actual];
+  final expectedSemitone = _keySemitoneForComparison(expected);
+  final actualSemitone = _keySemitoneForComparison(actual);
   return expectedSemitone != null &&
       actualSemitone != null &&
       expectedSemitone == actualSemitone;
+}
+
+int? _keySemitoneForComparison(String value) {
+  final directKey = MusicTheory.keyTonicSemitone(value);
+  if (directKey != null) {
+    return directKey;
+  }
+  final directNote = MusicTheory.noteToSemitone[value];
+  if (directNote != null) {
+    return directNote;
+  }
+  if (!value.contains('/')) {
+    return null;
+  }
+  final candidates = value
+      .split('/')
+      .map((item) => item.trim())
+      .where((item) => item.isNotEmpty)
+      .map(
+        (item) =>
+            MusicTheory.keyTonicSemitone(item) ??
+            MusicTheory.noteToSemitone[item],
+      )
+      .whereType<int>()
+      .toSet();
+  if (candidates.isEmpty) {
+    return null;
+  }
+  if (candidates.length == 1) {
+    return candidates.first;
+  }
+  return null;
 }
 
 _ModulationDiagnostics _buildModulationDiagnostics({
@@ -2651,19 +3749,192 @@ _ModulationDiagnostics _buildModulationDiagnostics({
   );
 }
 
+_KeyDiagnostics _buildKeyDiagnostics({
+  required _BenchmarkCase benchmarkCase,
+  required ProgressionAnalysis analysis,
+}) {
+  final topCandidates = analysis.keyCandidates.take(2).toList(growable: false);
+  final expectedIndex = analysis.keyCandidates.indexWhere(
+    (candidate) =>
+        candidate.keyCenter.tonicName == benchmarkCase.expectedKey &&
+        candidate.keyCenter.mode == benchmarkCase.expectedMode,
+  );
+  final expectedCandidate = expectedIndex == -1
+      ? null
+      : analysis.keyCandidates[expectedIndex];
+  final topCandidate = topCandidates.isEmpty ? null : topCandidates.first;
+
+  final dominantChordCount = analysis.chordAnalyses
+      .where(
+        (chord) =>
+            chord.harmonicFunction == ProgressionHarmonicFunction.dominant,
+      )
+      .length;
+  final overallDominantRatio = analysis.chordAnalyses.isEmpty
+      ? 0.0
+      : dominantChordCount / analysis.chordAnalyses.length;
+
+  final endingWindow = analysis.chordAnalyses.length <= 4
+      ? analysis.chordAnalyses
+      : analysis.chordAnalyses.sublist(analysis.chordAnalyses.length - 4);
+  final endingDominantCount = endingWindow
+      .where(
+        (chord) =>
+            chord.harmonicFunction == ProgressionHarmonicFunction.dominant,
+      )
+      .length;
+  final endingPredominantCount = endingWindow
+      .where(
+        (chord) =>
+            chord.harmonicFunction == ProgressionHarmonicFunction.predominant,
+      )
+      .length;
+  final endingTonicCount = endingWindow
+      .where(
+        (chord) => chord.harmonicFunction == ProgressionHarmonicFunction.tonic,
+      )
+      .length;
+  final endingDominantRatio = endingWindow.isEmpty
+      ? 0.0
+      : endingDominantCount / endingWindow.length;
+  var endingCadentialResolutions = 0;
+  for (var index = 1; index < endingWindow.length; index += 1) {
+    if (endingWindow[index - 1].harmonicFunction ==
+            ProgressionHarmonicFunction.dominant &&
+        endingWindow[index].harmonicFunction ==
+            ProgressionHarmonicFunction.tonic) {
+      endingCadentialResolutions += 1;
+    }
+  }
+
+  final appliedDominantChordCount = analysis.chordAnalyses
+      .where(
+        (chord) =>
+            chord.sourceKind == ChordSourceKind.secondaryDominant ||
+            chord.hasRemark(ProgressionRemarkKind.possibleSecondaryDominant),
+      )
+      .length;
+  final appliedDominantRemarkCount = analysis.chordAnalyses.fold<int>(
+    0,
+    (sum, chord) =>
+        sum +
+        chord.remarks
+            .where(
+              (remark) =>
+                  remark.kind ==
+                  ProgressionRemarkKind.possibleSecondaryDominant,
+            )
+            .length,
+  );
+  final tonicizationRemarkCount = analysis.chordAnalyses.fold<int>(
+    0,
+    (sum, chord) =>
+        sum +
+        chord.remarks
+            .where(
+              (remark) => remark.kind == ProgressionRemarkKind.tonicization,
+            )
+            .length,
+  );
+  final realModulationRemarkCount = analysis.chordAnalyses.fold<int>(
+    0,
+    (sum, chord) =>
+        sum +
+        chord.remarks
+            .where(
+              (remark) => remark.kind == ProgressionRemarkKind.realModulation,
+            )
+            .length,
+  );
+  final topTwoScoreGap = topCandidates.length < 2
+      ? null
+      : topCandidates[0].score - topCandidates[1].score;
+  final expectedKeyGapFromTop =
+      topCandidate == null || expectedCandidate == null
+      ? null
+      : topCandidate.score - expectedCandidate.score;
+  final dominantBiasOverhang = endingDominantRatio - overallDominantRatio;
+  final selectedKeyIsDominantOfExpected = _isDominantOfExpected(
+    expectedKey: benchmarkCase.expectedKey,
+    actualKey: analysis.primaryKey.keyCenter.tonicName,
+  );
+  final summaryParts = <String>[
+    if (topCandidates.isNotEmpty)
+      'top-2 ${topCandidates.map((candidate) => '${candidate.keyCenter.tonicName} ${candidate.keyCenter.mode.name} ${candidate.score.toStringAsFixed(2)}').join(' vs ')}',
+    if (topTwoScoreGap != null) 'gap ${topTwoScoreGap.toStringAsFixed(2)}',
+    'ending dominant $endingDominantCount/${endingWindow.length}',
+    'dominant overhang ${dominantBiasOverhang.toStringAsFixed(2)}',
+    'applied dominants $appliedDominantChordCount',
+    'tonicization remarks $tonicizationRemarkCount',
+    'real modulation remarks $realModulationRemarkCount',
+    if (expectedIndex >= 0) 'expected-rank ${expectedIndex + 1}',
+    if (selectedKeyIsDominantOfExpected) 'selected key is dominant-of-expected',
+  ];
+
+  return _KeyDiagnostics(
+    topCandidates: [
+      for (final candidate in topCandidates)
+        _KeyCandidateDiagnostic(
+          key: candidate.keyCenter.tonicName,
+          mode: candidate.keyCenter.mode.name,
+          score: candidate.score,
+          confidence: candidate.confidence,
+        ),
+    ],
+    topTwoScoreGap: topTwoScoreGap,
+    expectedKeyRank: expectedIndex >= 0 ? expectedIndex + 1 : null,
+    expectedKeyGapFromTop: expectedKeyGapFromTop,
+    selectedKeyIsDominantOfExpected: selectedKeyIsDominantOfExpected,
+    overallDominantRatio: overallDominantRatio,
+    endingDominantRatio: endingDominantRatio,
+    dominantBiasOverhang: dominantBiasOverhang,
+    endingDominantCount: endingDominantCount,
+    endingPredominantCount: endingPredominantCount,
+    endingTonicCount: endingTonicCount,
+    endingCadentialResolutions: endingCadentialResolutions,
+    endingWindowSize: endingWindow.length,
+    appliedDominantChordCount: appliedDominantChordCount,
+    appliedDominantRemarkCount: appliedDominantRemarkCount,
+    tonicizationRemarkCount: tonicizationRemarkCount,
+    realModulationRemarkCount: realModulationRemarkCount,
+    summary: summaryParts.join('; '),
+  );
+}
+
+bool _isDominantOfExpected({
+  required String expectedKey,
+  required String actualKey,
+}) {
+  final expectedSemitone = MusicTheory.noteToSemitone[expectedKey];
+  final actualSemitone = MusicTheory.noteToSemitone[actualKey];
+  if (expectedSemitone == null || actualSemitone == null) {
+    return false;
+  }
+  return (expectedSemitone + 7) % 12 == actualSemitone % 12;
+}
+
 List<_FailureTaxonomy> _classifyFailureCategories({
   required _BenchmarkCase benchmarkCase,
   required List<String> failures,
   required List<_SegmentComparison> segmentComparisons,
   required _ModulationDiagnostics modulationDiagnostics,
   required ProgressionAnalysis analysis,
+  required bool keyMatch,
+  required bool relaxedKeyMatch,
 }) {
   final categories = <_FailureTaxonomy>{...benchmarkCase.failureHints};
-  if (failures.any((failure) => failure.contains('expected key'))) {
+  final hasKeyFailure = failures.any(
+    (failure) => failure.contains('expected key'),
+  );
+  if (hasKeyFailure && relaxedKeyMatch && !keyMatch) {
+    categories.add(_FailureTaxonomy.enharmonicEquivalence);
+  }
+  if (hasKeyFailure && !relaxedKeyMatch) {
     categories.add(_FailureTaxonomy.ambiguousKeyCenter);
   }
   if (benchmarkCase.requiredTags.contains(ProgressionTagId.realModulation) &&
-      failures.any((failure) => failure.contains('expected key'))) {
+      hasKeyFailure &&
+      !relaxedKeyMatch) {
     categories.add(_FailureTaxonomy.modulationVsTonicization);
     categories.add(_FailureTaxonomy.endingBias);
   }
@@ -2690,7 +3961,9 @@ List<_FailureTaxonomy> _classifyFailureCategories({
       modulationDiagnostics.expectedTags.isNotEmpty) {
     categories.add(_FailureTaxonomy.modulationVsTonicization);
   }
-  if (analysis.alternativeKey != null && analysis.ambiguity > 0.15) {
+  if (!relaxedKeyMatch &&
+      analysis.alternativeKey != null &&
+      analysis.ambiguity > 0.15) {
     categories.add(_FailureTaxonomy.ambiguousKeyCenter);
   }
   return categories.toList(growable: false);
@@ -2719,24 +3992,155 @@ List<String> _recommendedFixes(List<_CaseResult> failures) {
   return fixes.toList(growable: false);
 }
 
+String _taxonomySummary(List<_FailureTaxonomy> categories) {
+  if (categories.isEmpty) {
+    return 'none';
+  }
+  return categories.map((item) => item.label).join(', ');
+}
+
+Map<String, int> _majorFailureClusters({
+  required List<_CaseResult> failures,
+  required Map<String, _AggregateMetrics> bySource,
+}) {
+  final counts = <String, int>{
+    'notation_only_key_miss': failures
+        .where((failure) => failure.notationOnlyKeyMiss)
+        .length,
+    'dominant_of_expected_key_miss': failures
+        .where(
+          (failure) =>
+              !failure.relaxedKeyMatch &&
+              failure.keyDiagnostics.selectedKeyIsDominantOfExpected,
+        )
+        .length,
+    'key_center_miss': failures
+        .where((failure) => !failure.relaxedKeyMatch)
+        .length,
+    'mode_miss': failures.where((failure) => !failure.modeMatch).length,
+    'no_chord_event_miss_case': failures
+        .where(
+          (failure) =>
+              failure.noChordSensitiveCase && !failure.noChordEventMatch,
+        )
+        .length,
+    'canonical_roman_miss_case': failures
+        .where(
+          (failure) =>
+              failure.matchedCanonicalRomanTokens <
+              failure.totalCanonicalRomanTokens,
+        )
+        .length,
+    'relaxed_function_still_miss_case': failures
+        .where(
+          (failure) =>
+              failure.matchedRelaxedRomanTokens <
+                  failure.totalRelaxedRomanTokens ||
+              failure.matchedFunctionTokens < failure.totalFunctionTokens,
+        )
+        .length,
+    'large_surface_notation_gap_source': _surfaceNotationGapEntries(
+      bySource,
+    ).length,
+  };
+  final filtered = counts.entries.where((entry) => entry.value > 0).toList()
+    ..sort((left, right) {
+      final byCount = right.value.compareTo(left.value);
+      if (byCount != 0) {
+        return byCount;
+      }
+      return left.key.compareTo(right.key);
+    });
+  return <String, int>{for (final entry in filtered) entry.key: entry.value};
+}
+
+List<MapEntry<String, _AggregateMetrics>> _surfaceNotationGapEntries(
+  Map<String, _AggregateMetrics> rows, {
+  double minGap = 0.25,
+  double minCanonicalAccuracy = 0.60,
+  int minSurfaceTokens = 4,
+}) {
+  final candidates =
+      rows.entries.where((entry) {
+        final metrics = entry.value;
+        if (metrics.totalSurfaceRomanTokens < minSurfaceTokens ||
+            metrics.totalCanonicalRomanTokens < minSurfaceTokens) {
+          return false;
+        }
+        final gap =
+            metrics.romanCanonicalExactAccuracy -
+            metrics.romanSurfaceExactAccuracy;
+        return gap >= minGap &&
+            metrics.romanCanonicalExactAccuracy >= minCanonicalAccuracy;
+      }).toList()..sort((left, right) {
+        final gapCompare =
+            (right.value.romanCanonicalExactAccuracy -
+                    right.value.romanSurfaceExactAccuracy)
+                .compareTo(
+                  left.value.romanCanonicalExactAccuracy -
+                      left.value.romanSurfaceExactAccuracy,
+                );
+        if (gapCompare != 0) {
+          return gapCompare;
+        }
+        return left.key.compareTo(right.key);
+      });
+  return candidates;
+}
+
 String _breakdownTable(String title, Map<String, _AggregateMetrics> rows) {
   final buffer = StringBuffer();
   buffer.writeln('### $title');
   buffer.writeln('');
   buffer.writeln(
-    '| Bucket | Key | Relaxed Key | Mode | Roman Exact | Roman Relaxed | Function Relaxed | Modulation Diagnostics |',
+    '| Bucket | Key | Relaxed Key | Mode | Roman Surface Exact | Roman Canonical Exact | Roman Relaxed | Function Relaxed | No-Chord Events | Modulation Diagnostics |',
   );
-  buffer.writeln('| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |');
+  buffer.writeln(
+    '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+  );
   for (final entry in rows.entries) {
     final metrics = entry.value;
     buffer.writeln(
       '| ${entry.key} | ${_formatPercent(metrics.keyAccuracy)} | '
       '${_formatPercent(metrics.relaxedKeyAccuracy)} | '
       '${_formatPercent(metrics.modeAccuracy)} | '
-      '${_formatConditionalPercent(metrics.matchedRomanTokens, metrics.totalRomanTokens)} | '
+      '${_formatConditionalPercent(metrics.matchedSurfaceRomanTokens, metrics.totalSurfaceRomanTokens)} | '
+      '${_formatConditionalPercent(metrics.matchedCanonicalRomanTokens, metrics.totalCanonicalRomanTokens)} | '
       '${_formatConditionalPercent(metrics.matchedRelaxedRomanTokens, metrics.totalRelaxedRomanTokens)} | '
       '${_formatConditionalPercent(metrics.matchedFunctionTokens, metrics.totalFunctionTokens)} | '
+      '${_formatConditionalPercent(metrics.matchedNoChordEvents, metrics.totalNoChordEvents)} | '
       '${_formatConditionalPercent(metrics.modulationDiagnosticMatches, metrics.totalModulationSensitiveCases)} |',
+    );
+  }
+  return buffer.toString().trimRight();
+}
+
+String _surfaceNotationGapTable(
+  String title,
+  Map<String, _AggregateMetrics> rows,
+) {
+  final entries = _surfaceNotationGapEntries(rows);
+  final buffer = StringBuffer();
+  buffer.writeln('### $title');
+  buffer.writeln('');
+  if (entries.isEmpty) {
+    buffer.writeln(
+      'No large surface-vs-canonical notation gaps crossed the reporting threshold in this run.',
+    );
+    return buffer.toString().trimRight();
+  }
+  buffer.writeln(
+    '| Bucket | Roman Surface Exact | Roman Canonical Exact | Gap |',
+  );
+  buffer.writeln('| --- | ---: | ---: | ---: |');
+  for (final entry in entries) {
+    final metrics = entry.value;
+    final gap =
+        metrics.romanCanonicalExactAccuracy - metrics.romanSurfaceExactAccuracy;
+    buffer.writeln(
+      '| ${entry.key} | ${_formatPercent(metrics.romanSurfaceExactAccuracy)} | '
+      '${_formatPercent(metrics.romanCanonicalExactAccuracy)} | '
+      '${_formatPercent(gap)} |',
     );
   }
   return buffer.toString().trimRight();
@@ -2745,72 +4149,323 @@ String _breakdownTable(String title, Map<String, _AggregateMetrics> rows) {
 _LoadedCuratedGoldCases _loadCuratedGoldCases({
   required String? manifestPath,
   required String outputDir,
+  String? abcSourceRootPath,
+  String? whenInRomeSourceRootPath,
 }) {
-  String? effectiveManifestPath = manifestPath;
-  _CuratedGoldLoadResult? precomputedStatus;
-
-  if (effectiveManifestPath == null || effectiveManifestPath.isEmpty) {
-    final fixtureDirectory = Directory(_defaultExternalGoldFixtureDir);
-    if (fixtureDirectory.existsSync()) {
-      final generatedManifestPath =
-          '$outputDir${Platform.pathSeparator}curated_gold${Platform.pathSeparator}abc_external_gold_manifest.json';
-      final importResult = const AbcExternalGoldAdapter().importExcerptDirectory(
-        fixtureDirectory.path,
-        manifestOutputPath: generatedManifestPath,
-      );
-      effectiveManifestPath = generatedManifestPath;
-      precomputedStatus = _CuratedGoldLoadResult(
-        manifestPath: generatedManifestPath,
-        loadedCaseCount: importResult.manifest.records.length,
-        status: 'loaded',
-        corpusId: importResult.manifest.corpusId,
-        corpusName: importResult.manifest.corpusName,
-        licenseNote: importResult.manifest.licenseNote,
-        adapterId: 'abc_external_gold_adapter',
-        fixtureDirectory: fixtureDirectory.path,
-        skippedRecordCount: importResult.skippedRecordCount,
-        skippedSegmentCount: importResult.skippedSegmentCount,
+  if (manifestPath != null && manifestPath.isNotEmpty) {
+    final file = File(manifestPath);
+    if (!file.existsSync()) {
+      return _LoadedCuratedGoldCases(
+        cases: const <_BenchmarkCase>[],
+        status: _CuratedGoldLoadResult.notLoaded(manifestPath: manifestPath),
       );
     }
+    final manifest = const ExternalGoldLoader().loadManifest(manifestPath);
+    final rawRecordCount = manifest.records.length;
+    final rawSegmentCount = manifest.records.fold<int>(
+      0,
+      (sum, record) => sum + record.segments.length,
+    );
+    final rawHarmonicSegmentCount = manifest.records.fold<int>(
+      0,
+      (sum, record) =>
+          sum + record.segments.where((segment) => segment.isHarmonic).length,
+    );
+    final rawNonHarmonicSegmentCount = manifest.records.fold<int>(
+      0,
+      (sum, record) =>
+          sum + record.segments.where((segment) => segment.isNoChord).length,
+    );
+    return _LoadedCuratedGoldCases(
+      cases: _benchmarkCasesFromExternalManifest(manifest),
+      status: _CuratedGoldLoadResult.combine(<_CuratedGoldCorpusLoad>[
+        _CuratedGoldCorpusLoad(
+          corpusId: manifest.corpusId,
+          corpusName: manifest.corpusName,
+          manifestPath: manifestPath,
+          loadedCaseCount: manifest.records.length,
+          licenseNote: manifest.licenseNote,
+          rawRecordCount: rawRecordCount,
+          rawSegmentCount: rawSegmentCount,
+          keptSegmentCount: rawSegmentCount,
+          rawHarmonicSegmentCount: rawHarmonicSegmentCount,
+          keptHarmonicSegmentCount: rawHarmonicSegmentCount,
+          rawNonHarmonicSegmentCount: rawNonHarmonicSegmentCount,
+          keptNonHarmonicSegmentCount: rawNonHarmonicSegmentCount,
+        ),
+      ]),
+    );
   }
 
-  if (effectiveManifestPath == null || effectiveManifestPath.isEmpty) {
+  final corpusLoads = <_CuratedGoldCorpusLoad>[];
+  final cases = <_BenchmarkCase>[];
+
+  final abcFixtureDirectory = Directory(_defaultAbcExternalGoldFixtureDir);
+  if (abcFixtureDirectory.existsSync()) {
+    final selectionManifest = File(
+      _defaultAbcExternalGoldSelectionManifestPath,
+    );
+    final discoveredSourceRoot =
+        abcSourceRootPath ??
+        Platform.environment['CHORD_ANALYZER_BENCHMARK_ABC_SOURCE_ROOT'] ??
+        _defaultAbcExternalGoldSourceRoot;
+    final sourceCorpusRoot = Directory(discoveredSourceRoot);
+    final generatedManifestPath =
+        '$outputDir${Platform.pathSeparator}curated_gold${Platform.pathSeparator}abc_external_gold_manifest.json';
+    final importResult =
+        selectionManifest.existsSync() && sourceCorpusRoot.existsSync()
+        ? const AbcExternalGoldAdapter().importSelectionManifest(
+            sourceCorpusRoot: sourceCorpusRoot.path,
+            selectionManifestPath: selectionManifest.path,
+            manifestOutputPath: generatedManifestPath,
+          )
+        : const AbcExternalGoldAdapter().importExcerptDirectory(
+            abcFixtureDirectory.path,
+            manifestOutputPath: generatedManifestPath,
+          );
+    corpusLoads.add(
+      _curatedGoldCorpusLoadFromAbcImport(
+        importResult,
+        manifestPath: generatedManifestPath,
+        fixtureDirectory: abcFixtureDirectory.path,
+      ),
+    );
+    cases.addAll(_benchmarkCasesFromExternalManifest(importResult.manifest));
+  }
+
+  final whenInRomeFixtureDirectory = Directory(
+    _defaultWhenInRomeExternalGoldFixtureDir,
+  );
+  final whenInRomeSelectionManifest = File(
+    _defaultWhenInRomeExternalGoldSelectionManifestPath,
+  );
+  final discoveredWhenInRomeSourceRoot =
+      whenInRomeSourceRootPath ??
+      Platform.environment['CHORD_ANALYZER_BENCHMARK_WIR_SOURCE_ROOT'] ??
+      _defaultWhenInRomeExternalGoldSourceRoot;
+  final whenInRomeSourceRoot = Directory(discoveredWhenInRomeSourceRoot);
+  if (whenInRomeFixtureDirectory.existsSync() &&
+      whenInRomeSelectionManifest.existsSync() &&
+      whenInRomeSourceRoot.existsSync()) {
+    final generatedManifestPath =
+        '$outputDir${Platform.pathSeparator}curated_gold${Platform.pathSeparator}when_in_rome_external_gold_manifest.json';
+    final importResult = const WhenInRomeExternalGoldAdapter()
+        .importSelectionManifest(
+          sourceCorpusRoot: whenInRomeSourceRoot.path,
+          selectionManifestPath: whenInRomeSelectionManifest.path,
+          manifestOutputPath: generatedManifestPath,
+        );
+    corpusLoads.add(
+      _curatedGoldCorpusLoadFromWhenInRomeImport(
+        importResult,
+        manifestPath: generatedManifestPath,
+        fixtureDirectory: whenInRomeFixtureDirectory.path,
+      ),
+    );
+    cases.addAll(_benchmarkCasesFromExternalManifest(importResult.manifest));
+  }
+
+  final isophonicsChocoFixtureDirectory = Directory(
+    _defaultIsophonicsChocoExternalGoldFixtureDir,
+  );
+  if (isophonicsChocoFixtureDirectory.existsSync()) {
+    final generatedManifestPath =
+        '$outputDir${Platform.pathSeparator}curated_gold${Platform.pathSeparator}isophonics_choco_external_gold_manifest.json';
+    final importResult = const IsophonicsChocoExternalGoldAdapter()
+        .importExcerptDirectory(
+          isophonicsChocoFixtureDirectory.path,
+          manifestOutputPath: generatedManifestPath,
+        );
+    corpusLoads.add(
+      _curatedGoldCorpusLoadFromChocoSurfaceImport(
+        importResult,
+        manifestPath: generatedManifestPath,
+        fixtureDirectory: isophonicsChocoFixtureDirectory.path,
+        adapterId: 'isophonics_choco_external_gold_adapter',
+      ),
+    );
+    cases.addAll(_benchmarkCasesFromExternalManifest(importResult.manifest));
+  }
+
+  final jaahChocoFixtureDirectory = Directory(
+    _defaultJaahChocoExternalGoldFixtureDir,
+  );
+  if (jaahChocoFixtureDirectory.existsSync()) {
+    final generatedManifestPath =
+        '$outputDir${Platform.pathSeparator}curated_gold${Platform.pathSeparator}jaah_choco_external_gold_manifest.json';
+    final importResult = const JaahChocoExternalGoldAdapter()
+        .importExcerptDirectory(
+          jaahChocoFixtureDirectory.path,
+          manifestOutputPath: generatedManifestPath,
+        );
+    corpusLoads.add(
+      _curatedGoldCorpusLoadFromChocoSurfaceImport(
+        importResult,
+        manifestPath: generatedManifestPath,
+        fixtureDirectory: jaahChocoFixtureDirectory.path,
+        adapterId: 'jaah_choco_external_gold_adapter',
+      ),
+    );
+    cases.addAll(_benchmarkCasesFromExternalManifest(importResult.manifest));
+  }
+
+  if (corpusLoads.isEmpty) {
     return _LoadedCuratedGoldCases(
       cases: const <_BenchmarkCase>[],
       status: _CuratedGoldLoadResult.notLoaded(),
     );
   }
 
-  final file = File(effectiveManifestPath);
-  if (!file.existsSync()) {
-    return _LoadedCuratedGoldCases(
-      cases: const <_BenchmarkCase>[],
-      status: _CuratedGoldLoadResult.notLoaded(
-        manifestPath: effectiveManifestPath,
-      ),
-    );
-  }
-
-  final manifest = const ExternalGoldLoader().loadManifest(effectiveManifestPath);
   return _LoadedCuratedGoldCases(
-    cases: [
-      for (final record in manifest.records)
-        _benchmarkCaseFromExternalRecord(
-          record,
-          corpusId: manifest.corpusId,
-          corpusName: manifest.corpusName,
+    cases: cases,
+    status: _CuratedGoldLoadResult.combine(corpusLoads),
+  );
+}
+
+List<_BenchmarkCase> _benchmarkCasesFromExternalManifest(
+  ExternalGoldCorpusManifest manifest,
+) {
+  return <_BenchmarkCase>[
+    for (final record in manifest.records)
+      _benchmarkCaseFromExternalRecord(
+        record,
+        corpusId: manifest.corpusId,
+        corpusName: manifest.corpusName,
+      ),
+  ];
+}
+
+_CuratedGoldCorpusLoad _curatedGoldCorpusLoadFromAbcImport(
+  AbcExternalGoldImportResult importResult, {
+  required String manifestPath,
+  required String fixtureDirectory,
+}) {
+  return _CuratedGoldCorpusLoad(
+    corpusId: importResult.manifest.corpusId,
+    corpusName: importResult.manifest.corpusName,
+    manifestPath: manifestPath,
+    loadedCaseCount: importResult.manifest.records.length,
+    licenseNote: importResult.manifest.licenseNote,
+    adapterId: 'abc_external_gold_adapter',
+    fixtureDirectory: fixtureDirectory,
+    selectionManifestPath: importResult.selectionManifestPath,
+    sourceCorpusRootPath: importResult.sourceCorpusRootPath,
+    importMode: importResult.importMode,
+    skippedRecordCount: importResult.skippedRecordCount,
+    skippedSegmentCount: importResult.skippedSegmentCount,
+    rawRecordCount: importResult.rawRecordCount,
+    rawSegmentCount: importResult.rawSegmentCount,
+    keptSegmentCount: importResult.keptSegmentCount,
+    rawHarmonicSegmentCount: importResult.rawSegmentCount,
+    keptHarmonicSegmentCount: importResult.keptSegmentCount,
+    rawNonHarmonicSegmentCount: 0,
+    keptNonHarmonicSegmentCount: 0,
+    skipReasonCounts: importResult.skipReasonCounts,
+    recordDropReasonCounts: importResult.recordDropReasonCounts,
+    coverageBySourceId: {
+      for (final entry in importResult.coverageBySourceId.entries)
+        entry.key: _CoverageBreakdown(
+          rawRecordCount: entry.value.rawRecordCount,
+          loadedRecordCount: entry.value.loadedRecordCount,
+          skippedRecordCount: entry.value.skippedRecordCount,
+          rawSegmentCount: entry.value.rawSegmentCount,
+          keptSegmentCount: entry.value.keptSegmentCount,
+          skippedSegmentCount: entry.value.skippedSegmentCount,
+          rawHarmonicSegmentCount: entry.value.rawSegmentCount,
+          keptHarmonicSegmentCount: entry.value.keptSegmentCount,
+          rawNonHarmonicSegmentCount: 0,
+          keptNonHarmonicSegmentCount: 0,
         ),
-    ],
-    status:
-        precomputedStatus ??
-        _CuratedGoldLoadResult(
-          manifestPath: effectiveManifestPath,
-          loadedCaseCount: manifest.records.length,
-          status: 'loaded',
-          corpusId: manifest.corpusId,
-          corpusName: manifest.corpusName,
-          licenseNote: manifest.licenseNote,
+    },
+  );
+}
+
+_CuratedGoldCorpusLoad _curatedGoldCorpusLoadFromWhenInRomeImport(
+  WhenInRomeExternalGoldImportResult importResult, {
+  required String manifestPath,
+  required String fixtureDirectory,
+}) {
+  return _CuratedGoldCorpusLoad(
+    corpusId: importResult.manifest.corpusId,
+    corpusName: importResult.manifest.corpusName,
+    manifestPath: manifestPath,
+    loadedCaseCount: importResult.manifest.records.length,
+    licenseNote: importResult.manifest.licenseNote,
+    adapterId: 'when_in_rome_external_gold_adapter',
+    fixtureDirectory: fixtureDirectory,
+    selectionManifestPath: importResult.selectionManifestPath,
+    sourceCorpusRootPath: importResult.sourceCorpusRootPath,
+    importMode: importResult.importMode,
+    skippedRecordCount: importResult.skippedRecordCount,
+    skippedSegmentCount: importResult.skippedSegmentCount,
+    rawRecordCount: importResult.rawRecordCount,
+    rawSegmentCount: importResult.rawSegmentCount,
+    keptSegmentCount: importResult.keptSegmentCount,
+    rawHarmonicSegmentCount: importResult.rawSegmentCount,
+    keptHarmonicSegmentCount: importResult.keptSegmentCount,
+    rawNonHarmonicSegmentCount: 0,
+    keptNonHarmonicSegmentCount: 0,
+    skipReasonCounts: importResult.skipReasonCounts,
+    recordDropReasonCounts: importResult.recordDropReasonCounts,
+    coverageBySourceId: {
+      for (final entry in importResult.coverageBySourceId.entries)
+        entry.key: _CoverageBreakdown(
+          rawRecordCount: entry.value.rawRecordCount,
+          loadedRecordCount: entry.value.loadedRecordCount,
+          skippedRecordCount: entry.value.skippedRecordCount,
+          rawSegmentCount: entry.value.rawSegmentCount,
+          keptSegmentCount: entry.value.keptSegmentCount,
+          skippedSegmentCount: entry.value.skippedSegmentCount,
+          rawHarmonicSegmentCount: entry.value.rawSegmentCount,
+          keptHarmonicSegmentCount: entry.value.keptSegmentCount,
+          rawNonHarmonicSegmentCount: 0,
+          keptNonHarmonicSegmentCount: 0,
         ),
+    },
+  );
+}
+
+_CuratedGoldCorpusLoad _curatedGoldCorpusLoadFromChocoSurfaceImport(
+  IsophonicsChocoExternalGoldImportResult importResult, {
+  required String manifestPath,
+  required String fixtureDirectory,
+  required String adapterId,
+}) {
+  return _CuratedGoldCorpusLoad(
+    corpusId: importResult.manifest.corpusId,
+    corpusName: importResult.manifest.corpusName,
+    manifestPath: manifestPath,
+    loadedCaseCount: importResult.manifest.records.length,
+    licenseNote: importResult.manifest.licenseNote,
+    adapterId: adapterId,
+    fixtureDirectory: fixtureDirectory,
+    importMode: importResult.importMode,
+    skippedRecordCount: importResult.skippedRecordCount,
+    skippedSegmentCount: importResult.skippedSegmentCount,
+    rawRecordCount: importResult.rawRecordCount,
+    rawSegmentCount: importResult.rawSegmentCount,
+    keptSegmentCount: importResult.keptSegmentCount,
+    rawHarmonicSegmentCount: importResult.rawHarmonicSegmentCount,
+    keptHarmonicSegmentCount: importResult.keptHarmonicSegmentCount,
+    rawNonHarmonicSegmentCount: importResult.rawNonHarmonicSegmentCount,
+    keptNonHarmonicSegmentCount: importResult.keptNonHarmonicSegmentCount,
+    skipReasonCounts: importResult.skipReasonCounts,
+    recordDropReasonCounts: importResult.recordDropReasonCounts,
+    coverageBySourceId: {
+      for (final entry in importResult.coverageBySourceId.entries)
+        entry.key: _CoverageBreakdown(
+          rawRecordCount: entry.value.rawRecordCount,
+          loadedRecordCount: entry.value.loadedRecordCount,
+          skippedRecordCount: entry.value.skippedRecordCount,
+          rawSegmentCount: entry.value.rawSegmentCount,
+          keptSegmentCount: entry.value.keptSegmentCount,
+          skippedSegmentCount: entry.value.skippedSegmentCount,
+          rawHarmonicSegmentCount: entry.value.rawHarmonicSegmentCount,
+          keptHarmonicSegmentCount: entry.value.keptHarmonicSegmentCount,
+          rawNonHarmonicSegmentCount: entry.value.rawNonHarmonicSegmentCount,
+          keptNonHarmonicSegmentCount: entry.value.keptNonHarmonicSegmentCount,
+        ),
+    },
   );
 }
 
@@ -2825,6 +4480,14 @@ _BenchmarkCase _benchmarkCaseFromExternalRecord(
     'classical' => _BenchmarkGenre.classical,
     _ => _BenchmarkGenre.mixed,
   };
+  final harmonicSegments = [
+    for (final segment in record.segments)
+      if (segment.isHarmonic) segment,
+  ];
+  final noChordSegments = [
+    for (final segment in record.segments)
+      if (segment.isNoChord) segment,
+  ];
   return _BenchmarkCase(
     id: 'curated-${record.recordId}',
     description: record.title,
@@ -2840,25 +4503,43 @@ _BenchmarkCase _benchmarkCaseFromExternalRecord(
     corpusId: corpusId,
     corpusName: corpusName,
     annotationLevel: record.annotationLevel.name,
+    keyScope: record.keyScope.jsonValue,
+    segmentationScope: record.segmentationScope.jsonValue,
     segmentExpectations: [
-      for (final segment in record.segments)
+      for (
+        var analysisIndex = 0;
+        analysisIndex < harmonicSegments.length;
+        analysisIndex += 1
+      )
         _SegmentExpectation(
-          index: segment.index,
-          expectedRoman: segment.expectedRoman,
-          expectedFunction: segment.expectedFunction,
-          expectedResolvedSymbol: segment.expectedResolvedSymbol,
-          note: segment.note,
+          index: harmonicSegments[analysisIndex].index,
+          analysisIndex: analysisIndex,
+          expectedSurfaceRoman:
+              harmonicSegments[analysisIndex].surfaceRomanLabel,
+          expectedCanonicalRoman:
+              harmonicSegments[analysisIndex].canonicalRomanLabel,
+          expectedFunction: harmonicSegments[analysisIndex].expectedFunction,
+          expectedResolvedSymbol:
+              harmonicSegments[analysisIndex].expectedResolvedSymbol,
+          note: harmonicSegments[analysisIndex].note,
           comparisonProfile: const _ComparisonProfile(
             allowEnharmonicKeyMatch: true,
             allowSlashBassTolerance: true,
           ),
         ),
     ],
+    expectedPartialFailure: noChordSegments.isNotEmpty,
+    expectedNoChordEventCount: noChordSegments.length,
     notes: [
       'annotationLevel=${record.annotationLevel.name}',
       'alignmentType=${record.alignmentType.name}',
+      'keyScope=${record.keyScope.jsonValue}',
+      'segmentationScope=${record.segmentationScope.jsonValue}',
       'splitTag=${record.splitTag}',
       'licenseNotes=${record.licenseNotes}',
+      'harmonicSegments=${harmonicSegments.length}',
+      if (noChordSegments.isNotEmpty)
+        'noChordSegments=${noChordSegments.length}',
       if (record.globalKey != null) 'globalKey=${record.globalKey}',
       if (record.localKey != null) 'localKey=${record.localKey}',
     ],

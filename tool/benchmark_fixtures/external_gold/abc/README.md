@@ -11,5 +11,14 @@ Included source pieces:
 - `n04op18-4_02` measures 6-9
 - `n13op130_04` measures 42-49
 
+Selection-manifest mode:
+- `selection_manifest.tsv` lists a larger 24-window evaluation slice sourced
+  from the local ABC checkout.
+- If `CHORD_ANALYZER_BENCHMARK_ABC_SOURCE_ROOT` is set, or `.codex_tmp/ABC`
+  exists in the workspace, the benchmark imports those windows directly from a
+  local ABC checkout and emits a generated canonical manifest.
+- If no local ABC checkout is available, the benchmark falls back to the
+  checked-in 3-slice excerpt directory above.
+
 The excerpts remain corpus-derived data. Provenance, source ids, annotation
 level, and license notes are preserved by the ABC adapter.

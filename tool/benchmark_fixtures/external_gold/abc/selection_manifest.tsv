@@ -1,0 +1,25 @@
+source_id	measure_start	measure_end	selection_note
+n01op18-1_01	3	11	fallback excerpt retained in the checked-in slice
+n01op18-1_01	84	91	c-major reprise with secondary dominant return
+n01op18-1_01	195	202	db-major late section with flat-side cadence
+n01op18-1_02	3	10	d-minor opening with diminished passing support
+n01op18-1_03	17	24	db-major excursion with applied diminished motion
+n01op18-1_04	68	75	c-major retransition with modal-mixture turn
+n02op18-2_01	1	8	g-major opening with tonic-predominant-dominant circulation
+n02op18-2_02	1	8	c-major adagio with applied leading-tone color
+n02op18-2_03	1	8	g-major scherzo opening
+n02op18-2_04	24	31	g-major mid-movement retransition window
+n03op18-3_01	1	8	d-major opening cadence loop
+n03op18-3_02	1	8	bb-major opening with dominant embellishment
+n03op18-3_03	15	22	g-major sequential dominant chain
+n03op18-3_04	63	70	a-major local-section cadence chain
+n04op18-4_01	5	12	c-minor excerpt with zero-skip support
+n04op18-4_02	6	9	curated failure case for dominant-centric local-key confusion
+n04op18-4_03	1	8	chromatic c-minor opening
+n04op18-4_04	20	27	a-major internal episode with chromatic pivots
+n05op18-5_01	5	12	a-major window with applied dominant motion
+n05op18-5_02	38	45	c-sharp-minor boundary window with applied dominant turn
+n05op18-5_02	59	66	d-major reprise with dominant carryover
+n05op18-5_03	7	14	d-major excerpt with local dominant pull
+n05op18-5_04	195	202	late a-major excerpt with modal mixture and applied motion
+n13op130_04	42	49	fallback excerpt retained in the checked-in slice
