@@ -5,11 +5,24 @@ import 'package:flutter_test/flutter_test.dart';
 import '../tool/benchmark/adapters/when_in_rome_external_gold_adapter.dart';
 import '../tool/benchmark/chord_analyzer_external_gold_schema.dart';
 
+String _joinPath(Iterable<String> segments) =>
+    segments.join(Platform.pathSeparator);
+
 void main() {
   const adapter = WhenInRomeExternalGoldAdapter();
-  final selectionManifest =
-      '${Directory.current.path}\\tool\\benchmark_fixtures\\external_gold\\when_in_rome\\selection_manifest.tsv';
-  final sourceRoot = '${Directory.current.path}\\.codex_tmp\\When-in-Rome';
+  final selectionManifest = _joinPath(<String>[
+    Directory.current.path,
+    'tool',
+    'benchmark_fixtures',
+    'external_gold',
+    'when_in_rome',
+    'selection_manifest.tsv',
+  ]);
+  final sourceRoot = _joinPath(<String>[
+    Directory.current.path,
+    '.codex_tmp',
+    'When-in-Rome',
+  ]);
   final canImport =
       File(selectionManifest).existsSync() &&
       Directory(sourceRoot).existsSync();

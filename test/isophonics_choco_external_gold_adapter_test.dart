@@ -5,10 +5,18 @@ import 'package:flutter_test/flutter_test.dart';
 import '../tool/benchmark/adapters/isophonics_choco_external_gold_adapter.dart';
 import '../tool/benchmark/chord_analyzer_external_gold_schema.dart';
 
+String _joinPath(Iterable<String> segments) =>
+    segments.join(Platform.pathSeparator);
+
 void main() {
   const adapter = IsophonicsChocoExternalGoldAdapter();
-  final fixtureDirectory =
-      '${Directory.current.path}\\tool\\benchmark_fixtures\\external_gold\\isophonics_choco';
+  final fixtureDirectory = _joinPath(<String>[
+    Directory.current.path,
+    'tool',
+    'benchmark_fixtures',
+    'external_gold',
+    'isophonics_choco',
+  ]);
 
   test('imports ChoCo Isophonics fixture slice into canonical manifest', () {
     final result = adapter.importExcerptDirectory(fixtureDirectory);
