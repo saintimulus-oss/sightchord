@@ -2,6 +2,6 @@ import 'app.dart';
 
 export 'app.dart';
 
-void main() {
-  bootstrapApp();
+Future<void> main() async {
+  await bootstrapApp();
 }

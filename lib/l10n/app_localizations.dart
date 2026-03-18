@@ -2238,7 +2238,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyHarmonyReviewQueueHint.
   ///
   /// In en, this message translates to:
-  /// **'Pulled from your current review queue placeholder.'**
+  /// **'Pulled from your current review queue.'**
   String get studyHarmonyReviewQueueHint;
 
   /// No description provided for @studyHarmonyReviewWeakHint.
@@ -2832,7 +2832,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyHarmonyPopTrackDescription.
   ///
   /// In en, this message translates to:
-  /// **'A song-focused path is planned after the Core track is stable.'**
+  /// **'Run the full harmony path in a pop lane with its own progress, daily picks, and review queue.'**
   String get studyHarmonyPopTrackDescription;
 
   /// No description provided for @studyHarmonyJazzTrackTitle.
@@ -2844,7 +2844,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyHarmonyJazzTrackDescription.
   ///
   /// In en, this message translates to:
-  /// **'Jazz harmony content stays locked until the Core curriculum settles.'**
+  /// **'Practice the full curriculum in a jazz lane with separate progress, daily picks, and review queue.'**
   String get studyHarmonyJazzTrackDescription;
 
   /// No description provided for @studyHarmonyClassicalTrackTitle.
@@ -2856,7 +2856,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyHarmonyClassicalTrackDescription.
   ///
   /// In en, this message translates to:
-  /// **'Functional harmony in classical contexts will arrive in a later phase.'**
+  /// **'Study the full curriculum in a classical lane with independent progress, daily picks, and review queue.'**
   String get studyHarmonyClassicalTrackDescription;
 
   /// No description provided for @studyHarmonyObjectiveQuickDrill.

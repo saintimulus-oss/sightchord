@@ -7,11 +7,30 @@ import 'l10n/app_localizations.dart';
 import 'study_harmony/application/study_harmony_progress_controller.dart';
 import 'study_harmony/application/study_harmony_session_controller.dart';
 import 'study_harmony/content/core_curriculum_catalog.dart';
+import 'study_harmony/content/study_harmony_track_catalog.dart';
 import 'study_harmony/domain/study_harmony_progress_models.dart';
 import 'study_harmony/domain/study_harmony_session_models.dart';
 import 'study_harmony/study_harmony_session_page.dart';
 
 enum _StudyHarmonyHubTrack { core, pop, jazz, classical }
+
+StudyHarmonyTrackId _trackIdForHubTrack(_StudyHarmonyHubTrack track) {
+  return switch (track) {
+    _StudyHarmonyHubTrack.core => studyHarmonyCoreTrackId,
+    _StudyHarmonyHubTrack.pop => studyHarmonyPopTrackId,
+    _StudyHarmonyHubTrack.jazz => studyHarmonyJazzTrackId,
+    _StudyHarmonyHubTrack.classical => studyHarmonyClassicalTrackId,
+  };
+}
+
+_StudyHarmonyHubTrack _hubTrackFromTrackId(StudyHarmonyTrackId? trackId) {
+  return switch (normalizeStudyHarmonyTrackId(trackId)) {
+    studyHarmonyPopTrackId => _StudyHarmonyHubTrack.pop,
+    studyHarmonyJazzTrackId => _StudyHarmonyHubTrack.jazz,
+    studyHarmonyClassicalTrackId => _StudyHarmonyHubTrack.classical,
+    _ => _StudyHarmonyHubTrack.core,
+  };
+}
 
 Color _hubCardColor(ColorScheme colorScheme) => colorScheme.surfaceContainerLow;
 
@@ -53,45 +72,66 @@ class StudyHarmonyPage extends StatefulWidget {
 }
 
 class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
-  StudyHarmonyCourseDefinition? _coreCourse;
+  Map<StudyHarmonyTrackId, StudyHarmonyCourseDefinition>? _coursesByTrackId;
   String? _localeTag;
   _StudyHarmonyHubTrack _selectedTrack = _StudyHarmonyHubTrack.core;
 
   @override
+  void initState() {
+    super.initState();
+    _selectedTrack = _hubTrackFromTrackId(
+      widget.progressController.lastPlayedTrackId,
+    );
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _syncLocalizedCourse();
+    _syncLocalizedCourses();
   }
 
   @override
   void didUpdateWidget(covariant StudyHarmonyPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.progressController != widget.progressController &&
-        _coreCourse != null) {
+        _coursesByTrackId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted || _coreCourse == null) {
+        final coursesByTrackId = _coursesByTrackId;
+        if (!mounted || coursesByTrackId == null) {
           return;
         }
-        unawaited(widget.progressController.syncCourse(_coreCourse!));
+        unawaited(
+          Future.wait<void>([
+            for (final course in coursesByTrackId.values)
+              widget.progressController.syncCourse(course),
+          ]),
+        );
       });
     }
   }
 
-  void _syncLocalizedCourse() {
+  void _syncLocalizedCourses() {
     final localeTag = Localizations.localeOf(context).toLanguageTag();
-    if (_coreCourse != null && _localeTag == localeTag) {
+    if (_coursesByTrackId != null && _localeTag == localeTag) {
       return;
     }
 
-    final course = buildStudyHarmonyCoreCourse(AppLocalizations.of(context)!);
-    _coreCourse = course;
+    final coursesByTrackId = buildStudyHarmonyTrackCourses(
+      AppLocalizations.of(context)!,
+    );
+    _coursesByTrackId = coursesByTrackId;
     _localeTag = localeTag;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
         return;
       }
-      unawaited(widget.progressController.syncCourse(course));
+      unawaited(
+        Future.wait<void>([
+          for (final course in coursesByTrackId.values)
+            widget.progressController.syncCourse(course),
+        ]),
+      );
     });
   }
 
@@ -213,7 +253,11 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final course = _coreCourse ?? buildStudyHarmonyCoreCourse(l10n);
+    final coursesByTrackId =
+        _coursesByTrackId ?? buildStudyHarmonyTrackCourses(l10n);
+    final course =
+        coursesByTrackId[_trackIdForHubTrack(_selectedTrack)] ??
+        coursesByTrackId[studyHarmonyCoreTrackId]!;
 
     return AnimatedBuilder(
       animation: widget.progressController,
@@ -309,7 +353,7 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
               in widget.progressController.milestoneBoardForCourse(course))
             _milestoneCardData(l10n: l10n, milestone: milestone),
         ];
-        final selectedTrack = _trackView(
+        final selectedTrackDescription = _trackDescription(
           l10n: l10n,
           course: course,
           track: _selectedTrack,
@@ -459,7 +503,7 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                               title: l10n.studyHarmonyTitle,
                               eyebrow: l10n.studyHarmonyHubHeroEyebrow,
                               subtitle: l10n.studyHarmonySubtitle,
-                              body: selectedTrack.description,
+                              body: selectedTrackDescription,
                               metrics: heroMetrics,
                             ),
                             const SizedBox(height: 20),
@@ -482,18 +526,18 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                 _TrackFilterChipData(
                                   track: _StudyHarmonyHubTrack.pop,
                                   label: l10n.studyHarmonyTrackPopFilterLabel,
-                                  icon: Icons.lock_outline_rounded,
+                                  icon: Icons.graphic_eq_rounded,
                                 ),
                                 _TrackFilterChipData(
                                   track: _StudyHarmonyHubTrack.jazz,
                                   label: l10n.studyHarmonyTrackJazzFilterLabel,
-                                  icon: Icons.lock_outline_rounded,
+                                  icon: Icons.queue_music_rounded,
                                 ),
                                 _TrackFilterChipData(
                                   track: _StudyHarmonyHubTrack.classical,
                                   label: l10n
                                       .studyHarmonyTrackClassicalFilterLabel,
-                                  icon: Icons.lock_outline_rounded,
+                                  icon: Icons.music_note_rounded,
                                 ),
                               ],
                               onChanged: (track) {
@@ -503,8 +547,7 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                               },
                             ),
                             const SizedBox(height: 20),
-                            if (_selectedTrack ==
-                                _StudyHarmonyHubTrack.core) ...[
+                            ...[
                               Wrap(
                                 spacing: 16,
                                 runSpacing: 16,
@@ -1142,15 +1185,7 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                     ),
                                 ],
                               ),
-                            ] else
-                              _LockedTrackPlaceholderCard(
-                                trackTitle: selectedTrack.title,
-                                trackDescription: selectedTrack.description,
-                                body: l10n.studyHarmonyTrackPlaceholderBody(
-                                  course.title,
-                                ),
-                                badgeLabel: l10n.studyHarmonyComingSoonTag,
-                              ),
+                            ],
                           ],
                         );
                       },
@@ -2091,101 +2126,15 @@ class _ChapterLessonTile extends StatelessWidget {
   }
 }
 
-class _LockedTrackPlaceholderCard extends StatelessWidget {
-  const _LockedTrackPlaceholderCard({
-    required this.trackTitle,
-    required this.trackDescription,
-    required this.body,
-    required this.badgeLabel,
-  });
-
-  final String trackTitle;
-  final String trackDescription;
-  final String body;
-  final String badgeLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Semantics(
-      container: true,
-      child: Card(
-        key: const ValueKey('study-harmony-track-placeholder'),
-        elevation: 0,
-        color: _hubCardColor(colorScheme),
-        shape: _hubCardShape(colorScheme),
-        clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Chip(
-                avatar: const Icon(Icons.lock_outline_rounded, size: 18),
-                label: Text(badgeLabel),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                trackTitle,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                trackDescription,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                body,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  height: 1.45,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _TrackViewData {
-  const _TrackViewData({required this.title, required this.description});
-
-  final String title;
-  final String description;
-}
-
-_TrackViewData _trackView({
+String _trackDescription({
   required AppLocalizations l10n,
   required StudyHarmonyCourseDefinition course,
   required _StudyHarmonyHubTrack track,
 }) {
-  return switch (track) {
-    _StudyHarmonyHubTrack.core => _TrackViewData(
-      title: course.title,
-      description: l10n.studyHarmonyHubHeroBody,
-    ),
-    _StudyHarmonyHubTrack.pop => _TrackViewData(
-      title: l10n.studyHarmonyPopTrackTitle,
-      description: l10n.studyHarmonyPopTrackDescription,
-    ),
-    _StudyHarmonyHubTrack.jazz => _TrackViewData(
-      title: l10n.studyHarmonyJazzTrackTitle,
-      description: l10n.studyHarmonyJazzTrackDescription,
-    ),
-    _StudyHarmonyHubTrack.classical => _TrackViewData(
-      title: l10n.studyHarmonyClassicalTrackTitle,
-      description: l10n.studyHarmonyClassicalTrackDescription,
-    ),
-  };
+  if (track == _StudyHarmonyHubTrack.core) {
+    return l10n.studyHarmonyHubHeroBody;
+  }
+  return course.description;
 }
 
 _HubQuestCardData _questCardData({

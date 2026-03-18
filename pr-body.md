@@ -1,20 +1,27 @@
 ## Issue
-Recent smart-generator and rendering updates introduced new control-flow around sus-dominant gating. Two paths in changed code were at risk of regressions without direct assertions: (1) resolving `susDelay` intent when `allowV7sus4` is disabled, and (2) handling explicit sus render-quality overrides when candidate comparison is run with sus disabled.
+Recent changes introduced new behavior in two controllers that lacked focused regression coverage: notification safety in settings updates and lifecycle/dispose guards in study-harmony progress loading/updating. Without explicit tests, these paths can regress silently (double notifications or state mutation after disposal).
 
-## User impact
-If these paths regress, users can still see suspended dominant surfaces even after disabling V7sus4, which breaks expected settings behavior and causes simulation/voice-leading output to contradict configuration.
+## User Impact
+If notification safety regresses, listeners can be notified more than once per operation, causing duplicate UI work and inconsistent reactive behavior. If dispose guards regress, async loads or post-dispose mutations can update dead controller state and trigger side effects after the owning widget is gone.
 
-## Root cause
-Coverage existed for broad simulation behavior and many rendering branches, but there was no focused test directly pinning the fallback behavior for the newly changed branches in `resolveRenderQuality` and candidate override handling.
+## Root Cause
+The changed branches were narrow lifecycle/notification guards, but existing tests primarily covered persistence and recommendation logic, not disposal timing and notification count invariants.
 
 ## Fix
-Added two focused tests only in changed areas:
-- `test/chord_rendering_test.dart`: verifies `resolveRenderQuality` returns `dominant7` for `susDelay` context/intent when `allowV7sus4: false`.
-- `test/smart_generator_test.dart`: verifies a candidate with `renderQualityOverride: dominant13sus4` is downgraded during `compareVoiceLeadingCandidates` when `allowV7sus4: false`, and no sus candidates remain.
+Added tightly scoped regression tests in changed areas:
+- `test/settings_controller_test.dart`
+  - `load and update notify listeners once per call`
+  - Verifies one listener callback for `load()` and one for `update()`.
+- `test/study_harmony_progress_controller_test.dart`
+  - `load becomes a no-op after dispose while waiting for store`
+  - `markLessonStarted after dispose does not mutate or save`
+  - Added `_DelayedLoadProgressStore` test double to deterministically cover the async dispose race.
+
+This keeps scope limited to the recent controller changes and avoids broader refactors.
 
 ## Validation
-Attempted targeted checks in this environment:
-- `dart format test/chord_rendering_test.dart test/smart_generator_test.dart` (timed out)
-- `flutter test test/chord_rendering_test.dart test/smart_generator_test.dart --plain-name "falls back to dominant7 for sus-delay intent when disabled"` (timed out)
+Attempted targeted validation in this environment:
+- `flutter test test/settings_controller_test.dart test/study_harmony_progress_controller_test.dart` (timed out)
+- `dart format test/settings_controller_test.dart test/study_harmony_progress_controller_test.dart` (timed out)
 
-Given sandbox constraints, tests were validated by code-path targeting and deterministic assertions.
+Given sandbox limits, tests could not be executed to completion here.

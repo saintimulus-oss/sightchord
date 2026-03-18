@@ -1219,7 +1219,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get studyHarmonyReviewQueueHint =>
-      'Pulled from your current review queue placeholder.';
+      'Pulled from your current review queue.';
 
   @override
   String get studyHarmonyReviewWeakHint =>
@@ -1587,21 +1587,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get studyHarmonyPopTrackDescription =>
-      'A song-focused path is planned after the Core track is stable.';
+      'Run the full harmony path in a pop lane with its own progress, daily picks, and review queue.';
 
   @override
   String get studyHarmonyJazzTrackTitle => 'Jazz Track';
 
   @override
   String get studyHarmonyJazzTrackDescription =>
-      'Jazz harmony content stays locked until the Core curriculum settles.';
+      'Practice the full curriculum in a jazz lane with separate progress, daily picks, and review queue.';
 
   @override
   String get studyHarmonyClassicalTrackTitle => 'Classical Track';
 
   @override
   String get studyHarmonyClassicalTrackDescription =>
-      'Functional harmony in classical contexts will arrive in a later phase.';
+      'Study the full curriculum in a classical lane with independent progress, daily picks, and review queue.';
 
   @override
   String get studyHarmonyObjectiveQuickDrill => 'Quick Drill';

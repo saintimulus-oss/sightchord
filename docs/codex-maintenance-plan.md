@@ -5,7 +5,7 @@
 - Generated Flutter web output is tracked at the repository root, which makes release artifacts look like source code and risks drift from the GitHub Pages CI build.
 - Machine-local and tool-generated files are present or tracked, including `.appdata/`, `.dart_tool/`, build outputs, logs, scratch files, and `android/local.properties`.
 - Several core Dart files are oversized and mix domain logic, state, and UI concerns, which raises regression risk for future maintenance.
-- Platform bundle/application identifiers still use templated `com.example.sightchord` values. Because no unambiguous production identifier is present elsewhere, this should stay as an owner follow-up instead of a guessed change.
+- Android release builds still fall back to the debug signing config, so store-ready packaging requires owner keystore provisioning.
 
 ## Milestones
 

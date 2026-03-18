@@ -8,7 +8,7 @@
 PRODUCT_NAME = Chordest
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.sightchord
+PRODUCT_BUNDLE_IDENTIFIER = io.github.saintimulusoss.chordest
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright (C) 2026 Chordest. All rights reserved.

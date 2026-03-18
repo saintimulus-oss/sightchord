@@ -8,7 +8,7 @@ import 'practice_home_page.dart';
 import 'settings/practice_settings.dart';
 import 'settings/settings_controller.dart';
 import 'study_harmony/application/study_harmony_progress_controller.dart';
-import 'study_harmony/content/core_curriculum_catalog.dart';
+import 'study_harmony/content/study_harmony_track_catalog.dart';
 import 'study_harmony/domain/study_harmony_session_models.dart';
 import 'study_harmony_page.dart';
 
@@ -182,7 +182,11 @@ class MainMenuPage extends StatelessWidget {
                       AnimatedBuilder(
                         animation: studyHarmonyProgressController,
                         builder: (context, _) {
-                          final course = buildStudyHarmonyCoreCourse(l10n);
+                          final course = buildStudyHarmonyCourseForTrackId(
+                            l10n: l10n,
+                            trackId: studyHarmonyProgressController
+                                .lastPlayedTrackId,
+                          );
                           final summary = _buildStudyHarmonyMenuSummary(
                             l10n: l10n,
                             course: course,

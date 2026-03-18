@@ -393,6 +393,25 @@ void main() {
         .data;
   }
 
+  String? sideChordText(WidgetTester tester, String key) {
+    final textFinder = find.descendant(
+      of: find.byKey(ValueKey(key)),
+      matching: find.byType(Text),
+    );
+    if (textFinder.evaluate().isEmpty) {
+      return null;
+    }
+    return tester.widget<Text>(textFinder.first).data;
+  }
+
+  String? previousChordText(WidgetTester tester) {
+    return sideChordText(tester, 'previous-chord-text');
+  }
+
+  String? nextChordText(WidgetTester tester) {
+    return sideChordText(tester, 'next-chord-text');
+  }
+
   int? activeBeatIndex(WidgetTester tester) {
     return tester
         .widget<BeatIndicatorRow>(find.byType(BeatIndicatorRow))
@@ -1798,26 +1817,27 @@ void main() {
   ) async {
     await pumpApp(tester);
 
-    final initialText = tester
-        .widget<Text>(find.byKey(const ValueKey('current-chord-text')))
-        .data;
+    final initialText = currentChordText(tester);
+    final initialNextText = nextChordText(tester);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.space);
     await tester.pumpAndSettle();
 
-    final nextText = tester
-        .widget<Text>(find.byKey(const ValueKey('current-chord-text')))
-        .data;
+    final advancedText = currentChordText(tester);
 
-    expect(nextText, isNotNull);
-    expect(nextText, isNot(initialText));
-    expect(nextText, isNotEmpty);
+    expect(initialText, isNotNull);
+    expect(initialNextText, isNotNull);
+    expect(advancedText, initialNextText);
+    expect(previousChordText(tester), initialText);
+    expect(advancedText, isNotEmpty);
   });
 
   testWidgets(
     'tapping previous and next chord regions uses animated navigation',
     (WidgetTester tester) async {
       await pumpApp(tester);
+      final initialText = currentChordText(tester);
+      final initialNextText = nextChordText(tester);
 
       await tester.tap(nextChordTapTarget().hitTestable());
       await tester.pump(const Duration(milliseconds: 40));
@@ -1827,13 +1847,17 @@ void main() {
       await tester.pumpAndSettle();
 
       final firstAdvancedText = currentChordText(tester);
+      expect(firstAdvancedText, initialNextText);
+      expect(previousChordText(tester), initialText);
       expect(firstAdvancedText, isNotNull);
       expect(firstAdvancedText, isNot(''));
 
+      final secondPreviewText = nextChordText(tester);
       await tapNextChordRegion(tester);
       final secondAdvancedText = currentChordText(tester);
 
-      expect(secondAdvancedText, isNot(firstAdvancedText));
+      expect(secondAdvancedText, secondPreviewText);
+      expect(previousChordText(tester), firstAdvancedText);
 
       await tapPreviousChordRegion(tester);
 
@@ -1856,15 +1880,17 @@ void main() {
     await tester.pumpAndSettle();
 
     final flingText = currentChordText(tester);
+    final flingPreviousText = previousChordText(tester);
 
     expect(flingText, isNotNull);
-    expect(flingText, isNot(initialText));
+    expect(flingText, isNotEmpty);
+    expect(flingPreviousText, isNotNull);
+    expect(flingPreviousText, isNotEmpty);
 
     await tapPreviousChordRegion(tester);
 
     final afterOneBack = currentChordText(tester);
-    expect(afterOneBack, isNot(initialText));
-    expect(afterOneBack, isNot(flingText));
+    expect(afterOneBack, flingPreviousText);
 
     await tester.fling(
       find.byKey(const ValueKey('chord-swipe-surface')),
@@ -1946,9 +1972,11 @@ void main() {
       );
 
       final initialText = currentChordText(tester);
+      final initialNextText = nextChordText(tester);
 
       await tapNextChordRegion(tester);
-      expect(currentChordText(tester), isNot(initialText));
+      expect(currentChordText(tester), initialNextText);
+      expect(previousChordText(tester), initialText);
       expect(currentChordText(tester), isNotEmpty);
 
       await tester.ensureVisible(

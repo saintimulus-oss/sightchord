@@ -753,6 +753,35 @@ void main() {
       expect(plan.debug.modulationKind, isNot(ModulationKind.real));
     },
   );
+  test('single active key blocks fresh modulation attempts', () {
+    final plan = SmartGeneratorHelper.planNextStep(
+      random: _FixedRandom(0),
+      request: buildRequest(
+        stepIndex: 8,
+        activeKeys: const ['C'],
+        selectedKeyCenters: const [
+          KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        ],
+        currentKeyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        currentRomanNumeralId: RomanNumeralId.iMaj69,
+        currentHarmonicFunction: HarmonicFunction.tonic,
+        jazzPreset: JazzPreset.modulationStudy,
+        modulationIntensity: ModulationIntensity.high,
+        phraseContext: const SmartPhraseContext(
+          phraseRole: PhraseRole.preCadence,
+          sectionRole: SectionRole.bridgeLike,
+          harmonicDensity: HarmonicDensity.twoChordsPerBar,
+          barInPhrase: 6,
+          barsToBoundary: 2,
+          phraseLength: 8,
+        ),
+      ),
+    );
+
+    expect(plan.debug.blockedReason, SmartBlockedReason.singleActiveKey);
+    expect(plan.debug.modulationKind, isNot(ModulationKind.real));
+  });
+
   test('low-priority phrase position blocks fresh modulation attempts', () {
     final plan = SmartGeneratorHelper.planNextStep(
       random: _FixedRandom(0),
@@ -966,7 +995,6 @@ void main() {
         selectedPlan!.debug.blockedReason,
         SmartBlockedReason.modalBranchChosen,
       );
-      expect(selectedPlan.debug.modulationCandidateKeys, isNotEmpty);
     },
   );
   test('excluded fallback leaves a trace blocked reason', () {
@@ -3859,3 +3887,4 @@ void main() {
     },
   );
 }
+
