@@ -104,6 +104,10 @@ class _MyHomePageState extends State<MyHomePage> {
   static const int _minBpm = PracticeSettings.minBpm;
   static const int _maxBpm = PracticeSettings.maxBpm;
   static const int _practiceHistoryLimit = 24;
+  static const double _combinedPlaybackChordGainScale = 0.74;
+  static const double _combinedPlaybackMelodyGainScale = 1.24;
+  static const double _combinedPlaybackGuideGainBoost = 0.08;
+  static const int _combinedPlaybackMelodyVelocityBoost = 14;
   static const Duration _scheduledMetronomeLookAhead = Duration(
     milliseconds: 120,
   );
@@ -883,7 +887,10 @@ class _MyHomePageState extends State<MyHomePage> {
         mode == MelodyPlaybackMode.both;
   }
 
-  HarmonyMelodyClip _melodyClipForEvent(GeneratedMelodyEvent melodyEvent) {
+  HarmonyMelodyClip _melodyClipForEvent(
+    GeneratedMelodyEvent melodyEvent, {
+    bool emphasizeLead = false,
+  }) {
     final beatMicros = _beatInterval().inMicroseconds;
 
     Duration durationFromBeats(double beats) {
@@ -898,8 +905,41 @@ class _MyHomePageState extends State<MyHomePage> {
             midiNote: note.midiNote,
             startOffset: durationFromBeats(note.startBeatOffset),
             duration: durationFromBeats(note.durationBeats),
+            velocity: emphasizeLead
+                ? (note.velocity + _combinedPlaybackMelodyVelocityBoost)
+                      .clamp(1, 127)
+                      .toInt()
+                : note.velocity,
+            gain: emphasizeLead ? _emphasizedMelodyGain(note) : note.gain,
+            toneLabel: note.toneLabel,
+          ),
+      ],
+    );
+  }
+
+  double _emphasizedMelodyGain(GeneratedMelodyNote note) {
+    final roleBoost = switch (note.role) {
+      MelodyNoteRole.guideTone ||
+      MelodyNoteRole.stableTension ||
+      MelodyNoteRole.anticipation => _combinedPlaybackGuideGainBoost,
+      _ => 0.0,
+    };
+    return (note.gain * _combinedPlaybackMelodyGainScale + roleBoost)
+        .clamp(0.35, 1.55)
+        .toDouble();
+  }
+
+  HarmonyChordClip _softenChordClipForCombinedPlayback(HarmonyChordClip clip) {
+    return HarmonyChordClip(
+      label: clip.label,
+      notes: [
+        for (final note in clip.notes)
+          HarmonyPreviewNote(
+            midiNote: note.midiNote,
             velocity: note.velocity,
-            gain: note.gain,
+            gain: (note.gain * _combinedPlaybackChordGainScale)
+                .clamp(0.2, 1.0)
+                .toDouble(),
             toneLabel: note.toneLabel,
           ),
       ],
@@ -918,16 +958,21 @@ class _MyHomePageState extends State<MyHomePage> {
     if (harmonyAudio == null) {
       return;
     }
-    final chordClip = _playbackModeUsesChord(playbackMode)
+    final baseChordClip = _playbackModeUsesChord(playbackMode)
         ? HarmonyPreviewResolver.auditionClipForGeneratedChord(
             event.chord,
             preferredVoicing: preferredVoicing,
           )
         : null;
+    final includesMelody =
+        _playbackModeUsesMelody(playbackMode) && melodyEvent != null;
+    final chordClip = baseChordClip != null && includesMelody
+        ? _softenChordClipForCombinedPlayback(baseChordClip)
+        : baseChordClip;
     final compositeClip = HarmonyCompositeClip(
       chordClip: chordClip,
-      melodyClip: _playbackModeUsesMelody(playbackMode) && melodyEvent != null
-          ? _melodyClipForEvent(melodyEvent)
+      melodyClip: includesMelody
+          ? _melodyClipForEvent(melodyEvent, emphasizeLead: chordClip != null)
           : null,
       label: _displaySymbolForEvent(event),
     );

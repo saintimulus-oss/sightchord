@@ -90,6 +90,109 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
+class _AnalysisStatusBanner extends StatelessWidget {
+  const _AnalysisStatusBanner({
+    required this.icon,
+    required this.title,
+    this.body,
+    this.chips = const [],
+    this.accent = false,
+    this.busy = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String? body;
+  final List<Widget> chips;
+  final bool accent;
+  final bool busy;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final iconBackground = accent
+        ? colorScheme.primary.withValues(alpha: 0.12)
+        : colorScheme.surfaceContainerHighest;
+    final iconColor = accent
+        ? colorScheme.primary
+        : colorScheme.onSurfaceVariant;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: accent
+            ? colorScheme.primaryContainer.withValues(alpha: 0.26)
+            : colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: accent
+              ? colorScheme.primary.withValues(alpha: 0.18)
+              : colorScheme.outlineVariant,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: iconBackground,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: iconColor),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  if (body != null && body!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 5),
+                    Text(
+                      body!,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                  if (chips.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Wrap(spacing: 8, runSpacing: 8, children: chips),
+                  ],
+                ],
+              ),
+            ),
+            if (busy) ...[
+              const SizedBox(width: 10),
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.2,
+                    color: accent ? colorScheme.primary : colorScheme.primary,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _LowConfidenceBanner extends StatelessWidget {
   const _LowConfidenceBanner({required this.title, required this.body});
 

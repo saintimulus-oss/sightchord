@@ -63,37 +63,62 @@ void main() {
     expect(secondOn, greaterThan(firstOff));
   });
 
-  test('composite clips can play melody notes alongside the chord clip', () async {
+  test(
+    'composite clips can play melody notes alongside the chord clip',
+    () async {
+      final events = <String>[];
+      final engine = _FakeSampledInstrumentEngine(events);
+      final service = HarmonyAudioService(engine: engine);
+
+      await service.playCompositeClip(
+        const HarmonyCompositeClip(
+          chordClip: HarmonyChordClip(
+            notes: <HarmonyPreviewNote>[
+              HarmonyPreviewNote(midiNote: 60),
+              HarmonyPreviewNote(midiNote: 64),
+            ],
+          ),
+          melodyClip: HarmonyMelodyClip(
+            notes: <HarmonyMelodyNote>[
+              HarmonyMelodyNote(
+                midiNote: 72,
+                startOffset: Duration.zero,
+                duration: Duration(milliseconds: 12),
+              ),
+            ],
+          ),
+        ),
+        overrides: HarmonyPlaybackOverrides(
+          blockHold: Duration(milliseconds: 18),
+        ),
+      );
+
+      expect(events, contains('noteOn:60'));
+      expect(events, contains('noteOn:64'));
+      expect(events, contains('noteOn:72'));
+    },
+  );
+
+  test('block chords start through the batch note-on path', () async {
     final events = <String>[];
     final engine = _FakeSampledInstrumentEngine(events);
     final service = HarmonyAudioService(engine: engine);
 
-    await service.playCompositeClip(
-      const HarmonyCompositeClip(
-        chordClip: HarmonyChordClip(
-          notes: <HarmonyPreviewNote>[
-            HarmonyPreviewNote(midiNote: 60),
-            HarmonyPreviewNote(midiNote: 64),
-          ],
-        ),
-        melodyClip: HarmonyMelodyClip(
-          notes: <HarmonyMelodyNote>[
-            HarmonyMelodyNote(
-              midiNote: 72,
-              startOffset: Duration.zero,
-              duration: Duration(milliseconds: 12),
-            ),
-          ],
-        ),
+    await service.playClip(
+      const HarmonyChordClip(
+        notes: <HarmonyPreviewNote>[
+          HarmonyPreviewNote(midiNote: 60),
+          HarmonyPreviewNote(midiNote: 64),
+          HarmonyPreviewNote(midiNote: 67),
+        ],
       ),
       overrides: HarmonyPlaybackOverrides(
-        blockHold: Duration(milliseconds: 18),
+        blockHold: Duration(milliseconds: 12),
       ),
     );
 
-    expect(events, contains('noteOn:60'));
-    expect(events, contains('noteOn:64'));
-    expect(events, contains('noteOn:72'));
+    expect(events, contains('noteOnBatch:60,64,67'));
+    expect(events.indexOf('noteOnBatch:60,64,67'), greaterThanOrEqualTo(0));
   });
 }
 
@@ -125,6 +150,25 @@ class _FakeSampledInstrumentEngine extends SampledInstrumentEngine {
       midiNote: midiNote,
       velocity: velocity,
     );
+  }
+
+  @override
+  Future<List<ActiveInstrumentNote>> noteOnBatch(
+    Iterable<InstrumentNoteRequest> notes, {
+    List<Duration>? startOffsets,
+  }) async {
+    final requestList = notes.toList(growable: false);
+    events.add(
+      'noteOnBatch:${requestList.map((note) => note.midiNote).join(',')}',
+    );
+    return [
+      for (final note in requestList)
+        (await noteOn(
+          midiNote: note.midiNote,
+          velocity: note.velocity,
+          gain: note.gain,
+        ))!,
+    ];
   }
 
   @override

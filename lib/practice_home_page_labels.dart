@@ -62,14 +62,4 @@ extension _PracticeHomePageLabels on _MyHomePageState {
     }
     return '${labels.take(2).join('  ·  ')} +${labels.length - 2}';
   }
-
-  List<String> _selectedKeyPreviewLabels(
-    AppLocalizations l10n, {
-    int limit = 6,
-  }) {
-    return [
-      for (final center in _orderedKeyCenters.take(limit))
-        _keyCenterLabel(l10n, center, trailingColon: false),
-    ];
-  }
 }

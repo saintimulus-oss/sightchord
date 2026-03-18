@@ -526,7 +526,7 @@ class PracticeSettings {
     this.autoPlayChordChanges = false,
     this.autoPlayPattern = HarmonyPlaybackPattern.block,
     double autoPlayHoldFactor = 0.82,
-    this.autoPlayMelodyWithChords = false,
+    this.autoPlayMelodyWithChords = true,
     this.melodyGenerationEnabled = false,
     this.melodyDensity = MelodyDensity.balanced,
     double motifRepetitionStrength = 0.55,

@@ -30,6 +30,8 @@ class StudyHarmonySessionController extends ChangeNotifier {
       <StudyHarmonyLessonId, int>{};
   final Map<StudyHarmonyLessonId, int> _lessonCorrectCounts =
       <StudyHarmonyLessonId, int>{};
+  final List<StudyHarmonyTaskBlueprintId> _remainingBlueprintIds =
+      <StudyHarmonyTaskBlueprintId>[];
 
   late StudyHarmonySessionState _state;
   int _nextTaskSequenceNumber = 0;
@@ -137,22 +139,37 @@ class StudyHarmonySessionController extends ChangeNotifier {
         _recordTaskOutcome(task: task, wasCorrect: evaluation.isCorrect);
         final nextCorrectAnswers =
             _state.correctAnswers + (evaluation.isCorrect ? 1 : 0);
-        final nextLivesRemaining = evaluation.isCorrect
-            ? _state.livesRemaining
-            : max(0, _state.livesRemaining - 1);
         final nextCurrentCombo = evaluation.isCorrect
             ? _state.currentCombo + 1
-            : 0;
+            : _comboAfterMiss(_state.currentCombo);
         final nextBestCombo = max(_state.bestCombo, nextCurrentCombo);
+        final nextProgressPoints = evaluation.isCorrect
+            ? min(
+                _lesson.goalCorrectAnswers,
+                _state.progressPoints +
+                    _progressGainForCorrect(nextCurrentCombo),
+              )
+            : max(0, _state.progressPoints - _missProgressPenalty());
+        final nextLivesRemaining = evaluation.isCorrect
+            ? min(
+                _maxLivesAllowed(),
+                _state.livesRemaining +
+                    _lifeGainForCombo(
+                      previousCombo: _state.currentCombo,
+                      nextCombo: nextCurrentCombo,
+                    ),
+              )
+            : max(0, _state.livesRemaining - _missLifePenalty());
         final nextPhase = _phaseAfterSubmission(
           isCorrect: evaluation.isCorrect,
-          correctAnswers: nextCorrectAnswers,
+          progressPoints: nextProgressPoints,
           livesRemaining: nextLivesRemaining,
         );
 
         _state = _state.copyWith(
           selectedAnswerIds: const <StudyHarmonyAnswerOptionId>{},
           lastEvaluation: evaluation,
+          progressPoints: nextProgressPoints,
           correctAnswers: nextCorrectAnswers,
           attempts: _state.attempts + 1,
           currentCombo: nextCurrentCombo,
@@ -183,6 +200,7 @@ class StudyHarmonySessionController extends ChangeNotifier {
     _skillCorrectCounts.clear();
     _lessonAttemptCounts.clear();
     _lessonCorrectCounts.clear();
+    _remainingBlueprintIds.clear();
     _stopwatch
       ..reset()
       ..start();
@@ -192,6 +210,7 @@ class StudyHarmonySessionController extends ChangeNotifier {
       lesson: _lesson,
       phase: StudyHarmonySessionPhase.ready,
       currentTask: _pickNextTask(),
+      progressPoints: 0,
       correctAnswers: 0,
       attempts: 0,
       currentCombo: 0,
@@ -212,8 +231,14 @@ class StudyHarmonySessionController extends ChangeNotifier {
       return;
     }
 
+    final repeatMissedTask =
+        _lesson.sessionMetadata.repeatMissedTask &&
+        _state.lastEvaluation.status == StudyHarmonyEvaluationStatus.incorrect;
+
     _state = _state.copyWith(
-      currentTask: _pickNextTask(previousBlueprintId: currentTask.blueprintId),
+      currentTask: repeatMissedTask
+          ? _taskFromBlueprintId(currentTask.blueprintId)
+          : _pickNextTask(previousBlueprintId: currentTask.blueprintId),
       selectedAnswerIds: const <StudyHarmonyAnswerOptionId>{},
       lastEvaluation: const StudyHarmonyEvaluationResult.idle(),
       phase: StudyHarmonySessionPhase.ready,
@@ -284,10 +309,10 @@ class StudyHarmonySessionController extends ChangeNotifier {
 
   StudyHarmonySessionPhase _phaseAfterSubmission({
     required bool isCorrect,
-    required int correctAnswers,
+    required int progressPoints,
     required int livesRemaining,
   }) {
-    if (correctAnswers >= _lesson.goalCorrectAnswers) {
+    if (progressPoints >= _lesson.goalCorrectAnswers) {
       return StudyHarmonySessionPhase.completed;
     }
     if (livesRemaining <= 0) {
@@ -305,29 +330,126 @@ class StudyHarmonySessionController extends ChangeNotifier {
     if (tasks.isEmpty) {
       throw StateError('Lesson ${_lesson.id} has no tasks.');
     }
+    if (_lesson.sessionMetadata.uniqueTaskCycle && tasks.length > 1) {
+      return _taskFromUniqueCycle(previousBlueprintId: previousBlueprintId);
+    }
     if (tasks.length == 1) {
-      return tasks.single.createInstance(
-        sequenceNumber: _nextTaskSequenceNumber++,
-        random: _random,
-      );
+      return _taskFromBlueprint(tasks.single);
     }
 
     var candidate = tasks[_random.nextInt(tasks.length)];
     if (candidate.id != previousBlueprintId) {
-      return candidate.createInstance(
-        sequenceNumber: _nextTaskSequenceNumber++,
-        random: _random,
-      );
+      return _taskFromBlueprint(candidate);
     }
 
     final alternatives = tasks
         .where((task) => task.id != previousBlueprintId)
         .toList(growable: false);
     final nextTask = alternatives[_random.nextInt(alternatives.length)];
-    return nextTask.createInstance(
+    return _taskFromBlueprint(nextTask);
+  }
+
+  int _progressGainForCorrect(int nextCombo) {
+    final metadata = _lesson.sessionMetadata;
+    final threshold = metadata.comboProgressThreshold;
+    final bonus = metadata.comboProgressBonus;
+    if (threshold <= 0 || bonus <= 0) {
+      return 1;
+    }
+    final previousMilestones = _state.currentCombo ~/ threshold;
+    final nextMilestones = nextCombo ~/ threshold;
+    final bonusGain = max(0, nextMilestones - previousMilestones) * bonus;
+    return 1 + bonusGain;
+  }
+
+  int _lifeGainForCombo({required int previousCombo, required int nextCombo}) {
+    final metadata = _lesson.sessionMetadata;
+    final threshold = metadata.comboLifeThreshold;
+    final bonus = metadata.comboLifeBonus;
+    if (threshold <= 0 || bonus <= 0) {
+      return 0;
+    }
+    final previousMilestones = previousCombo ~/ threshold;
+    final nextMilestones = nextCombo ~/ threshold;
+    return max(0, nextMilestones - previousMilestones) * bonus;
+  }
+
+  int _missLifePenalty() {
+    return max(1, _lesson.sessionMetadata.missLifePenalty);
+  }
+
+  int _comboAfterMiss(int currentCombo) {
+    if (currentCombo <= 0) {
+      return 0;
+    }
+    final metadata = _lesson.sessionMetadata;
+    if (metadata.comboResetsOnMiss) {
+      return 0;
+    }
+    return max(0, currentCombo - max(0, metadata.comboDropOnMiss));
+  }
+
+  int _missProgressPenalty() {
+    return max(0, _lesson.sessionMetadata.missProgressPenalty);
+  }
+
+  int _maxLivesAllowed() {
+    return _lesson.startingLives +
+        max(0, _lesson.sessionMetadata.comboLifeBonus);
+  }
+
+  StudyHarmonyTaskInstance _taskFromUniqueCycle({
+    StudyHarmonyTaskBlueprintId? previousBlueprintId,
+  }) {
+    if (_remainingBlueprintIds.isEmpty) {
+      _remainingBlueprintIds.addAll(_lesson.tasks.map((task) => task.id));
+      _remainingBlueprintIds.shuffle(_random);
+      if (_remainingBlueprintIds.length > 1 &&
+          previousBlueprintId != null &&
+          _remainingBlueprintIds.first == previousBlueprintId) {
+        final first = _remainingBlueprintIds.removeAt(0);
+        _remainingBlueprintIds.add(first);
+      }
+    }
+    final nextBlueprintId = _remainingBlueprintIds.removeAt(0);
+    return _taskFromBlueprintId(nextBlueprintId);
+  }
+
+  StudyHarmonyTaskInstance _taskFromBlueprintId(
+    StudyHarmonyTaskBlueprintId blueprintId,
+  ) {
+    final blueprint = _lesson.tasks.firstWhere(
+      (task) => task.id == blueprintId,
+    );
+    return _taskFromBlueprint(blueprint);
+  }
+
+  StudyHarmonyTaskInstance _taskFromBlueprint(
+    StudyHarmonyTaskBlueprint blueprint,
+  ) {
+    final instance = blueprint.createInstance(
       sequenceNumber: _nextTaskSequenceNumber++,
       random: _random,
     );
+    if (instance.answerSurface != StudyHarmonyAnswerSurfaceKind.choiceChips ||
+        !_lesson.sessionMetadata.shuffleChoiceOptions) {
+      return instance;
+    }
+    final shuffledOptions = instance.answerOptions.toList(growable: false)
+      ..shuffle(_random);
+    return StudyHarmonyTaskInstance(
+      blueprintId: instance.blueprintId,
+      lessonId: instance.lessonId,
+      taskKind: instance.taskKind,
+      prompt: instance.prompt,
+      answerOptions: shuffledOptions,
+      answerSummaryLabel: instance.answerSummaryLabel,
+      answerSurface: instance.answerSurface,
+      evaluator: instance.evaluator,
+      skillTags: instance.skillTags,
+      sequenceNumber: instance.sequenceNumber,
+      explanationTitle: instance.explanationTitle,
+      explanationBody: instance.explanationBody,
+    );
   }
 }
-

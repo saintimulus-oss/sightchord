@@ -1512,21 +1512,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyPopTrackTitle => '팝 트랙';
 
   @override
-  String get studyHarmonyPopTrackDescription => '코어 트랙이 안정되면 곡 중심의 길을 계획 중이다.';
+  String get studyHarmonyPopTrackDescription =>
+      '팝 전용 진행선에서 별도 진도, 데일리 추천, 복습 대기열로 전체 커리큘럼을 진행합니다.';
 
   @override
   String get studyHarmonyJazzTrackTitle => '재즈 트랙';
 
   @override
   String get studyHarmonyJazzTrackDescription =>
-      '재즈 하모니 콘텐츠는 핵심 커리큘럼이 확정될 때까지 잠긴 상태로 유지됩니다.';
+      '재즈 전용 진행선에서 별도 진도, 데일리 추천, 복습 대기열로 전체 커리큘럼을 연습합니다.';
 
   @override
   String get studyHarmonyClassicalTrackTitle => '클래식 트랙';
 
   @override
   String get studyHarmonyClassicalTrackDescription =>
-      '고전적인 맥락에서 기능적 조화는 나중 단계에 도달할 것입니다.';
+      '클래식 전용 진행선에서 별도 진도, 데일리 추천, 복습 대기열로 전체 커리큘럼을 학습합니다.';
 
   @override
   String get studyHarmonyObjectiveQuickDrill => '빠른 드릴';

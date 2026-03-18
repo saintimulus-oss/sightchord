@@ -90,5 +90,44 @@ void main() {
       );
     },
   );
+
+  test('progress snapshot serialization round-trips loadout ownership', () {
+    const snapshot = StudyHarmonyProgressSnapshot(
+      serializationVersion: StudyHarmonyProgressSnapshot.currentSerializationVersion,
+      ownedTitleIds: {'title.spark', 'title.riff_runner'},
+      ownedCosmeticIds: {'cosmetic.frame.neon', 'cosmetic.trail.confetti'},
+      equippedTitleId: 'title.spark',
+      equippedCosmeticIds: [
+        'cosmetic.frame.neon',
+        'cosmetic.trail.confetti',
+      ],
+    );
+
+    final decoded = StudyHarmonyProgressSnapshot.fromEncoded(snapshot.encode());
+
+    expect(decoded.ownedTitleIds, containsAll(const {'title.spark', 'title.riff_runner'}));
+    expect(
+      decoded.ownedCosmeticIds,
+      containsAll(const {'cosmetic.frame.neon', 'cosmetic.trail.confetti'}),
+    );
+    expect(decoded.equippedTitleId, 'title.spark');
+    expect(
+      decoded.equippedCosmeticIds,
+      equals(const ['cosmetic.frame.neon', 'cosmetic.trail.confetti']),
+    );
+  });
+
+  test('legacy snapshot payloads without loadout fields still decode safely', () {
+    final decoded = StudyHarmonyProgressSnapshot.fromJsonValue(
+      const <String, Object?>{
+        'serializationVersion': 13,
+      },
+    );
+
+    expect(decoded.ownedTitleIds, isEmpty);
+    expect(decoded.ownedCosmeticIds, isEmpty);
+    expect(decoded.equippedTitleId, isNull);
+    expect(decoded.equippedCosmeticIds, isEmpty);
+  });
 }
 

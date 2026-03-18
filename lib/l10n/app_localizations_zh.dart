@@ -1529,19 +1529,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get studyHarmonyPopTrackTitle => '流行路線';
 
   @override
-  String get studyHarmonyPopTrackDescription => '核心曲目穩定後，將規劃以歌曲為中心的路徑。';
+  String get studyHarmonyPopTrackDescription =>
+      '在流行路線中，用獨立的進度、每日推薦與複習佇列完成整套課程。';
 
   @override
   String get studyHarmonyJazzTrackTitle => '爵士路線';
 
   @override
-  String get studyHarmonyJazzTrackDescription => '在核心課程確定之前，爵士樂和聲內容將保持鎖定。';
+  String get studyHarmonyJazzTrackDescription =>
+      '在爵士路線中，用獨立的進度、每日推薦與複習佇列練習整套課程。';
 
   @override
   String get studyHarmonyClassicalTrackTitle => '古典路線';
 
   @override
-  String get studyHarmonyClassicalTrackDescription => '古典語境中的功能和諧將在稍後階段實現。';
+  String get studyHarmonyClassicalTrackDescription =>
+      '在古典路線中，用獨立的進度、每日推薦與複習佇列學習整套課程。';
 
   @override
   String get studyHarmonyObjectiveQuickDrill => '快速練習';
@@ -5331,19 +5334,22 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get studyHarmonyPopTrackTitle => '流行路线';
 
   @override
-  String get studyHarmonyPopTrackDescription => '核心曲目稳定后，将规划以歌曲为中心的路径。';
+  String get studyHarmonyPopTrackDescription =>
+      '在流行路线中，用独立的进度、每日推荐和复习队列完成整套课程。';
 
   @override
   String get studyHarmonyJazzTrackTitle => '爵士路线';
 
   @override
-  String get studyHarmonyJazzTrackDescription => '在核心课程确定之前，爵士乐和声内容将保持锁定。';
+  String get studyHarmonyJazzTrackDescription =>
+      '在爵士路线中，用独立的进度、每日推荐和复习队列练习整套课程。';
 
   @override
   String get studyHarmonyClassicalTrackTitle => '古典路线';
 
   @override
-  String get studyHarmonyClassicalTrackDescription => '古典语境中的功能和谐将在稍后阶段实现。';
+  String get studyHarmonyClassicalTrackDescription =>
+      '在古典路线中，用独立的进度、每日推荐和复习队列学习整套课程。';
 
   @override
   String get studyHarmonyObjectiveQuickDrill => '快速训练';

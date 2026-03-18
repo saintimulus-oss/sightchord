@@ -22,7 +22,7 @@ Validated locally:
 
 Important gaps found in the repo:
 
-- Android still uses the placeholder namespace and application ID `com.example.sightchord`.
+- Android now uses the shared app ID `io.github.saintimulusoss.chordest`, but release signing still needs owner provisioning.
 - The Android release build is still signed with the debug signing config.
 - The app version is still `1.0.0+1`.
 - The current dependency set does not include Play Billing, ads, analytics, crash reporting, auth, or backend sync.

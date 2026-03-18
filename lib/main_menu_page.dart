@@ -8,7 +8,7 @@ import 'practice_home_page.dart';
 import 'settings/practice_settings.dart';
 import 'settings/settings_controller.dart';
 import 'study_harmony/application/study_harmony_progress_controller.dart';
-import 'study_harmony/content/core_curriculum_catalog.dart';
+import 'study_harmony/content/study_harmony_track_catalog.dart';
 import 'study_harmony/domain/study_harmony_session_models.dart';
 import 'study_harmony_page.dart';
 
@@ -65,7 +65,6 @@ class MainMenuPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isWide = MediaQuery.sizeOf(context).width >= 720;
 
     return Scaffold(
       body: Stack(
@@ -109,80 +108,20 @@ class MainMenuPage extends StatelessWidget {
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(24, isWide ? 28 : 20, 24, 28),
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 720),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: IconButton.filledTonal(
-                          key: const ValueKey('main-open-settings-button'),
-                          onPressed: () => _openMainSettings(context),
-                          icon: const Icon(Icons.settings_rounded),
-                          tooltip: l10n.settings,
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colorScheme.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          'CHORDEST',
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color: colorScheme.primary,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.1,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      Text(
-                        'Chordest',
-                        style: theme.textTheme.displayMedium?.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 560),
-                        child: Text(
-                          l10n.mainMenuIntro,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                            height: 1.45,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      _MainActionButton(
-                        icon: Icons.auto_awesome_rounded,
-                        title: l10n.mainMenuGeneratorTitle,
-                        subtitle: l10n.mainMenuGeneratorDescription,
-                        isPrimary: true,
-                        buttonKey: const ValueKey('main-open-generator-button'),
-                        onPressed: () => _openCodeGenerator(context),
-                      ),
-                      const SizedBox(height: 14),
-                      _MainActionButton(
-                        icon: Icons.insights_rounded,
-                        title: l10n.mainMenuAnalyzerTitle,
-                        subtitle: l10n.mainMenuAnalyzerDescription,
-                        buttonKey: const ValueKey('main-open-analyzer-button'),
-                        onPressed: () => _openChordAnalyzer(context),
-                      ),
-                      const SizedBox(height: 14),
-                      AnimatedBuilder(
+                  constraints: const BoxConstraints(maxWidth: 960),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isWide = constraints.maxWidth >= 760;
+                      final studyHarmonyAction = AnimatedBuilder(
                         animation: studyHarmonyProgressController,
                         builder: (context, _) {
-                          final course = buildStudyHarmonyCoreCourse(l10n);
+                          final course = buildStudyHarmonyCourseForTrackId(
+                            l10n: l10n,
+                            trackId: studyHarmonyProgressController
+                                .lastPlayedTrackId,
+                          );
                           final summary = _buildStudyHarmonyMenuSummary(
                             l10n: l10n,
                             course: course,
@@ -193,21 +132,172 @@ class MainMenuPage extends StatelessWidget {
                             icon: Icons.school_rounded,
                             title: l10n.mainMenuStudyHarmonyTitle,
                             subtitle:
-                                '${summary.resumeLabel} · ${summary.progressLabel}',
+                                '${summary.resumeLabel} | ${summary.progressLabel}',
                             buttonKey: const ValueKey(
                               'main-open-study-harmony-button',
                             ),
                             onPressed: () => _openStudyHarmony(context),
                           );
                         },
-                      ),
-                    ],
+                      );
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _MainMenuHeroCard(
+                            badgeLabel: 'CHORDEST',
+                            title: 'Chordest',
+                            body: l10n.mainMenuIntro,
+                            settingsLabel: l10n.settings,
+                            onSettingsPressed: () => _openMainSettings(context),
+                          ),
+                          const SizedBox(height: 20),
+                          _MainActionButton(
+                            icon: Icons.auto_awesome_rounded,
+                            title: l10n.mainMenuGeneratorTitle,
+                            subtitle: l10n.mainMenuGeneratorDescription,
+                            isPrimary: true,
+                            buttonKey: const ValueKey(
+                              'main-open-generator-button',
+                            ),
+                            onPressed: () => _openCodeGenerator(context),
+                          ),
+                          const SizedBox(height: 14),
+                          if (isWide)
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: _MainActionButton(
+                                    icon: Icons.insights_rounded,
+                                    title: l10n.mainMenuAnalyzerTitle,
+                                    subtitle: l10n.mainMenuAnalyzerDescription,
+                                    buttonKey: const ValueKey(
+                                      'main-open-analyzer-button',
+                                    ),
+                                    onPressed: () =>
+                                        _openChordAnalyzer(context),
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(child: studyHarmonyAction),
+                              ],
+                            )
+                          else ...[
+                            _MainActionButton(
+                              icon: Icons.insights_rounded,
+                              title: l10n.mainMenuAnalyzerTitle,
+                              subtitle: l10n.mainMenuAnalyzerDescription,
+                              buttonKey: const ValueKey(
+                                'main-open-analyzer-button',
+                              ),
+                              onPressed: () => _openChordAnalyzer(context),
+                            ),
+                            const SizedBox(height: 14),
+                            studyHarmonyAction,
+                          ],
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _MainMenuHeroCard extends StatelessWidget {
+  const _MainMenuHeroCard({
+    required this.badgeLabel,
+    required this.title,
+    required this.body,
+    required this.settingsLabel,
+    required this.onSettingsPressed,
+  });
+
+  final String badgeLabel;
+  final String title;
+  final String body;
+  final String settingsLabel;
+  final VoidCallback onSettingsPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: colorScheme.outlineVariant),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(22),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    badgeLabel,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.1,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                IconButton.filledTonal(
+                  key: const ValueKey('main-open-settings-button'),
+                  onPressed: onSettingsPressed,
+                  icon: const Icon(Icons.settings_rounded),
+                  tooltip: settingsLabel,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: theme.textTheme.displayMedium?.copyWith(
+                color: colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640),
+              child: Text(
+                body,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  height: 1.45,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../data/study_harmony_progress_store.dart';
 import '../domain/study_harmony_progress_models.dart';
 import '../domain/study_harmony_session_models.dart';
+import '../meta/study_harmony_rewards_catalog.dart';
 
 typedef StudyHarmonyNowProvider = DateTime Function();
 
@@ -63,6 +64,11 @@ class StudyHarmonySessionProgressEffect {
     this.bestRank,
     this.personalBestImproved = false,
     this.countsTowardLessonProgress = false,
+    this.rewardBundles = const <StudyHarmonyRewardBundleDefinition>[],
+    this.currencyGrants = const <StudyHarmonyRewardGrant>[],
+    this.currencyBalances = const <StudyHarmonyCurrencyId, int>{},
+    this.newlyUnlockedRewards = const <StudyHarmonyRewardCandidate>[],
+    this.featuredRewardChases = const <StudyHarmonyRewardCandidate>[],
     this.dailyChallengeCompleted = false,
     this.focusSprintCompleted = false,
     this.dailyStreakCount,
@@ -103,6 +109,11 @@ class StudyHarmonySessionProgressEffect {
   final String? bestRank;
   final bool personalBestImproved;
   final bool countsTowardLessonProgress;
+  final List<StudyHarmonyRewardBundleDefinition> rewardBundles;
+  final List<StudyHarmonyRewardGrant> currencyGrants;
+  final Map<StudyHarmonyCurrencyId, int> currencyBalances;
+  final List<StudyHarmonyRewardCandidate> newlyUnlockedRewards;
+  final List<StudyHarmonyRewardCandidate> featuredRewardChases;
   final bool dailyChallengeCompleted;
   final bool focusSprintCompleted;
   final int? dailyStreakCount;
@@ -512,6 +523,9 @@ class StudyHarmonyProgressController extends ChangeNotifier {
     required int attempts,
     required double accuracy,
     required Duration elapsed,
+    int? bestCombo,
+    int? correctAnswers,
+    int? livesRemaining,
   }) {
     return recordSessionResult(
       trackId: trackId,
@@ -521,6 +535,9 @@ class StudyHarmonyProgressController extends ChangeNotifier {
       attempts: attempts,
       accuracy: accuracy,
       elapsed: elapsed,
+      bestCombo: bestCombo,
+      correctAnswers: correctAnswers,
+      livesRemaining: livesRemaining,
       performance: _defaultSessionPerformance(
         lesson: lesson,
         attempts: attempts,
@@ -537,6 +554,9 @@ class StudyHarmonyProgressController extends ChangeNotifier {
     required int attempts,
     required double accuracy,
     required Duration elapsed,
+    int? bestCombo,
+    int? correctAnswers,
+    int? livesRemaining,
     required StudyHarmonySessionPerformance performance,
   }) async {
     final nowLocal = _nowProvider();
@@ -595,6 +615,44 @@ class StudyHarmonyProgressController extends ChangeNotifier {
     final monthKey = _monthKey(nowLocal);
     final sessionStars = _starsForResult(cleared: cleared, accuracy: accuracy);
     final sessionRank = _rankForResult(cleared: cleared, accuracy: accuracy);
+    final effectiveCorrectAnswers =
+        correctAnswers ?? _correctCountForAccuracy(attempts, accuracy);
+    final effectiveBestCombo =
+        bestCombo ?? min(effectiveCorrectAnswers, attempts);
+    final effectiveLivesRemaining =
+        livesRemaining ??
+        max(
+          0,
+          lesson.startingLives - max(0, attempts - effectiveCorrectAnswers),
+        );
+    final rewardMetricsBefore = _rewardMetricsForSnapshot(_snapshot);
+    final unlockedRewardIdsBefore = {
+      for (final candidate in studyHarmonyRewardCandidatesForProgress(
+        rewardMetricsBefore,
+      ))
+        if (candidate.unlocked) candidate.id,
+    };
+    final sessionRewardInput = StudyHarmonySessionRewardInput(
+      mode: lesson.sessionMode,
+      lessonId: effectiveLessonId,
+      lessonTitle: lesson.title,
+      accuracy: accuracy,
+      stars: sessionStars,
+      streak: effectiveBestCombo,
+      bestCombo: effectiveBestCombo,
+      attempts: attempts,
+      correctAnswers: effectiveCorrectAnswers,
+      livesRemaining: effectiveLivesRemaining,
+      rank: sessionRank,
+      isCompleted: cleared,
+      isFinished: true,
+      countsTowardLessonProgress:
+          lesson.sessionMetadata.countsTowardLessonProgress,
+    );
+    final rewardBundles = studyHarmonySessionRewardBundles(sessionRewardInput);
+    final currencyGrants = _mergeRewardGrants([
+      for (final bundle in rewardBundles) ...bundle.grants,
+    ]);
     final previousWeeklyLeagueScore =
         _snapshot.weeklyLeagueScores[weekKey] ?? 0;
     final previousWeeklyLeagueTier = _leagueTierForScore(
@@ -612,6 +670,16 @@ class StudyHarmonyProgressController extends ChangeNotifier {
     var nextMonthlySpotlightClearCounts = Map<String, int>.from(
       _snapshot.monthlySpotlightClearCounts,
     );
+    final nextModeSessionCounts = Map<String, int>.from(
+      _snapshot.modeSessionCounts,
+    );
+    final nextModeClearCounts = Map<String, int>.from(
+      _snapshot.modeClearCounts,
+    );
+    _incrementEncodedModeCount(nextModeSessionCounts, lesson.sessionMode);
+    if (cleared) {
+      _incrementEncodedModeCount(nextModeClearCounts, lesson.sessionMode);
+    }
     var nextActiveLeagueXpBoostCharges = activeLeagueXpBoostBefore.chargeCount;
     var nextActiveLeagueXpBoostDateKey = activeLeagueXpBoostBefore.active
         ? activeLeagueXpBoostBefore.dateKey
@@ -760,6 +828,10 @@ class StudyHarmonyProgressController extends ChangeNotifier {
     if (lesson.sessionMode == StudyHarmonySessionMode.legend && cleared) {
       nextLegendaryChapterIds = {...nextLegendaryChapterIds, chapterId};
     }
+    final nextRewardCurrencyBalances = _applyRewardGrants(
+      existing: _snapshot.rewardCurrencyBalances,
+      grants: currencyGrants,
+    );
 
     var next = _snapshot.copyWith(
       lastPlayedTrackId: trackId,
@@ -784,6 +856,10 @@ class StudyHarmonyProgressController extends ChangeNotifier {
       awardedDailyQuestChestDateKeys: nextAwardedDailyQuestChestKeys,
       weeklyLeagueScores: nextWeeklyLeagueScores,
       monthlySpotlightClearCounts: nextMonthlySpotlightClearCounts,
+      modeSessionCounts: nextModeSessionCounts,
+      modeClearCounts: nextModeClearCounts,
+      rewardCurrencyBalances: nextRewardCurrencyBalances,
+      bestSessionCombo: max(_snapshot.bestSessionCombo, effectiveBestCombo),
       legendaryChapterIds: nextLegendaryChapterIds,
       relayWinCount: nextRelayWinCount,
       bestDailyChallengeStreak: nextBestDailyStreak,
@@ -835,6 +911,19 @@ class StudyHarmonyProgressController extends ChangeNotifier {
         : _earnedMilestoneIdsForCourse(course, snapshot: next);
     final nextWeeklyLeagueScore = next.weeklyLeagueScores[weekKey] ?? 0;
     final nextWeeklyLeagueTier = _leagueTierForScore(nextWeeklyLeagueScore);
+    final rewardMetricsAfter = _rewardMetricsForSnapshot(next);
+    final rewardCandidatesAfter = studyHarmonyRewardCandidatesForProgress(
+      rewardMetricsAfter,
+    );
+    final newlyUnlockedRewards = rewardCandidatesAfter
+        .where((candidate) => candidate.unlocked)
+        .where((candidate) => !unlockedRewardIdsBefore.contains(candidate.id))
+        .take(5)
+        .toList(growable: false);
+    final featuredRewardChases = rewardCandidatesAfter
+        .where((candidate) => !candidate.unlocked)
+        .take(3)
+        .toList(growable: false);
     final activeLeagueXpBoostAfter = _leagueXpBoostForSnapshot(
       next,
       referenceDate: nowLocal,
@@ -897,6 +986,11 @@ class StudyHarmonyProgressController extends ChangeNotifier {
       bestRank: nextBestRank,
       personalBestImproved: personalBestImproved,
       countsTowardLessonProgress: countsTowardLessonProgress,
+      rewardBundles: rewardBundles,
+      currencyGrants: currencyGrants,
+      currencyBalances: next.rewardCurrencyBalances,
+      newlyUnlockedRewards: newlyUnlockedRewards,
+      featuredRewardChases: featuredRewardChases,
       dailyChallengeCompleted: dailyChallengeCompleted,
       focusSprintCompleted: focusSprintCompleted,
       dailyStreakCount: dailyStreakCount,
@@ -958,6 +1052,209 @@ class StudyHarmonyProgressController extends ChangeNotifier {
     StudyHarmonySkillTag skillId,
   ) {
     return _snapshot.skillMasteryPlaceholders[skillId];
+  }
+
+  Map<StudyHarmonyCurrencyId, int> currentRewardCurrencyBalances() {
+    return Map<StudyHarmonyCurrencyId, int>.unmodifiable(
+      _snapshot.rewardCurrencyBalances,
+    );
+  }
+
+  int rewardCurrencyBalanceOf(StudyHarmonyCurrencyId currencyId) {
+    return _snapshot.rewardCurrencyBalances[currencyId] ?? 0;
+  }
+
+  int shopPurchaseCount() {
+    return _snapshot.shopPurchaseCount;
+  }
+
+  bool hasPurchasedUniqueShopItem(String itemId) {
+    return _snapshot.purchasedUniqueShopItemIds.contains(itemId);
+  }
+
+  StudyHarmonyRewardProgressMetrics currentRewardMetrics() {
+    final modeSessionCounts = _decodeModeCounts(_snapshot.modeSessionCounts);
+    final modeClearCounts = _decodeModeCounts(_snapshot.modeClearCounts);
+    return studyHarmonyRewardMetricsFromSnapshot(
+      _snapshot,
+      reviewClears: modeClearCounts[StudyHarmonySessionMode.review] ?? 0,
+      bossClears: modeClearCounts[StudyHarmonySessionMode.bossRush] ?? 0,
+      legendClears: max(
+        modeClearCounts[StudyHarmonySessionMode.legend] ?? 0,
+        _snapshot.legendaryChapterIds.length,
+      ),
+      bestCombo: _snapshot.bestSessionCombo,
+      shopPurchases: _snapshot.shopPurchaseCount,
+      currencySpent: _snapshot.rewardCurrencySpent,
+      modeSessionCounts: modeSessionCounts,
+      modeClearCounts: modeClearCounts,
+    );
+  }
+
+  List<StudyHarmonyRewardCandidate> currentRewardCandidates() {
+    return studyHarmonyRewardCandidatesForProgress(currentRewardMetrics());
+  }
+
+  Set<String> ownedTitleIds() {
+    final metrics = _rewardMetricsForSnapshot(_snapshot);
+    return Set<String>.unmodifiable(
+      _ownedTitleIdsForSnapshot(_snapshot, metrics),
+    );
+  }
+
+  Set<String> ownedCosmeticIds() {
+    final metrics = _rewardMetricsForSnapshot(_snapshot);
+    return Set<String>.unmodifiable(
+      _ownedCosmeticIdsForSnapshot(_snapshot, metrics),
+    );
+  }
+
+  String? equippedTitleId() {
+    return _normalizedRewardTitleId(
+      _snapshot.equippedTitleId,
+      ownedTitleIds: ownedTitleIds(),
+    );
+  }
+
+  List<String> equippedCosmeticIds() {
+    return List<String>.unmodifiable(
+      _normalizedRewardCosmeticLoadout(
+        _snapshot.equippedCosmeticIds,
+        ownedCosmeticIds: ownedCosmeticIds(),
+      ),
+    );
+  }
+
+  bool isTitleOwned(String titleId) {
+    return ownedTitleIds().contains(titleId);
+  }
+
+  bool isCosmeticOwned(String cosmeticId) {
+    return ownedCosmeticIds().contains(cosmeticId);
+  }
+
+  Future<bool> equipTitle(String titleId) async {
+    if (!studyHarmonyTitlesById.containsKey(titleId) ||
+        !isTitleOwned(titleId)) {
+      return false;
+    }
+    if (_snapshot.equippedTitleId == titleId) {
+      return true;
+    }
+    final next = _normalizedSnapshot(
+      _snapshot.copyWith(equippedTitleId: titleId),
+    );
+    await _updateSnapshotIfChanged(next);
+    return true;
+  }
+
+  Future<bool> unequipTitle() async {
+    if (_snapshot.equippedTitleId == null) {
+      return true;
+    }
+    final next = _normalizedSnapshot(
+      _snapshot.copyWith(clearEquippedTitleId: true),
+    );
+    await _updateSnapshotIfChanged(next);
+    return true;
+  }
+
+  Future<bool> equipCosmetic(String cosmeticId) async {
+    if (!studyHarmonyCosmeticsById.containsKey(cosmeticId) ||
+        !isCosmeticOwned(cosmeticId)) {
+      return false;
+    }
+    final nextLoadout = _normalizedRewardCosmeticLoadout([
+      for (final equipped in _snapshot.equippedCosmeticIds)
+        if (equipped != cosmeticId) equipped,
+      cosmeticId,
+    ], ownedCosmeticIds: ownedCosmeticIds());
+    if (listEquals(nextLoadout, _snapshot.equippedCosmeticIds)) {
+      return true;
+    }
+    final next = _normalizedSnapshot(
+      _snapshot.copyWith(equippedCosmeticIds: nextLoadout),
+    );
+    await _updateSnapshotIfChanged(next);
+    return true;
+  }
+
+  Future<bool> unequipCosmetic(String cosmeticId) async {
+    final nextLoadout = _normalizedRewardCosmeticLoadout([
+      for (final equipped in _snapshot.equippedCosmeticIds)
+        if (equipped != cosmeticId) equipped,
+    ], ownedCosmeticIds: ownedCosmeticIds());
+    if (listEquals(nextLoadout, _snapshot.equippedCosmeticIds)) {
+      return true;
+    }
+    final next = _normalizedSnapshot(
+      _snapshot.copyWith(equippedCosmeticIds: nextLoadout),
+    );
+    await _updateSnapshotIfChanged(next);
+    return true;
+  }
+
+  bool canPurchaseShopItem(StudyHarmonyShopItemDefinition item) {
+    final isRepeatable = _isRepeatableShopItem(item);
+    if (!isRepeatable && hasPurchasedUniqueShopItem(item.id)) {
+      return false;
+    }
+    final metrics = currentRewardMetrics();
+    if (!item.requirements.every((requirement) => requirement.isMet(metrics))) {
+      return false;
+    }
+    return rewardCurrencyBalanceOf(item.priceCurrencyId) >= item.priceAmount;
+  }
+
+  Future<bool> purchaseShopItem(StudyHarmonyShopItemDefinition item) async {
+    if (!canPurchaseShopItem(item)) {
+      return false;
+    }
+
+    final nextBalances = Map<StudyHarmonyCurrencyId, int>.from(
+      _snapshot.rewardCurrencyBalances,
+    );
+    nextBalances[item.priceCurrencyId] = max(
+      0,
+      (nextBalances[item.priceCurrencyId] ?? 0) - item.priceAmount,
+    );
+    for (final grant in item.grants) {
+      nextBalances[grant.currencyId] =
+          (nextBalances[grant.currencyId] ?? 0) + grant.amount;
+    }
+
+    final nextPurchasedUniqueIds = _isRepeatableShopItem(item)
+        ? _snapshot.purchasedUniqueShopItemIds
+        : {..._snapshot.purchasedUniqueShopItemIds, item.id};
+    final currentMetrics = _rewardMetricsForSnapshot(_snapshot);
+    final nextOwnedTitleIds = _ownedTitleIdsForSnapshot(
+      _snapshot,
+      currentMetrics,
+    );
+    final nextOwnedCosmeticIds = _ownedCosmeticIdsForSnapshot(
+      _snapshot,
+      currentMetrics,
+    );
+    for (final unlockId in item.unlockIds) {
+      if (studyHarmonyTitlesById.containsKey(unlockId)) {
+        nextOwnedTitleIds.add(unlockId);
+      }
+      if (studyHarmonyCosmeticsById.containsKey(unlockId)) {
+        nextOwnedCosmeticIds.add(unlockId);
+      }
+    }
+    final next = _normalizedSnapshot(
+      _snapshot.copyWith(
+        rewardCurrencyBalances: nextBalances,
+        rewardCurrencySpent: _snapshot.rewardCurrencySpent + item.priceAmount,
+        shopPurchaseCount: _snapshot.shopPurchaseCount + 1,
+        purchasedUniqueShopItemIds: nextPurchasedUniqueIds,
+        ownedTitleIds: nextOwnedTitleIds,
+        ownedCosmeticIds: nextOwnedCosmeticIds,
+      ),
+    );
+    await _updateSnapshotIfChanged(next);
+    return true;
   }
 
   bool _isLessonUnlocked(
@@ -3366,10 +3663,52 @@ class StudyHarmonyProgressController extends ChangeNotifier {
       normalized.monthlySpotlightClearCounts,
       referenceDate: _nowProvider(),
     );
+    final normalizedModeSessionCounts = _normalizedCountMap(
+      normalized.modeSessionCounts,
+    );
+    final normalizedModeClearCounts = _normalizedCountMap(
+      normalized.modeClearCounts,
+    );
+    final normalizedRewardCurrencyBalances = _normalizedCountMap(
+      normalized.rewardCurrencyBalances,
+    );
+    final normalizedRewardCurrencySpent = max(
+      0,
+      normalized.rewardCurrencySpent,
+    );
+    final normalizedShopPurchaseCount = max(0, normalized.shopPurchaseCount);
+    final normalizedBestSessionCombo = max(0, normalized.bestSessionCombo);
+    final normalizedRewardMetrics = _rewardMetricsForSnapshot(normalized);
+    final normalizedOwnedTitleIds = _ownedTitleIdsForSnapshot(
+      normalized,
+      normalizedRewardMetrics,
+    );
+    final normalizedOwnedCosmeticIds = _ownedCosmeticIdsForSnapshot(
+      normalized,
+      normalizedRewardMetrics,
+    );
+    final normalizedEquippedTitleId = _normalizedRewardTitleId(
+      normalized.equippedTitleId,
+      ownedTitleIds: normalizedOwnedTitleIds,
+    );
+    final normalizedEquippedCosmeticIds = _normalizedRewardCosmeticLoadout(
+      normalized.equippedCosmeticIds,
+      ownedCosmeticIds: normalizedOwnedCosmeticIds,
+    );
     if (normalizedBestStreak == normalized.bestDailyChallengeStreak &&
         normalizedBestDuetPactStreak == normalized.bestDuetPactStreak &&
         normalizedRelayWinCount == normalized.relayWinCount &&
         normalizedQuestChestCount == normalized.questChestCount &&
+        normalizedRewardCurrencySpent == normalized.rewardCurrencySpent &&
+        normalizedShopPurchaseCount == normalized.shopPurchaseCount &&
+        normalizedBestSessionCombo == normalized.bestSessionCombo &&
+        setEquals(normalizedOwnedTitleIds, normalized.ownedTitleIds) &&
+        setEquals(normalizedOwnedCosmeticIds, normalized.ownedCosmeticIds) &&
+        normalizedEquippedTitleId == normalized.equippedTitleId &&
+        listEquals(
+          normalizedEquippedCosmeticIds,
+          normalized.equippedCosmeticIds,
+        ) &&
         normalizedActiveLeagueXpBoostCharges ==
             normalized.activeLeagueXpBoostCharges &&
         normalizedActiveLeagueXpBoostDateKey ==
@@ -3397,6 +3736,12 @@ class StudyHarmonyProgressController extends ChangeNotifier {
         mapEquals(
           normalizedMonthlySpotlightClearCounts,
           normalized.monthlySpotlightClearCounts,
+        ) &&
+        mapEquals(normalizedModeSessionCounts, normalized.modeSessionCounts) &&
+        mapEquals(normalizedModeClearCounts, normalized.modeClearCounts) &&
+        mapEquals(
+          normalizedRewardCurrencyBalances,
+          normalized.rewardCurrencyBalances,
         )) {
       return normalized;
     }
@@ -3410,6 +3755,16 @@ class StudyHarmonyProgressController extends ChangeNotifier {
       awardedMonthlyTourMonthKeys: normalizedAwardedMonthlyTourMonthKeys,
       weeklyLeagueScores: normalizedWeeklyLeagueScores,
       monthlySpotlightClearCounts: normalizedMonthlySpotlightClearCounts,
+      modeSessionCounts: normalizedModeSessionCounts,
+      modeClearCounts: normalizedModeClearCounts,
+      rewardCurrencyBalances: normalizedRewardCurrencyBalances,
+      rewardCurrencySpent: normalizedRewardCurrencySpent,
+      shopPurchaseCount: normalizedShopPurchaseCount,
+      ownedTitleIds: normalizedOwnedTitleIds,
+      ownedCosmeticIds: normalizedOwnedCosmeticIds,
+      equippedTitleId: normalizedEquippedTitleId,
+      equippedCosmeticIds: normalizedEquippedCosmeticIds,
+      bestSessionCombo: normalizedBestSessionCombo,
       questChestCount: normalizedQuestChestCount,
       activeLeagueXpBoostDateKey: normalizedActiveLeagueXpBoostDateKey,
       activeLeagueXpBoostCharges: normalizedActiveLeagueXpBoostCharges,
@@ -3789,6 +4144,218 @@ class StudyHarmonyProgressController extends ChangeNotifier {
   String _dailyDateKey(DateTime now) {
     return _dateKeyFromDate(now);
   }
+
+  StudyHarmonyRewardProgressMetrics _rewardMetricsForSnapshot(
+    StudyHarmonyProgressSnapshot snapshot,
+  ) {
+    final modeSessionCounts = _decodeModeCounts(snapshot.modeSessionCounts);
+    final modeClearCounts = _decodeModeCounts(snapshot.modeClearCounts);
+    return studyHarmonyRewardMetricsFromSnapshot(
+      snapshot,
+      reviewClears: modeClearCounts[StudyHarmonySessionMode.review] ?? 0,
+      bossClears: modeClearCounts[StudyHarmonySessionMode.bossRush] ?? 0,
+      legendClears: max(
+        modeClearCounts[StudyHarmonySessionMode.legend] ?? 0,
+        snapshot.legendaryChapterIds.length,
+      ),
+      bestCombo: snapshot.bestSessionCombo,
+      shopPurchases: snapshot.shopPurchaseCount,
+      currencySpent: snapshot.rewardCurrencySpent,
+      modeSessionCounts: modeSessionCounts,
+      modeClearCounts: modeClearCounts,
+    );
+  }
+}
+
+Map<String, int> _normalizedCountMap(Map<String, int> values) {
+  if (values.isEmpty) {
+    return values;
+  }
+  final normalized = <String, int>{};
+  for (final entry in values.entries) {
+    final clampedValue = max(0, entry.value);
+    if (clampedValue <= 0) {
+      continue;
+    }
+    normalized[entry.key] = clampedValue;
+  }
+  return normalized;
+}
+
+Map<StudyHarmonySessionMode, int> _decodeModeCounts(Map<String, int> values) {
+  if (values.isEmpty) {
+    return const <StudyHarmonySessionMode, int>{};
+  }
+  final decoded = <StudyHarmonySessionMode, int>{};
+  for (final entry in values.entries) {
+    final mode = _sessionModeFromEncodedName(entry.key);
+    if (mode == null || entry.value <= 0) {
+      continue;
+    }
+    decoded[mode] = entry.value;
+  }
+  return decoded;
+}
+
+StudyHarmonySessionMode? _sessionModeFromEncodedName(String value) {
+  for (final mode in StudyHarmonySessionMode.values) {
+    if (mode.name == value) {
+      return mode;
+    }
+  }
+  return null;
+}
+
+void _incrementEncodedModeCount(
+  Map<String, int> values,
+  StudyHarmonySessionMode mode,
+) {
+  values[mode.name] = (values[mode.name] ?? 0) + 1;
+}
+
+Map<StudyHarmonyCurrencyId, int> _applyRewardGrants({
+  required Map<StudyHarmonyCurrencyId, int> existing,
+  required Iterable<StudyHarmonyRewardGrant> grants,
+}) {
+  final balances = Map<StudyHarmonyCurrencyId, int>.from(existing);
+  for (final grant in grants) {
+    balances[grant.currencyId] =
+        (balances[grant.currencyId] ?? 0) + grant.amount;
+  }
+  return balances;
+}
+
+List<StudyHarmonyRewardGrant> _mergeRewardGrants(
+  Iterable<StudyHarmonyRewardGrant> grants,
+) {
+  final totals = <StudyHarmonyCurrencyId, int>{};
+  final labels = <StudyHarmonyCurrencyId, String?>{};
+  for (final grant in grants) {
+    totals[grant.currencyId] = (totals[grant.currencyId] ?? 0) + grant.amount;
+    labels[grant.currencyId] ??= grant.label;
+  }
+  final merged =
+      [
+        for (final entry in totals.entries)
+          StudyHarmonyRewardGrant(
+            currencyId: entry.key,
+            amount: entry.value,
+            label: labels[entry.key],
+          ),
+      ]..sort((left, right) {
+        final byAmount = right.amount.compareTo(left.amount);
+        if (byAmount != 0) {
+          return byAmount;
+        }
+        return left.currencyId.compareTo(right.currencyId);
+      });
+  return merged;
+}
+
+bool _isRepeatableShopItem(StudyHarmonyShopItemDefinition item) {
+  return item.kind == StudyHarmonyShopItemKind.consumable ||
+      item.kind == StudyHarmonyShopItemKind.booster;
+}
+
+Set<String> _ownedTitleIdsForSnapshot(
+  StudyHarmonyProgressSnapshot snapshot,
+  StudyHarmonyRewardProgressMetrics metrics,
+) {
+  final owned = <String>{};
+  for (final titleId in snapshot.ownedTitleIds) {
+    if (studyHarmonyTitlesById.containsKey(titleId)) {
+      owned.add(titleId);
+    }
+  }
+  for (final candidate in studyHarmonyRewardCandidatesForProgress(metrics)) {
+    if (candidate.kind == StudyHarmonyRewardKind.title && candidate.unlocked) {
+      owned.add(candidate.id);
+    }
+  }
+  for (final shopItemId in snapshot.purchasedUniqueShopItemIds) {
+    final item = _studyHarmonyShopItemById(shopItemId);
+    if (item == null) {
+      continue;
+    }
+    for (final unlockId in item.unlockIds) {
+      if (studyHarmonyTitlesById.containsKey(unlockId)) {
+        owned.add(unlockId);
+      }
+    }
+  }
+  return owned;
+}
+
+Set<String> _ownedCosmeticIdsForSnapshot(
+  StudyHarmonyProgressSnapshot snapshot,
+  StudyHarmonyRewardProgressMetrics metrics,
+) {
+  final owned = <String>{};
+  for (final cosmeticId in snapshot.ownedCosmeticIds) {
+    if (studyHarmonyCosmeticsById.containsKey(cosmeticId)) {
+      owned.add(cosmeticId);
+    }
+  }
+  for (final candidate in studyHarmonyRewardCandidatesForProgress(metrics)) {
+    if (candidate.kind == StudyHarmonyRewardKind.cosmetic &&
+        candidate.unlocked) {
+      owned.add(candidate.id);
+    }
+  }
+  for (final shopItemId in snapshot.purchasedUniqueShopItemIds) {
+    final item = _studyHarmonyShopItemById(shopItemId);
+    if (item == null) {
+      continue;
+    }
+    for (final unlockId in item.unlockIds) {
+      if (studyHarmonyCosmeticsById.containsKey(unlockId)) {
+        owned.add(unlockId);
+      }
+    }
+  }
+  return owned;
+}
+
+String? _normalizedRewardTitleId(
+  String? titleId, {
+  required Set<String> ownedTitleIds,
+}) {
+  if (titleId == null || !studyHarmonyTitlesById.containsKey(titleId)) {
+    return null;
+  }
+  return ownedTitleIds.contains(titleId) ? titleId : null;
+}
+
+List<String> _normalizedRewardCosmeticLoadout(
+  Iterable<String> cosmeticIds, {
+  required Set<String> ownedCosmeticIds,
+}) {
+  final normalized = <String>[];
+  for (final cosmeticId in cosmeticIds) {
+    if (!studyHarmonyCosmeticsById.containsKey(cosmeticId)) {
+      continue;
+    }
+    if (!ownedCosmeticIds.contains(cosmeticId)) {
+      continue;
+    }
+    if (normalized.contains(cosmeticId)) {
+      continue;
+    }
+    normalized.add(cosmeticId);
+  }
+  if (normalized.length <= 2) {
+    return normalized;
+  }
+  return normalized.sublist(normalized.length - 2);
+}
+
+StudyHarmonyShopItemDefinition? _studyHarmonyShopItemById(String itemId) {
+  for (final item in studyHarmonyShopItems) {
+    if (item.id == itemId) {
+      return item;
+    }
+  }
+  return null;
 }
 
 @immutable

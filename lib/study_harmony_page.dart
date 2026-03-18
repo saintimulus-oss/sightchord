@@ -7,11 +7,35 @@ import 'l10n/app_localizations.dart';
 import 'study_harmony/application/study_harmony_progress_controller.dart';
 import 'study_harmony/application/study_harmony_session_controller.dart';
 import 'study_harmony/content/core_curriculum_catalog.dart';
+import 'study_harmony/content/study_harmony_track_catalog.dart';
 import 'study_harmony/domain/study_harmony_progress_models.dart';
 import 'study_harmony/domain/study_harmony_session_models.dart';
+import 'study_harmony/meta/study_harmony_arcade_catalog.dart';
+import 'study_harmony/meta/study_harmony_arcade_runtime.dart';
+import 'study_harmony/meta/study_harmony_difficulty_design.dart';
+import 'study_harmony/meta/study_harmony_personalization.dart';
+import 'study_harmony/meta/study_harmony_rewards_catalog.dart';
 import 'study_harmony/study_harmony_session_page.dart';
 
 enum _StudyHarmonyHubTrack { core, pop, jazz, classical }
+
+StudyHarmonyTrackId _trackIdForHubTrack(_StudyHarmonyHubTrack track) {
+  return switch (track) {
+    _StudyHarmonyHubTrack.core => studyHarmonyCoreTrackId,
+    _StudyHarmonyHubTrack.pop => studyHarmonyPopTrackId,
+    _StudyHarmonyHubTrack.jazz => studyHarmonyJazzTrackId,
+    _StudyHarmonyHubTrack.classical => studyHarmonyClassicalTrackId,
+  };
+}
+
+_StudyHarmonyHubTrack _hubTrackFromTrackId(StudyHarmonyTrackId? trackId) {
+  return switch (normalizeStudyHarmonyTrackId(trackId)) {
+    studyHarmonyPopTrackId => _StudyHarmonyHubTrack.pop,
+    studyHarmonyJazzTrackId => _StudyHarmonyHubTrack.jazz,
+    studyHarmonyClassicalTrackId => _StudyHarmonyHubTrack.classical,
+    _ => _StudyHarmonyHubTrack.core,
+  };
+}
 
 Color _hubCardColor(ColorScheme colorScheme) => colorScheme.surfaceContainerLow;
 
@@ -43,6 +67,26 @@ BoxDecoration _hubPanelDecoration(
   );
 }
 
+class _HubRecommendationCopy {
+  const _HubRecommendationCopy({
+    required this.icon,
+    required this.title,
+    required this.headline,
+    required this.supportingLabel,
+    required this.body,
+    required this.actionLabel,
+    required this.footerLabels,
+  });
+
+  final IconData icon;
+  final String title;
+  final String headline;
+  final String supportingLabel;
+  final String body;
+  final String actionLabel;
+  final List<String> footerLabels;
+}
+
 class StudyHarmonyPage extends StatefulWidget {
   const StudyHarmonyPage({super.key, required this.progressController});
 
@@ -53,45 +97,66 @@ class StudyHarmonyPage extends StatefulWidget {
 }
 
 class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
-  StudyHarmonyCourseDefinition? _coreCourse;
+  Map<StudyHarmonyTrackId, StudyHarmonyCourseDefinition>? _coursesByTrackId;
   String? _localeTag;
   _StudyHarmonyHubTrack _selectedTrack = _StudyHarmonyHubTrack.core;
 
   @override
+  void initState() {
+    super.initState();
+    _selectedTrack = _hubTrackFromTrackId(
+      widget.progressController.lastPlayedTrackId,
+    );
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _syncLocalizedCourse();
+    _syncLocalizedCourses();
   }
 
   @override
   void didUpdateWidget(covariant StudyHarmonyPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.progressController != widget.progressController &&
-        _coreCourse != null) {
+        _coursesByTrackId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted || _coreCourse == null) {
+        final coursesByTrackId = _coursesByTrackId;
+        if (!mounted || coursesByTrackId == null) {
           return;
         }
-        unawaited(widget.progressController.syncCourse(_coreCourse!));
+        unawaited(
+          Future.wait<void>([
+            for (final course in coursesByTrackId.values)
+              widget.progressController.syncCourse(course),
+          ]),
+        );
       });
     }
   }
 
-  void _syncLocalizedCourse() {
+  void _syncLocalizedCourses() {
     final localeTag = Localizations.localeOf(context).toLanguageTag();
-    if (_coreCourse != null && _localeTag == localeTag) {
+    if (_coursesByTrackId != null && _localeTag == localeTag) {
       return;
     }
 
-    final course = buildStudyHarmonyCoreCourse(AppLocalizations.of(context)!);
-    _coreCourse = course;
+    final coursesByTrackId = buildStudyHarmonyTrackCourses(
+      AppLocalizations.of(context)!,
+    );
+    _coursesByTrackId = coursesByTrackId;
     _localeTag = localeTag;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
         return;
       }
-      unawaited(widget.progressController.syncCourse(course));
+      unawaited(
+        Future.wait<void>([
+          for (final course in coursesByTrackId.values)
+            widget.progressController.syncCourse(course),
+        ]),
+      );
     });
   }
 
@@ -132,6 +197,112 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                 random: Random(recommendation.seedValue!),
               );
     _openLesson(context, sessionLesson, course, controllerFactory);
+  }
+
+  void _openArcadeMode(
+    BuildContext context,
+    AppLocalizations l10n, {
+    required StudyHarmonyArcadeModeDefinition mode,
+    required StudyHarmonyLessonRecommendation recommendation,
+    required StudyHarmonyCourseDefinition course,
+  }) {
+    final sessionLesson = _buildSessionLesson(
+      l10n: l10n,
+      recommendation: recommendation,
+      arcadeModeId: mode.id,
+    );
+    final controllerFactory = recommendation.seedValue == null
+        ? null
+        : (StudyHarmonyLessonDefinition lesson) =>
+              StudyHarmonySessionController(
+                lesson: lesson,
+                random: Random(recommendation.seedValue!),
+              );
+    _openLesson(context, sessionLesson, course, controllerFactory);
+  }
+
+  Future<void> _purchaseShopItem(
+    BuildContext context,
+    StudyHarmonyShopItemDefinition item,
+  ) async {
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
+    final messenger = ScaffoldMessenger.of(context);
+    final success = await widget.progressController.purchaseShopItem(item);
+    final equippedUnlockId = success
+        ? await _autoEquipPurchasedUnlock(item)
+        : null;
+    if (!mounted) {
+      return;
+    }
+    final snackBar = SnackBar(
+      content: Text(
+        success
+            ? (_isKoreanLocale(localeTag)
+                  ? equippedUnlockId == null
+                        ? '${item.title} 援щℓ ?꾨즺'
+                        : '${item.title} 援щℓ + ?옣李? ?꾨즺'
+                  : equippedUnlockId == null
+                  ? 'Purchased ${item.title}'
+                  : 'Purchased and equipped ${item.title}')
+            : (_isKoreanLocale(localeTag)
+                  ? '${item.title} 援щℓ 議곌굔??遺議깊빀?덈떎'
+                  : 'Cannot purchase ${item.title} yet'),
+      ),
+    );
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(snackBar);
+  }
+
+  Future<String?> _autoEquipPurchasedUnlock(
+    StudyHarmonyShopItemDefinition item,
+  ) async {
+    for (final unlockId in item.unlockIds) {
+      if (studyHarmonyTitlesById.containsKey(unlockId)) {
+        final equipped = await widget.progressController.equipTitle(unlockId);
+        if (equipped) {
+          return unlockId;
+        }
+      }
+      if (studyHarmonyCosmeticsById.containsKey(unlockId)) {
+        final equipped = await widget.progressController.equipCosmetic(
+          unlockId,
+        );
+        if (equipped) {
+          return unlockId;
+        }
+      }
+    }
+    return null;
+  }
+
+  Future<void> _equipOwnedReward(BuildContext context, String unlockId) async {
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
+    final messenger = ScaffoldMessenger.of(context);
+    var equipped = false;
+    if (studyHarmonyTitlesById.containsKey(unlockId)) {
+      equipped = await widget.progressController.equipTitle(unlockId);
+    } else if (studyHarmonyCosmeticsById.containsKey(unlockId)) {
+      equipped = await widget.progressController.equipCosmetic(unlockId);
+    }
+    if (!mounted || !equipped) {
+      return;
+    }
+    final rewardTitle =
+        studyHarmonyTitlesById[unlockId]?.title ??
+        studyHarmonyCosmeticsById[unlockId]?.title ??
+        unlockId;
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            _isKoreanLocale(localeTag)
+                ? '$rewardTitle ?옣李? ?꾨즺'
+                : 'Equipped $rewardTitle',
+          ),
+        ),
+      );
   }
 
   Future<void> _openChapterSheet(
@@ -213,7 +384,11 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final course = _coreCourse ?? buildStudyHarmonyCoreCourse(l10n);
+    final coursesByTrackId =
+        _coursesByTrackId ?? buildStudyHarmonyTrackCourses(l10n);
+    final course =
+        coursesByTrackId[_trackIdForHubTrack(_selectedTrack)] ??
+        coursesByTrackId[studyHarmonyCoreTrackId]!;
 
     return AnimatedBuilder(
       animation: widget.progressController,
@@ -269,6 +444,19 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                   focusRecommendation ??
                   dailyRecommendation
             : questChestRecommendation;
+        final primaryRecommendation = _primaryStudyHarmonyRecommendation(
+          continueRecommendation,
+          reviewRecommendation,
+          focusRecommendation,
+          dailyRecommendation,
+          monthlyTourActionRecommendation,
+          questChestActionRecommendation,
+          duetPactRecommendation,
+          leagueBoostRecommendation,
+          relayRecommendation,
+          legendRecommendation,
+          bossRushRecommendation,
+        );
         final reviewFooter = _reviewFooter(l10n, reviewRecommendation);
         final clearedLessons = chapterSummaries.fold<int>(
           0,
@@ -286,9 +474,6 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
         );
         final legendaryChapters = widget.progressController
             .legendaryChapterCountForCourse(course);
-        final relayWins = widget.progressController.relayWinCount();
-        final masteredSkills = widget.progressController
-            .masteredSkillCountForCourse(course);
         final dueReviews = widget.progressController.dueReviewCountForCourse(
           course,
         );
@@ -309,7 +494,7 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
               in widget.progressController.milestoneBoardForCourse(course))
             _milestoneCardData(l10n: l10n, milestone: milestone),
         ];
-        final selectedTrack = _trackView(
+        final selectedTrackDescription = _trackDescription(
           l10n: l10n,
           course: course,
           track: _selectedTrack,
@@ -333,16 +518,33 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
             icon: Icons.stars_rounded,
             label: l10n.studyHarmonyProgressStars(totalStars),
           ),
-          if (legendaryChapters > 0)
+          if (dueReviews > 0)
             _HubMetricChipData(
-              icon: Icons.workspace_premium_rounded,
-              label: l10n.studyHarmonyProgressLegendCrowns(legendaryChapters),
+              icon: Icons.refresh_rounded,
+              label: l10n.studyHarmonyProgressReviewsReady(dueReviews),
+            ),
+          if (dailyStreak > 0)
+            _HubMetricChipData(
+              icon: Icons.local_fire_department_rounded,
+              label: l10n.studyHarmonyProgressStreak(dailyStreak),
             ),
           if (leagueProgress.score > 0)
             _HubMetricChipData(
               icon: Icons.emoji_events_rounded,
               label: l10n.studyHarmonyProgressLeague(
                 _leagueTierLabel(l10n, leagueProgress.tier),
+              ),
+            ),
+          if (legendaryChapters > 0)
+            _HubMetricChipData(
+              icon: Icons.workspace_premium_rounded,
+              label: l10n.studyHarmonyProgressLegendCrowns(legendaryChapters),
+            ),
+          if (questChestStatus.openedCount > 0)
+            _HubMetricChipData(
+              icon: Icons.inventory_2_rounded,
+              label: l10n.studyHarmonyProgressQuestChests(
+                questChestStatus.openedCount,
               ),
             ),
           if (leagueXpBoost.active)
@@ -352,54 +554,145 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                 leagueXpBoost.chargeCount,
               ),
             ),
-          if (duetPact.bestStreak > 0)
-            _HubMetricChipData(
-              icon: Icons.people_alt_rounded,
-              label: l10n.studyHarmonyProgressDuetPact(duetPact.bestStreak),
-            ),
-          _HubMetricChipData(
-            icon: Icons.map_rounded,
-            label: monthlyTour.rewardClaimed
-                ? l10n.studyHarmonyProgressTourClaimed
-                : l10n.studyHarmonyProgressTour(
-                    monthlyTour.completedGoalCount,
-                    monthlyTour.totalGoalCount,
-                  ),
+        ].take(6).toList(growable: false);
+        final localeTag = Localizations.localeOf(context).toLanguageTag();
+        final recentPerformance =
+            StudyHarmonyRecentPerformance.fromProgressSnapshot(
+              widget.progressController.snapshot,
+            );
+        final adaptiveProfile = _hubAdaptiveProfile(
+          snapshot: widget.progressController.snapshot,
+          localeTag: localeTag,
+          recentPerformance: recentPerformance,
+        );
+        final adaptivePlan = personalizeStudyHarmony(
+          profile: adaptiveProfile,
+          recentPerformance: recentPerformance,
+        );
+        final rewardMetrics = widget.progressController.currentRewardMetrics();
+        final rewardCandidates = widget.progressController
+            .currentRewardCandidates();
+        final rewardBalances = widget.progressController
+            .currentRewardCurrencyBalances();
+        final unlockedTitles = rewardCandidates
+            .where(
+              (candidate) =>
+                  candidate.kind == StudyHarmonyRewardKind.title &&
+                  candidate.unlocked,
+            )
+            .take(3)
+            .toList(growable: false);
+        final unlockedCosmetics = rewardCandidates
+            .where(
+              (candidate) =>
+                  candidate.kind == StudyHarmonyRewardKind.cosmetic &&
+                  candidate.unlocked,
+            )
+            .take(3)
+            .toList(growable: false);
+        final upcomingRewards = rewardCandidates
+            .where((candidate) => !candidate.unlocked)
+            .take(3)
+            .toList(growable: false);
+        final directorMode =
+            primaryRecommendation?.sessionMode ??
+            continueRecommendation?.sessionMode ??
+            StudyHarmonySessionMode.lesson;
+        final difficultyPlan = StudyHarmonyDifficultyDesign.design(
+          mode: directorMode,
+          input: _hubDifficultyInput(
+            recentPerformance: recentPerformance,
+            adaptiveProfile: adaptiveProfile,
+            progressController: widget.progressController,
           ),
-          if (relayWins > 0)
-            _HubMetricChipData(
-              icon: Icons.alt_route_rounded,
-              label: l10n.studyHarmonyProgressRelayWins(relayWins),
-            ),
-          if (questChestStatus.openedCount > 0)
-            _HubMetricChipData(
-              icon: Icons.inventory_2_rounded,
-              label: l10n.studyHarmonyProgressQuestChests(
-                questChestStatus.openedCount,
-              ),
-            ),
-          if (dailyStreak > 0)
-            _HubMetricChipData(
-              icon: Icons.local_fire_department_rounded,
-              label: l10n.studyHarmonyProgressStreak(dailyStreak),
-            ),
-          _HubMetricChipData(
-            icon: Icons.school_rounded,
-            label: l10n.studyHarmonyProgressSkillsMastered(
-              masteredSkills,
-              course.skillTags.length,
-            ),
-          ),
-          _HubMetricChipData(
-            icon: Icons.refresh_rounded,
-            label: l10n.studyHarmonyProgressReviewsReady(dueReviews),
-          ),
-          if (streakSavers > 0)
-            _HubMetricChipData(
-              icon: Icons.shield_rounded,
-              label: l10n.studyHarmonyProgressStreakSaver(streakSavers),
-            ),
+        );
+        final runtimeTuning = StudyHarmonyRuntimeTuningRules.tuneFromPlan(
+          plan: difficultyPlan,
+          baseStartingLives: 3,
+          baseGoalCorrectAnswers: 5,
+        );
+        final lessonResults = <StudyHarmonyLessonProgressSummary>[
+          for (final chapter in course.chapters)
+            ...chapter.lessons
+                .map(
+                  (lesson) =>
+                      widget.progressController.lessonResultFor(lesson.id),
+                )
+                .whereType<StudyHarmonyLessonProgressSummary>(),
         ];
+        final arcadeProgress = summarizeStudyHarmonyArcadeProgress(
+          lessonResults,
+          totalLessons: totalLessons,
+          reviewQueueSize: dueReviews,
+          chapterClears: clearedChapters,
+          bossClears:
+              rewardMetrics.modeClearCounts[StudyHarmonySessionMode.bossRush] ??
+              legendaryChapters,
+          currentStreak: dailyStreak,
+        );
+        final isEarlyJourney =
+            clearedLessons < 6 &&
+            dueReviews <= 2 &&
+            widget.progressController.shopPurchaseCount() == 0;
+        final featuredArcadeModes = buildStudyHarmonyFeaturedArcadeModeCards(
+          arcadeProgress,
+          limit: isEarlyJourney ? 2 : 4,
+        );
+        final featuredPlaylists = buildStudyHarmonyFeaturedArcadePlaylists(
+          arcadeProgress,
+          limit: isEarlyJourney ? 1 : 2,
+        );
+        final featuredShopItems = _featuredShopItemsForHub(
+          metrics: rewardMetrics,
+          progressController: widget.progressController,
+          limit: isEarlyJourney ? 2 : 3,
+        );
+        final leadTitle = unlockedTitles.isEmpty
+            ? null
+            : _preferredRewardCandidate(
+                unlockedTitles,
+                adaptivePlan.rewardEmphasis.primaryFocus,
+              );
+        final leadCosmetic = unlockedCosmetics.isEmpty
+            ? null
+            : unlockedCosmetics.first;
+        final ownedTitleIds = widget.progressController.ownedTitleIds();
+        final ownedCosmeticIds = widget.progressController.ownedCosmeticIds();
+        final equippedTitleId = widget.progressController.equippedTitleId();
+        final equippedCosmeticIds = widget.progressController
+            .equippedCosmeticIds();
+        final equippedTitle = equippedTitleId == null
+            ? null
+            : studyHarmonyTitlesById[equippedTitleId];
+        final equippedCosmetics = <StudyHarmonyCosmeticDefinition>[
+          for (final cosmeticId in equippedCosmeticIds)
+            if (studyHarmonyCosmeticsById[cosmeticId] != null)
+              studyHarmonyCosmeticsById[cosmeticId]!,
+        ];
+        final ownedTitles =
+            <StudyHarmonyTitleDefinition>[
+              for (final titleId in ownedTitleIds)
+                if (studyHarmonyTitlesById[titleId] != null)
+                  studyHarmonyTitlesById[titleId]!,
+            ]..sort((left, right) {
+              final byRarity = right.rarity.index.compareTo(left.rarity.index);
+              if (byRarity != 0) {
+                return byRarity;
+              }
+              return left.title.compareTo(right.title);
+            });
+        final ownedCosmetics =
+            <StudyHarmonyCosmeticDefinition>[
+              for (final cosmeticId in ownedCosmeticIds)
+                if (studyHarmonyCosmeticsById[cosmeticId] != null)
+                  studyHarmonyCosmeticsById[cosmeticId]!,
+            ]..sort((left, right) {
+              final byRarity = right.rarity.index.compareTo(left.rarity.index);
+              if (byRarity != 0) {
+                return byRarity;
+              }
+              return left.title.compareTo(right.title);
+            });
 
         return Scaffold(
           appBar: AppBar(
@@ -435,7 +728,7 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                           contentWidth,
                           compact: 1,
                           medium: 2,
-                          large: 3,
+                          large: 2,
                         );
                         final chapterColumns = _columnsFor(
                           contentWidth,
@@ -451,6 +744,24 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                           contentWidth,
                           chapterColumns,
                         );
+                        final primaryRecommendationCopy =
+                            primaryRecommendation == null
+                            ? null
+                            : _recommendationCopy(l10n, primaryRecommendation);
+                        final quickRoutineRecommendation = dueReviews > 0
+                            ? (reviewRecommendation ??
+                                  dailyRecommendation ??
+                                  primaryRecommendation)
+                            : (dailyRecommendation ??
+                                  reviewRecommendation ??
+                                  primaryRecommendation);
+                        final quickRoutineCopy =
+                            quickRoutineRecommendation == null
+                            ? null
+                            : _recommendationCopy(
+                                l10n,
+                                quickRoutineRecommendation,
+                              );
 
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -459,10 +770,20 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                               title: l10n.studyHarmonyTitle,
                               eyebrow: l10n.studyHarmonyHubHeroEyebrow,
                               subtitle: l10n.studyHarmonySubtitle,
-                              body: selectedTrack.description,
+                              body: selectedTrackDescription,
                               metrics: heroMetrics,
+                              recommendationCopy: primaryRecommendationCopy,
+                              recommendationOnPressed:
+                                  primaryRecommendation == null
+                                  ? null
+                                  : () => _openRecommendation(
+                                      context,
+                                      l10n,
+                                      primaryRecommendation,
+                                      course,
+                                    ),
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 18),
                             Text(
                               l10n.studyHarmonyTrackFilterLabel,
                               style: theme.textTheme.titleMedium?.copyWith(
@@ -482,18 +803,18 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                 _TrackFilterChipData(
                                   track: _StudyHarmonyHubTrack.pop,
                                   label: l10n.studyHarmonyTrackPopFilterLabel,
-                                  icon: Icons.lock_outline_rounded,
+                                  icon: Icons.graphic_eq_rounded,
                                 ),
                                 _TrackFilterChipData(
                                   track: _StudyHarmonyHubTrack.jazz,
                                   label: l10n.studyHarmonyTrackJazzFilterLabel,
-                                  icon: Icons.lock_outline_rounded,
+                                  icon: Icons.queue_music_rounded,
                                 ),
                                 _TrackFilterChipData(
                                   track: _StudyHarmonyHubTrack.classical,
                                   label: l10n
                                       .studyHarmonyTrackClassicalFilterLabel,
-                                  icon: Icons.lock_outline_rounded,
+                                  icon: Icons.music_note_rounded,
                                 ),
                               ],
                               onChanged: (track) {
@@ -502,12 +823,656 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                 });
                               },
                             ),
-                            const SizedBox(height: 20),
-                            if (_selectedTrack ==
-                                _StudyHarmonyHubTrack.core) ...[
+                            const SizedBox(height: 18),
+                            Text(
+                              _isKoreanLocale(localeTag)
+                                  ? '吏湲??쒖옉'
+                                  : 'Start Here',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 14,
+                              runSpacing: 14,
+                              children: [
+                                SizedBox(
+                                  width: actionWidth,
+                                  child: _HubActionCard(
+                                    key: const ValueKey(
+                                      'study-harmony-quickstart-primary-card',
+                                    ),
+                                    icon: Icons.play_circle_fill_rounded,
+                                    title:
+                                        primaryRecommendationCopy?.title ??
+                                        l10n.studyHarmonyContinueCardTitle,
+                                    headline:
+                                        primaryRecommendationCopy?.headline ??
+                                        continueRecommendation?.lesson.title ??
+                                        l10n.studyHarmonyContinueCardTitle,
+                                    supportingLabel:
+                                        primaryRecommendationCopy
+                                            ?.supportingLabel ??
+                                        continueRecommendation?.chapter.title ??
+                                        course.title,
+                                    body:
+                                        primaryRecommendationCopy?.body ??
+                                        _continueHint(
+                                          l10n,
+                                          continueRecommendation,
+                                        ),
+                                    footerLabels: [
+                                      _runtimeTuningSummary(
+                                        localeTag,
+                                        runtimeTuning,
+                                      ),
+                                      if (primaryRecommendation != null)
+                                        _sessionModeLabel(
+                                          l10n,
+                                          primaryRecommendation.sessionMode,
+                                        ),
+                                    ],
+                                    actionLabel: primaryRecommendation == null
+                                        ? null
+                                        : 'Play Now',
+                                    onPressed: primaryRecommendation == null
+                                        ? null
+                                        : () => _openRecommendation(
+                                            context,
+                                            l10n,
+                                            primaryRecommendation,
+                                            course,
+                                          ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: actionWidth,
+                                  child: _HubActionCard(
+                                    key: const ValueKey(
+                                      'study-harmony-quickstart-routine-card',
+                                    ),
+                                    icon: dueReviews > 0
+                                        ? Icons.refresh_rounded
+                                        : Icons.wb_sunny_rounded,
+                                    title:
+                                        quickRoutineCopy?.title ??
+                                        (dueReviews > 0
+                                            ? l10n.studyHarmonyReviewCardTitle
+                                            : l10n.studyHarmonyDailyCardTitle),
+                                    headline:
+                                        quickRoutineCopy?.headline ??
+                                        quickRoutineRecommendation
+                                            ?.lesson
+                                            .title ??
+                                        course.title,
+                                    supportingLabel:
+                                        quickRoutineCopy?.supportingLabel ??
+                                        quickRoutineRecommendation
+                                            ?.chapter
+                                            .title ??
+                                        course.title,
+                                    body:
+                                        quickRoutineCopy?.body ??
+                                        (dueReviews > 0
+                                            ? _reviewHint(
+                                                l10n,
+                                                reviewRecommendation,
+                                              )
+                                            : (dailyCompletedToday
+                                                  ? l10n.studyHarmonyDailyCardHintCompleted
+                                                  : l10n.studyHarmonyDailyCardHint)),
+                                    footerLabels: [
+                                      if (dueReviews > 0)
+                                        l10n.studyHarmonyProgressReviewsReady(
+                                          dueReviews,
+                                        )
+                                      else if (dailyStreak > 0)
+                                        l10n.studyHarmonyProgressStreak(
+                                          dailyStreak,
+                                        ),
+                                      _coachLabel(
+                                        localeTag,
+                                        adaptivePlan.coachStyle,
+                                      ),
+                                    ],
+                                    actionLabel:
+                                        quickRoutineRecommendation == null
+                                        ? null
+                                        : (_isKoreanLocale(localeTag)
+                                              ? '由щ벉 ?좎?'
+                                              : 'Keep Momentum'),
+                                    onPressed:
+                                        quickRoutineRecommendation == null
+                                        ? null
+                                        : () async {
+                                            if (quickRoutineRecommendation
+                                                    .sessionMode ==
+                                                StudyHarmonySessionMode.daily) {
+                                              final prepared = await widget
+                                                  .progressController
+                                                  .prepareDailyChallengeRecommendationForCourse(
+                                                    course,
+                                                  );
+                                              if (!context.mounted ||
+                                                  prepared == null) {
+                                                return;
+                                              }
+                                              _openRecommendation(
+                                                context,
+                                                l10n,
+                                                prepared,
+                                                course,
+                                              );
+                                              return;
+                                            }
+                                            _openRecommendation(
+                                              context,
+                                              l10n,
+                                              quickRoutineRecommendation,
+                                              course,
+                                            );
+                                          },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (ownedTitles.isNotEmpty ||
+                                ownedCosmetics.isNotEmpty) ...[
+                              const SizedBox(height: 12),
                               Wrap(
-                                spacing: 16,
-                                runSpacing: 16,
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  if (equippedTitleId != null)
+                                    FilterChip(
+                                      label: Text(
+                                        _isKoreanLocale(localeTag)
+                                            ? '칭호 해제'
+                                            : 'Clear title',
+                                      ),
+                                      selected: false,
+                                      onSelected: (_) {
+                                        unawaited(
+                                          widget.progressController
+                                              .unequipTitle(),
+                                        );
+                                      },
+                                    ),
+                                  for (final title in ownedTitles.take(
+                                    isEarlyJourney ? 3 : 5,
+                                  ))
+                                    FilterChip(
+                                      label: Text(title.title),
+                                      selected: equippedTitleId == title.id,
+                                      onSelected: (selected) {
+                                        unawaited(
+                                          selected
+                                              ? widget.progressController
+                                                    .equipTitle(title.id)
+                                              : widget.progressController
+                                                    .unequipTitle(),
+                                        );
+                                      },
+                                    ),
+                                  for (final cosmetic in ownedCosmetics.take(
+                                    isEarlyJourney ? 4 : 6,
+                                  ))
+                                    FilterChip(
+                                      label: Text(cosmetic.title),
+                                      selected: equippedCosmeticIds.contains(
+                                        cosmetic.id,
+                                      ),
+                                      onSelected: (selected) {
+                                        unawaited(
+                                          selected
+                                              ? widget.progressController
+                                                    .equipCosmetic(cosmetic.id)
+                                              : widget.progressController
+                                                    .unequipCosmetic(
+                                                      cosmetic.id,
+                                                    ),
+                                        );
+                                      },
+                                    ),
+                                ],
+                              ),
+                            ],
+                            const SizedBox(height: 24),
+                            Text(
+                              'Player Deck',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 14,
+                              runSpacing: 14,
+                              children: [
+                                SizedBox(
+                                  width: actionWidth,
+                                  child: _HubActionCard(
+                                    key: const ValueKey(
+                                      'study-harmony-player-card',
+                                    ),
+                                    icon: Icons.person_rounded,
+                                    title: 'Playstyle',
+                                    headline:
+                                        equippedTitle?.title ??
+                                        leadTitle?.title ??
+                                        _playStyleLabel(
+                                          localeTag,
+                                          adaptiveProfile.playStyle,
+                                        ),
+                                    supportingLabel:
+                                        equippedCosmetics.isNotEmpty
+                                        ? equippedCosmetics.first.title
+                                        : _coachLabel(
+                                            localeTag,
+                                            adaptivePlan.coachStyle,
+                                          ),
+                                    body:
+                                        equippedTitle?.description ??
+                                        _coachLine(localeTag, adaptivePlan),
+                                    footerLabels: [
+                                      _rewardFocusLabel(
+                                        localeTag,
+                                        adaptivePlan
+                                            .rewardEmphasis
+                                            .primaryFocus,
+                                      ),
+                                      for (final cosmetic
+                                          in equippedCosmetics.take(2))
+                                        cosmetic.title,
+                                      if (equippedCosmetics.isEmpty &&
+                                          leadCosmetic != null)
+                                        leadCosmetic.title,
+                                      if (upcomingRewards.isNotEmpty)
+                                        _nextUnlockShortLabel(
+                                          localeTag,
+                                          upcomingRewards.first,
+                                        ),
+                                    ],
+                                    actionLabel: _isKoreanLocale(localeTag)
+                                        ? '?곹깭 ?뺤씤'
+                                        : 'Overview',
+                                    onPressed: null,
+                                    showAction: false,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: actionWidth,
+                                  child: _HubActionCard(
+                                    key: const ValueKey(
+                                      'study-harmony-director-card',
+                                    ),
+                                    icon: Icons.tune_rounded,
+                                    title: 'Run Director',
+                                    headline: _difficultyLaneLabel(
+                                      localeTag,
+                                      difficultyPlan.difficultyLane,
+                                    ),
+                                    supportingLabel: _runtimeTuningSummary(
+                                      localeTag,
+                                      runtimeTuning,
+                                    ),
+                                    body: runtimeTuning.rationale.first,
+                                    footerLabels: [
+                                      _pressureTierLabel(
+                                        localeTag,
+                                        difficultyPlan.pressureTier,
+                                      ),
+                                      _forgivenessTierLabel(
+                                        localeTag,
+                                        difficultyPlan.forgivenessTier,
+                                      ),
+                                      _comboGoalLabel(
+                                        localeTag,
+                                        difficultyPlan.comboTarget,
+                                      ),
+                                      _pacingPlanLabel(
+                                        localeTag,
+                                        difficultyPlan,
+                                      ),
+                                    ],
+                                    actionLabel: primaryRecommendation == null
+                                        ? null
+                                        : (_isKoreanLocale(localeTag)
+                                              ? '異붿쿇 ???쒖옉'
+                                              : 'Play Recommended'),
+                                    onPressed: primaryRecommendation == null
+                                        ? null
+                                        : () => _openRecommendation(
+                                            context,
+                                            l10n,
+                                            primaryRecommendation,
+                                            course,
+                                          ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: actionWidth,
+                                  child: _HubActionCard(
+                                    key: const ValueKey(
+                                      'study-harmony-economy-card',
+                                    ),
+                                    icon: Icons.wallet_giftcard_rounded,
+                                    title: _isKoreanLocale(localeTag)
+                                        ? '寃뚯엫 ?댁퐫?몃?'
+                                        : 'Game Economy',
+                                    headline: _currencyBalanceLabel(
+                                      'currency.studyCoin',
+                                      rewardBalances['currency.studyCoin'] ?? 0,
+                                    ),
+                                    supportingLabel: _currencyBalanceLabel(
+                                      'currency.starShard',
+                                      rewardBalances['currency.starShard'] ?? 0,
+                                    ),
+                                    body: _isKoreanLocale(localeTag)
+                                        ? '?곸젏, ?좏겙, 蹂댁“ ?꾩씠?쒖씠 紐⑤몢 ?꾩옱 吏꾪뻾?꾩? ?곌껐?⑸땲??'
+                                        : 'Shop stock, utility tokens, and meta items all react to your run history.',
+                                    footerLabels: [
+                                      _currencyBalanceLabel(
+                                        'currency.focusToken',
+                                        rewardBalances['currency.focusToken'] ??
+                                            0,
+                                      ),
+                                      _currencyBalanceLabel(
+                                        'currency.rerollToken',
+                                        rewardBalances['currency.rerollToken'] ??
+                                            0,
+                                      ),
+                                      _currencyBalanceLabel(
+                                        'currency.streakShield',
+                                        rewardBalances['currency.streakShield'] ??
+                                            0,
+                                      ),
+                                      _isKoreanLocale(localeTag)
+                                          ? '칭호 ${ownedTitles.length}개'
+                                          : '${ownedTitles.length} titles owned',
+                                      _isKoreanLocale(localeTag)
+                                          ? '코스메틱 ${ownedCosmetics.length}개'
+                                          : '${ownedCosmetics.length} cosmetics owned',
+                                      _isKoreanLocale(localeTag)
+                                          ? '상점 구매 ${widget.progressController.shopPurchaseCount()}회'
+                                          : '${widget.progressController.shopPurchaseCount()} shop purchases',
+                                    ],
+                                    actionLabel: _isKoreanLocale(localeTag)
+                                        ? '蹂닿???蹂닿린'
+                                        : 'View Wallet',
+                                    onPressed: null,
+                                    showAction: false,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            Text(
+                              _isKoreanLocale(localeTag)
+                                  ? '?꾩??대뱶 ?ㅽ룷?몃씪?댄듃'
+                                  : 'Arcade Spotlight',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 14,
+                              runSpacing: 14,
+                              children: [
+                                for (final featured in featuredArcadeModes)
+                                  SizedBox(
+                                    width: actionWidth,
+                                    child: _HubActionCard(
+                                      key: ValueKey(
+                                        'study-harmony-arcade-card-${featured.mode.id}',
+                                      ),
+                                      icon: _arcadeModeIcon(featured.mode),
+                                      title: featured.mode.title,
+                                      headline: featured.mode.fantasy,
+                                      supportingLabel: _arcadeRewardStyleLabel(
+                                        localeTag,
+                                        buildStudyHarmonyArcadeRuntimePlan(
+                                              modeId: featured.mode.id,
+                                              baseStartingLives: runtimeTuning
+                                                  .recommendedStartingLives,
+                                              baseGoalCorrectAnswers: runtimeTuning
+                                                  .recommendedGoalCorrectAnswers,
+                                              progress: arcadeProgress,
+                                            ).primaryRewardStyle() ??
+                                            featured.mode.rewardStyle,
+                                      ),
+                                      body: featured.cue,
+                                      footerLabels: [
+                                        _arcadeRiskLabel(
+                                          localeTag,
+                                          featured.mode.riskStyle,
+                                        ),
+                                        ..._arcadeRuntimeLabels(
+                                          localeTag,
+                                          buildStudyHarmonyArcadeRuntimePlan(
+                                            modeId: featured.mode.id,
+                                            baseStartingLives: runtimeTuning
+                                                .recommendedStartingLives,
+                                            baseGoalCorrectAnswers: runtimeTuning
+                                                .recommendedGoalCorrectAnswers,
+                                            progress: arcadeProgress,
+                                          ),
+                                        ).take(1),
+                                        ...featured.mode.unlockConditionLabels
+                                            .take(1),
+                                      ],
+                                      actionLabel: _isKoreanLocale(localeTag)
+                                          ? '?꾩??대뱶 ?쒖옉'
+                                          : 'Play Arcade',
+                                      onPressed:
+                                          _arcadeRecommendationForMode(
+                                                featured.mode.id,
+                                                continueRecommendation:
+                                                    continueRecommendation,
+                                                reviewRecommendation:
+                                                    reviewRecommendation,
+                                                focusRecommendation:
+                                                    focusRecommendation,
+                                                dailyRecommendation:
+                                                    dailyRecommendation,
+                                                relayRecommendation:
+                                                    relayRecommendation,
+                                                legendRecommendation:
+                                                    legendRecommendation,
+                                                bossRushRecommendation:
+                                                    bossRushRecommendation,
+                                              ) ==
+                                              null
+                                          ? null
+                                          : () => _openArcadeMode(
+                                              context,
+                                              l10n,
+                                              mode: featured.mode,
+                                              recommendation:
+                                                  _arcadeRecommendationForMode(
+                                                    featured.mode.id,
+                                                    continueRecommendation:
+                                                        continueRecommendation,
+                                                    reviewRecommendation:
+                                                        reviewRecommendation,
+                                                    focusRecommendation:
+                                                        focusRecommendation,
+                                                    dailyRecommendation:
+                                                        dailyRecommendation,
+                                                    relayRecommendation:
+                                                        relayRecommendation,
+                                                    legendRecommendation:
+                                                        legendRecommendation,
+                                                    bossRushRecommendation:
+                                                        bossRushRecommendation,
+                                                  )!,
+                                              course: course,
+                                            ),
+                                    ),
+                                  ),
+                                for (final playlist in featuredPlaylists)
+                                  SizedBox(
+                                    width: actionWidth,
+                                    child: _HubActionCard(
+                                      key: ValueKey(
+                                        'study-harmony-playlist-card-${playlist.playlist.id}',
+                                      ),
+                                      icon: Icons.queue_music_rounded,
+                                      title: playlist.playlist.title,
+                                      headline: playlist.playlist.subtitle,
+                                      supportingLabel: playlist.cue,
+                                      body: playlist.playlist.fantasy,
+                                      footerLabels: [
+                                        '${playlist.playlist.modeIds.length} modes',
+                                      ],
+                                      actionLabel: _isKoreanLocale(localeTag)
+                                          ? '?명듃 ?쒖옉'
+                                          : 'Play Set',
+                                      onPressed:
+                                          _arcadePlaylistRecommendation(
+                                                playlist.playlist,
+                                                continueRecommendation:
+                                                    continueRecommendation,
+                                                reviewRecommendation:
+                                                    reviewRecommendation,
+                                                focusRecommendation:
+                                                    focusRecommendation,
+                                                dailyRecommendation:
+                                                    dailyRecommendation,
+                                                relayRecommendation:
+                                                    relayRecommendation,
+                                                legendRecommendation:
+                                                    legendRecommendation,
+                                                bossRushRecommendation:
+                                                    bossRushRecommendation,
+                                              ) ==
+                                              null
+                                          ? null
+                                          : () => _openRecommendation(
+                                              context,
+                                              l10n,
+                                              _arcadePlaylistRecommendation(
+                                                playlist.playlist,
+                                                continueRecommendation:
+                                                    continueRecommendation,
+                                                reviewRecommendation:
+                                                    reviewRecommendation,
+                                                focusRecommendation:
+                                                    focusRecommendation,
+                                                dailyRecommendation:
+                                                    dailyRecommendation,
+                                                relayRecommendation:
+                                                    relayRecommendation,
+                                                legendRecommendation:
+                                                    legendRecommendation,
+                                                bossRushRecommendation:
+                                                    bossRushRecommendation,
+                                              )!,
+                                              course,
+                                            ),
+                                      showAction:
+                                          _arcadePlaylistRecommendation(
+                                            playlist.playlist,
+                                            continueRecommendation:
+                                                continueRecommendation,
+                                            reviewRecommendation:
+                                                reviewRecommendation,
+                                            focusRecommendation:
+                                                focusRecommendation,
+                                            dailyRecommendation:
+                                                dailyRecommendation,
+                                            relayRecommendation:
+                                                relayRecommendation,
+                                            legendRecommendation:
+                                                legendRecommendation,
+                                            bossRushRecommendation:
+                                                bossRushRecommendation,
+                                          ) !=
+                                          null,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            Text(
+                              _isKoreanLocale(localeTag)
+                                  ? '?섏씠??留덉폆'
+                                  : 'Night Market',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 14,
+                              runSpacing: 14,
+                              children: [
+                                for (final item in featuredShopItems)
+                                  SizedBox(
+                                    width: actionWidth,
+                                    child: _HubActionCard(
+                                      key: ValueKey(
+                                        'study-harmony-shop-card-${item.id}',
+                                      ),
+                                      icon: Icons.storefront_rounded,
+                                      title: item.title,
+                                      headline:
+                                          '${item.priceAmount} ${studyHarmonyCurrenciesById[item.priceCurrencyId]?.title ?? item.priceCurrencyId}',
+                                      supportingLabel: _shopStateLabel(
+                                        localeTag,
+                                        item: item,
+                                        progressController:
+                                            widget.progressController,
+                                      ),
+                                      body: item.description,
+                                      footerLabels: [
+                                        for (final grant in item.grants)
+                                          _currencyGrantLabel(grant),
+                                        if (item.unlockIds.isNotEmpty)
+                                          item.unlockIds.first,
+                                      ],
+                                      actionLabel: _shopActionLabel(
+                                        localeTag,
+                                        item: item,
+                                        progressController:
+                                            widget.progressController,
+                                      ),
+                                      onPressed:
+                                          widget.progressController
+                                              .canPurchaseShopItem(item)
+                                          ? () =>
+                                                _purchaseShopItem(context, item)
+                                          : (_shopLoadoutUnlockId(
+                                                      item,
+                                                      widget.progressController,
+                                                    ) ==
+                                                    null ||
+                                                _isRewardUnlockEquipped(
+                                                  _shopLoadoutUnlockId(
+                                                    item,
+                                                    widget.progressController,
+                                                  )!,
+                                                  widget.progressController,
+                                                ))
+                                          ? null
+                                          : () => _equipOwnedReward(
+                                              context,
+                                              _shopLoadoutUnlockId(
+                                                item,
+                                                widget.progressController,
+                                              )!,
+                                            ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            ...[
+                              Wrap(
+                                spacing: 14,
+                                runSpacing: 14,
                                 children: [
                                   SizedBox(
                                     width: actionWidth,
@@ -914,7 +1879,7 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 28),
+                              const SizedBox(height: 24),
                               Text(
                                 l10n.studyHarmonyQuestBoardTitle,
                                 style: theme.textTheme.titleLarge?.copyWith(
@@ -923,8 +1888,8 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                               ),
                               const SizedBox(height: 12),
                               Wrap(
-                                spacing: 16,
-                                runSpacing: 16,
+                                spacing: 14,
+                                runSpacing: 14,
                                 children: [
                                   for (final questCard in questCards)
                                     SizedBox(
@@ -1039,7 +2004,7 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 28),
+                              const SizedBox(height: 24),
                               Text(
                                 l10n.studyHarmonyWeeklyPlanTitle,
                                 style: theme.textTheme.titleLarge?.copyWith(
@@ -1048,8 +2013,8 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                               ),
                               const SizedBox(height: 12),
                               Wrap(
-                                spacing: 16,
-                                runSpacing: 16,
+                                spacing: 14,
+                                runSpacing: 14,
                                 children: [
                                   for (final weeklyGoal in weeklyGoals)
                                     SizedBox(
@@ -1063,7 +2028,7 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                     ),
                                 ],
                               ),
-                              const SizedBox(height: 28),
+                              const SizedBox(height: 24),
                               Text(
                                 l10n.studyHarmonyMilestoneCabinetTitle,
                                 style: theme.textTheme.titleLarge?.copyWith(
@@ -1072,8 +2037,8 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                               ),
                               const SizedBox(height: 12),
                               Wrap(
-                                spacing: 16,
-                                runSpacing: 16,
+                                spacing: 14,
+                                runSpacing: 14,
                                 children: [
                                   for (final milestoneCard in milestoneCards)
                                     SizedBox(
@@ -1084,7 +2049,7 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                     ),
                                 ],
                               ),
-                              const SizedBox(height: 28),
+                              const SizedBox(height: 24),
                               Text(
                                 l10n.studyHarmonyHubChapterSectionTitle,
                                 style: theme.textTheme.titleLarge?.copyWith(
@@ -1093,8 +2058,8 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                               ),
                               const SizedBox(height: 12),
                               Wrap(
-                                spacing: 16,
-                                runSpacing: 16,
+                                spacing: 14,
+                                runSpacing: 14,
                                 children: [
                                   for (final summary in chapterSummaries)
                                     SizedBox(
@@ -1142,15 +2107,7 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                     ),
                                 ],
                               ),
-                            ] else
-                              _LockedTrackPlaceholderCard(
-                                trackTitle: selectedTrack.title,
-                                trackDescription: selectedTrack.description,
-                                body: l10n.studyHarmonyTrackPlaceholderBody(
-                                  course.title,
-                                ),
-                                badgeLabel: l10n.studyHarmonyComingSoonTag,
-                              ),
+                            ],
                           ],
                         );
                       },
@@ -1169,10 +2126,28 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
 StudyHarmonyLessonDefinition _buildSessionLesson({
   required AppLocalizations l10n,
   required StudyHarmonyLessonRecommendation recommendation,
+  String? arcadeModeId,
 }) {
   if (recommendation.sessionMode == StudyHarmonySessionMode.lesson &&
       recommendation.resolvedSourceLessons.length <= 1) {
-    return recommendation.lesson;
+    if (arcadeModeId == null) {
+      return recommendation.lesson;
+    }
+    return StudyHarmonyLessonDefinition(
+      id: recommendation.lesson.id,
+      chapterId: recommendation.lesson.chapterId,
+      title: recommendation.lesson.title,
+      description: recommendation.lesson.description,
+      objectiveLabel: recommendation.lesson.objectiveLabel,
+      goalCorrectAnswers: recommendation.lesson.goalCorrectAnswers,
+      startingLives: recommendation.lesson.startingLives,
+      sessionMode: recommendation.lesson.sessionMode,
+      tasks: recommendation.lesson.tasks,
+      skillTags: recommendation.lesson.skillTags,
+      sessionMetadata: recommendation.lesson.sessionMetadata.copyWith(
+        arcadeModeId: arcadeModeId,
+      ),
+    );
   }
 
   final sourceLessons = recommendation.resolvedSourceLessons;
@@ -1276,6 +2251,7 @@ StudyHarmonyLessonDefinition _buildSessionLesson({
       sourceLessonIds: {for (final lesson in sourceLessons) lesson.id},
       focusSkillTags: skillTags,
       countsTowardLessonProgress: false,
+      arcadeModeId: arcadeModeId,
       reviewReason: recommendation.reviewReason,
       dailyDateKey: recommendation.dailyDateKey,
       dailySeedValue: recommendation.seedValue,
@@ -1455,6 +2431,8 @@ class _HubHeroCard extends StatelessWidget {
     required this.subtitle,
     required this.body,
     required this.metrics,
+    required this.recommendationCopy,
+    required this.recommendationOnPressed,
   });
 
   final String title;
@@ -1462,6 +2440,8 @@ class _HubHeroCard extends StatelessWidget {
   final String subtitle;
   final String body;
   final List<_HubMetricChipData> metrics;
+  final _HubRecommendationCopy? recommendationCopy;
+  final VoidCallback? recommendationOnPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -1478,59 +2458,104 @@ class _HubHeroCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                eyebrow,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.2,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                title,
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                subtitle,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 12),
-              DecoratedBox(
-                decoration: _hubPanelDecoration(colorScheme, accent: true),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    body,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      height: 1.45,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 880;
+              final copy = recommendationCopy;
+              final heroCopy = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    eyebrow,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.2,
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  for (final metric in metrics)
-                    Chip(
-                      avatar: Icon(metric.icon, size: 18),
-                      label: Text(metric.label),
+                  const SizedBox(height: 10),
+                  Text(
+                    title,
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
                     ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  DecoratedBox(
+                    decoration: _hubPanelDecoration(colorScheme, accent: true),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        body,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          height: 1.45,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      for (final metric in metrics)
+                        Chip(
+                          avatar: Icon(metric.icon, size: 18),
+                          label: Text(metric.label),
+                        ),
+                    ],
+                  ),
                 ],
-              ),
-            ],
+              );
+              final featuredCard = copy == null
+                  ? const SizedBox.shrink()
+                  : _HubActionCard(
+                      icon: copy.icon,
+                      title: copy.title,
+                      headline: copy.headline,
+                      supportingLabel: copy.supportingLabel,
+                      body: copy.body,
+                      actionLabel: copy.actionLabel,
+                      onPressed: recommendationOnPressed,
+                      footerLabels: copy.footerLabels,
+                      dense: false,
+                    );
+
+              if (copy == null) {
+                return heroCopy;
+              }
+
+              if (isWide) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 3, child: heroCopy),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      flex: 2,
+                      child: Align(
+                        alignment: Alignment.topLeft,
+                        child: featuredCard,
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [heroCopy, const SizedBox(height: 16), featuredCard],
+              );
+            },
           ),
         ),
       ),
@@ -1546,9 +2571,11 @@ class _HubActionCard extends StatelessWidget {
     required this.headline,
     required this.supportingLabel,
     required this.body,
-    required this.actionLabel,
+    this.actionLabel,
     required this.onPressed,
     this.footerLabels = const <String>[],
+    this.dense = true,
+    this.showAction = true,
   });
 
   final IconData icon;
@@ -1556,9 +2583,11 @@ class _HubActionCard extends StatelessWidget {
   final String headline;
   final String supportingLabel;
   final String body;
-  final String actionLabel;
+  final String? actionLabel;
   final VoidCallback? onPressed;
   final List<String> footerLabels;
+  final bool dense;
+  final bool showAction;
 
   @override
   Widget build(BuildContext context) {
@@ -1572,29 +2601,39 @@ class _HubActionCard extends StatelessWidget {
         shape: _hubCardShape(colorScheme),
         clipBehavior: Clip.antiAlias,
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(dense ? 16 : 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _HubIconBadge(icon: icon),
-              const SizedBox(height: 14),
+              SizedBox(height: dense ? 12 : 14),
               Text(
                 title,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w800,
-                ),
+                style:
+                    (dense
+                            ? theme.textTheme.titleSmall
+                            : theme.textTheme.titleMedium)
+                        ?.copyWith(
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.w800,
+                        ),
               ),
               const SizedBox(height: 8),
               Text(
                 headline,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w900,
-                ),
+                maxLines: dense ? 2 : null,
+                overflow: dense ? TextOverflow.ellipsis : TextOverflow.visible,
+                style:
+                    (dense
+                            ? theme.textTheme.titleLarge
+                            : theme.textTheme.headlineSmall)
+                        ?.copyWith(fontWeight: FontWeight.w900),
               ),
               const SizedBox(height: 6),
               Text(
                 supportingLabel,
+                maxLines: dense ? 1 : 2,
+                overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleSmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w700,
@@ -1603,31 +2642,48 @@ class _HubActionCard extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 body,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  height: 1.4,
-                ),
+                maxLines: dense ? 3 : null,
+                overflow: dense ? TextOverflow.ellipsis : TextOverflow.visible,
+                style:
+                    (dense
+                            ? theme.textTheme.bodySmall
+                            : theme.textTheme.bodyMedium)
+                        ?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          height: 1.4,
+                        ),
               ),
               if (footerLabels.isNotEmpty) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: [
                     for (final footer in footerLabels)
-                      Chip(label: Text(footer)),
+                      Chip(
+                        label: Text(footer),
+                        visualDensity: VisualDensity.compact,
+                      ),
                   ],
                 ),
               ],
-              const SizedBox(height: 18),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: onPressed,
-                  icon: const Icon(Icons.arrow_forward_rounded),
-                  label: Text(actionLabel),
-                ),
-              ),
+              if (showAction)
+                if (actionLabel case final label?) ...[
+                  SizedBox(height: dense ? 14 : 18),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      style: dense
+                          ? FilledButton.styleFrom(
+                              minimumSize: const Size.fromHeight(44),
+                            )
+                          : null,
+                      onPressed: onPressed,
+                      icon: const Icon(Icons.arrow_forward_rounded),
+                      label: Text(label),
+                    ),
+                  ),
+                ],
             ],
           ),
         ),
@@ -1653,50 +2709,55 @@ class _HubQuestCard extends StatelessWidget {
       shape: _hubCardShape(colorScheme),
       clipBehavior: Clip.antiAlias,
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _HubIconBadge(icon: data.icon),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             Text(
               data.title,
-              style: theme.textTheme.titleMedium?.copyWith(
+              style: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 10),
             Text(
               data.body,
-              style: theme.textTheme.bodyMedium?.copyWith(
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
                 height: 1.4,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             ClipRRect(
               borderRadius: BorderRadius.circular(999),
               child: LinearProgressIndicator(
                 value: data.progressFraction,
-                minHeight: 10,
+                minHeight: 8,
                 backgroundColor: colorScheme.surfaceContainerHighest,
               ),
             ),
             const SizedBox(height: 10),
             Text(
               data.progressLabel,
-              style: theme.textTheme.bodyMedium?.copyWith(
+              style: theme.textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             if (data.badgeLabels.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
                   for (final badge in data.badgeLabels)
-                    Chip(label: Text(badge)),
+                    Chip(
+                      label: Text(badge),
+                      visualDensity: VisualDensity.compact,
+                    ),
                 ],
               ),
             ],
@@ -1724,47 +2785,52 @@ class _HubMilestoneCard extends StatelessWidget {
       shape: _hubCardShape(colorScheme),
       clipBehavior: Clip.antiAlias,
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _HubIconBadge(icon: data.icon),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             Text(
               data.title,
-              style: theme.textTheme.titleMedium?.copyWith(
+              style: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 10),
             Text(
               data.body,
-              style: theme.textTheme.bodyMedium?.copyWith(
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
                 height: 1.4,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             LinearProgressIndicator(
               value: data.progressFraction,
-              minHeight: 8,
+              minHeight: 7,
               borderRadius: BorderRadius.circular(999),
             ),
             const SizedBox(height: 10),
             Text(
               data.progressLabel,
-              style: theme.textTheme.labelLarge?.copyWith(
+              style: theme.textTheme.labelMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             if (data.badgeLabels.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
                   for (final badge in data.badgeLabels)
-                    Chip(label: Text(badge)),
+                    Chip(
+                      label: Text(badge),
+                      visualDensity: VisualDensity.compact,
+                    ),
                 ],
               ),
             ],
@@ -1792,47 +2858,52 @@ class _HubWeeklyGoalCard extends StatelessWidget {
       shape: _hubCardShape(colorScheme),
       clipBehavior: Clip.antiAlias,
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _HubIconBadge(icon: data.icon),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             Text(
               data.title,
-              style: theme.textTheme.titleMedium?.copyWith(
+              style: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 10),
             Text(
               data.body,
-              style: theme.textTheme.bodyMedium?.copyWith(
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
                 height: 1.4,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             LinearProgressIndicator(
               value: data.progressFraction,
-              minHeight: 8,
+              minHeight: 7,
               borderRadius: BorderRadius.circular(999),
             ),
             const SizedBox(height: 10),
             Text(
               data.progressLabel,
-              style: theme.textTheme.labelLarge?.copyWith(
+              style: theme.textTheme.labelMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             if (data.badgeLabels.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
                   for (final badge in data.badgeLabels)
-                    Chip(label: Text(badge)),
+                    Chip(
+                      label: Text(badge),
+                      visualDensity: VisualDensity.compact,
+                    ),
                 ],
               ),
             ],
@@ -1882,7 +2953,7 @@ class _HubChapterCard extends StatelessWidget {
         shape: _hubCardShape(colorScheme),
         clipBehavior: Clip.antiAlias,
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1913,19 +2984,23 @@ class _HubChapterCard extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 summary.chapter.title,
-                style: theme.textTheme.titleLarge?.copyWith(
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 summary.chapter.description,
-                style: theme.textTheme.bodyLarge?.copyWith(
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                   height: 1.45,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               Semantics(
                 label: progressLabel,
                 child: ExcludeSemantics(
@@ -1936,7 +3011,7 @@ class _HubChapterCard extends StatelessWidget {
                         'study-harmony-chapter-progress-${summary.chapter.id}',
                       ),
                       value: summary.progressFraction,
-                      minHeight: 10,
+                      minHeight: 8,
                       backgroundColor: colorScheme.surfaceContainerHighest,
                     ),
                   ),
@@ -1945,7 +3020,7 @@ class _HubChapterCard extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 progressLabel,
-                style: theme.textTheme.bodyMedium?.copyWith(
+                style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -1954,21 +3029,33 @@ class _HubChapterCard extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  Chip(label: Text(lessonCountLabel)),
-                  Chip(label: Text(completedCountLabel)),
-                  if (rewardLabel case final reward?) Chip(label: Text(reward)),
+                  Chip(
+                    label: Text(lessonCountLabel),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  Chip(
+                    label: Text(completedCountLabel),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  if (rewardLabel case final reward?)
+                    Chip(
+                      label: Text(reward),
+                      visualDensity: VisualDensity.compact,
+                    ),
                 ],
               ),
               if (nextLessonLabel case final nextLesson?) ...[
                 const SizedBox(height: 12),
                 Text(
                   nextLesson,
-                  style: theme.textTheme.bodyMedium?.copyWith(
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
-              const SizedBox(height: 18),
+              const SizedBox(height: 14),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -2091,101 +3178,15 @@ class _ChapterLessonTile extends StatelessWidget {
   }
 }
 
-class _LockedTrackPlaceholderCard extends StatelessWidget {
-  const _LockedTrackPlaceholderCard({
-    required this.trackTitle,
-    required this.trackDescription,
-    required this.body,
-    required this.badgeLabel,
-  });
-
-  final String trackTitle;
-  final String trackDescription;
-  final String body;
-  final String badgeLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Semantics(
-      container: true,
-      child: Card(
-        key: const ValueKey('study-harmony-track-placeholder'),
-        elevation: 0,
-        color: _hubCardColor(colorScheme),
-        shape: _hubCardShape(colorScheme),
-        clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Chip(
-                avatar: const Icon(Icons.lock_outline_rounded, size: 18),
-                label: Text(badgeLabel),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                trackTitle,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                trackDescription,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                body,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  height: 1.45,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _TrackViewData {
-  const _TrackViewData({required this.title, required this.description});
-
-  final String title;
-  final String description;
-}
-
-_TrackViewData _trackView({
+String _trackDescription({
   required AppLocalizations l10n,
   required StudyHarmonyCourseDefinition course,
   required _StudyHarmonyHubTrack track,
 }) {
-  return switch (track) {
-    _StudyHarmonyHubTrack.core => _TrackViewData(
-      title: course.title,
-      description: l10n.studyHarmonyHubHeroBody,
-    ),
-    _StudyHarmonyHubTrack.pop => _TrackViewData(
-      title: l10n.studyHarmonyPopTrackTitle,
-      description: l10n.studyHarmonyPopTrackDescription,
-    ),
-    _StudyHarmonyHubTrack.jazz => _TrackViewData(
-      title: l10n.studyHarmonyJazzTrackTitle,
-      description: l10n.studyHarmonyJazzTrackDescription,
-    ),
-    _StudyHarmonyHubTrack.classical => _TrackViewData(
-      title: l10n.studyHarmonyClassicalTrackTitle,
-      description: l10n.studyHarmonyClassicalTrackDescription,
-    ),
-  };
+  if (track == _StudyHarmonyHubTrack.core) {
+    return l10n.studyHarmonyHubHeroBody;
+  }
+  return course.description;
 }
 
 _HubQuestCardData _questCardData({
@@ -2439,6 +3440,574 @@ double _cardWidthFor(double width, int columns) {
     return width;
   }
   return (width - ((columns - 1) * 16)) / columns;
+}
+
+StudyHarmonyPersonalizationProfile _hubAdaptiveProfile({
+  required StudyHarmonyProgressSnapshot snapshot,
+  required String localeTag,
+  required StudyHarmonyRecentPerformance recentPerformance,
+}) {
+  final modeClearCounts = snapshot.modeClearCounts;
+  final competitorWeight =
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.relay) +
+      _modeCountFromSnapshot(
+        modeClearCounts,
+        StudyHarmonySessionMode.bossRush,
+      ) +
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.legend) +
+      snapshot.relayWinCount +
+      snapshot.legendaryChapterIds.length;
+  final collectorWeight =
+      snapshot.questChestCount +
+      snapshot.shopPurchaseCount +
+      ((snapshot.rewardCurrencyBalances['currency.starShard'] ?? 0) ~/ 2);
+  final explorerWeight =
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.daily) +
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.focus) +
+      snapshot.completedFrontierQuestDateKeys.length;
+  final stabilizerWeight =
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.review) +
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.lesson) +
+      snapshot.reviewQueuePlaceholders.length;
+  final playStyle = _dominantPlayStyle(
+    competitorWeight: competitorWeight.toDouble(),
+    collectorWeight: collectorWeight.toDouble(),
+    explorerWeight: explorerWeight.toDouble(),
+    stabilizerWeight: stabilizerWeight.toDouble(),
+  );
+
+  return StudyHarmonyPersonalizationProfile(
+    ageBand: StudyHarmonyAgeBand.adult,
+    skillBand: inferStudyHarmonySkillBand(recentPerformance),
+    playStyle: playStyle,
+    sessionLengthPreference:
+        _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.focus) +
+                _modeCountFromSnapshot(
+                  modeClearCounts,
+                  StudyHarmonySessionMode.legend,
+                ) >
+            _modeCountFromSnapshot(
+                  modeClearCounts,
+                  StudyHarmonySessionMode.review,
+                ) +
+                _modeCountFromSnapshot(
+                  modeClearCounts,
+                  StudyHarmonySessionMode.lesson,
+                )
+        ? StudyHarmonySessionLengthPreference.long
+        : StudyHarmonySessionLengthPreference.short,
+    regionFlavor: studyHarmonyRegionFlavorFromCountryCode(
+      _countryCodeFromLocaleTag(localeTag),
+    ),
+    gameplayAffinity: StudyHarmonyGameplayAffinity(
+      competition: _scaledWeight(competitorWeight.toDouble()),
+      collection: _scaledWeight(collectorWeight.toDouble()),
+      exploration: _scaledWeight(explorerWeight.toDouble()),
+      stability: _scaledWeight(stabilizerWeight.toDouble()),
+    ),
+    countryCode: _countryCodeFromLocaleTag(localeTag),
+    localeTag: localeTag,
+  );
+}
+
+StudyHarmonyDifficultyInput _hubDifficultyInput({
+  required StudyHarmonyRecentPerformance recentPerformance,
+  required StudyHarmonyPersonalizationProfile adaptiveProfile,
+  required StudyHarmonyProgressController progressController,
+}) {
+  final comboPeak = progressController.snapshot.bestSessionCombo;
+  return StudyHarmonyDifficultyInput(
+    skillRating: recentPerformance.masteryMomentum,
+    recentAccuracy: recentPerformance.averageAccuracy,
+    recentStability: recentPerformance.confidence,
+    recentMomentum:
+        (recentPerformance.masteryMomentum - recentPerformance.recoveryNeed)
+            .clamp(-1.0, 1.0)
+            .toDouble(),
+    recentStruggleRate: recentPerformance.recoveryNeed,
+    recentComboPeak: (comboPeak.clamp(0, 20) / 20).toDouble(),
+    preferredSessionMinutes: switch (adaptiveProfile.sessionLengthPreference) {
+      StudyHarmonySessionLengthPreference.micro => 4,
+      StudyHarmonySessionLengthPreference.short => 7,
+      StudyHarmonySessionLengthPreference.medium => 10,
+      StudyHarmonySessionLengthPreference.long => 13,
+      StudyHarmonySessionLengthPreference.marathon => 16,
+    },
+  );
+}
+
+List<StudyHarmonyShopItemDefinition> _featuredShopItemsForHub({
+  required StudyHarmonyRewardProgressMetrics metrics,
+  required StudyHarmonyProgressController progressController,
+  int limit = 3,
+}) {
+  final items = studyHarmonyShopItems.toList(growable: false)
+    ..sort((left, right) {
+      final leftPurchasable = progressController.canPurchaseShopItem(left)
+          ? 1
+          : 0;
+      final rightPurchasable = progressController.canPurchaseShopItem(right)
+          ? 1
+          : 0;
+      final byPurchasable = rightPurchasable.compareTo(leftPurchasable);
+      if (byPurchasable != 0) {
+        return byPurchasable;
+      }
+      final leftRequirementsMet =
+          left.requirements.every((requirement) => requirement.isMet(metrics))
+          ? 1
+          : 0;
+      final rightRequirementsMet =
+          right.requirements.every((requirement) => requirement.isMet(metrics))
+          ? 1
+          : 0;
+      final byUnlocked = rightRequirementsMet.compareTo(leftRequirementsMet);
+      if (byUnlocked != 0) {
+        return byUnlocked;
+      }
+      final byRarity = right.rarity.index.compareTo(left.rarity.index);
+      if (byRarity != 0) {
+        return byRarity;
+      }
+      return left.priceAmount.compareTo(right.priceAmount);
+    });
+  return items.take(limit).toList(growable: false);
+}
+
+StudyHarmonyRewardCandidate? _preferredRewardCandidate(
+  List<StudyHarmonyRewardCandidate> candidates,
+  StudyHarmonyRewardFocus focus,
+) {
+  if (candidates.isEmpty) {
+    return null;
+  }
+  final sorted = candidates.toList(growable: false)
+    ..sort((left, right) {
+      final focusScore = _rewardCandidateFocusScore(
+        right,
+        focus,
+      ).compareTo(_rewardCandidateFocusScore(left, focus));
+      if (focusScore != 0) {
+        return focusScore;
+      }
+      final byRarity = right.rarity.index.compareTo(left.rarity.index);
+      if (byRarity != 0) {
+        return byRarity;
+      }
+      return left.title.compareTo(right.title);
+    });
+  return sorted.first;
+}
+
+int _rewardCandidateFocusScore(
+  StudyHarmonyRewardCandidate candidate,
+  StudyHarmonyRewardFocus focus,
+) {
+  return switch (focus) {
+    StudyHarmonyRewardFocus.mastery =>
+      candidate.tags.contains('lesson') || candidate.tags.contains('review')
+          ? 2
+          : 0,
+    StudyHarmonyRewardFocus.achievements =>
+      candidate.kind == StudyHarmonyRewardKind.title ? 2 : 1,
+    StudyHarmonyRewardFocus.cosmetics =>
+      candidate.kind == StudyHarmonyRewardKind.cosmetic ? 2 : 0,
+    StudyHarmonyRewardFocus.currency =>
+      candidate.tags.contains('shop') || candidate.tags.contains('economy')
+          ? 2
+          : 0,
+    StudyHarmonyRewardFocus.collection =>
+      candidate.tags.contains('collection') || candidate.tags.contains('tour')
+          ? 2
+          : 0,
+  };
+}
+
+StudyHarmonyLessonRecommendation? _arcadeRecommendationForMode(
+  StudyHarmonyArcadeModeId modeId, {
+  required StudyHarmonyLessonRecommendation? continueRecommendation,
+  required StudyHarmonyLessonRecommendation? reviewRecommendation,
+  required StudyHarmonyLessonRecommendation? focusRecommendation,
+  required StudyHarmonyLessonRecommendation? dailyRecommendation,
+  required StudyHarmonyLessonRecommendation? relayRecommendation,
+  required StudyHarmonyLessonRecommendation? legendRecommendation,
+  required StudyHarmonyLessonRecommendation? bossRushRecommendation,
+}) {
+  return switch (modeId) {
+    'neon-sprint' => dailyRecommendation ?? continueRecommendation,
+    'ghost-relay' => relayRecommendation ?? continueRecommendation,
+    'vault-break' =>
+      reviewRecommendation ?? focusRecommendation ?? continueRecommendation,
+    'remix-fever' =>
+      focusRecommendation ?? dailyRecommendation ?? continueRecommendation,
+    'boss-rush' =>
+      bossRushRecommendation ?? relayRecommendation ?? continueRecommendation,
+    'crown-loop' =>
+      legendRecommendation ?? bossRushRecommendation ?? continueRecommendation,
+    'duel-stage' => relayRecommendation ?? reviewRecommendation,
+    'night-market' =>
+      dailyRecommendation ?? reviewRecommendation ?? continueRecommendation,
+    _ => continueRecommendation,
+  };
+}
+
+StudyHarmonyLessonRecommendation? _arcadePlaylistRecommendation(
+  StudyHarmonyArcadePlaylistDefinition playlist, {
+  required StudyHarmonyLessonRecommendation? continueRecommendation,
+  required StudyHarmonyLessonRecommendation? reviewRecommendation,
+  required StudyHarmonyLessonRecommendation? focusRecommendation,
+  required StudyHarmonyLessonRecommendation? dailyRecommendation,
+  required StudyHarmonyLessonRecommendation? relayRecommendation,
+  required StudyHarmonyLessonRecommendation? legendRecommendation,
+  required StudyHarmonyLessonRecommendation? bossRushRecommendation,
+}) {
+  for (final modeId in playlist.modeIds) {
+    final recommendation = _arcadeRecommendationForMode(
+      modeId,
+      continueRecommendation: continueRecommendation,
+      reviewRecommendation: reviewRecommendation,
+      focusRecommendation: focusRecommendation,
+      dailyRecommendation: dailyRecommendation,
+      relayRecommendation: relayRecommendation,
+      legendRecommendation: legendRecommendation,
+      bossRushRecommendation: bossRushRecommendation,
+    );
+    if (recommendation != null) {
+      return recommendation;
+    }
+  }
+  return continueRecommendation;
+}
+
+int _modeCountFromSnapshot(
+  Map<String, int> counts,
+  StudyHarmonySessionMode mode,
+) {
+  return counts[mode.name] ?? 0;
+}
+
+StudyHarmonyPlayStyle _dominantPlayStyle({
+  required double competitorWeight,
+  required double collectorWeight,
+  required double explorerWeight,
+  required double stabilizerWeight,
+}) {
+  final entries = <MapEntry<StudyHarmonyPlayStyle, double>>[
+    MapEntry(StudyHarmonyPlayStyle.competitor, competitorWeight),
+    MapEntry(StudyHarmonyPlayStyle.collector, collectorWeight),
+    MapEntry(StudyHarmonyPlayStyle.explorer, explorerWeight),
+    MapEntry(StudyHarmonyPlayStyle.stabilizer, stabilizerWeight),
+    const MapEntry(StudyHarmonyPlayStyle.balanced, 0.8),
+  ]..sort((left, right) => right.value.compareTo(left.value));
+  return entries.first.key;
+}
+
+double _scaledWeight(double value) {
+  return (value / 8).clamp(0.2, 1.0).toDouble();
+}
+
+String? _countryCodeFromLocaleTag(String localeTag) {
+  final normalized = localeTag.replaceAll('_', '-');
+  final parts = normalized.split('-');
+  if (parts.length < 2) {
+    return null;
+  }
+  final candidate = parts[1].trim();
+  if (candidate.length != 2) {
+    return null;
+  }
+  return candidate.toUpperCase();
+}
+
+bool _isKoreanLocale(String localeTag) {
+  return localeTag.toLowerCase().startsWith('ko');
+}
+
+String _playStyleLabel(String localeTag, StudyHarmonyPlayStyle playStyle) {
+  return switch (playStyle) {
+    StudyHarmonyPlayStyle.competitor => 'Competitor',
+    StudyHarmonyPlayStyle.collector => 'Collector',
+    StudyHarmonyPlayStyle.explorer => 'Explorer',
+    StudyHarmonyPlayStyle.stabilizer => 'Stabilizer',
+    StudyHarmonyPlayStyle.balanced => 'Balanced',
+  };
+}
+
+String _rewardFocusLabel(String localeTag, StudyHarmonyRewardFocus focus) {
+  return switch (focus) {
+    StudyHarmonyRewardFocus.mastery => 'Focus: Mastery',
+    StudyHarmonyRewardFocus.achievements => 'Focus: Achievements',
+    StudyHarmonyRewardFocus.cosmetics => 'Focus: Cosmetics',
+    StudyHarmonyRewardFocus.currency => 'Focus: Currency',
+    StudyHarmonyRewardFocus.collection => 'Focus: Collection',
+  };
+}
+
+String _nextUnlockShortLabel(
+  String localeTag,
+  StudyHarmonyRewardCandidate reward,
+) {
+  final ko = _isKoreanLocale(localeTag);
+  final progress = (reward.progressFraction * 100).round();
+  return ko
+      ? '?ㅼ쓬 ?닿툑 ${reward.title} $progress%'
+      : 'Next ${reward.title} $progress%';
+}
+
+String _currencyBalanceLabel(StudyHarmonyCurrencyId currencyId, int balance) {
+  return '${studyHarmonyCurrenciesById[currencyId]?.title ?? currencyId} $balance';
+}
+
+String _currencyGrantLabel(StudyHarmonyRewardGrant grant) {
+  return '${studyHarmonyCurrenciesById[grant.currencyId]?.title ?? grant.currencyId} +${grant.amount}';
+}
+
+String _difficultyLaneLabel(String localeTag, StudyHarmonyDifficultyLane lane) {
+  final ko = _isKoreanLocale(localeTag);
+  return switch (lane) {
+    StudyHarmonyDifficultyLane.recovery => ko ? '?뚮났 ?덉씤' : 'Recovery Lane',
+    StudyHarmonyDifficultyLane.groove => ko ? '洹몃（釉??덉씤' : 'Groove Lane',
+    StudyHarmonyDifficultyLane.push => ko ? '?몄떆 ?덉씤' : 'Push Lane',
+    StudyHarmonyDifficultyLane.clutch => ko ? '?대윭移??덉씤' : 'Clutch Lane',
+    StudyHarmonyDifficultyLane.legend => ko ? '?덉쟾???덉씤' : 'Legend Lane',
+  };
+}
+
+String _pressureTierLabel(String localeTag, StudyHarmonyPressureTier tier) {
+  return switch (tier) {
+    StudyHarmonyPressureTier.calm => 'Calm Pressure',
+    StudyHarmonyPressureTier.steady => 'Steady Pressure',
+    StudyHarmonyPressureTier.hot => 'Hot Pressure',
+    StudyHarmonyPressureTier.charged => 'Charged Pressure',
+    StudyHarmonyPressureTier.overdrive => 'Overdrive',
+  };
+}
+
+String _forgivenessTierLabel(
+  String localeTag,
+  StudyHarmonyForgivenessTier tier,
+) {
+  final ko = _isKoreanLocale(localeTag);
+  return switch (tier) {
+    StudyHarmonyForgivenessTier.strict => ko ? '?ㅼ닔 ?덉슜 ?곸쓬' : 'Strict Windows',
+    StudyHarmonyForgivenessTier.tight => ko ? '?ㅼ닔 ?덉슜 ??댄듃' : 'Tight Windows',
+    StudyHarmonyForgivenessTier.balanced =>
+      ko ? '?ㅼ닔 ?덉슜 洹좏삎' : 'Balanced Windows',
+    StudyHarmonyForgivenessTier.kind => ko ? '?ㅼ닔 ?덉슜 ?볦쓬' : 'Kind Windows',
+    StudyHarmonyForgivenessTier.generous =>
+      ko ? '?ㅼ닔 ?덉슜 留ㅼ슦 ?볦쓬' : 'Generous Windows',
+  };
+}
+
+String _comboGoalLabel(String localeTag, int comboTarget) {
+  return _isKoreanLocale(localeTag)
+      ? '肄ㅻ낫 紐⑺몴 $comboTarget'
+      : 'Combo Goal $comboTarget';
+}
+
+String _runtimeTuningSummary(
+  String localeTag,
+  StudyHarmonyRuntimeTuning tuning,
+) {
+  return _isKoreanLocale(localeTag)
+      ? '?섑듃 ${tuning.recommendedStartingLives} 쨌 紐⑺몴 ${tuning.recommendedGoalCorrectAnswers}'
+      : 'Lives ${tuning.recommendedStartingLives} 쨌 Goal ${tuning.recommendedGoalCorrectAnswers}';
+}
+
+String _coachLabel(String localeTag, StudyHarmonyCoachStyle coachStyle) {
+  final ko = _isKoreanLocale(localeTag);
+  return switch (coachStyle) {
+    StudyHarmonyCoachStyle.supportive => ko ? '?묒썝??肄붿튂' : 'Supportive Coach',
+    StudyHarmonyCoachStyle.structured => ko ? '援ъ“??肄붿튂' : 'Structured Coach',
+    StudyHarmonyCoachStyle.challengeForward =>
+      ko ? '?꾩쟾??肄붿튂' : 'Challenge Coach',
+    StudyHarmonyCoachStyle.analytical => ko ? '遺꾩꽍??肄붿튂' : 'Analytical Coach',
+    StudyHarmonyCoachStyle.restorative => ko ? '?뚮났??肄붿튂' : 'Restorative Coach',
+  };
+}
+
+String _coachLine(String localeTag, StudyHarmonyAdaptivePlan plan) {
+  final ko = _isKoreanLocale(localeTag);
+  return switch (plan.coachStyle) {
+    StudyHarmonyCoachStyle.supportive =>
+      ko
+          ? '?ㅼ닔蹂대떎 ?먮쫫??吏?ㅻ뒗 ??吏묒쨷?댁슂.'
+          : 'Protect flow first and let confidence compound.',
+    StudyHarmonyCoachStyle.structured =>
+      ko
+          ? '?쒖꽌瑜?吏?ㅻ㈃ ?ㅻ젰??媛??鍮좊Ⅴ寃?遺숈뼱??'
+          : 'Follow the structure and the gains will stick.',
+    StudyHarmonyCoachStyle.challengeForward =>
+      ko
+          ? '?대쾲 ?곗? ?뺣컯??利먭린硫????④퀎 ?щ젮遊낅땲??'
+          : 'Lean into the pressure and push for a sharper run.',
+    StudyHarmonyCoachStyle.analytical =>
+      ko
+          ? '?대뵒???붾뱾由щ뒗吏 ?쎌쑝硫댁꽌 ?뺣??섍쾶 媛묐땲??'
+          : 'Read the weak point and refine it with precision.',
+    StudyHarmonyCoachStyle.restorative =>
+      ko
+          ? '臾대꼫吏吏 ?딄쾶 ?쒗룷瑜??섏갼???곗엯?덈떎.'
+          : 'This run is about rebuilding rhythm without tilt.',
+  };
+}
+
+String _pacingPlanLabel(
+  String localeTag,
+  StudyHarmonyDifficultyPlan difficultyPlan,
+) {
+  final segments = difficultyPlan.pacingPlan.segments
+      .where((segment) => segment.minutes > 0)
+      .take(2)
+      .map((segment) {
+        final label = switch (segment.kind) {
+          StudyHarmonyRhythmBeatKind.warmup => 'Warmup',
+          StudyHarmonyRhythmBeatKind.tension => 'Tension',
+          StudyHarmonyRhythmBeatKind.release => 'Release',
+          StudyHarmonyRhythmBeatKind.reward => 'Reward',
+        };
+        return '$label ${segment.minutes}m';
+      })
+      .join(' 쨌 ');
+  return 'Pacing $segments';
+}
+
+String _arcadeRiskLabel(
+  String localeTag,
+  StudyHarmonyArcadeRiskStyle riskStyle,
+) {
+  final ko = _isKoreanLocale(localeTag);
+  return switch (riskStyle) {
+    StudyHarmonyArcadeRiskStyle.forgiving => ko ? '由ъ뒪????쓬' : 'Low Risk',
+    StudyHarmonyArcadeRiskStyle.balanced => ko ? '由ъ뒪??洹좏삎' : 'Balanced Risk',
+    StudyHarmonyArcadeRiskStyle.tense => ko ? '由ъ뒪???믪쓬' : 'High Tension',
+    StudyHarmonyArcadeRiskStyle.punishing => ko ? '由ъ뒪??洹뱁븳' : 'Punishing Risk',
+  };
+}
+
+String _arcadeRewardStyleLabel(
+  String localeTag,
+  StudyHarmonyArcadeRewardStyle rewardStyle,
+) {
+  final ko = _isKoreanLocale(localeTag);
+  return switch (rewardStyle) {
+    StudyHarmonyArcadeRewardStyle.currency => ko ? '肄붿씤 以묒떖' : 'Currency Loop',
+    StudyHarmonyArcadeRewardStyle.cosmetic =>
+      ko ? '肄붿뒪硫뷀떛 以묒떖' : 'Cosmetic Hunt',
+    StudyHarmonyArcadeRewardStyle.title => ko ? '移?샇 以묒떖' : 'Title Hunt',
+    StudyHarmonyArcadeRewardStyle.trophy => ko ? '?몃줈??以묒떖' : 'Trophy Run',
+    StudyHarmonyArcadeRewardStyle.bundle => ko ? '臾띠쓬 蹂댁긽' : 'Bundle Rewards',
+    StudyHarmonyArcadeRewardStyle.prestige =>
+      ko ? '紐낆삁 蹂댁긽' : 'Prestige Rewards',
+  };
+}
+
+List<String> _arcadeRuntimeLabels(
+  String localeTag,
+  StudyHarmonyArcadeRuntimePlan plan,
+) {
+  final labels = <String>[];
+  if (plan.comboBonusAmount > 0) {
+    labels.add('Combo bonus every ${plan.comboBonusEvery}');
+  }
+  if (plan.missPenaltyLives > 1) {
+    labels.add('Miss costs ${plan.missPenaltyLives}');
+  }
+  if (plan.usesModifierStorm) {
+    labels.add('Modifier pulses');
+  }
+  if (plan.usesGhostPressure) {
+    labels.add('Ghost pressure');
+  }
+  if (plan.usesShopBias) {
+    labels.add('Shop-biased loot');
+  }
+  if (labels.isEmpty) {
+    labels.add('Steady ruleset');
+  }
+  return labels;
+}
+
+IconData _arcadeModeIcon(StudyHarmonyArcadeModeDefinition mode) {
+  return switch (mode.rewardStyle) {
+    StudyHarmonyArcadeRewardStyle.currency => Icons.toll_rounded,
+    StudyHarmonyArcadeRewardStyle.cosmetic => Icons.palette_rounded,
+    StudyHarmonyArcadeRewardStyle.title => Icons.verified_rounded,
+    StudyHarmonyArcadeRewardStyle.trophy => Icons.workspace_premium_rounded,
+    StudyHarmonyArcadeRewardStyle.bundle => Icons.inventory_2_rounded,
+    StudyHarmonyArcadeRewardStyle.prestige =>
+      Icons.local_fire_department_rounded,
+  };
+}
+
+String _shopStateLabel(
+  String localeTag, {
+  required StudyHarmonyShopItemDefinition item,
+  required StudyHarmonyProgressController progressController,
+}) {
+  final canPurchase = progressController.canPurchaseShopItem(item);
+  final purchased =
+      !(_isRepeatableShopItem(item)) &&
+      progressController.hasPurchasedUniqueShopItem(item.id);
+  if (purchased) {
+    return 'Already purchased';
+  }
+  if (canPurchase) {
+    return 'Ready to buy';
+  }
+  return 'Progress locked';
+}
+
+String? _shopLoadoutUnlockId(
+  StudyHarmonyShopItemDefinition item,
+  StudyHarmonyProgressController progressController,
+) {
+  for (final unlockId in item.unlockIds) {
+    if (studyHarmonyTitlesById.containsKey(unlockId) &&
+        progressController.isTitleOwned(unlockId)) {
+      return unlockId;
+    }
+    if (studyHarmonyCosmeticsById.containsKey(unlockId) &&
+        progressController.isCosmeticOwned(unlockId)) {
+      return unlockId;
+    }
+  }
+  return null;
+}
+
+bool _isRewardUnlockEquipped(
+  String unlockId,
+  StudyHarmonyProgressController progressController,
+) {
+  if (studyHarmonyTitlesById.containsKey(unlockId)) {
+    return progressController.equippedTitleId() == unlockId;
+  }
+  if (studyHarmonyCosmeticsById.containsKey(unlockId)) {
+    return progressController.equippedCosmeticIds().contains(unlockId);
+  }
+  return false;
+}
+
+String? _shopActionLabel(
+  String localeTag, {
+  required StudyHarmonyShopItemDefinition item,
+  required StudyHarmonyProgressController progressController,
+}) {
+  if (progressController.canPurchaseShopItem(item)) {
+    return _isKoreanLocale(localeTag) ? '援щℓ' : 'Buy';
+  }
+  final unlockId = _shopLoadoutUnlockId(item, progressController);
+  if (unlockId == null) {
+    return null;
+  }
+  return _isRewardUnlockEquipped(unlockId, progressController)
+      ? (_isKoreanLocale(localeTag) ? '?옣李??섏쓬' : 'Equipped')
+      : (_isKoreanLocale(localeTag) ? '?옣李?' : 'Equip');
+}
+
+bool _isRepeatableShopItem(StudyHarmonyShopItemDefinition item) {
+  return item.kind == StudyHarmonyShopItemKind.consumable ||
+      item.kind == StudyHarmonyShopItemKind.booster;
 }
 
 String _continueHint(
@@ -2747,4 +4316,112 @@ IconData _chapterMasteryIcon(StudyHarmonyChapterMasteryTier tier) {
     StudyHarmonyChapterMasteryTier.gold => Icons.workspace_premium_rounded,
     StudyHarmonyChapterMasteryTier.legendary => Icons.auto_awesome_rounded,
   };
+}
+
+StudyHarmonyLessonRecommendation? _primaryStudyHarmonyRecommendation(
+  StudyHarmonyLessonRecommendation? continueRecommendation,
+  StudyHarmonyLessonRecommendation? reviewRecommendation,
+  StudyHarmonyLessonRecommendation? focusRecommendation,
+  StudyHarmonyLessonRecommendation? dailyRecommendation,
+  StudyHarmonyLessonRecommendation? monthlyTourActionRecommendation,
+  StudyHarmonyLessonRecommendation? questChestActionRecommendation,
+  StudyHarmonyLessonRecommendation? duetPactRecommendation,
+  StudyHarmonyLessonRecommendation? leagueBoostRecommendation,
+  StudyHarmonyLessonRecommendation? relayRecommendation,
+  StudyHarmonyLessonRecommendation? legendRecommendation,
+  StudyHarmonyLessonRecommendation? bossRushRecommendation,
+) {
+  return continueRecommendation ??
+      reviewRecommendation ??
+      focusRecommendation ??
+      dailyRecommendation ??
+      monthlyTourActionRecommendation ??
+      questChestActionRecommendation ??
+      duetPactRecommendation ??
+      leagueBoostRecommendation ??
+      relayRecommendation ??
+      legendRecommendation ??
+      bossRushRecommendation;
+}
+
+IconData _recommendationIcon(StudyHarmonyLessonRecommendation recommendation) {
+  return switch (recommendation.sessionMode) {
+    StudyHarmonySessionMode.review => Icons.refresh_rounded,
+    StudyHarmonySessionMode.daily => Icons.wb_sunny_rounded,
+    StudyHarmonySessionMode.focus => Icons.bolt_rounded,
+    StudyHarmonySessionMode.relay => Icons.alt_route_rounded,
+    StudyHarmonySessionMode.bossRush => Icons.local_fire_department_rounded,
+    StudyHarmonySessionMode.legend => Icons.workspace_premium_rounded,
+    StudyHarmonySessionMode.lesson ||
+    StudyHarmonySessionMode.legacyLevel => Icons.play_circle_fill_rounded,
+  };
+}
+
+String _recommendationTitle(
+  AppLocalizations l10n,
+  StudyHarmonyLessonRecommendation recommendation,
+) {
+  return switch (recommendation.sessionMode) {
+    StudyHarmonySessionMode.review => l10n.studyHarmonyReviewCardTitle,
+    StudyHarmonySessionMode.daily => l10n.studyHarmonyDailyCardTitle,
+    StudyHarmonySessionMode.focus => l10n.studyHarmonyFocusCardTitle,
+    StudyHarmonySessionMode.relay => l10n.studyHarmonyRelayCardTitle,
+    StudyHarmonySessionMode.bossRush => l10n.studyHarmonyBossRushCardTitle,
+    StudyHarmonySessionMode.legend => l10n.studyHarmonyLegendCardTitle,
+    StudyHarmonySessionMode.lesson ||
+    StudyHarmonySessionMode.legacyLevel => l10n.studyHarmonyContinueCardTitle,
+  };
+}
+
+String _recommendationActionLabel(
+  AppLocalizations l10n,
+  StudyHarmonyLessonRecommendation recommendation,
+) {
+  return switch (recommendation.sessionMode) {
+    StudyHarmonySessionMode.review => l10n.studyHarmonyReviewAction,
+    StudyHarmonySessionMode.daily => l10n.studyHarmonyDailyAction,
+    StudyHarmonySessionMode.focus => l10n.studyHarmonyFocusAction,
+    StudyHarmonySessionMode.relay => l10n.studyHarmonyRelayAction,
+    StudyHarmonySessionMode.bossRush => l10n.studyHarmonyBossRushAction,
+    StudyHarmonySessionMode.legend => l10n.studyHarmonyLegendAction,
+    StudyHarmonySessionMode.lesson ||
+    StudyHarmonySessionMode.legacyLevel => l10n.studyHarmonyOpenLessonAction,
+  };
+}
+
+String _recommendationBody(
+  AppLocalizations l10n,
+  StudyHarmonyLessonRecommendation recommendation,
+) {
+  return switch (recommendation.sessionMode) {
+    StudyHarmonySessionMode.review => _reviewHint(l10n, recommendation),
+    StudyHarmonySessionMode.daily => recommendation.lesson.description,
+    StudyHarmonySessionMode.focus => _focusHint(l10n, recommendation),
+    StudyHarmonySessionMode.relay => _relayHint(l10n, recommendation),
+    StudyHarmonySessionMode.bossRush => _bossRushHint(l10n, recommendation),
+    StudyHarmonySessionMode.legend => _legendHint(l10n, recommendation),
+    StudyHarmonySessionMode.lesson ||
+    StudyHarmonySessionMode.legacyLevel => switch (recommendation.source) {
+      StudyHarmonyRecommendationSource.lastPlayed =>
+        l10n.studyHarmonyContinueResumeHint,
+      StudyHarmonyRecommendationSource.frontier =>
+        l10n.studyHarmonyContinueFrontierHint,
+      _ => recommendation.lesson.description,
+    },
+  };
+}
+
+_HubRecommendationCopy _recommendationCopy(
+  AppLocalizations l10n,
+  StudyHarmonyLessonRecommendation recommendation,
+) {
+  return _HubRecommendationCopy(
+    icon: _recommendationIcon(recommendation),
+    title: _recommendationTitle(l10n, recommendation),
+    headline: recommendation.lesson.title,
+    supportingLabel: recommendation.chapter.title,
+    body: _recommendationBody(l10n, recommendation),
+    actionLabel: _recommendationActionLabel(l10n, recommendation),
+    footerLabels: const <String>[],
+  );
 }

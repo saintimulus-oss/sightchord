@@ -1548,21 +1548,21 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get studyHarmonyPopTrackDescription =>
-      'コアトラックが安定した後に、歌に焦点を当てたパスが計画されています。';
+      'ポップ用の進行として、独立した進捗・デイリーピック・復習キューで全カリキュラムを進められます。';
 
   @override
   String get studyHarmonyJazzTrackTitle => 'ジャズコース';
 
   @override
   String get studyHarmonyJazzTrackDescription =>
-      'ジャズ ハーモニー コンテンツは、コア カリキュラムが定着するまでロックされたままになります。';
+      'ジャズ用の進行として、独立した進捗・デイリーピック・復習キューで全カリキュラムを練習できます。';
 
   @override
   String get studyHarmonyClassicalTrackTitle => 'クラシックコース';
 
   @override
   String get studyHarmonyClassicalTrackDescription =>
-      '古典的な文脈における機能的調和は、後の段階で登場します。';
+      'クラシック用の進行として、独立した進捗・デイリーピック・復習キューで全カリキュラムを学べます。';
 
   @override
   String get studyHarmonyObjectiveQuickDrill => 'クイックドリル';

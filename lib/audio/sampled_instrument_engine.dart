@@ -115,6 +115,69 @@ class SampledInstrumentEngine {
     return _startPreparedNote(prepared);
   }
 
+  Future<List<ActiveInstrumentNote>> noteOnBatch(
+    Iterable<InstrumentNoteRequest> notes, {
+    List<Duration>? startOffsets,
+  }) async {
+    final requestList = notes.toList(growable: false);
+    if (requestList.isEmpty) {
+      return const <ActiveInstrumentNote>[];
+    }
+    if (startOffsets != null && startOffsets.length != requestList.length) {
+      throw ArgumentError.value(
+        startOffsets,
+        'startOffsets',
+        'must match the number of requested notes',
+      );
+    }
+
+    await prepare();
+    if (_manifest == null) {
+      return const <ActiveInstrumentNote>[];
+    }
+
+    final preparedNotes = <_PreparedInstrumentNoteWithOffset>[];
+    for (var index = 0; index < requestList.length; index += 1) {
+      final note = requestList[index];
+      final prepared = await _prepareNote(
+        midiNote: note.midiNote,
+        velocity: note.velocity,
+        gain: note.gain,
+      );
+      if (prepared != null) {
+        preparedNotes.add(
+          _PreparedInstrumentNoteWithOffset(
+            prepared: prepared,
+            startOffset: startOffsets?[index] ?? Duration.zero,
+          ),
+        );
+      }
+    }
+    if (preparedNotes.isEmpty) {
+      return const <ActiveInstrumentNote>[];
+    }
+
+    final startsAreSimultaneous = preparedNotes.every(
+      (entry) => entry.startOffset <= Duration.zero,
+    );
+    final startedNotes = startsAreSimultaneous
+        ? await Future.wait<ActiveInstrumentNote?>(
+            preparedNotes.map((entry) => _startPreparedNote(entry.prepared)),
+          )
+        : await Future.wait<ActiveInstrumentNote?>(
+            preparedNotes.map((entry) async {
+              if (entry.startOffset > Duration.zero) {
+                await Future<void>.delayed(entry.startOffset);
+              }
+              return _startPreparedNote(entry.prepared);
+            }),
+          );
+
+    return startedNotes.whereType<ActiveInstrumentNote>().toList(
+      growable: false,
+    );
+  }
+
   Future<_PreparedInstrumentNote?> _prepareNote({
     required int midiNote,
     required int velocity,
@@ -219,23 +282,7 @@ class SampledInstrumentEngine {
     if (manifest == null) {
       return;
     }
-    final preparedNotes = <_PreparedInstrumentNote>[];
-    for (final note in notes) {
-      final prepared = await _prepareNote(
-        midiNote: note.midiNote,
-        velocity: note.velocity,
-        gain: note.gain,
-      );
-      if (prepared != null) {
-        preparedNotes.add(prepared);
-      }
-    }
-    final startedNotes = await Future.wait<ActiveInstrumentNote?>(
-      preparedNotes.map(_startPreparedNote),
-    );
-    final activeNotes = startedNotes.whereType<ActiveInstrumentNote>().toList(
-      growable: false,
-    );
+    final activeNotes = await noteOnBatch(notes);
     await Future<void>.delayed(
       hold ?? Duration(milliseconds: manifest.defaults.defaultChordHoldMs),
     );
@@ -476,4 +523,14 @@ class _PreparedInstrumentNote {
   final ActiveInstrumentNote note;
   final _VoiceSlot slot;
   final double volume;
+}
+
+class _PreparedInstrumentNoteWithOffset {
+  const _PreparedInstrumentNoteWithOffset({
+    required this.prepared,
+    required this.startOffset,
+  });
+
+  final _PreparedInstrumentNote prepared;
+  final Duration startOffset;
 }

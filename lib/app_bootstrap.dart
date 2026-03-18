@@ -8,8 +8,10 @@ Future<void> bootstrapApp() async {
   WidgetsFlutterBinding.ensureInitialized();
   final controller = AppSettingsController();
   final studyHarmonyProgressController = StudyHarmonyProgressController();
-  await controller.load();
-  await studyHarmonyProgressController.load();
+  await Future.wait<void>([
+    controller.load(),
+    studyHarmonyProgressController.load(),
+  ]);
   runApp(
     MyApp(
       controller: controller,

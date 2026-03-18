@@ -37,20 +37,13 @@ GitHub Pages deploys from CI-generated `build/web` artifacts. Generated web outp
 
 ## Owner-Only Follow-Ups
 
-The repository still contains templated platform identifiers. There is no unambiguous canonical production identifier elsewhere in the repo, so these values were intentionally left unchanged.
+The repository now uses the shared production identifier `io.github.saintimulusoss.chordest` across Android, iOS, macOS, and Linux. The remaining owner-only work is release provisioning rather than namespace cleanup.
 
-- [android/app/build.gradle.kts](/Users/User/sightchord/android/app/build.gradle.kts):9 currently sets `namespace = "com.example.sightchord"`.
-- [android/app/build.gradle.kts](/Users/User/sightchord/android/app/build.gradle.kts):24 currently sets `applicationId = "com.example.sightchord"`.
-- [android/app/src/main/kotlin/com/example/sightchord/MainActivity.kt](/Users/User/sightchord/android/app/src/main/kotlin/com/example/sightchord/MainActivity.kt):1 currently declares `package com.example.sightchord`.
-- [ios/Runner.xcodeproj/project.pbxproj](/Users/User/sightchord/ios/Runner.xcodeproj/project.pbxproj):375 currently sets `PRODUCT_BUNDLE_IDENTIFIER = com.example.sightchord;`.
-- [ios/Runner.xcodeproj/project.pbxproj](/Users/User/sightchord/ios/Runner.xcodeproj/project.pbxproj):391 currently sets Runner test bundle identifiers under `com.example.sightchord.RunnerTests`.
-- [linux/CMakeLists.txt](/Users/User/sightchord/linux/CMakeLists.txt):10 currently sets `APPLICATION_ID "com.example.sightchord"`.
-- [macos/Runner/Configs/AppInfo.xcconfig](/Users/User/sightchord/macos/Runner/Configs/AppInfo.xcconfig):11 currently sets `PRODUCT_BUNDLE_IDENTIFIER = com.example.sightchord`.
-- [macos/Runner.xcodeproj/project.pbxproj](/Users/User/sightchord/macos/Runner.xcodeproj/project.pbxproj):388 currently sets Runner test bundle identifiers under `com.example.sightchord.RunnerTests`.
+- [android/app/build.gradle.kts](/Users/User/sightchord/android/app/build.gradle.kts):28 still signs release builds with the debug keystore until owner-provided release signing is configured.
+- Platform-specific release verification still needs to run on owner hardware and toolchains after signing/notarization setup.
 
 Recommended owner action:
 
-1. Decide the canonical production package or bundle identifier.
-2. Update Android namespace/application ID plus the Kotlin package path together.
-3. Update iOS, macOS, and Linux bundle identifiers to the same canonical namespace where applicable.
-4. Re-run the full validation flow and platform-specific release checks after those identifier changes.
+1. Provision Android release signing and remove the debug-key fallback.
+2. Re-run Android, iOS, macOS, Linux, and Windows release checks on fully provisioned machines.
+3. Finish store-facing metadata such as versioning, privacy policy, and support links before distribution.

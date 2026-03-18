@@ -435,7 +435,12 @@ class _PracticeAdvancedSettingsPageState
         value: _settings.melodyGenerationEnabled,
         onChanged: (value) {
           dispatcher.apply(
-            (current) => current.copyWith(melodyGenerationEnabled: value),
+            (current) => current.copyWith(
+              melodyGenerationEnabled: value,
+              autoPlayMelodyWithChords: value
+                  ? true
+                  : current.autoPlayMelodyWithChords,
+            ),
           );
         },
       ),
@@ -1888,6 +1893,9 @@ class _PracticeAdvancedSettingsPageState
                             dispatcher.apply(
                               (current) => current.copyWith(
                                 melodyGenerationEnabled: value,
+                                autoPlayMelodyWithChords: value
+                                    ? true
+                                    : current.autoPlayMelodyWithChords,
                               ),
                             );
                           },

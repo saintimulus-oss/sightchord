@@ -111,6 +111,19 @@ class _MyAppState extends State<MyApp> {
       colorScheme: colorScheme,
       scaffoldBackgroundColor: isDark ? _darkBackground : _lightBackground,
       canvasColor: isDark ? _darkBackground : _lightBackground,
+      appBarTheme: AppBarTheme(
+        backgroundColor: colorScheme.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        iconTheme: IconThemeData(color: colorScheme.onSurface),
+        actionsIconTheme: IconThemeData(color: colorScheme.onSurface),
+        titleTextStyle: textTheme.titleLarge?.copyWith(
+          color: colorScheme.onSurface,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
       textTheme: textTheme.copyWith(
         displayMedium: textTheme.displayMedium?.copyWith(
           fontWeight: FontWeight.w800,
@@ -140,6 +153,28 @@ class _MyAppState extends State<MyApp> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+      ),
+      dividerTheme: DividerThemeData(
+        color: colorScheme.outlineVariant,
+        thickness: 1,
+        space: 1,
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: colorScheme.surface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+      ),
+      tooltipTheme: TooltipThemeData(
+        waitDuration: const Duration(milliseconds: 350),
+        showDuration: const Duration(seconds: 2),
+        textStyle: textTheme.labelMedium?.copyWith(
+          color: colorScheme.onPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+        decoration: BoxDecoration(
+          color: colorScheme.onSurface,
+          borderRadius: BorderRadius.circular(10),
+        ),
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: colorScheme.surface,

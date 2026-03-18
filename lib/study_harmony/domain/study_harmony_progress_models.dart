@@ -352,6 +352,17 @@ class StudyHarmonyProgressSnapshot {
     this.awardedMonthlyTourMonthKeys = const <String>{},
     this.weeklyLeagueScores = const <String, int>{},
     this.monthlySpotlightClearCounts = const <String, int>{},
+    this.modeSessionCounts = const <String, int>{},
+    this.modeClearCounts = const <String, int>{},
+    this.rewardCurrencyBalances = const <String, int>{},
+    this.rewardCurrencySpent = 0,
+    this.shopPurchaseCount = 0,
+    this.purchasedUniqueShopItemIds = const <String>{},
+    this.ownedTitleIds = const <String>{},
+    this.ownedCosmeticIds = const <String>{},
+    this.equippedTitleId,
+    this.equippedCosmeticIds = const <String>[],
+    this.bestSessionCombo = 0,
     this.legendaryChapterIds = const <StudyHarmonyChapterId>{},
     this.relayWinCount = 0,
     this.bestDailyChallengeStreak = 0,
@@ -362,7 +373,7 @@ class StudyHarmonyProgressSnapshot {
     this.activeLeagueXpBoostCharges = 0,
   });
 
-  static const int currentSerializationVersion = 12;
+  static const int currentSerializationVersion = 14;
 
   final int serializationVersion;
   final StudyHarmonyTrackId? lastPlayedTrackId;
@@ -387,6 +398,17 @@ class StudyHarmonyProgressSnapshot {
   final Set<String> awardedMonthlyTourMonthKeys;
   final Map<String, int> weeklyLeagueScores;
   final Map<String, int> monthlySpotlightClearCounts;
+  final Map<String, int> modeSessionCounts;
+  final Map<String, int> modeClearCounts;
+  final Map<String, int> rewardCurrencyBalances;
+  final int rewardCurrencySpent;
+  final int shopPurchaseCount;
+  final Set<String> purchasedUniqueShopItemIds;
+  final Set<String> ownedTitleIds;
+  final Set<String> ownedCosmeticIds;
+  final String? equippedTitleId;
+  final List<String> equippedCosmeticIds;
+  final int bestSessionCombo;
   final Set<StudyHarmonyChapterId> legendaryChapterIds;
   final int relayWinCount;
   final int bestDailyChallengeStreak;
@@ -425,6 +447,19 @@ class StudyHarmonyProgressSnapshot {
     Set<String>? awardedMonthlyTourMonthKeys,
     Map<String, int>? weeklyLeagueScores,
     Map<String, int>? monthlySpotlightClearCounts,
+    Map<String, int>? modeSessionCounts,
+    Map<String, int>? modeClearCounts,
+    Map<String, int>? rewardCurrencyBalances,
+    int? rewardCurrencySpent,
+    int? shopPurchaseCount,
+    Set<String>? purchasedUniqueShopItemIds,
+    Set<String>? ownedTitleIds,
+    Set<String>? ownedCosmeticIds,
+    String? equippedTitleId,
+    List<String>? equippedCosmeticIds,
+    bool clearEquippedTitleId = false,
+    bool clearEquippedCosmeticIds = false,
+    int? bestSessionCombo,
     Set<StudyHarmonyChapterId>? legendaryChapterIds,
     int? relayWinCount,
     int? bestDailyChallengeStreak,
@@ -484,6 +519,23 @@ class StudyHarmonyProgressSnapshot {
       weeklyLeagueScores: weeklyLeagueScores ?? this.weeklyLeagueScores,
       monthlySpotlightClearCounts:
           monthlySpotlightClearCounts ?? this.monthlySpotlightClearCounts,
+      modeSessionCounts: modeSessionCounts ?? this.modeSessionCounts,
+      modeClearCounts: modeClearCounts ?? this.modeClearCounts,
+      rewardCurrencyBalances:
+          rewardCurrencyBalances ?? this.rewardCurrencyBalances,
+      rewardCurrencySpent: rewardCurrencySpent ?? this.rewardCurrencySpent,
+      shopPurchaseCount: shopPurchaseCount ?? this.shopPurchaseCount,
+      purchasedUniqueShopItemIds:
+          purchasedUniqueShopItemIds ?? this.purchasedUniqueShopItemIds,
+      ownedTitleIds: ownedTitleIds ?? this.ownedTitleIds,
+      ownedCosmeticIds: ownedCosmeticIds ?? this.ownedCosmeticIds,
+      equippedTitleId: clearEquippedTitleId
+          ? null
+          : equippedTitleId ?? this.equippedTitleId,
+      equippedCosmeticIds: clearEquippedCosmeticIds
+          ? const <String>[]
+          : equippedCosmeticIds ?? this.equippedCosmeticIds,
+      bestSessionCombo: bestSessionCombo ?? this.bestSessionCombo,
       legendaryChapterIds: legendaryChapterIds ?? this.legendaryChapterIds,
       relayWinCount: relayWinCount ?? this.relayWinCount,
       bestDailyChallengeStreak:
@@ -536,9 +588,25 @@ class StudyHarmonyProgressSnapshot {
     final sortedMonthlySpotlightKeys = monthlySpotlightClearCounts.keys.toList(
       growable: false,
     )..sort();
+    final sortedModeSessionKeys = modeSessionCounts.keys.toList(growable: false)
+      ..sort();
+    final sortedModeClearKeys = modeClearCounts.keys.toList(growable: false)
+      ..sort();
+    final sortedRewardCurrencyKeys = rewardCurrencyBalances.keys.toList(
+      growable: false,
+    )..sort();
+    final sortedPurchasedUniqueShopItemIds = purchasedUniqueShopItemIds.toList(
+      growable: false,
+    )..sort();
+    final sortedOwnedTitleIds = ownedTitleIds.toList(growable: false)..sort();
+    final sortedOwnedCosmeticIds = ownedCosmeticIds.toList(growable: false)
+      ..sort();
     final sortedLegendaryChapterIds = legendaryChapterIds.toList(
       growable: false,
     )..sort();
+    final equippedCosmeticIds = this.equippedCosmeticIds.toList(
+      growable: false,
+    );
 
     return {
       'serializationVersion': serializationVersion,
@@ -576,6 +644,26 @@ class StudyHarmonyProgressSnapshot {
         for (final monthKey in sortedMonthlySpotlightKeys)
           monthKey: monthlySpotlightClearCounts[monthKey],
       },
+      'modeSessionCounts': {
+        for (final modeKey in sortedModeSessionKeys)
+          modeKey: modeSessionCounts[modeKey],
+      },
+      'modeClearCounts': {
+        for (final modeKey in sortedModeClearKeys)
+          modeKey: modeClearCounts[modeKey],
+      },
+      'rewardCurrencyBalances': {
+        for (final currencyId in sortedRewardCurrencyKeys)
+          currencyId: rewardCurrencyBalances[currencyId],
+      },
+      'rewardCurrencySpent': rewardCurrencySpent,
+      'shopPurchaseCount': shopPurchaseCount,
+      'purchasedUniqueShopItemIds': sortedPurchasedUniqueShopItemIds,
+      'ownedTitleIds': sortedOwnedTitleIds,
+      'ownedCosmeticIds': sortedOwnedCosmeticIds,
+      'equippedTitleId': equippedTitleId,
+      'equippedCosmeticIds': equippedCosmeticIds,
+      'bestSessionCombo': bestSessionCombo,
       'legendaryChapterIds': sortedLegendaryChapterIds,
       'relayWinCount': relayWinCount,
       'bestDailyChallengeStreak': bestDailyChallengeStreak,
@@ -650,6 +738,14 @@ class StudyHarmonyProgressSnapshot {
         monthlySpotlightClearCounts[entry.key] = _intOrZero(entry.value);
       }
     }
+    final modeSessionCounts = _stringIntMapFromValue(json['modeSessionCounts']);
+    final modeClearCounts = _stringIntMapFromValue(json['modeClearCounts']);
+    final rewardCurrencyBalances = _stringIntMapFromValue(
+      json['rewardCurrencyBalances'],
+    );
+    final equippedCosmeticIds = _stringListFromValue(
+      json['equippedCosmeticIds'],
+    );
 
     return StudyHarmonyProgressSnapshot(
       serializationVersion: _intOr(
@@ -695,6 +791,19 @@ class StudyHarmonyProgressSnapshot {
       ),
       weeklyLeagueScores: weeklyLeagueScores,
       monthlySpotlightClearCounts: monthlySpotlightClearCounts,
+      modeSessionCounts: modeSessionCounts,
+      modeClearCounts: modeClearCounts,
+      rewardCurrencyBalances: rewardCurrencyBalances,
+      rewardCurrencySpent: _intOrZero(json['rewardCurrencySpent']),
+      shopPurchaseCount: _intOrZero(json['shopPurchaseCount']),
+      purchasedUniqueShopItemIds: _stringSetFromValue(
+        json['purchasedUniqueShopItemIds'],
+      ),
+      ownedTitleIds: _stringSetFromValue(json['ownedTitleIds']),
+      ownedCosmeticIds: _stringSetFromValue(json['ownedCosmeticIds']),
+      equippedTitleId: _stringOrNull(json['equippedTitleId']),
+      equippedCosmeticIds: equippedCosmeticIds,
+      bestSessionCombo: _intOrZero(json['bestSessionCombo']),
       legendaryChapterIds: _stringSetFromValue(json['legendaryChapterIds']),
       relayWinCount: _intOrZero(json['relayWinCount']),
       bestDailyChallengeStreak: _intOrZero(json['bestDailyChallengeStreak']),
@@ -756,6 +865,27 @@ Set<String> _stringSetFromValue(Object? value) {
     }
   }
   return ids;
+}
+
+List<String> _stringListFromValue(Object? value) {
+  if (value is List<String>) {
+    return value;
+  }
+  if (value is List) {
+    return [
+      for (final entry in value)
+        if (entry is String) entry,
+    ];
+  }
+  return const <String>[];
+}
+
+Map<String, int> _stringIntMapFromValue(Object? value) {
+  final map = _mapOrNull(value);
+  if (map == null) {
+    return const <String, int>{};
+  }
+  return {for (final entry in map.entries) entry.key: _intOrZero(entry.value)};
 }
 
 String? _stringOrNull(Object? value) {

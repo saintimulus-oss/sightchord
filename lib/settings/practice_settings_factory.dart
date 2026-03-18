@@ -133,6 +133,7 @@ class PracticeSettingsFactory {
   ) {
     final profile = MelodyGenerationConfig.quickPresetFor(preset);
     return settings.copyWith(
+      autoPlayMelodyWithChords: true,
       melodyGenerationEnabled: true,
       melodyDensity: profile.density,
       melodyStyle: profile.style,

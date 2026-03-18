@@ -307,14 +307,6 @@ extension _PracticeHomePageUi on _MyHomePageState {
     );
   }
 
-  List<String> _selectedChordQualityPreviewLabels() {
-    return [
-      for (final quality in MusicTheory.supportedGeneratorChordQualities)
-        if (_settings.enabledChordQualities.contains(quality))
-          MusicTheory.generatorQualityLabel(quality),
-    ];
-  }
-
   Future<void> _openChordQualityPicker() async {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
@@ -664,6 +656,44 @@ extension _PracticeHomePageUi on _MyHomePageState {
     return 'Tap the melody button to cycle Guide, Song, and Color lines.';
   }
 
+  Widget _buildGeneratorSummaryStrip(
+    BuildContext context, {
+    required bool compact,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    final spacing = compact ? 8.0 : 10.0;
+    return Wrap(
+      spacing: spacing,
+      runSpacing: spacing,
+      children: [
+        _GeneratorSummaryChip(
+          icon: Icons.library_music_rounded,
+          label: l10n.keys,
+          value: _selectedKeySummary(l10n),
+        ),
+        _GeneratorSummaryChip(
+          icon: Icons.auto_awesome_rounded,
+          label: l10n.smartGeneratorMode,
+          value: _settings.smartGeneratorMode ? l10n.enabled : l10n.disabled,
+        ),
+        _GeneratorSummaryChip(
+          icon: Icons.piano_rounded,
+          label: l10n.voicingSuggestionsTitle,
+          value: _settings.voicingSuggestionsEnabled
+              ? l10n.enabled
+              : l10n.disabled,
+        ),
+        _GeneratorSummaryChip(
+          icon: Icons.music_note_rounded,
+          label: l10n.melodyGenerationTitle,
+          value: _settings.melodyGenerationEnabled
+              ? _quickMelodyToggleLabel(l10n, compact: true)
+              : l10n.disabled,
+        ),
+      ],
+    );
+  }
+
   Widget _buildMelodyPresetSelector(
     BuildContext context, {
     required bool compact,
@@ -686,6 +716,12 @@ extension _PracticeHomePageUi on _MyHomePageState {
               '${_melodyMetricLabel(context, 'Color')} ${quickDescriptor.colorBand} / '
               '${_melodyMetricLabel(context, 'Novelty')} ${quickDescriptor.noveltyBand} / '
               '${_melodyMetricLabel(context, 'Motif')} ${quickDescriptor.motifBand}';
+    final expandedMetrics = quickDescriptor == null
+        ? null
+        : '${_melodyMetricLabel(context, 'Novelty')} ${quickDescriptor.noveltyBand} / '
+              '${_melodyMetricLabel(context, 'Motif')} ${quickDescriptor.motifBand} / '
+              '${_melodyMetricLabel(context, 'Chromatic')} '
+              '${_melodyOnOffLabel(context, quickDescriptor.allowChromaticApproaches)}';
 
     final card = DecoratedBox(
       decoration: BoxDecoration(
@@ -842,39 +878,37 @@ extension _PracticeHomePageUi on _MyHomePageState {
                   ),
                 )
               else
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _MelodyMetricChip(
-                      label: _melodyMetricLabel(context, 'Density'),
-                      value: densityLabel!,
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _MelodyMetricChip(
+                          label: _melodyMetricLabel(context, 'Density'),
+                          value: densityLabel!,
+                        ),
+                        _MelodyMetricChip(
+                          label: _melodyMetricLabel(context, 'Style'),
+                          value: styleLabel!,
+                        ),
+                        _MelodyMetricChip(
+                          label: _melodyMetricLabel(context, 'Sync'),
+                          value: quickDescriptor.syncopationBand,
+                        ),
+                        _MelodyMetricChip(
+                          label: _melodyMetricLabel(context, 'Color'),
+                          value: quickDescriptor.colorBand,
+                        ),
+                      ],
                     ),
-                    _MelodyMetricChip(
-                      label: _melodyMetricLabel(context, 'Style'),
-                      value: styleLabel!,
-                    ),
-                    _MelodyMetricChip(
-                      label: _melodyMetricLabel(context, 'Sync'),
-                      value: quickDescriptor.syncopationBand,
-                    ),
-                    _MelodyMetricChip(
-                      label: _melodyMetricLabel(context, 'Color'),
-                      value: quickDescriptor.colorBand,
-                    ),
-                    _MelodyMetricChip(
-                      label: _melodyMetricLabel(context, 'Novelty'),
-                      value: quickDescriptor.noveltyBand,
-                    ),
-                    _MelodyMetricChip(
-                      label: _melodyMetricLabel(context, 'Motif'),
-                      value: quickDescriptor.motifBand,
-                    ),
-                    _MelodyMetricChip(
-                      label: _melodyMetricLabel(context, 'Chromatic'),
-                      value: _melodyOnOffLabel(
-                        context,
-                        quickDescriptor.allowChromaticApproaches,
+                    const SizedBox(height: 8),
+                    Text(
+                      expandedMetrics!,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        height: 1.3,
                       ),
                     ),
                   ],
@@ -1186,6 +1220,8 @@ extension _PracticeHomePageUi on _MyHomePageState {
               ],
             ),
             const SizedBox(height: 12),
+            _buildGeneratorSummaryStrip(context, compact: true),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -1213,10 +1249,10 @@ extension _PracticeHomePageUi on _MyHomePageState {
                 ],
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: 10,
+              runSpacing: 10,
               children: [
                 _CompactQuickToggleButton(
                   buttonKey: const ValueKey('smart-generator-mode-toggle'),
@@ -1279,11 +1315,10 @@ extension _PracticeHomePageUi on _MyHomePageState {
                   ),
               ],
             ),
+            const SizedBox(height: 10),
             if (_settings.melodyGenerationEnabled) ...[
-              const SizedBox(height: 10),
               _buildMelodyPresetSelector(context, compact: true),
             ] else ...[
-              const SizedBox(height: 10),
               Text(
                 _compactMelodyToggleHint(context),
                 style: theme.textTheme.bodySmall?.copyWith(
@@ -1310,8 +1345,6 @@ extension _PracticeHomePageUi on _MyHomePageState {
   Widget _buildGeneratorQuickSettingsPanel(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final previewLabels = _selectedKeyPreviewLabels(l10n);
-    final chordQualityPreviewLabels = _selectedChordQualityPreviewLabels();
     final showExpandedGeneratorControls = !_usesGuidedSettingsMode;
 
     if (_usesCompactMobileLayout(context)) {
@@ -1344,6 +1377,8 @@ extension _PracticeHomePageUi on _MyHomePageState {
               ),
             ),
             const SizedBox(height: 12),
+            _buildGeneratorSummaryStrip(context, compact: false),
+            const SizedBox(height: 14),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -1361,24 +1396,9 @@ extension _PracticeHomePageUi on _MyHomePageState {
               _usesKeyMode ? l10n.keysSelectedHelp : l10n.noKeysSelected,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
+                height: 1.35,
               ),
             ),
-            if (previewLabels.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final label in previewLabels) Chip(label: Text(label)),
-                  if (_orderedKeyCenters.length > previewLabels.length)
-                    Chip(
-                      label: Text(
-                        '+${_orderedKeyCenters.length - previewLabels.length}',
-                      ),
-                    ),
-                ],
-              ),
-            ],
             const SizedBox(height: 12),
             if (showExpandedGeneratorControls) ...[
               SizedBox(
@@ -1399,6 +1419,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
                 l10n.chordTypeFiltersHelp,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.35,
                 ),
               ),
             ] else
@@ -1406,24 +1427,9 @@ extension _PracticeHomePageUi on _MyHomePageState {
                 l10n.setupAssistantCardBody,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.35,
                 ),
               ),
-            if (showExpandedGeneratorControls &&
-                chordQualityPreviewLabels.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final label in chordQualityPreviewLabels.take(6))
-                    Chip(label: Text(label)),
-                  if (chordQualityPreviewLabels.length > 6)
-                    Chip(
-                      label: Text('+${chordQualityPreviewLabels.length - 6}'),
-                    ),
-                ],
-              ),
-            ],
             const SizedBox(height: 14),
             Wrap(
               spacing: 10,
@@ -2520,6 +2526,75 @@ class _MelodyMetricChip extends StatelessWidget {
   }
 }
 
+class _GeneratorSummaryChip extends StatelessWidget {
+  const _GeneratorSummaryChip({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, size: 16, color: colorScheme.primary),
+            ),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _CompactQuickActionTile extends StatelessWidget {
   const _CompactQuickActionTile({
     required this.buttonKey,
@@ -2625,8 +2700,6 @@ class _CompactQuickToggleButton extends StatelessWidget {
           onTap: onPressed,
           borderRadius: BorderRadius.circular(16),
           child: Ink(
-            width: 42,
-            height: 42,
             decoration: BoxDecoration(
               color: backgroundColor,
               borderRadius: BorderRadius.circular(16),
@@ -2636,7 +2709,25 @@ class _CompactQuickToggleButton extends StatelessWidget {
                     : colorScheme.outlineVariant,
               ),
             ),
-            child: Icon(icon, size: 20, color: foregroundColor),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, size: 18, color: foregroundColor),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: foregroundColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

@@ -328,20 +328,7 @@ class HarmonyAudioService {
     required Duration hold,
     required int sessionId,
   }) async {
-    final activeNotes = <ActiveInstrumentNote>[];
-    final delayRange = _timingHumanizationDelayRange();
-    for (var index = 0; index < requests.length; index += 1) {
-      if (!_isPlaybackSessionCurrent(sessionId)) {
-        return;
-      }
-      final active = await _startSessionNote(requests[index], sessionId);
-      if (active != null) {
-        activeNotes.add(active);
-      }
-      if (index < requests.length - 1 && delayRange > Duration.zero) {
-        await _delayInterruptibly(_randomDuration(delayRange), sessionId);
-      }
-    }
+    final activeNotes = await _startSessionChord(requests, sessionId);
     if (activeNotes.isEmpty || !_isPlaybackSessionCurrent(sessionId)) {
       return;
     }
@@ -385,9 +372,7 @@ class HarmonyAudioService {
       return;
     }
     final orderedNotes = [...clip.notes]
-      ..sort(
-        (left, right) => left.startOffset.compareTo(right.startOffset),
-      );
+      ..sort((left, right) => left.startOffset.compareTo(right.startOffset));
     var elapsed = Duration.zero;
     final releaseFutures = <Future<void>>[];
     for (final note in orderedNotes) {
@@ -446,6 +431,32 @@ class HarmonyAudioService {
     }
     await noteOff(active, fadeOut: Duration.zero);
     return null;
+  }
+
+  Future<List<ActiveInstrumentNote>> _startSessionChord(
+    List<InstrumentNoteRequest> requests,
+    int sessionId,
+  ) async {
+    if (requests.isEmpty || !_isPlaybackSessionCurrent(sessionId)) {
+      return const <ActiveInstrumentNote>[];
+    }
+    if (!await _ensureReady()) {
+      return const <ActiveInstrumentNote>[];
+    }
+    final activeNotes =
+        await _safeRun<List<ActiveInstrumentNote>>(
+          () => _engine.noteOnBatch(
+            requests,
+            startOffsets: _buildBlockStartOffsets(requests.length),
+          ),
+          fallback: const <ActiveInstrumentNote>[],
+        ) ??
+        const <ActiveInstrumentNote>[];
+    if (_isPlaybackSessionCurrent(sessionId)) {
+      return activeNotes;
+    }
+    await _releaseActiveNotes(activeNotes, fadeOut: Duration.zero);
+    return const <ActiveInstrumentNote>[];
   }
 
   Future<void> _releaseActiveNotes(
@@ -572,6 +583,23 @@ class HarmonyAudioService {
       return Duration.zero;
     }
     return Duration(milliseconds: (18 * _config.timingHumanization).round());
+  }
+
+  List<Duration> _buildBlockStartOffsets(int noteCount) {
+    if (noteCount <= 0) {
+      return const <Duration>[];
+    }
+    final delayRange = _timingHumanizationDelayRange();
+    if (delayRange <= Duration.zero) {
+      return List<Duration>.filled(noteCount, Duration.zero, growable: false);
+    }
+    final offsets = <Duration>[Duration.zero];
+    var cumulative = Duration.zero;
+    for (var index = 1; index < noteCount; index += 1) {
+      cumulative += _randomDuration(delayRange);
+      offsets.add(cumulative);
+    }
+    return offsets;
   }
 
   Duration _randomDuration(Duration maxDuration) {

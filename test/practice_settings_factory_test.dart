@@ -134,6 +134,7 @@ void main() {
     );
 
     expect(guideLine.melodyGenerationEnabled, isTrue);
+    expect(guideLine.autoPlayMelodyWithChords, isTrue);
     expect(guideLine.allowChromaticApproaches, isFalse);
     expect(songLine.allowChromaticApproaches, isTrue);
     expect(colorLine.melodyDensity, MelodyDensity.active);

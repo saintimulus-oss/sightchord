@@ -1,22 +1,27 @@
-## Summary
-This changeset closes a focused test gap in recently introduced melody generation internals by adding deterministic coverage for the new stable hashing utility used by phrase/rhythm/motif seeding.
+## Issue
+Recent changes introduced new behavior in two controllers that lacked focused regression coverage: notification safety in settings updates and lifecycle/dispose guards in study-harmony progress loading/updating. Without explicit tests, these paths can regress silently (double notifications or state mutation after disposal).
 
-## User impact
-Without direct tests around seed hashing behavior, regressions in hashing logic could silently alter generated melody output patterns, making generated phrases less repeatable for the same musical input and seed.
+## User Impact
+If notification safety regresses, listeners can be notified more than once per operation, causing duplicate UI work and inconsistent reactive behavior. If dispose guards regress, async loads or post-dispose mutations can update dead controller state and trigger side effects after the owning widget is gone.
 
-## Root cause
-`MelodySeedUtil` was newly introduced and immediately used in generation pipelines, but there was no dedicated test suite validating type handling (null, bool, numeric, enum, iterables), deterministic output, and order sensitivity.
+## Root Cause
+The changed branches were narrow lifecycle/notification guards, but existing tests primarily covered persistence and recommendation logic, not disposal timing and notification count invariants.
 
 ## Fix
-- Added `test/melody_seed_util_test.dart` with focused unit coverage for:
-  - deterministic hashing for primitive and enum values
-  - branch differentiation for bool/double/enum variants
-  - deterministic and order-sensitive behavior of `stableHashAll`
-  - output range contract (`0..0x3fffffff`) for aggregated hashes
+Added tightly scoped regression tests in changed areas:
+- `test/settings_controller_test.dart`
+  - `load and update notify listeners once per call`
+  - Verifies one listener callback for `load()` and one for `update()`.
+- `test/study_harmony_progress_controller_test.dart`
+  - `load becomes a no-op after dispose while waiting for store`
+  - `markLessonStarted after dispose does not mutate or save`
+  - Added `_DelayedLoadProgressStore` test double to deterministically cover the async dispose race.
+
+This keeps scope limited to the recent controller changes and avoids broader refactors.
 
 ## Validation
-Attempted to run targeted local checks in this sandbox:
-- `dart format test/melody_seed_util_test.dart` (timed out)
-- `flutter test test/melody_seed_util_test.dart` (timed out)
+Attempted targeted validation in this environment:
+- `flutter test test/settings_controller_test.dart test/study_harmony_progress_controller_test.dart` (timed out)
+- `dart format test/settings_controller_test.dart test/study_harmony_progress_controller_test.dart` (timed out)
 
-The new test is intentionally isolated and does not broaden scope beyond changed melody seeding logic.
+Given sandbox limits, tests could not be executed to completion here.

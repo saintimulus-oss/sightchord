@@ -4,6 +4,7 @@ import 'package:chordest/study_harmony/application/study_harmony_progress_contro
 import 'package:chordest/study_harmony/data/study_harmony_progress_store.dart';
 import 'package:chordest/study_harmony/domain/study_harmony_progress_models.dart';
 import 'package:chordest/study_harmony/domain/study_harmony_session_models.dart';
+import 'package:chordest/study_harmony/meta/study_harmony_rewards_catalog.dart';
 
 void main() {
   test(
@@ -337,6 +338,62 @@ void main() {
       expect(store.savedSnapshots, isNotEmpty);
     },
   );
+
+  test('equip and unequip loadout items persist in the snapshot', () async {
+    final store = _MemoryProgressStore();
+    final controller = StudyHarmonyProgressController(
+      store: store,
+      initialSnapshot: StudyHarmonyProgressSnapshot.initial().copyWith(
+        ownedTitleIds: {'title.spark'},
+        ownedCosmeticIds: {
+          'cosmetic.frame.neon',
+          'cosmetic.trail.confetti',
+          'cosmetic.theme.midnight',
+        },
+      ),
+    );
+
+    expect(await controller.equipTitle('title.spark'), isTrue);
+    expect(controller.equippedTitleId(), 'title.spark');
+
+    expect(await controller.equipCosmetic('cosmetic.frame.neon'), isTrue);
+    expect(await controller.equipCosmetic('cosmetic.trail.confetti'), isTrue);
+    expect(await controller.equipCosmetic('cosmetic.theme.midnight'), isTrue);
+    expect(
+      controller.equippedCosmeticIds(),
+      equals(const ['cosmetic.trail.confetti', 'cosmetic.theme.midnight']),
+    );
+
+    expect(await controller.unequipCosmetic('cosmetic.theme.midnight'), isTrue);
+    expect(controller.equippedCosmeticIds(), equals(const ['cosmetic.trail.confetti']));
+
+    expect(await controller.unequipTitle(), isTrue);
+    expect(controller.equippedTitleId(), isNull);
+    expect(store.savedSnapshots, isNotEmpty);
+  });
+
+  test('shop purchases unlock owned cosmetics that can be equipped', () async {
+    final store = _MemoryProgressStore();
+    final controller = StudyHarmonyProgressController(
+      store: store,
+      initialSnapshot: StudyHarmonyProgressSnapshot.initial().copyWith(
+        rewardCurrencyBalances: {'currency.starShard': 20},
+        shopPurchaseCount: 1,
+        rewardCurrencySpent: 200,
+      ),
+    );
+    final item = studyHarmonyShopItems.firstWhere(
+      (candidate) => candidate.id == 'shop.holo_badge_unlock',
+    );
+
+    expect(controller.canPurchaseShopItem(item), isTrue);
+    expect(await controller.purchaseShopItem(item), isTrue);
+    expect(controller.isCosmeticOwned('cosmetic.badge.holo'), isTrue);
+    expect(await controller.equipCosmetic('cosmetic.badge.holo'), isTrue);
+    expect(controller.equippedCosmeticIds(), equals(const ['cosmetic.badge.holo']));
+    expect(controller.hasPurchasedUniqueShopItem(item.id), isTrue);
+    expect(store.savedSnapshots.last.ownedCosmeticIds, contains('cosmetic.badge.holo'));
+  });
 }
 
 StudyHarmonyCourseDefinition _buildCourse() {

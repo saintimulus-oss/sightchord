@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,7 +11,13 @@ import '../audio/sightchord_audio_scope.dart';
 import '../l10n/app_localizations.dart';
 import 'application/study_harmony_progress_controller.dart';
 import 'application/study_harmony_session_controller.dart';
+import 'domain/study_harmony_progress_models.dart';
 import 'domain/study_harmony_session_models.dart';
+import 'meta/study_harmony_arcade_catalog.dart';
+import 'meta/study_harmony_arcade_runtime.dart';
+import 'meta/study_harmony_difficulty_design.dart';
+import 'meta/study_harmony_personalization.dart';
+import 'meta/study_harmony_rewards_catalog.dart';
 import 'study_harmony_keyboard.dart';
 import 'study_harmony_models.dart';
 import 'ui/study_harmony_progression_strip.dart';
@@ -128,8 +135,9 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
   }
 
   StudyHarmonySessionController _buildController() {
-    return widget.controllerFactory?.call(widget.lesson) ??
-        StudyHarmonySessionController(lesson: widget.lesson);
+    final lesson = _buildRuntimeLesson(widget.lesson);
+    return widget.controllerFactory?.call(lesson) ??
+        StudyHarmonySessionController(lesson: lesson);
   }
 
   void _syncCourseIfNeeded() {
@@ -143,6 +151,171 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
       }
       unawaited(widget.progressController.syncCourse(course));
     });
+  }
+
+  StudyHarmonyLessonDefinition _buildRuntimeLesson(
+    StudyHarmonyLessonDefinition lesson,
+  ) {
+    final localeTag = WidgetsBinding.instance.platformDispatcher.locale
+        .toLanguageTag();
+    final snapshot = widget.progressController.snapshot;
+    final recentPerformance =
+        StudyHarmonyRecentPerformance.fromProgressSnapshot(snapshot);
+    final adaptiveProfile = _sessionAdaptiveProfile(
+      snapshot: snapshot,
+      localeTag: localeTag,
+      recentPerformance: recentPerformance,
+    );
+    final difficultyPlan = StudyHarmonyDifficultyDesign.design(
+      mode: lesson.sessionMode,
+      input: _difficultyInputForSession(
+        recentPerformance: recentPerformance,
+        adaptiveProfile: adaptiveProfile,
+        progressController: widget.progressController,
+        liveComboPeak: 0,
+      ),
+    );
+    final runtimeTuning = StudyHarmonyRuntimeTuningRules.tuneFromPlan(
+      plan: difficultyPlan,
+      baseStartingLives: lesson.startingLives,
+      baseGoalCorrectAnswers: lesson.goalCorrectAnswers,
+      taskCount: lesson.tasks.length,
+    );
+
+    var startingLives = runtimeTuning.recommendedStartingLives;
+    var goalCorrectAnswers = runtimeTuning.recommendedGoalCorrectAnswers;
+    var metadata = lesson.sessionMetadata;
+
+    final shouldRewardCombo = runtimeTuning.bonusAggressiveness >= 0.7;
+    final shouldShuffleChoices = runtimeTuning.remixIntensity >= 0.78;
+    final shouldRepeatMisses =
+        runtimeTuning.forgivenessTier.index >=
+            StudyHarmonyForgivenessTier.kind.index ||
+        difficultyPlan.difficultyLane == StudyHarmonyDifficultyLane.recovery;
+    final comboProgressThreshold = shouldRewardCombo
+        ? max(2, min(5, runtimeTuning.comboTarget))
+        : metadata.comboProgressThreshold;
+    final comboProgressBonus = shouldRewardCombo
+        ? max(1, metadata.comboProgressBonus)
+        : metadata.comboProgressBonus;
+    final comboLifeThreshold = runtimeTuning.isForgiving
+        ? max(4, min(8, runtimeTuning.comboTarget + 1))
+        : metadata.comboLifeThreshold;
+    final comboLifeBonus = runtimeTuning.isForgiving
+        ? max(1, metadata.comboLifeBonus)
+        : metadata.comboLifeBonus;
+    metadata = metadata.copyWith(
+      missProgressPenalty: runtimeTuning.isPressureHeavy
+          ? max(metadata.missProgressPenalty, 1)
+          : metadata.missProgressPenalty,
+      comboProgressThreshold: comboProgressThreshold,
+      comboProgressBonus: comboProgressBonus,
+      comboLifeThreshold: comboLifeThreshold,
+      comboLifeBonus: comboLifeBonus,
+      shuffleChoiceOptions:
+          metadata.shuffleChoiceOptions || shouldShuffleChoices,
+      repeatMissedTask: metadata.repeatMissedTask || shouldRepeatMisses,
+    );
+
+    final arcadeModeId = metadata.arcadeModeId;
+    if (arcadeModeId != null) {
+      final arcadeRuntime =
+          buildStudyHarmonyArcadeRuntimePlanFromLessonSummaries(
+            snapshot.lessonResults.values,
+            modeId: arcadeModeId,
+            baseStartingLives: startingLives,
+            baseGoalCorrectAnswers: goalCorrectAnswers,
+            totalLessons: max(
+              snapshot.unlockedLessonIds.length,
+              snapshot.lessonResults.length,
+            ),
+            reviewQueueSize: snapshot.reviewQueuePlaceholders.length,
+            chapterClears: snapshot.unlockedChapterIds.length,
+            bossClears: _modeCountFromSnapshot(
+              snapshot.modeClearCounts,
+              StudyHarmonySessionMode.bossRush,
+            ),
+            currentStreak: snapshot.bestDailyChallengeStreak,
+          );
+      final arcadeComboLifeThreshold =
+          arcadeRuntime.comboBonusAmount >= 2 || runtimeTuning.isForgiving
+          ? max(4, min(7, arcadeRuntime.comboBonusEvery + 2))
+          : metadata.comboLifeThreshold;
+      final arcadeComboLifeBonus = arcadeRuntime.comboBonusAmount >= 3
+          ? 1
+          : metadata.comboLifeBonus;
+      startingLives = arcadeRuntime.startingLives;
+      goalCorrectAnswers = arcadeRuntime.goalCorrectAnswers;
+      metadata = metadata.copyWith(
+        missLifePenalty: max(
+          metadata.missLifePenalty,
+          arcadeRuntime.missPenaltyLives,
+        ),
+        missProgressPenalty:
+            arcadeRuntime.usesGhostPressure ||
+                arcadeRuntime.modeId == 'boss-rush' ||
+                arcadeRuntime.modeId == 'crown-loop' ||
+                arcadeRuntime.modeId == 'duel-stage'
+            ? max(metadata.missProgressPenalty, 1)
+            : metadata.missProgressPenalty,
+        comboProgressThreshold: arcadeRuntime.comboBonusAmount > 0
+            ? arcadeRuntime.comboBonusEvery
+            : metadata.comboProgressThreshold,
+        comboProgressBonus: arcadeRuntime.comboBonusAmount > 0
+            ? max(
+                metadata.comboProgressBonus,
+                min(2, arcadeRuntime.comboBonusAmount),
+              )
+            : metadata.comboProgressBonus,
+        comboLifeThreshold: arcadeComboLifeThreshold,
+        comboLifeBonus: max(metadata.comboLifeBonus, arcadeComboLifeBonus),
+        comboDropOnMiss: arcadeRuntime.comboResetsOnMiss
+            ? 0
+            : max(1, arcadeRuntime.comboDropOnMiss),
+        comboResetsOnMiss: arcadeRuntime.comboResetsOnMiss,
+        shuffleChoiceOptions:
+            metadata.shuffleChoiceOptions || arcadeRuntime.usesModifierStorm,
+        repeatMissedTask:
+            metadata.repeatMissedTask ||
+            arcadeRuntime.usesGhostPressure ||
+            runtimeTuning.isForgiving,
+        uniqueTaskCycle:
+            metadata.uniqueTaskCycle ||
+            arcadeRuntime.modifierPool.isNotEmpty ||
+            arcadeRuntime.mechanics.isNotEmpty,
+      );
+    }
+
+    final tunedLives = startingLives.clamp(1, 6).toInt();
+    final minimumGoal = lesson.sessionMode == StudyHarmonySessionMode.lesson
+        ? (lesson.tasks.length == 1
+              ? lesson.goalCorrectAnswers
+              : min(lesson.goalCorrectAnswers, 2))
+        : 1;
+    final tunedGoal = goalCorrectAnswers
+        .clamp(
+          minimumGoal,
+          max(max(lesson.goalCorrectAnswers + 4, lesson.tasks.length), 3),
+        )
+        .toInt();
+    if (tunedLives == lesson.startingLives &&
+        tunedGoal == lesson.goalCorrectAnswers &&
+        metadata == lesson.sessionMetadata) {
+      return lesson;
+    }
+    return StudyHarmonyLessonDefinition(
+      id: lesson.id,
+      chapterId: lesson.chapterId,
+      title: lesson.title,
+      description: lesson.description,
+      objectiveLabel: lesson.objectiveLabel,
+      goalCorrectAnswers: tunedGoal,
+      startingLives: tunedLives,
+      sessionMode: lesson.sessionMode,
+      tasks: lesson.tasks,
+      skillTags: lesson.skillTags,
+      sessionMetadata: metadata,
+    );
   }
 
   void _toggleAnswer(StudyHarmonyAnswerOptionId answerId) {
@@ -298,6 +471,9 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
       attempts: state.attempts,
       accuracy: state.accuracy,
       elapsed: state.elapsed,
+      bestCombo: state.bestCombo,
+      correctAnswers: state.correctAnswers,
+      livesRemaining: state.livesRemaining,
       performance: state.performance,
     );
     if (!mounted) {
@@ -344,6 +520,32 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
           lesson: lesson,
           state: state,
         );
+        final localeTag = Localizations.localeOf(context).toLanguageTag();
+        final recentPerformance =
+            StudyHarmonyRecentPerformance.fromProgressSnapshot(
+              widget.progressController.snapshot,
+            );
+        final adaptiveProfile = _sessionAdaptiveProfile(
+          snapshot: widget.progressController.snapshot,
+          localeTag: localeTag,
+          recentPerformance: recentPerformance,
+        );
+        final adaptivePlan = personalizeStudyHarmony(
+          profile: adaptiveProfile,
+          recentPerformance: recentPerformance,
+        );
+        final difficultyPlan = StudyHarmonyDifficultyDesign.design(
+          mode: lesson.sessionMode,
+          input: _difficultyInputForSession(
+            recentPerformance: recentPerformance,
+            adaptiveProfile: adaptiveProfile,
+            progressController: widget.progressController,
+            liveComboPeak: state.bestCombo,
+          ),
+        );
+        final arcadeMode = lesson.sessionMetadata.arcadeModeId == null
+            ? null
+            : studyHarmonyArcadeModeById(lesson.sessionMetadata.arcadeModeId!);
         final completedBonusGoalLabels = [
           for (final goal in bonusGoals)
             if (goal.completed) goal.label,
@@ -531,6 +733,21 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.stretch,
                                             children: [
+                                              _SessionBriefingCard(
+                                                arcadeMode: arcadeMode,
+                                                adaptivePlan: adaptivePlan,
+                                                difficultyPlan: difficultyPlan,
+                                                modeLabel: _sessionModeLabel(
+                                                  l10n,
+                                                  lesson.sessionMode,
+                                                ),
+                                                runtimeRuleLabels:
+                                                    _runtimeRuleLabels(
+                                                      localeTag,
+                                                      lesson.sessionMetadata,
+                                                    ),
+                                              ),
+                                              const SizedBox(height: 14),
                                               _SessionOverviewCard(
                                                 lesson: lesson,
                                                 modeLabel: _sessionModeLabel(
@@ -539,7 +756,7 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                                 ),
                                                 progressLabel: l10n
                                                     .studyHarmonyClearProgress(
-                                                      state.correctAnswers,
+                                                      state.progressPoints,
                                                       lesson.goalCorrectAnswers,
                                                     ),
                                                 attemptsLabel:
@@ -712,7 +929,7 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                         : l10n.studyHarmonyGameOverBody,
                                     progressLabel: l10n
                                         .studyHarmonyClearProgress(
-                                          state.correctAnswers,
+                                          state.progressPoints,
                                           lesson.goalCorrectAnswers,
                                         ),
                                     accuracyLabel:
@@ -742,6 +959,10 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                         l10n.studyHarmonyResultReviewFocusTitle,
                                     rewardTitle:
                                         l10n.studyHarmonyResultRewardTitle,
+                                    arcadeTitle: _sessionArcadeTitle(localeTag),
+                                    directorTitle: _sessionDirectorTitle(
+                                      localeTag,
+                                    ),
                                     milestoneTitle:
                                         l10n.studyHarmonyResultMilestonesTitle,
                                     bonusTitle:
@@ -902,6 +1123,96 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                                   .bossRush &&
                                           state.isCompleted)
                                         l10n.studyHarmonyResultBossRushLine,
+                                      for (final bundle
+                                          in (_lastProgressEffect
+                                                  ?.rewardBundles ??
+                                              const <
+                                                StudyHarmonyRewardBundleDefinition
+                                              >[]))
+                                        _rewardBundleLabel(bundle),
+                                      for (final grant
+                                          in (_lastProgressEffect
+                                                  ?.currencyGrants ??
+                                              const <
+                                                StudyHarmonyRewardGrant
+                                              >[]))
+                                        _currencyGrantLabel(grant),
+                                      for (final reward
+                                          in (_lastProgressEffect
+                                                  ?.newlyUnlockedRewards ??
+                                              const <
+                                                StudyHarmonyRewardCandidate
+                                              >[]))
+                                        _rewardUnlockLabel(localeTag, reward),
+                                      for (final entry
+                                          in (_lastProgressEffect
+                                                      ?.currencyBalances
+                                                      .entries
+                                                      .toList(
+                                                        growable: false,
+                                                      ) ??
+                                                  const <
+                                                    MapEntry<
+                                                      StudyHarmonyCurrencyId,
+                                                      int
+                                                    >
+                                                  >[])
+                                              .take(3))
+                                        _currencyBalanceLabel(
+                                          entry.key,
+                                          entry.value,
+                                        ),
+                                    ],
+                                    arcadeLabels: [
+                                      if (arcadeMode != null) arcadeMode.title,
+                                      if (arcadeMode != null)
+                                        _arcadeRiskLabel(
+                                          localeTag,
+                                          arcadeMode.riskStyle,
+                                        ),
+                                      if (arcadeMode != null)
+                                        _arcadeRewardStyleLabel(
+                                          localeTag,
+                                          arcadeMode.rewardStyle,
+                                        ),
+                                      if (arcadeMode != null)
+                                        arcadeMode.shortLoop,
+                                      ..._runtimeRuleLabels(
+                                        localeTag,
+                                        lesson.sessionMetadata,
+                                      ),
+                                    ],
+                                    directorLabels: [
+                                      _difficultyLaneLabel(
+                                        localeTag,
+                                        difficultyPlan.difficultyLane,
+                                      ),
+                                      _pressureTierLabel(
+                                        localeTag,
+                                        difficultyPlan.pressureTier,
+                                      ),
+                                      _forgivenessTierLabel(
+                                        localeTag,
+                                        difficultyPlan.forgivenessTier,
+                                      ),
+                                      _sessionLengthLabel(
+                                        localeTag,
+                                        difficultyPlan
+                                            .sessionLengthSuggestion
+                                            .inMinutes,
+                                      ),
+                                      _comboGoalLabel(
+                                        localeTag,
+                                        difficultyPlan.comboTarget,
+                                      ),
+                                      _pacingPlanLabel(
+                                        localeTag,
+                                        difficultyPlan,
+                                      ),
+                                      _coachLabel(
+                                        localeTag,
+                                        adaptivePlan.coachStyle,
+                                      ),
                                     ],
                                     milestoneLabels: unlockedMilestoneLabels,
                                     bonusHighlightLabel: bonusSweep
@@ -997,6 +1308,106 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
         ],
       ),
     };
+  }
+}
+
+class _SessionBriefingCard extends StatelessWidget {
+  const _SessionBriefingCard({
+    required this.adaptivePlan,
+    required this.difficultyPlan,
+    required this.modeLabel,
+    required this.runtimeRuleLabels,
+    this.arcadeMode,
+  });
+
+  final StudyHarmonyArcadeModeDefinition? arcadeMode;
+  final StudyHarmonyAdaptivePlan adaptivePlan;
+  final StudyHarmonyDifficultyPlan difficultyPlan;
+  final String modeLabel;
+  final List<String> runtimeRuleLabels;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
+
+    return DecoratedBox(
+      key: const ValueKey('study-harmony-session-briefing'),
+      decoration: BoxDecoration(
+        color: colorScheme.primaryContainer.withValues(alpha: 0.38),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.14)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              arcadeMode?.title ?? modeLabel,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              arcadeMode?.fantasy ?? _coachLine(localeTag, adaptivePlan),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                height: 1.35,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                Chip(
+                  label: Text(
+                    _difficultyLaneLabel(
+                      localeTag,
+                      difficultyPlan.difficultyLane,
+                    ),
+                  ),
+                ),
+                Chip(
+                  label: Text(
+                    _pressureTierLabel(localeTag, difficultyPlan.pressureTier),
+                  ),
+                ),
+                Chip(
+                  label: Text(
+                    _forgivenessTierLabel(
+                      localeTag,
+                      difficultyPlan.forgivenessTier,
+                    ),
+                  ),
+                ),
+                Chip(
+                  label: Text(
+                    _comboGoalLabel(localeTag, difficultyPlan.comboTarget),
+                  ),
+                ),
+                Chip(
+                  label: Text(
+                    _sessionLengthLabel(
+                      localeTag,
+                      difficultyPlan.sessionLengthSuggestion.inMinutes,
+                    ),
+                  ),
+                ),
+                Chip(
+                  label: Text(_coachLabel(localeTag, adaptivePlan.coachStyle)),
+                ),
+                for (final label in runtimeRuleLabels.take(3))
+                  Chip(label: Text(label)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -1488,6 +1899,8 @@ class _ResultOverlay extends StatelessWidget {
     required this.skillGainTitle,
     required this.reviewFocusTitle,
     required this.rewardTitle,
+    required this.arcadeTitle,
+    required this.directorTitle,
     required this.milestoneTitle,
     required this.bonusTitle,
     required this.retryLabel,
@@ -1499,6 +1912,8 @@ class _ResultOverlay extends StatelessWidget {
     this.rewardHighlightLabel,
     this.bonusHighlightLabel,
     this.rewardLabels = const <String>[],
+    this.arcadeLabels = const <String>[],
+    this.directorLabels = const <String>[],
     this.milestoneLabels = const <String>[],
     this.bonusLabels = const <String>[],
     this.skillGainLabels = const <String>[],
@@ -1515,6 +1930,8 @@ class _ResultOverlay extends StatelessWidget {
   final String skillGainTitle;
   final String reviewFocusTitle;
   final String rewardTitle;
+  final String arcadeTitle;
+  final String directorTitle;
   final String milestoneTitle;
   final String bonusTitle;
   final String retryLabel;
@@ -1524,6 +1941,8 @@ class _ResultOverlay extends StatelessWidget {
   final String? rewardHighlightLabel;
   final String? bonusHighlightLabel;
   final List<String> rewardLabels;
+  final List<String> arcadeLabels;
+  final List<String> directorLabels;
   final List<String> milestoneLabels;
   final List<String> bonusLabels;
   final List<String> skillGainLabels;
@@ -1544,153 +1963,195 @@ class _ResultOverlay extends StatelessWidget {
       child: Card(
         key: const ValueKey('study-harmony-result-overlay'),
         elevation: 6,
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.78,
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                body,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyLarge,
-              ),
-              const SizedBox(height: 20),
-              _StatChip(label: progressLabel),
-              const SizedBox(height: 8),
-              _StatChip(label: accuracyLabel),
-              const SizedBox(height: 8),
-              _StatChip(label: elapsedLabel),
-              const SizedBox(height: 8),
-              _StatChip(label: attemptsLabel),
-              const SizedBox(height: 8),
-              _StatChip(label: modeLabel),
-              if (dailyDateLabel case final String dailyLabel?) ...[
+                const SizedBox(height: 10),
+                Text(
+                  body,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 20),
+                _StatChip(label: progressLabel),
                 const SizedBox(height: 8),
-                _StatChip(label: dailyLabel),
-              ],
-              if (reviewReasonLabel case final String reviewReason?) ...[
+                _StatChip(label: accuracyLabel),
                 const SizedBox(height: 8),
-                _StatChip(label: reviewReason),
-              ],
-              if (rewardLabels.isNotEmpty) ...[
-                const SizedBox(height: 18),
-                Text(
-                  rewardTitle,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                if (rewardHighlightLabel
-                    case final String rewardHighlight?) ...[
-                  const SizedBox(height: 10),
-                  Chip(label: Text(rewardHighlight)),
+                _StatChip(label: elapsedLabel),
+                const SizedBox(height: 8),
+                _StatChip(label: attemptsLabel),
+                const SizedBox(height: 8),
+                _StatChip(label: modeLabel),
+                if (dailyDateLabel case final String dailyLabel?) ...[
+                  const SizedBox(height: 8),
+                  _StatChip(label: dailyLabel),
                 ],
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final label in rewardLabels) Chip(label: Text(label)),
-                  ],
-                ),
-              ],
-              if (milestoneLabels.isNotEmpty) ...[
-                const SizedBox(height: 18),
-                Text(
-                  milestoneTitle,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final label in milestoneLabels)
-                      Chip(label: Text(label)),
-                  ],
-                ),
-              ],
-              if (bonusLabels.isNotEmpty) ...[
-                const SizedBox(height: 18),
-                Text(
-                  bonusTitle,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                if (bonusHighlightLabel case final String highlight?) ...[
-                  const SizedBox(height: 10),
-                  Chip(label: Text(highlight)),
+                if (reviewReasonLabel case final String reviewReason?) ...[
+                  const SizedBox(height: 8),
+                  _StatChip(label: reviewReason),
                 ],
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final label in bonusLabels) Chip(label: Text(label)),
-                  ],
-                ),
-              ],
-              if (skillGainLabels.isNotEmpty) ...[
-                const SizedBox(height: 18),
-                Text(
-                  skillGainTitle,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
+                if (rewardLabels.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  Text(
+                    rewardTitle,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final label in skillGainLabels.take(3))
-                      Chip(label: Text(label)),
+                  if (rewardHighlightLabel
+                      case final String rewardHighlight?) ...[
+                    const SizedBox(height: 10),
+                    Chip(label: Text(rewardHighlight)),
                   ],
-                ),
-              ],
-              if (focusSkillLabels.isNotEmpty) ...[
-                const SizedBox(height: 18),
-                Text(
-                  reviewFocusTitle,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final label in rewardLabels)
+                        Chip(label: Text(label)),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final label in focusSkillLabels.take(3))
-                      Chip(label: Text(label)),
+                ],
+                if (arcadeLabels.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  Text(
+                    arcadeTitle,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final label in arcadeLabels.take(4))
+                        Chip(label: Text(label)),
+                    ],
+                  ),
+                ],
+                if (directorLabels.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  Text(
+                    directorTitle,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final label in directorLabels.take(4))
+                        Chip(label: Text(label)),
+                    ],
+                  ),
+                ],
+                if (milestoneLabels.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  Text(
+                    milestoneTitle,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final label in milestoneLabels)
+                        Chip(label: Text(label)),
+                    ],
+                  ),
+                ],
+                if (bonusLabels.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  Text(
+                    bonusTitle,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  if (bonusHighlightLabel case final String highlight?) ...[
+                    const SizedBox(height: 10),
+                    Chip(label: Text(highlight)),
                   ],
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final label in bonusLabels) Chip(label: Text(label)),
+                    ],
+                  ),
+                ],
+                if (skillGainLabels.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  Text(
+                    skillGainTitle,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final label in skillGainLabels.take(3))
+                        Chip(label: Text(label)),
+                    ],
+                  ),
+                ],
+                if (focusSkillLabels.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  Text(
+                    reviewFocusTitle,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final label in focusSkillLabels.take(3))
+                        Chip(label: Text(label)),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 20),
+                FilledButton(
+                  key: const ValueKey('study-harmony-retry-button'),
+                  onPressed: onRetry,
+                  child: Text(retryLabel),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  key: const ValueKey('study-harmony-back-button'),
+                  onPressed: onBack,
+                  child: Text(backLabel),
                 ),
               ],
-              const SizedBox(height: 20),
-              FilledButton(
-                key: const ValueKey('study-harmony-retry-button'),
-                onPressed: onRetry,
-                child: Text(retryLabel),
-              ),
-              const SizedBox(height: 8),
-              OutlinedButton(
-                key: const ValueKey('study-harmony-back-button'),
-                onPressed: onBack,
-                child: Text(backLabel),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -1921,6 +2382,380 @@ String? _reviewReasonLabel(AppLocalizations l10n, String? reason) {
     'frontier-refresh' => l10n.studyHarmonyReviewReasonFrontierRefresh,
     _ => null,
   };
+}
+
+StudyHarmonyPersonalizationProfile _sessionAdaptiveProfile({
+  required StudyHarmonyProgressSnapshot snapshot,
+  required String localeTag,
+  required StudyHarmonyRecentPerformance recentPerformance,
+}) {
+  final modeClearCounts = snapshot.modeClearCounts;
+  final competitorWeight =
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.relay) +
+      _modeCountFromSnapshot(
+        modeClearCounts,
+        StudyHarmonySessionMode.bossRush,
+      ) +
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.legend) +
+      snapshot.relayWinCount +
+      snapshot.legendaryChapterIds.length;
+  final collectorWeight =
+      snapshot.questChestCount +
+      snapshot.shopPurchaseCount +
+      ((snapshot.rewardCurrencyBalances['currency.starShard'] ?? 0) ~/ 2);
+  final explorerWeight =
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.daily) +
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.focus) +
+      snapshot.completedFrontierQuestDateKeys.length;
+  final stabilizerWeight =
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.review) +
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.lesson) +
+      snapshot.reviewQueuePlaceholders.length;
+
+  final playStyle = _dominantPlayStyle(
+    competitorWeight: competitorWeight.toDouble(),
+    collectorWeight: collectorWeight.toDouble(),
+    explorerWeight: explorerWeight.toDouble(),
+    stabilizerWeight: stabilizerWeight.toDouble(),
+  );
+  final shortWeight =
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.lesson) +
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.review) +
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.daily);
+  final longWeight =
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.focus) +
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.relay) +
+      _modeCountFromSnapshot(
+        modeClearCounts,
+        StudyHarmonySessionMode.bossRush,
+      ) +
+      _modeCountFromSnapshot(modeClearCounts, StudyHarmonySessionMode.legend);
+
+  return StudyHarmonyPersonalizationProfile(
+    ageBand: StudyHarmonyAgeBand.adult,
+    skillBand: inferStudyHarmonySkillBand(recentPerformance),
+    playStyle: playStyle,
+    sessionLengthPreference: shortWeight >= longWeight
+        ? StudyHarmonySessionLengthPreference.short
+        : StudyHarmonySessionLengthPreference.long,
+    regionFlavor: studyHarmonyRegionFlavorFromCountryCode(
+      _countryCodeFromLocaleTag(localeTag),
+    ),
+    gameplayAffinity: StudyHarmonyGameplayAffinity(
+      competition: _scaledWeight(competitorWeight.toDouble()),
+      collection: _scaledWeight(collectorWeight.toDouble()),
+      exploration: _scaledWeight(explorerWeight.toDouble()),
+      stability: _scaledWeight(stabilizerWeight.toDouble()),
+    ),
+    countryCode: _countryCodeFromLocaleTag(localeTag),
+    localeTag: localeTag,
+  );
+}
+
+StudyHarmonyDifficultyInput _difficultyInputForSession({
+  required StudyHarmonyRecentPerformance recentPerformance,
+  required StudyHarmonyPersonalizationProfile adaptiveProfile,
+  required StudyHarmonyProgressController progressController,
+  required int liveComboPeak,
+}) {
+  final comboPeak = max(
+    progressController.snapshot.bestSessionCombo,
+    liveComboPeak,
+  );
+  return StudyHarmonyDifficultyInput(
+    skillRating: recentPerformance.masteryMomentum,
+    recentAccuracy: recentPerformance.averageAccuracy,
+    recentStability: recentPerformance.confidence,
+    recentMomentum:
+        (recentPerformance.masteryMomentum - recentPerformance.recoveryNeed)
+            .clamp(-1.0, 1.0)
+            .toDouble(),
+    recentStruggleRate: recentPerformance.recoveryNeed,
+    recentComboPeak: (comboPeak.clamp(0, 20) / 20).toDouble(),
+    preferredSessionMinutes: switch (adaptiveProfile.sessionLengthPreference) {
+      StudyHarmonySessionLengthPreference.micro => 4,
+      StudyHarmonySessionLengthPreference.short => 7,
+      StudyHarmonySessionLengthPreference.medium => 10,
+      StudyHarmonySessionLengthPreference.long => 13,
+      StudyHarmonySessionLengthPreference.marathon => 16,
+    },
+  );
+}
+
+int _modeCountFromSnapshot(
+  Map<String, int> counts,
+  StudyHarmonySessionMode mode,
+) {
+  return counts[mode.name] ?? 0;
+}
+
+StudyHarmonyPlayStyle _dominantPlayStyle({
+  required double competitorWeight,
+  required double collectorWeight,
+  required double explorerWeight,
+  required double stabilizerWeight,
+}) {
+  final entries = <MapEntry<StudyHarmonyPlayStyle, double>>[
+    MapEntry(StudyHarmonyPlayStyle.competitor, competitorWeight),
+    MapEntry(StudyHarmonyPlayStyle.collector, collectorWeight),
+    MapEntry(StudyHarmonyPlayStyle.explorer, explorerWeight),
+    MapEntry(StudyHarmonyPlayStyle.stabilizer, stabilizerWeight),
+    const MapEntry(StudyHarmonyPlayStyle.balanced, 0.8),
+  ]..sort((left, right) => right.value.compareTo(left.value));
+  return entries.first.key;
+}
+
+double _scaledWeight(double value) {
+  return (value / 8).clamp(0.2, 1.0).toDouble();
+}
+
+String? _countryCodeFromLocaleTag(String localeTag) {
+  final normalized = localeTag.replaceAll('_', '-');
+  final parts = normalized.split('-');
+  if (parts.length < 2) {
+    return null;
+  }
+  final candidate = parts[1].trim();
+  if (candidate.length != 2) {
+    return null;
+  }
+  return candidate.toUpperCase();
+}
+
+bool _isKoreanLocale(String localeTag) {
+  return localeTag.toLowerCase().startsWith('ko');
+}
+
+String _sessionArcadeTitle(String localeTag) {
+  return _isKoreanLocale(localeTag) ? '아케이드 룰' : 'Arcade Rules';
+}
+
+String _sessionDirectorTitle(String localeTag) {
+  return _isKoreanLocale(localeTag) ? '런 디렉터' : 'Run Director';
+}
+
+String _difficultyLaneLabel(String localeTag, StudyHarmonyDifficultyLane lane) {
+  final ko = _isKoreanLocale(localeTag);
+  return switch (lane) {
+    StudyHarmonyDifficultyLane.recovery => ko ? '회복 레인' : 'Recovery Lane',
+    StudyHarmonyDifficultyLane.groove => ko ? '그루브 레인' : 'Groove Lane',
+    StudyHarmonyDifficultyLane.push => ko ? '푸시 레인' : 'Push Lane',
+    StudyHarmonyDifficultyLane.clutch => ko ? '클러치 레인' : 'Clutch Lane',
+    StudyHarmonyDifficultyLane.legend => ko ? '레전드 레인' : 'Legend Lane',
+  };
+}
+
+String _pressureTierLabel(String localeTag, StudyHarmonyPressureTier tier) {
+  final ko = _isKoreanLocale(localeTag);
+  return switch (tier) {
+    StudyHarmonyPressureTier.calm => ko ? '압박 낮음' : 'Calm Pressure',
+    StudyHarmonyPressureTier.steady => ko ? '압박 보통' : 'Steady Pressure',
+    StudyHarmonyPressureTier.hot => ko ? '압박 상승' : 'Hot Pressure',
+    StudyHarmonyPressureTier.charged => ko ? '압박 높음' : 'Charged Pressure',
+    StudyHarmonyPressureTier.overdrive => ko ? '압박 극대화' : 'Overdrive',
+  };
+}
+
+String _forgivenessTierLabel(
+  String localeTag,
+  StudyHarmonyForgivenessTier tier,
+) {
+  final ko = _isKoreanLocale(localeTag);
+  return switch (tier) {
+    StudyHarmonyForgivenessTier.strict => ko ? '실수 허용 적음' : 'Strict Windows',
+    StudyHarmonyForgivenessTier.tight => ko ? '실수 허용 타이트' : 'Tight Windows',
+    StudyHarmonyForgivenessTier.balanced =>
+      ko ? '실수 허용 균형' : 'Balanced Windows',
+    StudyHarmonyForgivenessTier.kind => ko ? '실수 허용 넓음' : 'Kind Windows',
+    StudyHarmonyForgivenessTier.generous =>
+      ko ? '실수 허용 매우 넓음' : 'Generous Windows',
+  };
+}
+
+String _sessionLengthLabel(String localeTag, int minutes) {
+  return _isKoreanLocale(localeTag) ? '$minutes분 세션' : '$minutes min run';
+}
+
+String _comboGoalLabel(String localeTag, int comboTarget) {
+  return _isKoreanLocale(localeTag)
+      ? '콤보 목표 $comboTarget'
+      : 'Combo Goal $comboTarget';
+}
+
+String _coachLabel(String localeTag, StudyHarmonyCoachStyle coachStyle) {
+  final ko = _isKoreanLocale(localeTag);
+  return switch (coachStyle) {
+    StudyHarmonyCoachStyle.supportive => ko ? '응원형 코치' : 'Supportive Coach',
+    StudyHarmonyCoachStyle.structured => ko ? '구조형 코치' : 'Structured Coach',
+    StudyHarmonyCoachStyle.challengeForward =>
+      ko ? '도전형 코치' : 'Challenge Coach',
+    StudyHarmonyCoachStyle.analytical => ko ? '분석형 코치' : 'Analytical Coach',
+    StudyHarmonyCoachStyle.restorative => ko ? '회복형 코치' : 'Restorative Coach',
+  };
+}
+
+String _coachLine(String localeTag, StudyHarmonyAdaptivePlan plan) {
+  final ko = _isKoreanLocale(localeTag);
+  return switch (plan.coachStyle) {
+    StudyHarmonyCoachStyle.supportive =>
+      ko
+          ? '실수보다 흐름을 지키는 데 집중해요.'
+          : 'Protect flow first and let confidence compound.',
+    StudyHarmonyCoachStyle.structured =>
+      ko
+          ? '순서를 지키면 실력이 가장 빠르게 붙어요.'
+          : 'Follow the structure and the gains will stick.',
+    StudyHarmonyCoachStyle.challengeForward =>
+      ko
+          ? '이번 런은 압박을 즐기며 한 단계 올려봅니다.'
+          : 'Lean into the pressure and push for a sharper run.',
+    StudyHarmonyCoachStyle.analytical =>
+      ko
+          ? '어디서 흔들리는지 읽으면서 정밀하게 갑니다.'
+          : 'Read the weak point and refine it with precision.',
+    StudyHarmonyCoachStyle.restorative =>
+      ko
+          ? '무너지지 않게 템포를 되찾는 런입니다.'
+          : 'This run is about rebuilding rhythm without tilt.',
+  };
+}
+
+String _pacingPlanLabel(
+  String localeTag,
+  StudyHarmonyDifficultyPlan difficultyPlan,
+) {
+  final ko = _isKoreanLocale(localeTag);
+  final segments = difficultyPlan.pacingPlan.segments
+      .where((segment) => segment.minutes > 0)
+      .take(2)
+      .map((segment) {
+        final label = switch (segment.kind) {
+          StudyHarmonyRhythmBeatKind.warmup => ko ? '워밍업' : 'Warmup',
+          StudyHarmonyRhythmBeatKind.tension => ko ? '긴장' : 'Tension',
+          StudyHarmonyRhythmBeatKind.release => ko ? '완화' : 'Release',
+          StudyHarmonyRhythmBeatKind.reward => ko ? '보상' : 'Reward',
+        };
+        return '$label ${segment.minutes}m';
+      })
+      .join(' · ');
+  return ko ? '페이싱 $segments' : 'Pacing $segments';
+}
+
+String _arcadeRiskLabel(
+  String localeTag,
+  StudyHarmonyArcadeRiskStyle riskStyle,
+) {
+  final ko = _isKoreanLocale(localeTag);
+  return switch (riskStyle) {
+    StudyHarmonyArcadeRiskStyle.forgiving => ko ? '리스크 낮음' : 'Low Risk',
+    StudyHarmonyArcadeRiskStyle.balanced => ko ? '리스크 균형' : 'Balanced Risk',
+    StudyHarmonyArcadeRiskStyle.tense => ko ? '리스크 높음' : 'High Tension',
+    StudyHarmonyArcadeRiskStyle.punishing => ko ? '리스크 극한' : 'Punishing Risk',
+  };
+}
+
+String _arcadeRewardStyleLabel(
+  String localeTag,
+  StudyHarmonyArcadeRewardStyle rewardStyle,
+) {
+  final ko = _isKoreanLocale(localeTag);
+  return switch (rewardStyle) {
+    StudyHarmonyArcadeRewardStyle.currency => ko ? '코인 중심' : 'Currency Loop',
+    StudyHarmonyArcadeRewardStyle.cosmetic => ko ? '코스메틱 중심' : 'Cosmetic Hunt',
+    StudyHarmonyArcadeRewardStyle.title => ko ? '칭호 중심' : 'Title Hunt',
+    StudyHarmonyArcadeRewardStyle.trophy => ko ? '트로피 중심' : 'Trophy Run',
+    StudyHarmonyArcadeRewardStyle.bundle => ko ? '묶음 보상' : 'Bundle Rewards',
+    StudyHarmonyArcadeRewardStyle.prestige => ko ? '명예 보상' : 'Prestige Rewards',
+  };
+}
+
+String _currencyTitle(StudyHarmonyCurrencyId currencyId) {
+  return studyHarmonyCurrenciesById[currencyId]?.title ?? currencyId;
+}
+
+String _rewardBundleLabel(StudyHarmonyRewardBundleDefinition bundle) {
+  final summary = bundle.grants
+      .take(2)
+      .map((grant) => '${_currencyTitle(grant.currencyId)} +${grant.amount}')
+      .join(' · ');
+  return '${bundle.title}: $summary';
+}
+
+String _currencyGrantLabel(StudyHarmonyRewardGrant grant) {
+  return '${_currencyTitle(grant.currencyId)} +${grant.amount}';
+}
+
+String _currencyBalanceLabel(StudyHarmonyCurrencyId currencyId, int balance) {
+  return '${_currencyTitle(currencyId)} $balance';
+}
+
+String _rewardUnlockLabel(
+  String localeTag,
+  StudyHarmonyRewardCandidate reward,
+) {
+  final ko = _isKoreanLocale(localeTag);
+  final kind = switch (reward.kind) {
+    StudyHarmonyRewardKind.achievement => ko ? '업적' : 'Achievement',
+    StudyHarmonyRewardKind.title => ko ? '칭호' : 'Title',
+    StudyHarmonyRewardKind.cosmetic => ko ? '코스메틱' : 'Cosmetic',
+    StudyHarmonyRewardKind.shopItem => ko ? '상점 해금' : 'Shop Unlock',
+  };
+  return '$kind: ${reward.title}';
+}
+
+List<String> _runtimeRuleLabels(
+  String localeTag,
+  StudyHarmonySessionMetadata metadata,
+) {
+  final ko = _isKoreanLocale(localeTag);
+  final labels = <String>[];
+  if (metadata.missLifePenalty > 1) {
+    labels.add(
+      ko
+          ? '실수 시 하트 -${metadata.missLifePenalty}'
+          : 'Misses cost ${metadata.missLifePenalty} hearts',
+    );
+  }
+  if (metadata.missProgressPenalty > 0) {
+    labels.add(
+      ko
+          ? '실수 시 진행 -${metadata.missProgressPenalty}'
+          : 'Misses push progress back',
+    );
+  }
+  if (metadata.comboProgressThreshold > 0 && metadata.comboProgressBonus > 0) {
+    labels.add(
+      ko
+          ? '콤보 ${metadata.comboProgressThreshold}마다 진행 +${metadata.comboProgressBonus}'
+          : 'Combo ${metadata.comboProgressThreshold} => +${metadata.comboProgressBonus} progress',
+    );
+  }
+  if (metadata.comboLifeThreshold > 0 && metadata.comboLifeBonus > 0) {
+    labels.add(
+      ko
+          ? '콤보 ${metadata.comboLifeThreshold}마다 하트 +${metadata.comboLifeBonus}'
+          : 'Combo ${metadata.comboLifeThreshold} => +${metadata.comboLifeBonus} heart',
+    );
+  }
+  if (metadata.comboResetsOnMiss) {
+    labels.add(ko ? '실수 시 콤보 초기화' : 'Misses reset combo');
+  } else if (metadata.comboDropOnMiss > 0) {
+    labels.add(
+      ko
+          ? '실수 시 콤보 -${metadata.comboDropOnMiss}'
+          : 'Misses cut combo by ${metadata.comboDropOnMiss}',
+    );
+  }
+  if (metadata.shuffleChoiceOptions) {
+    labels.add(ko ? '선택지가 계속 섞임' : 'Choices reshuffle');
+  }
+  if (metadata.repeatMissedTask) {
+    labels.add(ko ? '틀린 문제 즉시 재도전' : 'Missed prompts replay');
+  }
+  if (metadata.uniqueTaskCycle) {
+    labels.add(ko ? '중복 문제 최소화' : 'No prompt repeats');
+  }
+  return labels;
 }
 
 String _skillLabel(AppLocalizations l10n, StudyHarmonySkillTag skillId) {

@@ -9,6 +9,7 @@ import 'package:chordest/settings/practice_settings.dart';
 import 'package:chordest/settings/settings_controller.dart';
 import 'package:chordest/study_harmony/application/study_harmony_progress_controller.dart';
 import 'package:chordest/study_harmony/content/core_curriculum_catalog.dart';
+import 'package:chordest/study_harmony/content/study_harmony_track_catalog.dart';
 import 'package:chordest/study_harmony/domain/study_harmony_progress_models.dart';
 import 'package:chordest/study_harmony/domain/study_harmony_session_models.dart';
 import 'package:chordest/study_harmony/domain/study_harmony_task_evaluators.dart';
@@ -205,6 +206,41 @@ void main() {
       expect(find.text('3 stars'), findsNothing);
     },
   );
+
+  testWidgets('main menu summary follows the last played non-core track', (
+    WidgetTester tester,
+  ) async {
+    final snapshot = StudyHarmonyProgressSnapshot.initial().copyWith(
+      lastPlayedTrackId: studyHarmonyJazzTrackId,
+      lastPlayedChapterId: 'jazz-chapter-notes-keyboard',
+      lastPlayedLessonId: 'jazz-notes-2-name-preview',
+      unlockedChapterIds: {'jazz-chapter-notes-keyboard'},
+      unlockedLessonIds: {
+        'jazz-notes-1-note-keyboard',
+        'jazz-notes-2-name-preview',
+      },
+      lessonResults: {
+        'jazz-notes-1-note-keyboard': const StudyHarmonyLessonProgressSummary(
+          lessonId: 'jazz-notes-1-note-keyboard',
+          isCleared: true,
+          bestAccuracy: 0.92,
+          bestAttemptCount: 2,
+          bestStars: 3,
+          bestRank: 'A',
+          bestElapsedMillis: 16000,
+          playCount: 1,
+        ),
+      },
+    );
+
+    await pumpApp(tester, progressSnapshot: snapshot);
+
+    expect(
+      find.textContaining('Continue: Name the Highlighted Note'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('1/69 lessons cleared'), findsOneWidget);
+  });
 
   testWidgets(
     'study harmony hub renders continue, review, daily, and chapter cards',
@@ -451,7 +487,7 @@ void main() {
     },
   );
 
-  testWidgets('track filter switches to locked placeholder content', (
+  testWidgets('track filter switches to live track content', (
     WidgetTester tester,
   ) async {
     await pumpApp(tester);
@@ -470,10 +506,21 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.byKey(const ValueKey('study-harmony-track-placeholder')),
+      find.byKey(
+        const ValueKey(
+          'study-harmony-chapter-card-jazz-chapter-notes-keyboard',
+        ),
+      ),
       findsOneWidget,
     );
-    expect(find.text('Coming soon'), findsWidgets);
+    expect(
+      find.byKey(
+        const ValueKey(
+          'study-harmony-chapter-card-core-chapter-notes-keyboard',
+        ),
+      ),
+      findsNothing,
+    );
   });
 
   testWidgets('track filter stays responsive on narrow widths', (
@@ -508,10 +555,57 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.byKey(const ValueKey('study-harmony-track-placeholder')),
+      find.byKey(
+        const ValueKey(
+          'study-harmony-chapter-card-jazz-chapter-notes-keyboard',
+        ),
+      ),
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('study harmony page opens on the last played track', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 1800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: StudyHarmonyPage(
+          progressController: StudyHarmonyProgressController(
+            initialSnapshot: StudyHarmonyProgressSnapshot.initial().copyWith(
+              lastPlayedTrackId: studyHarmonyJazzTrackId,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(
+        const ValueKey(
+          'study-harmony-chapter-card-jazz-chapter-notes-keyboard',
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(
+        const ValueKey(
+          'study-harmony-chapter-card-core-chapter-notes-keyboard',
+        ),
+      ),
+      findsNothing,
+    );
   });
 
   testWidgets('daily streak and quest board surface momentum cues', (
@@ -963,6 +1057,36 @@ void main() {
     expect(
       course.chapters[4].lessons.first.id,
       'core-progression-1-key-center',
+    );
+  });
+
+  test('alternate track catalogs clone the curriculum with unique ids', () {
+    final courses = buildStudyHarmonyTrackCourses(AppLocalizationsEn());
+    final coreCourse = courses[studyHarmonyCoreTrackId]!;
+    final jazzCourse = courses[studyHarmonyJazzTrackId]!;
+
+    expect(jazzCourse.trackId, studyHarmonyJazzTrackId);
+    expect(jazzCourse.id, studyHarmonyJazzCourseId);
+    expect(jazzCourse.chapters, hasLength(coreCourse.chapters.length));
+    expect(
+      jazzCourse.chapters.map((chapter) => chapter.lessons.length).toList(),
+      equals(
+        coreCourse.chapters.map((chapter) => chapter.lessons.length).toList(),
+      ),
+    );
+    expect(jazzCourse.chapters.first.id, 'jazz-chapter-notes-keyboard');
+    expect(jazzCourse.chapters.first.id, isNot(coreCourse.chapters.first.id));
+    expect(
+      jazzCourse.chapters.first.lessons.first.id,
+      'jazz-notes-1-note-keyboard',
+    );
+    expect(
+      jazzCourse.chapters.first.lessons.first.tasks.first.lessonId,
+      'jazz-notes-1-note-keyboard',
+    );
+    expect(
+      jazzCourse.chapters[4].lessons.first.id,
+      'jazz-progression-1-key-center',
     );
   });
 

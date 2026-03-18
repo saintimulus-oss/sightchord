@@ -1600,21 +1600,21 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get studyHarmonyPopTrackDescription =>
-      'Se planea un camino centrado en la canción después de que la pista principal esté estable.';
+      'Recorre toda la ruta de armonía en una vía pop con su propio progreso, elección diaria y cola de repaso.';
 
   @override
   String get studyHarmonyJazzTrackTitle => 'Ruta de jazz';
 
   @override
   String get studyHarmonyJazzTrackDescription =>
-      'El contenido de armonía del jazz permanece bloqueado hasta que se asienta el plan de estudios básico.';
+      'Practica todo el plan de estudios en una vía jazz con progreso, elección diaria y cola de repaso separados.';
 
   @override
   String get studyHarmonyClassicalTrackTitle => 'Ruta clásica';
 
   @override
   String get studyHarmonyClassicalTrackDescription =>
-      'La armonía funcional en contextos clásicos llegará en una fase posterior.';
+      'Estudia todo el plan de estudios en una vía clásica con progreso, elección diaria y cola de repaso independientes.';
 
   @override
   String get studyHarmonyObjectiveQuickDrill => 'Práctica rápida';

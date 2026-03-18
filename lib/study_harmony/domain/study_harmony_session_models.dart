@@ -137,28 +137,65 @@ class StudyHarmonySessionMetadata {
     this.sourceLessonIds = const <StudyHarmonyLessonId>{},
     this.focusSkillTags = const <StudyHarmonySkillTag>{},
     this.countsTowardLessonProgress = true,
+    this.arcadeModeId,
     this.reviewReason,
     this.dailyDateKey,
     this.dailySeedValue,
+    this.missLifePenalty = 1,
+    this.missProgressPenalty = 0,
+    this.comboProgressThreshold = 0,
+    this.comboProgressBonus = 0,
+    this.comboLifeThreshold = 0,
+    this.comboLifeBonus = 0,
+    this.comboDropOnMiss = 0,
+    this.comboResetsOnMiss = true,
+    this.shuffleChoiceOptions = false,
+    this.repeatMissedTask = false,
+    this.uniqueTaskCycle = false,
   });
 
   final StudyHarmonyLessonId? anchorLessonId;
   final Set<StudyHarmonyLessonId> sourceLessonIds;
   final Set<StudyHarmonySkillTag> focusSkillTags;
   final bool countsTowardLessonProgress;
+  final String? arcadeModeId;
   final String? reviewReason;
   final String? dailyDateKey;
   final int? dailySeedValue;
+  final int missLifePenalty;
+  final int missProgressPenalty;
+  final int comboProgressThreshold;
+  final int comboProgressBonus;
+  final int comboLifeThreshold;
+  final int comboLifeBonus;
+  final int comboDropOnMiss;
+  final bool comboResetsOnMiss;
+  final bool shuffleChoiceOptions;
+  final bool repeatMissedTask;
+  final bool uniqueTaskCycle;
 
   StudyHarmonySessionMetadata copyWith({
     StudyHarmonyLessonId? anchorLessonId,
     Set<StudyHarmonyLessonId>? sourceLessonIds,
     Set<StudyHarmonySkillTag>? focusSkillTags,
     bool? countsTowardLessonProgress,
+    String? arcadeModeId,
     String? reviewReason,
     String? dailyDateKey,
     int? dailySeedValue,
+    int? missLifePenalty,
+    int? missProgressPenalty,
+    int? comboProgressThreshold,
+    int? comboProgressBonus,
+    int? comboLifeThreshold,
+    int? comboLifeBonus,
+    int? comboDropOnMiss,
+    bool? comboResetsOnMiss,
+    bool? shuffleChoiceOptions,
+    bool? repeatMissedTask,
+    bool? uniqueTaskCycle,
     bool clearAnchorLessonId = false,
+    bool clearArcadeModeId = false,
     bool clearReviewReason = false,
     bool clearDailyDateKey = false,
     bool clearDailySeedValue = false,
@@ -171,6 +208,9 @@ class StudyHarmonySessionMetadata {
       focusSkillTags: focusSkillTags ?? this.focusSkillTags,
       countsTowardLessonProgress:
           countsTowardLessonProgress ?? this.countsTowardLessonProgress,
+      arcadeModeId: clearArcadeModeId
+          ? null
+          : arcadeModeId ?? this.arcadeModeId,
       reviewReason: clearReviewReason
           ? null
           : reviewReason ?? this.reviewReason,
@@ -180,6 +220,18 @@ class StudyHarmonySessionMetadata {
       dailySeedValue: clearDailySeedValue
           ? null
           : dailySeedValue ?? this.dailySeedValue,
+      missLifePenalty: missLifePenalty ?? this.missLifePenalty,
+      missProgressPenalty: missProgressPenalty ?? this.missProgressPenalty,
+      comboProgressThreshold:
+          comboProgressThreshold ?? this.comboProgressThreshold,
+      comboProgressBonus: comboProgressBonus ?? this.comboProgressBonus,
+      comboLifeThreshold: comboLifeThreshold ?? this.comboLifeThreshold,
+      comboLifeBonus: comboLifeBonus ?? this.comboLifeBonus,
+      comboDropOnMiss: comboDropOnMiss ?? this.comboDropOnMiss,
+      comboResetsOnMiss: comboResetsOnMiss ?? this.comboResetsOnMiss,
+      shuffleChoiceOptions: shuffleChoiceOptions ?? this.shuffleChoiceOptions,
+      repeatMissedTask: repeatMissedTask ?? this.repeatMissedTask,
+      uniqueTaskCycle: uniqueTaskCycle ?? this.uniqueTaskCycle,
     );
   }
 }
@@ -550,6 +602,7 @@ class StudyHarmonySessionState {
     this.currentTask,
     this.selectedAnswerIds = const <StudyHarmonyAnswerOptionId>{},
     this.lastEvaluation = const StudyHarmonyEvaluationResult.idle(),
+    this.progressPoints = 0,
     this.correctAnswers = 0,
     this.attempts = 0,
     this.currentCombo = 0,
@@ -576,6 +629,7 @@ class StudyHarmonySessionState {
   final StudyHarmonyTaskInstance? currentTask;
   final Set<StudyHarmonyAnswerOptionId> selectedAnswerIds;
   final StudyHarmonyEvaluationResult lastEvaluation;
+  final int progressPoints;
   final int correctAnswers;
   final int attempts;
   final int currentCombo;
@@ -599,6 +653,7 @@ class StudyHarmonySessionState {
     StudyHarmonyTaskInstance? currentTask,
     Set<StudyHarmonyAnswerOptionId>? selectedAnswerIds,
     StudyHarmonyEvaluationResult? lastEvaluation,
+    int? progressPoints,
     int? correctAnswers,
     int? attempts,
     int? currentCombo,
@@ -618,6 +673,7 @@ class StudyHarmonySessionState {
       lastEvaluation: clearLastEvaluation
           ? const StudyHarmonyEvaluationResult.idle()
           : lastEvaluation ?? this.lastEvaluation,
+      progressPoints: progressPoints ?? this.progressPoints,
       correctAnswers: correctAnswers ?? this.correctAnswers,
       attempts: attempts ?? this.attempts,
       currentCombo: currentCombo ?? this.currentCombo,
