@@ -1,6 +1,9 @@
 import '../../l10n/app_localizations.dart';
 import '../domain/study_harmony_session_models.dart';
+import 'classical_progression_curriculum.dart';
 import 'core_curriculum_catalog.dart';
+import 'jazz_progression_curriculum.dart';
+import 'pop_progression_curriculum.dart';
 
 const StudyHarmonyTrackId studyHarmonyPopTrackId = 'pop';
 const StudyHarmonyTrackId studyHarmonyJazzTrackId = 'jazz';
@@ -31,6 +34,7 @@ buildStudyHarmonyTrackCourses(AppLocalizations l10n) {
       courseId: studyHarmonyPopCourseId,
       title: l10n.studyHarmonyPopTrackTitle,
       description: l10n.studyHarmonyPopTrackDescription,
+      l10n: l10n,
     ),
     studyHarmonyJazzTrackId: _buildCourseForTrack(
       source: coreCourse,
@@ -38,6 +42,7 @@ buildStudyHarmonyTrackCourses(AppLocalizations l10n) {
       courseId: studyHarmonyJazzCourseId,
       title: l10n.studyHarmonyJazzTrackTitle,
       description: l10n.studyHarmonyJazzTrackDescription,
+      l10n: l10n,
     ),
     studyHarmonyClassicalTrackId: _buildCourseForTrack(
       source: coreCourse,
@@ -45,6 +50,7 @@ buildStudyHarmonyTrackCourses(AppLocalizations l10n) {
       courseId: studyHarmonyClassicalCourseId,
       title: l10n.studyHarmonyClassicalTrackTitle,
       description: l10n.studyHarmonyClassicalTrackDescription,
+      l10n: l10n,
     ),
   };
 }
@@ -62,6 +68,7 @@ StudyHarmonyCourseDefinition buildStudyHarmonyCourseForTrackId({
       courseId: studyHarmonyPopCourseId,
       title: l10n.studyHarmonyPopTrackTitle,
       description: l10n.studyHarmonyPopTrackDescription,
+      l10n: l10n,
     ),
     studyHarmonyJazzTrackId => _buildCourseForTrack(
       source: coreCourse,
@@ -69,6 +76,7 @@ StudyHarmonyCourseDefinition buildStudyHarmonyCourseForTrackId({
       courseId: studyHarmonyJazzCourseId,
       title: l10n.studyHarmonyJazzTrackTitle,
       description: l10n.studyHarmonyJazzTrackDescription,
+      l10n: l10n,
     ),
     studyHarmonyClassicalTrackId => _buildCourseForTrack(
       source: coreCourse,
@@ -76,6 +84,7 @@ StudyHarmonyCourseDefinition buildStudyHarmonyCourseForTrackId({
       courseId: studyHarmonyClassicalCourseId,
       title: l10n.studyHarmonyClassicalTrackTitle,
       description: l10n.studyHarmonyClassicalTrackDescription,
+      l10n: l10n,
     ),
     _ => coreCourse,
   };
@@ -87,6 +96,7 @@ StudyHarmonyCourseDefinition _buildCourseForTrack({
   required StudyHarmonyCourseId courseId,
   required String title,
   required String description,
+  required AppLocalizations l10n,
 }) {
   final chapterIds = <StudyHarmonyChapterId, StudyHarmonyChapterId>{
     for (final chapter in source.chapters)
@@ -98,7 +108,7 @@ StudyHarmonyCourseDefinition _buildCourseForTrack({
         lesson.id: _trackScopedId(trackId, lesson.id),
   };
 
-  final chapters = [
+  final sharedChapters = [
     for (final chapter in source.chapters)
       StudyHarmonyChapterDefinition(
         id: chapterIds[chapter.id]!,
@@ -118,6 +128,12 @@ StudyHarmonyCourseDefinition _buildCourseForTrack({
         skillTags: chapter.skillTags,
       ),
   ];
+  final chapters = _withTrackSpecificChapters(
+    trackId: trackId,
+    courseId: courseId,
+    l10n: l10n,
+    sharedChapters: sharedChapters,
+  );
 
   return StudyHarmonyCourseDefinition(
     id: courseId,
@@ -125,7 +141,7 @@ StudyHarmonyCourseDefinition _buildCourseForTrack({
     title: title,
     description: description,
     chapters: chapters,
-    skillTags: source.skillTags,
+    skillTags: {for (final chapter in chapters) ...chapter.skillTags},
   );
 }
 
@@ -217,4 +233,44 @@ String _trackScopedId(StudyHarmonyTrackId trackId, String id) {
     return '$trackId-${id.substring(corePrefix.length)}';
   }
   return '$trackId-$id';
+}
+
+List<StudyHarmonyChapterDefinition> _withTrackSpecificChapters({
+  required StudyHarmonyTrackId trackId,
+  required StudyHarmonyCourseId courseId,
+  required AppLocalizations l10n,
+  required List<StudyHarmonyChapterDefinition> sharedChapters,
+}) {
+  final uniqueChapters = switch (trackId) {
+    studyHarmonyPopTrackId => buildStudyHarmonyPopProgressionChapters(
+      l10n: l10n,
+      courseId: courseId,
+    ),
+    studyHarmonyJazzTrackId => buildStudyHarmonyJazzProgressionChapters(
+      l10n: l10n,
+      courseId: courseId,
+    ),
+    studyHarmonyClassicalTrackId =>
+      buildStudyHarmonyClassicalProgressionChapters(
+        l10n: l10n,
+        courseId: courseId,
+      ),
+    _ => const <StudyHarmonyChapterDefinition>[],
+  };
+
+  if (uniqueChapters.isEmpty) {
+    return sharedChapters;
+  }
+
+  final insertionIndex = sharedChapters.indexWhere(
+    (chapter) => chapter.id.contains('progression-detective'),
+  );
+  if (insertionIndex < 0) {
+    return [...sharedChapters, ...uniqueChapters];
+  }
+  return [
+    ...sharedChapters.take(insertionIndex),
+    ...uniqueChapters,
+    ...sharedChapters.skip(insertionIndex),
+  ];
 }

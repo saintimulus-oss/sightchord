@@ -7,11 +7,13 @@ import 'audio/sightchord_audio_scope.dart';
 import 'l10n/app_localizations.dart';
 import 'music/progression_analysis_models.dart';
 import 'music/progression_analyzer.dart';
+import 'music/progression_explanation_bundle_builder.dart';
 import 'music/progression_explainer.dart';
 import 'music/progression_variation_generator.dart';
 import 'settings/practice_settings.dart';
 import 'settings/settings_controller.dart';
 import 'widgets/chord_input_editor.dart';
+import 'widgets/explanation_bundle_panel.dart';
 
 part 'chord_analyzer_page_sections.dart';
 
@@ -32,6 +34,8 @@ class ChordAnalyzerPage extends StatefulWidget {
 class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   final TextEditingController _controller = TextEditingController();
   final ProgressionAnalyzer _analyzer = const ProgressionAnalyzer();
+  final ProgressionExplanationBundleBuilder _bundleBuilder =
+      const ProgressionExplanationBundleBuilder();
   final ProgressionExplainer _explainer = const ProgressionExplainer();
   final ProgressionVariationGenerator _variationGenerator =
       const ProgressionVariationGenerator();
@@ -113,11 +117,14 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final harmonyAudio = SightChordAudioScope.maybeOf(context);
+    if (!identical(_harmonyAudio, harmonyAudio)) {
+      _harmonyAudio = harmonyAudio;
+      _requestedHarmonyAudioWarmUp = false;
+    }
     if (_requestedHarmonyAudioWarmUp) {
       return;
     }
-    final harmonyAudio = SightChordAudioScope.maybeOf(context);
-    _harmonyAudio = harmonyAudio;
     if (harmonyAudio == null) {
       return;
     }
@@ -147,16 +154,8 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     await _analyze();
   }
 
-  bool _usesKoreanUiCopy(BuildContext context) {
-    return Localizations.localeOf(context).languageCode == 'ko';
-  }
-
-  String _analyzerQuickStartHint(BuildContext context) {
-    if (_usesKoreanUiCopy(context)) {
-      return '예시를 누르면 바로 결과를 볼 수 있고, 데스크톱에서는 Ctrl+Enter로도 분석할 수 있어요.';
-    }
-    return 'Tap an example to see instant results, or press Ctrl+Enter on desktop to analyze.';
-  }
+  String _analyzerQuickStartHint(BuildContext context) =>
+      AppLocalizations.of(context)!.chordAnalyzerQuickStartHint;
 
   void _generateVariations() {
     final analysis = _analysis;
@@ -403,6 +402,10 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     final warnings = _warningTexts(l10n, analysis);
     final keyCandidates = analysis.keyCandidates.take(5).toList();
     final groupedMeasures = analysis.groupedMeasures;
+    final explanationBundle = _bundleBuilder.build(
+      l10n: l10n,
+      analysis: analysis,
+    );
     final sections = <Widget>[];
 
     void addSection(Widget section) {
@@ -470,6 +473,18 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
               ),
             ],
           ],
+        ),
+      ),
+    );
+
+    addSection(
+      _SectionCard(
+        key: const ValueKey('analyzer-explanation-card'),
+        title: l10n.explanationSectionTitle,
+        child: ExplanationBundlePanel(
+          key: const ValueKey('analyzer-explanation-panel'),
+          bundle: explanationBundle,
+          compact: true,
         ),
       ),
     );
@@ -928,6 +943,7 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
               minLines: compactLayout ? 2 : 3,
               maxLines: compactLayout ? 3 : 5,
               showDesktopKeyboardOnFocus: false,
+              allowTouchRawInput: false,
               onAnalyze: _isAnalyzing ? () {} : _analyze,
             ),
             SizedBox(height: compactLayout ? 10 : 12),

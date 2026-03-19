@@ -184,4 +184,21 @@ void main() {
     );
     expect(PracticeSettingsEffects.harmonyAudioChanged(previous, next), isTrue);
   });
+
+  test('sound profile selection only refreshes harmony audio effects', () {
+    final previous = PracticeSettings(
+      voicingSuggestionsEnabled: true,
+      lookAheadDepth: 2,
+      harmonySoundProfileSelection: HarmonySoundProfileSelection.trackAware,
+    );
+    final next = previous.copyWith(
+      harmonySoundProfileSelection: HarmonySoundProfileSelection.pop,
+    );
+
+    expect(
+      PracticeSettingsEffects.queueAffectingChanged(previous, next),
+      isFalse,
+    );
+    expect(PracticeSettingsEffects.harmonyAudioChanged(previous, next), isTrue);
+  });
 }

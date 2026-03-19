@@ -8,7 +8,7 @@ BoxDecoration _analyzerPanelDecoration(
     color: accent
         ? colorScheme.primaryContainer.withValues(alpha: 0.34)
         : colorScheme.surfaceContainerLow,
-    borderRadius: BorderRadius.circular(28),
+    borderRadius: BorderRadius.circular(20),
     border: Border.all(
       color: accent
           ? colorScheme.primary.withValues(alpha: 0.18)
@@ -19,7 +19,7 @@ BoxDecoration _analyzerPanelDecoration(
 
 RoundedRectangleBorder _analyzerCardShape(ColorScheme colorScheme) {
   return RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(28),
+    borderRadius: BorderRadius.circular(20),
     side: BorderSide(color: colorScheme.outlineVariant),
   );
 }
@@ -123,7 +123,7 @@ class _AnalysisStatusBanner extends StatelessWidget {
         color: accent
             ? colorScheme.primaryContainer.withValues(alpha: 0.26)
             : colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: accent
               ? colorScheme.primary.withValues(alpha: 0.18)
@@ -140,7 +140,7 @@ class _AnalysisStatusBanner extends StatelessWidget {
               height: 48,
               decoration: BoxDecoration(
                 color: iconBackground,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: iconColor),
             ),
@@ -531,30 +531,33 @@ class _AnalysisRowFrame extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: accent.withValues(alpha: 0.3)),
       ),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              width: 4,
-              decoration: BoxDecoration(
-                color: accent,
-                borderRadius: const BorderRadius.horizontal(
-                  left: Radius.circular(18),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                width: 4,
+                decoration: BoxDecoration(
+                  color: accent,
+                  borderRadius: const BorderRadius.horizontal(
+                    left: Radius.circular(14),
+                  ),
                 ),
               ),
             ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-                child: child,
-              ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+              child: child,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

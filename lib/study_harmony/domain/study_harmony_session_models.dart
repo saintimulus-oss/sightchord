@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 
+import '../../music/explanation_models.dart';
+
 typedef StudyHarmonyTrackId = String;
 typedef StudyHarmonyCourseId = String;
 typedef StudyHarmonyChapterId = String;
@@ -43,6 +45,22 @@ enum StudyHarmonySessionMode {
   relay,
   bossRush,
   legend,
+}
+
+enum TrackExerciseFlavor {
+  coreFunctional,
+  popHookLoop,
+  popBorrowedLift,
+  popBassMotion,
+  jazzGuideTone,
+  jazzShellVoicing,
+  jazzMinorCadence,
+  jazzRootlessVoicing,
+  jazzDominantColor,
+  jazzBackdoorCadence,
+  classicalCadence,
+  classicalInversion,
+  classicalSecondaryDominant,
 }
 
 enum StudyHarmonySessionPhase {
@@ -373,6 +391,8 @@ class StudyHarmonyTaskBlueprint {
     this.skillTags = const <StudyHarmonySkillTag>{},
     this.explanationTitle,
     this.explanationBody,
+    this.trackExerciseFlavor,
+    this.explanationBundle,
   });
 
   final StudyHarmonyTaskBlueprintId id;
@@ -387,6 +407,8 @@ class StudyHarmonyTaskBlueprint {
   final Set<StudyHarmonySkillTag> skillTags;
   final String? explanationTitle;
   final String? explanationBody;
+  final TrackExerciseFlavor? trackExerciseFlavor;
+  final ExplanationBundle? explanationBundle;
 
   StudyHarmonySelectionModeKind get selectionMode => evaluator.selectionMode;
 
@@ -424,6 +446,8 @@ class StudyHarmonyTaskBlueprint {
       sequenceNumber: sequenceNumber,
       explanationTitle: explanationTitle,
       explanationBody: explanationBody,
+      trackExerciseFlavor: trackExerciseFlavor,
+      explanationBundle: explanationBundle,
     );
   }
 }
@@ -443,6 +467,8 @@ class StudyHarmonyTaskInstance {
     this.skillTags = const <StudyHarmonySkillTag>{},
     this.explanationTitle,
     this.explanationBody,
+    this.trackExerciseFlavor,
+    this.explanationBundle,
   });
 
   final StudyHarmonyTaskBlueprintId blueprintId;
@@ -457,6 +483,8 @@ class StudyHarmonyTaskInstance {
   final int sequenceNumber;
   final String? explanationTitle;
   final String? explanationBody;
+  final TrackExerciseFlavor? trackExerciseFlavor;
+  final ExplanationBundle? explanationBundle;
 
   StudyHarmonySelectionModeKind get selectionMode => evaluator.selectionMode;
 
@@ -506,6 +534,7 @@ class StudyHarmonyEvaluationResult {
     this.selectedAnswerSummary,
     this.explanationTitle,
     this.explanationBody,
+    this.explanationBundle,
     this.evaluatorId,
     this.skillTags = const <StudyHarmonySkillTag>{},
   });
@@ -522,6 +551,7 @@ class StudyHarmonyEvaluationResult {
       selectedAnswerSummary = null,
       explanationTitle = null,
       explanationBody = null,
+      explanationBundle = null,
       evaluatorId = null,
       skillTags = const <StudyHarmonySkillTag>{};
 
@@ -536,6 +566,7 @@ class StudyHarmonyEvaluationResult {
   final String? selectedAnswerSummary;
   final String? explanationTitle;
   final String? explanationBody;
+  final ExplanationBundle? explanationBundle;
   final String? evaluatorId;
   final Set<StudyHarmonySkillTag> skillTags;
 

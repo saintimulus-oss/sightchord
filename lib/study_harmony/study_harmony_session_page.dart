@@ -9,18 +9,24 @@ import '../audio/harmony_audio_models.dart';
 import '../audio/sampled_instrument_engine.dart';
 import '../audio/sightchord_audio_scope.dart';
 import '../l10n/app_localizations.dart';
+import '../settings/practice_settings.dart';
+import '../settings/settings_controller.dart';
 import 'application/study_harmony_progress_controller.dart';
 import 'application/study_harmony_session_controller.dart';
+import 'content/track_generation_profiles.dart';
 import 'domain/study_harmony_progress_models.dart';
 import 'domain/study_harmony_session_models.dart';
+import 'domain/study_harmony_track_profiles.dart';
 import 'meta/study_harmony_arcade_catalog.dart';
 import 'meta/study_harmony_arcade_runtime.dart';
 import 'meta/study_harmony_difficulty_design.dart';
 import 'meta/study_harmony_personalization.dart';
 import 'meta/study_harmony_rewards_catalog.dart';
+import 'study_harmony_display_copy.dart';
 import 'study_harmony_keyboard.dart';
 import 'study_harmony_models.dart';
 import 'ui/study_harmony_progression_strip.dart';
+import '../widgets/explanation_bundle_panel.dart';
 
 typedef StudyHarmonySessionControllerFactory =
     StudyHarmonySessionController Function(StudyHarmonyLessonDefinition lesson);
@@ -45,6 +51,7 @@ class StudyHarmonySessionPage extends StatefulWidget {
     required this.lesson,
     required this.trackId,
     required this.progressController,
+    this.settingsController,
     this.courseToSync,
     this.controllerFactory,
   });
@@ -52,6 +59,7 @@ class StudyHarmonySessionPage extends StatefulWidget {
   final StudyHarmonyLessonDefinition lesson;
   final StudyHarmonyTrackId trackId;
   final StudyHarmonyProgressController progressController;
+  final AppSettingsController? settingsController;
   final StudyHarmonyCourseDefinition? courseToSync;
   final StudyHarmonySessionControllerFactory? controllerFactory;
 
@@ -74,6 +82,7 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
   void initState() {
     super.initState();
     _pageFocusNode = FocusNode(debugLabel: 'studyHarmonySessionPage');
+    _attachSettingsController(widget.settingsController);
     _syncCourseIfNeeded();
     _controller = _buildController();
     _controller.addListener(_handleSessionChanged);
@@ -84,12 +93,13 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_requestedHarmonyAudioWarmUp) {
-      return;
-    }
     final harmonyAudio = SightChordAudioScope.maybeOf(context);
     _harmonyAudio = harmonyAudio;
     if (harmonyAudio == null) {
+      return;
+    }
+    unawaited(_syncTrackSoundProfile(harmonyAudio));
+    if (_requestedHarmonyAudioWarmUp) {
       return;
     }
     _requestedHarmonyAudioWarmUp = true;
@@ -123,11 +133,24 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
         oldWidget.lesson.id != widget.lesson.id) {
       _markLessonStarted();
     }
+
+    if (oldWidget.trackId != widget.trackId ||
+        oldWidget.settingsController != widget.settingsController) {
+      if (oldWidget.settingsController != widget.settingsController) {
+        _detachSettingsController(oldWidget.settingsController);
+        _attachSettingsController(widget.settingsController);
+      }
+      final harmonyAudio = _harmonyAudio;
+      if (harmonyAudio != null) {
+        unawaited(_syncTrackSoundProfile(harmonyAudio));
+      }
+    }
   }
 
   @override
   void dispose() {
     unawaited(_stopPreviewNotes());
+    _detachSettingsController(widget.settingsController);
     _controller.removeListener(_handleSessionChanged);
     _controller.dispose();
     _pageFocusNode.dispose();
@@ -138,6 +161,36 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
     final lesson = _buildRuntimeLesson(widget.lesson);
     return widget.controllerFactory?.call(lesson) ??
         StudyHarmonySessionController(lesson: lesson);
+  }
+
+  TrackSoundProfile _activeSessionSoundProfile(AppLocalizations l10n) {
+    final selection =
+        widget.settingsController?.settings.harmonySoundProfileSelection ??
+        HarmonySoundProfileSelection.trackAware;
+    return trackSoundProfileForSelection(
+      l10n,
+      selection: selection,
+        activeTrackId: widget.trackId,
+    );
+  }
+
+  void _attachSettingsController(AppSettingsController? controller) {
+    controller?.addListener(_handleSettingsChanged);
+  }
+
+  void _detachSettingsController(AppSettingsController? controller) {
+    controller?.removeListener(_handleSettingsChanged);
+  }
+
+  void _handleSettingsChanged() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
+    final harmonyAudio = _harmonyAudio;
+    if (harmonyAudio != null) {
+      unawaited(_syncTrackSoundProfile(harmonyAudio));
+    }
   }
 
   void _syncCourseIfNeeded() {
@@ -322,6 +375,18 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
     _controller.toggleAnswer(answerId);
   }
 
+  Future<void> _syncTrackSoundProfile(HarmonyAudioService harmonyAudio) async {
+    final l10n = AppLocalizations.of(context)!;
+    final soundProfile = _activeSessionSoundProfile(l10n);
+    final baseConfig = harmonyAudioBaseConfigForSettings(
+      widget.settingsController?.settings ?? PracticeSettings(),
+    );
+    await harmonyAudio.applyRuntimeProfile(
+      soundProfile.runtimeProfile,
+      baseConfig: baseConfig,
+    );
+  }
+
   Future<void> _playPromptPreview({
     required HarmonyPlaybackPattern pattern,
   }) async {
@@ -331,6 +396,31 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
       return;
     }
     await harmonyAudio.playStudyPrompt(task, pattern: pattern);
+  }
+
+  HarmonyPlaybackPattern _primaryPromptPreviewPattern(AppLocalizations l10n) {
+    return _activeSessionSoundProfile(l10n).runtimeProfile.preferredPattern;
+  }
+
+  HarmonyPlaybackPattern _secondaryPromptPreviewPattern(AppLocalizations l10n) {
+    return switch (_primaryPromptPreviewPattern(l10n)) {
+      HarmonyPlaybackPattern.block => HarmonyPlaybackPattern.arpeggio,
+      HarmonyPlaybackPattern.arpeggio => HarmonyPlaybackPattern.block,
+    };
+  }
+
+  String _primaryPromptPreviewLabel(AppLocalizations l10n) {
+    return switch (_primaryPromptPreviewPattern(l10n)) {
+      HarmonyPlaybackPattern.block => l10n.audioPlayPrompt,
+      HarmonyPlaybackPattern.arpeggio => l10n.audioPlayArpeggio,
+    };
+  }
+
+  String _secondaryPromptPreviewLabel(AppLocalizations l10n) {
+    return switch (_secondaryPromptPreviewPattern(l10n)) {
+      HarmonyPlaybackPattern.block => l10n.audioPlayPrompt,
+      HarmonyPlaybackPattern.arpeggio => l10n.audioPlayArpeggio,
+    };
   }
 
   Future<void> _previewKeyDown(StudyHarmonyAnswerOptionId answerId) async {
@@ -559,6 +649,8 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
         final bonusSweep =
             bonusGoals.isNotEmpty &&
             completedBonusGoalLabels.length == bonusGoals.length;
+        final primaryPreviewPattern = _primaryPromptPreviewPattern(l10n);
+        final secondaryPreviewPattern = _secondaryPromptPreviewPattern(l10n);
 
         return Shortcuts(
           shortcuts: const <ShortcutActivator, Intent>{
@@ -743,7 +835,7 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                                 ),
                                                 runtimeRuleLabels:
                                                     _runtimeRuleLabels(
-                                                      localeTag,
+                                                      l10n,
                                                       lesson.sessionMetadata,
                                                     ),
                                               ),
@@ -796,10 +888,14 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                                             task: task,
                                                             instructionLabel: l10n
                                                                 .studyHarmonyPromptInstruction,
-                                                            playLabel: l10n
-                                                                .audioPlayPrompt,
-                                                            arpeggioLabel: l10n
-                                                                .audioPlayArpeggio,
+                                                            playLabel:
+                                                                _primaryPromptPreviewLabel(
+                                                                  l10n,
+                                                                ),
+                                                            arpeggioLabel:
+                                                                _secondaryPromptPreviewLabel(
+                                                                  l10n,
+                                                                ),
                                                             onPlayPreview:
                                                                 task
                                                                         .prompt
@@ -809,8 +905,7 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                                                         .showsProgressionPreview
                                                                 ? () => _playPromptPreview(
                                                                     pattern:
-                                                                        HarmonyPlaybackPattern
-                                                                            .block,
+                                                                        primaryPreviewPattern,
                                                                   )
                                                                 : null,
                                                             onPlayArpeggio:
@@ -822,8 +917,7 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                                                         .showsProgressionPreview
                                                                 ? () => _playPromptPreview(
                                                                     pattern:
-                                                                        HarmonyPlaybackPattern
-                                                                            .arpeggio,
+                                                                        secondaryPreviewPattern,
                                                                   )
                                                                 : null,
                                                           ),
@@ -861,9 +955,13 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                                   instructionLabel: l10n
                                                       .studyHarmonyPromptInstruction,
                                                   playLabel:
-                                                      l10n.audioPlayPrompt,
+                                                      _primaryPromptPreviewLabel(
+                                                        l10n,
+                                                      ),
                                                   arpeggioLabel:
-                                                      l10n.audioPlayArpeggio,
+                                                      _secondaryPromptPreviewLabel(
+                                                        l10n,
+                                                      ),
                                                   onPlayPreview:
                                                       task
                                                               .prompt
@@ -873,8 +971,7 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                                               .showsProgressionPreview
                                                       ? () => _playPromptPreview(
                                                           pattern:
-                                                              HarmonyPlaybackPattern
-                                                                  .block,
+                                                              primaryPreviewPattern,
                                                         )
                                                       : null,
                                                   onPlayArpeggio:
@@ -886,8 +983,7 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                                               .showsProgressionPreview
                                                       ? () => _playPromptPreview(
                                                           pattern:
-                                                              HarmonyPlaybackPattern
-                                                                  .arpeggio,
+                                                              secondaryPreviewPattern,
                                                         )
                                                       : null,
                                                 ),
@@ -959,10 +1055,8 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                         l10n.studyHarmonyResultReviewFocusTitle,
                                     rewardTitle:
                                         l10n.studyHarmonyResultRewardTitle,
-                                    arcadeTitle: _sessionArcadeTitle(localeTag),
-                                    directorTitle: _sessionDirectorTitle(
-                                      localeTag,
-                                    ),
+                                    arcadeTitle: _sessionArcadeTitle(l10n),
+                                    directorTitle: _sessionDirectorTitle(l10n),
                                     milestoneTitle:
                                         l10n.studyHarmonyResultMilestonesTitle,
                                     bonusTitle:
@@ -1129,21 +1223,29 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                               const <
                                                 StudyHarmonyRewardBundleDefinition
                                               >[]))
-                                        _rewardBundleLabel(bundle),
+                                        _rewardBundleLabel(
+                                          l10n,
+                                          localeTag,
+                                          bundle,
+                                        ),
                                       for (final grant
                                           in (_lastProgressEffect
                                                   ?.currencyGrants ??
                                               const <
                                                 StudyHarmonyRewardGrant
                                               >[]))
-                                        _currencyGrantLabel(grant),
+                                        _currencyGrantLabel(localeTag, grant),
                                       for (final reward
                                           in (_lastProgressEffect
                                                   ?.newlyUnlockedRewards ??
                                               const <
                                                 StudyHarmonyRewardCandidate
                                               >[]))
-                                        _rewardUnlockLabel(localeTag, reward),
+                                        _rewardUnlockLabel(
+                                          l10n,
+                                          localeTag,
+                                          reward,
+                                        ),
                                       for (final entry
                                           in (_lastProgressEffect
                                                       ?.currencyBalances
@@ -1159,58 +1261,63 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
                                                   >[])
                                               .take(3))
                                         _currencyBalanceLabel(
+                                          localeTag,
                                           entry.key,
                                           entry.value,
                                         ),
                                     ],
                                     arcadeLabels: [
-                                      if (arcadeMode != null) arcadeMode.title,
+                                      if (arcadeMode != null)
+                                        studyHarmonyArcadeModeTitleForLocale(
+                                          localeTag,
+                                          arcadeMode,
+                                        ),
                                       if (arcadeMode != null)
                                         _arcadeRiskLabel(
-                                          localeTag,
+                                          l10n,
                                           arcadeMode.riskStyle,
                                         ),
                                       if (arcadeMode != null)
                                         _arcadeRewardStyleLabel(
-                                          localeTag,
+                                          l10n,
                                           arcadeMode.rewardStyle,
                                         ),
                                       if (arcadeMode != null)
-                                        arcadeMode.shortLoop,
+                                        studyHarmonyArcadeModeLoopForLocale(
+                                          localeTag,
+                                          arcadeMode,
+                                        ),
                                       ..._runtimeRuleLabels(
-                                        localeTag,
+                                        l10n,
                                         lesson.sessionMetadata,
                                       ),
                                     ],
                                     directorLabels: [
                                       _difficultyLaneLabel(
-                                        localeTag,
+                                        l10n,
                                         difficultyPlan.difficultyLane,
                                       ),
                                       _pressureTierLabel(
-                                        localeTag,
+                                        l10n,
                                         difficultyPlan.pressureTier,
                                       ),
                                       _forgivenessTierLabel(
-                                        localeTag,
+                                        l10n,
                                         difficultyPlan.forgivenessTier,
                                       ),
                                       _sessionLengthLabel(
-                                        localeTag,
+                                        l10n,
                                         difficultyPlan
                                             .sessionLengthSuggestion
                                             .inMinutes,
                                       ),
                                       _comboGoalLabel(
-                                        localeTag,
+                                        l10n,
                                         difficultyPlan.comboTarget,
                                       ),
-                                      _pacingPlanLabel(
-                                        localeTag,
-                                        difficultyPlan,
-                                      ),
+                                      _pacingPlanLabel(l10n, difficultyPlan),
                                       _coachLabel(
-                                        localeTag,
+                                        l10n,
                                         adaptivePlan.coachStyle,
                                       ),
                                     ],
@@ -1330,6 +1437,7 @@ class _SessionBriefingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final localeTag = Localizations.localeOf(context).toLanguageTag();
 
     return DecoratedBox(
@@ -1345,14 +1453,24 @@ class _SessionBriefingCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              arcadeMode?.title ?? modeLabel,
+              arcadeMode == null
+                  ? modeLabel
+                  : studyHarmonyArcadeModeTitleForLocale(
+                      localeTag,
+                      arcadeMode!,
+                    ),
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 6),
             Text(
-              arcadeMode?.fantasy ?? _coachLine(localeTag, adaptivePlan),
+              arcadeMode == null
+                  ? _coachLine(l10n, adaptivePlan)
+                  : studyHarmonyArcadeModeHeadlineForLocale(
+                      localeTag,
+                      arcadeMode!,
+                    ),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
                 height: 1.35,
@@ -1365,41 +1483,33 @@ class _SessionBriefingCard extends StatelessWidget {
               children: [
                 Chip(
                   label: Text(
-                    _difficultyLaneLabel(
-                      localeTag,
-                      difficultyPlan.difficultyLane,
-                    ),
+                    _difficultyLaneLabel(l10n, difficultyPlan.difficultyLane),
                   ),
                 ),
                 Chip(
                   label: Text(
-                    _pressureTierLabel(localeTag, difficultyPlan.pressureTier),
+                    _pressureTierLabel(l10n, difficultyPlan.pressureTier),
                   ),
                 ),
                 Chip(
                   label: Text(
-                    _forgivenessTierLabel(
-                      localeTag,
-                      difficultyPlan.forgivenessTier,
-                    ),
+                    _forgivenessTierLabel(l10n, difficultyPlan.forgivenessTier),
                   ),
                 ),
                 Chip(
                   label: Text(
-                    _comboGoalLabel(localeTag, difficultyPlan.comboTarget),
+                    _comboGoalLabel(l10n, difficultyPlan.comboTarget),
                   ),
                 ),
                 Chip(
                   label: Text(
                     _sessionLengthLabel(
-                      localeTag,
+                      l10n,
                       difficultyPlan.sessionLengthSuggestion.inMinutes,
                     ),
                   ),
                 ),
-                Chip(
-                  label: Text(_coachLabel(localeTag, adaptivePlan.coachStyle)),
-                ),
+                Chip(label: Text(_coachLabel(l10n, adaptivePlan.coachStyle))),
                 for (final label in runtimeRuleLabels.take(3))
                   Chip(label: Text(label)),
               ],
@@ -1856,6 +1966,16 @@ class _FeedbackBanner extends StatelessWidget {
                           ),
                         ),
                       ),
+                    if (evaluation.explanationBundle case final bundle?) ...[
+                      const SizedBox(height: 12),
+                      ExplanationBundlePanel(
+                        key: const ValueKey(
+                          'study-harmony-feedback-explanation',
+                        ),
+                        bundle: bundle,
+                        compact: true,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -2522,240 +2642,200 @@ String? _countryCodeFromLocaleTag(String localeTag) {
   return candidate.toUpperCase();
 }
 
-bool _isKoreanLocale(String localeTag) {
-  return localeTag.toLowerCase().startsWith('ko');
+String _sessionArcadeTitle(AppLocalizations l10n) {
+  return l10n.studyHarmonyArcadeRulesTitle;
 }
 
-String _sessionArcadeTitle(String localeTag) {
-  return _isKoreanLocale(localeTag) ? '아케이드 룰' : 'Arcade Rules';
+String _sessionDirectorTitle(AppLocalizations l10n) {
+  return l10n.studyHarmonyRunDirectorTitle;
 }
 
-String _sessionDirectorTitle(String localeTag) {
-  return _isKoreanLocale(localeTag) ? '런 디렉터' : 'Run Director';
+String _difficultyLaneLabel(
+  AppLocalizations l10n,
+  StudyHarmonyDifficultyLane lane,
+) {
+  return l10n.studyHarmonyDifficultyLaneLabel(lane.name);
 }
 
-String _difficultyLaneLabel(String localeTag, StudyHarmonyDifficultyLane lane) {
-  final ko = _isKoreanLocale(localeTag);
-  return switch (lane) {
-    StudyHarmonyDifficultyLane.recovery => ko ? '회복 레인' : 'Recovery Lane',
-    StudyHarmonyDifficultyLane.groove => ko ? '그루브 레인' : 'Groove Lane',
-    StudyHarmonyDifficultyLane.push => ko ? '푸시 레인' : 'Push Lane',
-    StudyHarmonyDifficultyLane.clutch => ko ? '클러치 레인' : 'Clutch Lane',
-    StudyHarmonyDifficultyLane.legend => ko ? '레전드 레인' : 'Legend Lane',
-  };
-}
-
-String _pressureTierLabel(String localeTag, StudyHarmonyPressureTier tier) {
-  final ko = _isKoreanLocale(localeTag);
-  return switch (tier) {
-    StudyHarmonyPressureTier.calm => ko ? '압박 낮음' : 'Calm Pressure',
-    StudyHarmonyPressureTier.steady => ko ? '압박 보통' : 'Steady Pressure',
-    StudyHarmonyPressureTier.hot => ko ? '압박 상승' : 'Hot Pressure',
-    StudyHarmonyPressureTier.charged => ko ? '압박 높음' : 'Charged Pressure',
-    StudyHarmonyPressureTier.overdrive => ko ? '압박 극대화' : 'Overdrive',
-  };
+String _pressureTierLabel(
+  AppLocalizations l10n,
+  StudyHarmonyPressureTier tier,
+) {
+  return l10n.studyHarmonyPressureTierLabel(tier.name);
 }
 
 String _forgivenessTierLabel(
-  String localeTag,
+  AppLocalizations l10n,
   StudyHarmonyForgivenessTier tier,
 ) {
-  final ko = _isKoreanLocale(localeTag);
-  return switch (tier) {
-    StudyHarmonyForgivenessTier.strict => ko ? '실수 허용 적음' : 'Strict Windows',
-    StudyHarmonyForgivenessTier.tight => ko ? '실수 허용 타이트' : 'Tight Windows',
-    StudyHarmonyForgivenessTier.balanced =>
-      ko ? '실수 허용 균형' : 'Balanced Windows',
-    StudyHarmonyForgivenessTier.kind => ko ? '실수 허용 넓음' : 'Kind Windows',
-    StudyHarmonyForgivenessTier.generous =>
-      ko ? '실수 허용 매우 넓음' : 'Generous Windows',
-  };
+  return l10n.studyHarmonyForgivenessTierLabel(tier.name);
 }
 
-String _sessionLengthLabel(String localeTag, int minutes) {
-  return _isKoreanLocale(localeTag) ? '$minutes분 세션' : '$minutes min run';
+String _sessionLengthLabel(AppLocalizations l10n, int minutes) {
+  return l10n.studyHarmonySessionLengthLabel(minutes);
 }
 
-String _comboGoalLabel(String localeTag, int comboTarget) {
-  return _isKoreanLocale(localeTag)
-      ? '콤보 목표 $comboTarget'
-      : 'Combo Goal $comboTarget';
+String _comboGoalLabel(AppLocalizations l10n, int comboTarget) {
+  return l10n.studyHarmonyComboGoalLabel(comboTarget);
 }
 
-String _coachLabel(String localeTag, StudyHarmonyCoachStyle coachStyle) {
-  final ko = _isKoreanLocale(localeTag);
-  return switch (coachStyle) {
-    StudyHarmonyCoachStyle.supportive => ko ? '응원형 코치' : 'Supportive Coach',
-    StudyHarmonyCoachStyle.structured => ko ? '구조형 코치' : 'Structured Coach',
-    StudyHarmonyCoachStyle.challengeForward =>
-      ko ? '도전형 코치' : 'Challenge Coach',
-    StudyHarmonyCoachStyle.analytical => ko ? '분석형 코치' : 'Analytical Coach',
-    StudyHarmonyCoachStyle.restorative => ko ? '회복형 코치' : 'Restorative Coach',
-  };
+String _coachLabel(AppLocalizations l10n, StudyHarmonyCoachStyle coachStyle) {
+  return l10n.studyHarmonyCoachLabel(coachStyle.name);
 }
 
-String _coachLine(String localeTag, StudyHarmonyAdaptivePlan plan) {
-  final ko = _isKoreanLocale(localeTag);
-  return switch (plan.coachStyle) {
-    StudyHarmonyCoachStyle.supportive =>
-      ko
-          ? '실수보다 흐름을 지키는 데 집중해요.'
-          : 'Protect flow first and let confidence compound.',
-    StudyHarmonyCoachStyle.structured =>
-      ko
-          ? '순서를 지키면 실력이 가장 빠르게 붙어요.'
-          : 'Follow the structure and the gains will stick.',
-    StudyHarmonyCoachStyle.challengeForward =>
-      ko
-          ? '이번 런은 압박을 즐기며 한 단계 올려봅니다.'
-          : 'Lean into the pressure and push for a sharper run.',
-    StudyHarmonyCoachStyle.analytical =>
-      ko
-          ? '어디서 흔들리는지 읽으면서 정밀하게 갑니다.'
-          : 'Read the weak point and refine it with precision.',
-    StudyHarmonyCoachStyle.restorative =>
-      ko
-          ? '무너지지 않게 템포를 되찾는 런입니다.'
-          : 'This run is about rebuilding rhythm without tilt.',
-  };
+String _coachLine(AppLocalizations l10n, StudyHarmonyAdaptivePlan plan) {
+  return l10n.studyHarmonyCoachLine(plan.coachStyle.name);
 }
 
 String _pacingPlanLabel(
-  String localeTag,
+  AppLocalizations l10n,
   StudyHarmonyDifficultyPlan difficultyPlan,
 ) {
-  final ko = _isKoreanLocale(localeTag);
   final segments = difficultyPlan.pacingPlan.segments
       .where((segment) => segment.minutes > 0)
       .take(2)
-      .map((segment) {
-        final label = switch (segment.kind) {
-          StudyHarmonyRhythmBeatKind.warmup => ko ? '워밍업' : 'Warmup',
-          StudyHarmonyRhythmBeatKind.tension => ko ? '긴장' : 'Tension',
-          StudyHarmonyRhythmBeatKind.release => ko ? '완화' : 'Release',
-          StudyHarmonyRhythmBeatKind.reward => ko ? '보상' : 'Reward',
-        };
-        return '$label ${segment.minutes}m';
-      })
+      .map(
+        (segment) => l10n.studyHarmonyPacingSegmentLabel(
+          segment.kind.name,
+          segment.minutes,
+        ),
+      )
       .join(' · ');
-  return ko ? '페이싱 $segments' : 'Pacing $segments';
+  return l10n.studyHarmonyPacingSummaryLabel(segments);
 }
 
 String _arcadeRiskLabel(
-  String localeTag,
+  AppLocalizations l10n,
   StudyHarmonyArcadeRiskStyle riskStyle,
 ) {
-  final ko = _isKoreanLocale(localeTag);
-  return switch (riskStyle) {
-    StudyHarmonyArcadeRiskStyle.forgiving => ko ? '리스크 낮음' : 'Low Risk',
-    StudyHarmonyArcadeRiskStyle.balanced => ko ? '리스크 균형' : 'Balanced Risk',
-    StudyHarmonyArcadeRiskStyle.tense => ko ? '리스크 높음' : 'High Tension',
-    StudyHarmonyArcadeRiskStyle.punishing => ko ? '리스크 극한' : 'Punishing Risk',
-  };
+  return l10n.studyHarmonyArcadeRiskLabel(riskStyle.name);
 }
 
 String _arcadeRewardStyleLabel(
-  String localeTag,
+  AppLocalizations l10n,
   StudyHarmonyArcadeRewardStyle rewardStyle,
 ) {
-  final ko = _isKoreanLocale(localeTag);
-  return switch (rewardStyle) {
-    StudyHarmonyArcadeRewardStyle.currency => ko ? '코인 중심' : 'Currency Loop',
-    StudyHarmonyArcadeRewardStyle.cosmetic => ko ? '코스메틱 중심' : 'Cosmetic Hunt',
-    StudyHarmonyArcadeRewardStyle.title => ko ? '칭호 중심' : 'Title Hunt',
-    StudyHarmonyArcadeRewardStyle.trophy => ko ? '트로피 중심' : 'Trophy Run',
-    StudyHarmonyArcadeRewardStyle.bundle => ko ? '묶음 보상' : 'Bundle Rewards',
-    StudyHarmonyArcadeRewardStyle.prestige => ko ? '명예 보상' : 'Prestige Rewards',
-  };
+  return l10n.studyHarmonyArcadeRewardStyleLabel(rewardStyle.name);
 }
 
-String _currencyTitle(StudyHarmonyCurrencyId currencyId) {
-  return studyHarmonyCurrenciesById[currencyId]?.title ?? currencyId;
+String _currencyTitle(String localeTag, StudyHarmonyCurrencyId currencyId) {
+  return studyHarmonyCurrencyTitleForLocale(localeTag, currencyId);
 }
 
-String _rewardBundleLabel(StudyHarmonyRewardBundleDefinition bundle) {
+String _rewardBundleLabel(
+  AppLocalizations l10n,
+  String localeTag,
+  StudyHarmonyRewardBundleDefinition bundle,
+) {
   final summary = bundle.grants
       .take(2)
-      .map((grant) => '${_currencyTitle(grant.currencyId)} +${grant.amount}')
+      .map(
+        (grant) =>
+            '${_currencyTitle(localeTag, grant.currencyId)} +${grant.amount}',
+      )
       .join(' · ');
-  return '${bundle.title}: $summary';
+  final bundleTitle = _rewardBundleTitle(l10n, localeTag, bundle);
+  return '$bundleTitle: $summary';
 }
 
-String _currencyGrantLabel(StudyHarmonyRewardGrant grant) {
-  return '${_currencyTitle(grant.currencyId)} +${grant.amount}';
+String _currencyGrantLabel(String localeTag, StudyHarmonyRewardGrant grant) {
+  return '${_currencyTitle(localeTag, grant.currencyId)} +${grant.amount}';
 }
 
-String _currencyBalanceLabel(StudyHarmonyCurrencyId currencyId, int balance) {
-  return '${_currencyTitle(currencyId)} $balance';
+String _currencyBalanceLabel(
+  String localeTag,
+  StudyHarmonyCurrencyId currencyId,
+  int balance,
+) {
+  return '${_currencyTitle(localeTag, currencyId)} $balance';
 }
 
 String _rewardUnlockLabel(
+  AppLocalizations l10n,
   String localeTag,
   StudyHarmonyRewardCandidate reward,
 ) {
-  final ko = _isKoreanLocale(localeTag);
-  final kind = switch (reward.kind) {
-    StudyHarmonyRewardKind.achievement => ko ? '업적' : 'Achievement',
-    StudyHarmonyRewardKind.title => ko ? '칭호' : 'Title',
-    StudyHarmonyRewardKind.cosmetic => ko ? '코스메틱' : 'Cosmetic',
-    StudyHarmonyRewardKind.shopItem => ko ? '상점 해금' : 'Shop Unlock',
-  };
-  return '$kind: ${reward.title}';
+  final kind = l10n.studyHarmonyRewardKindLabel(reward.kind.name);
+  final rewardTitle = studyHarmonyRewardTitleForLocale(
+    localeTag,
+    rewardId: reward.id,
+    fallbackTitle: reward.title,
+  );
+  return '$kind: $rewardTitle';
 }
 
 List<String> _runtimeRuleLabels(
-  String localeTag,
+  AppLocalizations l10n,
   StudyHarmonySessionMetadata metadata,
 ) {
-  final ko = _isKoreanLocale(localeTag);
   final labels = <String>[];
   if (metadata.missLifePenalty > 1) {
     labels.add(
-      ko
-          ? '실수 시 하트 -${metadata.missLifePenalty}'
-          : 'Misses cost ${metadata.missLifePenalty} hearts',
+      l10n.studyHarmonyArcadeRuntimeMissLifeLabel(metadata.missLifePenalty),
     );
   }
   if (metadata.missProgressPenalty > 0) {
     labels.add(
-      ko
-          ? '실수 시 진행 -${metadata.missProgressPenalty}'
-          : 'Misses push progress back',
+      l10n.studyHarmonyArcadeRuntimeMissProgressLabel(
+        metadata.missProgressPenalty,
+      ),
     );
   }
   if (metadata.comboProgressThreshold > 0 && metadata.comboProgressBonus > 0) {
     labels.add(
-      ko
-          ? '콤보 ${metadata.comboProgressThreshold}마다 진행 +${metadata.comboProgressBonus}'
-          : 'Combo ${metadata.comboProgressThreshold} => +${metadata.comboProgressBonus} progress',
+      l10n.studyHarmonyArcadeRuntimeComboProgressLabel(
+        metadata.comboProgressThreshold,
+        metadata.comboProgressBonus,
+      ),
     );
   }
   if (metadata.comboLifeThreshold > 0 && metadata.comboLifeBonus > 0) {
     labels.add(
-      ko
-          ? '콤보 ${metadata.comboLifeThreshold}마다 하트 +${metadata.comboLifeBonus}'
-          : 'Combo ${metadata.comboLifeThreshold} => +${metadata.comboLifeBonus} heart',
+      l10n.studyHarmonyArcadeRuntimeComboLifeLabel(
+        metadata.comboLifeThreshold,
+        metadata.comboLifeBonus,
+      ),
     );
   }
   if (metadata.comboResetsOnMiss) {
-    labels.add(ko ? '실수 시 콤보 초기화' : 'Misses reset combo');
+    labels.add(l10n.studyHarmonyArcadeRuntimeComboResetLabel);
   } else if (metadata.comboDropOnMiss > 0) {
     labels.add(
-      ko
-          ? '실수 시 콤보 -${metadata.comboDropOnMiss}'
-          : 'Misses cut combo by ${metadata.comboDropOnMiss}',
+      l10n.studyHarmonyArcadeRuntimeComboDropLabel(metadata.comboDropOnMiss),
     );
   }
   if (metadata.shuffleChoiceOptions) {
-    labels.add(ko ? '선택지가 계속 섞임' : 'Choices reshuffle');
+    labels.add(l10n.studyHarmonyArcadeRuntimeChoicesReshuffleLabel);
   }
   if (metadata.repeatMissedTask) {
-    labels.add(ko ? '틀린 문제 즉시 재도전' : 'Missed prompts replay');
+    labels.add(l10n.studyHarmonyArcadeRuntimeMissedReplayLabel);
   }
   if (metadata.uniqueTaskCycle) {
-    labels.add(ko ? '중복 문제 최소화' : 'No prompt repeats');
+    labels.add(l10n.studyHarmonyArcadeRuntimeUniqueCycleLabel);
   }
   return labels;
+}
+
+String _rewardBundleTitle(
+  AppLocalizations l10n,
+  String localeTag,
+  StudyHarmonyRewardBundleDefinition bundle,
+) {
+  final localizedTitle = switch (bundle.id) {
+    'bundle.session.base' => l10n.studyHarmonyRuntimeBundleClearBonusTitle,
+    'bundle.session.precision' =>
+      l10n.studyHarmonyRuntimeBundlePrecisionBonusTitle,
+    'bundle.session.combo' => l10n.studyHarmonyRuntimeBundleComboBonusTitle,
+    'bundle.session.mode' => l10n.studyHarmonyRuntimeBundleModeBonusTitle,
+    'bundle.session.mastery' => l10n.studyHarmonyRuntimeBundleMasteryBonusTitle,
+    _ => null,
+  };
+  return localizedTitle ??
+      studyHarmonyBundleTitleForLocale(
+        localeTag,
+        bundleId: bundle.id,
+        fallbackTitle: bundle.title,
+      );
 }
 
 String _skillLabel(AppLocalizations l10n, StudyHarmonySkillTag skillId) {

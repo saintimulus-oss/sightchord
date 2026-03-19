@@ -3,21 +3,29 @@ import 'dart:math';
 import '../../l10n/app_localizations.dart';
 import '../../music/chord_formatting.dart';
 import '../../music/chord_theory.dart';
+import '../../music/explanation_models.dart';
 import '../../music/progression_analysis_models.dart';
+import '../../music/progression_explanation_bundle_builder.dart';
 import '../../music/progression_explainer.dart';
 import '../domain/study_harmony_session_models.dart';
 import '../domain/study_harmony_task_evaluators.dart';
+import '../domain/study_harmony_track_profiles.dart';
+import '../content/track_pedagogy_profiles.dart';
 import 'study_harmony_generator_adapter.dart';
 
 class StudyHarmonyProgressionAdapter {
   StudyHarmonyProgressionAdapter({
     StudyHarmonyGeneratorAdapter? generatorAdapter,
     ProgressionExplainer? explainer,
+    ProgressionExplanationBundleBuilder? bundleBuilder,
   }) : _generatorAdapter = generatorAdapter ?? StudyHarmonyGeneratorAdapter(),
-       _explainer = explainer ?? const ProgressionExplainer();
+       _explainer = explainer ?? const ProgressionExplainer(),
+       _bundleBuilder =
+           bundleBuilder ?? const ProgressionExplanationBundleBuilder();
 
   final StudyHarmonyGeneratorAdapter _generatorAdapter;
   final ProgressionExplainer _explainer;
+  final ProgressionExplanationBundleBuilder _bundleBuilder;
 
   static final List<KeyCenter> _commonCoreCenters = <KeyCenter>[
     for (final tonic in const ['C', 'G', 'D', 'F', 'A'])
@@ -38,6 +46,8 @@ class StudyHarmonyProgressionAdapter {
     required StudyHarmonyTaskBlueprintId blueprintId,
     required AppLocalizations l10n,
     Set<StudyHarmonySkillTag> skillTags = _keyCenterSkills,
+    TrackGenerationProfile? generationProfile,
+    bool? allowNonDiatonicOverride,
   }) {
     return _generatedBlueprint(
       blueprintId: blueprintId,
@@ -45,18 +55,32 @@ class StudyHarmonyProgressionAdapter {
       l10n: l10n,
       taskKind: StudyHarmonyTaskKind.progressionKeyCenterChoice,
       skillTags: skillTags,
+      generationProfile: generationProfile,
       instanceFactory:
           ({required blueprint, required sequenceNumber, required random}) {
-            final progression = _generatorAdapter.generateCommonProgression(
+            final progression = _generateProgression(
               random: random,
+              generationProfile: generationProfile,
               minLength: 3,
               maxLength: 4,
+              allowNonDiatonic:
+                  allowNonDiatonicOverride ??
+                  generationProfile?.allowNonDiatonic ??
+                  false,
+              requireSingleNonDiatonic:
+                  generationProfile?.requireSingleNonDiatonic ?? false,
             );
             final keyLabel = _explainer.keyLabel(
               l10n,
               progression.analysis.primaryKey.keyCenter,
             );
             final choices = _keyCenterChoices(l10n, progression);
+            final explanationBundle = _bundleBuilder.build(
+              l10n: l10n,
+              analysis: progression.analysis,
+              trackId: generationProfile?.trackId,
+              exerciseFlavor: generationProfile?.exerciseFlavor,
+            );
             return _singleChoiceInstance(
               blueprint: blueprint,
               sequenceNumber: sequenceNumber,
@@ -72,7 +96,9 @@ class StudyHarmonyProgressionAdapter {
               explanationBody: _keyCenterExplanation(
                 l10n,
                 progression: progression,
+                generationProfile: generationProfile,
               ),
+              explanationBundle: explanationBundle,
             );
           },
     );
@@ -83,6 +109,8 @@ class StudyHarmonyProgressionAdapter {
     required StudyHarmonyTaskBlueprintId blueprintId,
     required AppLocalizations l10n,
     Set<StudyHarmonySkillTag> skillTags = _functionSkills,
+    TrackGenerationProfile? generationProfile,
+    bool? allowNonDiatonicOverride,
   }) {
     return _generatedBlueprint(
       blueprintId: blueprintId,
@@ -90,12 +118,20 @@ class StudyHarmonyProgressionAdapter {
       l10n: l10n,
       taskKind: StudyHarmonyTaskKind.progressionFunctionChoice,
       skillTags: skillTags,
+      generationProfile: generationProfile,
       instanceFactory:
           ({required blueprint, required sequenceNumber, required random}) {
-            final progression = _generatorAdapter.generateCommonProgression(
+            final progression = _generateProgression(
               random: random,
+              generationProfile: generationProfile,
               minLength: 3,
               maxLength: 4,
+              allowNonDiatonic:
+                  allowNonDiatonicOverride ??
+                  generationProfile?.allowNonDiatonic ??
+                  false,
+              requireSingleNonDiatonic:
+                  generationProfile?.requireSingleNonDiatonic ?? false,
               extraAcceptance: (progression) =>
                   progression.analysis.chordAnalyses.any(
                     (analysis) =>
@@ -110,6 +146,13 @@ class StudyHarmonyProgressionAdapter {
             final functionLabel = _functionChoiceLabel(
               l10n,
               targetAnalysis.harmonicFunction,
+            );
+            final explanationBundle = _bundleBuilder.build(
+              l10n: l10n,
+              analysis: progression.analysis,
+              trackId: generationProfile?.trackId,
+              exerciseFlavor: generationProfile?.exerciseFlavor,
+              focusChord: targetAnalysis,
             );
             return _singleChoiceInstance(
               blueprint: blueprint,
@@ -139,7 +182,9 @@ class StudyHarmonyProgressionAdapter {
                 l10n,
                 progression: progression,
                 targetAnalysis: targetAnalysis,
+                generationProfile: generationProfile,
               ),
+              explanationBundle: explanationBundle,
             );
           },
     );
@@ -150,6 +195,8 @@ class StudyHarmonyProgressionAdapter {
     required StudyHarmonyTaskBlueprintId blueprintId,
     required AppLocalizations l10n,
     Set<StudyHarmonySkillTag> skillTags = _nonDiatonicSkills,
+    TrackGenerationProfile? generationProfile,
+    bool? requireSingleNonDiatonicOverride,
   }) {
     return _generatedBlueprint(
       blueprintId: blueprintId,
@@ -157,14 +204,17 @@ class StudyHarmonyProgressionAdapter {
       l10n: l10n,
       taskKind: StudyHarmonyTaskKind.progressionNonDiatonicChoice,
       skillTags: skillTags,
+      generationProfile: generationProfile,
       instanceFactory:
           ({required blueprint, required sequenceNumber, required random}) {
-            final progression = _generatorAdapter.generateCommonProgression(
+            final progression = _generateProgression(
               random: random,
+              generationProfile: generationProfile,
               minLength: 4,
               maxLength: 4,
               allowNonDiatonic: true,
-              requireSingleNonDiatonic: true,
+              requireSingleNonDiatonic:
+                  requireSingleNonDiatonicOverride ?? true,
             );
             final targetIndex = progression.analysis.chordAnalyses.indexWhere(
               (analysis) => analysis.isNonDiatonic,
@@ -183,6 +233,13 @@ class StudyHarmonyProgressionAdapter {
                 ),
             ];
             final correctLabel = choices[targetIndex];
+            final explanationBundle = _bundleBuilder.build(
+              l10n: l10n,
+              analysis: progression.analysis,
+              trackId: generationProfile?.trackId,
+              exerciseFlavor: generationProfile?.exerciseFlavor,
+              focusChord: targetAnalysis,
+            );
             return _singleChoiceInstance(
               blueprint: blueprint,
               sequenceNumber: sequenceNumber,
@@ -199,7 +256,9 @@ class StudyHarmonyProgressionAdapter {
                 l10n,
                 progression: progression,
                 targetAnalysis: targetAnalysis,
+                generationProfile: generationProfile,
               ),
+              explanationBundle: explanationBundle,
             );
           },
     );
@@ -210,7 +269,10 @@ class StudyHarmonyProgressionAdapter {
     required StudyHarmonyTaskBlueprintId blueprintId,
     required AppLocalizations l10n,
     required bool cadenceFocus,
+    bool? allowNonDiatonicOverride,
+    bool? requireSingleNonDiatonicOverride,
     Set<StudyHarmonySkillTag> skillTags = _fillBlankSkills,
+    TrackGenerationProfile? generationProfile,
   }) {
     return _generatedBlueprint(
       blueprintId: blueprintId,
@@ -218,13 +280,22 @@ class StudyHarmonyProgressionAdapter {
       l10n: l10n,
       taskKind: StudyHarmonyTaskKind.progressionMissingChordChoice,
       skillTags: skillTags,
+      generationProfile: generationProfile,
       instanceFactory:
           ({required blueprint, required sequenceNumber, required random}) {
-            final progression = _generatorAdapter.generateCommonProgression(
+            final progression = _generateProgression(
               random: random,
+              generationProfile: generationProfile,
               minLength: 4,
               maxLength: 4,
-              allowNonDiatonic: false,
+              allowNonDiatonic:
+                  allowNonDiatonicOverride ??
+                  generationProfile?.allowNonDiatonic ??
+                  false,
+              requireSingleNonDiatonic:
+                  requireSingleNonDiatonicOverride ??
+                  generationProfile?.requireSingleNonDiatonic ??
+                  false,
               extraAcceptance: (progression) => cadenceFocus
                   ? _hasCadentialWindow(progression.analysis)
                   : progression.analysis.chordAnalyses.length == 4,
@@ -237,6 +308,13 @@ class StudyHarmonyProgressionAdapter {
             final choices = _missingChordChoices(
               progression: progression,
               hiddenIndex: hiddenIndex,
+            );
+            final explanationBundle = _bundleBuilder.build(
+              l10n: l10n,
+              analysis: progression.analysis,
+              trackId: generationProfile?.trackId,
+              exerciseFlavor: generationProfile?.exerciseFlavor,
+              focusChord: hiddenAnalysis,
             );
             return _singleChoiceInstance(
               blueprint: blueprint,
@@ -255,7 +333,9 @@ class StudyHarmonyProgressionAdapter {
                 l10n,
                 progression: progression,
                 targetAnalysis: hiddenAnalysis,
+                generationProfile: generationProfile,
               ),
+              explanationBundle: explanationBundle,
             );
           },
     );
@@ -267,6 +347,7 @@ class StudyHarmonyProgressionAdapter {
     required AppLocalizations l10n,
     required StudyHarmonyTaskKind taskKind,
     required Set<StudyHarmonySkillTag> skillTags,
+    required TrackGenerationProfile? generationProfile,
     required StudyHarmonyTaskInstanceFactory instanceFactory,
   }) {
     return StudyHarmonyTaskBlueprint(
@@ -292,6 +373,7 @@ class StudyHarmonyProgressionAdapter {
       ),
       instanceFactory: instanceFactory,
       skillTags: skillTags,
+      trackExerciseFlavor: generationProfile?.exerciseFlavor,
     );
   }
 
@@ -305,6 +387,7 @@ class StudyHarmonyProgressionAdapter {
     required StudyHarmonyProgressionDisplaySpec progressionDisplay,
     required String explanationTitle,
     required String explanationBody,
+    ExplanationBundle? explanationBundle,
   }) {
     final labels = choices.toSet().toList(growable: false);
     final options = [
@@ -333,6 +416,38 @@ class StudyHarmonyProgressionAdapter {
       sequenceNumber: sequenceNumber,
       explanationTitle: explanationTitle,
       explanationBody: explanationBody,
+      trackExerciseFlavor: blueprint.trackExerciseFlavor,
+      explanationBundle: explanationBundle,
+    );
+  }
+
+  StudyHarmonyGeneratedProgression _generateProgression({
+    required Random random,
+    required TrackGenerationProfile? generationProfile,
+    required int minLength,
+    required int maxLength,
+    bool allowNonDiatonic = false,
+    bool requireSingleNonDiatonic = false,
+    StudyHarmonyProgressionAcceptance? extraAcceptance,
+  }) {
+    if (generationProfile == null) {
+      return _generatorAdapter.generateCommonProgression(
+        random: random,
+        minLength: minLength,
+        maxLength: maxLength,
+        allowNonDiatonic: allowNonDiatonic,
+        requireSingleNonDiatonic: requireSingleNonDiatonic,
+        extraAcceptance: extraAcceptance,
+      );
+    }
+    return _generatorAdapter.generateProgressionForProfile(
+      random: random,
+      profile: generationProfile,
+      extraAcceptance: extraAcceptance,
+      minLengthOverride: minLength,
+      maxLengthOverride: maxLength,
+      allowNonDiatonicOverride: allowNonDiatonic,
+      requireSingleNonDiatonicOverride: requireSingleNonDiatonic,
     );
   }
 
@@ -419,6 +534,7 @@ class StudyHarmonyProgressionAdapter {
   String _keyCenterExplanation(
     AppLocalizations l10n, {
     required StudyHarmonyGeneratedProgression progression,
+    required TrackGenerationProfile? generationProfile,
   }) {
     final keyLabel = _explainer.keyLabel(
       l10n,
@@ -427,14 +543,15 @@ class StudyHarmonyProgressionAdapter {
     final summary = _explainer
         .buildSummary(l10n, progression.analysis)
         .join(' ');
-    return '${l10n.studyHarmonyProgressionExplanationKeyCenter(keyLabel)} '
-        '$summary';
+    return '${_trackExplanationTone(l10n, generationProfile: generationProfile)} '
+        '${l10n.studyHarmonyProgressionExplanationKeyCenter(keyLabel)} $summary';
   }
 
   String _functionExplanation(
     AppLocalizations l10n, {
     required StudyHarmonyGeneratedProgression progression,
     required AnalyzedChord targetAnalysis,
+    required TrackGenerationProfile? generationProfile,
   }) {
     final functionLabel = _explainer.functionLabel(
       l10n,
@@ -443,13 +560,15 @@ class StudyHarmonyProgressionAdapter {
     final summary = _explainer
         .buildSummary(l10n, progression.analysis)
         .join(' ');
-    return '${l10n.studyHarmonyProgressionExplanationFunction(targetAnalysis.chord.sourceSymbol, functionLabel)} $summary';
+    return '${_trackExplanationTone(l10n, generationProfile: generationProfile)} '
+        '${l10n.studyHarmonyProgressionExplanationFunction(targetAnalysis.chord.sourceSymbol, functionLabel)} $summary';
   }
 
   String _nonDiatonicExplanation(
     AppLocalizations l10n, {
     required StudyHarmonyGeneratedProgression progression,
     required AnalyzedChord targetAnalysis,
+    required TrackGenerationProfile? generationProfile,
   }) {
     final keyLabel = _explainer.keyLabel(
       l10n,
@@ -465,13 +584,15 @@ class StudyHarmonyProgressionAdapter {
     final detail = remark == null
         ? ''
         : ' ${_explainer.remarkLabel(l10n, remark)}';
-    return '${l10n.studyHarmonyProgressionExplanationNonDiatonic(targetAnalysis.chord.sourceSymbol, keyLabel)}$detail';
+    return '${_trackExplanationTone(l10n, generationProfile: generationProfile)} '
+        '${l10n.studyHarmonyProgressionExplanationNonDiatonic(targetAnalysis.chord.sourceSymbol, keyLabel)}$detail';
   }
 
   String _missingChordExplanation(
     AppLocalizations l10n, {
     required StudyHarmonyGeneratedProgression progression,
     required AnalyzedChord targetAnalysis,
+    required TrackGenerationProfile? generationProfile,
   }) {
     final functionLabel = _explainer.functionLabel(
       l10n,
@@ -480,7 +601,72 @@ class StudyHarmonyProgressionAdapter {
     final summary = _explainer
         .buildSummary(l10n, progression.analysis)
         .join(' ');
-    return '${l10n.studyHarmonyProgressionExplanationMissingChord(targetAnalysis.chord.sourceSymbol, functionLabel)} $summary';
+    return '${_trackExplanationTone(l10n, generationProfile: generationProfile)} '
+        '${l10n.studyHarmonyProgressionExplanationMissingChord(targetAnalysis.chord.sourceSymbol, functionLabel)} $summary';
+  }
+
+  String _trackExplanationTone(
+    AppLocalizations l10n, {
+    required TrackGenerationProfile? generationProfile,
+  }) {
+    if (generationProfile == null) {
+      return '';
+    }
+
+    final pedagogy = trackPedagogyProfileForTrack(
+      l10n,
+      generationProfile.trackId,
+    );
+    final context = switch (generationProfile.trackId) {
+      'pop' => l10n.explanationTrackContextPop,
+      'jazz' => l10n.explanationTrackContextJazz,
+      'classical' => l10n.explanationTrackContextClassical,
+      _ => '',
+    };
+
+    final exerciseLead = _exerciseToneFocus(
+      pedagogy: pedagogy,
+      exerciseFlavor: generationProfile.exerciseFlavor,
+    );
+
+    final parts = <String>[
+      if (context.isNotEmpty) context,
+      pedagogy.theoryTone,
+      if (exerciseLead.isNotEmpty) exerciseLead,
+    ];
+    return parts.join(' ');
+  }
+
+  String _exerciseToneFocus({
+    required TrackPedagogyProfile pedagogy,
+    required TrackExerciseFlavor exerciseFlavor,
+  }) {
+    String focusAt(int index) {
+      if (index < pedagogy.focusPoints.length) {
+        return pedagogy.focusPoints[index];
+      }
+      return '';
+    }
+
+    switch (exerciseFlavor) {
+      case TrackExerciseFlavor.popHookLoop:
+      case TrackExerciseFlavor.jazzGuideTone:
+      case TrackExerciseFlavor.jazzShellVoicing:
+      case TrackExerciseFlavor.classicalCadence:
+        return focusAt(0);
+      case TrackExerciseFlavor.popBorrowedLift:
+      case TrackExerciseFlavor.jazzMinorCadence:
+      case TrackExerciseFlavor.jazzRootlessVoicing:
+      case TrackExerciseFlavor.classicalInversion:
+        return focusAt(1);
+      case TrackExerciseFlavor.popBassMotion:
+      case TrackExerciseFlavor.jazzDominantColor:
+      case TrackExerciseFlavor.jazzBackdoorCadence:
+      case TrackExerciseFlavor.classicalSecondaryDominant:
+        return focusAt(2);
+      case TrackExerciseFlavor.coreFunctional:
+        return '';
+    }
   }
 
   bool _hasCadentialWindow(ProgressionAnalysis analysis) {

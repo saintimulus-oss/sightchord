@@ -7,440 +7,15 @@ import '../domain/study_harmony_progress_models.dart';
 import '../domain/study_harmony_session_models.dart';
 import '../meta/study_harmony_rewards_catalog.dart';
 
-typedef StudyHarmonyNowProvider = DateTime Function();
-
-enum StudyHarmonyRecommendationSource {
-  lastPlayed,
-  frontier,
-  reviewQueue,
-  weakSpot,
-  dailySeed,
-}
-
-enum StudyHarmonyQuestKind { dailyStreak, frontierLesson, chapterStars }
-
-enum StudyHarmonyMilestoneKind {
-  lessonPath,
-  starCollector,
-  streakLegend,
-  masteryScholar,
-  relayRunner,
-}
-
-enum StudyHarmonyWeeklyGoalKind { activeDays, dailyClears, focusSprint }
-
-enum StudyHarmonyMonthlyGoalKind { activeDays, questChests, spotlightClears }
-
-enum StudyHarmonyLeagueTier { rookie, bronze, silver, gold, diamond }
-
-@immutable
-class StudyHarmonySkillGainSummary {
-  const StudyHarmonySkillGainSummary({
-    required this.skillId,
-    required this.beforeScore,
-    required this.afterScore,
-    required this.delta,
-    required this.recentAccuracy,
-  });
-
-  final StudyHarmonySkillTag skillId;
-  final double beforeScore;
-  final double afterScore;
-  final double delta;
-  final double recentAccuracy;
-}
-
-@immutable
-class StudyHarmonySessionProgressEffect {
-  const StudyHarmonySessionProgressEffect({
-    required this.mode,
-    required this.sessionStars,
-    required this.sessionRank,
-    this.skillGains = const <StudyHarmonySkillGainSummary>[],
-    this.focusSkillTags = const <StudyHarmonySkillTag>{},
-    this.reviewReason,
-    this.dailyDateKey,
-    this.bestStars,
-    this.bestRank,
-    this.personalBestImproved = false,
-    this.countsTowardLessonProgress = false,
-    this.rewardBundles = const <StudyHarmonyRewardBundleDefinition>[],
-    this.currencyGrants = const <StudyHarmonyRewardGrant>[],
-    this.currencyBalances = const <StudyHarmonyCurrencyId, int>{},
-    this.newlyUnlockedRewards = const <StudyHarmonyRewardCandidate>[],
-    this.featuredRewardChases = const <StudyHarmonyRewardCandidate>[],
-    this.dailyChallengeCompleted = false,
-    this.focusSprintCompleted = false,
-    this.dailyStreakCount,
-    this.bestDailyStreakCount,
-    this.newlyUnlockedMilestoneIds = const <String>[],
-    this.weeklyRewardUnlocked = false,
-    this.streakSaverUsed = false,
-    this.streakSaverCount = 0,
-    this.relayWinCount,
-    this.weeklyLeagueScore = 0,
-    this.weeklyLeagueScoreDelta = 0,
-    this.weeklyLeagueTier = StudyHarmonyLeagueTier.rookie,
-    this.promotedLeagueTier,
-    this.dailyQuestChestOpened = false,
-    this.questChestCount = 0,
-    this.questChestLeagueXpBonus = 0,
-    this.leagueXpBoostUnlocked = false,
-    this.leagueXpBoostChargeCount = 0,
-    this.leagueXpBoostAppliedBonus = 0,
-    this.monthlyTourRewardUnlocked = false,
-    this.monthlyTourLeagueXpBonus = 0,
-    this.monthlyTourStreakSaverCount = 0,
-    this.duetPactActiveToday = false,
-    this.duetPactCurrentStreak = 0,
-    this.duetPactBestStreak = 0,
-    this.duetPactRewardUnlocked = false,
-    this.duetPactLeagueXpBonus = 0,
-  });
-
-  final StudyHarmonySessionMode mode;
-  final int sessionStars;
-  final String sessionRank;
-  final List<StudyHarmonySkillGainSummary> skillGains;
-  final Set<StudyHarmonySkillTag> focusSkillTags;
-  final String? reviewReason;
-  final String? dailyDateKey;
-  final int? bestStars;
-  final String? bestRank;
-  final bool personalBestImproved;
-  final bool countsTowardLessonProgress;
-  final List<StudyHarmonyRewardBundleDefinition> rewardBundles;
-  final List<StudyHarmonyRewardGrant> currencyGrants;
-  final Map<StudyHarmonyCurrencyId, int> currencyBalances;
-  final List<StudyHarmonyRewardCandidate> newlyUnlockedRewards;
-  final List<StudyHarmonyRewardCandidate> featuredRewardChases;
-  final bool dailyChallengeCompleted;
-  final bool focusSprintCompleted;
-  final int? dailyStreakCount;
-  final int? bestDailyStreakCount;
-  final List<String> newlyUnlockedMilestoneIds;
-  final bool weeklyRewardUnlocked;
-  final bool streakSaverUsed;
-  final int streakSaverCount;
-  final int? relayWinCount;
-  final int weeklyLeagueScore;
-  final int weeklyLeagueScoreDelta;
-  final StudyHarmonyLeagueTier weeklyLeagueTier;
-  final StudyHarmonyLeagueTier? promotedLeagueTier;
-  final bool dailyQuestChestOpened;
-  final int questChestCount;
-  final int questChestLeagueXpBonus;
-  final bool leagueXpBoostUnlocked;
-  final int leagueXpBoostChargeCount;
-  final int leagueXpBoostAppliedBonus;
-  final bool monthlyTourRewardUnlocked;
-  final int monthlyTourLeagueXpBonus;
-  final int monthlyTourStreakSaverCount;
-  final bool duetPactActiveToday;
-  final int duetPactCurrentStreak;
-  final int duetPactBestStreak;
-  final bool duetPactRewardUnlocked;
-  final int duetPactLeagueXpBonus;
-}
-
-@immutable
-class StudyHarmonyLessonRecommendation {
-  const StudyHarmonyLessonRecommendation({
-    required this.lesson,
-    required this.chapter,
-    required this.source,
-    this.sessionMode = StudyHarmonySessionMode.lesson,
-    this.sourceLessons = const <StudyHarmonyLessonDefinition>[],
-    this.focusSkillTags = const <StudyHarmonySkillTag>{},
-    this.reviewEntry,
-    this.reviewReason,
-    this.dailyDateKey,
-    this.seedValue,
-  });
-
-  final StudyHarmonyLessonDefinition lesson;
-  final StudyHarmonyChapterDefinition chapter;
-  final StudyHarmonyRecommendationSource source;
-  final StudyHarmonySessionMode sessionMode;
-  final List<StudyHarmonyLessonDefinition> sourceLessons;
-  final Set<StudyHarmonySkillTag> focusSkillTags;
-  final StudyHarmonyReviewQueuePlaceholderEntry? reviewEntry;
-  final String? reviewReason;
-  final String? dailyDateKey;
-  final int? seedValue;
-
-  List<StudyHarmonyLessonDefinition> get resolvedSourceLessons =>
-      sourceLessons.isEmpty
-      ? <StudyHarmonyLessonDefinition>[lesson]
-      : sourceLessons;
-}
-
-@immutable
-class StudyHarmonyChapterProgressSummaryView {
-  const StudyHarmonyChapterProgressSummaryView({
-    required this.chapter,
-    required this.lessonCount,
-    required this.clearedLessonCount,
-    required this.starCount,
-    required this.masteryTier,
-    required this.unlocked,
-    this.nextLesson,
-  });
-
-  final StudyHarmonyChapterDefinition chapter;
-  final int lessonCount;
-  final int clearedLessonCount;
-  final int starCount;
-  final StudyHarmonyChapterMasteryTier masteryTier;
-  final bool unlocked;
-  final StudyHarmonyLessonDefinition? nextLesson;
-
-  bool get isCompleted => lessonCount > 0 && clearedLessonCount >= lessonCount;
-
-  double get progressFraction =>
-      lessonCount == 0 ? 0 : clearedLessonCount / lessonCount;
-}
-
-@immutable
-class StudyHarmonyQuestProgressView {
-  const StudyHarmonyQuestProgressView({
-    required this.kind,
-    required this.current,
-    required this.target,
-    this.lesson,
-    this.chapter,
-    this.completedToday = false,
-    this.countsTowardChest = false,
-  });
-
-  final StudyHarmonyQuestKind kind;
-  final int current;
-  final int target;
-  final StudyHarmonyLessonDefinition? lesson;
-  final StudyHarmonyChapterDefinition? chapter;
-  final bool completedToday;
-  final bool countsTowardChest;
-
-  bool get completed => current >= target;
-
-  double get progressFraction =>
-      target <= 0 ? 0 : (current.clamp(0, target) / target).toDouble();
-}
-
-@immutable
-class StudyHarmonyMilestoneProgressView {
-  const StudyHarmonyMilestoneProgressView({
-    required this.id,
-    required this.kind,
-    required this.current,
-    required this.target,
-    required this.earnedCount,
-    required this.totalTiers,
-  });
-
-  final String id;
-  final StudyHarmonyMilestoneKind kind;
-  final int current;
-  final int target;
-  final int earnedCount;
-  final int totalTiers;
-
-  bool get completedAll => earnedCount >= totalTiers;
-
-  double get progressFraction {
-    if (completedAll) {
-      return 1;
-    }
-    return target <= 0 ? 0 : (current.clamp(0, target) / target).toDouble();
-  }
-}
-
-@immutable
-class StudyHarmonyQuestChestProgressView {
-  const StudyHarmonyQuestChestProgressView({
-    required this.dateKey,
-    required this.completedQuestCount,
-    required this.totalQuestCount,
-    required this.rewardLeagueXp,
-    required this.openedCount,
-    this.openedToday = false,
-  });
-
-  final String dateKey;
-  final int completedQuestCount;
-  final int totalQuestCount;
-  final int rewardLeagueXp;
-  final int openedCount;
-  final bool openedToday;
-
-  bool get ready => !openedToday && completedQuestCount >= totalQuestCount;
-
-  int get remainingQuestCount => max(0, totalQuestCount - completedQuestCount);
-
-  double get progressFraction {
-    if (totalQuestCount <= 0) {
-      return 0;
-    }
-    return (completedQuestCount.clamp(0, totalQuestCount) / totalQuestCount)
-        .toDouble();
-  }
-}
-
-@immutable
-class StudyHarmonyLeagueXpBoostProgressView {
-  const StudyHarmonyLeagueXpBoostProgressView({
-    required this.chargeCount,
-    required this.multiplier,
-    this.dateKey,
-  });
-
-  final int chargeCount;
-  final int multiplier;
-  final String? dateKey;
-
-  bool get active => chargeCount > 0;
-
-  int bonusForBase(int baseXp) {
-    if (baseXp <= 0 || multiplier <= 1) {
-      return 0;
-    }
-    return baseXp * (multiplier - 1);
-  }
-}
-
-@immutable
-class StudyHarmonyWeeklyGoalProgressView {
-  const StudyHarmonyWeeklyGoalProgressView({
-    required this.kind,
-    required this.current,
-    required this.target,
-    required this.weekKey,
-    this.rewardClaimed = false,
-  });
-
-  final StudyHarmonyWeeklyGoalKind kind;
-  final int current;
-  final int target;
-  final String weekKey;
-  final bool rewardClaimed;
-
-  bool get completed => current >= target;
-  bool get rewardReady => completed && !rewardClaimed;
-
-  double get progressFraction =>
-      target <= 0 ? 0 : (current.clamp(0, target) / target).toDouble();
-}
-
-@immutable
-class StudyHarmonyMonthlyGoalProgressView {
-  const StudyHarmonyMonthlyGoalProgressView({
-    required this.kind,
-    required this.current,
-    required this.target,
-    required this.monthKey,
-  });
-
-  final StudyHarmonyMonthlyGoalKind kind;
-  final int current;
-  final int target;
-  final String monthKey;
-
-  bool get completed => current >= target;
-
-  double get progressFraction =>
-      target <= 0 ? 0 : (current.clamp(0, target) / target).toDouble();
-}
-
-@immutable
-class StudyHarmonyMonthlyTourProgressView {
-  const StudyHarmonyMonthlyTourProgressView({
-    required this.monthKey,
-    required this.goals,
-    required this.rewardClaimed,
-    required this.rewardLeagueXp,
-    required this.rewardStreakSavers,
-  });
-
-  final String monthKey;
-  final List<StudyHarmonyMonthlyGoalProgressView> goals;
-  final bool rewardClaimed;
-  final int rewardLeagueXp;
-  final int rewardStreakSavers;
-
-  int get completedGoalCount => goals.where((goal) => goal.completed).length;
-
-  int get totalGoalCount => goals.length;
-
-  bool get completed => completedGoalCount >= totalGoalCount;
-
-  bool get rewardReady => completed && !rewardClaimed;
-
-  double get progressFraction {
-    if (goals.isEmpty) {
-      return 0;
-    }
-    return completedGoalCount / goals.length;
-  }
-}
-
-@immutable
-class StudyHarmonyDuetPactProgressView {
-  const StudyHarmonyDuetPactProgressView({
-    required this.currentStreak,
-    required this.bestStreak,
-    required this.activeToday,
-    required this.nextTarget,
-    required this.rewardLeagueXp,
-  });
-
-  final int currentStreak;
-  final int bestStreak;
-  final bool activeToday;
-  final int nextTarget;
-  final int rewardLeagueXp;
-
-  double get progressFraction =>
-      nextTarget <= 0 ? 1 : (currentStreak.clamp(0, nextTarget) / nextTarget);
-}
-
-@immutable
-class StudyHarmonyLeagueProgressView {
-  const StudyHarmonyLeagueProgressView({
-    required this.weekKey,
-    required this.score,
-    required this.tier,
-    required this.currentTierFloor,
-    this.nextTier,
-    this.nextTarget,
-  });
-
-  final String weekKey;
-  final int score;
-  final StudyHarmonyLeagueTier tier;
-  final int currentTierFloor;
-  final StudyHarmonyLeagueTier? nextTier;
-  final int? nextTarget;
-
-  bool get maxTier => nextTier == null || nextTarget == null;
-
-  double get progressFraction {
-    if (maxTier) {
-      return 1;
-    }
-    final span = nextTarget! - currentTierFloor;
-    if (span <= 0) {
-      return 1;
-    }
-    return ((score - currentTierFloor).clamp(0, span) / span).toDouble();
-  }
-}
+part 'study_harmony_progress_controller_internal.dart';
+part 'study_harmony_progress_controller_types.dart';
 
 class StudyHarmonyProgressController extends ChangeNotifier {
   StudyHarmonyProgressController({
     StudyHarmonyProgressStore? store,
     StudyHarmonyProgressSnapshot? initialSnapshot,
     StudyHarmonyNowProvider? nowProvider,
-  }) : _store = store ?? const SharedPrefsStudyHarmonyProgressStore(),
+  }) : _store = store ?? SharedPrefsStudyHarmonyProgressStore(),
        _snapshot = initialSnapshot ?? StudyHarmonyProgressSnapshot.initial(),
        _nowProvider = nowProvider ?? _defaultNowProvider;
 
@@ -1297,7 +872,7 @@ class StudyHarmonyProgressController extends ChangeNotifier {
         _isChapterUnlocked(snapshot, chapter.id) ||
         chapter.lessons.any((lesson) => _isLessonUnlocked(snapshot, lesson.id));
     final isCompleted = lessonCount > 0 && clearedLessonCount >= lessonCount;
-    final nextLesson = !unlocked || isCompleted
+    final nextLesson = lessonCount == 0 || !unlocked || isCompleted
         ? null
         : chapter.lessons.firstWhere(
             (lesson) =>
@@ -1574,9 +1149,23 @@ class StudyHarmonyProgressController extends ChangeNotifier {
           reviewRecommendationForCourse(course);
     }
 
-    final spotlightGoal = monthlyTour.goals.firstWhere(
-      (goal) => goal.kind == StudyHarmonyMonthlyGoalKind.spotlightClears,
-    );
+    StudyHarmonyMonthlyGoalProgressView? spotlightGoal;
+    StudyHarmonyMonthlyGoalProgressView? questChestGoal;
+    for (final goal in monthlyTour.goals) {
+      switch (goal.kind) {
+        case StudyHarmonyMonthlyGoalKind.spotlightClears:
+          spotlightGoal = goal;
+        case StudyHarmonyMonthlyGoalKind.questChests:
+          questChestGoal = goal;
+        case StudyHarmonyMonthlyGoalKind.activeDays:
+          break;
+      }
+    }
+    if (spotlightGoal == null || questChestGoal == null) {
+      return dailyChallengeRecommendationForCourse(course) ??
+          continueRecommendationForCourse(course) ??
+          reviewRecommendationForCourse(course);
+    }
     if (!spotlightGoal.completed) {
       return bossRushRecommendationForCourse(course) ??
           legendTrialRecommendationForCourse(course) ??
@@ -1585,9 +1174,6 @@ class StudyHarmonyProgressController extends ChangeNotifier {
           continueRecommendationForCourse(course);
     }
 
-    final questChestGoal = monthlyTour.goals.firstWhere(
-      (goal) => goal.kind == StudyHarmonyMonthlyGoalKind.questChests,
-    );
     if (!questChestGoal.completed) {
       return questChestRecommendationForCourse(course) ??
           dailyChallengeRecommendationForCourse(course) ??
@@ -1649,6 +1235,9 @@ class StudyHarmonyProgressController extends ChangeNotifier {
     }
 
     final frontierLessonToOpen = frontierLesson ?? _fallbackLesson(course);
+    if (frontierLessonToOpen == null) {
+      return null;
+    }
     return _recommendationForLesson(
       course: course,
       lesson: frontierLessonToOpen,
@@ -2457,6 +2046,35 @@ class StudyHarmonyProgressController extends ChangeNotifier {
         .contains(dateKey);
     final frontierCompletedToday = snapshot.completedFrontierQuestDateKeys
         .contains(dateKey);
+
+    if (course.chapters.isEmpty) {
+      return <StudyHarmonyQuestProgressView>[
+        StudyHarmonyQuestProgressView(
+          kind: StudyHarmonyQuestKind.dailyStreak,
+          current: currentStreak,
+          target: _dailyStreakTarget(currentStreak),
+          completedToday: dailyCompletedToday,
+          countsTowardChest: dailyCompletedToday,
+        ),
+        StudyHarmonyQuestProgressView(
+          kind: StudyHarmonyQuestKind.frontierLesson,
+          current: frontierCompletedToday ? 1 : 0,
+          target: 1,
+          lesson: null,
+          chapter: null,
+          completedToday: frontierCompletedToday,
+          countsTowardChest: frontierCompletedToday,
+        ),
+        const StudyHarmonyQuestProgressView(
+          kind: StudyHarmonyQuestKind.chapterStars,
+          current: 0,
+          target: 1,
+          chapter: null,
+          countsTowardChest: false,
+        ),
+      ];
+    }
+
     final starQuestChapter = _starQuestChapterForCourse(
       course,
       snapshot: snapshot,
@@ -3157,10 +2775,15 @@ class StudyHarmonyProgressController extends ChangeNotifier {
     return lesson.goalCorrectAnswers >= 9 || lesson.startingLives >= 4;
   }
 
-  StudyHarmonyLessonDefinition _fallbackLesson(
+  StudyHarmonyLessonDefinition? _fallbackLesson(
     StudyHarmonyCourseDefinition course,
   ) {
-    return course.chapters.first.lessons.first;
+    for (final chapter in course.chapters) {
+      if (chapter.lessons.isNotEmpty) {
+        return chapter.lessons.first;
+      }
+    }
+    return null;
   }
 
   StudyHarmonyLessonDefinition? _lessonForId(
@@ -4165,300 +3788,4 @@ class StudyHarmonyProgressController extends ChangeNotifier {
       modeClearCounts: modeClearCounts,
     );
   }
-}
-
-Map<String, int> _normalizedCountMap(Map<String, int> values) {
-  if (values.isEmpty) {
-    return values;
-  }
-  final normalized = <String, int>{};
-  for (final entry in values.entries) {
-    final clampedValue = max(0, entry.value);
-    if (clampedValue <= 0) {
-      continue;
-    }
-    normalized[entry.key] = clampedValue;
-  }
-  return normalized;
-}
-
-Map<StudyHarmonySessionMode, int> _decodeModeCounts(Map<String, int> values) {
-  if (values.isEmpty) {
-    return const <StudyHarmonySessionMode, int>{};
-  }
-  final decoded = <StudyHarmonySessionMode, int>{};
-  for (final entry in values.entries) {
-    final mode = _sessionModeFromEncodedName(entry.key);
-    if (mode == null || entry.value <= 0) {
-      continue;
-    }
-    decoded[mode] = entry.value;
-  }
-  return decoded;
-}
-
-StudyHarmonySessionMode? _sessionModeFromEncodedName(String value) {
-  for (final mode in StudyHarmonySessionMode.values) {
-    if (mode.name == value) {
-      return mode;
-    }
-  }
-  return null;
-}
-
-void _incrementEncodedModeCount(
-  Map<String, int> values,
-  StudyHarmonySessionMode mode,
-) {
-  values[mode.name] = (values[mode.name] ?? 0) + 1;
-}
-
-Map<StudyHarmonyCurrencyId, int> _applyRewardGrants({
-  required Map<StudyHarmonyCurrencyId, int> existing,
-  required Iterable<StudyHarmonyRewardGrant> grants,
-}) {
-  final balances = Map<StudyHarmonyCurrencyId, int>.from(existing);
-  for (final grant in grants) {
-    balances[grant.currencyId] =
-        (balances[grant.currencyId] ?? 0) + grant.amount;
-  }
-  return balances;
-}
-
-List<StudyHarmonyRewardGrant> _mergeRewardGrants(
-  Iterable<StudyHarmonyRewardGrant> grants,
-) {
-  final totals = <StudyHarmonyCurrencyId, int>{};
-  final labels = <StudyHarmonyCurrencyId, String?>{};
-  for (final grant in grants) {
-    totals[grant.currencyId] = (totals[grant.currencyId] ?? 0) + grant.amount;
-    labels[grant.currencyId] ??= grant.label;
-  }
-  final merged =
-      [
-        for (final entry in totals.entries)
-          StudyHarmonyRewardGrant(
-            currencyId: entry.key,
-            amount: entry.value,
-            label: labels[entry.key],
-          ),
-      ]..sort((left, right) {
-        final byAmount = right.amount.compareTo(left.amount);
-        if (byAmount != 0) {
-          return byAmount;
-        }
-        return left.currencyId.compareTo(right.currencyId);
-      });
-  return merged;
-}
-
-bool _isRepeatableShopItem(StudyHarmonyShopItemDefinition item) {
-  return item.kind == StudyHarmonyShopItemKind.consumable ||
-      item.kind == StudyHarmonyShopItemKind.booster;
-}
-
-Set<String> _ownedTitleIdsForSnapshot(
-  StudyHarmonyProgressSnapshot snapshot,
-  StudyHarmonyRewardProgressMetrics metrics,
-) {
-  final owned = <String>{};
-  for (final titleId in snapshot.ownedTitleIds) {
-    if (studyHarmonyTitlesById.containsKey(titleId)) {
-      owned.add(titleId);
-    }
-  }
-  for (final candidate in studyHarmonyRewardCandidatesForProgress(metrics)) {
-    if (candidate.kind == StudyHarmonyRewardKind.title && candidate.unlocked) {
-      owned.add(candidate.id);
-    }
-  }
-  for (final shopItemId in snapshot.purchasedUniqueShopItemIds) {
-    final item = _studyHarmonyShopItemById(shopItemId);
-    if (item == null) {
-      continue;
-    }
-    for (final unlockId in item.unlockIds) {
-      if (studyHarmonyTitlesById.containsKey(unlockId)) {
-        owned.add(unlockId);
-      }
-    }
-  }
-  return owned;
-}
-
-Set<String> _ownedCosmeticIdsForSnapshot(
-  StudyHarmonyProgressSnapshot snapshot,
-  StudyHarmonyRewardProgressMetrics metrics,
-) {
-  final owned = <String>{};
-  for (final cosmeticId in snapshot.ownedCosmeticIds) {
-    if (studyHarmonyCosmeticsById.containsKey(cosmeticId)) {
-      owned.add(cosmeticId);
-    }
-  }
-  for (final candidate in studyHarmonyRewardCandidatesForProgress(metrics)) {
-    if (candidate.kind == StudyHarmonyRewardKind.cosmetic &&
-        candidate.unlocked) {
-      owned.add(candidate.id);
-    }
-  }
-  for (final shopItemId in snapshot.purchasedUniqueShopItemIds) {
-    final item = _studyHarmonyShopItemById(shopItemId);
-    if (item == null) {
-      continue;
-    }
-    for (final unlockId in item.unlockIds) {
-      if (studyHarmonyCosmeticsById.containsKey(unlockId)) {
-        owned.add(unlockId);
-      }
-    }
-  }
-  return owned;
-}
-
-String? _normalizedRewardTitleId(
-  String? titleId, {
-  required Set<String> ownedTitleIds,
-}) {
-  if (titleId == null || !studyHarmonyTitlesById.containsKey(titleId)) {
-    return null;
-  }
-  return ownedTitleIds.contains(titleId) ? titleId : null;
-}
-
-List<String> _normalizedRewardCosmeticLoadout(
-  Iterable<String> cosmeticIds, {
-  required Set<String> ownedCosmeticIds,
-}) {
-  final normalized = <String>[];
-  for (final cosmeticId in cosmeticIds) {
-    if (!studyHarmonyCosmeticsById.containsKey(cosmeticId)) {
-      continue;
-    }
-    if (!ownedCosmeticIds.contains(cosmeticId)) {
-      continue;
-    }
-    if (normalized.contains(cosmeticId)) {
-      continue;
-    }
-    normalized.add(cosmeticId);
-  }
-  if (normalized.length <= 2) {
-    return normalized;
-  }
-  return normalized.sublist(normalized.length - 2);
-}
-
-StudyHarmonyShopItemDefinition? _studyHarmonyShopItemById(String itemId) {
-  for (final item in studyHarmonyShopItems) {
-    if (item.id == itemId) {
-      return item;
-    }
-  }
-  return null;
-}
-
-@immutable
-class _ReviewCandidate {
-  const _ReviewCandidate({
-    required this.lesson,
-    required this.score,
-    required this.reason,
-    this.entry,
-  });
-
-  final StudyHarmonyLessonDefinition lesson;
-  final double score;
-  final String reason;
-  final StudyHarmonyReviewQueuePlaceholderEntry? entry;
-}
-
-@immutable
-class _StreakSaverUseResult {
-  const _StreakSaverUseResult({
-    required this.protectedDailyDateKeys,
-    required this.remainingStreakSavers,
-    required this.used,
-  });
-
-  final Set<String> protectedDailyDateKeys;
-  final int remainingStreakSavers;
-  final bool used;
-}
-
-@immutable
-class _WeeklyPlanRewardResult {
-  const _WeeklyPlanRewardResult({
-    required this.snapshot,
-    required this.rewardUnlocked,
-  });
-
-  final StudyHarmonyProgressSnapshot snapshot;
-  final bool rewardUnlocked;
-}
-
-@immutable
-class _MonthlyTourRewardResult {
-  const _MonthlyTourRewardResult({
-    required this.snapshot,
-    required this.rewardUnlocked,
-    required this.leagueXpBonus,
-  });
-
-  final StudyHarmonyProgressSnapshot snapshot;
-  final bool rewardUnlocked;
-  final int leagueXpBonus;
-}
-
-@immutable
-class _DuetPactRewardResult {
-  const _DuetPactRewardResult({
-    required this.snapshot,
-    required this.rewardUnlocked,
-    required this.leagueXpBonus,
-  });
-
-  final StudyHarmonyProgressSnapshot snapshot;
-  final bool rewardUnlocked;
-  final int leagueXpBonus;
-}
-
-@immutable
-class _DailyQuestChestRewardResult {
-  const _DailyQuestChestRewardResult({
-    required this.snapshot,
-    required this.chestOpened,
-    required this.leagueXpBonus,
-    required this.leagueXpBoostUnlocked,
-  });
-
-  final StudyHarmonyProgressSnapshot snapshot;
-  final bool chestOpened;
-  final int leagueXpBonus;
-  final bool leagueXpBoostUnlocked;
-}
-
-double _averageDoubles(Iterable<double> values) {
-  var count = 0;
-  var sum = 0.0;
-  for (final value in values) {
-    sum += value;
-    count += 1;
-  }
-  return count == 0 ? 0 : sum / count;
-}
-
-double _clampUnitDouble(double value) {
-  if (value.isNaN) {
-    return 0;
-  }
-  return value.clamp(0.0, 1.0).toDouble();
-}
-
-int _stableHash(String value) {
-  var hash = 0;
-  for (final unit in value.codeUnits) {
-    hash = ((hash * 31) + unit) & 0x7fffffff;
-  }
-  return hash;
 }

@@ -230,11 +230,7 @@ class PracticeSettingsFactory {
   ) {
     final profile = MelodyGenerationConfig.quickPresetFor(preset);
     return MelodyPresetDescriptor(
-      label: switch (preset) {
-        MelodyQuickPreset.guideLine => 'Guide Line',
-        MelodyQuickPreset.songLine => 'Song Line',
-        MelodyQuickPreset.colorLine => 'Color Line',
-      },
+      label: preset.defaultLabel,
       summary: switch (preset) {
         MelodyQuickPreset.guideLine =>
           'guide-focused line with steady rhythm and low surprise',

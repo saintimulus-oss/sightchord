@@ -46,6 +46,7 @@ void main() {
         melodyStyle: MelodyStyle.bebop,
         allowChromaticApproaches: true,
         melodyPlaybackMode: MelodyPlaybackMode.melodyOnly,
+        harmonySoundProfileSelection: HarmonySoundProfileSelection.jazz,
         harmonyMasterVolume: 0.72,
         harmonyPreviewHoldFactor: 1.2,
         harmonyArpeggioStepSpeed: 1.4,
@@ -103,6 +104,7 @@ void main() {
       expect(preferences.getString('melodyStyle'), 'bebop');
       expect(preferences.getBool('allowChromaticApproaches'), isTrue);
       expect(preferences.getString('melodyPlaybackMode'), 'melodyOnly');
+      expect(preferences.getString('harmonySoundProfileSelection'), 'jazz');
       expect(preferences.getDouble('harmonyMasterVolume'), 0.72);
       expect(preferences.getDouble('harmonyPreviewHoldFactor'), 1.2);
       expect(preferences.getDouble('harmonyArpeggioStepSpeed'), 1.4);
@@ -180,6 +182,20 @@ void main() {
     final loaded = await store.load(fallbackSettings: PracticeSettings());
 
     expect(loaded.anchorLoop, settings.anchorLoop.normalized());
+  });
+
+  test('store loads harmony sound profile selection from storage', () async {
+    SharedPreferences.setMockInitialValues({
+      'harmonySoundProfileSelection': 'classical',
+    });
+    const store = PracticeSettingsStore();
+
+    final loaded = await store.load(fallbackSettings: PracticeSettings());
+
+    expect(
+      loaded.harmonySoundProfileSelection,
+      HarmonySoundProfileSelection.classical,
+    );
   });
 
   test('store keeps fallback settings when storage keys are missing', () async {

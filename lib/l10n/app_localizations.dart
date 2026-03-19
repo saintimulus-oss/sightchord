@@ -654,7 +654,7 @@ abstract class AppLocalizations {
   /// No description provided for @setupAssistantNotationDelta.
   ///
   /// In en, this message translates to:
-  /// **'CΔ7 style'**
+  /// **'C?7 style'**
   String get setupAssistantNotationDelta;
 
   /// No description provided for @setupAssistantDifficultyTriads.
@@ -3360,13 +3360,13 @@ abstract class AppLocalizations {
   /// No description provided for @studyHarmonyProgressionExplanationKeyCenter.
   ///
   /// In en, this message translates to:
-  /// **'The analyzer reads this progression most clearly in {keyLabel}.'**
+  /// **'One likely reading keeps this progression centered on {keyLabel}.'**
   String studyHarmonyProgressionExplanationKeyCenter(Object keyLabel);
 
   /// No description provided for @studyHarmonyProgressionExplanationFunction.
   ///
   /// In en, this message translates to:
-  /// **'{chord} behaves most like a {functionLabel} chord in this context.'**
+  /// **'{chord} can be heard as a {functionLabel} chord in this context.'**
   String studyHarmonyProgressionExplanationFunction(
     Object chord,
     Object functionLabel,
@@ -3375,7 +3375,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyHarmonyProgressionExplanationNonDiatonic.
   ///
   /// In en, this message translates to:
-  /// **'{chord} stands out against the main {keyLabel} reading, so it is the best non-diatonic pick.'**
+  /// **'{chord} sits outside the main {keyLabel} reading, so it stands out as a plausible non-diatonic color.'**
   String studyHarmonyProgressionExplanationNonDiatonic(
     Object chord,
     Object keyLabel,
@@ -3384,7 +3384,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyHarmonyProgressionExplanationMissingChord.
   ///
   /// In en, this message translates to:
-  /// **'{chord} restores the expected {functionLabel} pull in this progression.'**
+  /// **'{chord} can restore some of the expected {functionLabel} pull in this progression.'**
   String studyHarmonyProgressionExplanationMissingChord(
     Object chord,
     Object functionLabel,
@@ -3471,7 +3471,7 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Paste a progression and get a conservative harmonic reading.'**
+  /// **'Enter a progression to see likely keys, Roman numerals, and harmonic function.'**
   String get chordAnalyzerSubtitle;
 
   /// No description provided for @chordAnalyzerInputLabel.
@@ -3549,7 +3549,7 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerBackspace.
   ///
   /// In en, this message translates to:
-  /// **'⌫'**
+  /// **'Backspace'**
   String get chordAnalyzerBackspace;
 
   /// No description provided for @chordAnalyzerSpace.
@@ -3579,7 +3579,7 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerPlaceholderExplanation.
   ///
   /// In en, this message translates to:
-  /// **'This ? was inferred from the surrounding harmonic context.'**
+  /// **'This ? was inferred from the surrounding harmonic context, so treat it as a suggested fill rather than a certainty.'**
   String get chordAnalyzerPlaceholderExplanation;
 
   /// No description provided for @chordAnalyzerSuggestedFill.
@@ -3897,7 +3897,7 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerVariationMinorCadenceBody.
   ///
   /// In en, this message translates to:
-  /// **'Keeps the minor cadence intact but leans into iiø-Valt-i color.'**
+  /// **'Keeps the minor cadence intact but leans into ii첩-Valt-i color.'**
   String get chordAnalyzerVariationMinorCadenceBody;
 
   /// No description provided for @chordAnalyzerVariationColorLiftTitle.
@@ -4043,6 +4043,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose how much theory detail appears and how non-diatonic categories are highlighted.'**
   String get chordAnalyzerDisplaySettingsHelp;
+
+  /// No description provided for @chordAnalyzerQuickStartHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap an example to see instant results, or press Ctrl+Enter on desktop to analyze.'**
+  String get chordAnalyzerQuickStartHint;
 
   /// No description provided for @chordAnalyzerDetailLevel.
   ///
@@ -5202,6 +5208,186 @@ abstract class AppLocalizations {
   /// **'Climb league'**
   String get studyHarmonyLeagueAction;
 
+  /// No description provided for @studyHarmonyHubStartHereTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Here'**
+  String get studyHarmonyHubStartHereTitle;
+
+  /// No description provided for @studyHarmonyHubNextLessonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Lesson'**
+  String get studyHarmonyHubNextLessonTitle;
+
+  /// No description provided for @studyHarmonyHubWhyItMattersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Why It Matters'**
+  String get studyHarmonyHubWhyItMattersTitle;
+
+  /// No description provided for @studyHarmonyHubQuickPracticeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Practice'**
+  String get studyHarmonyHubQuickPracticeTitle;
+
+  /// No description provided for @studyHarmonyHubMetaPreviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'More Opens Soon'**
+  String get studyHarmonyHubMetaPreviewTitle;
+
+  /// No description provided for @studyHarmonyHubMetaPreviewHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Build a little momentum first'**
+  String get studyHarmonyHubMetaPreviewHeadline;
+
+  /// No description provided for @studyHarmonyHubMetaPreviewBody.
+  ///
+  /// In en, this message translates to:
+  /// **'League, shop, and reward systems open up more fully after a few clears. For now, finish your next lesson and one quick practice run.'**
+  String get studyHarmonyHubMetaPreviewBody;
+
+  /// No description provided for @studyHarmonyHubPlayNowAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Now'**
+  String get studyHarmonyHubPlayNowAction;
+
+  /// No description provided for @studyHarmonyHubKeepMomentumAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep Momentum'**
+  String get studyHarmonyHubKeepMomentumAction;
+
+  /// No description provided for @studyHarmonyClearTitleAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear title'**
+  String get studyHarmonyClearTitleAction;
+
+  /// No description provided for @studyHarmonyPlayerDeckTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Player Deck'**
+  String get studyHarmonyPlayerDeckTitle;
+
+  /// No description provided for @studyHarmonyPlayerDeckCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Playstyle'**
+  String get studyHarmonyPlayerDeckCardTitle;
+
+  /// No description provided for @studyHarmonyPlayerDeckOverviewAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get studyHarmonyPlayerDeckOverviewAction;
+
+  /// No description provided for @studyHarmonyRunDirectorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Run Director'**
+  String get studyHarmonyRunDirectorTitle;
+
+  /// No description provided for @studyHarmonyRunDirectorAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Recommended'**
+  String get studyHarmonyRunDirectorAction;
+
+  /// No description provided for @studyHarmonyGameEconomyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Game Economy'**
+  String get studyHarmonyGameEconomyTitle;
+
+  /// No description provided for @studyHarmonyGameEconomyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop stock, utility tokens, and meta items all react to your recent run history.'**
+  String get studyHarmonyGameEconomyBody;
+
+  /// No description provided for @studyHarmonyGameEconomyTitlesOwned.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} titles owned'**
+  String studyHarmonyGameEconomyTitlesOwned(int count);
+
+  /// No description provided for @studyHarmonyGameEconomyCosmeticsOwned.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} cosmetics owned'**
+  String studyHarmonyGameEconomyCosmeticsOwned(int count);
+
+  /// No description provided for @studyHarmonyGameEconomyShopPurchases.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} shop purchases'**
+  String studyHarmonyGameEconomyShopPurchases(int count);
+
+  /// No description provided for @studyHarmonyGameEconomyWalletAction.
+  ///
+  /// In en, this message translates to:
+  /// **'View Wallet'**
+  String get studyHarmonyGameEconomyWalletAction;
+
+  /// No description provided for @studyHarmonyArcadeSpotlightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Arcade Spotlight'**
+  String get studyHarmonyArcadeSpotlightTitle;
+
+  /// No description provided for @studyHarmonyArcadePlayAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Arcade'**
+  String get studyHarmonyArcadePlayAction;
+
+  /// No description provided for @studyHarmonyArcadeModeCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} modes'**
+  String studyHarmonyArcadeModeCount(int count);
+
+  /// No description provided for @studyHarmonyArcadePlaylistAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Set'**
+  String get studyHarmonyArcadePlaylistAction;
+
+  /// No description provided for @studyHarmonyNightMarketTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Night Market'**
+  String get studyHarmonyNightMarketTitle;
+
+  /// No description provided for @studyHarmonyPurchaseSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchased {itemTitle}'**
+  String studyHarmonyPurchaseSuccess(Object itemTitle);
+
+  /// No description provided for @studyHarmonyPurchaseAndEquipSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchased and equipped {itemTitle}'**
+  String studyHarmonyPurchaseAndEquipSuccess(Object itemTitle);
+
+  /// No description provided for @studyHarmonyPurchaseFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot purchase {itemTitle} yet'**
+  String studyHarmonyPurchaseFailure(Object itemTitle);
+
+  /// No description provided for @studyHarmonyRewardEquipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Equipped {itemTitle}'**
+  String studyHarmonyRewardEquipped(Object itemTitle);
+
   /// No description provided for @studyHarmonyLeagueScoreLabel.
   ///
   /// In en, this message translates to:
@@ -5645,6 +5831,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear {target} spotlight runs this month. Boss Rush, Relay, Focus, Legend, and boss lessons all count.'**
   String studyHarmonyTourSpotlightBody(Object target);
+
+  /// No description provided for @studyHarmonyTourEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly tour goals will appear here as you log activity this month.'**
+  String get studyHarmonyTourEmptyBody;
 
   /// No description provided for @studyHarmonyTourReadyBody.
   ///
@@ -6575,6 +6767,1692 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Slightly loosen simultaneous note attacks for a less rigid block chord.'**
   String get harmonyTimingHumanizationHelp;
+
+  /// No description provided for @harmonySoundProfileSelectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound profile mode'**
+  String get harmonySoundProfileSelectionTitle;
+
+  /// No description provided for @harmonySoundProfileSelectionHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a neutral preview, follow the active Study Harmony track, or pin one track\'s playback feel.'**
+  String get harmonySoundProfileSelectionHelp;
+
+  /// No description provided for @harmonySoundProfileSelectionNeutral.
+  ///
+  /// In en, this message translates to:
+  /// **'Neutral shared piano'**
+  String get harmonySoundProfileSelectionNeutral;
+
+  /// No description provided for @harmonySoundProfileSelectionTrackAware.
+  ///
+  /// In en, this message translates to:
+  /// **'Track-aware'**
+  String get harmonySoundProfileSelectionTrackAware;
+
+  /// No description provided for @harmonySoundProfileSelectionPop.
+  ///
+  /// In en, this message translates to:
+  /// **'Pop profile'**
+  String get harmonySoundProfileSelectionPop;
+
+  /// No description provided for @harmonySoundProfileSelectionJazz.
+  ///
+  /// In en, this message translates to:
+  /// **'Jazz profile'**
+  String get harmonySoundProfileSelectionJazz;
+
+  /// No description provided for @harmonySoundProfileSelectionClassical.
+  ///
+  /// In en, this message translates to:
+  /// **'Classical profile'**
+  String get harmonySoundProfileSelectionClassical;
+
+  /// No description provided for @harmonySoundProfileSummaryLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Instrument: {instrument}. Recommended preview: {pattern}.'**
+  String harmonySoundProfileSummaryLine(Object instrument, Object pattern);
+
+  /// No description provided for @harmonySoundProfileTrackAwareFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'In free practice this stays on the shared piano profile. Study Harmony sessions switch to the active track\'s sound shaping.'**
+  String get harmonySoundProfileTrackAwareFallback;
+
+  /// No description provided for @harmonySoundProfileNeutralLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced / shared piano'**
+  String get harmonySoundProfileNeutralLabel;
+
+  /// No description provided for @harmonySoundProfileNeutralSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the shared piano asset with a steady, all-purpose preview shape.'**
+  String get harmonySoundProfileNeutralSummary;
+
+  /// No description provided for @harmonySoundTagBalanced.
+  ///
+  /// In en, this message translates to:
+  /// **'balanced'**
+  String get harmonySoundTagBalanced;
+
+  /// No description provided for @harmonySoundTagPiano.
+  ///
+  /// In en, this message translates to:
+  /// **'piano'**
+  String get harmonySoundTagPiano;
+
+  /// No description provided for @harmonySoundTagSoft.
+  ///
+  /// In en, this message translates to:
+  /// **'soft'**
+  String get harmonySoundTagSoft;
+
+  /// No description provided for @harmonySoundTagOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'open'**
+  String get harmonySoundTagOpen;
+
+  /// No description provided for @harmonySoundTagModern.
+  ///
+  /// In en, this message translates to:
+  /// **'modern'**
+  String get harmonySoundTagModern;
+
+  /// No description provided for @harmonySoundTagDry.
+  ///
+  /// In en, this message translates to:
+  /// **'dry'**
+  String get harmonySoundTagDry;
+
+  /// No description provided for @harmonySoundTagWarm.
+  ///
+  /// In en, this message translates to:
+  /// **'warm'**
+  String get harmonySoundTagWarm;
+
+  /// No description provided for @harmonySoundTagEpReady.
+  ///
+  /// In en, this message translates to:
+  /// **'EP-ready'**
+  String get harmonySoundTagEpReady;
+
+  /// No description provided for @harmonySoundTagClear.
+  ///
+  /// In en, this message translates to:
+  /// **'clear'**
+  String get harmonySoundTagClear;
+
+  /// No description provided for @harmonySoundTagAcoustic.
+  ///
+  /// In en, this message translates to:
+  /// **'acoustic'**
+  String get harmonySoundTagAcoustic;
+
+  /// No description provided for @harmonySoundTagFocused.
+  ///
+  /// In en, this message translates to:
+  /// **'focused'**
+  String get harmonySoundTagFocused;
+
+  /// No description provided for @harmonySoundNeutralTrait1.
+  ///
+  /// In en, this message translates to:
+  /// **'Steady hold for general harmonic checking'**
+  String get harmonySoundNeutralTrait1;
+
+  /// No description provided for @harmonySoundNeutralTrait2.
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced attack with low coloration'**
+  String get harmonySoundNeutralTrait2;
+
+  /// No description provided for @harmonySoundNeutralTrait3.
+  ///
+  /// In en, this message translates to:
+  /// **'Safe fallback for any lesson or free-play context'**
+  String get harmonySoundNeutralTrait3;
+
+  /// No description provided for @harmonySoundNeutralExpansion1.
+  ///
+  /// In en, this message translates to:
+  /// **'Future split by piano register or room size'**
+  String get harmonySoundNeutralExpansion1;
+
+  /// No description provided for @harmonySoundNeutralExpansion2.
+  ///
+  /// In en, this message translates to:
+  /// **'Possible alternate shared instrument set for headphones'**
+  String get harmonySoundNeutralExpansion2;
+
+  /// No description provided for @harmonySoundPopTrait1.
+  ///
+  /// In en, this message translates to:
+  /// **'Longer sustain for open hooks and add9 color'**
+  String get harmonySoundPopTrait1;
+
+  /// No description provided for @harmonySoundPopTrait2.
+  ///
+  /// In en, this message translates to:
+  /// **'Softer attack with a little width in repeated previews'**
+  String get harmonySoundPopTrait2;
+
+  /// No description provided for @harmonySoundPopTrait3.
+  ///
+  /// In en, this message translates to:
+  /// **'Gentle humanization so loops feel less grid-locked'**
+  String get harmonySoundPopTrait3;
+
+  /// No description provided for @harmonySoundPopExpansion1.
+  ///
+  /// In en, this message translates to:
+  /// **'Bright pop keys or layered piano-synth asset'**
+  String get harmonySoundPopExpansion1;
+
+  /// No description provided for @harmonySoundPopExpansion2.
+  ///
+  /// In en, this message translates to:
+  /// **'Wider stereo voicing playback for chorus lift'**
+  String get harmonySoundPopExpansion2;
+
+  /// No description provided for @harmonySoundJazzTrait1.
+  ///
+  /// In en, this message translates to:
+  /// **'Shorter hold to keep cadence motion readable'**
+  String get harmonySoundJazzTrait1;
+
+  /// No description provided for @harmonySoundJazzTrait2.
+  ///
+  /// In en, this message translates to:
+  /// **'Faster broken-preview feel for guide-tone hearing'**
+  String get harmonySoundJazzTrait2;
+
+  /// No description provided for @harmonySoundJazzTrait3.
+  ///
+  /// In en, this message translates to:
+  /// **'More touch variation to suggest shell and rootless comping'**
+  String get harmonySoundJazzTrait3;
+
+  /// No description provided for @harmonySoundJazzExpansion1.
+  ///
+  /// In en, this message translates to:
+  /// **'Dry upright or mellow electric-piano instrument family'**
+  String get harmonySoundJazzExpansion1;
+
+  /// No description provided for @harmonySoundJazzExpansion2.
+  ///
+  /// In en, this message translates to:
+  /// **'Track-aware comping presets for shell and rootless drills'**
+  String get harmonySoundJazzExpansion2;
+
+  /// No description provided for @harmonySoundClassicalTrait1.
+  ///
+  /// In en, this message translates to:
+  /// **'Centered sustain for function and cadence clarity'**
+  String get harmonySoundClassicalTrait1;
+
+  /// No description provided for @harmonySoundClassicalTrait2.
+  ///
+  /// In en, this message translates to:
+  /// **'Low randomness to keep voice-leading stable'**
+  String get harmonySoundClassicalTrait2;
+
+  /// No description provided for @harmonySoundClassicalTrait3.
+  ///
+  /// In en, this message translates to:
+  /// **'More direct block playback for harmonic arrival'**
+  String get harmonySoundClassicalTrait3;
+
+  /// No description provided for @harmonySoundClassicalExpansion1.
+  ///
+  /// In en, this message translates to:
+  /// **'Direct acoustic piano profile with less ambient spread'**
+  String get harmonySoundClassicalExpansion1;
+
+  /// No description provided for @harmonySoundClassicalExpansion2.
+  ///
+  /// In en, this message translates to:
+  /// **'Dedicated cadence and sequence preview voicings'**
+  String get harmonySoundClassicalExpansion2;
+
+  /// No description provided for @explanationSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Why this works'**
+  String get explanationSectionTitle;
+
+  /// No description provided for @explanationReasonSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Why this result'**
+  String get explanationReasonSection;
+
+  /// No description provided for @explanationConfidenceHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High confidence'**
+  String get explanationConfidenceHigh;
+
+  /// No description provided for @explanationConfidenceMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Plausible reading'**
+  String get explanationConfidenceMedium;
+
+  /// No description provided for @explanationConfidenceLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Treat as a tentative reading'**
+  String get explanationConfidenceLow;
+
+  /// No description provided for @explanationAmbiguityLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Most of the progression points in one direction, but a light alternate reading is still possible.'**
+  String get explanationAmbiguityLow;
+
+  /// No description provided for @explanationAmbiguityMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'More than one plausible reading is still in play, so context matters here.'**
+  String get explanationAmbiguityMedium;
+
+  /// No description provided for @explanationAmbiguityHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Several readings are competing, so treat this as a cautious, context-dependent explanation.'**
+  String get explanationAmbiguityHigh;
+
+  /// No description provided for @explanationCautionParser.
+  ///
+  /// In en, this message translates to:
+  /// **'Some chord symbols were normalized before analysis.'**
+  String get explanationCautionParser;
+
+  /// No description provided for @explanationCautionAmbiguous.
+  ///
+  /// In en, this message translates to:
+  /// **'There is more than one reasonable reading here.'**
+  String get explanationCautionAmbiguous;
+
+  /// No description provided for @explanationCautionAlternateKey.
+  ///
+  /// In en, this message translates to:
+  /// **'A nearby key center also fits part of this progression.'**
+  String get explanationCautionAlternateKey;
+
+  /// No description provided for @explanationAlternativeSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Other readings'**
+  String get explanationAlternativeSection;
+
+  /// No description provided for @explanationAlternativeKeyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Alternate key: {keyLabel}'**
+  String explanationAlternativeKeyLabel(Object keyLabel);
+
+  /// No description provided for @explanationAlternativeKeyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The harmonic pull is still valid, but another key center also explains some of the same chords.'**
+  String get explanationAlternativeKeyBody;
+
+  /// No description provided for @explanationAlternativeReadingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Alternate reading: {romanNumeral}'**
+  String explanationAlternativeReadingLabel(Object romanNumeral);
+
+  /// No description provided for @explanationAlternativeReadingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This is another possible interpretation rather than a single definitive label.'**
+  String get explanationAlternativeReadingBody;
+
+  /// No description provided for @explanationListeningSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening focus'**
+  String get explanationListeningSection;
+
+  /// No description provided for @explanationListeningGuideToneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow the 3rds and 7ths'**
+  String get explanationListeningGuideToneTitle;
+
+  /// No description provided for @explanationListeningGuideToneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen for the smallest inner-line motion as the cadence resolves.'**
+  String get explanationListeningGuideToneBody;
+
+  /// No description provided for @explanationListeningDominantColorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen for the dominant color'**
+  String get explanationListeningDominantColorTitle;
+
+  /// No description provided for @explanationListeningDominantColorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Notice how the tension on the dominant wants to release, even before the final arrival lands.'**
+  String get explanationListeningDominantColorBody;
+
+  /// No description provided for @explanationListeningBackdoorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear the softer backdoor pull'**
+  String get explanationListeningBackdoorTitle;
+
+  /// No description provided for @explanationListeningBackdoorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen for the subdominant-minor color leading home by color and voice leading rather than a plain V-I push.'**
+  String get explanationListeningBackdoorBody;
+
+  /// No description provided for @explanationListeningBorrowedColorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear the color shift'**
+  String get explanationListeningBorrowedColorTitle;
+
+  /// No description provided for @explanationListeningBorrowedColorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Notice how the borrowed chord darkens or brightens the loop before it returns home.'**
+  String get explanationListeningBorrowedColorBody;
+
+  /// No description provided for @explanationListeningBassMotionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow the bass motion'**
+  String get explanationListeningBassMotionTitle;
+
+  /// No description provided for @explanationListeningBassMotionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Track how the bass note reshapes momentum, even when the upper harmony stays closely related.'**
+  String get explanationListeningBassMotionBody;
+
+  /// No description provided for @explanationListeningCadenceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear the arrival'**
+  String get explanationListeningCadenceTitle;
+
+  /// No description provided for @explanationListeningCadenceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay attention to which chord feels like the point of rest and how the approach prepares it.'**
+  String get explanationListeningCadenceBody;
+
+  /// No description provided for @explanationListeningAmbiguityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare the competing readings'**
+  String get explanationListeningAmbiguityTitle;
+
+  /// No description provided for @explanationListeningAmbiguityBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try hearing the same chord once for its local pull and once for its larger key-center role.'**
+  String get explanationListeningAmbiguityBody;
+
+  /// No description provided for @explanationPerformanceSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance focus'**
+  String get explanationPerformanceSection;
+
+  /// No description provided for @explanationPerformancePopTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the hook singable'**
+  String get explanationPerformancePopTitle;
+
+  /// No description provided for @explanationPerformancePopBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Favor clear top notes, repeated contour, and open voicings that support the vocal line.'**
+  String get explanationPerformancePopBody;
+
+  /// No description provided for @explanationPerformanceJazzTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Target guide tones first'**
+  String get explanationPerformanceJazzTitle;
+
+  /// No description provided for @explanationPerformanceJazzBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Outline the 3rd and 7th before adding extra tensions or reharm color.'**
+  String get explanationPerformanceJazzBody;
+
+  /// No description provided for @explanationPerformanceJazzShellTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with shell tones'**
+  String get explanationPerformanceJazzShellTitle;
+
+  /// No description provided for @explanationPerformanceJazzShellBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Place the root, 3rd, and 7th cleanly first so the cadence stays easy to hear.'**
+  String get explanationPerformanceJazzShellBody;
+
+  /// No description provided for @explanationPerformanceJazzRootlessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let the 3rd and 7th carry the shape'**
+  String get explanationPerformanceJazzRootlessTitle;
+
+  /// No description provided for @explanationPerformanceJazzRootlessBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the guide tones stable, then add 9 or 13 only if the line still resolves clearly.'**
+  String get explanationPerformanceJazzRootlessBody;
+
+  /// No description provided for @explanationPerformanceClassicalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the voices disciplined'**
+  String get explanationPerformanceClassicalTitle;
+
+  /// No description provided for @explanationPerformanceClassicalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Prioritize stable spacing, functional arrivals, and stepwise motion where possible.'**
+  String get explanationPerformanceClassicalBody;
+
+  /// No description provided for @explanationPerformanceDominantColorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tension after the target is clear'**
+  String get explanationPerformanceDominantColorTitle;
+
+  /// No description provided for @explanationPerformanceDominantColorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Land the guide tones first, then treat 9, 13, or altered color as decoration rather than the main signal.'**
+  String get explanationPerformanceDominantColorBody;
+
+  /// No description provided for @explanationPerformanceAmbiguityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Anchor the most stable tones'**
+  String get explanationPerformanceAmbiguityTitle;
+
+  /// No description provided for @explanationPerformanceAmbiguityBody.
+  ///
+  /// In en, this message translates to:
+  /// **'If the reading is ambiguous, emphasize the likely resolution tones before leaning into the more colorful option.'**
+  String get explanationPerformanceAmbiguityBody;
+
+  /// No description provided for @explanationPerformanceVoicingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Voicing cue'**
+  String get explanationPerformanceVoicingTitle;
+
+  /// No description provided for @explanationPerformanceMelodyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Melody cue'**
+  String get explanationPerformanceMelodyTitle;
+
+  /// No description provided for @explanationPerformanceMelodyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Lean on the structural target notes, then let passing tones fill the space around them.'**
+  String get explanationPerformanceMelodyBody;
+
+  /// No description provided for @explanationReasonFunctionalResolutionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Functional pull'**
+  String get explanationReasonFunctionalResolutionLabel;
+
+  /// No description provided for @explanationReasonFunctionalResolutionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The chords line up as tonic, predominant, and dominant functions rather than isolated sonorities.'**
+  String get explanationReasonFunctionalResolutionBody;
+
+  /// No description provided for @explanationReasonGuideToneSmoothnessLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide-tone motion'**
+  String get explanationReasonGuideToneSmoothnessLabel;
+
+  /// No description provided for @explanationReasonGuideToneSmoothnessBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The inner voices move efficiently, which strengthens the sense of direction.'**
+  String get explanationReasonGuideToneSmoothnessBody;
+
+  /// No description provided for @explanationReasonBorrowedColorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowed color'**
+  String get explanationReasonBorrowedColorLabel;
+
+  /// No description provided for @explanationReasonBorrowedColorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A parallel-mode borrowing adds contrast without fully leaving the home key.'**
+  String get explanationReasonBorrowedColorBody;
+
+  /// No description provided for @explanationReasonSecondaryDominantLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Secondary dominant pull'**
+  String get explanationReasonSecondaryDominantLabel;
+
+  /// No description provided for @explanationReasonSecondaryDominantBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This dominant points strongly toward a local target chord instead of only the tonic.'**
+  String get explanationReasonSecondaryDominantBody;
+
+  /// No description provided for @explanationReasonTritoneSubLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tritone-sub color'**
+  String get explanationReasonTritoneSubLabel;
+
+  /// No description provided for @explanationReasonTritoneSubBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The dominant color is preserved while the bass motion shifts to a substitute route.'**
+  String get explanationReasonTritoneSubBody;
+
+  /// No description provided for @explanationReasonDominantColorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Dominant tension'**
+  String get explanationReasonDominantColorLabel;
+
+  /// No description provided for @explanationReasonDominantColorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Altered or extended dominant color strengthens the pull toward the next chord without changing the whole key reading.'**
+  String get explanationReasonDominantColorBody;
+
+  /// No description provided for @explanationReasonBackdoorMotionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Backdoor motion'**
+  String get explanationReasonBackdoorMotionLabel;
+
+  /// No description provided for @explanationReasonBackdoorMotionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This reading leans on subdominant-minor or backdoor motion, so the resolution feels softer but still directed.'**
+  String get explanationReasonBackdoorMotionBody;
+
+  /// No description provided for @explanationReasonCadentialStrengthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cadential shape'**
+  String get explanationReasonCadentialStrengthLabel;
+
+  /// No description provided for @explanationReasonCadentialStrengthBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The phrase ends with a stronger arrival than a neutral loop continuation.'**
+  String get explanationReasonCadentialStrengthBody;
+
+  /// No description provided for @explanationReasonVoiceLeadingStabilityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Stable voice leading'**
+  String get explanationReasonVoiceLeadingStabilityLabel;
+
+  /// No description provided for @explanationReasonVoiceLeadingStabilityBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected voicing keeps common tones or resolves tendency tones cleanly.'**
+  String get explanationReasonVoiceLeadingStabilityBody;
+
+  /// No description provided for @explanationReasonSingableContourLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Singable contour'**
+  String get explanationReasonSingableContourLabel;
+
+  /// No description provided for @explanationReasonSingableContourBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The line favors memorable motion over angular, highly technical shapes.'**
+  String get explanationReasonSingableContourBody;
+
+  /// No description provided for @explanationReasonSlashBassLiftLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bass-motion lift'**
+  String get explanationReasonSlashBassLiftLabel;
+
+  /// No description provided for @explanationReasonSlashBassLiftBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The bass note changes the momentum even when the harmony stays closely related.'**
+  String get explanationReasonSlashBassLiftBody;
+
+  /// No description provided for @explanationReasonTurnaroundGravityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Turnaround gravity'**
+  String get explanationReasonTurnaroundGravityLabel;
+
+  /// No description provided for @explanationReasonTurnaroundGravityBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This pattern creates forward pull by cycling through familiar jazz resolution points.'**
+  String get explanationReasonTurnaroundGravityBody;
+
+  /// No description provided for @explanationReasonInversionDisciplineLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Inversion control'**
+  String get explanationReasonInversionDisciplineLabel;
+
+  /// No description provided for @explanationReasonInversionDisciplineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The inversion choice supports smoother outer-voice motion and clearer cadence behavior.'**
+  String get explanationReasonInversionDisciplineBody;
+
+  /// No description provided for @explanationReasonAmbiguityWindowLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Competing readings'**
+  String get explanationReasonAmbiguityWindowLabel;
+
+  /// No description provided for @explanationReasonAmbiguityWindowBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Some of the same notes support more than one harmonic role, so context decides which reading feels stronger.'**
+  String get explanationReasonAmbiguityWindowBody;
+
+  /// No description provided for @explanationReasonChromaticLineLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Chromatic line'**
+  String get explanationReasonChromaticLineLabel;
+
+  /// No description provided for @explanationReasonChromaticLineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A chromatic bass or inner-line connection helps explain why this chord fits despite the extra color.'**
+  String get explanationReasonChromaticLineBody;
+
+  /// No description provided for @explanationTrackContextPop.
+  ///
+  /// In en, this message translates to:
+  /// **'In a pop context, this reading leans toward loop gravity, color contrast, and a singable top line.'**
+  String get explanationTrackContextPop;
+
+  /// No description provided for @explanationTrackContextJazz.
+  ///
+  /// In en, this message translates to:
+  /// **'In a jazz context, this is one plausible reading that highlights guide tones, cadence pull, and usable dominant color.'**
+  String get explanationTrackContextJazz;
+
+  /// No description provided for @explanationTrackContextClassical.
+  ///
+  /// In en, this message translates to:
+  /// **'In a classical context, this reading leans toward function, inversion awareness, and cadence strength.'**
+  String get explanationTrackContextClassical;
+
+  /// No description provided for @studyHarmonyTrackFocusSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This track emphasizes'**
+  String get studyHarmonyTrackFocusSectionTitle;
+
+  /// No description provided for @studyHarmonyTrackLessFocusSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This track treats more lightly'**
+  String get studyHarmonyTrackLessFocusSectionTitle;
+
+  /// No description provided for @studyHarmonyTrackRecommendedForSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended for'**
+  String get studyHarmonyTrackRecommendedForSectionTitle;
+
+  /// No description provided for @studyHarmonyTrackSoundSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound profile'**
+  String get studyHarmonyTrackSoundSectionTitle;
+
+  /// No description provided for @studyHarmonyTrackSoundAssetPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Current release uses the shared piano asset. This profile prepares future track-specific sound choices.'**
+  String get studyHarmonyTrackSoundAssetPlaceholder;
+
+  /// No description provided for @studyHarmonyTrackSoundInstrumentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current instrument: {instrument}'**
+  String studyHarmonyTrackSoundInstrumentLabel(Object instrument);
+
+  /// No description provided for @studyHarmonyTrackSoundPlaybackLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended preview pattern: {pattern}'**
+  String studyHarmonyTrackSoundPlaybackLabel(Object pattern);
+
+  /// No description provided for @studyHarmonyTrackSoundPlaybackTraitsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback character'**
+  String get studyHarmonyTrackSoundPlaybackTraitsTitle;
+
+  /// No description provided for @studyHarmonyTrackSoundExpansionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Expansion path'**
+  String get studyHarmonyTrackSoundExpansionTitle;
+
+  /// No description provided for @studyHarmonyTrackPopFocus1.
+  ///
+  /// In en, this message translates to:
+  /// **'Diatonic loop gravity and hook-friendly repetition'**
+  String get studyHarmonyTrackPopFocus1;
+
+  /// No description provided for @studyHarmonyTrackPopFocus2.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowed-color lifts such as iv, bVII, or IVMaj7'**
+  String get studyHarmonyTrackPopFocus2;
+
+  /// No description provided for @studyHarmonyTrackPopFocus3.
+  ///
+  /// In en, this message translates to:
+  /// **'Slash-bass and pedal-bass motion that supports pre-chorus lift'**
+  String get studyHarmonyTrackPopFocus3;
+
+  /// No description provided for @studyHarmonyTrackPopLess1.
+  ///
+  /// In en, this message translates to:
+  /// **'Dense jazz reharmonization and advanced substitute dominants'**
+  String get studyHarmonyTrackPopLess1;
+
+  /// No description provided for @studyHarmonyTrackPopLess2.
+  ///
+  /// In en, this message translates to:
+  /// **'Rootless voicing systems and heavy altered-dominant language'**
+  String get studyHarmonyTrackPopLess2;
+
+  /// No description provided for @studyHarmonyTrackPopRecommendedFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Writers, producers, and players who want modern pop or ballad harmony that sounds usable quickly.'**
+  String get studyHarmonyTrackPopRecommendedFor;
+
+  /// No description provided for @studyHarmonyTrackPopTheoryTone.
+  ///
+  /// In en, this message translates to:
+  /// **'Practical, song-first, and color-aware without overloading the learner with jargon.'**
+  String get studyHarmonyTrackPopTheoryTone;
+
+  /// No description provided for @studyHarmonyTrackPopHeroHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Build hook-friendly loops'**
+  String get studyHarmonyTrackPopHeroHeadline;
+
+  /// No description provided for @studyHarmonyTrackPopHeroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This track teaches loop gravity, restrained borrowed color, and bass movement that lifts a section without losing clarity.'**
+  String get studyHarmonyTrackPopHeroBody;
+
+  /// No description provided for @studyHarmonyTrackPopQuickPracticeCue.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with the signature loop chapter, then listen for how the bass and borrowed color reshape the same hook.'**
+  String get studyHarmonyTrackPopQuickPracticeCue;
+
+  /// No description provided for @studyHarmonyTrackPopSoundLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Soft / open / modern'**
+  String get studyHarmonyTrackPopSoundLabel;
+
+  /// No description provided for @studyHarmonyTrackPopSoundSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced piano now, with future room for brighter pop keys and wider stereo voicings.'**
+  String get studyHarmonyTrackPopSoundSummary;
+
+  /// No description provided for @studyHarmonyTrackJazzFocus1.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide-tone hearing and shell-to-rootless voicing growth'**
+  String get studyHarmonyTrackJazzFocus1;
+
+  /// No description provided for @studyHarmonyTrackJazzFocus2.
+  ///
+  /// In en, this message translates to:
+  /// **'Major ii-V-I, minor iiø-V-i, and turnaround behavior'**
+  String get studyHarmonyTrackJazzFocus2;
+
+  /// No description provided for @studyHarmonyTrackJazzFocus3.
+  ///
+  /// In en, this message translates to:
+  /// **'Dominant color, tensions, tritone sub, and backdoor entry points'**
+  String get studyHarmonyTrackJazzFocus3;
+
+  /// No description provided for @studyHarmonyTrackJazzLess1.
+  ///
+  /// In en, this message translates to:
+  /// **'Purely song-loop repetition without cadence awareness'**
+  String get studyHarmonyTrackJazzLess1;
+
+  /// No description provided for @studyHarmonyTrackJazzLess2.
+  ///
+  /// In en, this message translates to:
+  /// **'Classical inversion literacy as a primary objective'**
+  String get studyHarmonyTrackJazzLess2;
+
+  /// No description provided for @studyHarmonyTrackJazzRecommendedFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Players who want to hear and use functional jazz harmony without jumping straight into maximal reharm complexity.'**
+  String get studyHarmonyTrackJazzRecommendedFor;
+
+  /// No description provided for @studyHarmonyTrackJazzTheoryTone.
+  ///
+  /// In en, this message translates to:
+  /// **'Contextual, confidence-aware, and careful about calling one reading the only correct jazz answer.'**
+  String get studyHarmonyTrackJazzTheoryTone;
+
+  /// No description provided for @studyHarmonyTrackJazzHeroHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear the line inside the chords'**
+  String get studyHarmonyTrackJazzHeroHeadline;
+
+  /// No description provided for @studyHarmonyTrackJazzHeroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This track turns jazz harmony into manageable steps: guide tones first, then cadence families, then tasteful dominant color.'**
+  String get studyHarmonyTrackJazzHeroBody;
+
+  /// No description provided for @studyHarmonyTrackJazzQuickPracticeCue.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with guide tones and shell voicings, then revisit the same cadence with rootless color.'**
+  String get studyHarmonyTrackJazzQuickPracticeCue;
+
+  /// No description provided for @studyHarmonyTrackJazzSoundLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Dry / warm / EP-ready'**
+  String get studyHarmonyTrackJazzSoundLabel;
+
+  /// No description provided for @studyHarmonyTrackJazzSoundSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared piano for now, with placeholders for drier attacks and future electric-piano friendly playback.'**
+  String get studyHarmonyTrackJazzSoundSummary;
+
+  /// No description provided for @studyHarmonyTrackClassicalFocus1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tonic / predominant / dominant function and cadence types'**
+  String get studyHarmonyTrackClassicalFocus1;
+
+  /// No description provided for @studyHarmonyTrackClassicalFocus2.
+  ///
+  /// In en, this message translates to:
+  /// **'Inversion literacy, including first inversion and cadential 6/4 behavior'**
+  String get studyHarmonyTrackClassicalFocus2;
+
+  /// No description provided for @studyHarmonyTrackClassicalFocus3.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice-leading stability, sequence, and functional modulation basics'**
+  String get studyHarmonyTrackClassicalFocus3;
+
+  /// No description provided for @studyHarmonyTrackClassicalLess1.
+  ///
+  /// In en, this message translates to:
+  /// **'Heavy tension stacking, quartal color, and upper-structure thinking'**
+  String get studyHarmonyTrackClassicalLess1;
+
+  /// No description provided for @studyHarmonyTrackClassicalLess2.
+  ///
+  /// In en, this message translates to:
+  /// **'Loop-driven pop repetition as the main learning frame'**
+  String get studyHarmonyTrackClassicalLess2;
+
+  /// No description provided for @studyHarmonyTrackClassicalRecommendedFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Learners who want clear functional hearing, inversion awareness, and disciplined voice leading.'**
+  String get studyHarmonyTrackClassicalRecommendedFor;
+
+  /// No description provided for @studyHarmonyTrackClassicalTheoryTone.
+  ///
+  /// In en, this message translates to:
+  /// **'Structured, function-first, and phrased in a way that supports listening as well as label recognition.'**
+  String get studyHarmonyTrackClassicalTheoryTone;
+
+  /// No description provided for @studyHarmonyTrackClassicalHeroHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear function and cadence clearly'**
+  String get studyHarmonyTrackClassicalHeroHeadline;
+
+  /// No description provided for @studyHarmonyTrackClassicalHeroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This track emphasizes functional arrival, inversion control, and phrase endings that feel architecturally clear.'**
+  String get studyHarmonyTrackClassicalHeroBody;
+
+  /// No description provided for @studyHarmonyTrackClassicalQuickPracticeCue.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with cadence lab drills, then compare how inversions change the same function.'**
+  String get studyHarmonyTrackClassicalQuickPracticeCue;
+
+  /// No description provided for @studyHarmonyTrackClassicalSoundLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear / acoustic / focused'**
+  String get studyHarmonyTrackClassicalSoundLabel;
+
+  /// No description provided for @studyHarmonyTrackClassicalSoundSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared piano for now, with room for a more direct acoustic profile in later releases.'**
+  String get studyHarmonyTrackClassicalSoundSummary;
+
+  /// No description provided for @studyHarmonyPopChapterSignatureLoopsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Signature Pop Loops'**
+  String get studyHarmonyPopChapterSignatureLoopsTitle;
+
+  /// No description provided for @studyHarmonyPopChapterSignatureLoopsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Build practical pop instincts with hook gravity, borrowed lift, and bass motion that feels arrangement-ready.'**
+  String get studyHarmonyPopChapterSignatureLoopsDescription;
+
+  /// No description provided for @studyHarmonyPopLessonHookGravityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hook Gravity'**
+  String get studyHarmonyPopLessonHookGravityTitle;
+
+  /// No description provided for @studyHarmonyPopLessonHookGravityDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear why modern four-chord loops stay catchy even when the harmony is simple.'**
+  String get studyHarmonyPopLessonHookGravityDescription;
+
+  /// No description provided for @studyHarmonyPopLessonBorrowedLiftTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowed Lift'**
+  String get studyHarmonyPopLessonBorrowedLiftTitle;
+
+  /// No description provided for @studyHarmonyPopLessonBorrowedLiftDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience restrained borrowed-color chords that brighten or darken a section without derailing the hook.'**
+  String get studyHarmonyPopLessonBorrowedLiftDescription;
+
+  /// No description provided for @studyHarmonyPopLessonBassMotionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bass Motion'**
+  String get studyHarmonyPopLessonBassMotionTitle;
+
+  /// No description provided for @studyHarmonyPopLessonBassMotionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Use slash-bass and line motion to create lift while the upper harmony stays familiar.'**
+  String get studyHarmonyPopLessonBassMotionDescription;
+
+  /// No description provided for @studyHarmonyPopLessonBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pre-Chorus Lift Checkpoint'**
+  String get studyHarmonyPopLessonBossTitle;
+
+  /// No description provided for @studyHarmonyPopLessonBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Combine loop gravity, borrowed color, and bass motion in one song-ready pop slice.'**
+  String get studyHarmonyPopLessonBossDescription;
+
+  /// No description provided for @studyHarmonyJazzChapterGuideToneLabTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide-Tone Lab'**
+  String get studyHarmonyJazzChapterGuideToneLabTitle;
+
+  /// No description provided for @studyHarmonyJazzChapterGuideToneLabDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Move from clear major ii-V-I hearing into shell voicings, minor cadences, rootless color, and careful reharm entry points.'**
+  String get studyHarmonyJazzChapterGuideToneLabDescription;
+
+  /// No description provided for @studyHarmonyJazzLessonGuideTonesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide-Tone Hearing'**
+  String get studyHarmonyJazzLessonGuideTonesTitle;
+
+  /// No description provided for @studyHarmonyJazzLessonGuideTonesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Track the 3rds and 7ths that define a clear major ii-V-I before adding extra color.'**
+  String get studyHarmonyJazzLessonGuideTonesDescription;
+
+  /// No description provided for @studyHarmonyJazzLessonShellVoicingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shell Voicings'**
+  String get studyHarmonyJazzLessonShellVoicingsTitle;
+
+  /// No description provided for @studyHarmonyJazzLessonShellVoicingsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the cadence clear with lean shell shapes and simple turnaround motion.'**
+  String get studyHarmonyJazzLessonShellVoicingsDescription;
+
+  /// No description provided for @studyHarmonyJazzLessonMinorCadenceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Minor Cadence'**
+  String get studyHarmonyJazzLessonMinorCadenceTitle;
+
+  /// No description provided for @studyHarmonyJazzLessonMinorCadenceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Recognize how minor ii첩-V-i motion feels and why the dominant sounds more urgent there.'**
+  String get studyHarmonyJazzLessonMinorCadenceDescription;
+
+  /// No description provided for @studyHarmonyJazzLessonRootlessVoicingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rootless Voicings'**
+  String get studyHarmonyJazzLessonRootlessVoicingsTitle;
+
+  /// No description provided for @studyHarmonyJazzLessonRootlessVoicingsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear the same turnaround after the bass drops out of the voicing and the color tones carry more weight.'**
+  String get studyHarmonyJazzLessonRootlessVoicingsDescription;
+
+  /// No description provided for @studyHarmonyJazzLessonDominantColorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Dominant Tension'**
+  String get studyHarmonyJazzLessonDominantColorTitle;
+
+  /// No description provided for @studyHarmonyJazzLessonDominantColorDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Add 9ths, 13ths, sus, or altered pull without losing the cadence target.'**
+  String get studyHarmonyJazzLessonDominantColorDescription;
+
+  /// No description provided for @studyHarmonyJazzLessonBackdoorCadenceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tritone and Backdoor'**
+  String get studyHarmonyJazzLessonBackdoorCadenceTitle;
+
+  /// No description provided for @studyHarmonyJazzLessonBackdoorCadenceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare substitute-dominant and backdoor arrivals as plausible jazz routes into the same tonic.'**
+  String get studyHarmonyJazzLessonBackdoorCadenceDescription;
+
+  /// No description provided for @studyHarmonyJazzLessonBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Turnaround Checkpoint'**
+  String get studyHarmonyJazzLessonBossTitle;
+
+  /// No description provided for @studyHarmonyJazzLessonBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Mix major ii-V-I, minor iiø-V-i, rootless color, and careful reharm so the cadence target still stays readable.'**
+  String get studyHarmonyJazzLessonBossDescription;
+
+  /// No description provided for @studyHarmonyClassicalChapterCadenceLabTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cadence Lab'**
+  String get studyHarmonyClassicalChapterCadenceLabTitle;
+
+  /// No description provided for @studyHarmonyClassicalChapterCadenceLabDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Strengthen functional hearing with cadences, inversions, and carefully controlled secondary dominants.'**
+  String get studyHarmonyClassicalChapterCadenceLabDescription;
+
+  /// No description provided for @studyHarmonyClassicalLessonCadenceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cadence Function'**
+  String get studyHarmonyClassicalLessonCadenceTitle;
+
+  /// No description provided for @studyHarmonyClassicalLessonCadenceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort tonic, predominant, and dominant behavior by how each chord prepares or completes the phrase.'**
+  String get studyHarmonyClassicalLessonCadenceDescription;
+
+  /// No description provided for @studyHarmonyClassicalLessonInversionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Inversion Control'**
+  String get studyHarmonyClassicalLessonInversionTitle;
+
+  /// No description provided for @studyHarmonyClassicalLessonInversionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear how inversions change the bass line and the stability of an arrival.'**
+  String get studyHarmonyClassicalLessonInversionDescription;
+
+  /// No description provided for @studyHarmonyClassicalLessonSecondaryDominantTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Functional Secondary Dominants'**
+  String get studyHarmonyClassicalLessonSecondaryDominantTitle;
+
+  /// No description provided for @studyHarmonyClassicalLessonSecondaryDominantDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Treat secondary dominants as directed functional events instead of generic color chords.'**
+  String get studyHarmonyClassicalLessonSecondaryDominantDescription;
+
+  /// No description provided for @studyHarmonyClassicalLessonBossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrival Checkpoint'**
+  String get studyHarmonyClassicalLessonBossTitle;
+
+  /// No description provided for @studyHarmonyClassicalLessonBossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Combine cadence shape, inversion awareness, and secondary-dominant pull in one controlled phrase.'**
+  String get studyHarmonyClassicalLessonBossDescription;
+
+  /// No description provided for @studyHarmonyPlayStyleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{playStyle, select, competitor{Competitor} collector{Collector} explorer{Explorer} stabilizer{Stabilizer} balanced{Balanced} other{Balanced}}'**
+  String studyHarmonyPlayStyleLabel(String playStyle);
+
+  /// No description provided for @studyHarmonyRewardFocusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{focus, select, mastery{Focus: Mastery} achievements{Focus: Achievements} cosmetics{Focus: Cosmetics} currency{Focus: Currency} collection{Focus: Collection} other{Focus}}'**
+  String studyHarmonyRewardFocusLabel(String focus);
+
+  /// No description provided for @studyHarmonyNextUnlockProgressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Next {rewardTitle} {progress}%'**
+  String studyHarmonyNextUnlockProgressLabel(String rewardTitle, int progress);
+
+  /// No description provided for @studyHarmonyCurrencyBalanceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{currencyTitle} {amount}'**
+  String studyHarmonyCurrencyBalanceLabel(String currencyTitle, int amount);
+
+  /// No description provided for @studyHarmonyCurrencyGrantLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{currencyTitle} +{amount}'**
+  String studyHarmonyCurrencyGrantLabel(String currencyTitle, int amount);
+
+  /// No description provided for @studyHarmonyDifficultyLaneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{lane, select, recovery{Recovery Lane} groove{Groove Lane} push{Push Lane} clutch{Clutch Lane} legend{Legend Lane} other{Practice Lane}}'**
+  String studyHarmonyDifficultyLaneLabel(String lane);
+
+  /// No description provided for @studyHarmonyPressureTierLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{tier, select, calm{Calm Pressure} steady{Steady Pressure} hot{Hot Pressure} charged{Charged Pressure} overdrive{Overdrive} other{Pressure}}'**
+  String studyHarmonyPressureTierLabel(String tier);
+
+  /// No description provided for @studyHarmonyForgivenessTierLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{tier, select, strict{Strict Windows} tight{Tight Windows} balanced{Balanced Windows} kind{Kind Windows} generous{Generous Windows} other{Timing Windows}}'**
+  String studyHarmonyForgivenessTierLabel(String tier);
+
+  /// No description provided for @studyHarmonyComboGoalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Combo Goal {comboTarget}'**
+  String studyHarmonyComboGoalLabel(int comboTarget);
+
+  /// No description provided for @studyHarmonyRuntimeTuningSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Lives {lives} | Goal {goal}'**
+  String studyHarmonyRuntimeTuningSummary(int lives, int goal);
+
+  /// No description provided for @studyHarmonyCoachLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{style, select, supportive{Supportive Coach} structured{Structured Coach} challengeForward{Challenge Coach} analytical{Analytical Coach} restorative{Restorative Coach} other{Coach}}'**
+  String studyHarmonyCoachLabel(String style);
+
+  /// No description provided for @studyHarmonyCoachLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{style, select, supportive{Protect flow first and let confidence compound.} structured{Follow the structure and the gains will stick.} challengeForward{Lean into the pressure and push for a sharper run.} analytical{Read the weak point and refine it with precision.} restorative{This run is about rebuilding rhythm without tilt.} other{Keep the next run focused and intentional.}}'**
+  String studyHarmonyCoachLine(String style);
+
+  /// No description provided for @studyHarmonyPacingSegmentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{segment, select, warmup{Warmup} tension{Tension} release{Release} reward{Reward} other{Segment}} {minutes}m'**
+  String studyHarmonyPacingSegmentLabel(String segment, int minutes);
+
+  /// No description provided for @studyHarmonyPacingSummaryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pacing {segments}'**
+  String studyHarmonyPacingSummaryLabel(String segments);
+
+  /// No description provided for @studyHarmonyArcadeRiskLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{risk, select, forgiving{Low Risk} balanced{Balanced Risk} tense{High Tension} punishing{Punishing Risk} other{Arcade Risk}}'**
+  String studyHarmonyArcadeRiskLabel(String risk);
+
+  /// No description provided for @studyHarmonyArcadeRewardStyleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{style, select, currency{Currency Loop} cosmetic{Cosmetic Hunt} title{Title Hunt} trophy{Trophy Run} bundle{Bundle Rewards} prestige{Prestige Rewards} other{Reward Loop}}'**
+  String studyHarmonyArcadeRewardStyleLabel(String style);
+
+  /// No description provided for @studyHarmonyArcadeRuntimeComboBonusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Combo bonus every {count}'**
+  String studyHarmonyArcadeRuntimeComboBonusLabel(int count);
+
+  /// No description provided for @studyHarmonyArcadeRuntimeMissCostLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Miss costs {lives}'**
+  String studyHarmonyArcadeRuntimeMissCostLabel(int lives);
+
+  /// No description provided for @studyHarmonyArcadeRuntimeModifierPulses.
+  ///
+  /// In en, this message translates to:
+  /// **'Modifier pulses'**
+  String get studyHarmonyArcadeRuntimeModifierPulses;
+
+  /// No description provided for @studyHarmonyArcadeRuntimeGhostPressure.
+  ///
+  /// In en, this message translates to:
+  /// **'Ghost pressure'**
+  String get studyHarmonyArcadeRuntimeGhostPressure;
+
+  /// No description provided for @studyHarmonyArcadeRuntimeShopBiasedLoot.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop-biased loot'**
+  String get studyHarmonyArcadeRuntimeShopBiasedLoot;
+
+  /// No description provided for @studyHarmonyArcadeRuntimeSteadyRuleset.
+  ///
+  /// In en, this message translates to:
+  /// **'Steady ruleset'**
+  String get studyHarmonyArcadeRuntimeSteadyRuleset;
+
+  /// No description provided for @studyHarmonyShopStateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{state, select, alreadyPurchased{Already purchased} readyToBuy{Ready to buy} progressLocked{Progress locked} other{Shop state}}'**
+  String studyHarmonyShopStateLabel(String state);
+
+  /// No description provided for @studyHarmonyShopActionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{action, select, buy{Buy} equipped{Equipped} equip{Equip} other{Shop action}}'**
+  String studyHarmonyShopActionLabel(String action);
+
+  /// No description provided for @melodyCurrentLineFeelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Current line feel'**
+  String get melodyCurrentLineFeelTitle;
+
+  /// No description provided for @melodyLinePersonalityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Line personality'**
+  String get melodyLinePersonalityTitle;
+
+  /// No description provided for @melodyLinePersonalityBody.
+  ///
+  /// In en, this message translates to:
+  /// **'These four sliders shape why guided, standard, and advanced can feel different even before you change the harmony.'**
+  String get melodyLinePersonalityBody;
+
+  /// No description provided for @melodySyncopationBiasTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncopation Bias'**
+  String get melodySyncopationBiasTitle;
+
+  /// No description provided for @melodySyncopationBiasBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Leans toward offbeat starts, anticipations, and rhythmic lift.'**
+  String get melodySyncopationBiasBody;
+
+  /// No description provided for @melodyColorRealizationBiasTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Color Realization Bias'**
+  String get melodyColorRealizationBiasTitle;
+
+  /// No description provided for @melodyColorRealizationBiasBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Lets the melody pick up featured tensions and color tones more often.'**
+  String get melodyColorRealizationBiasBody;
+
+  /// No description provided for @melodyNoveltyTargetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Novelty Target'**
+  String get melodyNoveltyTargetTitle;
+
+  /// No description provided for @melodyNoveltyTargetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduces exact repeats and nudges the line toward fresher interval shapes.'**
+  String get melodyNoveltyTargetBody;
+
+  /// No description provided for @melodyMotifVariationBiasTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Motif Variation Bias'**
+  String get melodyMotifVariationBiasTitle;
+
+  /// No description provided for @melodyMotifVariationBiasBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Turns motif reuse into sequence, tail changes, and rhythmic variation.'**
+  String get melodyMotifVariationBiasBody;
+
+  /// No description provided for @studyHarmonyArcadeRulesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Arcade Rules'**
+  String get studyHarmonyArcadeRulesTitle;
+
+  /// No description provided for @studyHarmonySessionLengthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min run'**
+  String studyHarmonySessionLengthLabel(int minutes);
+
+  /// No description provided for @studyHarmonyRewardKindLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{kind, select, achievement{Achievement} title{Title} cosmetic{Cosmetic} shopItem{Shop Unlock} other{Reward}}'**
+  String studyHarmonyRewardKindLabel(String kind);
+
+  /// No description provided for @studyHarmonyArcadeRuntimeMissLifeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Misses cost {lives} hearts'**
+  String studyHarmonyArcadeRuntimeMissLifeLabel(int lives);
+
+  /// No description provided for @studyHarmonyArcadeRuntimeMissProgressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Misses push progress back by {amount}'**
+  String studyHarmonyArcadeRuntimeMissProgressLabel(int amount);
+
+  /// No description provided for @studyHarmonyArcadeRuntimeComboProgressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {threshold} combo adds +{amount} progress'**
+  String studyHarmonyArcadeRuntimeComboProgressLabel(int threshold, int amount);
+
+  /// No description provided for @studyHarmonyArcadeRuntimeComboLifeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {threshold} combo adds +{amount} heart'**
+  String studyHarmonyArcadeRuntimeComboLifeLabel(int threshold, int amount);
+
+  /// No description provided for @studyHarmonyArcadeRuntimeComboResetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Misses reset combo'**
+  String get studyHarmonyArcadeRuntimeComboResetLabel;
+
+  /// No description provided for @studyHarmonyArcadeRuntimeComboDropLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Misses cut combo by {amount}'**
+  String studyHarmonyArcadeRuntimeComboDropLabel(int amount);
+
+  /// No description provided for @studyHarmonyArcadeRuntimeChoicesReshuffleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Choices reshuffle'**
+  String get studyHarmonyArcadeRuntimeChoicesReshuffleLabel;
+
+  /// No description provided for @studyHarmonyArcadeRuntimeMissedReplayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Missed prompts replay'**
+  String get studyHarmonyArcadeRuntimeMissedReplayLabel;
+
+  /// No description provided for @studyHarmonyArcadeRuntimeUniqueCycleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'No prompt repeats'**
+  String get studyHarmonyArcadeRuntimeUniqueCycleLabel;
+
+  /// No description provided for @studyHarmonyRuntimeBundleClearBonusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Bonus'**
+  String get studyHarmonyRuntimeBundleClearBonusTitle;
+
+  /// No description provided for @studyHarmonyRuntimeBundlePrecisionBonusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Precision Bonus'**
+  String get studyHarmonyRuntimeBundlePrecisionBonusTitle;
+
+  /// No description provided for @studyHarmonyRuntimeBundleComboBonusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Combo Bonus'**
+  String get studyHarmonyRuntimeBundleComboBonusTitle;
+
+  /// No description provided for @studyHarmonyRuntimeBundleModeBonusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mode Bonus'**
+  String get studyHarmonyRuntimeBundleModeBonusTitle;
+
+  /// No description provided for @studyHarmonyRuntimeBundleMasteryBonusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mastery Bonus'**
+  String get studyHarmonyRuntimeBundleMasteryBonusTitle;
+
+  /// No description provided for @melodyQuickPresetGuideLineLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide Line'**
+  String get melodyQuickPresetGuideLineLabel;
+
+  /// No description provided for @melodyQuickPresetSongLineLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Song Line'**
+  String get melodyQuickPresetSongLineLabel;
+
+  /// No description provided for @melodyQuickPresetColorLineLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Color Line'**
+  String get melodyQuickPresetColorLineLabel;
+
+  /// No description provided for @melodyQuickPresetGuideCompactLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide'**
+  String get melodyQuickPresetGuideCompactLabel;
+
+  /// No description provided for @melodyQuickPresetSongCompactLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Song'**
+  String get melodyQuickPresetSongCompactLabel;
+
+  /// No description provided for @melodyQuickPresetColorCompactLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get melodyQuickPresetColorCompactLabel;
+
+  /// No description provided for @melodyQuickPresetGuideShort.
+  ///
+  /// In en, this message translates to:
+  /// **'steady guide notes'**
+  String get melodyQuickPresetGuideShort;
+
+  /// No description provided for @melodyQuickPresetSongShort.
+  ///
+  /// In en, this message translates to:
+  /// **'singable contour'**
+  String get melodyQuickPresetSongShort;
+
+  /// No description provided for @melodyQuickPresetColorShort.
+  ///
+  /// In en, this message translates to:
+  /// **'color-forward line'**
+  String get melodyQuickPresetColorShort;
+
+  /// No description provided for @melodyQuickPresetPanelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Melody Presets'**
+  String get melodyQuickPresetPanelTitle;
+
+  /// No description provided for @melodyQuickPresetPanelCompactTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Line Presets'**
+  String get melodyQuickPresetPanelCompactTitle;
+
+  /// No description provided for @melodyQuickPresetOffLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get melodyQuickPresetOffLabel;
+
+  /// No description provided for @melodyQuickPresetCompactOffLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Line Off'**
+  String get melodyQuickPresetCompactOffLabel;
+
+  /// No description provided for @melodyMetricDensityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Density'**
+  String get melodyMetricDensityLabel;
+
+  /// No description provided for @melodyMetricStyleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Style'**
+  String get melodyMetricStyleLabel;
+
+  /// No description provided for @melodyMetricSyncLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync'**
+  String get melodyMetricSyncLabel;
+
+  /// No description provided for @melodyMetricColorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get melodyMetricColorLabel;
+
+  /// No description provided for @melodyMetricNoveltyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Novelty'**
+  String get melodyMetricNoveltyLabel;
+
+  /// No description provided for @melodyMetricMotifLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Motif'**
+  String get melodyMetricMotifLabel;
+
+  /// No description provided for @melodyMetricChromaticLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Chromatic'**
+  String get melodyMetricChromaticLabel;
+
+  /// No description provided for @practiceFirstRunWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your first chord is ready'**
+  String get practiceFirstRunWelcomeTitle;
+
+  /// No description provided for @practiceFirstRunWelcomeBodyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'A beginner-friendly starting profile is already applied. Listen first, then swipe the card to explore the next chord.'**
+  String get practiceFirstRunWelcomeBodyEmpty;
+
+  /// No description provided for @practiceFirstRunWelcomeBodyReady.
+  ///
+  /// In en, this message translates to:
+  /// **'{chordLabel} is ready to go. Listen first, then swipe the card to explore what comes next. You can still open the setup assistant to personalize the start.'**
+  String practiceFirstRunWelcomeBodyReady(Object chordLabel);
+
+  /// No description provided for @practiceFirstRunSetupButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalize'**
+  String get practiceFirstRunSetupButton;
 }
 
 class _AppLocalizationsDelegate

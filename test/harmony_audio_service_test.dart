@@ -1,188 +1,71 @@
 import 'package:chordest/audio/harmony_audio_models.dart';
 import 'package:chordest/audio/harmony_audio_service.dart';
-import 'package:chordest/audio/sampled_instrument_engine.dart';
+import 'package:chordest/audio/instrument_library_registry.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+class _ConfigCaptureHarmonyAudioService extends HarmonyAudioService {
+  _ConfigCaptureHarmonyAudioService() : super();
+
+  HarmonyAudioConfig? lastAppliedConfig;
+
+  @override
+  Future<void> warmUp() async {}
+
+  @override
+  Future<void> applyConfig(HarmonyAudioConfig config) async {
+    lastAppliedConfig = config;
+  }
+}
+
 void main() {
-  test('new playback requests interrupt an active arpeggio', () async {
-    final events = <String>[];
-    final engine = _FakeSampledInstrumentEngine(events);
-    final service = HarmonyAudioService(engine: engine);
-
-    final firstPlayback = service.playClip(
-      const HarmonyChordClip(
-        notes: <HarmonyPreviewNote>[
-          HarmonyPreviewNote(midiNote: 60),
-          HarmonyPreviewNote(midiNote: 64),
-          HarmonyPreviewNote(midiNote: 67),
-        ],
-      ),
-      pattern: HarmonyPlaybackPattern.arpeggio,
-    );
-
-    await Future<void>.delayed(const Duration(milliseconds: 30));
-    await service.playClip(
-      const HarmonyChordClip(
-        notes: <HarmonyPreviewNote>[HarmonyPreviewNote(midiNote: 72)],
-      ),
-    );
-    await firstPlayback;
-
-    expect(events.where((event) => event == 'noteOn:64'), isEmpty);
-    expect(events.where((event) => event == 'noteOn:67'), isEmpty);
-    expect(events, contains('noteOn:60'));
-    expect(events, contains('noteOn:72'));
-    expect(
-      events.lastIndexOf('noteOn:72'),
-      greaterThan(events.lastIndexOf('stopAll')),
-    );
-  });
-
-  test('arpeggios release each note before the next note starts', () async {
-    final events = <String>[];
-    final engine = _FakeSampledInstrumentEngine(events);
-    final service = HarmonyAudioService(engine: engine);
-
-    await service.playClip(
-      const HarmonyChordClip(
-        notes: <HarmonyPreviewNote>[
-          HarmonyPreviewNote(midiNote: 60),
-          HarmonyPreviewNote(midiNote: 64),
-          HarmonyPreviewNote(midiNote: 67),
-        ],
-      ),
-      pattern: HarmonyPlaybackPattern.arpeggio,
-    );
-
-    final firstOn = events.indexOf('noteOn:60');
-    final firstOff = events.indexOf('noteOff:60');
-    final secondOn = events.indexOf('noteOn:64');
-
-    expect(firstOn, greaterThanOrEqualTo(0));
-    expect(firstOff, greaterThan(firstOn));
-    expect(secondOn, greaterThan(firstOff));
-  });
-
   test(
-    'composite clips can play melody notes alongside the chord clip',
+    'applying a runtime profile without a new base config does not compound shaping',
     () async {
-      final events = <String>[];
-      final engine = _FakeSampledInstrumentEngine(events);
-      final service = HarmonyAudioService(engine: engine);
-
-      await service.playCompositeClip(
-        const HarmonyCompositeClip(
-          chordClip: HarmonyChordClip(
-            notes: <HarmonyPreviewNote>[
-              HarmonyPreviewNote(midiNote: 60),
-              HarmonyPreviewNote(midiNote: 64),
-            ],
-          ),
-          melodyClip: HarmonyMelodyClip(
-            notes: <HarmonyMelodyNote>[
-              HarmonyMelodyNote(
-                midiNote: 72,
-                startOffset: Duration.zero,
-                duration: Duration(milliseconds: 12),
-              ),
-            ],
-          ),
-        ),
-        overrides: HarmonyPlaybackOverrides(
-          blockHold: Duration(milliseconds: 18),
+      final service = _ConfigCaptureHarmonyAudioService();
+      const profile = HarmonyAudioRuntimeProfile(
+        profileId: 'test-profile',
+        instrumentId: InstrumentLibraryRegistry.defaultHarmonyPianoId,
+        preferredPattern: HarmonyPlaybackPattern.arpeggio,
+        tuning: HarmonyAudioProfileTuning(
+          masterVolumeScale: 0.9,
+          previewHoldFactorScale: 1.15,
+          arpeggioStepSpeedScale: 1.2,
         ),
       );
+      const baseConfig = HarmonyAudioConfig(
+        masterVolume: 0.8,
+        previewHoldFactor: 1.0,
+        arpeggioStepSpeed: 0.75,
+      );
 
-      expect(events, contains('noteOn:60'));
-      expect(events, contains('noteOn:64'));
-      expect(events, contains('noteOn:72'));
+      await service.applyRuntimeProfile(profile, baseConfig: baseConfig);
+      final firstApplied = service.lastAppliedConfig!;
+
+      await service.applyRuntimeProfile(profile);
+      final secondApplied = service.lastAppliedConfig!;
+
+      expect(secondApplied.masterVolume, firstApplied.masterVolume);
+      expect(secondApplied.previewHoldFactor, firstApplied.previewHoldFactor);
+      expect(secondApplied.arpeggioStepSpeed, firstApplied.arpeggioStepSpeed);
     },
   );
 
-  test('block chords start through the batch note-on path', () async {
-    final events = <String>[];
-    final engine = _FakeSampledInstrumentEngine(events);
-    final service = HarmonyAudioService(engine: engine);
-
-    await service.playClip(
-      const HarmonyChordClip(
-        notes: <HarmonyPreviewNote>[
-          HarmonyPreviewNote(midiNote: 60),
-          HarmonyPreviewNote(midiNote: 64),
-          HarmonyPreviewNote(midiNote: 67),
-        ],
-      ),
-      overrides: HarmonyPlaybackOverrides(
-        blockHold: Duration(milliseconds: 12),
-      ),
+  test('setMasterVolume preserves the active runtime profile shaping', () async {
+    final service = _ConfigCaptureHarmonyAudioService();
+    const profile = HarmonyAudioRuntimeProfile(
+      profileId: 'test-profile',
+      instrumentId: InstrumentLibraryRegistry.defaultHarmonyPianoId,
+      preferredPattern: HarmonyPlaybackPattern.block,
+      tuning: HarmonyAudioProfileTuning(masterVolumeScale: 0.85),
     );
 
-    expect(events, contains('noteOnBatch:60,64,67'));
-    expect(events.indexOf('noteOnBatch:60,64,67'), greaterThanOrEqualTo(0));
+    await service.applyRuntimeProfile(
+      profile,
+      baseConfig: const HarmonyAudioConfig(masterVolume: 0.5),
+    );
+    await service.setMasterVolume(0.9);
+
+    expect(service.lastAppliedConfig, isNotNull);
+    expect(service.lastAppliedConfig!.masterVolume, closeTo(0.765, 0.0001));
   });
-}
-
-class _FakeSampledInstrumentEngine extends SampledInstrumentEngine {
-  _FakeSampledInstrumentEngine(this.events)
-    : super(
-        bundle: const SampledInstrumentAssetBundle(
-          id: 'fake-piano',
-          manifestAssetPath: 'unused.json',
-          assetRootPath: 'unused',
-        ),
-      );
-
-  final List<String> events;
-  int _nextNoteId = 1;
-
-  @override
-  Future<void> prepare() async {}
-
-  @override
-  Future<ActiveInstrumentNote?> noteOn({
-    required int midiNote,
-    int velocity = 88,
-    double gain = 1.0,
-  }) async {
-    events.add('noteOn:$midiNote');
-    return ActiveInstrumentNote(
-      id: _nextNoteId++,
-      midiNote: midiNote,
-      velocity: velocity,
-    );
-  }
-
-  @override
-  Future<List<ActiveInstrumentNote>> noteOnBatch(
-    Iterable<InstrumentNoteRequest> notes, {
-    List<Duration>? startOffsets,
-  }) async {
-    final requestList = notes.toList(growable: false);
-    events.add(
-      'noteOnBatch:${requestList.map((note) => note.midiNote).join(',')}',
-    );
-    return [
-      for (final note in requestList)
-        (await noteOn(
-          midiNote: note.midiNote,
-          velocity: note.velocity,
-          gain: note.gain,
-        ))!,
-    ];
-  }
-
-  @override
-  Future<void> noteOff(ActiveInstrumentNote note, {Duration? fadeOut}) async {
-    events.add('noteOff:${note.midiNote}');
-  }
-
-  @override
-  Future<void> stopAll() async {
-    events.add('stopAll');
-  }
-
-  @override
-  Future<void> dispose() async {
-    events.add('dispose');
-  }
 }

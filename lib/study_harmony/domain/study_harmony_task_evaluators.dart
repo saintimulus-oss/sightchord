@@ -199,6 +199,7 @@ class ExactSetEvaluator extends StudyHarmonyTaskEvaluator
       selectedAnswerSummary: selectedAnswerSummary,
       explanationTitle: task.explanationTitle ?? task.prompt.primaryLabel,
       explanationBody: explanationBody,
+      explanationBundle: task.explanationBundle,
       evaluatorId: id,
       skillTags: Set<StudyHarmonySkillTag>.unmodifiable(task.skillTags),
     );

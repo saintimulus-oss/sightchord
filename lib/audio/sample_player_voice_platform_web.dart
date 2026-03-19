@@ -3,3 +3,5 @@ import 'sample_player_voice_web.dart';
 
 SamplePlayerVoiceFactory createDefaultSamplePlayerVoiceFactory() =>
     const WebAudioSamplePlayerVoiceFactory();
+
+Future<void> activatePlatformAudio() => activateWebAudio();

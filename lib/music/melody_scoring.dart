@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 import '../settings/practice_settings.dart';
@@ -133,17 +134,9 @@ class MelodyScoring {
       score += 0.75;
     }
     if (context.palette.isColorChord) {
-      final colorHits = notes
-          .where(
-            (note) => context.palette.containsIdentityLabel(note.toneLabel),
-          )
-          .length;
-      final realized = colorHits / notes.length;
-      final distinctIdentity = {
-        for (final note in notes)
-          if (context.palette.containsIdentityLabel(note.toneLabel))
-            note.toneLabel!,
-      }.length;
+      final identityCoverage = _identityCoverage(notes, context.palette);
+      final realized = identityCoverage.hits / notes.length;
+      final distinctIdentity = identityCoverage.distinct;
       final distinctCoverage = context.palette.identityLabels.isEmpty
           ? 1.0
           : distinctIdentity / context.palette.identityLabels.length;
@@ -198,18 +191,16 @@ class MelodyScoring {
       final bias = context.request.settings.colorRealizationBias;
       final priority = context.palette.identityPriorityFor(candidate.toneLabel);
       final identityBonus = max(0.0, 0.26 - (priority * 0.05));
-      final modeBase =
-          switch (context.effectiveMode) {
-            SettingsComplexityMode.guided => 0.16,
-            SettingsComplexityMode.standard => 0.24,
-            SettingsComplexityMode.advanced => 0.34,
-          };
-      final biasFactor =
-          switch (context.effectiveMode) {
-            SettingsComplexityMode.guided => 0.24,
-            SettingsComplexityMode.standard => 0.40,
-            SettingsComplexityMode.advanced => 0.58,
-          };
+      final modeBase = switch (context.effectiveMode) {
+        SettingsComplexityMode.guided => 0.16,
+        SettingsComplexityMode.standard => 0.24,
+        SettingsComplexityMode.advanced => 0.34,
+      };
+      final biasFactor = switch (context.effectiveMode) {
+        SettingsComplexityMode.guided => 0.24,
+        SettingsComplexityMode.standard => 0.40,
+        SettingsComplexityMode.advanced => 0.58,
+      };
       return context.palette.isColorChord
           ? modeBase + identityBonus + (bias * biasFactor)
           : (modeBase * 0.6) + identityBonus + (bias * (biasFactor * 0.5));
@@ -260,8 +251,7 @@ class MelodyScoring {
     if (durMs < 350 && absSemitones > 4) {
       score -= 0.35 * (absSemitones - 4);
     }
-    if (context.effectiveMode ==
-            SettingsComplexityMode.advanced &&
+    if (context.effectiveMode == SettingsComplexityMode.advanced &&
         (slot.phrasePos01 - context.phrasePlan.apexPos01).abs() <= 0.14 &&
         absSemitones >= 7 &&
         absSemitones <= 12) {
@@ -292,8 +282,7 @@ class MelodyScoring {
         context.targetMidiFor(min(1.0, slot.phrasePos01 + 0.18)) -
         context.targetMidiFor(slot.phrasePos01);
     var score = currentInterval.sign == desiredDirection.sign ? 0.35 : -0.10;
-    if (context.effectiveMode ==
-            SettingsComplexityMode.advanced &&
+    if (context.effectiveMode == SettingsComplexityMode.advanced &&
         (slot.phrasePos01 - context.phrasePlan.apexPos01).abs() <= 0.14 &&
         currentInterval.abs() >= 7 &&
         currentInterval.abs() <= 12) {
@@ -317,8 +306,7 @@ class MelodyScoring {
           currentInterval.sign == previousInterval.sign &&
           currentInterval.abs() <= 2) {
         score += 0.25;
-      } else if (context.effectiveMode !=
-              SettingsComplexityMode.guided &&
+      } else if (context.effectiveMode != SettingsComplexityMode.guided &&
           currentInterval.sign != previousInterval.sign &&
           currentInterval.abs() <= 2) {
         score += 0.20;
@@ -528,19 +516,17 @@ class MelodyScoring {
     if (!context.palette.isColorChord) {
       return candidate.targetsColor ? 0.12 : 0.0;
     }
-    final identityHitLabels = {
-      for (final note in beamNotes)
-        if (context.palette.containsIdentityLabel(note.note.toneLabel))
-          note.note.toneLabel!,
-    };
-    final realized =
-        beamNotes
-            .where(
-              (note) =>
-                  context.palette.containsIdentityLabel(note.note.toneLabel),
-            )
-            .length /
-        max(1, slotIndex);
+    var realizedHits = 0;
+    final identityHitLabels = <String>{};
+    for (final beamNote in beamNotes) {
+      final label = beamNote.note.toneLabel;
+      if (!context.palette.containsIdentityLabel(label)) {
+        continue;
+      }
+      realizedHits += 1;
+      identityHitLabels.add(label!);
+    }
+    final realized = realizedHits / max(1, slotIndex);
     final distinctCoverage = context.palette.identityLabels.isEmpty
         ? 1.0
         : identityHitLabels.length /
@@ -551,18 +537,16 @@ class MelodyScoring {
           ((realized * 0.72) + (distinctCoverage * 0.28)),
     );
     if (candidate.targetsColor) {
-      final modeBase =
-          switch (context.effectiveMode) {
-            SettingsComplexityMode.guided => 0.04,
-            SettingsComplexityMode.standard => 0.10,
-            SettingsComplexityMode.advanced => 0.18,
-          };
-      final modeBonus =
-          switch (context.effectiveMode) {
-            SettingsComplexityMode.guided => 0.0,
-            SettingsComplexityMode.standard => 0.03,
-            SettingsComplexityMode.advanced => 0.08,
-          };
+      final modeBase = switch (context.effectiveMode) {
+        SettingsComplexityMode.guided => 0.04,
+        SettingsComplexityMode.standard => 0.10,
+        SettingsComplexityMode.advanced => 0.18,
+      };
+      final modeBonus = switch (context.effectiveMode) {
+        SettingsComplexityMode.guided => 0.0,
+        SettingsComplexityMode.standard => 0.03,
+        SettingsComplexityMode.advanced => 0.08,
+      };
       final missingIdentityBonus =
           candidate.toneLabel != null &&
               !identityHitLabels.contains(candidate.toneLabel)
@@ -573,8 +557,7 @@ class MelodyScoring {
             }
           : 0.03;
       final hardColorBonus = context.palette.isHardColorChord
-          ? (context.effectiveMode ==
-                    SettingsComplexityMode.advanced
+          ? (context.effectiveMode == SettingsComplexityMode.advanced
                 ? 0.16
                 : 0.08)
           : 0.0;
@@ -595,8 +578,7 @@ class MelodyScoring {
     }
     if (!slot.isStrong &&
         outstanding > 0.0 &&
-        context.effectiveMode ==
-            SettingsComplexityMode.advanced) {
+        context.effectiveMode == SettingsComplexityMode.advanced) {
       return -0.08 - (outstanding * 0.18);
     }
     return -0.04;
@@ -743,15 +725,14 @@ class MelodyScoring {
       if (recent.notes.length < notes.length) {
         continue;
       }
-      final prefix = recent.notes.take(notes.length).toList(growable: false);
-      if (_isExactSameEvent(notes, prefix)) {
+      if (_isExactSamePrefix(notes, recent.notes, notes.length)) {
         score += _recentExactRepeatPenalty(mode, distance) * 0.55;
         continue;
       }
-      if (_hasSameIntervalVector(notes, prefix)) {
+      if (_hasSameIntervalVectorPrefix(notes, recent.notes, notes.length)) {
         score += _recentIntervalVectorPenalty(mode, distance) * 0.55;
       }
-      if (_hasSameRhythmVector(notes, prefix)) {
+      if (_hasSameRhythmVectorPrefix(notes, recent.notes, notes.length)) {
         score += _recentRhythmRepeatPenalty(mode, distance) * 0.45;
       }
     }
@@ -765,33 +746,76 @@ class MelodyScoring {
     List<GeneratedMelodyNote> left,
     List<GeneratedMelodyNote> right,
   ) {
-    return _intervalSignatureFor(left) == _intervalSignatureFor(right) &&
-        _intervalSignatureFor(left).isNotEmpty;
+    if (left.length != right.length || left.length < 2) {
+      return false;
+    }
+    return _hasSameIntervalVectorPrefix(left, right, left.length);
   }
 
   static bool _hasSameRhythmVector(
     List<GeneratedMelodyNote> left,
     List<GeneratedMelodyNote> right,
   ) {
-    return _rhythmSignatureFor(left) == _rhythmSignatureFor(right) &&
-        _rhythmSignatureFor(left).isNotEmpty;
+    if (left.length != right.length || left.isEmpty) {
+      return false;
+    }
+    return _hasSameRhythmVectorPrefix(left, right, left.length);
   }
 
-  static String _intervalSignatureFor(List<GeneratedMelodyNote> notes) {
-    if (notes.length < 2) {
-      return '';
+  static bool _isExactSamePrefix(
+    List<GeneratedMelodyNote> left,
+    List<GeneratedMelodyNote> right,
+    int length,
+  ) {
+    if (length == 0 || left.length < length || right.length < length) {
+      return false;
     }
-    return [
-      for (var index = 1; index < notes.length; index += 1)
-        notes[index].midiNote - notes[index - 1].midiNote,
-    ].join(',');
+    for (var index = 0; index < length; index += 1) {
+      final leftNote = left[index];
+      final rightNote = right[index];
+      if (leftNote.midiNote != rightNote.midiNote ||
+          leftNote.startBeatOffset.toStringAsFixed(2) !=
+              rightNote.startBeatOffset.toStringAsFixed(2) ||
+          leftNote.durationBeats.toStringAsFixed(2) !=
+              rightNote.durationBeats.toStringAsFixed(2)) {
+        return false;
+      }
+    }
+    return true;
   }
 
-  static String _rhythmSignatureFor(List<GeneratedMelodyNote> notes) {
-    if (notes.isEmpty) {
-      return '';
+  static bool _hasSameIntervalVectorPrefix(
+    List<GeneratedMelodyNote> left,
+    List<GeneratedMelodyNote> right,
+    int length,
+  ) {
+    if (length < 2 || left.length < length || right.length < length) {
+      return false;
     }
-    return notes.map((note) => note.durationBeats.toStringAsFixed(2)).join(',');
+    for (var index = 1; index < length; index += 1) {
+      if (left[index].midiNote - left[index - 1].midiNote !=
+          right[index].midiNote - right[index - 1].midiNote) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  static bool _hasSameRhythmVectorPrefix(
+    List<GeneratedMelodyNote> left,
+    List<GeneratedMelodyNote> right,
+    int length,
+  ) {
+    if (length == 0 || left.length < length || right.length < length) {
+      return false;
+    }
+    for (var index = 0; index < length; index += 1) {
+      if (left[index].durationBeats.toStringAsFixed(2) !=
+          right[index].durationBeats.toStringAsFixed(2)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   static double _recentExactRepeatPenalty(
@@ -921,7 +945,8 @@ class MelodyScoring {
         score += 0.26;
       }
       if (candidate.role == MelodyNoteRole.approach) {
-        score += (0.12 + (approachDensity * 0.24)) +
+        score +=
+            (0.12 + (approachDensity * 0.24)) +
             max(0.0, 0.20 - (nextDistance * 0.08));
       }
     }
@@ -935,8 +960,7 @@ class MelodyScoring {
         candidate.targetsColor &&
         beamNotes.isNotEmpty &&
         slot.index <= 2 &&
-        context.effectiveMode ==
-            SettingsComplexityMode.advanced) {
+        context.effectiveMode == SettingsComplexityMode.advanced) {
       score += 0.10;
     }
     return score;
@@ -958,34 +982,71 @@ class MelodyScoring {
     return best;
   }
 
+  static ({int hits, int distinct}) _identityCoverage(
+    Iterable<GeneratedMelodyNote> notes,
+    MelodyHarmonyPalette palette,
+  ) {
+    var hits = 0;
+    final distinct = <String>{};
+    for (final note in notes) {
+      final label = note.toneLabel;
+      if (!palette.containsIdentityLabel(label)) {
+        continue;
+      }
+      hits += 1;
+      distinct.add(label!);
+    }
+    return (hits: hits, distinct: distinct.length);
+  }
+
   static bool _isMonotoneContour(List<GeneratedMelodyNote> notes) {
     if (notes.length < 3) {
       return false;
     }
-    final intervals = <int>[];
+    var seenSign = 0;
     for (var index = 1; index < notes.length; index += 1) {
-      intervals.add(notes[index].midiNote - notes[index - 1].midiNote);
+      final interval = notes[index].midiNote - notes[index - 1].midiNote;
+      if (interval == 0) {
+        continue;
+      }
+      final sign = interval.sign;
+      if (seenSign == 0) {
+        seenSign = sign;
+        continue;
+      }
+      if (seenSign != sign) {
+        return false;
+      }
     }
-    final signs = intervals
-        .where((interval) => interval != 0)
-        .map((interval) => interval.sign)
-        .toSet();
-    return signs.length <= 1;
+    return true;
   }
 
   static int _samePitchOverflow(
     List<GeneratedMelodyNote> notes, {
     required int window,
   }) {
+    if (window <= 0 || notes.isEmpty) {
+      return 0;
+    }
+    final counts = <int, int>{};
+    final active = ListQueue<int>();
     var overflow = 0;
-    for (var index = 0; index < notes.length; index += 1) {
-      final start = max(0, index - window + 1);
-      final count = notes
-          .sublist(start, index + 1)
-          .where((note) => note.midiNote == notes[index].midiNote)
-          .length;
-      if (count > 2) {
-        overflow += count - 2;
+    for (final note in notes) {
+      final pitch = note.midiNote;
+      active.addLast(pitch);
+      final updated = (counts[pitch] ?? 0) + 1;
+      counts[pitch] = updated;
+      if (updated > 2) {
+        overflow += updated - 2;
+      }
+      if (active.length > window) {
+        final removed = active.removeFirst();
+        final remaining = counts[removed]! - 1;
+        if (remaining == 0) {
+          counts.remove(removed);
+        } else {
+          counts[removed] = remaining;
+        }
       }
     }
     return overflow;

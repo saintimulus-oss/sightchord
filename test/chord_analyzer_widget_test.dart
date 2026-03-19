@@ -174,7 +174,40 @@ void main() {
       expect(find.text('Detected Keys'), findsOneWidget);
       expect(find.text('Chord-by-chord analysis'), findsOneWidget);
       expect(find.text('Progression summary'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('analyzer-explanation-panel')),
+        findsOneWidget,
+      );
       expect(find.text('Measure 1'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'ambiguous analyzer results surface alternative readings and ambiguity UI',
+    (WidgetTester tester) async {
+      addTearDown(() => restoreDisplay(tester));
+      await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+      final input = find.byKey(const ValueKey('analyzer-input-field'));
+      await tester.enterText(input, 'Db7 Cmaj7');
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(tester.element(input))!;
+
+      expect(
+        find.byKey(const ValueKey('analyzer-explanation-panel')),
+        findsOneWidget,
+      );
+      expect(find.text(l10n.explanationAlternativeSection), findsOneWidget);
+      expect(
+        find.textContaining(l10n.chordAnalyzerAmbiguityLabel),
+        findsWidgets,
+      );
+      expect(find.text(l10n.explanationListeningSection), findsOneWidget);
+      expect(find.text(l10n.explanationPerformanceSection), findsOneWidget);
     },
   );
 
@@ -231,6 +264,9 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('analyzer-input-field')));
     await tester.pump();
 
+    final l10n = AppLocalizations.of(
+      tester.element(find.byKey(const ValueKey('analyzer-input-field'))),
+    )!;
     final beforeToggle = tester.widget<TextField>(
       find.byKey(const ValueKey('analyzer-input-field')),
     );
@@ -240,7 +276,15 @@ void main() {
       findsOneWidget,
     );
     expect(find.byKey(const ValueKey('analyzer-key-paste')), findsOneWidget);
-    expect(find.text('ABC'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('analyzer-keyboard-panel')),
+        matching: find.byType(SegmentedButton<bool>),
+      ),
+      findsNothing,
+    );
+    expect(find.text(l10n.chordAnalyzerRawInput), findsNothing);
+    expect(find.text(l10n.chordAnalyzerKeyboardTouchHint), findsNothing);
   });
 
   testWidgets('example chips populate the analyzer input field', (
@@ -536,7 +580,9 @@ void main() {
       expect(find.text('Suggested fill: Cmaj7'), findsOneWidget);
       expect(find.text('Suggested fill: Cmaj7'), findsOneWidget);
       expect(
-        find.text('This ? was inferred from the surrounding harmonic context.'),
+        find.text(
+          'This ? was inferred from the surrounding harmonic context, so treat it as a suggested fill rather than a certainty.',
+        ),
         findsWidgets,
       );
 

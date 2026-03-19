@@ -80,6 +80,7 @@ class SampledInstrumentEngine {
   final Queue<_VoiceSlot> _idleVoices = Queue<_VoiceSlot>();
   final Map<int, _ActiveVoiceLease> _activeNotes = <int, _ActiveVoiceLease>{};
   Future<void>? _prepareFuture;
+  int _pendingVoiceCreations = 0;
 
   SampledInstrumentManifest? get manifest => _manifest;
   bool get isPrepared => _prepared;
@@ -136,22 +137,19 @@ class SampledInstrumentEngine {
       return const <ActiveInstrumentNote>[];
     }
 
+    final preparedBatch = await _prepareNotes(requestList);
     final preparedNotes = <_PreparedInstrumentNoteWithOffset>[];
-    for (var index = 0; index < requestList.length; index += 1) {
-      final note = requestList[index];
-      final prepared = await _prepareNote(
-        midiNote: note.midiNote,
-        velocity: note.velocity,
-        gain: note.gain,
-      );
-      if (prepared != null) {
-        preparedNotes.add(
-          _PreparedInstrumentNoteWithOffset(
-            prepared: prepared,
-            startOffset: startOffsets?[index] ?? Duration.zero,
-          ),
-        );
+    for (var index = 0; index < preparedBatch.length; index += 1) {
+      final prepared = preparedBatch[index];
+      if (prepared == null) {
+        continue;
       }
+      preparedNotes.add(
+        _PreparedInstrumentNoteWithOffset(
+          prepared: prepared,
+          startOffset: startOffsets?[index] ?? Duration.zero,
+        ),
+      );
     }
     if (preparedNotes.isEmpty) {
       return const <ActiveInstrumentNote>[];
@@ -178,10 +176,22 @@ class SampledInstrumentEngine {
     );
   }
 
+  Future<void> prefetchNotes(Iterable<InstrumentNoteRequest> notes) async {
+    final preparedNotes = await _prepareNotes(notes, allowVoiceStealing: false);
+    final prefetchedSlots = <_VoiceSlot>{
+      for (final prepared in preparedNotes.whereType<_PreparedInstrumentNote>())
+        prepared.slot,
+    };
+    await Future.wait<void>([
+      for (final slot in prefetchedSlots) _releaseSlot(slot),
+    ]);
+  }
+
   Future<_PreparedInstrumentNote?> _prepareNote({
     required int midiNote,
     required int velocity,
     required double gain,
+    bool allowVoiceStealing = true,
   }) async {
     await prepare();
     final manifest = _manifest;
@@ -196,7 +206,12 @@ class SampledInstrumentEngine {
       return null;
     }
 
-    final slot = await _acquireVoiceSlot();
+    final slot = await _acquireVoiceSlot(
+      allowVoiceStealing: allowVoiceStealing,
+    );
+    if (slot == null) {
+      return null;
+    }
     final noteId = _nextNoteId++;
     final effectiveVolume =
         (manifest.defaults.baseVolume *
@@ -234,6 +249,25 @@ class SampledInstrumentEngine {
       await _releaseSlot(slot);
       return null;
     }
+  }
+
+  Future<List<_PreparedInstrumentNote?>> _prepareNotes(
+    Iterable<InstrumentNoteRequest> notes, {
+    bool allowVoiceStealing = true,
+  }) async {
+    final requestList = notes.toList(growable: false);
+    if (requestList.isEmpty) {
+      return const <_PreparedInstrumentNote?>[];
+    }
+    return Future.wait<_PreparedInstrumentNote?>([
+      for (final note in requestList)
+        _prepareNote(
+          midiNote: note.midiNote,
+          velocity: note.velocity,
+          gain: note.gain,
+          allowVoiceStealing: allowVoiceStealing,
+        ),
+    ]);
   }
 
   Future<ActiveInstrumentNote?> _startPreparedNote(
@@ -306,18 +340,9 @@ class SampledInstrumentEngine {
         step ?? Duration(milliseconds: manifest.defaults.defaultArpeggioStepMs);
     final effectiveHold =
         hold ?? Duration(milliseconds: manifest.defaults.defaultArpeggioHoldMs);
-    final preparedNotes = <_PreparedInstrumentNote>[];
-
-    for (final note in notes) {
-      final prepared = await _prepareNote(
-        midiNote: note.midiNote,
-        velocity: note.velocity,
-        gain: note.gain,
-      );
-      if (prepared != null) {
-        preparedNotes.add(prepared);
-      }
-    }
+    final preparedNotes = (await _prepareNotes(
+      notes,
+    )).whereType<_PreparedInstrumentNote>().toList(growable: false);
 
     for (final prepared in preparedNotes) {
       final active = await _startPreparedNote(prepared);
@@ -410,7 +435,9 @@ class SampledInstrumentEngine {
     return _VoiceSlot(voice: await _voiceFactory.createVoice());
   }
 
-  Future<_VoiceSlot> _acquireVoiceSlot() async {
+  Future<_VoiceSlot?> _acquireVoiceSlot({
+    bool allowVoiceStealing = true,
+  }) async {
     final manifest = _manifest;
     if (manifest == null) {
       throw StateError('The sampled instrument manifest has not been loaded.');
@@ -418,10 +445,18 @@ class SampledInstrumentEngine {
     if (_idleVoices.isNotEmpty) {
       return _idleVoices.removeFirst();
     }
-    if (_voicePool.length < manifest.defaults.polyphony) {
-      final slot = await _createVoiceSlot();
-      _voicePool.add(slot);
-      return slot;
+    if (_canCreateAdditionalVoice(manifest)) {
+      _pendingVoiceCreations += 1;
+      try {
+        final slot = await _createVoiceSlot();
+        _voicePool.add(slot);
+        return slot;
+      } finally {
+        _pendingVoiceCreations -= 1;
+      }
+    }
+    if (!allowVoiceStealing) {
+      return null;
     }
 
     _voicePool.sort(
@@ -435,6 +470,11 @@ class SampledInstrumentEngine {
     await stolen.voice.stop();
     stolen.activeNoteId = null;
     return stolen;
+  }
+
+  bool _canCreateAdditionalVoice(SampledInstrumentManifest manifest) {
+    return _voicePool.length + _pendingVoiceCreations <
+        manifest.defaults.polyphony;
   }
 
   Future<void> _fadeOutAndRelease(

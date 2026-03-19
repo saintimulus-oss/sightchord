@@ -88,7 +88,7 @@ void main() {
     expect(ko.chordAnalyzerInputHint, 'Dm7, G7 | ? Am');
     expect(
       ko.chordAnalyzerPlaceholderExplanation,
-      '\uC774 ?\uB294 \uC55E\uB4A4 \uD654\uC131 \uB9E5\uB77D\uC744 \uBC14\uD0D5\uC73C\uB85C \uCD94\uB860\uD55C \uC790\uB9AC\uC785\uB2C8\uB2E4.',
+      '\uC774 ?\uB294 \uC55E\uB4A4 \uD654\uC131 \uB9E5\uB77D\uC744 \uBC14\uD0D5\uC73C\uB85C \uCD94\uB860\uD55C \uC790\uB9AC\uC774\uBBC0\uB85C, \uD655\uC815\uAC12\uBCF4\uB2E4 \uC81C\uC548\uB41C \uCC44\uC6C0\uC73C\uB85C \uBCF4\uB294 \uD3B8\uC774 \uC88B\uC2B5\uB2C8\uB2E4.',
     );
     expect(
       ko.chordAnalyzerSuggestedFill('Cmaj7'),

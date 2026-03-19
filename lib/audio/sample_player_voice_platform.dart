@@ -5,3 +5,5 @@ import 'sample_player_voice_platform_stub.dart'
 
 SamplePlayerVoiceFactory createDefaultSamplePlayerVoiceFactory() =>
     impl.createDefaultSamplePlayerVoiceFactory();
+
+Future<void> activatePlatformAudio() => impl.activatePlatformAudio();

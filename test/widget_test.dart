@@ -133,12 +133,15 @@ Future<void> pumpVoicingSection(
 }
 
 class _SpyHarmonyAudioService extends HarmonyAudioService {
-  _SpyHarmonyAudioService() : super();
+  _SpyHarmonyAudioService({this.failPrepareCompositeClipCount = 0}) : super();
 
   final List<(HarmonyPlaybackPattern, String?)> playedLabels =
       <(HarmonyPlaybackPattern, String?)>[];
   final List<HarmonyCompositeClip> playedCompositeClips =
       <HarmonyCompositeClip>[];
+  final List<HarmonyCompositeClip> preparedCompositeClips =
+      <HarmonyCompositeClip>[];
+  int failPrepareCompositeClipCount;
   HarmonyAudioConfig? lastConfig;
 
   @override
@@ -171,6 +174,16 @@ class _SpyHarmonyAudioService extends HarmonyAudioService {
       pattern,
       clip.label ?? clip.chordClip?.label ?? clip.melodyClip?.label,
     ));
+  }
+
+  @override
+  Future<bool> prepareCompositeClip(HarmonyCompositeClip clip) async {
+    if (failPrepareCompositeClipCount > 0) {
+      failPrepareCompositeClipCount -= 1;
+      return false;
+    }
+    preparedCompositeClips.add(clip);
+    return true;
   }
 }
 
@@ -656,6 +669,11 @@ void main() {
     await pumpMainMenuWithSettings(tester, PracticeSettings());
 
     await openChordAnalyzer(tester);
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('analyzer-example-Dm7, G7 | ? Am')),
+    );
+    await tester.pumpAndSettle();
 
     await tester.tap(
       find.byKey(const ValueKey('analyzer-example-Dm7, G7 | ? Am')),
@@ -2351,6 +2369,12 @@ void main() {
     final controller = await pumpAppWithController(tester, PracticeSettings());
 
     await tester.ensureVisible(
+      find.byKey(const ValueKey('melody-generation-toggle')),
+    );
+    await tester.tap(find.byKey(const ValueKey('melody-generation-toggle')));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
       find.byKey(const ValueKey('melody-preset-guideLine')),
     );
     await tester.pumpAndSettle();
@@ -2395,6 +2419,25 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(controller.settings.melodyGenerationEnabled, isFalse);
+  });
+
+  testWidgets('melody preset copy stays readable in Korean locale', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithController(
+      tester,
+      PracticeSettings(language: AppLanguage.ko),
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('melody-generation-toggle')),
+    );
+    await tester.tap(find.byKey(const ValueKey('melody-generation-toggle')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('멜로디 프리셋'), findsWidgets);
+    expect(find.textContaining('가이드'), findsWidgets);
+    expect(find.textContaining('안정적인 가이드 톤 중심'), findsWidgets);
   });
 
   testWidgets('transport uses separate play, pause, speaker, and reset icons', (
@@ -2781,6 +2824,115 @@ void main() {
 
     expect(voicingNotesFor(tester, 'natural'), beforeToggle);
   });
+
+  testWidgets(
+    'voicing selection refreshes preview prefetch without duplicating identical clips',
+    (WidgetTester tester) async {
+      final audio = _SpyHarmonyAudioService();
+      await pumpAppWithAudioService(
+        tester,
+        PracticeSettings(
+          activeKeys: const {'C'},
+          voicingSuggestionsEnabled: true,
+          allowTensions: true,
+          lookAheadDepth: 2,
+          metronomeEnabled: false,
+        ),
+        harmonyAudioService: audio,
+      );
+
+      String? selectedKind;
+      var renderedKinds = const <String>[];
+      var initialPrefetchCount = 0;
+      for (var iteration = 0; iteration < 3; iteration++) {
+        await advanceChord(tester);
+        initialPrefetchCount = audio.preparedCompositeClips.length;
+        selectedKind = voicingBadgeKind(tester, 'selected');
+        renderedKinds = renderedVoicingCardKeys(tester);
+        if (selectedKind != null &&
+            renderedKinds.any((kind) => kind != selectedKind)) {
+          break;
+        }
+      }
+
+      expect(initialPrefetchCount, greaterThan(0));
+      expect(selectedKind, isNotNull);
+
+      await tester.ensureVisible(
+        find.byKey(ValueKey('voicing-suggestion-card-$selectedKind')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(ValueKey('voicing-suggestion-card-$selectedKind')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(audio.preparedCompositeClips.length, initialPrefetchCount);
+
+      String? alternateKind;
+      for (final kind in renderedKinds) {
+        if (kind != selectedKind) {
+          alternateKind = kind;
+          break;
+        }
+      }
+      if (alternateKind == null) {
+        expect(renderedKinds, hasLength(1));
+        return;
+      }
+      await tester.ensureVisible(
+        find.byKey(ValueKey('voicing-suggestion-card-$alternateKind')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(ValueKey('voicing-suggestion-card-$alternateKind')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        audio.preparedCompositeClips.length,
+        greaterThan(initialPrefetchCount),
+      );
+    },
+  );
+
+  testWidgets(
+    'failed preview prefetch retries when the same clip is requested again',
+    (WidgetTester tester) async {
+      final audio = _SpyHarmonyAudioService(failPrepareCompositeClipCount: 20);
+      await pumpAppWithAudioService(
+        tester,
+        PracticeSettings(
+          activeKeys: const {'C'},
+          voicingSuggestionsEnabled: true,
+          allowTensions: true,
+          lookAheadDepth: 2,
+          metronomeEnabled: false,
+        ),
+        harmonyAudioService: audio,
+      );
+
+      await advanceChord(tester);
+      await tester.pumpAndSettle();
+
+      expect(audio.preparedCompositeClips, isEmpty);
+      audio.failPrepareCompositeClipCount = 0;
+
+      final selectedKind = voicingBadgeKind(tester, 'selected');
+      expect(selectedKind, isNotNull);
+
+      await tester.ensureVisible(
+        find.byKey(ValueKey('voicing-suggestion-card-$selectedKind')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(ValueKey('voicing-suggestion-card-$selectedKind')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(audio.preparedCompositeClips, isNotEmpty);
+    },
+  );
 
   testWidgets('voicing suggestions avoid overflow on narrow width', (
     WidgetTester tester,

@@ -106,8 +106,14 @@ class MelodyHarmonyPalette {
       }
     }
     candidates.sort(
-      (left, right) =>
-          (left - targetMidi).abs().compareTo((right - targetMidi).abs()),
+      (left, right) {
+        final distanceCompare =
+            (left - targetMidi).abs().compareTo((right - targetMidi).abs());
+        if (distanceCompare != 0) {
+          return distanceCompare;
+        }
+        return left.compareTo(right);
+      },
     );
     return candidates.take(count).toList(growable: false);
   }

@@ -54,6 +54,7 @@ class MainMenuPage extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => StudyHarmonyPage(
+          settingsController: controller,
           progressController: studyHarmonyProgressController,
         ),
       ),
@@ -110,11 +111,57 @@ class MainMenuPage extends StatelessWidget {
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 960),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final isWide = constraints.maxWidth >= 760;
-                      final studyHarmonyAction = AnimatedBuilder(
+                  constraints: const BoxConstraints(maxWidth: 680),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Align(
+                        alignment: Alignment.center,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 560),
+                          child: _MainMenuHeroCard(
+                            title: 'Chordest',
+                            body: l10n.mainMenuIntro,
+                            settingsLabel: l10n.settings,
+                            onSettingsPressed: () => _openMainSettings(context),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Align(
+                        alignment: Alignment.center,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 560),
+                          child: _MainActionButton(
+                            icon: Icons.auto_awesome_rounded,
+                            title: l10n.mainMenuGeneratorTitle,
+                            subtitle: l10n.mainMenuGeneratorDescription,
+                            isPrimary: true,
+                            buttonKey: const ValueKey(
+                              'main-open-generator-button',
+                            ),
+                            onPressed: () => _openCodeGenerator(context),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.center,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 560),
+                          child: _MainActionButton(
+                            icon: Icons.insights_rounded,
+                            title: l10n.mainMenuAnalyzerTitle,
+                            subtitle: l10n.mainMenuAnalyzerDescription,
+                            buttonKey: const ValueKey(
+                              'main-open-analyzer-button',
+                            ),
+                            onPressed: () => _openChordAnalyzer(context),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      AnimatedBuilder(
                         animation: studyHarmonyProgressController,
                         builder: (context, _) {
                           final course = buildStudyHarmonyCourseForTrackId(
@@ -128,77 +175,25 @@ class MainMenuPage extends StatelessWidget {
                             progressController: studyHarmonyProgressController,
                           );
 
-                          return _MainActionButton(
-                            icon: Icons.school_rounded,
-                            title: l10n.mainMenuStudyHarmonyTitle,
-                            subtitle:
-                                '${summary.resumeLabel} | ${summary.progressLabel}',
-                            buttonKey: const ValueKey(
-                              'main-open-study-harmony-button',
+                          return Align(
+                            alignment: Alignment.center,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 560),
+                              child: _MainActionButton(
+                                icon: Icons.school_rounded,
+                                title: l10n.mainMenuStudyHarmonyTitle,
+                                subtitle:
+                                    '${summary.resumeLabel} | ${summary.progressLabel}',
+                                buttonKey: const ValueKey(
+                                  'main-open-study-harmony-button',
+                                ),
+                                onPressed: () => _openStudyHarmony(context),
+                              ),
                             ),
-                            onPressed: () => _openStudyHarmony(context),
                           );
                         },
-                      );
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _MainMenuHeroCard(
-                            badgeLabel: 'CHORDEST',
-                            title: 'Chordest',
-                            body: l10n.mainMenuIntro,
-                            settingsLabel: l10n.settings,
-                            onSettingsPressed: () => _openMainSettings(context),
-                          ),
-                          const SizedBox(height: 20),
-                          _MainActionButton(
-                            icon: Icons.auto_awesome_rounded,
-                            title: l10n.mainMenuGeneratorTitle,
-                            subtitle: l10n.mainMenuGeneratorDescription,
-                            isPrimary: true,
-                            buttonKey: const ValueKey(
-                              'main-open-generator-button',
-                            ),
-                            onPressed: () => _openCodeGenerator(context),
-                          ),
-                          const SizedBox(height: 14),
-                          if (isWide)
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: _MainActionButton(
-                                    icon: Icons.insights_rounded,
-                                    title: l10n.mainMenuAnalyzerTitle,
-                                    subtitle: l10n.mainMenuAnalyzerDescription,
-                                    buttonKey: const ValueKey(
-                                      'main-open-analyzer-button',
-                                    ),
-                                    onPressed: () =>
-                                        _openChordAnalyzer(context),
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(child: studyHarmonyAction),
-                              ],
-                            )
-                          else ...[
-                            _MainActionButton(
-                              icon: Icons.insights_rounded,
-                              title: l10n.mainMenuAnalyzerTitle,
-                              subtitle: l10n.mainMenuAnalyzerDescription,
-                              buttonKey: const ValueKey(
-                                'main-open-analyzer-button',
-                              ),
-                              onPressed: () => _openChordAnalyzer(context),
-                            ),
-                            const SizedBox(height: 14),
-                            studyHarmonyAction,
-                          ],
-                        ],
-                      );
-                    },
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -212,14 +207,12 @@ class MainMenuPage extends StatelessWidget {
 
 class _MainMenuHeroCard extends StatelessWidget {
   const _MainMenuHeroCard({
-    required this.badgeLabel,
     required this.title,
     required this.body,
     required this.settingsLabel,
     required this.onSettingsPressed,
   });
 
-  final String badgeLabel;
   final String title;
   final String body;
   final String settingsLabel;
@@ -230,75 +223,34 @@ class _MainMenuHeroCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: colorScheme.outlineVariant),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: theme.textTheme.displayMedium?.copyWith(
+            color: colorScheme.onSurface,
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(22),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    badgeLabel,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: colorScheme.primary,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.1,
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                IconButton.filledTonal(
-                  key: const ValueKey('main-open-settings-button'),
-                  onPressed: onSettingsPressed,
-                  icon: const Icon(Icons.settings_rounded),
-                  tooltip: settingsLabel,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: theme.textTheme.displayMedium?.copyWith(
-                color: colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 12),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 640),
-              child: Text(
-                body,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  height: 1.45,
-                ),
-              ),
-            ),
-          ],
         ),
-      ),
+        const SizedBox(height: 10),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: Text(
+            body,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              height: 1.4,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextButton.icon(
+          key: const ValueKey('main-open-settings-button'),
+          onPressed: onSettingsPressed,
+          icon: const Icon(Icons.settings_rounded),
+          label: Text(settingsLabel),
+        ),
+      ],
     );
   }
 }
@@ -342,11 +294,11 @@ class _MainActionButton extends StatelessWidget {
       child: InkWell(
         key: buttonKey,
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(20),
         child: Ink(
           decoration: BoxDecoration(
             color: backgroundColor,
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(20),
             border: isPrimary
                 ? null
                 : Border.all(color: colorScheme.outlineVariant),
@@ -354,23 +306,23 @@ class _MainActionButton extends StatelessWidget {
               if (isPrimary)
                 BoxShadow(
                   color: colorScheme.primary.withValues(alpha: 0.2),
-                  blurRadius: 28,
-                  offset: const Offset(0, 14),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
                 ),
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
             child: Row(
               children: [
                 Container(
-                  width: 52,
-                  height: 52,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: isPrimary
                         ? Colors.white.withValues(alpha: 0.14)
                         : colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(
                     icon,
@@ -379,7 +331,7 @@ class _MainActionButton extends StatelessWidget {
                         : colorScheme.primary,
                   ),
                 ),
-                const SizedBox(width: 18),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -391,7 +343,7 @@ class _MainActionButton extends StatelessWidget {
                           color: foregroundColor,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Text(
                         subtitle,
                         maxLines: 2,

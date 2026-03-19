@@ -57,9 +57,7 @@ class _WebAudioSamplePlayerVoice implements SamplePlayerVoice {
     if (context == null || buffer == null) {
       throw StateError('The web sample voice must be prepared before start().');
     }
-    if (context.state == 'suspended') {
-      await context.resume().toDart;
-    }
+    await activateWebAudio();
 
     await stop();
 
@@ -116,7 +114,52 @@ class _WebAudioSamplePlayerVoice implements SamplePlayerVoice {
         assetData.lengthInBytes,
       ),
     );
-    return context.decodeAudioData(tightBytes.buffer.toJS).toDart;
+    try {
+      return await context.decodeAudioData(tightBytes.buffer.toJS).toDart;
+    } catch (_) {
+      _decodedBuffers.remove(assetPath);
+      rethrow;
+    }
+  }
+}
+
+Future<void> activateWebAudio() async {
+  var context = _WebAudioSamplePlayerVoice._sharedAudioContext;
+  if (context == null || context.state == 'closed') {
+    context = web.AudioContext();
+    _WebAudioSamplePlayerVoice._sharedAudioContext = context;
+  }
+  if (context.state != 'running') {
+    await context.resume().toDart;
+  }
+  if (context.state == 'running') {
+    _playSilentUnlockPulse(context);
+  }
+}
+
+void _playSilentUnlockPulse(web.AudioContext context) {
+  try {
+    final source = context.createBufferSource();
+    final gain = context.createGain();
+    final buffer = context.createBuffer(1, 1, context.sampleRate);
+    gain.gain.value = 0;
+    source.buffer = buffer;
+    source.connect(gain);
+    gain.connect(context.destination);
+    source.start(0);
+    source.addEventListener(
+      'ended',
+      ((web.Event _) {
+        try {
+          source.disconnect();
+        } catch (_) {}
+        try {
+          gain.disconnect();
+        } catch (_) {}
+      }).toJS,
+    );
+  } catch (_) {
+    // Best effort only. Some browsers do not need an explicit silent pulse.
   }
 }
 

@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chordest/app.dart';
+import 'package:chordest/audio/harmony_audio_models.dart';
+import 'package:chordest/audio/harmony_audio_service.dart';
+import 'package:chordest/audio/sightchord_audio_scope.dart';
 import 'package:chordest/l10n/app_localizations.dart';
 import 'package:chordest/l10n/app_localizations_en.dart';
 import 'package:chordest/settings/practice_settings.dart';
@@ -10,6 +13,7 @@ import 'package:chordest/settings/settings_controller.dart';
 import 'package:chordest/study_harmony/application/study_harmony_progress_controller.dart';
 import 'package:chordest/study_harmony/content/core_curriculum_catalog.dart';
 import 'package:chordest/study_harmony/content/study_harmony_track_catalog.dart';
+import 'package:chordest/study_harmony/content/track_pedagogy_profiles.dart';
 import 'package:chordest/study_harmony/domain/study_harmony_progress_models.dart';
 import 'package:chordest/study_harmony/domain/study_harmony_session_models.dart';
 import 'package:chordest/study_harmony/domain/study_harmony_task_evaluators.dart';
@@ -17,6 +21,33 @@ import 'package:chordest/study_harmony_page.dart';
 import 'package:chordest/study_harmony/study_harmony_level_page.dart';
 import 'package:chordest/study_harmony/study_harmony_models.dart';
 import 'package:chordest/study_harmony/study_harmony_session_page.dart';
+
+class _StudyHarmonyAudioSpy extends HarmonyAudioService {
+  _StudyHarmonyAudioSpy() : super();
+
+  HarmonyAudioRuntimeProfile? appliedRuntimeProfile;
+  final List<HarmonyPlaybackPattern> promptPatterns =
+      <HarmonyPlaybackPattern>[];
+
+  @override
+  Future<void> warmUp() async {}
+
+  @override
+  Future<void> applyRuntimeProfile(
+    HarmonyAudioRuntimeProfile profile, {
+    HarmonyAudioConfig? baseConfig,
+  }) async {
+    appliedRuntimeProfile = profile;
+  }
+
+  @override
+  Future<void> playStudyPrompt(
+    StudyHarmonyTaskInstance task, {
+    HarmonyPlaybackPattern pattern = HarmonyPlaybackPattern.block,
+  }) async {
+    promptPatterns.add(pattern);
+  }
+}
 
 StudyHarmonyLessonDefinition _buildShortcutLesson() {
   const lessonId = 'shortcut-lesson';
@@ -122,6 +153,24 @@ StudyHarmonyLessonDefinition _buildPromptPreviewLesson() {
   );
 }
 
+class _EmptyMonthlyTourProgressController
+    extends StudyHarmonyProgressController {
+  _EmptyMonthlyTourProgressController({super.initialSnapshot});
+
+  @override
+  StudyHarmonyMonthlyTourProgressView monthlyTourProgressForCourse(
+    StudyHarmonyCourseDefinition course,
+  ) {
+    return const StudyHarmonyMonthlyTourProgressView(
+      monthKey: '2026-03',
+      goals: <StudyHarmonyMonthlyGoalProgressView>[],
+      rewardClaimed: false,
+      rewardLeagueXp: 18,
+      rewardStreakSavers: 1,
+    );
+  }
+}
+
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -130,6 +179,8 @@ void main() {
   Future<void> pumpApp(
     WidgetTester tester, {
     StudyHarmonyProgressSnapshot? progressSnapshot,
+    AppLanguage language = AppLanguage.en,
+    StudyHarmonyProgressController? progressController,
   }) async {
     tester.view.physicalSize = const Size(1280, 1800);
     tester.view.devicePixelRatio = 1;
@@ -141,15 +192,82 @@ void main() {
     await tester.pumpWidget(
       MyApp(
         controller: AppSettingsController(
-          initialSettings: PracticeSettings(language: AppLanguage.en),
+          initialSettings: PracticeSettings(language: language),
         ),
-        studyHarmonyProgressController: StudyHarmonyProgressController(
-          initialSnapshot:
-              progressSnapshot ?? StudyHarmonyProgressSnapshot.initial(),
-        ),
+        studyHarmonyProgressController:
+            progressController ??
+            StudyHarmonyProgressController(
+              initialSnapshot:
+                  progressSnapshot ?? StudyHarmonyProgressSnapshot.initial(),
+            ),
       ),
     );
     await tester.pumpAndSettle();
+  }
+
+  StudyHarmonyLessonProgressSummary clearedLessonSummary(
+    String lessonId,
+    int index,
+  ) {
+    return StudyHarmonyLessonProgressSummary(
+      lessonId: lessonId,
+      isCleared: true,
+      bestAccuracy: 0.9,
+      bestAttemptCount: 2,
+      bestStars: 3,
+      bestRank: 'A',
+      bestElapsedMillis: 14000 + (index * 1000),
+      playCount: 1,
+      lastPlayedAtIso8601:
+          '2026-03-${(10 + index).toString().padLeft(2, '0')}T00:00:00.000Z',
+    );
+  }
+
+  StudyHarmonyProgressSnapshot buildProgressedHubSnapshot({
+    String trackId = studyHarmonyCoreTrackId,
+  }) {
+    final l10n = AppLocalizationsEn();
+    final course = buildStudyHarmonyTrackCourses(l10n)[trackId]!;
+    final unlockedChapterIds = <StudyHarmonyChapterId>{};
+    final unlockedLessonIds = <StudyHarmonyLessonId>{};
+    final lessonResults =
+        <StudyHarmonyLessonId, StudyHarmonyLessonProgressSummary>{};
+    var clearedCount = 0;
+    StudyHarmonyChapterId? lastChapterId;
+    StudyHarmonyLessonId? lastLessonId;
+
+    for (final chapter in course.chapters) {
+      unlockedChapterIds.add(chapter.id);
+      for (final lesson in chapter.lessons) {
+        unlockedLessonIds.add(lesson.id);
+        if (clearedCount < 6) {
+          lessonResults[lesson.id] = clearedLessonSummary(
+            lesson.id,
+            clearedCount,
+          );
+          lastChapterId = chapter.id;
+          lastLessonId = lesson.id;
+          clearedCount += 1;
+        }
+        if (clearedCount >= 6) {
+          break;
+        }
+      }
+      if (clearedCount >= 6) {
+        break;
+      }
+    }
+
+    return StudyHarmonyProgressSnapshot.initial().copyWith(
+      lastPlayedTrackId: trackId,
+      lastPlayedChapterId: lastChapterId ?? course.chapters.first.id,
+      lastPlayedLessonId:
+          lastLessonId ?? course.chapters.first.lessons.first.id,
+      unlockedChapterIds: unlockedChapterIds,
+      unlockedLessonIds: unlockedLessonIds,
+      lessonResults: lessonResults,
+      shopPurchaseCount: 1,
+    );
   }
 
   testWidgets('main menu shows a study harmony entry point', (
@@ -239,11 +357,39 @@ void main() {
       find.textContaining('Continue: Name the Highlighted Note'),
       findsOneWidget,
     );
-    expect(find.textContaining('1/69 lessons cleared'), findsOneWidget);
+    expect(find.textContaining('1/76 lessons cleared'), findsOneWidget);
   });
 
   testWidgets(
-    'study harmony hub renders continue, review, daily, and chapter cards',
+    'study harmony hub stays stable when monthly tour goals are empty',
+    (WidgetTester tester) async {
+      final controller = _EmptyMonthlyTourProgressController(
+        initialSnapshot: buildProgressedHubSnapshot(),
+      );
+
+      await pumpApp(tester, progressController: controller);
+
+      await tester.tap(
+        find.byKey(const ValueKey('main-open-study-harmony-button')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('study-harmony-tour-card')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          'Monthly tour goals will appear here as you log activity this month.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Tour finale ready'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'study harmony hub puts the learning loop ahead of meta systems early on',
     (WidgetTester tester) async {
       await pumpApp(tester);
 
@@ -261,35 +407,15 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('study-harmony-continue-card')),
+        find.byKey(const ValueKey('study-harmony-quickstart-primary-card')),
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('study-harmony-tour-card')),
+        find.byKey(const ValueKey('study-harmony-quickstart-why-card')),
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('study-harmony-duet-card')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('study-harmony-review-card')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('study-harmony-daily-card')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('study-harmony-legend-card')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('study-harmony-league-card')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('study-harmony-relay-card')),
+        find.byKey(const ValueKey('study-harmony-quickstart-routine-card')),
         findsOneWidget,
       );
       expect(
@@ -301,191 +427,125 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.byKey(
-          const ValueKey(
-            'study-harmony-chapter-card-core-chapter-chords-basics',
-          ),
+        find.byKey(const ValueKey('study-harmony-meta-preview')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('study-harmony-league-card')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('study-harmony-player-card')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('study-harmony-director-card')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('study-harmony-economy-card')),
+        findsNothing,
+      );
+
+      final primaryCard = find.byKey(
+        const ValueKey('study-harmony-quickstart-primary-card'),
+      );
+      final whyCard = find.byKey(
+        const ValueKey('study-harmony-quickstart-why-card'),
+      );
+      final routineCard = find.byKey(
+        const ValueKey('study-harmony-quickstart-routine-card'),
+      );
+      final firstChapterCard = find.byKey(
+        const ValueKey(
+          'study-harmony-chapter-card-core-chapter-notes-keyboard',
         ),
-        findsOneWidget,
+      );
+      final metaPreview = find.byKey(
+        const ValueKey('study-harmony-meta-preview'),
+      );
+
+      expect(
+        tester.getTopLeft(primaryCard).dy,
+        lessThan(tester.getTopLeft(firstChapterCard).dy),
       );
       expect(
-        find.byKey(
-          const ValueKey(
-            'study-harmony-chapter-card-core-chapter-progression-detective',
-          ),
-        ),
-        findsOneWidget,
+        tester.getTopLeft(whyCard).dy,
+        lessThan(tester.getTopLeft(firstChapterCard).dy),
       );
       expect(
-        find.byKey(
-          const ValueKey(
-            'study-harmony-chapter-card-core-chapter-checkpoint-gauntlet',
-          ),
-        ),
-        findsOneWidget,
+        tester.getTopLeft(routineCard).dy,
+        lessThan(tester.getTopLeft(firstChapterCard).dy),
       );
       expect(
-        find.byKey(
-          const ValueKey(
-            'study-harmony-chapter-card-core-chapter-capstone-trials',
-          ),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey('study-harmony-chapter-card-core-chapter-remix-arena'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey(
-            'study-harmony-chapter-card-core-chapter-encore-ladder',
-          ),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey(
-            'study-harmony-chapter-card-core-chapter-spotlight-showdown',
-          ),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey(
-            'study-harmony-chapter-card-core-chapter-after-hours-lab',
-          ),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey(
-            'study-harmony-chapter-card-core-chapter-neon-detours',
-          ),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey(
-            'study-harmony-chapter-card-core-chapter-midnight-switchboard',
-          ),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey(
-            'study-harmony-chapter-card-core-chapter-skyline-circuit',
-          ),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey(
-            'study-harmony-chapter-card-core-chapter-afterglow-runway',
-          ),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey(
-            'study-harmony-chapter-card-core-chapter-daybreak-frequency',
-          ),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey(
-            'study-harmony-chapter-card-core-chapter-blue-hour-exchange',
-          ),
-        ),
-        findsOneWidget,
-      );
-      expect(find.text('Daily missing'), findsOneWidget);
-      expect(find.text('Spotlight missing'), findsOneWidget);
-      expect(
-        find.byKey(
-          const ValueKey(
-            'study-harmony-chapter-lock-core-chapter-chords-basics',
-          ),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('study-harmony-quest-card-dailyStreak')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('study-harmony-quest-card-frontierLesson')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('study-harmony-quest-card-chapterStars')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('study-harmony-quest-chest-card')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('study-harmony-milestone-card-lessonPath')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey('study-harmony-milestone-card-starCollector'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('study-harmony-milestone-card-streakLegend')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey('study-harmony-milestone-card-masteryScholar'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('study-harmony-milestone-card-relayRunner')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('study-harmony-focus-card')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('study-harmony-boss-rush-card')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('study-harmony-weekly-goal-card-activeDays')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey('study-harmony-weekly-goal-card-dailyClears'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey('study-harmony-weekly-goal-card-focusSprint'),
-        ),
-        findsOneWidget,
+        tester.getTopLeft(firstChapterCard).dy,
+        lessThan(tester.getTopLeft(metaPreview).dy),
       );
     },
   );
+
+  testWidgets('study harmony Korean locale keeps the director card readable', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(
+      tester,
+      language: AppLanguage.ko,
+      progressSnapshot: buildProgressedHubSnapshot(),
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('main-open-study-harmony-button')),
+    );
+    await tester.pumpAndSettle();
+
+    final pageElement = tester.element(
+      find.byKey(const ValueKey('study-harmony-page')),
+    );
+    final l10n = AppLocalizations.of(pageElement)!;
+    final directorCard = find.byKey(
+      const ValueKey('study-harmony-director-card'),
+    );
+    final playerCard = find.byKey(const ValueKey('study-harmony-player-card'));
+
+    await tester.ensureVisible(playerCard);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(directorCard);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: playerCard,
+        matching: find.text(l10n.studyHarmonyPlayerDeckCardTitle),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: directorCard,
+        matching: find.text(l10n.studyHarmonyRunDirectorTitle),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: directorCard, matching: find.textContaining('Lane')),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: directorCard, matching: find.textContaining('레인')),
+      findsWidgets,
+    );
+    expect(
+      find.descendant(
+        of: directorCard,
+        matching: find.textContaining('Pressure'),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: directorCard, matching: find.textContaining('압박')),
+      findsWidgets,
+    );
+  });
 
   testWidgets('track filter switches to live track content', (
     WidgetTester tester,
@@ -522,6 +582,100 @@ void main() {
       findsNothing,
     );
   });
+
+  testWidgets(
+    'jazz track shows expectation copy and keeps learning cards above league meta',
+    (WidgetTester tester) async {
+      await pumpApp(
+        tester,
+        progressSnapshot: buildProgressedHubSnapshot(
+          trackId: studyHarmonyJazzTrackId,
+        ),
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey('main-open-study-harmony-button')),
+      );
+      await tester.pumpAndSettle();
+
+      final jazzChip = find.byKey(
+        const ValueKey('study-harmony-track-filter-jazz'),
+      );
+      await tester.ensureVisible(jazzChip);
+      await tester.pumpAndSettle();
+      await tester.tap(jazzChip);
+      await tester.pumpAndSettle();
+
+      final expectationCard = find.byKey(
+        const ValueKey('study-harmony-track-expectation-jazz'),
+      );
+      final signatureChapter = find.byKey(
+        const ValueKey(
+          'study-harmony-chapter-card-jazz-chapter-guide-tone-lab',
+        ),
+      );
+      final leagueCard = find.byKey(
+        const ValueKey('study-harmony-league-card'),
+      );
+
+      expect(expectationCard, findsOneWidget);
+      expect(signatureChapter, findsOneWidget);
+      expect(leagueCard, findsOneWidget);
+      expect(
+        tester.getTopLeft(signatureChapter).dy,
+        lessThan(tester.getTopLeft(leagueCard).dy),
+      );
+    },
+  );
+
+  testWidgets(
+    'jazz expectation card shows focus, lighter focus, and recommended copy',
+    (WidgetTester tester) async {
+      await pumpApp(tester);
+
+      await tester.tap(
+        find.byKey(const ValueKey('main-open-study-harmony-button')),
+      );
+      await tester.pumpAndSettle();
+
+      final jazzChip = find.byKey(
+        const ValueKey('study-harmony-track-filter-jazz'),
+      );
+      await tester.ensureVisible(jazzChip);
+      await tester.pumpAndSettle();
+      await tester.tap(jazzChip);
+      await tester.pumpAndSettle();
+
+      final pageElement = tester.element(
+        find.byKey(const ValueKey('study-harmony-page')),
+      );
+      final l10n = AppLocalizations.of(pageElement)!;
+      final pedagogy = trackPedagogyProfileForTrack(
+        l10n,
+        studyHarmonyJazzTrackId,
+      );
+
+      expect(
+        find.byKey(const ValueKey('study-harmony-track-expectation-jazz')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(l10n.studyHarmonyTrackFocusSectionTitle),
+        findsOneWidget,
+      );
+      expect(
+        find.text(l10n.studyHarmonyTrackLessFocusSectionTitle),
+        findsOneWidget,
+      );
+      expect(
+        find.text(l10n.studyHarmonyTrackRecommendedForSectionTitle),
+        findsOneWidget,
+      );
+      expect(find.text(pedagogy.focusPoints.first), findsWidgets);
+      expect(find.text(pedagogy.lighterFocusPoints.first), findsWidgets);
+      expect(find.text(pedagogy.recommendedFor), findsOneWidget);
+    },
+  );
 
   testWidgets('track filter stays responsive on narrow widths', (
     WidgetTester tester,
@@ -624,7 +778,7 @@ void main() {
         supportedLocales: AppLocalizations.supportedLocales,
         home: StudyHarmonyPage(
           progressController: StudyHarmonyProgressController(
-            initialSnapshot: StudyHarmonyProgressSnapshot.initial().copyWith(
+            initialSnapshot: buildProgressedHubSnapshot().copyWith(
               completedDailyChallengeDateKeys: {'2026-03-11', '2026-03-12'},
               bestDailyChallengeStreak: 2,
             ),
@@ -693,67 +847,68 @@ void main() {
     expect(find.byKey(const ValueKey('study-harmony-lives')), findsOneWidget);
   });
 
-  testWidgets('continue card surfaces the last played lesson when available', (
-    WidgetTester tester,
-  ) async {
-    final snapshot = StudyHarmonyProgressSnapshot.initial().copyWith(
-      lastPlayedTrackId: studyHarmonyCoreTrackId,
-      lastPlayedChapterId: studyHarmonyCoreNotesChapterId,
-      lastPlayedLessonId: 'core-notes-2-name-preview',
-      unlockedChapterIds: {studyHarmonyCoreNotesChapterId},
-      unlockedLessonIds: {
-        'core-notes-1-note-keyboard',
-        'core-notes-2-name-preview',
-      },
-    );
+  testWidgets(
+    'next lesson card surfaces the last played lesson when available',
+    (WidgetTester tester) async {
+      final snapshot = StudyHarmonyProgressSnapshot.initial().copyWith(
+        lastPlayedTrackId: studyHarmonyCoreTrackId,
+        lastPlayedChapterId: studyHarmonyCoreNotesChapterId,
+        lastPlayedLessonId: 'core-notes-2-name-preview',
+        unlockedChapterIds: {studyHarmonyCoreNotesChapterId},
+        unlockedLessonIds: {
+          'core-notes-1-note-keyboard',
+          'core-notes-2-name-preview',
+        },
+      );
 
-    tester.view.physicalSize = const Size(1280, 1800);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(() {
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
+      tester.view.physicalSize = const Size(1280, 1800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: StudyHarmonyPage(
-          progressController: StudyHarmonyProgressController(
-            initialSnapshot: snapshot,
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: StudyHarmonyPage(
+            progressController: StudyHarmonyProgressController(
+              initialSnapshot: snapshot,
+            ),
           ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    final continueCard = find.byKey(
-      const ValueKey('study-harmony-continue-card'),
-    );
+      final continueCard = find.byKey(
+        const ValueKey('study-harmony-quickstart-primary-card'),
+      );
 
-    expect(continueCard, findsOneWidget);
-    expect(
-      find.descendant(
-        of: continueCard,
-        matching: find.text('Name the Highlighted Note'),
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(
-        of: continueCard,
-        matching: find.text('Resume the lesson you touched most recently.'),
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(
-        of: continueCard,
-        matching: find.text('Next up: Name the Highlighted Note'),
-      ),
-      findsNothing,
-    );
-  });
+      expect(continueCard, findsOneWidget);
+      expect(
+        find.descendant(
+          of: continueCard,
+          matching: find.text('Name the Highlighted Note'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: continueCard,
+          matching: find.text('Resume the lesson you touched most recently.'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: continueCard,
+          matching: find.text('Next up: Name the Highlighted Note'),
+        ),
+        findsNothing,
+      );
+    },
+  );
 
   testWidgets(
     'review, relay, legend, boss rush, focus, and daily cards open routed session modes',
@@ -827,6 +982,7 @@ void main() {
             skillTags: {'note.findKeyboard'},
           ),
         ],
+        shopPurchaseCount: 1,
       );
 
       tester.view.physicalSize = const Size(1280, 1800);
@@ -1041,6 +1197,112 @@ void main() {
     },
   );
 
+  testWidgets(
+    'jazz session uses the track sound profile preview pattern as the primary prompt action',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1280, 1800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final audio = _StudyHarmonyAudioSpy();
+      final settingsController = AppSettingsController(
+        initialSettings: PracticeSettings(
+          harmonySoundProfileSelection: HarmonySoundProfileSelection.trackAware,
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: SightChordAudioScope(
+            harmonyAudio: audio,
+            child: StudyHarmonySessionPage(
+              lesson: _buildPromptPreviewLesson(),
+              trackId: studyHarmonyJazzTrackId,
+              progressController: StudyHarmonyProgressController(
+                initialSnapshot: StudyHarmonyProgressSnapshot.initial(),
+              ),
+              settingsController: settingsController,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(audio.appliedRuntimeProfile?.profileId, 'jazz-dry-warm');
+      expect(find.text('Play Arpeggio'), findsOneWidget);
+      expect(find.text('Play Prompt'), findsOneWidget);
+
+      await tester.tap(
+        find.byKey(const ValueKey('study-harmony-play-prompt-button')),
+      );
+      await tester.pump();
+      expect(audio.promptPatterns.last, HarmonyPlaybackPattern.arpeggio);
+
+      await tester.tap(
+        find.byKey(const ValueKey('study-harmony-play-prompt-arpeggio-button')),
+      );
+        await tester.pump();
+        expect(audio.promptPatterns.last, HarmonyPlaybackPattern.block);
+      },
+  );
+
+  testWidgets(
+    'session sound profile reacts to settings updates while the page is open',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1280, 1800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final audio = _StudyHarmonyAudioSpy();
+      final settingsController = AppSettingsController(
+        initialSettings: PracticeSettings(
+          harmonySoundProfileSelection: HarmonySoundProfileSelection.trackAware,
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: SightChordAudioScope(
+            harmonyAudio: audio,
+            child: StudyHarmonySessionPage(
+              lesson: _buildPromptPreviewLesson(),
+              trackId: studyHarmonyJazzTrackId,
+              progressController: StudyHarmonyProgressController(
+                initialSnapshot: StudyHarmonyProgressSnapshot.initial(),
+              ),
+              settingsController: settingsController,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(audio.appliedRuntimeProfile?.profileId, 'jazz-dry-warm');
+      expect(find.text('Play Arpeggio'), findsOneWidget);
+
+      await settingsController.update(
+        settingsController.settings.copyWith(
+          harmonySoundProfileSelection:
+              HarmonySoundProfileSelection.classical,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(audio.appliedRuntimeProfile?.profileId, 'classical-clear-focused');
+      expect(find.text('Play Prompt'), findsWidgets);
+    },
+  );
+
   test('core course catalog exposes eighteen chapters and lesson counts', () {
     final course = buildStudyHarmonyCoreCourse(AppLocalizationsEn());
 
@@ -1067,12 +1329,16 @@ void main() {
 
     expect(jazzCourse.trackId, studyHarmonyJazzTrackId);
     expect(jazzCourse.id, studyHarmonyJazzCourseId);
-    expect(jazzCourse.chapters, hasLength(coreCourse.chapters.length));
+    expect(jazzCourse.chapters, hasLength(coreCourse.chapters.length + 1));
     expect(
-      jazzCourse.chapters.map((chapter) => chapter.lessons.length).toList(),
-      equals(
-        coreCourse.chapters.map((chapter) => chapter.lessons.length).toList(),
+      jazzCourse.chapters.any(
+        (chapter) => chapter.id == 'jazz-chapter-guide-tone-lab',
       ),
+      isTrue,
+    );
+    expect(
+      jazzCourse.chapters.map((chapter) => chapter.lessons.length),
+      contains(4),
     );
     expect(jazzCourse.chapters.first.id, 'jazz-chapter-notes-keyboard');
     expect(jazzCourse.chapters.first.id, isNot(coreCourse.chapters.first.id));
@@ -1085,8 +1351,12 @@ void main() {
       'jazz-notes-1-note-keyboard',
     );
     expect(
-      jazzCourse.chapters[4].lessons.first.id,
-      'jazz-progression-1-key-center',
+      jazzCourse.chapters.any(
+        (chapter) => chapter.lessons.any(
+          (lesson) => lesson.id == 'jazz-progression-1-key-center',
+        ),
+      ),
+      isTrue,
     );
   });
 

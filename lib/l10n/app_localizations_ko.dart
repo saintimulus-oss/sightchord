@@ -1318,7 +1318,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '오늘의 데일리는 이미 끝났습니다. 지금은 연속 기록이 유지되고 있습니다.';
 
   @override
-  String get studyHarmonyQuestFrontierTitle => '프론티어 돌파';
+  String get studyHarmonyQuestFrontierTitle => '진도 밀기';
 
   @override
   String studyHarmonyQuestFrontierBody(Object lessonTitle) {
@@ -1834,7 +1834,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String studyHarmonyProgressionExplanationKeyCenter(Object keyLabel) {
-    return '분석기는 이 진행을 $keyLabel 중심으로 읽는 것이 가장 자연스럽다고 봅니다.';
+    return '가능한 해석 중 하나는 이 진행을 $keyLabel 중심으로 읽는 것입니다.';
   }
 
   @override
@@ -1842,7 +1842,7 @@ class AppLocalizationsKo extends AppLocalizations {
     Object chord,
     Object functionLabel,
   ) {
-    return '$chord는 이 문맥에서 $functionLabel 기능으로 읽는 것이 가장 자연스럽습니다.';
+    return '$chord는 이 문맥에서 $functionLabel 기능으로 들을 수 있는 후보입니다.';
   }
 
   @override
@@ -1850,7 +1850,7 @@ class AppLocalizationsKo extends AppLocalizations {
     Object chord,
     Object keyLabel,
   ) {
-    return '$chord는 주된 $keyLabel 읽기에서 벗어나므로 논다이아토닉 후보로 가장 적절합니다.';
+    return '$chord는 주된 $keyLabel 읽기 바깥에 있어서, 논다이아토닉 컬러로 들릴 가능성이 있습니다.';
   }
 
   @override
@@ -1858,7 +1858,7 @@ class AppLocalizationsKo extends AppLocalizations {
     Object chord,
     Object functionLabel,
   ) {
-    return '$chord를 넣으면 이 진행의 $functionLabel 흐름이 가장 자연스럽게 복원됩니다.';
+    return '$chord를 넣으면 이 진행의 $functionLabel 흐름이 어느 정도 복원될 수 있습니다.';
   }
 
   @override
@@ -1913,7 +1913,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chordAnalyzerTitle => '코드 분석기';
 
   @override
-  String get chordAnalyzerSubtitle => '진행을 붙여 넣으면 보수적인 화성 해석을 보여줍니다.';
+  String get chordAnalyzerSubtitle => '진행을 넣으면 조성, 로마 숫자, 화성 기능을 바로 확인합니다.';
 
   @override
   String get chordAnalyzerInputLabel => '코드 진행';
@@ -1972,7 +1972,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chordAnalyzerPlaceholderExplanation =>
-      '이 ?는 앞뒤 화성 맥락을 바탕으로 추론한 자리입니다.';
+      '이 ?는 앞뒤 화성 맥락을 바탕으로 추론한 자리이므로, 확정값보다 제안된 채움으로 보는 편이 좋습니다.';
 
   @override
   String chordAnalyzerSuggestedFill(Object chord) {
@@ -2273,6 +2273,10 @@ class AppLocalizationsKo extends AppLocalizations {
       '이론 설명의 깊이와 비다이어토닉 범주의 강조 색상을 조절합니다.';
 
   @override
+  String get chordAnalyzerQuickStartHint =>
+      '예시를 누르면 바로 결과를 볼 수 있고, 데스크톱에서는 Ctrl+Enter로도 분석할 수 있어요.';
+
+  @override
   String get chordAnalyzerDetailLevel => '설명 상세도';
 
   @override
@@ -2506,7 +2510,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyDailyReplayAction => '오늘의 도전 다시 하기';
 
   @override
-  String get studyHarmonyMilestoneCabinetTitle => '마일스톤 메달';
+  String get studyHarmonyMilestoneCabinetTitle => '성취 기록';
 
   @override
   String get studyHarmonyMilestoneLessonsTitle => '개척자 메달';
@@ -2569,7 +2573,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyResultMilestonesTitle => '새 메달';
 
   @override
-  String get studyHarmonyChapterRemixTitle => '리믹스 아레나';
+  String get studyHarmonyChapterRemixTitle => '고급 진행 혼합';
 
   @override
   String get studyHarmonyChapterRemixDescription =>
@@ -2597,7 +2601,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '기능, 종지 채우기, 조성 중력을 더 빠르게 연달아 읽어냅니다.';
 
   @override
-  String get studyHarmonyLessonRemixBossTitle => '리믹스 마라톤';
+  String get studyHarmonyLessonRemixBossTitle => '고급 진행 종합';
 
   @override
   String get studyHarmonyLessonRemixBossDescription =>
@@ -2614,13 +2618,13 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get studyHarmonyModeFocus => '포커스 모드';
+  String get studyHarmonyModeFocus => '약점 집중 훈련';
 
   @override
-  String get studyHarmonyModeLegend => '레전드 트라이얼';
+  String get studyHarmonyModeLegend => '최고 난도 도전';
 
   @override
-  String get studyHarmonyFocusCardTitle => '포커스 스프린트';
+  String get studyHarmonyFocusCardTitle => '약점 집중 훈련';
 
   @override
   String get studyHarmonyFocusCardHint =>
@@ -2633,7 +2637,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyFocusAction => '스프린트 시작';
 
   @override
-  String get studyHarmonyFocusSessionTitle => '포커스 스프린트';
+  String get studyHarmonyFocusSessionTitle => '약점 집중 훈련';
 
   @override
   String studyHarmonyFocusSessionDescription(Object chapter) {
@@ -2649,7 +2653,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyFocusRewardLabel => '주간 세이버 보상';
 
   @override
-  String get studyHarmonyLegendCardTitle => '레전드 트라이얼';
+  String get studyHarmonyLegendCardTitle => '최고 난도 도전';
 
   @override
   String get studyHarmonyLegendCardHint =>
@@ -2657,13 +2661,13 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyLegendFallbackHint =>
-      '챕터를 클리어하고 레슨당 평균 2별 정도까지 올리면 레전드 트라이얼이 열립니다.';
+      '챕터를 클리어하고 레슨당 평균 2별 정도까지 올리면 최고 난도 도전이 열립니다.';
 
   @override
-  String get studyHarmonyLegendAction => '레전드 도전';
+  String get studyHarmonyLegendAction => '도전 시작';
 
   @override
-  String get studyHarmonyLegendSessionTitle => '레전드 트라이얼';
+  String get studyHarmonyLegendSessionTitle => '최고 난도 도전';
 
   @override
   String studyHarmonyLegendSessionDescription(Object chapter) {
@@ -2707,11 +2711,11 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get studyHarmonyWeeklyGoalFocusTitle => '포커스 스프린트 완료';
+  String get studyHarmonyWeeklyGoalFocusTitle => '약점 집중 훈련 완료';
 
   @override
   String studyHarmonyWeeklyGoalFocusBody(Object target) {
-    return '이번 주에 포커스 스프린트를 $target회 완료하세요.';
+    return '이번 주에 약점 집중 훈련을 $target회 완료하세요.';
   }
 
   @override
@@ -2724,7 +2728,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get studyHarmonyResultFocusSprintLine => '포커스 스프린트를 클리어했습니다.';
+  String get studyHarmonyResultFocusSprintLine => '약점 집중 훈련을 클리어했습니다.';
 
   @override
   String studyHarmonyResultLegendLine(Object chapter) {
@@ -2732,7 +2736,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get studyHarmonyChapterEncoreTitle => '앙코르 래더';
+  String get studyHarmonyChapterEncoreTitle => '최종 압축 훈련';
 
   @override
   String get studyHarmonyChapterEncoreDescription =>
@@ -2753,7 +2757,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '차용 색채 판별과 빈칸 코드 복원을 번갈아 처리하며 감각을 다집니다.';
 
   @override
-  String get studyHarmonyLessonEncoreBossTitle => '앙코르 피날레';
+  String get studyHarmonyLessonEncoreBossTitle => '최종 압축 보스';
 
   @override
   String get studyHarmonyLessonEncoreBossDescription =>
@@ -2772,10 +2776,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyChapterMasteryLegendary => '레전드 크라운';
 
   @override
-  String get studyHarmonyModeBossRush => '보스 러시 모드';
+  String get studyHarmonyModeBossRush => '보스 연속 도전';
 
   @override
-  String get studyHarmonyBossRushCardTitle => '보스 러시';
+  String get studyHarmonyBossRushCardTitle => '보스 연속 도전';
 
   @override
   String get studyHarmonyBossRushCardHint =>
@@ -2789,7 +2793,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyBossRushAction => '러시 시작';
 
   @override
-  String get studyHarmonyBossRushSessionTitle => '보스 러시';
+  String get studyHarmonyBossRushSessionTitle => '보스 연속 도전';
 
   @override
   String studyHarmonyBossRushSessionDescription(Object chapter) {
@@ -2805,7 +2809,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyBossRushHighRiskLabel => '목숨 2개 한정';
 
   @override
-  String get studyHarmonyResultBossRushLine => '보스 러시를 클리어했습니다.';
+  String get studyHarmonyResultBossRushLine => '보스 연속 도전을 클리어했습니다.';
 
   @override
   String get studyHarmonyChapterSpotlightTitle => '스포트라이트 쇼다운';
@@ -2876,10 +2880,10 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get studyHarmonyModeRelay => '아레나 릴레이';
+  String get studyHarmonyModeRelay => '챕터 혼합 도전';
 
   @override
-  String get studyHarmonyRelayCardTitle => '아레나 릴레이';
+  String get studyHarmonyRelayCardTitle => '챕터 혼합 도전';
 
   @override
   String get studyHarmonyRelayCardHint =>
@@ -2887,13 +2891,13 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyRelayFallbackHint =>
-      '서로 다른 챕터가 두 개 이상 열리면 아레나 릴레이가 열립니다.';
+      '서로 다른 챕터가 두 개 이상 열리면 챕터 혼합 도전이 열립니다.';
 
   @override
   String get studyHarmonyRelayAction => '릴레이 시작';
 
   @override
-  String get studyHarmonyRelaySessionTitle => '아레나 릴레이';
+  String get studyHarmonyRelaySessionTitle => '챕터 혼합 도전';
 
   @override
   String studyHarmonyRelaySessionDescription(Object chapter) {
@@ -2915,7 +2919,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String studyHarmonyResultRelayLine(Object count) {
-    return '아레나 릴레이 승리 $count회';
+    return '챕터 혼합 도전 승리 $count회';
   }
 
   @override
@@ -2923,25 +2927,25 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String studyHarmonyMilestoneRelayBody(Object target) {
-    return '아레나 릴레이를 $target회 클리어하세요.';
+    return '챕터 혼합 도전을 $target회 클리어하세요.';
   }
 
   @override
-  String get studyHarmonyChapterNeonTitle => '네온 디투어';
+  String get studyHarmonyChapterNeonTitle => '후반 전환 훈련';
 
   @override
   String get studyHarmonyChapterNeonDescription =>
       '차용 색채, 중심 전환, 착지 복원을 번갈아 흔들며 읽기 정확도를 끝까지 시험하는 후반부 종합 챕터입니다.';
 
   @override
-  String get studyHarmonyLessonNeonDetourTitle => '모달 디투어';
+  String get studyHarmonyLessonNeonDetourTitle => '차용 전환 읽기';
 
   @override
   String get studyHarmonyLessonNeonDetourDescription =>
       '차용 색채가 진행을 옆길로 끌어도 실제 중심 조성을 끝까지 추적합니다.';
 
   @override
-  String get studyHarmonyLessonNeonPivotTitle => '피벗 프레셔';
+  String get studyHarmonyLessonNeonPivotTitle => '전환 압박 읽기';
 
   @override
   String get studyHarmonyLessonNeonPivotDescription =>
@@ -2955,7 +2959,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '차용 색채 페이크 이후 비어 있는 착지 화음을 복원하며 진짜 해결 지점을 되찾습니다.';
 
   @override
-  String get studyHarmonyLessonNeonBossTitle => '시티 라이트 보스';
+  String get studyHarmonyLessonNeonBossTitle => '전환 종합 보스';
 
   @override
   String get studyHarmonyLessonNeonBossDescription =>
@@ -2967,7 +2971,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get studyHarmonyLeagueCardTitle => '하모니 리그';
+  String get studyHarmonyLeagueCardTitle => '주간 등급';
 
   @override
   String studyHarmonyLeagueCardHint(Object tier, Object mode) {
@@ -2984,6 +2988,114 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyLeagueAction => '리그 도전';
+
+  @override
+  String get studyHarmonyHubStartHereTitle => '지금 시작';
+
+  @override
+  String get studyHarmonyHubNextLessonTitle => '다음 레슨';
+
+  @override
+  String get studyHarmonyHubWhyItMattersTitle => '왜 중요한가';
+
+  @override
+  String get studyHarmonyHubQuickPracticeTitle => '빠른 연습';
+
+  @override
+  String get studyHarmonyHubMetaPreviewTitle => '다음 메타는 곧 열립니다';
+
+  @override
+  String get studyHarmonyHubMetaPreviewHeadline => '먼저 작은 학습 흐름부터 만드세요';
+
+  @override
+  String get studyHarmonyHubMetaPreviewBody =>
+      '리그, 상점, 보상 시스템은 몇 개의 레슨을 마친 뒤에 더 유용하게 열립니다. 지금은 다음 레슨 하나와 짧은 연습 한 번에 집중하면 충분합니다.';
+
+  @override
+  String get studyHarmonyHubPlayNowAction => '바로 시작';
+
+  @override
+  String get studyHarmonyHubKeepMomentumAction => '흐름 이어가기';
+
+  @override
+  String get studyHarmonyClearTitleAction => '칭호 해제';
+
+  @override
+  String get studyHarmonyPlayerDeckTitle => '플레이어 덱';
+
+  @override
+  String get studyHarmonyPlayerDeckCardTitle => '플레이스타일';
+
+  @override
+  String get studyHarmonyPlayerDeckOverviewAction => '개요';
+
+  @override
+  String get studyHarmonyRunDirectorTitle => '런 디렉터';
+
+  @override
+  String get studyHarmonyRunDirectorAction => '추천으로 시작';
+
+  @override
+  String get studyHarmonyGameEconomyTitle => '게임 재화';
+
+  @override
+  String get studyHarmonyGameEconomyBody =>
+      '상점 재고, 유틸리티 토큰, 메타 보상은 최근 플레이 흐름에 따라 달라집니다.';
+
+  @override
+  String studyHarmonyGameEconomyTitlesOwned(int count) {
+    return '칭호 $count개 보유';
+  }
+
+  @override
+  String studyHarmonyGameEconomyCosmeticsOwned(int count) {
+    return '코스메틱 $count개 보유';
+  }
+
+  @override
+  String studyHarmonyGameEconomyShopPurchases(int count) {
+    return '상점 구매 $count회';
+  }
+
+  @override
+  String get studyHarmonyGameEconomyWalletAction => '지갑 보기';
+
+  @override
+  String get studyHarmonyArcadeSpotlightTitle => '아케이드 스포트라이트';
+
+  @override
+  String get studyHarmonyArcadePlayAction => '아케이드 시작';
+
+  @override
+  String studyHarmonyArcadeModeCount(int count) {
+    return '모드 $count개';
+  }
+
+  @override
+  String get studyHarmonyArcadePlaylistAction => '세트 시작';
+
+  @override
+  String get studyHarmonyNightMarketTitle => '나이트 마켓';
+
+  @override
+  String studyHarmonyPurchaseSuccess(Object itemTitle) {
+    return '$itemTitle 구매 완료';
+  }
+
+  @override
+  String studyHarmonyPurchaseAndEquipSuccess(Object itemTitle) {
+    return '$itemTitle 구매 후 바로 장착했습니다';
+  }
+
+  @override
+  String studyHarmonyPurchaseFailure(Object itemTitle) {
+    return '$itemTitle 구매 조건이 아직 맞지 않습니다';
+  }
+
+  @override
+  String studyHarmonyRewardEquipped(Object itemTitle) {
+    return '$itemTitle 장착 완료';
+  }
 
   @override
   String studyHarmonyLeagueScoreLabel(Object score) {
@@ -3166,7 +3278,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get studyHarmonyChapterSkylineTitle => '스카이라인 서킷';
+  String get studyHarmonyChapterSkylineTitle => '최종 중심 읽기';
 
   @override
   String get studyHarmonyChapterSkylineDescription =>
@@ -3244,7 +3356,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyProgressTourClaimed => '이번 달 투어 완료';
 
   @override
-  String get studyHarmonyTourTitle => '하모니 투어';
+  String get studyHarmonyTourTitle => '월간 도전';
 
   @override
   String studyHarmonyTourProgressHeadline(Object count, Object target) {
@@ -3274,8 +3386,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String studyHarmonyTourSpotlightBody(Object target) {
-    return '이번 달 스포트라이트 런을 $target번 클리어하세요. 보스 러시, 아레나 릴레이, 포커스 스프린트, 레전드 트라이얼, 보스 레슨이 모두 카운트됩니다.';
+    return '이번 달 스포트라이트 런을 $target번 클리어하세요. 보스 연속 도전, 챕터 혼합 도전, 약점 집중 훈련, 최고 난도 도전, 보스 레슨이 모두 카운트됩니다.';
   }
+
+  @override
+  String get studyHarmonyTourEmptyBody => '이번 달 활동이 쌓이면 여기에 월간 도전 목표가 나타납니다.';
 
   @override
   String get studyHarmonyTourReadyBody =>
@@ -3357,7 +3472,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get studyHarmonyDuetTitle => '듀엣 약속';
+  String get studyHarmonyDuetTitle => '연속 플레이 약속';
 
   @override
   String get studyHarmonyDuetStartHeadline => '오늘의 듀엣 시작';
@@ -3383,7 +3498,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get studyHarmonyDuetNeedSpotlightBody =>
-      '데일리는 끝났습니다. 포커스 스프린트, 아레나 릴레이, 보스 러시, 레전드 트라이얼, 보스 레슨 중 하나를 클리어하면 오늘 듀엣이 완성됩니다.';
+      '데일리는 끝났습니다. 약점 집중 훈련, 챕터 혼합 도전, 보스 연속 도전, 최고 난도 도전, 보스 레슨 중 하나를 클리어하면 오늘 연속 플레이 약속이 완성됩니다.';
 
   @override
   String studyHarmonyDuetActiveBody(Object count) {
@@ -3506,7 +3621,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get studyHarmonyTemplateChoiceLabel => '템플릿';
 
   @override
-  String get studyHarmonyChapterBlueHourTitle => '블루 아워 교차점';
+  String get studyHarmonyChapterBlueHourTitle => '최종 종합 교차';
 
   @override
   String get studyHarmonyChapterBlueHourDescription =>
@@ -3819,4 +3934,1111 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get harmonyTimingHumanizationHelp =>
       '블록 코드의 동시 어택을 약간 풀어 덜 딱딱하게 들리게 합니다.';
+
+  @override
+  String get harmonySoundProfileSelectionTitle => '사운드 프로파일 모드';
+
+  @override
+  String get harmonySoundProfileSelectionHelp =>
+      '중립 프리뷰를 쓰거나, Study Harmony 트랙을 따라가거나, 특정 트랙의 재생 성향을 고정할 수 있습니다.';
+
+  @override
+  String get harmonySoundProfileSelectionNeutral => '중립 공용 피아노';
+
+  @override
+  String get harmonySoundProfileSelectionTrackAware => '트랙 연동';
+
+  @override
+  String get harmonySoundProfileSelectionPop => '팝 프로파일';
+
+  @override
+  String get harmonySoundProfileSelectionJazz => '재즈 프로파일';
+
+  @override
+  String get harmonySoundProfileSelectionClassical => '클래식 프로파일';
+
+  @override
+  String harmonySoundProfileSummaryLine(Object instrument, Object pattern) {
+    return '악기: $instrument. 추천 프리뷰 패턴: $pattern.';
+  }
+
+  @override
+  String get harmonySoundProfileTrackAwareFallback =>
+      '자유 연습에서는 공용 피아노 프로파일을 유지하고, Study Harmony 세션에서는 현재 트랙에 맞는 사운드 shaping을 적용합니다.';
+
+  @override
+  String get harmonySoundProfileNeutralLabel => '균형형 공용 피아노';
+
+  @override
+  String get harmonySoundProfileNeutralSummary =>
+      '공용 피아노 자산을 기반으로, 어떤 레슨에도 무리 없이 맞는 중립 프리뷰를 사용합니다.';
+
+  @override
+  String get harmonySoundTagBalanced => '균형형';
+
+  @override
+  String get harmonySoundTagPiano => '피아노';
+
+  @override
+  String get harmonySoundTagSoft => '부드러움';
+
+  @override
+  String get harmonySoundTagOpen => '열림';
+
+  @override
+  String get harmonySoundTagModern => '현대적';
+
+  @override
+  String get harmonySoundTagDry => '드라이';
+
+  @override
+  String get harmonySoundTagWarm => '따뜻함';
+
+  @override
+  String get harmonySoundTagEpReady => 'EP 지향';
+
+  @override
+  String get harmonySoundTagClear => '선명함';
+
+  @override
+  String get harmonySoundTagAcoustic => '어쿠스틱';
+
+  @override
+  String get harmonySoundTagFocused => '집중형';
+
+  @override
+  String get harmonySoundNeutralTrait1 => '기본 화성 확인에 무난한 안정적 홀드';
+
+  @override
+  String get harmonySoundNeutralTrait2 => '과한 색채 없이 균형 잡힌 어택';
+
+  @override
+  String get harmonySoundNeutralTrait3 => '어떤 레슨이나 자유 연습에도 안전한 기본값';
+
+  @override
+  String get harmonySoundNeutralExpansion1 => '향후 음역대나 공간감 기준의 공용 피아노 분기';
+
+  @override
+  String get harmonySoundNeutralExpansion2 => '헤드폰용 대체 공용 악기 세트 확장 가능';
+
+  @override
+  String get harmonySoundPopTrait1 => 'open hook과 add9 color를 살리는 조금 긴 sustain';
+
+  @override
+  String get harmonySoundPopTrait2 => '반복 프리뷰가 덜 딱딱하게 들리도록 부드러운 attack';
+
+  @override
+  String get harmonySoundPopTrait3 =>
+      'loop가 너무 격자처럼 들리지 않게 하는 가벼운 humanization';
+
+  @override
+  String get harmonySoundPopExpansion1 => '밝은 팝 키보드 또는 piano-synth 레이어 자산';
+
+  @override
+  String get harmonySoundPopExpansion2 => 'chorus lift용 넓은 스테레오 보이싱 재생';
+
+  @override
+  String get harmonySoundJazzTrait1 => '종지 흐름이 보이도록 조금 짧은 hold';
+
+  @override
+  String get harmonySoundJazzTrait2 => 'guide-tone 청감을 돕는 빠른 broken-preview 감각';
+
+  @override
+  String get harmonySoundJazzTrait3 =>
+      'shell과 rootless comping을 암시하는 더 큰 터치 변화';
+
+  @override
+  String get harmonySoundJazzExpansion1 => '드라이한 업라이트 또는 부드러운 EP 계열 악기';
+
+  @override
+  String get harmonySoundJazzExpansion2 => 'shell / rootless 드릴용 comping 프리셋';
+
+  @override
+  String get harmonySoundClassicalTrait1 => '기능과 종지를 분명하게 듣게 하는 중심형 sustain';
+
+  @override
+  String get harmonySoundClassicalTrait2 => 'voice-leading 안정성을 위한 낮은 랜덤성';
+
+  @override
+  String get harmonySoundClassicalTrait3 => '화성 도착감을 직접적으로 들려주는 block playback';
+
+  @override
+  String get harmonySoundClassicalExpansion1 => '공간감을 줄인 직접적인 어쿠스틱 피아노 프로파일';
+
+  @override
+  String get harmonySoundClassicalExpansion2 => 'cadence와 sequence 전용 프리뷰 보이싱';
+
+  @override
+  String get explanationSectionTitle => '왜 이렇게 들리는가';
+
+  @override
+  String get explanationReasonSection => '왜 이런 결과가 나왔는가';
+
+  @override
+  String get explanationConfidenceHigh => '신뢰도 높음';
+
+  @override
+  String get explanationConfidenceMedium => '설득력 있는 해석';
+
+  @override
+  String get explanationConfidenceLow => '잠정적 해석으로 보는 편이 좋습니다';
+
+  @override
+  String get explanationAmbiguityLow =>
+      '대체로 한 방향으로 읽히지만, 약한 다른 해석 가능성도 남아 있습니다.';
+
+  @override
+  String get explanationAmbiguityMedium =>
+      '둘 이상의 그럴듯한 해석이 함께 남아 있어서, 전후 문맥이 중요합니다.';
+
+  @override
+  String get explanationAmbiguityHigh =>
+      '여러 해석이 경쟁하고 있으므로, 이번 설명은 문맥 의존적인 보수적 해석으로 보는 편이 안전합니다.';
+
+  @override
+  String get explanationCautionParser => '분석 전에 일부 코드 표기가 정규화되었습니다.';
+
+  @override
+  String get explanationCautionAmbiguous => '여기에는 둘 이상의 합리적인 해석이 가능합니다.';
+
+  @override
+  String get explanationCautionAlternateKey =>
+      '가까운 다른 key center도 일부 구간을 설명합니다.';
+
+  @override
+  String get explanationAlternativeSection => '다른 해석';
+
+  @override
+  String explanationAlternativeKeyLabel(Object keyLabel) {
+    return '대안 key: $keyLabel';
+  }
+
+  @override
+  String get explanationAlternativeKeyBody =>
+      '현재 해석도 유효하지만, 다른 key center로 읽어도 일부 코드 흐름이 설명됩니다.';
+
+  @override
+  String explanationAlternativeReadingLabel(Object romanNumeral) {
+    return '대안 해석: $romanNumeral';
+  }
+
+  @override
+  String get explanationAlternativeReadingBody =>
+      '유일한 정답이라기보다 가능한 해석 중 하나로 보는 편이 안전합니다.';
+
+  @override
+  String get explanationListeningSection => '청감 포인트';
+
+  @override
+  String get explanationListeningGuideToneTitle => '3도와 7도를 따라 들어보세요';
+
+  @override
+  String get explanationListeningGuideToneBody =>
+      '종지로 갈수록 안쪽 성부가 가장 작은 움직임으로 어떻게 연결되는지 들어보세요.';
+
+  @override
+  String get explanationListeningDominantColorTitle => 'dominant 컬러를 들어보세요';
+
+  @override
+  String get explanationListeningDominantColorBody =>
+      '최종 도착 전에 dominant의 텐션이 어떻게 풀리려 하는지 먼저 느껴보세요.';
+
+  @override
+  String get explanationListeningBackdoorTitle => '부드러운 backdoor 끌림을 들어보세요';
+
+  @override
+  String get explanationListeningBackdoorBody =>
+      '평범한 V-I 압력보다, subdominant minor 계열의 색채와 성부 진행으로 home으로 돌아오는 느낌을 들어보세요.';
+
+  @override
+  String get explanationListeningBorrowedColorTitle => '컬러가 바뀌는 순간을 들어보세요';
+
+  @override
+  String get explanationListeningBorrowedColorBody =>
+      'borrowed chord가 들어오며 루프의 밝기나 어둠이 어떻게 바뀌는지 느껴보세요.';
+
+  @override
+  String get explanationListeningBassMotionTitle => '베이스 움직임을 따라 들어보세요';
+
+  @override
+  String get explanationListeningBassMotionBody =>
+      '위쪽 화성이 크게 바뀌지 않아도, bass note가 추진감을 어떻게 바꾸는지 따라가 보세요.';
+
+  @override
+  String get explanationListeningCadenceTitle => '도착 지점을 들어보세요';
+
+  @override
+  String get explanationListeningCadenceBody =>
+      '어느 코드가 안정점처럼 들리는지, 그리고 그 전에 어떤 준비가 있었는지 들어보세요.';
+
+  @override
+  String get explanationListeningAmbiguityTitle => '경쟁하는 해석을 비교해 들어보세요';
+
+  @override
+  String get explanationListeningAmbiguityBody =>
+      '같은 코드를 한 번은 국소적 해결감으로, 한 번은 더 큰 key center 역할로 들어보며 차이를 비교해 보세요.';
+
+  @override
+  String get explanationPerformanceSection => '연주 포인트';
+
+  @override
+  String get explanationPerformancePopTitle => '훅이 잘 들리게 유지하세요';
+
+  @override
+  String get explanationPerformancePopBody =>
+      '선명한 탑노트, 반복되는 윤곽, 열린 보이싱으로 보컬 라인을 받쳐 주세요.';
+
+  @override
+  String get explanationPerformanceJazzTitle => '가이드톤부터 잡으세요';
+
+  @override
+  String get explanationPerformanceJazzBody =>
+      '추가 텐션이나 reharm을 얹기 전에 3도와 7도로 종지감을 먼저 만드세요.';
+
+  @override
+  String get explanationPerformanceJazzShellTitle => '먼저 shell tone으로 잡으세요';
+
+  @override
+  String get explanationPerformanceJazzShellBody =>
+      'root, 3도, 7도를 먼저 또렷하게 놓아 종지 흐름이 쉽게 들리게 하세요.';
+
+  @override
+  String get explanationPerformanceJazzRootlessTitle => '3도와 7도가 형태를 이끌게 하세요';
+
+  @override
+  String get explanationPerformanceJazzRootlessBody =>
+      'guide tone을 안정적으로 유지한 뒤, 해결감이 남아 있을 때만 9나 13을 더해 보세요.';
+
+  @override
+  String get explanationPerformanceClassicalTitle => '성부 진행을 단정하게 유지하세요';
+
+  @override
+  String get explanationPerformanceClassicalBody =>
+      '안정적인 간격, 기능적 도착, 가능한 한 순차 진행을 우선하세요.';
+
+  @override
+  String get explanationPerformanceDominantColorTitle =>
+      '목표를 먼저 분명히 한 뒤 텐션을 더하세요';
+
+  @override
+  String get explanationPerformanceDominantColorBody =>
+      '가이드톤으로 해결 방향을 먼저 들리게 한 다음, 9, 13, altered color를 장식처럼 얹어 보세요.';
+
+  @override
+  String get explanationPerformanceAmbiguityTitle => '가장 안정적인 음을 먼저 고정하세요';
+
+  @override
+  String get explanationPerformanceAmbiguityBody =>
+      '해석이 모호하다면 더 화려한 선택보다, 해결 가능성이 큰 타깃음을 먼저 강조해 주세요.';
+
+  @override
+  String get explanationPerformanceVoicingTitle => '보이싱 포인트';
+
+  @override
+  String get explanationPerformanceMelodyTitle => '멜로디 포인트';
+
+  @override
+  String get explanationPerformanceMelodyBody =>
+      '구조적 타깃음을 먼저 잡고, 그 주변을 passing tone으로 메워 보세요.';
+
+  @override
+  String get explanationReasonFunctionalResolutionLabel => '기능적 끌림';
+
+  @override
+  String get explanationReasonFunctionalResolutionBody =>
+      '코드들이 따로 놓인 소리가 아니라 tonic, predominant, dominant의 흐름으로 정리됩니다.';
+
+  @override
+  String get explanationReasonGuideToneSmoothnessLabel => '가이드톤 연결';
+
+  @override
+  String get explanationReasonGuideToneSmoothnessBody =>
+      '안쪽 성부가 효율적으로 움직여 진행 방향이 더 분명해집니다.';
+
+  @override
+  String get explanationReasonBorrowedColorLabel => 'borrowed color';
+
+  @override
+  String get explanationReasonBorrowedColorBody =>
+      '병행조 차용이 home key를 완전히 떠나지 않으면서 대비를 만듭니다.';
+
+  @override
+  String get explanationReasonSecondaryDominantLabel =>
+      'secondary dominant의 끌림';
+
+  @override
+  String get explanationReasonSecondaryDominantBody =>
+      '이 dominant는 tonic만이 아니라 특정 목표 코드로 강하게 향합니다.';
+
+  @override
+  String get explanationReasonTritoneSubLabel => 'tritone sub 컬러';
+
+  @override
+  String get explanationReasonTritoneSubBody =>
+      'dominant 성격은 유지하면서 bass 진행만 대체 경로로 바뀝니다.';
+
+  @override
+  String get explanationReasonDominantColorLabel => 'dominant tension';
+
+  @override
+  String get explanationReasonDominantColorBody =>
+      'altered 혹은 extended dominant 컬러가 전체 key 해석을 바꾸지 않으면서 다음 화음으로의 끌림을 강화합니다.';
+
+  @override
+  String get explanationReasonBackdoorMotionLabel => 'backdoor 진행';
+
+  @override
+  String get explanationReasonBackdoorMotionBody =>
+      'subdominant minor나 backdoor 성격이 섞여 있어서, 더 부드럽지만 방향성 있는 해결감이 생깁니다.';
+
+  @override
+  String get explanationReasonCadentialStrengthLabel => '종지 형태';
+
+  @override
+  String get explanationReasonCadentialStrengthBody =>
+      '중립적인 루프 반복보다 더 강한 도착감을 만드는 마무리 형태입니다.';
+
+  @override
+  String get explanationReasonVoiceLeadingStabilityLabel => '안정적인 성부 진행';
+
+  @override
+  String get explanationReasonVoiceLeadingStabilityBody =>
+      '선택된 보이싱이 공통음을 유지하거나 경향음을 자연스럽게 해결합니다.';
+
+  @override
+  String get explanationReasonSingableContourLabel => '노래하기 쉬운 윤곽';
+
+  @override
+  String get explanationReasonSingableContourBody =>
+      '지나치게 각진 선보다 기억하기 쉬운 움직임을 우선한 라인입니다.';
+
+  @override
+  String get explanationReasonSlashBassLiftLabel => '베이스 움직임의 리프트';
+
+  @override
+  String get explanationReasonSlashBassLiftBody =>
+      '위쪽 화성은 가깝게 유지하면서도 bass가 추진감을 바꿉니다.';
+
+  @override
+  String get explanationReasonTurnaroundGravityLabel => 'turnaround의 중력';
+
+  @override
+  String get explanationReasonTurnaroundGravityBody =>
+      '익숙한 재즈 해결 지점을 순환하며 다음 화음으로 끌어당깁니다.';
+
+  @override
+  String get explanationReasonInversionDisciplineLabel => 'inversion 제어';
+
+  @override
+  String get explanationReasonInversionDisciplineBody =>
+      'inversion 선택이 outer voice와 종지 행동을 더 매끄럽게 만듭니다.';
+
+  @override
+  String get explanationReasonAmbiguityWindowLabel => '경쟁하는 해석';
+
+  @override
+  String get explanationReasonAmbiguityWindowBody =>
+      '같은 음 구성으로도 둘 이상의 화성 역할이 가능해서, 어떤 해석이 더 강한지는 문맥이 결정합니다.';
+
+  @override
+  String get explanationReasonChromaticLineLabel => '반음계 라인';
+
+  @override
+  String get explanationReasonChromaticLineBody =>
+      'bass나 내성의 반음계 연결이 추가 색채를 가진 화음도 자연스럽게 들리게 만듭니다.';
+
+  @override
+  String get explanationTrackContextPop =>
+      '팝 문맥에서는 loop의 중력, 색채 대비, singable한 탑라인 쪽으로 기울어진 해석입니다.';
+
+  @override
+  String get explanationTrackContextJazz =>
+      '재즈 문맥에서는 guide tone, 종지의 끌림, dominant color를 중심으로 볼 수 있는 가능한 해석입니다.';
+
+  @override
+  String get explanationTrackContextClassical =>
+      '클래식 문맥에서는 기능 구분, inversion 인식, 종지 강도 쪽으로 기울어진 해석입니다.';
+
+  @override
+  String get studyHarmonyTrackFocusSectionTitle => '이 트랙에서 주로 다루는 것';
+
+  @override
+  String get studyHarmonyTrackLessFocusSectionTitle => '상대적으로 덜 다루는 것';
+
+  @override
+  String get studyHarmonyTrackRecommendedForSectionTitle => '추천 대상';
+
+  @override
+  String get studyHarmonyTrackSoundSectionTitle => '사운드 프로파일';
+
+  @override
+  String get studyHarmonyTrackSoundAssetPlaceholder =>
+      '현재 릴리스는 공용 피아노 자산을 사용합니다. 이 프로파일은 향후 트랙별 사운드 확장을 위한 준비 계층입니다.';
+
+  @override
+  String studyHarmonyTrackSoundInstrumentLabel(Object instrument) {
+    return '현재 악기: $instrument';
+  }
+
+  @override
+  String studyHarmonyTrackSoundPlaybackLabel(Object pattern) {
+    return '추천 프리뷰 패턴: $pattern';
+  }
+
+  @override
+  String get studyHarmonyTrackSoundPlaybackTraitsTitle => '재생 성향';
+
+  @override
+  String get studyHarmonyTrackSoundExpansionTitle => '향후 확장 포인트';
+
+  @override
+  String get studyHarmonyTrackPopFocus1 => '다이아토닉 루프의 중력과 훅 친화적 반복';
+
+  @override
+  String get studyHarmonyTrackPopFocus2 =>
+      'iv, bVII, IVMaj7 같은 절제된 borrowed color';
+
+  @override
+  String get studyHarmonyTrackPopFocus3 =>
+      'pre-chorus lift를 만드는 slash bass와 pedal bass 감각';
+
+  @override
+  String get studyHarmonyTrackPopLess1 =>
+      '촘촘한 재즈 reharm과 고급 substitute dominant';
+
+  @override
+  String get studyHarmonyTrackPopLess2 =>
+      'rootless 보이싱 체계와 강한 altered dominant 언어';
+
+  @override
+  String get studyHarmonyTrackPopRecommendedFor =>
+      '현대 팝, 발라드, 송라이팅 문맥에서 바로 쓸 수 있는 화성을 익히고 싶은 사용자에게 적합합니다.';
+
+  @override
+  String get studyHarmonyTrackPopTheoryTone =>
+      '곡 중심이고 실용적이며, 용어 과부하 없이 색채를 체험하게 하는 톤입니다.';
+
+  @override
+  String get studyHarmonyTrackPopHeroHeadline => '훅이 살아 있는 루프 만들기';
+
+  @override
+  String get studyHarmonyTrackPopHeroBody =>
+      '이 트랙은 loop의 중력, 절제된 borrowed color, section을 들어 올리는 bass 움직임을 중심으로 팝 화성을 가르칩니다.';
+
+  @override
+  String get studyHarmonyTrackPopQuickPracticeCue =>
+      '시그니처 루프 챕터부터 시작한 뒤, 같은 훅이 bass와 borrowed color 때문에 어떻게 달라지는지 들어보세요.';
+
+  @override
+  String get studyHarmonyTrackPopSoundLabel => '부드럽고 열린 현대 팝 톤';
+
+  @override
+  String get studyHarmonyTrackPopSoundSummary =>
+      '현재는 공용 피아노를 쓰지만, 향후 더 밝은 팝 키보드와 넓은 스테레오 보이싱으로 확장할 수 있습니다.';
+
+  @override
+  String get studyHarmonyTrackJazzFocus1 =>
+      'guide-tone 청감과 shell에서 rootless로 가는 보이싱 성장';
+
+  @override
+  String get studyHarmonyTrackJazzFocus2 =>
+      'major ii-V-I, minor iiø-V-i, turnaround의 흐름';
+
+  @override
+  String get studyHarmonyTrackJazzFocus3 =>
+      'dominant color, tensions, tritone sub, backdoor의 입문 문맥';
+
+  @override
+  String get studyHarmonyTrackJazzLess1 => '종지 감각 없는 단순 반복형 song loop';
+
+  @override
+  String get studyHarmonyTrackJazzLess2 =>
+      '주된 목표로서의 classical inversion literacy';
+
+  @override
+  String get studyHarmonyTrackJazzRecommendedFor =>
+      '복잡한 reharm으로 바로 뛰지 않고도 기능적 재즈 화성을 귀와 손으로 익히고 싶은 사용자에게 추천합니다.';
+
+  @override
+  String get studyHarmonyTrackJazzTheoryTone =>
+      '맥락적이고 신뢰도 인식형이며, 하나의 재즈 해석만을 정답처럼 과장하지 않는 톤입니다.';
+
+  @override
+  String get studyHarmonyTrackJazzHeroHeadline => '코드 안의 선율을 듣기';
+
+  @override
+  String get studyHarmonyTrackJazzHeroBody =>
+      '이 트랙은 guide tone부터 시작해 종지 패밀리, 그리고 절제된 dominant color까지 재즈 화성을 단계적으로 체감하게 합니다.';
+
+  @override
+  String get studyHarmonyTrackJazzQuickPracticeCue =>
+      'guide tone과 shell voicing부터 익힌 뒤, 같은 종지를 rootless color로 다시 들어보세요.';
+
+  @override
+  String get studyHarmonyTrackJazzSoundLabel => '드라이하고 따뜻한 재즈 톤';
+
+  @override
+  String get studyHarmonyTrackJazzSoundSummary =>
+      '현재는 공용 피아노를 쓰지만, 향후 더 건조한 어택과 EP 친화 재생으로 확장할 수 있습니다.';
+
+  @override
+  String get studyHarmonyTrackClassicalFocus1 => 'T / S / D 기능 구분과 cadence 유형';
+
+  @override
+  String get studyHarmonyTrackClassicalFocus2 =>
+      '1전위, 2전위, cadential 6/4를 포함한 inversion literacy';
+
+  @override
+  String get studyHarmonyTrackClassicalFocus3 =>
+      '성부 진행 안정성, sequence, 기능적 modulation 기초';
+
+  @override
+  String get studyHarmonyTrackClassicalLess1 =>
+      '강한 tension 적층, quartal color, upper-structure 사고';
+
+  @override
+  String get studyHarmonyTrackClassicalLess2 => '루프 반복을 중심으로 한 팝식 학습 프레임';
+
+  @override
+  String get studyHarmonyTrackClassicalRecommendedFor =>
+      '기능 청감, inversion 인식, disciplined voice leading을 분명하게 배우고 싶은 사용자에게 적합합니다.';
+
+  @override
+  String get studyHarmonyTrackClassicalTheoryTone =>
+      '구조적이고 기능 우선이며, 라벨 암기뿐 아니라 청감까지 연결하는 톤입니다.';
+
+  @override
+  String get studyHarmonyTrackClassicalHeroHeadline => '기능과 종지를 또렷하게 듣기';
+
+  @override
+  String get studyHarmonyTrackClassicalHeroBody =>
+      '이 트랙은 기능적 도착, inversion 제어, 구조적으로 분명한 phrase ending에 집중합니다.';
+
+  @override
+  String get studyHarmonyTrackClassicalQuickPracticeCue =>
+      'cadence lab부터 시작한 뒤, 같은 기능이 inversion 때문에 어떻게 달라지는지 비교해 보세요.';
+
+  @override
+  String get studyHarmonyTrackClassicalSoundLabel => '선명하고 집중된 어쿠스틱 톤';
+
+  @override
+  String get studyHarmonyTrackClassicalSoundSummary =>
+      '현재는 공용 피아노를 쓰지만, 향후 더 직접적인 어쿠스틱 프로파일로 확장할 수 있습니다.';
+
+  @override
+  String get studyHarmonyPopChapterSignatureLoopsTitle => '시그니처 팝 루프';
+
+  @override
+  String get studyHarmonyPopChapterSignatureLoopsDescription =>
+      'hook gravity, borrowed lift, bass motion을 통해 바로 곡에 쓸 수 있는 팝 감각을 만듭니다.';
+
+  @override
+  String get studyHarmonyPopLessonHookGravityTitle => '훅의 중력';
+
+  @override
+  String get studyHarmonyPopLessonHookGravityDescription =>
+      '단순한 4코드 루프가 왜 계속 귀에 남는지 들어봅니다.';
+
+  @override
+  String get studyHarmonyPopLessonBorrowedLiftTitle => 'borrowed lift';
+
+  @override
+  String get studyHarmonyPopLessonBorrowedLiftDescription =>
+      'hook를 망치지 않으면서 section의 분위기를 바꾸는 borrowed chord를 체험합니다.';
+
+  @override
+  String get studyHarmonyPopLessonBassMotionTitle => '베이스 움직임';
+
+  @override
+  String get studyHarmonyPopLessonBassMotionDescription =>
+      '윗성부는 익숙하게 두고 bass line만으로도 리프트를 만드는 방법을 익힙니다.';
+
+  @override
+  String get studyHarmonyPopLessonBossTitle => '프리코러스 리프트 체크포인트';
+
+  @override
+  String get studyHarmonyPopLessonBossDescription =>
+      'loop의 중력, borrowed color, bass motion을 한 번에 연결하는 팝형 문제 묶음입니다.';
+
+  @override
+  String get studyHarmonyJazzChapterGuideToneLabTitle => '가이드톤 랩';
+
+  @override
+  String get studyHarmonyJazzChapterGuideToneLabDescription =>
+      '선명한 major ii-V-I에서 시작해 shell voicing, minor cadence, rootless color, reharm 입문까지 단계적으로 이어집니다.';
+
+  @override
+  String get studyHarmonyJazzLessonGuideTonesTitle => '가이드톤 청감';
+
+  @override
+  String get studyHarmonyJazzLessonGuideTonesDescription =>
+      'extra color를 더하기 전에 선명한 major ii-V-I를 3도와 7도로 먼저 듣습니다.';
+
+  @override
+  String get studyHarmonyJazzLessonShellVoicingsTitle => '셸 보이싱';
+
+  @override
+  String get studyHarmonyJazzLessonShellVoicingsDescription =>
+      'lean한 shell shape와 단순한 turnaround 안에서 종지의 뼈대를 듣습니다.';
+
+  @override
+  String get studyHarmonyJazzLessonMinorCadenceTitle => '마이너 종지';
+
+  @override
+  String get studyHarmonyJazzLessonMinorCadenceDescription =>
+      'minor iiø-V-i가 주는 긴장과 도착의 감각을 익힙니다.';
+
+  @override
+  String get studyHarmonyJazzLessonRootlessVoicingsTitle => '루트리스 보이싱';
+
+  @override
+  String get studyHarmonyJazzLessonRootlessVoicingsDescription =>
+      '베이스를 보이싱에서 덜어낸 뒤에도 turnaround의 목표음과 color tone이 어떻게 들리는지 익힙니다.';
+
+  @override
+  String get studyHarmonyJazzLessonDominantColorTitle => '도미넌트 텐션';
+
+  @override
+  String get studyHarmonyJazzLessonDominantColorDescription =>
+      '종지 타깃을 잃지 않으면서도 9th, 13th, sus, altered pull을 단계적으로 듣습니다.';
+
+  @override
+  String get studyHarmonyJazzLessonBackdoorCadenceTitle => '트라이톤과 백도어';
+
+  @override
+  String get studyHarmonyJazzLessonBackdoorCadenceDescription =>
+      '같은 토닉으로 가더라도 substitute dominant와 backdoor가 어떤 다른 경로로 들리는지 비교합니다.';
+
+  @override
+  String get studyHarmonyJazzLessonBossTitle => '턴어라운드 체크포인트';
+
+  @override
+  String get studyHarmonyJazzLessonBossDescription =>
+      'major ii-V-I, minor iiø-V-i, rootless color, 신중한 reharm을 섞어도 종지 타깃이 계속 읽히는지 확인합니다.';
+
+  @override
+  String get studyHarmonyClassicalChapterCadenceLabTitle => '카덴스 랩';
+
+  @override
+  String get studyHarmonyClassicalChapterCadenceLabDescription =>
+      'cadence, inversion, controlled secondary dominant를 통해 기능 청감을 강화합니다.';
+
+  @override
+  String get studyHarmonyClassicalLessonCadenceTitle => '카덴스 기능';
+
+  @override
+  String get studyHarmonyClassicalLessonCadenceDescription =>
+      '어떤 화음이 준비하고, 어떤 화음이 도착을 완성하는지 기능으로 구분합니다.';
+
+  @override
+  String get studyHarmonyClassicalLessonInversionTitle => 'inversion 제어';
+
+  @override
+  String get studyHarmonyClassicalLessonInversionDescription =>
+      'inversion이 bass line과 도착감에 어떤 차이를 만드는지 들어봅니다.';
+
+  @override
+  String get studyHarmonyClassicalLessonSecondaryDominantTitle =>
+      '기능적 secondary dominant';
+
+  @override
+  String get studyHarmonyClassicalLessonSecondaryDominantDescription =>
+      'secondary dominant를 막연한 색채가 아니라 목적지가 있는 기능 사건으로 다룹니다.';
+
+  @override
+  String get studyHarmonyClassicalLessonBossTitle => '도착 체크포인트';
+
+  @override
+  String get studyHarmonyClassicalLessonBossDescription =>
+      'cadence 형태, inversion 인식, secondary dominant의 끌림을 한 phrase 안에서 함께 점검합니다.';
+
+  @override
+  String studyHarmonyPlayStyleLabel(String playStyle) {
+    String _temp0 = intl.Intl.selectLogic(playStyle, {
+      'competitor': '경쟁형',
+      'collector': '수집형',
+      'explorer': '탐색형',
+      'stabilizer': '안정형',
+      'balanced': '균형형',
+      'other': '균형형',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyRewardFocusLabel(String focus) {
+    String _temp0 = intl.Intl.selectLogic(focus, {
+      'mastery': '집중: 숙련',
+      'achievements': '집중: 업적',
+      'cosmetics': '집중: 코스메틱',
+      'currency': '집중: 재화',
+      'collection': '집중: 수집',
+      'other': '집중',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyNextUnlockProgressLabel(String rewardTitle, int progress) {
+    return '다음 $rewardTitle $progress%';
+  }
+
+  @override
+  String studyHarmonyCurrencyBalanceLabel(String currencyTitle, int amount) {
+    return '$currencyTitle $amount';
+  }
+
+  @override
+  String studyHarmonyCurrencyGrantLabel(String currencyTitle, int amount) {
+    return '$currencyTitle +$amount';
+  }
+
+  @override
+  String studyHarmonyDifficultyLaneLabel(String lane) {
+    String _temp0 = intl.Intl.selectLogic(lane, {
+      'recovery': '회복 레인',
+      'groove': '그루브 레인',
+      'push': '푸시 레인',
+      'clutch': '클러치 레인',
+      'legend': '레전드 레인',
+      'other': '연습 레인',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyPressureTierLabel(String tier) {
+    String _temp0 = intl.Intl.selectLogic(tier, {
+      'calm': '차분한 압박',
+      'steady': '안정 압박',
+      'hot': '뜨거운 압박',
+      'charged': '고조 압박',
+      'overdrive': '오버드라이브',
+      'other': '압박',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyForgivenessTierLabel(String tier) {
+    String _temp0 = intl.Intl.selectLogic(tier, {
+      'strict': '엄격한 판정',
+      'tight': '좁은 판정',
+      'balanced': '균형 판정',
+      'kind': '관대한 판정',
+      'generous': '매우 관대한 판정',
+      'other': '판정',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyComboGoalLabel(int comboTarget) {
+    return '콤보 목표 $comboTarget';
+  }
+
+  @override
+  String studyHarmonyRuntimeTuningSummary(int lives, int goal) {
+    return '라이프 $lives | 목표 $goal';
+  }
+
+  @override
+  String studyHarmonyCoachLabel(String style) {
+    String _temp0 = intl.Intl.selectLogic(style, {
+      'supportive': '지원형 코치',
+      'structured': '구조형 코치',
+      'challengeForward': '도전형 코치',
+      'analytical': '분석형 코치',
+      'restorative': '회복형 코치',
+      'other': '코치',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyCoachLine(String style) {
+    String _temp0 = intl.Intl.selectLogic(style, {
+      'supportive': '흐름을 먼저 지키고 자신감을 자연스럽게 쌓아 보세요.',
+      'structured': '구조를 따라가면 성과가 더 오래 남습니다.',
+      'challengeForward': '적당한 압박을 받아들이고 더 선명한 런으로 밀어 보세요.',
+      'analytical': '약한 지점을 읽고 정확하게 다듬어 보세요.',
+      'restorative': '이번 런은 흔들리지 않게 리듬을 다시 세우는 데 집중합니다.',
+      'other': '다음 런의 초점을 분명하게 유지해 보세요.',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyPacingSegmentLabel(String segment, int minutes) {
+    String _temp0 = intl.Intl.selectLogic(segment, {
+      'warmup': '워밍업',
+      'tension': '긴장',
+      'release': '이완',
+      'reward': '보상',
+      'other': '세그먼트',
+    });
+    return '$_temp0 $minutes분';
+  }
+
+  @override
+  String studyHarmonyPacingSummaryLabel(String segments) {
+    return '페이싱 $segments';
+  }
+
+  @override
+  String studyHarmonyArcadeRiskLabel(String risk) {
+    String _temp0 = intl.Intl.selectLogic(risk, {
+      'forgiving': '낮은 리스크',
+      'balanced': '균형 리스크',
+      'tense': '높은 긴장',
+      'punishing': '강한 리스크',
+      'other': '아케이드 리스크',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyArcadeRewardStyleLabel(String style) {
+    String _temp0 = intl.Intl.selectLogic(style, {
+      'currency': '재화 루프',
+      'cosmetic': '코스메틱 수집',
+      'title': '칭호 수집',
+      'trophy': '트로피 런',
+      'bundle': '번들 보상',
+      'prestige': '명성 보상',
+      'other': '보상 루프',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyArcadeRuntimeComboBonusLabel(int count) {
+    return '콤보 보너스 $count마다';
+  }
+
+  @override
+  String studyHarmonyArcadeRuntimeMissCostLabel(int lives) {
+    return '미스 시 라이프 $lives 감소';
+  }
+
+  @override
+  String get studyHarmonyArcadeRuntimeModifierPulses => '변형 규칙';
+
+  @override
+  String get studyHarmonyArcadeRuntimeGhostPressure => '고스트 압박';
+
+  @override
+  String get studyHarmonyArcadeRuntimeShopBiasedLoot => '상점 편향 보상';
+
+  @override
+  String get studyHarmonyArcadeRuntimeSteadyRuleset => '안정 규칙';
+
+  @override
+  String studyHarmonyShopStateLabel(String state) {
+    String _temp0 = intl.Intl.selectLogic(state, {
+      'alreadyPurchased': '이미 구매함',
+      'readyToBuy': '구매 가능',
+      'progressLocked': '진행 잠금',
+      'other': '상점 상태',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyShopActionLabel(String action) {
+    String _temp0 = intl.Intl.selectLogic(action, {
+      'buy': '구매',
+      'equipped': '장착됨',
+      'equip': '장착',
+      'other': '상점 액션',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get melodyCurrentLineFeelTitle => '현재 라인 성향';
+
+  @override
+  String get melodyLinePersonalityTitle => '라인 성격';
+
+  @override
+  String get melodyLinePersonalityBody =>
+      '이 네 개의 슬라이더는 화성을 바꾸기 전에도 guided, standard, advanced가 어떻게 다르게 느껴지는지를 정리합니다.';
+
+  @override
+  String get melodySyncopationBiasTitle => '싱코페이션 성향';
+
+  @override
+  String get melodySyncopationBiasBody =>
+      '엇박 시작, anticipation, 리듬의 들뜸을 더 자주 선택하게 합니다.';
+
+  @override
+  String get melodyColorRealizationBiasTitle => '컬러 실현 성향';
+
+  @override
+  String get melodyColorRealizationBiasBody =>
+      '멜로디가 tension과 color tone을 더 자주 집어들게 합니다.';
+
+  @override
+  String get melodyNoveltyTargetTitle => '새로움 목표';
+
+  @override
+  String get melodyNoveltyTargetBody => '완전한 반복을 줄이고 더 새로운 음정 윤곽으로 조금씩 밀어 줍니다.';
+
+  @override
+  String get melodyMotifVariationBiasTitle => '모티프 변형 성향';
+
+  @override
+  String get melodyMotifVariationBiasBody =>
+      '모티프 재사용을 sequence, 꼬리 변화, 리듬 변형으로 이어지게 합니다.';
+
+  @override
+  String get studyHarmonyArcadeRulesTitle => '아케이드 규칙';
+
+  @override
+  String studyHarmonySessionLengthLabel(int minutes) {
+    return '$minutes분 세션';
+  }
+
+  @override
+  String studyHarmonyRewardKindLabel(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'achievement': '업적',
+      'title': '타이틀',
+      'cosmetic': '외형',
+      'shopItem': '상점 해금',
+      'other': '보상',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyArcadeRuntimeMissLifeLabel(int lives) {
+    return '미스 시 하트 $lives 감소';
+  }
+
+  @override
+  String studyHarmonyArcadeRuntimeMissProgressLabel(int amount) {
+    return '미스 시 진행 $amount 감소';
+  }
+
+  @override
+  String studyHarmonyArcadeRuntimeComboProgressLabel(
+    int threshold,
+    int amount,
+  ) {
+    return '콤보 $threshold마다 진행 +$amount';
+  }
+
+  @override
+  String studyHarmonyArcadeRuntimeComboLifeLabel(int threshold, int amount) {
+    return '콤보 $threshold마다 하트 +$amount';
+  }
+
+  @override
+  String get studyHarmonyArcadeRuntimeComboResetLabel => '미스 시 콤보 초기화';
+
+  @override
+  String studyHarmonyArcadeRuntimeComboDropLabel(int amount) {
+    return '미스 시 콤보 $amount 감소';
+  }
+
+  @override
+  String get studyHarmonyArcadeRuntimeChoicesReshuffleLabel => '선택지가 다시 섞입니다';
+
+  @override
+  String get studyHarmonyArcadeRuntimeMissedReplayLabel => '놓친 문제가 다시 나옵니다';
+
+  @override
+  String get studyHarmonyArcadeRuntimeUniqueCycleLabel => '문제 중복 없음';
+
+  @override
+  String get studyHarmonyRuntimeBundleClearBonusTitle => '클리어 보너스';
+
+  @override
+  String get studyHarmonyRuntimeBundlePrecisionBonusTitle => '정확도 보너스';
+
+  @override
+  String get studyHarmonyRuntimeBundleComboBonusTitle => '콤보 보너스';
+
+  @override
+  String get studyHarmonyRuntimeBundleModeBonusTitle => '모드 보너스';
+
+  @override
+  String get studyHarmonyRuntimeBundleMasteryBonusTitle => '숙련 보너스';
+
+  @override
+  String get melodyQuickPresetGuideLineLabel => '가이드 라인';
+
+  @override
+  String get melodyQuickPresetSongLineLabel => '송 라인';
+
+  @override
+  String get melodyQuickPresetColorLineLabel => '컬러 라인';
+
+  @override
+  String get melodyQuickPresetGuideCompactLabel => '가이드';
+
+  @override
+  String get melodyQuickPresetSongCompactLabel => '송';
+
+  @override
+  String get melodyQuickPresetColorCompactLabel => '컬러';
+
+  @override
+  String get melodyQuickPresetGuideShort => '안정적인 가이드 톤 중심';
+
+  @override
+  String get melodyQuickPresetSongShort => '노래처럼 부르기 쉬운 윤곽';
+
+  @override
+  String get melodyQuickPresetColorShort => '컬러 톤을 앞세운 라인';
+
+  @override
+  String get melodyQuickPresetPanelTitle => '멜로디 프리셋';
+
+  @override
+  String get melodyQuickPresetPanelCompactTitle => '라인 프리셋';
+
+  @override
+  String get melodyQuickPresetOffLabel => '끔';
+
+  @override
+  String get melodyQuickPresetCompactOffLabel => '라인 끔';
+
+  @override
+  String get melodyMetricDensityLabel => '밀도';
+
+  @override
+  String get melodyMetricStyleLabel => '스타일';
+
+  @override
+  String get melodyMetricSyncLabel => '싱코페이션';
+
+  @override
+  String get melodyMetricColorLabel => '컬러';
+
+  @override
+  String get melodyMetricNoveltyLabel => '새로움';
+
+  @override
+  String get melodyMetricMotifLabel => '모티프';
+
+  @override
+  String get melodyMetricChromaticLabel => '반음계';
+
+  @override
+  String get practiceFirstRunWelcomeTitle => '첫 코드가 바로 준비됐어요';
+
+  @override
+  String get practiceFirstRunWelcomeBodyEmpty =>
+      '초심자용 시작 프로파일이 이미 적용되어 있습니다. 먼저 들어보고, 카드를 넘겨 다음 코드를 살펴보세요.';
+
+  @override
+  String practiceFirstRunWelcomeBodyReady(Object chordLabel) {
+    return '$chordLabel 코드가 준비됐어요. 먼저 들어보고, 카드를 넘겨 다음 흐름을 살펴보세요. 원하면 설정 도우미로 시작점을 더 다듬을 수 있습니다.';
+  }
+
+  @override
+  String get practiceFirstRunSetupButton => '맞춤 설정';
 }

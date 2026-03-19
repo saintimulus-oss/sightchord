@@ -115,6 +115,19 @@ void main() {
     expect(firstChord.confidence, greaterThan(0));
   });
 
+  test(
+    'surfaces warning state when parser issues and alternate key compete',
+    () {
+      final analysis = analyzer.analyze('Cmaj7 H7 G7');
+
+      expect(analysis.parseResult.hasPartialFailure, isTrue);
+      expect(analysis.hasWarnings, isTrue);
+      expect(analysis.alternativeKey, isNotNull);
+      expect(analysis.ambiguity, greaterThan(0));
+      expect(analysis.confidence, lessThan(1));
+    },
+  );
+
   test('detects backdoor and subdominant minor color separately', () {
     final analysis = analyzer.analyze('Fm7 Bb7 Cmaj7');
 
@@ -322,6 +335,7 @@ void main() {
     expect(analysis.chordAnalyses, hasLength(4));
     expect(analysis.parseResult.placeholders, hasLength(1));
     expect(analysis.inferredChordCount, 1);
+    expect(analysis.hasWarnings, isTrue);
     expect(inferred.isInferred, isTrue);
     expect(inferred.chord.sourceSymbol, '?');
     expect(inferred.resolvedSymbol, 'Cmaj7');

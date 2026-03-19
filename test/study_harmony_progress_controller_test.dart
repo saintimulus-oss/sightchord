@@ -1,10 +1,11 @@
 import 'dart:async';
-import 'package:flutter_test/flutter_test.dart';
+
 import 'package:chordest/study_harmony/application/study_harmony_progress_controller.dart';
 import 'package:chordest/study_harmony/data/study_harmony_progress_store.dart';
 import 'package:chordest/study_harmony/domain/study_harmony_progress_models.dart';
 import 'package:chordest/study_harmony/domain/study_harmony_session_models.dart';
 import 'package:chordest/study_harmony/meta/study_harmony_rewards_catalog.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test(
@@ -263,7 +264,9 @@ void main() {
 
   test('load becomes a no-op after dispose while waiting for store', () async {
     final initialSnapshot = StudyHarmonyProgressSnapshot.initial();
-    final loadedSnapshot = initialSnapshot.copyWith(lastPlayedLessonId: 'lesson-1');
+    final loadedSnapshot = initialSnapshot.copyWith(
+      lastPlayedLessonId: 'lesson-1',
+    );
     final store = _DelayedLoadProgressStore(loadedSnapshot);
     final controller = StudyHarmonyProgressController(
       store: store,
@@ -365,7 +368,10 @@ void main() {
     );
 
     expect(await controller.unequipCosmetic('cosmetic.theme.midnight'), isTrue);
-    expect(controller.equippedCosmeticIds(), equals(const ['cosmetic.trail.confetti']));
+    expect(
+      controller.equippedCosmeticIds(),
+      equals(const ['cosmetic.trail.confetti']),
+    );
 
     expect(await controller.unequipTitle(), isTrue);
     expect(controller.equippedTitleId(), isNull);
@@ -390,9 +396,80 @@ void main() {
     expect(await controller.purchaseShopItem(item), isTrue);
     expect(controller.isCosmeticOwned('cosmetic.badge.holo'), isTrue);
     expect(await controller.equipCosmetic('cosmetic.badge.holo'), isTrue);
-    expect(controller.equippedCosmeticIds(), equals(const ['cosmetic.badge.holo']));
+    expect(
+      controller.equippedCosmeticIds(),
+      equals(const ['cosmetic.badge.holo']),
+    );
     expect(controller.hasPurchasedUniqueShopItem(item.id), isTrue);
-    expect(store.savedSnapshots.last.ownedCosmeticIds, contains('cosmetic.badge.holo'));
+    expect(
+      store.savedSnapshots.last.ownedCosmeticIds,
+      contains('cosmetic.badge.holo'),
+    );
+  });
+
+  test('empty courses do not crash progress recommendations', () async {
+    final controller = StudyHarmonyProgressController(
+      initialSnapshot: StudyHarmonyProgressSnapshot.initial(),
+      nowProvider: () => DateTime(2026, 3, 19),
+    );
+    const emptyCourse = StudyHarmonyCourseDefinition(
+      id: 'empty-course',
+      trackId: 'empty-track',
+      title: 'Empty',
+      description: 'No lessons',
+    );
+
+    await controller.syncCourse(emptyCourse);
+
+    expect(controller.continueRecommendationForCourse(emptyCourse), isNull);
+    expect(controller.focusSprintRecommendationForCourse(emptyCourse), isNull);
+
+    final questBoard = controller.questBoardForCourse(emptyCourse);
+    final questChestStatus = controller.questChestStatusForCourse(emptyCourse);
+
+    expect(questBoard, hasLength(3));
+    expect(questBoard[0].kind, StudyHarmonyQuestKind.dailyStreak);
+    expect(questBoard[1].lesson, isNull);
+    expect(questBoard[2].chapter, isNull);
+    expect(questChestStatus.totalQuestCount, 3);
+    expect(controller.questChestRecommendationForCourse(emptyCourse), isNull);
+  });
+
+  test('empty chapter summaries stay safe', () {
+    const emptyChapter = StudyHarmonyChapterDefinition(
+      id: 'empty-chapter',
+      courseId: 'empty-course',
+      title: 'Empty',
+      description: 'No lessons',
+    );
+
+    final controller = StudyHarmonyProgressController(
+      initialSnapshot: StudyHarmonyProgressSnapshot.initial().copyWith(
+        unlockedChapterIds: {'empty-chapter'},
+      ),
+    );
+
+    final summary = controller.chapterProgressFor(emptyChapter);
+
+    expect(summary.lessonCount, 0);
+    expect(summary.clearedLessonCount, 0);
+    expect(summary.nextLesson, isNull);
+    expect(summary.unlocked, isTrue);
+  });
+
+  test('empty monthly tour progress stays locked', () {
+    const monthlyTour = StudyHarmonyMonthlyTourProgressView(
+      monthKey: '2026-03',
+      goals: <StudyHarmonyMonthlyGoalProgressView>[],
+      rewardClaimed: false,
+      rewardLeagueXp: 18,
+      rewardStreakSavers: 1,
+    );
+
+    expect(monthlyTour.totalGoalCount, 0);
+    expect(monthlyTour.progressFraction, 0);
+    expect(monthlyTour.completed, isFalse);
+    expect(monthlyTour.rewardReady, isFalse);
   });
 }
 
@@ -464,9 +541,6 @@ class _MemoryProgressStore implements StudyHarmonyProgressStore {
     savedSnapshots.add(snapshot);
   }
 }
-
-
-
 
 class _DelayedLoadProgressStore implements StudyHarmonyProgressStore {
   _DelayedLoadProgressStore(this._loadedSnapshot);

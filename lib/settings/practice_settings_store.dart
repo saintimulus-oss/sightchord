@@ -50,6 +50,8 @@ class PracticeSettingsStore {
   static const String colorToneTargetKey = 'colorToneTarget';
   static const String exactRepeatTargetKey = 'exactRepeatTarget';
   static const String melodyPlaybackModeKey = 'melodyPlaybackMode';
+  static const String harmonySoundProfileSelectionKey =
+      'harmonySoundProfileSelection';
   static const String harmonyMasterVolumeKey = 'harmonyMasterVolume';
   static const String harmonyPreviewHoldFactorKey = 'harmonyPreviewHoldFactor';
   static const String harmonyArpeggioStepSpeedKey = 'harmonyArpeggioStepSpeed';
@@ -127,6 +129,7 @@ class PracticeSettingsStore {
     colorToneTargetKey,
     exactRepeatTargetKey,
     melodyPlaybackModeKey,
+    harmonySoundProfileSelectionKey,
     harmonyMasterVolumeKey,
     harmonyPreviewHoldFactorKey,
     harmonyArpeggioStepSpeedKey,
@@ -203,6 +206,9 @@ class PracticeSettingsStore {
     final storedMelodyStyle = preferences.getString(melodyStyleKey);
     final storedMelodyPlaybackMode = preferences.getString(
       melodyPlaybackModeKey,
+    );
+    final storedHarmonySoundProfileSelection = preferences.getString(
+      harmonySoundProfileSelectionKey,
     );
     final storedChordAnchorLoop = preferences.getString(chordAnchorLoopKey);
     final storedActiveKeyCenters = preferences.getStringList(
@@ -370,6 +376,11 @@ class PracticeSettingsStore {
       melodyPlaybackMode: storedMelodyPlaybackMode == null
           ? fallbackSettings.melodyPlaybackMode
           : MelodyPlaybackModeX.fromStorageKey(storedMelodyPlaybackMode),
+      harmonySoundProfileSelection: storedHarmonySoundProfileSelection == null
+          ? fallbackSettings.harmonySoundProfileSelection
+          : HarmonySoundProfileSelectionX.fromStorageKey(
+              storedHarmonySoundProfileSelection,
+            ),
       harmonyMasterVolume:
           preferences.getDouble(harmonyMasterVolumeKey) ??
           fallbackSettings.harmonyMasterVolume,
@@ -628,6 +639,10 @@ class PracticeSettingsStore {
     await preferences.setString(
       melodyPlaybackModeKey,
       settings.melodyPlaybackMode.storageKey,
+    );
+    await preferences.setString(
+      harmonySoundProfileSelectionKey,
+      settings.harmonySoundProfileSelection.storageKey,
     );
     await preferences.setDouble(
       harmonyMasterVolumeKey,

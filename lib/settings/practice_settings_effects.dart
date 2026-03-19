@@ -72,6 +72,8 @@ class PracticeSettingsEffects {
         previous.autoPlayPattern != next.autoPlayPattern ||
         previous.autoPlayHoldFactor != next.autoPlayHoldFactor ||
         previous.autoPlayMelodyWithChords != next.autoPlayMelodyWithChords ||
+        previous.harmonySoundProfileSelection !=
+            next.harmonySoundProfileSelection ||
         previous.harmonyMasterVolume != next.harmonyMasterVolume ||
         previous.harmonyPreviewHoldFactor != next.harmonyPreviewHoldFactor ||
         previous.harmonyArpeggioStepSpeed != next.harmonyArpeggioStepSpeed ||

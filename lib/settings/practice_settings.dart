@@ -42,6 +42,8 @@ enum MelodyPlaybackMode { chordsOnly, melodyOnly, both }
 
 enum SettingsComplexityMode { guided, standard, advanced }
 
+enum HarmonySoundProfileSelection { neutral, trackAware, pop, jazz, classical }
+
 enum DefaultVoicingSuggestionKind { natural, colorful, easy }
 
 enum ChordLanguageLevel {
@@ -297,6 +299,14 @@ extension MelodyStyleX on MelodyStyle {
 extension MelodyQuickPresetX on MelodyQuickPreset {
   String get storageKey => name;
 
+  String get defaultLabel {
+    return switch (this) {
+      MelodyQuickPreset.guideLine => 'Guide Line',
+      MelodyQuickPreset.songLine => 'Song Line',
+      MelodyQuickPreset.colorLine => 'Color Line',
+    };
+  }
+
   MelodyQuickPreset get next {
     return switch (this) {
       MelodyQuickPreset.guideLine => MelodyQuickPreset.songLine,
@@ -307,9 +317,17 @@ extension MelodyQuickPresetX on MelodyQuickPreset {
 
   String localizedLabel(AppLocalizations l10n) {
     return switch (this) {
-      MelodyQuickPreset.guideLine => 'Guide Line',
-      MelodyQuickPreset.songLine => 'Song Line',
-      MelodyQuickPreset.colorLine => 'Color Line',
+      MelodyQuickPreset.guideLine => l10n.melodyQuickPresetGuideLineLabel,
+      MelodyQuickPreset.songLine => l10n.melodyQuickPresetSongLineLabel,
+      MelodyQuickPreset.colorLine => l10n.melodyQuickPresetColorLineLabel,
+    };
+  }
+
+  String compactLocalizedLabel(AppLocalizations l10n) {
+    return switch (this) {
+      MelodyQuickPreset.guideLine => l10n.melodyQuickPresetGuideCompactLabel,
+      MelodyQuickPreset.songLine => l10n.melodyQuickPresetSongCompactLabel,
+      MelodyQuickPreset.colorLine => l10n.melodyQuickPresetColorCompactLabel,
     };
   }
 
@@ -318,6 +336,14 @@ extension MelodyQuickPresetX on MelodyQuickPreset {
       MelodyQuickPreset.guideLine => 'steady guide notes',
       MelodyQuickPreset.songLine => 'singable contour',
       MelodyQuickPreset.colorLine => 'color-forward line',
+    };
+  }
+
+  String localizedShortDescription(AppLocalizations l10n) {
+    return switch (this) {
+      MelodyQuickPreset.guideLine => l10n.melodyQuickPresetGuideShort,
+      MelodyQuickPreset.songLine => l10n.melodyQuickPresetSongShort,
+      MelodyQuickPreset.colorLine => l10n.melodyQuickPresetColorShort,
     };
   }
 
@@ -363,6 +389,31 @@ extension SettingsComplexityModeX on SettingsComplexityMode {
     return SettingsComplexityMode.values.firstWhere(
       (mode) => mode.storageKey == value,
       orElse: () => SettingsComplexityMode.guided,
+    );
+  }
+}
+
+extension HarmonySoundProfileSelectionX on HarmonySoundProfileSelection {
+  String get storageKey => name;
+
+  String localizedLabel(AppLocalizations l10n) {
+    return switch (this) {
+      HarmonySoundProfileSelection.neutral =>
+        l10n.harmonySoundProfileSelectionNeutral,
+      HarmonySoundProfileSelection.trackAware =>
+        l10n.harmonySoundProfileSelectionTrackAware,
+      HarmonySoundProfileSelection.pop => l10n.harmonySoundProfileSelectionPop,
+      HarmonySoundProfileSelection.jazz =>
+        l10n.harmonySoundProfileSelectionJazz,
+      HarmonySoundProfileSelection.classical =>
+        l10n.harmonySoundProfileSelectionClassical,
+    };
+  }
+
+  static HarmonySoundProfileSelection fromStorageKey(String? value) {
+    return HarmonySoundProfileSelection.values.firstWhere(
+      (selection) => selection.storageKey == value,
+      orElse: () => HarmonySoundProfileSelection.trackAware,
     );
   }
 }
@@ -543,6 +594,7 @@ class PracticeSettings {
     double colorToneTarget = 0.22,
     double exactRepeatTarget = 0.04,
     this.melodyPlaybackMode = MelodyPlaybackMode.chordsOnly,
+    this.harmonySoundProfileSelection = HarmonySoundProfileSelection.trackAware,
     double harmonyMasterVolume = 1,
     double harmonyPreviewHoldFactor = 1,
     double harmonyArpeggioStepSpeed = 1,
@@ -709,6 +761,7 @@ class PracticeSettings {
   final double colorToneTarget;
   final double exactRepeatTarget;
   final MelodyPlaybackMode melodyPlaybackMode;
+  final HarmonySoundProfileSelection harmonySoundProfileSelection;
   final double harmonyMasterVolume;
   final double harmonyPreviewHoldFactor;
   final double harmonyArpeggioStepSpeed;
@@ -802,6 +855,7 @@ class PracticeSettings {
     double? colorToneTarget,
     double? exactRepeatTarget,
     MelodyPlaybackMode? melodyPlaybackMode,
+    HarmonySoundProfileSelection? harmonySoundProfileSelection,
     double? harmonyMasterVolume,
     double? harmonyPreviewHoldFactor,
     double? harmonyArpeggioStepSpeed,
@@ -895,6 +949,8 @@ class PracticeSettings {
       colorToneTarget: colorToneTarget ?? this.colorToneTarget,
       exactRepeatTarget: exactRepeatTarget ?? this.exactRepeatTarget,
       melodyPlaybackMode: melodyPlaybackMode ?? this.melodyPlaybackMode,
+      harmonySoundProfileSelection:
+          harmonySoundProfileSelection ?? this.harmonySoundProfileSelection,
       harmonyMasterVolume: harmonyMasterVolume ?? this.harmonyMasterVolume,
       harmonyPreviewHoldFactor:
           harmonyPreviewHoldFactor ?? this.harmonyPreviewHoldFactor,

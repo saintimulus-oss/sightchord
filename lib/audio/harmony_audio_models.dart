@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import '../l10n/app_localizations.dart';
 
 enum HarmonyPlaybackPattern { block, arpeggio }
@@ -83,6 +85,61 @@ class HarmonyAudioConfig {
   }
 }
 
+class HarmonyAudioProfileTuning {
+  const HarmonyAudioProfileTuning({
+    this.masterVolumeScale = 1.0,
+    this.previewHoldFactorScale = 1.0,
+    this.arpeggioStepSpeedScale = 1.0,
+    this.velocityHumanizationFloor = 0.0,
+    this.gainRandomnessFloor = 0.0,
+    this.timingHumanizationFloor = 0.0,
+  });
+
+  final double masterVolumeScale;
+  final double previewHoldFactorScale;
+  final double arpeggioStepSpeedScale;
+  final double velocityHumanizationFloor;
+  final double gainRandomnessFloor;
+  final double timingHumanizationFloor;
+
+  HarmonyAudioConfig resolveAgainst(HarmonyAudioConfig base) {
+    return HarmonyAudioConfig(
+      masterVolume: base.masterVolume * masterVolumeScale,
+      previewHoldFactor: base.previewHoldFactor * previewHoldFactorScale,
+      arpeggioStepSpeed: base.arpeggioStepSpeed * arpeggioStepSpeedScale,
+      velocityHumanization: math.max(
+        base.velocityHumanization,
+        velocityHumanizationFloor,
+      ),
+      gainRandomness: math.max(base.gainRandomness, gainRandomnessFloor),
+      timingHumanization: math.max(
+        base.timingHumanization,
+        timingHumanizationFloor,
+      ),
+    ).clamped();
+  }
+}
+
+class HarmonyAudioRuntimeProfile {
+  const HarmonyAudioRuntimeProfile({
+    required this.profileId,
+    required this.instrumentId,
+    required this.preferredPattern,
+    this.tuning = const HarmonyAudioProfileTuning(),
+    this.futureAssetHint,
+  });
+
+  final String profileId;
+  final String instrumentId;
+  final HarmonyPlaybackPattern preferredPattern;
+  final HarmonyAudioProfileTuning tuning;
+  final String? futureAssetHint;
+
+  HarmonyAudioConfig resolveConfig(HarmonyAudioConfig base) {
+    return tuning.resolveAgainst(base);
+  }
+}
+
 class HarmonyPlaybackOverrides {
   const HarmonyPlaybackOverrides({
     this.blockHold,
@@ -146,11 +203,7 @@ class HarmonyMelodyClip {
 }
 
 class HarmonyCompositeClip {
-  const HarmonyCompositeClip({
-    this.chordClip,
-    this.melodyClip,
-    this.label,
-  });
+  const HarmonyCompositeClip({this.chordClip, this.melodyClip, this.label});
 
   final HarmonyChordClip? chordClip;
   final HarmonyMelodyClip? melodyClip;

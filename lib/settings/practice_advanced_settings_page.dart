@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../audio/instrument_library_registry.dart';
 import '../audio/harmony_audio_models.dart';
 import '../l10n/app_localizations.dart';
 import '../music/anchor_loop_layout.dart';
@@ -13,6 +14,7 @@ import '../widgets/chord_input_editor.dart';
 import 'practice_settings_factory.dart';
 import 'practice_settings.dart';
 import 'practice_settings_dispatcher.dart';
+import '../study_harmony/content/track_generation_profiles.dart';
 
 class PracticeAdvancedSettingsPage extends StatefulWidget {
   const PracticeAdvancedSettingsPage({
@@ -458,7 +460,7 @@ class _PracticeAdvancedSettingsPageState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Current line feel',
+                  l10n.melodyCurrentLineFeelTitle,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -543,14 +545,14 @@ class _PracticeAdvancedSettingsPageState
         ),
         const SizedBox(height: 12),
         Text(
-          'Line personality',
+          l10n.melodyLinePersonalityTitle,
           style: theme.textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 4),
         Text(
-          'These four sliders decide why guided, standard, and advanced feel different before you even change harmony.',
+          l10n.melodyLinePersonalityBody,
           style: theme.textTheme.bodySmall?.copyWith(
             color: colorScheme.onSurfaceVariant,
           ),
@@ -558,8 +560,8 @@ class _PracticeAdvancedSettingsPageState
         const SizedBox(height: 12),
         _AdvancedSliderTile(
           key: const ValueKey('syncopation-bias-slider'),
-          title: 'Syncopation Bias',
-          subtitle: 'Pushes offbeat starts, anticipations, and rhythmic lift.',
+          title: l10n.melodySyncopationBiasTitle,
+          subtitle: l10n.melodySyncopationBiasBody,
           value: _settings.syncopationBias,
           min: PracticeSettings.minMelodyBias,
           max: PracticeSettings.maxMelodyBias,
@@ -574,9 +576,8 @@ class _PracticeAdvancedSettingsPageState
         const SizedBox(height: 12),
         _AdvancedSliderTile(
           key: const ValueKey('color-realization-bias-slider'),
-          title: 'Color Realization Bias',
-          subtitle:
-              'Makes the melody pick up featured tensions and color tones more often.',
+          title: l10n.melodyColorRealizationBiasTitle,
+          subtitle: l10n.melodyColorRealizationBiasBody,
           value: _settings.colorRealizationBias,
           min: PracticeSettings.minMelodyBias,
           max: PracticeSettings.maxMelodyBias,
@@ -591,8 +592,8 @@ class _PracticeAdvancedSettingsPageState
         const SizedBox(height: 12),
         _AdvancedSliderTile(
           key: const ValueKey('novelty-target-slider'),
-          title: 'Novelty Target',
-          subtitle: 'Reduces exact repeats and pushes fresher interval shapes.',
+          title: l10n.melodyNoveltyTargetTitle,
+          subtitle: l10n.melodyNoveltyTargetBody,
           value: _settings.noveltyTarget,
           min: PracticeSettings.minMelodyBias,
           max: PracticeSettings.maxMelodyBias,
@@ -607,9 +608,8 @@ class _PracticeAdvancedSettingsPageState
         const SizedBox(height: 12),
         _AdvancedSliderTile(
           key: const ValueKey('motif-variation-bias-slider'),
-          title: 'Motif Variation Bias',
-          subtitle:
-              'Turns motif reuse into sequence, tail changes, and rhythmic variation.',
+          title: l10n.melodyMotifVariationBiasTitle,
+          subtitle: l10n.melodyMotifVariationBiasBody,
           value: _settings.motifVariationBias,
           min: PracticeSettings.minMelodyBias,
           max: PracticeSettings.maxMelodyBias,
@@ -903,8 +903,118 @@ class _PracticeAdvancedSettingsPageState
     required AppLocalizations l10n,
     required PracticeSettingsDispatcher dispatcher,
   }) {
+    final soundProfile = trackSoundProfileForSelection(
+      l10n,
+      selection: _settings.harmonySoundProfileSelection,
+    );
+    final instrumentName = InstrumentLibraryRegistry.byId(
+      soundProfile.suggestedInstrumentId,
+    ).displayName;
     return [
       _AdvancedSectionTitle(text: l10n.harmonySoundTitle),
+      DropdownButtonFormField<HarmonySoundProfileSelection>(
+        key: const ValueKey('harmony-sound-profile-selection-dropdown'),
+        initialValue: _settings.harmonySoundProfileSelection,
+        isExpanded: true,
+        decoration: InputDecoration(
+          border: const OutlineInputBorder(),
+          labelText: l10n.harmonySoundProfileSelectionTitle,
+          helperText: l10n.harmonySoundProfileSelectionHelp,
+        ),
+        items: HarmonySoundProfileSelection.values
+            .map(
+              (value) => DropdownMenuItem<HarmonySoundProfileSelection>(
+                value: value,
+                child: Text(value.localizedLabel(l10n)),
+              ),
+            )
+            .toList(growable: false),
+        onChanged: (value) {
+          if (value == null) {
+            return;
+          }
+          dispatcher.apply(
+            (current) => current.copyWith(harmonySoundProfileSelection: value),
+          );
+        },
+      ),
+      const SizedBox(height: 12),
+      DecoratedBox(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                soundProfile.label,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                soundProfile.summary,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.harmonySoundProfileSummaryLine(
+                  instrumentName,
+                  soundProfile.runtimeProfile.preferredPattern.localizedLabel(
+                    l10n,
+                  ),
+                ),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              if (soundProfile.playbackTraits.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final trait in soundProfile.playbackTraits)
+                      Chip(
+                        visualDensity: VisualDensity.compact,
+                        label: Text(trait),
+                      ),
+                  ],
+                ),
+              ],
+              if (_settings.harmonySoundProfileSelection ==
+                  HarmonySoundProfileSelection.trackAware) ...[
+                const SizedBox(height: 8),
+                Text(
+                  l10n.harmonySoundProfileTrackAwareFallback,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+              if (soundProfile.assetStatusNote case final assetNote?) ...[
+                const SizedBox(height: 8),
+                Text(
+                  assetNote,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      const SizedBox(height: 16),
       _AdvancedSliderTile(
         title: l10n.harmonyMasterVolume,
         subtitle: l10n.harmonyMasterVolumeHelp,

@@ -168,11 +168,10 @@ class ProgressionVariationGenerator {
 
     if (cadence.hasPredominant) {
       final predominant = analysis.chordAnalyses[cadence.startIndex];
-      final replacement =
-          predominant.chord.analysisFamily == ChordFamily.halfDiminished
-          ? _symbol(predominant.chord.root, 'm7b5')
-          : _symbol(predominant.chord.root, 'm7b5');
-      replacements[_slotFor(predominant)] = replacement;
+      replacements[_slotFor(predominant)] = _symbol(
+        predominant.chord.root,
+        'm7b5',
+      );
     }
 
     return _materializeVariation(

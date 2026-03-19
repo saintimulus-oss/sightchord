@@ -1942,7 +1942,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String studyHarmonyProgressionExplanationKeyCenter(Object keyLabel) {
-    return 'El analizador lee esta progresión con mayor claridad en $keyLabel.';
+    return 'One likely reading keeps this progression centered on $keyLabel.';
   }
 
   @override
@@ -1950,7 +1950,7 @@ class AppLocalizationsEs extends AppLocalizations {
     Object chord,
     Object functionLabel,
   ) {
-    return '$chord se comporta más como un acorde $functionLabel en este contexto.';
+    return '$chord can be heard as a $functionLabel chord in this context.';
   }
 
   @override
@@ -1958,7 +1958,7 @@ class AppLocalizationsEs extends AppLocalizations {
     Object chord,
     Object keyLabel,
   ) {
-    return '$chord se destaca frente a la lectura principal de $keyLabel, por lo que es la mejor elección de no diatónico.';
+    return '$chord sits outside the main $keyLabel reading, so it stands out as a plausible non-diatonic color.';
   }
 
   @override
@@ -1966,7 +1966,7 @@ class AppLocalizationsEs extends AppLocalizations {
     Object chord,
     Object functionLabel,
   ) {
-    return '$chord restaura el tirón esperado de $functionLabel en esta progresión.';
+    return '$chord can restore some of the expected $functionLabel pull in this progression.';
   }
 
   @override
@@ -2081,7 +2081,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get chordAnalyzerPlaceholderExplanation =>
-      'Este ? se infirió a partir del contexto armónico que lo rodea.';
+      'This ? was inferred from the surrounding harmonic context, so treat it as a suggested fill rather than a certainty.';
 
   @override
   String chordAnalyzerSuggestedFill(Object chord) {
@@ -2384,6 +2384,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get chordAnalyzerDisplaySettingsHelp =>
       'Choose how much theory detail appears and how non-diatonic categories are highlighted.';
+
+  @override
+  String get chordAnalyzerQuickStartHint =>
+      'Tap an example to see instant results, or press Ctrl+Enter on desktop to analyze.';
 
   @override
   String get chordAnalyzerDetailLevel => 'Explanation detail';
@@ -3108,6 +3112,115 @@ class AppLocalizationsEs extends AppLocalizations {
   String get studyHarmonyLeagueAction => 'Subir de liga';
 
   @override
+  String get studyHarmonyHubStartHereTitle => 'Start Here';
+
+  @override
+  String get studyHarmonyHubNextLessonTitle => 'Next Lesson';
+
+  @override
+  String get studyHarmonyHubWhyItMattersTitle => 'Why It Matters';
+
+  @override
+  String get studyHarmonyHubQuickPracticeTitle => 'Quick Practice';
+
+  @override
+  String get studyHarmonyHubMetaPreviewTitle => 'More Opens Soon';
+
+  @override
+  String get studyHarmonyHubMetaPreviewHeadline =>
+      'Build a little momentum first';
+
+  @override
+  String get studyHarmonyHubMetaPreviewBody =>
+      'League, shop, and reward systems open up more fully after a few clears. For now, finish your next lesson and one quick practice run.';
+
+  @override
+  String get studyHarmonyHubPlayNowAction => 'Play Now';
+
+  @override
+  String get studyHarmonyHubKeepMomentumAction => 'Keep Momentum';
+
+  @override
+  String get studyHarmonyClearTitleAction => 'Clear title';
+
+  @override
+  String get studyHarmonyPlayerDeckTitle => 'Player Deck';
+
+  @override
+  String get studyHarmonyPlayerDeckCardTitle => 'Playstyle';
+
+  @override
+  String get studyHarmonyPlayerDeckOverviewAction => 'Overview';
+
+  @override
+  String get studyHarmonyRunDirectorTitle => 'Run Director';
+
+  @override
+  String get studyHarmonyRunDirectorAction => 'Play Recommended';
+
+  @override
+  String get studyHarmonyGameEconomyTitle => 'Game Economy';
+
+  @override
+  String get studyHarmonyGameEconomyBody =>
+      'Shop stock, utility tokens, and meta items all react to your recent run history.';
+
+  @override
+  String studyHarmonyGameEconomyTitlesOwned(int count) {
+    return '$count titles owned';
+  }
+
+  @override
+  String studyHarmonyGameEconomyCosmeticsOwned(int count) {
+    return '$count cosmetics owned';
+  }
+
+  @override
+  String studyHarmonyGameEconomyShopPurchases(int count) {
+    return '$count shop purchases';
+  }
+
+  @override
+  String get studyHarmonyGameEconomyWalletAction => 'View Wallet';
+
+  @override
+  String get studyHarmonyArcadeSpotlightTitle => 'Arcade Spotlight';
+
+  @override
+  String get studyHarmonyArcadePlayAction => 'Play Arcade';
+
+  @override
+  String studyHarmonyArcadeModeCount(int count) {
+    return '$count modes';
+  }
+
+  @override
+  String get studyHarmonyArcadePlaylistAction => 'Play Set';
+
+  @override
+  String get studyHarmonyNightMarketTitle => 'Night Market';
+
+  @override
+  String studyHarmonyPurchaseSuccess(Object itemTitle) {
+    return 'Purchased $itemTitle';
+  }
+
+  @override
+  String studyHarmonyPurchaseAndEquipSuccess(Object itemTitle) {
+    return 'Purchased and equipped $itemTitle';
+  }
+
+  @override
+  String studyHarmonyPurchaseFailure(Object itemTitle) {
+    return 'Cannot purchase $itemTitle yet';
+  }
+
+  @override
+  String studyHarmonyRewardEquipped(Object itemTitle) {
+    return 'Equipped $itemTitle';
+  }
+
+  @override
   String studyHarmonyLeagueScoreLabel(Object score) {
     return '$score XP esta semana';
   }
@@ -3400,6 +3513,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String studyHarmonyTourSpotlightBody(Object target) {
     return 'Supera $target retos destacados este mes. Cuentan Boss Rush, Relevo de arena, Sprint de enfoque, Prueba de leyenda y las lecciones de jefe.';
   }
+
+  @override
+  String get studyHarmonyTourEmptyBody =>
+      'Monthly tour goals will appear here as you log activity this month.';
 
   @override
   String get studyHarmonyTourReadyBody =>
@@ -3957,4 +4074,1149 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get harmonyTimingHumanizationHelp =>
       'Slightly loosen simultaneous note attacks for a less rigid block chord.';
+
+  @override
+  String get harmonySoundProfileSelectionTitle => 'Sound profile mode';
+
+  @override
+  String get harmonySoundProfileSelectionHelp =>
+      'Choose a neutral preview, follow the active Study Harmony track, or pin one track\'s playback feel.';
+
+  @override
+  String get harmonySoundProfileSelectionNeutral => 'Neutral shared piano';
+
+  @override
+  String get harmonySoundProfileSelectionTrackAware => 'Track-aware';
+
+  @override
+  String get harmonySoundProfileSelectionPop => 'Pop profile';
+
+  @override
+  String get harmonySoundProfileSelectionJazz => 'Jazz profile';
+
+  @override
+  String get harmonySoundProfileSelectionClassical => 'Classical profile';
+
+  @override
+  String harmonySoundProfileSummaryLine(Object instrument, Object pattern) {
+    return 'Instrument: $instrument. Recommended preview: $pattern.';
+  }
+
+  @override
+  String get harmonySoundProfileTrackAwareFallback =>
+      'In free practice this stays on the shared piano profile. Study Harmony sessions switch to the active track\'s sound shaping.';
+
+  @override
+  String get harmonySoundProfileNeutralLabel => 'Balanced / shared piano';
+
+  @override
+  String get harmonySoundProfileNeutralSummary =>
+      'Use the shared piano asset with a steady, all-purpose preview shape.';
+
+  @override
+  String get harmonySoundTagBalanced => 'balanced';
+
+  @override
+  String get harmonySoundTagPiano => 'piano';
+
+  @override
+  String get harmonySoundTagSoft => 'soft';
+
+  @override
+  String get harmonySoundTagOpen => 'open';
+
+  @override
+  String get harmonySoundTagModern => 'modern';
+
+  @override
+  String get harmonySoundTagDry => 'dry';
+
+  @override
+  String get harmonySoundTagWarm => 'warm';
+
+  @override
+  String get harmonySoundTagEpReady => 'EP-ready';
+
+  @override
+  String get harmonySoundTagClear => 'clear';
+
+  @override
+  String get harmonySoundTagAcoustic => 'acoustic';
+
+  @override
+  String get harmonySoundTagFocused => 'focused';
+
+  @override
+  String get harmonySoundNeutralTrait1 =>
+      'Steady hold for general harmonic checking';
+
+  @override
+  String get harmonySoundNeutralTrait2 => 'Balanced attack with low coloration';
+
+  @override
+  String get harmonySoundNeutralTrait3 =>
+      'Safe fallback for any lesson or free-play context';
+
+  @override
+  String get harmonySoundNeutralExpansion1 =>
+      'Future split by piano register or room size';
+
+  @override
+  String get harmonySoundNeutralExpansion2 =>
+      'Possible alternate shared instrument set for headphones';
+
+  @override
+  String get harmonySoundPopTrait1 =>
+      'Longer sustain for open hooks and add9 color';
+
+  @override
+  String get harmonySoundPopTrait2 =>
+      'Softer attack with a little width in repeated previews';
+
+  @override
+  String get harmonySoundPopTrait3 =>
+      'Gentle humanization so loops feel less grid-locked';
+
+  @override
+  String get harmonySoundPopExpansion1 =>
+      'Bright pop keys or layered piano-synth asset';
+
+  @override
+  String get harmonySoundPopExpansion2 =>
+      'Wider stereo voicing playback for chorus lift';
+
+  @override
+  String get harmonySoundJazzTrait1 =>
+      'Shorter hold to keep cadence motion readable';
+
+  @override
+  String get harmonySoundJazzTrait2 =>
+      'Faster broken-preview feel for guide-tone hearing';
+
+  @override
+  String get harmonySoundJazzTrait3 =>
+      'More touch variation to suggest shell and rootless comping';
+
+  @override
+  String get harmonySoundJazzExpansion1 =>
+      'Dry upright or mellow electric-piano instrument family';
+
+  @override
+  String get harmonySoundJazzExpansion2 =>
+      'Track-aware comping presets for shell and rootless drills';
+
+  @override
+  String get harmonySoundClassicalTrait1 =>
+      'Centered sustain for function and cadence clarity';
+
+  @override
+  String get harmonySoundClassicalTrait2 =>
+      'Low randomness to keep voice-leading stable';
+
+  @override
+  String get harmonySoundClassicalTrait3 =>
+      'More direct block playback for harmonic arrival';
+
+  @override
+  String get harmonySoundClassicalExpansion1 =>
+      'Direct acoustic piano profile with less ambient spread';
+
+  @override
+  String get harmonySoundClassicalExpansion2 =>
+      'Dedicated cadence and sequence preview voicings';
+
+  @override
+  String get explanationSectionTitle => 'Why this works';
+
+  @override
+  String get explanationReasonSection => 'Why this result';
+
+  @override
+  String get explanationConfidenceHigh => 'High confidence';
+
+  @override
+  String get explanationConfidenceMedium => 'Plausible reading';
+
+  @override
+  String get explanationConfidenceLow => 'Treat as a tentative reading';
+
+  @override
+  String get explanationAmbiguityLow =>
+      'Most of the progression points in one direction, but a light alternate reading is still possible.';
+
+  @override
+  String get explanationAmbiguityMedium =>
+      'More than one plausible reading is still in play, so context matters here.';
+
+  @override
+  String get explanationAmbiguityHigh =>
+      'Several readings are competing, so treat this as a cautious, context-dependent explanation.';
+
+  @override
+  String get explanationCautionParser =>
+      'Some chord symbols were normalized before analysis.';
+
+  @override
+  String get explanationCautionAmbiguous =>
+      'There is more than one reasonable reading here.';
+
+  @override
+  String get explanationCautionAlternateKey =>
+      'A nearby key center also fits part of this progression.';
+
+  @override
+  String get explanationAlternativeSection => 'Other readings';
+
+  @override
+  String explanationAlternativeKeyLabel(Object keyLabel) {
+    return 'Alternate key: $keyLabel';
+  }
+
+  @override
+  String get explanationAlternativeKeyBody =>
+      'The harmonic pull is still valid, but another key center also explains some of the same chords.';
+
+  @override
+  String explanationAlternativeReadingLabel(Object romanNumeral) {
+    return 'Alternate reading: $romanNumeral';
+  }
+
+  @override
+  String get explanationAlternativeReadingBody =>
+      'This is another possible interpretation rather than a single definitive label.';
+
+  @override
+  String get explanationListeningSection => 'Listening focus';
+
+  @override
+  String get explanationListeningGuideToneTitle => 'Follow the 3rds and 7ths';
+
+  @override
+  String get explanationListeningGuideToneBody =>
+      'Listen for the smallest inner-line motion as the cadence resolves.';
+
+  @override
+  String get explanationListeningDominantColorTitle =>
+      'Listen for the dominant color';
+
+  @override
+  String get explanationListeningDominantColorBody =>
+      'Notice how the tension on the dominant wants to release, even before the final arrival lands.';
+
+  @override
+  String get explanationListeningBackdoorTitle =>
+      'Hear the softer backdoor pull';
+
+  @override
+  String get explanationListeningBackdoorBody =>
+      'Listen for the subdominant-minor color leading home by color and voice leading rather than a plain V-I push.';
+
+  @override
+  String get explanationListeningBorrowedColorTitle => 'Hear the color shift';
+
+  @override
+  String get explanationListeningBorrowedColorBody =>
+      'Notice how the borrowed chord darkens or brightens the loop before it returns home.';
+
+  @override
+  String get explanationListeningBassMotionTitle => 'Follow the bass motion';
+
+  @override
+  String get explanationListeningBassMotionBody =>
+      'Track how the bass note reshapes momentum, even when the upper harmony stays closely related.';
+
+  @override
+  String get explanationListeningCadenceTitle => 'Hear the arrival';
+
+  @override
+  String get explanationListeningCadenceBody =>
+      'Pay attention to which chord feels like the point of rest and how the approach prepares it.';
+
+  @override
+  String get explanationListeningAmbiguityTitle =>
+      'Compare the competing readings';
+
+  @override
+  String get explanationListeningAmbiguityBody =>
+      'Try hearing the same chord once for its local pull and once for its larger key-center role.';
+
+  @override
+  String get explanationPerformanceSection => 'Performance focus';
+
+  @override
+  String get explanationPerformancePopTitle => 'Keep the hook singable';
+
+  @override
+  String get explanationPerformancePopBody =>
+      'Favor clear top notes, repeated contour, and open voicings that support the vocal line.';
+
+  @override
+  String get explanationPerformanceJazzTitle => 'Target guide tones first';
+
+  @override
+  String get explanationPerformanceJazzBody =>
+      'Outline the 3rd and 7th before adding extra tensions or reharm color.';
+
+  @override
+  String get explanationPerformanceJazzShellTitle => 'Start with shell tones';
+
+  @override
+  String get explanationPerformanceJazzShellBody =>
+      'Place the root, 3rd, and 7th cleanly first so the cadence stays easy to hear.';
+
+  @override
+  String get explanationPerformanceJazzRootlessTitle =>
+      'Let the 3rd and 7th carry the shape';
+
+  @override
+  String get explanationPerformanceJazzRootlessBody =>
+      'Keep the guide tones stable, then add 9 or 13 only if the line still resolves clearly.';
+
+  @override
+  String get explanationPerformanceClassicalTitle =>
+      'Keep the voices disciplined';
+
+  @override
+  String get explanationPerformanceClassicalBody =>
+      'Prioritize stable spacing, functional arrivals, and stepwise motion where possible.';
+
+  @override
+  String get explanationPerformanceDominantColorTitle =>
+      'Add tension after the target is clear';
+
+  @override
+  String get explanationPerformanceDominantColorBody =>
+      'Land the guide tones first, then treat 9, 13, or altered color as decoration rather than the main signal.';
+
+  @override
+  String get explanationPerformanceAmbiguityTitle =>
+      'Anchor the most stable tones';
+
+  @override
+  String get explanationPerformanceAmbiguityBody =>
+      'If the reading is ambiguous, emphasize the likely resolution tones before leaning into the more colorful option.';
+
+  @override
+  String get explanationPerformanceVoicingTitle => 'Voicing cue';
+
+  @override
+  String get explanationPerformanceMelodyTitle => 'Melody cue';
+
+  @override
+  String get explanationPerformanceMelodyBody =>
+      'Lean on the structural target notes, then let passing tones fill the space around them.';
+
+  @override
+  String get explanationReasonFunctionalResolutionLabel => 'Functional pull';
+
+  @override
+  String get explanationReasonFunctionalResolutionBody =>
+      'The chords line up as tonic, predominant, and dominant functions rather than isolated sonorities.';
+
+  @override
+  String get explanationReasonGuideToneSmoothnessLabel => 'Guide-tone motion';
+
+  @override
+  String get explanationReasonGuideToneSmoothnessBody =>
+      'The inner voices move efficiently, which strengthens the sense of direction.';
+
+  @override
+  String get explanationReasonBorrowedColorLabel => 'Borrowed color';
+
+  @override
+  String get explanationReasonBorrowedColorBody =>
+      'A parallel-mode borrowing adds contrast without fully leaving the home key.';
+
+  @override
+  String get explanationReasonSecondaryDominantLabel =>
+      'Secondary dominant pull';
+
+  @override
+  String get explanationReasonSecondaryDominantBody =>
+      'This dominant points strongly toward a local target chord instead of only the tonic.';
+
+  @override
+  String get explanationReasonTritoneSubLabel => 'Tritone-sub color';
+
+  @override
+  String get explanationReasonTritoneSubBody =>
+      'The dominant color is preserved while the bass motion shifts to a substitute route.';
+
+  @override
+  String get explanationReasonDominantColorLabel => 'Dominant tension';
+
+  @override
+  String get explanationReasonDominantColorBody =>
+      'Altered or extended dominant color strengthens the pull toward the next chord without changing the whole key reading.';
+
+  @override
+  String get explanationReasonBackdoorMotionLabel => 'Backdoor motion';
+
+  @override
+  String get explanationReasonBackdoorMotionBody =>
+      'This reading leans on subdominant-minor or backdoor motion, so the resolution feels softer but still directed.';
+
+  @override
+  String get explanationReasonCadentialStrengthLabel => 'Cadential shape';
+
+  @override
+  String get explanationReasonCadentialStrengthBody =>
+      'The phrase ends with a stronger arrival than a neutral loop continuation.';
+
+  @override
+  String get explanationReasonVoiceLeadingStabilityLabel =>
+      'Stable voice leading';
+
+  @override
+  String get explanationReasonVoiceLeadingStabilityBody =>
+      'The selected voicing keeps common tones or resolves tendency tones cleanly.';
+
+  @override
+  String get explanationReasonSingableContourLabel => 'Singable contour';
+
+  @override
+  String get explanationReasonSingableContourBody =>
+      'The line favors memorable motion over angular, highly technical shapes.';
+
+  @override
+  String get explanationReasonSlashBassLiftLabel => 'Bass-motion lift';
+
+  @override
+  String get explanationReasonSlashBassLiftBody =>
+      'The bass note changes the momentum even when the harmony stays closely related.';
+
+  @override
+  String get explanationReasonTurnaroundGravityLabel => 'Turnaround gravity';
+
+  @override
+  String get explanationReasonTurnaroundGravityBody =>
+      'This pattern creates forward pull by cycling through familiar jazz resolution points.';
+
+  @override
+  String get explanationReasonInversionDisciplineLabel => 'Inversion control';
+
+  @override
+  String get explanationReasonInversionDisciplineBody =>
+      'The inversion choice supports smoother outer-voice motion and clearer cadence behavior.';
+
+  @override
+  String get explanationReasonAmbiguityWindowLabel => 'Competing readings';
+
+  @override
+  String get explanationReasonAmbiguityWindowBody =>
+      'Some of the same notes support more than one harmonic role, so context decides which reading feels stronger.';
+
+  @override
+  String get explanationReasonChromaticLineLabel => 'Chromatic line';
+
+  @override
+  String get explanationReasonChromaticLineBody =>
+      'A chromatic bass or inner-line connection helps explain why this chord fits despite the extra color.';
+
+  @override
+  String get explanationTrackContextPop =>
+      'In a pop context, this reading leans toward loop gravity, color contrast, and a singable top line.';
+
+  @override
+  String get explanationTrackContextJazz =>
+      'In a jazz context, this is one plausible reading that highlights guide tones, cadence pull, and usable dominant color.';
+
+  @override
+  String get explanationTrackContextClassical =>
+      'In a classical context, this reading leans toward function, inversion awareness, and cadence strength.';
+
+  @override
+  String get studyHarmonyTrackFocusSectionTitle => 'This track emphasizes';
+
+  @override
+  String get studyHarmonyTrackLessFocusSectionTitle =>
+      'This track treats more lightly';
+
+  @override
+  String get studyHarmonyTrackRecommendedForSectionTitle => 'Recommended for';
+
+  @override
+  String get studyHarmonyTrackSoundSectionTitle => 'Sound profile';
+
+  @override
+  String get studyHarmonyTrackSoundAssetPlaceholder =>
+      'Current release uses the shared piano asset. This profile prepares future track-specific sound choices.';
+
+  @override
+  String studyHarmonyTrackSoundInstrumentLabel(Object instrument) {
+    return 'Current instrument: $instrument';
+  }
+
+  @override
+  String studyHarmonyTrackSoundPlaybackLabel(Object pattern) {
+    return 'Recommended preview pattern: $pattern';
+  }
+
+  @override
+  String get studyHarmonyTrackSoundPlaybackTraitsTitle => 'Playback character';
+
+  @override
+  String get studyHarmonyTrackSoundExpansionTitle => 'Expansion path';
+
+  @override
+  String get studyHarmonyTrackPopFocus1 =>
+      'Diatonic loop gravity and hook-friendly repetition';
+
+  @override
+  String get studyHarmonyTrackPopFocus2 =>
+      'Borrowed-color lifts such as iv, bVII, or IVMaj7';
+
+  @override
+  String get studyHarmonyTrackPopFocus3 =>
+      'Slash-bass and pedal-bass motion that supports pre-chorus lift';
+
+  @override
+  String get studyHarmonyTrackPopLess1 =>
+      'Dense jazz reharmonization and advanced substitute dominants';
+
+  @override
+  String get studyHarmonyTrackPopLess2 =>
+      'Rootless voicing systems and heavy altered-dominant language';
+
+  @override
+  String get studyHarmonyTrackPopRecommendedFor =>
+      'Writers, producers, and players who want modern pop or ballad harmony that sounds usable quickly.';
+
+  @override
+  String get studyHarmonyTrackPopTheoryTone =>
+      'Practical, song-first, and color-aware without overloading the learner with jargon.';
+
+  @override
+  String get studyHarmonyTrackPopHeroHeadline => 'Build hook-friendly loops';
+
+  @override
+  String get studyHarmonyTrackPopHeroBody =>
+      'This track teaches loop gravity, restrained borrowed color, and bass movement that lifts a section without losing clarity.';
+
+  @override
+  String get studyHarmonyTrackPopQuickPracticeCue =>
+      'Start with the signature loop chapter, then listen for how the bass and borrowed color reshape the same hook.';
+
+  @override
+  String get studyHarmonyTrackPopSoundLabel => 'Soft / open / modern';
+
+  @override
+  String get studyHarmonyTrackPopSoundSummary =>
+      'Balanced piano now, with future room for brighter pop keys and wider stereo voicings.';
+
+  @override
+  String get studyHarmonyTrackJazzFocus1 =>
+      'Guide-tone hearing and shell-to-rootless voicing growth';
+
+  @override
+  String get studyHarmonyTrackJazzFocus2 =>
+      'Major ii-V-I, minor ii-V-i, and turnaround behavior';
+
+  @override
+  String get studyHarmonyTrackJazzFocus3 =>
+      'Dominant color, tensions, tritone sub, and backdoor entry points';
+
+  @override
+  String get studyHarmonyTrackJazzLess1 =>
+      'Purely song-loop repetition without cadence awareness';
+
+  @override
+  String get studyHarmonyTrackJazzLess2 =>
+      'Classical inversion literacy as a primary objective';
+
+  @override
+  String get studyHarmonyTrackJazzRecommendedFor =>
+      'Players who want to hear and use functional jazz harmony without jumping straight into maximal reharm complexity.';
+
+  @override
+  String get studyHarmonyTrackJazzTheoryTone =>
+      'Contextual, confidence-aware, and careful about calling one reading the only correct jazz answer.';
+
+  @override
+  String get studyHarmonyTrackJazzHeroHeadline =>
+      'Hear the line inside the chords';
+
+  @override
+  String get studyHarmonyTrackJazzHeroBody =>
+      'This track turns jazz harmony into manageable steps: guide tones first, then cadence families, then tasteful dominant color.';
+
+  @override
+  String get studyHarmonyTrackJazzQuickPracticeCue =>
+      'Start with guide tones and shell voicings, then revisit the same cadence with rootless color.';
+
+  @override
+  String get studyHarmonyTrackJazzSoundLabel => 'Dry / warm / EP-ready';
+
+  @override
+  String get studyHarmonyTrackJazzSoundSummary =>
+      'Shared piano for now, with placeholders for drier attacks and future electric-piano friendly playback.';
+
+  @override
+  String get studyHarmonyTrackClassicalFocus1 =>
+      'Tonic / predominant / dominant function and cadence types';
+
+  @override
+  String get studyHarmonyTrackClassicalFocus2 =>
+      'Inversion literacy, including first inversion and cadential 6/4 behavior';
+
+  @override
+  String get studyHarmonyTrackClassicalFocus3 =>
+      'Voice-leading stability, sequence, and functional modulation basics';
+
+  @override
+  String get studyHarmonyTrackClassicalLess1 =>
+      'Heavy tension stacking, quartal color, and upper-structure thinking';
+
+  @override
+  String get studyHarmonyTrackClassicalLess2 =>
+      'Loop-driven pop repetition as the main learning frame';
+
+  @override
+  String get studyHarmonyTrackClassicalRecommendedFor =>
+      'Learners who want clear functional hearing, inversion awareness, and disciplined voice leading.';
+
+  @override
+  String get studyHarmonyTrackClassicalTheoryTone =>
+      'Structured, function-first, and phrased in a way that supports listening as well as label recognition.';
+
+  @override
+  String get studyHarmonyTrackClassicalHeroHeadline =>
+      'Hear function and cadence clearly';
+
+  @override
+  String get studyHarmonyTrackClassicalHeroBody =>
+      'This track emphasizes functional arrival, inversion control, and phrase endings that feel architecturally clear.';
+
+  @override
+  String get studyHarmonyTrackClassicalQuickPracticeCue =>
+      'Start with cadence lab drills, then compare how inversions change the same function.';
+
+  @override
+  String get studyHarmonyTrackClassicalSoundLabel =>
+      'Clear / acoustic / focused';
+
+  @override
+  String get studyHarmonyTrackClassicalSoundSummary =>
+      'Shared piano for now, with room for a more direct acoustic profile in later releases.';
+
+  @override
+  String get studyHarmonyPopChapterSignatureLoopsTitle => 'Signature Pop Loops';
+
+  @override
+  String get studyHarmonyPopChapterSignatureLoopsDescription =>
+      'Build practical pop instincts with hook gravity, borrowed lift, and bass motion that feels arrangement-ready.';
+
+  @override
+  String get studyHarmonyPopLessonHookGravityTitle => 'Hook Gravity';
+
+  @override
+  String get studyHarmonyPopLessonHookGravityDescription =>
+      'Hear why modern four-chord loops stay catchy even when the harmony is simple.';
+
+  @override
+  String get studyHarmonyPopLessonBorrowedLiftTitle => 'Borrowed Lift';
+
+  @override
+  String get studyHarmonyPopLessonBorrowedLiftDescription =>
+      'Experience restrained borrowed-color chords that brighten or darken a section without derailing the hook.';
+
+  @override
+  String get studyHarmonyPopLessonBassMotionTitle => 'Bass Motion';
+
+  @override
+  String get studyHarmonyPopLessonBassMotionDescription =>
+      'Use slash-bass and line motion to create lift while the upper harmony stays familiar.';
+
+  @override
+  String get studyHarmonyPopLessonBossTitle => 'Pre-Chorus Lift Checkpoint';
+
+  @override
+  String get studyHarmonyPopLessonBossDescription =>
+      'Combine loop gravity, borrowed color, and bass motion in one song-ready pop slice.';
+
+  @override
+  String get studyHarmonyJazzChapterGuideToneLabTitle => 'Guide-Tone Lab';
+
+  @override
+  String get studyHarmonyJazzChapterGuideToneLabDescription =>
+      'Learn to hear cadence direction through inner lines, then add richer dominant color without losing the thread.';
+
+  @override
+  String get studyHarmonyJazzLessonGuideTonesTitle => 'Guide-Tone Hearing';
+
+  @override
+  String get studyHarmonyJazzLessonGuideTonesDescription =>
+      'Track the 3rds and 7ths that define a major ii-V-I with minimal clutter.';
+
+  @override
+  String get studyHarmonyJazzLessonShellVoicingsTitle => 'Shell Voicings';
+
+  @override
+  String get studyHarmonyJazzLessonShellVoicingsDescription =>
+      'Keep the cadence clear with lean shell shapes and simple turnaround motion.';
+
+  @override
+  String get studyHarmonyJazzLessonMinorCadenceTitle => 'Minor Cadence';
+
+  @override
+  String get studyHarmonyJazzLessonMinorCadenceDescription =>
+      'Recognize how minor ii-V-i motion feels and why the dominant sounds more urgent there.';
+
+  @override
+  String get studyHarmonyJazzLessonRootlessVoicingsTitle => 'Rootless Voicings';
+
+  @override
+  String get studyHarmonyJazzLessonRootlessVoicingsDescription =>
+      'Hear the same turnaround after the bass drops out of the voicing and the color tones carry more weight.';
+
+  @override
+  String get studyHarmonyJazzLessonDominantColorTitle => 'Dominant Color';
+
+  @override
+  String get studyHarmonyJazzLessonDominantColorDescription =>
+      'Add safe tension and substitute color without losing the cadence target.';
+
+  @override
+  String get studyHarmonyJazzLessonBackdoorCadenceTitle =>
+      'Tritone and Backdoor';
+
+  @override
+  String get studyHarmonyJazzLessonBackdoorCadenceDescription =>
+      'Compare substitute-dominant and backdoor arrivals as plausible jazz routes into the same tonic.';
+
+  @override
+  String get studyHarmonyJazzLessonBossTitle => 'Turnaround Checkpoint';
+
+  @override
+  String get studyHarmonyJazzLessonBossDescription =>
+      'Compare major and minor cadence pull, then hear how jazz dominant color changes the same route home.';
+
+  @override
+  String get studyHarmonyClassicalChapterCadenceLabTitle => 'Cadence Lab';
+
+  @override
+  String get studyHarmonyClassicalChapterCadenceLabDescription =>
+      'Strengthen functional hearing with cadences, inversions, and carefully controlled secondary dominants.';
+
+  @override
+  String get studyHarmonyClassicalLessonCadenceTitle => 'Cadence Function';
+
+  @override
+  String get studyHarmonyClassicalLessonCadenceDescription =>
+      'Sort tonic, predominant, and dominant behavior by how each chord prepares or completes the phrase.';
+
+  @override
+  String get studyHarmonyClassicalLessonInversionTitle => 'Inversion Control';
+
+  @override
+  String get studyHarmonyClassicalLessonInversionDescription =>
+      'Hear how inversions change the bass line and the stability of an arrival.';
+
+  @override
+  String get studyHarmonyClassicalLessonSecondaryDominantTitle =>
+      'Functional Secondary Dominants';
+
+  @override
+  String get studyHarmonyClassicalLessonSecondaryDominantDescription =>
+      'Treat secondary dominants as directed functional events instead of generic color chords.';
+
+  @override
+  String get studyHarmonyClassicalLessonBossTitle => 'Arrival Checkpoint';
+
+  @override
+  String get studyHarmonyClassicalLessonBossDescription =>
+      'Combine cadence shape, inversion awareness, and secondary-dominant pull in one controlled phrase.';
+
+  @override
+  String studyHarmonyPlayStyleLabel(String playStyle) {
+    String _temp0 = intl.Intl.selectLogic(playStyle, {
+      'competitor': 'Competitor',
+      'collector': 'Collector',
+      'explorer': 'Explorer',
+      'stabilizer': 'Stabilizer',
+      'balanced': 'Balanced',
+      'other': 'Balanced',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyRewardFocusLabel(String focus) {
+    String _temp0 = intl.Intl.selectLogic(focus, {
+      'mastery': 'Focus: Mastery',
+      'achievements': 'Focus: Achievements',
+      'cosmetics': 'Focus: Cosmetics',
+      'currency': 'Focus: Currency',
+      'collection': 'Focus: Collection',
+      'other': 'Focus',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyNextUnlockProgressLabel(String rewardTitle, int progress) {
+    return 'Next $rewardTitle $progress%';
+  }
+
+  @override
+  String studyHarmonyCurrencyBalanceLabel(String currencyTitle, int amount) {
+    return '$currencyTitle $amount';
+  }
+
+  @override
+  String studyHarmonyCurrencyGrantLabel(String currencyTitle, int amount) {
+    return '$currencyTitle +$amount';
+  }
+
+  @override
+  String studyHarmonyDifficultyLaneLabel(String lane) {
+    String _temp0 = intl.Intl.selectLogic(lane, {
+      'recovery': 'Recovery Lane',
+      'groove': 'Groove Lane',
+      'push': 'Push Lane',
+      'clutch': 'Clutch Lane',
+      'legend': 'Legend Lane',
+      'other': 'Practice Lane',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyPressureTierLabel(String tier) {
+    String _temp0 = intl.Intl.selectLogic(tier, {
+      'calm': 'Calm Pressure',
+      'steady': 'Steady Pressure',
+      'hot': 'Hot Pressure',
+      'charged': 'Charged Pressure',
+      'overdrive': 'Overdrive',
+      'other': 'Pressure',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyForgivenessTierLabel(String tier) {
+    String _temp0 = intl.Intl.selectLogic(tier, {
+      'strict': 'Strict Windows',
+      'tight': 'Tight Windows',
+      'balanced': 'Balanced Windows',
+      'kind': 'Kind Windows',
+      'generous': 'Generous Windows',
+      'other': 'Timing Windows',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyComboGoalLabel(int comboTarget) {
+    return 'Combo Goal $comboTarget';
+  }
+
+  @override
+  String studyHarmonyRuntimeTuningSummary(int lives, int goal) {
+    return 'Lives $lives | Goal $goal';
+  }
+
+  @override
+  String studyHarmonyCoachLabel(String style) {
+    String _temp0 = intl.Intl.selectLogic(style, {
+      'supportive': 'Supportive Coach',
+      'structured': 'Structured Coach',
+      'challengeForward': 'Challenge Coach',
+      'analytical': 'Analytical Coach',
+      'restorative': 'Restorative Coach',
+      'other': 'Coach',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyCoachLine(String style) {
+    String _temp0 = intl.Intl.selectLogic(style, {
+      'supportive': 'Protect flow first and let confidence compound.',
+      'structured': 'Follow the structure and the gains will stick.',
+      'challengeForward': 'Lean into the pressure and push for a sharper run.',
+      'analytical': 'Read the weak point and refine it with precision.',
+      'restorative': 'This run is about rebuilding rhythm without tilt.',
+      'other': 'Keep the next run focused and intentional.',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyPacingSegmentLabel(String segment, int minutes) {
+    String _temp0 = intl.Intl.selectLogic(segment, {
+      'warmup': 'Warmup',
+      'tension': 'Tension',
+      'release': 'Release',
+      'reward': 'Reward',
+      'other': 'Segment',
+    });
+    return '$_temp0 ${minutes}m';
+  }
+
+  @override
+  String studyHarmonyPacingSummaryLabel(String segments) {
+    return 'Pacing $segments';
+  }
+
+  @override
+  String studyHarmonyArcadeRiskLabel(String risk) {
+    String _temp0 = intl.Intl.selectLogic(risk, {
+      'forgiving': 'Low Risk',
+      'balanced': 'Balanced Risk',
+      'tense': 'High Tension',
+      'punishing': 'Punishing Risk',
+      'other': 'Arcade Risk',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyArcadeRewardStyleLabel(String style) {
+    String _temp0 = intl.Intl.selectLogic(style, {
+      'currency': 'Currency Loop',
+      'cosmetic': 'Cosmetic Hunt',
+      'title': 'Title Hunt',
+      'trophy': 'Trophy Run',
+      'bundle': 'Bundle Rewards',
+      'prestige': 'Prestige Rewards',
+      'other': 'Reward Loop',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyArcadeRuntimeComboBonusLabel(int count) {
+    return 'Combo bonus every $count';
+  }
+
+  @override
+  String studyHarmonyArcadeRuntimeMissCostLabel(int lives) {
+    return 'Miss costs $lives';
+  }
+
+  @override
+  String get studyHarmonyArcadeRuntimeModifierPulses => 'Modifier pulses';
+
+  @override
+  String get studyHarmonyArcadeRuntimeGhostPressure => 'Ghost pressure';
+
+  @override
+  String get studyHarmonyArcadeRuntimeShopBiasedLoot => 'Shop-biased loot';
+
+  @override
+  String get studyHarmonyArcadeRuntimeSteadyRuleset => 'Steady ruleset';
+
+  @override
+  String studyHarmonyShopStateLabel(String state) {
+    String _temp0 = intl.Intl.selectLogic(state, {
+      'alreadyPurchased': 'Already purchased',
+      'readyToBuy': 'Ready to buy',
+      'progressLocked': 'Progress locked',
+      'other': 'Shop state',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyShopActionLabel(String action) {
+    String _temp0 = intl.Intl.selectLogic(action, {
+      'buy': 'Buy',
+      'equipped': 'Equipped',
+      'equip': 'Equip',
+      'other': 'Shop action',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get melodyCurrentLineFeelTitle => 'Current line feel';
+
+  @override
+  String get melodyLinePersonalityTitle => 'Line personality';
+
+  @override
+  String get melodyLinePersonalityBody =>
+      'These four sliders shape why guided, standard, and advanced can feel different even before you change the harmony.';
+
+  @override
+  String get melodySyncopationBiasTitle => 'Syncopation Bias';
+
+  @override
+  String get melodySyncopationBiasBody =>
+      'Leans toward offbeat starts, anticipations, and rhythmic lift.';
+
+  @override
+  String get melodyColorRealizationBiasTitle => 'Color Realization Bias';
+
+  @override
+  String get melodyColorRealizationBiasBody =>
+      'Lets the melody pick up featured tensions and color tones more often.';
+
+  @override
+  String get melodyNoveltyTargetTitle => 'Novelty Target';
+
+  @override
+  String get melodyNoveltyTargetBody =>
+      'Reduces exact repeats and nudges the line toward fresher interval shapes.';
+
+  @override
+  String get melodyMotifVariationBiasTitle => 'Motif Variation Bias';
+
+  @override
+  String get melodyMotifVariationBiasBody =>
+      'Turns motif reuse into sequence, tail changes, and rhythmic variation.';
+
+  @override
+  String get studyHarmonyArcadeRulesTitle => 'Arcade Rules';
+
+  @override
+  String studyHarmonySessionLengthLabel(int minutes) {
+    return '$minutes min run';
+  }
+
+  @override
+  String studyHarmonyRewardKindLabel(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'achievement': 'Achievement',
+      'title': 'Title',
+      'cosmetic': 'Cosmetic',
+      'shopItem': 'Shop Unlock',
+      'other': 'Reward',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String studyHarmonyArcadeRuntimeMissLifeLabel(int lives) {
+    return 'Misses cost $lives hearts';
+  }
+
+  @override
+  String studyHarmonyArcadeRuntimeMissProgressLabel(int amount) {
+    return 'Misses push progress back by $amount';
+  }
+
+  @override
+  String studyHarmonyArcadeRuntimeComboProgressLabel(
+    int threshold,
+    int amount,
+  ) {
+    return 'Every $threshold combo adds +$amount progress';
+  }
+
+  @override
+  String studyHarmonyArcadeRuntimeComboLifeLabel(int threshold, int amount) {
+    return 'Every $threshold combo adds +$amount heart';
+  }
+
+  @override
+  String get studyHarmonyArcadeRuntimeComboResetLabel => 'Misses reset combo';
+
+  @override
+  String studyHarmonyArcadeRuntimeComboDropLabel(int amount) {
+    return 'Misses cut combo by $amount';
+  }
+
+  @override
+  String get studyHarmonyArcadeRuntimeChoicesReshuffleLabel =>
+      'Choices reshuffle';
+
+  @override
+  String get studyHarmonyArcadeRuntimeMissedReplayLabel =>
+      'Missed prompts replay';
+
+  @override
+  String get studyHarmonyArcadeRuntimeUniqueCycleLabel => 'No prompt repeats';
+
+  @override
+  String get studyHarmonyRuntimeBundleClearBonusTitle => 'Clear Bonus';
+
+  @override
+  String get studyHarmonyRuntimeBundlePrecisionBonusTitle => 'Precision Bonus';
+
+  @override
+  String get studyHarmonyRuntimeBundleComboBonusTitle => 'Combo Bonus';
+
+  @override
+  String get studyHarmonyRuntimeBundleModeBonusTitle => 'Mode Bonus';
+
+  @override
+  String get studyHarmonyRuntimeBundleMasteryBonusTitle => 'Mastery Bonus';
+
+  @override
+  String get melodyQuickPresetGuideLineLabel => 'Guide Line';
+
+  @override
+  String get melodyQuickPresetSongLineLabel => 'Song Line';
+
+  @override
+  String get melodyQuickPresetColorLineLabel => 'Color Line';
+
+  @override
+  String get melodyQuickPresetGuideCompactLabel => 'Guide';
+
+  @override
+  String get melodyQuickPresetSongCompactLabel => 'Song';
+
+  @override
+  String get melodyQuickPresetColorCompactLabel => 'Color';
+
+  @override
+  String get melodyQuickPresetGuideShort => 'steady guide notes';
+
+  @override
+  String get melodyQuickPresetSongShort => 'singable contour';
+
+  @override
+  String get melodyQuickPresetColorShort => 'color-forward line';
+
+  @override
+  String get melodyQuickPresetPanelTitle => 'Melody Presets';
+
+  @override
+  String get melodyQuickPresetPanelCompactTitle => 'Line Presets';
+
+  @override
+  String get melodyQuickPresetOffLabel => 'Off';
+
+  @override
+  String get melodyQuickPresetCompactOffLabel => 'Line Off';
+
+  @override
+  String get melodyMetricDensityLabel => 'Density';
+
+  @override
+  String get melodyMetricStyleLabel => 'Style';
+
+  @override
+  String get melodyMetricSyncLabel => 'Sync';
+
+  @override
+  String get melodyMetricColorLabel => 'Color';
+
+  @override
+  String get melodyMetricNoveltyLabel => 'Novelty';
+
+  @override
+  String get melodyMetricMotifLabel => 'Motif';
+
+  @override
+  String get melodyMetricChromaticLabel => 'Chromatic';
+
+  @override
+  String get practiceFirstRunWelcomeTitle => 'Your first chord is ready';
+
+  @override
+  String get practiceFirstRunWelcomeBodyEmpty =>
+      'A beginner-friendly starting profile is already applied. Listen first, then swipe the card to explore the next chord.';
+
+  @override
+  String practiceFirstRunWelcomeBodyReady(Object chordLabel) {
+    return '$chordLabel is ready to go. Listen first, then swipe the card to explore what comes next. You can still open the setup assistant to personalize the start.';
+  }
+
+  @override
+  String get practiceFirstRunSetupButton => 'Personalize';
 }

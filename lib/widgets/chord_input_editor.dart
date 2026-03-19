@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -19,6 +20,7 @@ class ChordInputEditor extends StatefulWidget {
     this.minLines = 3,
     this.maxLines = 5,
     this.showDesktopKeyboardOnFocus = true,
+    this.allowTouchRawInput = true,
   });
 
   final TextEditingController controller;
@@ -31,6 +33,7 @@ class ChordInputEditor extends StatefulWidget {
   final int minLines;
   final int maxLines;
   final bool showDesktopKeyboardOnFocus;
+  final bool allowTouchRawInput;
 
   @override
   State<ChordInputEditor> createState() => _ChordInputEditorState();
@@ -61,6 +64,14 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
   @override
   void didUpdateWidget(covariant ChordInputEditor oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (!widget.allowTouchRawInput && _rawInputMode) {
+      _rawInputMode = false;
+    }
+    if (_usesTouchKeyboard &&
+        !widget.allowTouchRawInput &&
+        _focusNode.hasFocus) {
+      unawaited(SystemChannels.textInput.invokeMethod<void>('TextInput.hide'));
+    }
     if (oldWidget.controller == widget.controller) {
       return;
     }
@@ -78,6 +89,11 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
   }
 
   void _handleFocusChanged() {
+    if (_usesTouchKeyboard &&
+        !widget.allowTouchRawInput &&
+        _focusNode.hasFocus) {
+      unawaited(SystemChannels.textInput.invokeMethod<void>('TextInput.hide'));
+    }
     if (!mounted) {
       return;
     }
@@ -184,7 +200,7 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
   }
 
   Future<void> _toggleRawInputMode() async {
-    if (!_usesTouchKeyboard) {
+    if (!_usesTouchKeyboard || !widget.allowTouchRawInput) {
       return;
     }
     setState(() {
@@ -256,6 +272,9 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
               focusNode: _focusNode,
               minLines: widget.minLines,
               maxLines: widget.maxLines,
+              keyboardType: _usesTouchKeyboard && !_rawInputMode
+                  ? TextInputType.none
+                  : TextInputType.multiline,
               readOnly: _usesTouchKeyboard && !_rawInputMode,
               showCursor: true,
               onTap: _ensureValidSelection,
@@ -296,6 +315,7 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
                     child: _ChordKeyboardPanel(
                       l10n: l10n,
                       usesTouchKeyboard: _usesTouchKeyboard,
+                      allowRawInput: widget.allowTouchRawInput,
                       rawInputMode: _rawInputMode,
                       editorContext: editorContext,
                       onInsert: _handleInsert,
@@ -320,6 +340,7 @@ class _ChordKeyboardPanel extends StatelessWidget {
   const _ChordKeyboardPanel({
     required this.l10n,
     required this.usesTouchKeyboard,
+    required this.allowRawInput,
     required this.rawInputMode,
     required this.editorContext,
     required this.onInsert,
@@ -332,6 +353,7 @@ class _ChordKeyboardPanel extends StatelessWidget {
 
   final AppLocalizations l10n;
   final bool usesTouchKeyboard;
+  final bool allowRawInput;
   final bool rawInputMode;
   final _EditorTokenContext editorContext;
   final ValueChanged<_KeyboardInsertSpec> onInsert;
@@ -371,7 +393,7 @@ class _ChordKeyboardPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final hint = usesTouchKeyboard
-        ? l10n.chordAnalyzerKeyboardTouchHint
+        ? (allowRawInput ? l10n.chordAnalyzerKeyboardTouchHint : null)
         : l10n.chordAnalyzerKeyboardDesktopHint;
 
     return Card(
@@ -392,7 +414,7 @@ class _ChordKeyboardPanel extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                if (usesTouchKeyboard) ...[
+                if (usesTouchKeyboard && allowRawInput) ...[
                   SegmentedButton<bool>(
                     segments: [
                       ButtonSegment<bool>(
@@ -424,13 +446,15 @@ class _ChordKeyboardPanel extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Text(
-              hint,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+            if (hint != null) ...[
+              Text(
+                hint,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
+            ],
             _KeyboardSection(
               children: [
                 for (final note in _roots)

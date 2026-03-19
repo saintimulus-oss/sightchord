@@ -9,6 +9,7 @@ import '../study_harmony/domain/study_harmony_session_models.dart';
 import 'harmony_audio_models.dart';
 import 'harmony_preview_resolver.dart';
 import 'instrument_library_registry.dart';
+import 'sample_player_voice_platform.dart';
 import 'sampled_instrument_engine.dart';
 
 class HarmonyAudioService {
@@ -31,24 +32,30 @@ class HarmonyAudioService {
              bundle:
                  (instrument ?? InstrumentLibraryRegistry.defaultHarmonyPiano)
                      .bundle,
-           );
+           ),
+       _activeRuntimeProfile = HarmonyAudioRuntimeProfile(
+         profileId: 'default-balanced',
+         instrumentId:
+             (instrument ?? InstrumentLibraryRegistry.defaultHarmonyPiano).id,
+         preferredPattern: HarmonyPlaybackPattern.block,
+       );
 
-  final InstrumentLibraryDescriptor _instrument;
-  final SampledInstrumentEngine _engine;
+  InstrumentLibraryDescriptor _instrument;
+  SampledInstrumentEngine _engine;
   final math.Random _random = math.Random();
   Future<void>? _warmUpFuture;
+  bool _isReady = false;
   HarmonyAudioConfig _config = const HarmonyAudioConfig();
-  bool _audioDisabled = false;
+  HarmonyAudioConfig _runtimeProfileBaseConfig = const HarmonyAudioConfig();
+  HarmonyAudioRuntimeProfile _activeRuntimeProfile;
   int _playbackSessionSerial = 0;
 
   String get instrumentId => _instrument.id;
   HarmonyAudioCapabilities get capabilities => const HarmonyAudioCapabilities();
   HarmonyAudioConfig get config => _config;
+  HarmonyAudioRuntimeProfile get activeRuntimeProfile => _activeRuntimeProfile;
 
   Future<void> warmUp() {
-    if (_audioDisabled) {
-      return Future<void>.value();
-    }
     final pending = _warmUpFuture;
     if (pending != null) {
       return pending;
@@ -58,8 +65,29 @@ class HarmonyAudioService {
     return future;
   }
 
+  Future<void> activate() async {
+    await _safeRun(activatePlatformAudio, reason: 'activation');
+    await warmUp();
+  }
+
   Future<void> setMasterVolume(double volume) async {
-    await applyConfig(_config.copyWith(masterVolume: volume));
+    final nextBaseConfig = _runtimeProfileBaseConfig.copyWith(
+      masterVolume: volume,
+    );
+    _runtimeProfileBaseConfig = nextBaseConfig.clamped();
+    await applyConfig(_activeRuntimeProfile.resolveConfig(nextBaseConfig));
+  }
+
+  Future<void> applyRuntimeProfile(
+    HarmonyAudioRuntimeProfile profile, {
+    HarmonyAudioConfig? baseConfig,
+  }) async {
+    _activeRuntimeProfile = profile;
+    if (baseConfig != null) {
+      _runtimeProfileBaseConfig = baseConfig.clamped();
+    }
+    await _replaceInstrumentIfNeeded(profile.instrumentId);
+    await applyConfig(profile.resolveConfig(_runtimeProfileBaseConfig));
   }
 
   Future<void> applyConfig(HarmonyAudioConfig config) async {
@@ -67,7 +95,10 @@ class HarmonyAudioService {
     if (!await _ensureReady()) {
       return;
     }
-    await _safeRun(() => _engine.setMasterVolume(_config.masterVolume));
+    await _safeRun(
+      () => _engine.setMasterVolume(_config.masterVolume),
+      reason: 'config',
+    );
   }
 
   Future<ActiveInstrumentNote?> noteOn({
@@ -75,12 +106,14 @@ class HarmonyAudioService {
     int velocity = 88,
     double gain = 1.0,
   }) async {
+    await activate();
     if (!await _ensureReady()) {
       return null;
     }
     return _safeRun<ActiveInstrumentNote?>(
       () => _engine.noteOn(midiNote: midiNote, velocity: velocity, gain: gain),
       fallback: null,
+      reason: 'note-on',
     );
   }
 
@@ -97,6 +130,7 @@ class HarmonyAudioService {
     if (clip.isEmpty) {
       return;
     }
+    await activate();
     final sessionId = await _beginPlaybackSession();
     if (sessionId == null) {
       return;
@@ -114,6 +148,7 @@ class HarmonyAudioService {
     if (clip.isEmpty) {
       return;
     }
+    await activate();
     final sessionId = await _beginPlaybackSession();
     if (sessionId == null) {
       return;
@@ -130,6 +165,7 @@ class HarmonyAudioService {
     if (clip.isEmpty) {
       return;
     }
+    await activate();
     final sessionId = await _beginPlaybackSession();
     if (sessionId == null) {
       return;
@@ -153,6 +189,7 @@ class HarmonyAudioService {
     if (clips.isEmpty) {
       return;
     }
+    await activate();
     final sessionId = await _beginPlaybackSession();
     if (sessionId == null) {
       return;
@@ -231,12 +268,64 @@ class HarmonyAudioService {
 
   Future<void> stopAll() async {
     _invalidatePlaybackSessions();
-    await _safeRun(() => _engine.stopAll());
+    await _safeRun(() => _engine.stopAll(), reason: 'stop-all');
   }
 
   Future<void> dispose() async {
     _invalidatePlaybackSessions();
-    await _safeRun(() => _engine.dispose());
+    await _safeRun(() => _engine.dispose(), reason: 'dispose');
+  }
+
+  Future<void> _replaceInstrumentIfNeeded(String instrumentId) async {
+    if (_instrument.id == instrumentId) {
+      return;
+    }
+    final nextInstrument = InstrumentLibraryRegistry.byId(instrumentId);
+    await _safeRun(() => _engine.stopAll(), reason: 'instrument-stop');
+    await _safeRun(() => _engine.dispose(), reason: 'instrument-dispose');
+    _instrument = nextInstrument;
+    _engine = SampledInstrumentEngine(bundle: nextInstrument.bundle);
+    _isReady = false;
+    _warmUpFuture = null;
+  }
+
+  Future<void> prepareClip(HarmonyChordClip clip) async {
+    if (clip.isEmpty || !await _ensureReady()) {
+      return;
+    }
+    await _safeRun(
+      () => _engine.prefetchNotes(_buildRequests(clip)),
+      reason: 'prefetch-clip',
+    );
+  }
+
+  Future<bool> prepareCompositeClip(HarmonyCompositeClip clip) async {
+    if (clip.isEmpty || !await _ensureReady()) {
+      return false;
+    }
+    final requests = <InstrumentNoteRequest>[
+      if (clip.chordClip case final chordClip?) ..._buildRequests(chordClip),
+      if (clip.melodyClip case final melodyClip?)
+        for (final note in melodyClip.notes)
+          InstrumentNoteRequest(
+            midiNote: note.midiNote,
+            velocity: note.velocity,
+            gain: note.gain,
+            toneLabel: note.toneLabel,
+          ),
+    ];
+    if (requests.isEmpty) {
+      return false;
+    }
+    return await _safeRun<bool>(
+          () async {
+            await _engine.prefetchNotes(requests);
+            return true;
+          },
+          fallback: false,
+          reason: 'prefetch-composite',
+        ) ??
+        false;
   }
 
   Future<int?> _beginPlaybackSession() async {
@@ -504,42 +593,40 @@ class HarmonyAudioService {
     try {
       await _engine.prepare();
       await _engine.setMasterVolume(_config.masterVolume);
+      _isReady = true;
     } catch (error, stackTrace) {
-      _disableAudio('warm-up', error: error, stackTrace: stackTrace);
+      _isReady = false;
+      _warmUpFuture = null;
+      _logRecoverableFailure('warm-up', error: error, stackTrace: stackTrace);
     }
   }
 
   Future<bool> _ensureReady() async {
-    if (_audioDisabled) {
-      return false;
-    }
     await warmUp();
-    return !_audioDisabled;
+    return _isReady;
   }
 
-  Future<T?> _safeRun<T>(Future<T> Function() action, {T? fallback}) async {
-    if (_audioDisabled) {
-      return fallback;
-    }
+  Future<T?> _safeRun<T>(
+    Future<T> Function() action, {
+    T? fallback,
+    String reason = 'runtime',
+  }) async {
     try {
       return await action();
     } catch (error, stackTrace) {
-      _disableAudio('playback', error: error, stackTrace: stackTrace);
+      _logRecoverableFailure(reason, error: error, stackTrace: stackTrace);
       return fallback;
     }
   }
 
-  void _disableAudio(
+  void _logRecoverableFailure(
     String reason, {
     required Object error,
     required StackTrace stackTrace,
   }) {
-    if (_audioDisabled) {
-      return;
-    }
-    _audioDisabled = true;
     developer.log(
-      'Harmony audio disabled after $reason failed for ${_instrument.id}.',
+      'Harmony audio $reason failed for ${_instrument.id}; the next request '
+      'will retry.',
       name: 'chordest.audio',
       error: error,
       stackTrace: stackTrace,

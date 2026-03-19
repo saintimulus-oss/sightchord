@@ -18,11 +18,14 @@ import 'music/chord_anchor_loop.dart';
 import 'music/chord_formatting.dart';
 import 'music/chord_timing_models.dart';
 import 'music/chord_theory.dart';
+import 'music/explanation_models.dart';
 import 'music/harmonic_rhythm_planner.dart';
 import 'music/melody_generator.dart';
 import 'music/melody_models.dart';
 import 'music/practice_chord_queue_state.dart';
 import 'music/progression_analysis_models.dart';
+import 'music/progression_analyzer.dart';
+import 'music/progression_explanation_bundle_builder.dart';
 import 'music/voicing_engine.dart';
 import 'music/voicing_models.dart';
 import 'music/voicing_session_state.dart';
@@ -34,9 +37,9 @@ import 'settings/practice_settings_factory.dart';
 import 'settings/practice_settings_drawer.dart';
 import 'settings/settings_controller.dart';
 import 'smart_generator.dart';
+import 'study_harmony/content/track_generation_profiles.dart';
 import 'widgets/beat_indicator_row.dart';
-import 'widgets/voicing_suggestions_section.dart';
-
+import 'widgets/explanation_bundle_panel.dart';
 part 'practice_home_page_labels.dart';
 part 'practice_home_page_ui.dart';
 
@@ -117,6 +120,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final Random _random = Random();
   final AnchorLoopPlanner _anchorLoopPlanner = const AnchorLoopPlanner();
+  final ProgressionAnalyzer _progressionAnalyzer = const ProgressionAnalyzer();
+  final ProgressionExplanationBundleBuilder _progressionExplanationBuilder =
+      const ProgressionExplanationBundleBuilder();
   late final MetronomeAudioService _metronomeAudio;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<_ChordSwipeSurfaceState> _chordSwipeSurfaceKey =
@@ -137,6 +143,8 @@ class _MyHomePageState extends State<MyHomePage> {
   double? _scheduledMetronomeBaseTimeSeconds;
   bool _requestedHarmonyAudioWarmUp = false;
   HarmonyAudioService? _harmonyAudio;
+  String? _lastCurrentPreviewPrefetchKey;
+  String? _lastNextPreviewPrefetchKey;
   AnchorCyclePlan? _cachedAnchorCyclePlan;
   KeyCenter? _anchorLoopSeedKeyCenter;
   PracticeChordQueueState _queueState = const PracticeChordQueueState();
@@ -277,6 +285,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _practiceSessionInitialized = true;
     _ensureChordQueueInitialized();
     _recomputeVoicingSuggestions();
+    _queueHarmonyPreviewPrefetch();
   }
 
   Future<void> _runSetupAssistant({required bool mandatory}) async {
@@ -321,6 +330,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final harmonyAudio = SightChordAudioScope.maybeOf(context);
+    if (!identical(_harmonyAudio, harmonyAudio)) {
+      _resetHarmonyPreviewPrefetchCache();
+    }
     _harmonyAudio = harmonyAudio;
     if (harmonyAudio == null) {
       return;
@@ -331,6 +343,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     _requestedHarmonyAudioWarmUp = true;
     unawaited(harmonyAudio.warmUp());
+    _queueHarmonyPreviewPrefetch();
   }
 
   Future<void> _initAudio() async {
@@ -359,15 +372,14 @@ class _MyHomePageState extends State<MyHomePage> {
     if (harmonyAudio == null) {
       return;
     }
-    await harmonyAudio.applyConfig(
-      HarmonyAudioConfig(
-        masterVolume: settings.harmonyMasterVolume,
-        previewHoldFactor: settings.harmonyPreviewHoldFactor,
-        arpeggioStepSpeed: settings.harmonyArpeggioStepSpeed,
-        velocityHumanization: settings.harmonyVelocityHumanization,
-        gainRandomness: settings.harmonyGainRandomness,
-        timingHumanization: settings.harmonyTimingHumanization,
-      ),
+    final l10n = AppLocalizations.of(context)!;
+    final soundProfile = trackSoundProfileForSelection(
+      l10n,
+      selection: settings.harmonySoundProfileSelection,
+    );
+    await harmonyAudio.applyRuntimeProfile(
+      soundProfile.runtimeProfile,
+      baseConfig: harmonyAudioBaseConfigForSettings(settings),
     );
   }
 
@@ -680,6 +692,7 @@ class _MyHomePageState extends State<MyHomePage> {
         );
       }
     });
+    _queueHarmonyPreviewPrefetch();
     if (_autoRunning &&
         (nextSettings.bpm != previousSettings.bpm ||
             nextSettings.timeSignature != previousSettings.timeSignature ||
@@ -917,6 +930,191 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  HarmonyCompositeClip _buildCompositePreviewClip({
+    required GeneratedChordEvent event,
+    required MelodyPlaybackMode playbackMode,
+    ConcreteVoicing? preferredVoicing,
+    GeneratedMelodyEvent? melodyEvent,
+  }) {
+    final baseChordClip = _playbackModeUsesChord(playbackMode)
+        ? HarmonyPreviewResolver.auditionClipForGeneratedChord(
+            event.chord,
+            preferredVoicing: preferredVoicing,
+          )
+        : null;
+    final includesMelody =
+        _playbackModeUsesMelody(playbackMode) && melodyEvent != null;
+    final chordClip = baseChordClip != null && includesMelody
+        ? _softenChordClipForCombinedPlayback(baseChordClip)
+        : baseChordClip;
+    return HarmonyCompositeClip(
+      chordClip: chordClip,
+      melodyClip: includesMelody
+          ? _melodyClipForEvent(melodyEvent, emphasizeLead: chordClip != null)
+          : null,
+      label: _displaySymbolForEvent(event),
+    );
+  }
+
+  void _resetHarmonyPreviewPrefetchCache() {
+    _lastCurrentPreviewPrefetchKey = null;
+    _lastNextPreviewPrefetchKey = null;
+  }
+
+  void _queueHarmonyPreviewPrefetch() {
+    final harmonyAudio = _harmonyAudio;
+    if (harmonyAudio == null) {
+      _resetHarmonyPreviewPrefetchCache();
+      return;
+    }
+
+    final currentEvent = _currentChordEvent;
+    if (currentEvent != null) {
+      final currentClip = _buildCompositePreviewClip(
+        event: currentEvent,
+        playbackMode: _settings.melodyPlaybackMode,
+        preferredVoicing: _preferredPlaybackVoicing(),
+        melodyEvent: _currentMelodyEvent,
+      );
+      _scheduleCompositePreviewPrefetch(
+        harmonyAudio: harmonyAudio,
+        clip: currentClip,
+        isCurrentClip: true,
+      );
+    } else {
+      _lastCurrentPreviewPrefetchKey = null;
+    }
+
+    final nextEvent = _nextChordEvent;
+    if (nextEvent != null) {
+      final nextClip = _buildCompositePreviewClip(
+        event: nextEvent,
+        playbackMode: _autoPlaybackMode(),
+        preferredVoicing: _preferredUpcomingPlaybackVoicing(),
+        melodyEvent: _nextMelodyEvent,
+      );
+      _scheduleCompositePreviewPrefetch(
+        harmonyAudio: harmonyAudio,
+        clip: nextClip,
+        isCurrentClip: false,
+      );
+    } else {
+      _lastNextPreviewPrefetchKey = null;
+    }
+  }
+
+  void _scheduleCompositePreviewPrefetch({
+    required HarmonyAudioService harmonyAudio,
+    required HarmonyCompositeClip clip,
+    required bool isCurrentClip,
+  }) {
+    if (clip.isEmpty) {
+      if (isCurrentClip) {
+        _lastCurrentPreviewPrefetchKey = null;
+      } else {
+        _lastNextPreviewPrefetchKey = null;
+      }
+      return;
+    }
+    final key = _compositeClipPrefetchKey(clip);
+    final previousKey = isCurrentClip
+        ? _lastCurrentPreviewPrefetchKey
+        : _lastNextPreviewPrefetchKey;
+    if (key == previousKey) {
+      return;
+    }
+    if (isCurrentClip) {
+      _lastCurrentPreviewPrefetchKey = key;
+    } else {
+      _lastNextPreviewPrefetchKey = key;
+    }
+    unawaited(
+      _completeCompositePreviewPrefetch(
+        harmonyAudio: harmonyAudio,
+        clip: clip,
+        key: key,
+        isCurrentClip: isCurrentClip,
+      ),
+    );
+  }
+
+  Future<void> _completeCompositePreviewPrefetch({
+    required HarmonyAudioService harmonyAudio,
+    required HarmonyCompositeClip clip,
+    required String key,
+    required bool isCurrentClip,
+  }) async {
+    final prepared = await harmonyAudio.prepareCompositeClip(clip);
+    if (prepared) {
+      return;
+    }
+    final cachedKey = isCurrentClip
+        ? _lastCurrentPreviewPrefetchKey
+        : _lastNextPreviewPrefetchKey;
+    if (cachedKey != key) {
+      return;
+    }
+    if (isCurrentClip) {
+      _lastCurrentPreviewPrefetchKey = null;
+    } else {
+      _lastNextPreviewPrefetchKey = null;
+    }
+  }
+
+  String _compositeClipPrefetchKey(HarmonyCompositeClip clip) {
+    final buffer = StringBuffer();
+    buffer.write(clip.label ?? '');
+    buffer.write('|chord:');
+    final chordClip = clip.chordClip;
+    if (chordClip != null) {
+      for (final note in chordClip.notes) {
+        _appendPreviewNoteKey(buffer, note);
+      }
+    }
+    buffer.write('|melody:');
+    final melodyClip = clip.melodyClip;
+    if (melodyClip != null) {
+      for (final note in melodyClip.notes) {
+        _appendMelodyNoteKey(buffer, note);
+      }
+    }
+    return buffer.toString();
+  }
+
+  static void _appendPreviewNoteKey(
+    StringBuffer buffer,
+    HarmonyPreviewNote note,
+  ) {
+    buffer
+      ..write(note.midiNote)
+      ..write('/')
+      ..write(note.velocity)
+      ..write('/')
+      ..write(note.gain.toStringAsFixed(3))
+      ..write('/')
+      ..write(note.toneLabel ?? '')
+      ..write(';');
+  }
+
+  static void _appendMelodyNoteKey(
+    StringBuffer buffer,
+    HarmonyMelodyNote note,
+  ) {
+    buffer
+      ..write(note.midiNote)
+      ..write('/')
+      ..write(note.velocity)
+      ..write('/')
+      ..write(note.gain.toStringAsFixed(3))
+      ..write('/')
+      ..write(note.startOffset.inMilliseconds)
+      ..write('/')
+      ..write(note.duration.inMilliseconds)
+      ..write('/')
+      ..write(note.toneLabel ?? '')
+      ..write(';');
+  }
+
   double _emphasizedMelodyGain(GeneratedMelodyNote note) {
     final roleBoost = switch (note.role) {
       MelodyNoteRole.guideTone ||
@@ -958,24 +1156,13 @@ class _MyHomePageState extends State<MyHomePage> {
     if (harmonyAudio == null) {
       return;
     }
-    final baseChordClip = _playbackModeUsesChord(playbackMode)
-        ? HarmonyPreviewResolver.auditionClipForGeneratedChord(
-            event.chord,
-            preferredVoicing: preferredVoicing,
-          )
-        : null;
-    final includesMelody =
-        _playbackModeUsesMelody(playbackMode) && melodyEvent != null;
-    final chordClip = baseChordClip != null && includesMelody
-        ? _softenChordClipForCombinedPlayback(baseChordClip)
-        : baseChordClip;
-    final compositeClip = HarmonyCompositeClip(
-      chordClip: chordClip,
-      melodyClip: includesMelody
-          ? _melodyClipForEvent(melodyEvent, emphasizeLead: chordClip != null)
-          : null,
-      label: _displaySymbolForEvent(event),
+    final compositeClip = _buildCompositePreviewClip(
+      event: event,
+      playbackMode: playbackMode,
+      preferredVoicing: preferredVoicing,
+      melodyEvent: melodyEvent,
     );
+    final chordClip = compositeClip.chordClip;
     if (compositeClip.isEmpty) {
       return;
     }
@@ -1043,6 +1230,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _voicingState = _voicingState.reset();
     _ensureChordQueueInitialized();
     _recomputeVoicingSuggestions();
+    _queueHarmonyPreviewPrefetch();
   }
 
   void _recordPracticeHistory() {
@@ -1246,6 +1434,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
     _rebuildMelodyQueue();
     _recomputeVoicingSuggestions();
+    _queueHarmonyPreviewPrefetch();
   }
 
   void _recomputeVoicingSuggestions({bool forceLookAheadRefresh = false}) {
@@ -1295,6 +1484,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _recomputeVoicingSuggestions();
       }
     });
+    _queueHarmonyPreviewPrefetch();
   }
 
   void _handleVoicingLockToggle(VoicingSuggestion suggestion) {
@@ -1302,6 +1492,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _voicingState = _voicingState.toggleLock(suggestion);
       _recomputeVoicingSuggestions();
     });
+    _queueHarmonyPreviewPrefetch();
   }
 
   bool _isExcludedCandidate(
@@ -2445,6 +2636,11 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_autoRunning) {
       _stopAutoPlay(resetBeat: false);
       return;
+    }
+    final harmonyAudio = _harmonyAudio;
+    if (harmonyAudio != null) {
+      unawaited(harmonyAudio.activate());
+      _queueHarmonyPreviewPrefetch();
     }
     _startAutoPlay();
   }
