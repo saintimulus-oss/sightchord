@@ -8,6 +8,7 @@ import '../audio/sightchord_audio_scope.dart';
 import '../l10n/app_localizations.dart';
 import '../music/chord_formatting.dart';
 import '../music/chord_theory.dart';
+import '../music/notation_presentation.dart';
 import 'practice_setup_models.dart';
 import 'practice_setup_preview.dart';
 import 'practice_settings.dart';
@@ -800,7 +801,12 @@ class _PracticeSetupAssistantSheetState
   }
 
   String _keyCenterLabel(AppLocalizations l10n, KeyCenter center) {
-    return '${MusicTheory.displayRootForKey(center.tonicName)} ${l10n.modeMajor}';
+    return MusicNotationFormatter.formatKeyCenterLabel(
+      center: center,
+      labelStyle: KeyCenterLabelStyle.modeText,
+      preferences: widget.currentSettings.notationPreferences,
+      l10n: l10n,
+    );
   }
 
   String _keyCenterDescription(AppLocalizations l10n, KeyCenter center) {
@@ -866,6 +872,7 @@ class _PracticeSetupAssistantSheetState
         renderQuality: ChordQuality.major7,
       ),
       style,
+      preferences: widget.currentSettings.notationPreferences,
     );
   }
 }

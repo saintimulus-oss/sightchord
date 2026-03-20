@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "ko",
   "settings": "설정",
   "closeSettings": "설정 닫기",
@@ -2094,8 +2094,7 @@
   "studyHarmonyLessonBlueHourHorizonTitle": "이중 지평선",
   "studyHarmonyLessonBlueHourHorizonDescription": "두 개의 도착점이 번갈아 보이는 상황에서도 진짜 귀착 지점을 끝까지 유지합니다.",
   "studyHarmonyLessonBlueHourBossTitle": "트윈 랜턴즈 보스",
-  "studyHarmonyLessonBlueHourBossDescription": "중심 조성, 기능, 차용 색채, 빈칸 코드 복원을 황혼 속도로 빠르게 교차시키는 최종 블루 아워 보스입니다."
-,
+  "studyHarmonyLessonBlueHourBossDescription": "중심 조성, 기능, 차용 색채, 빈칸 코드 복원을 황혼 속도로 빠르게 교차시키는 최종 블루 아워 보스입니다.",
   "chordTypeFilters": "코드 종류",
   "chordTypeFiltersHelp": "생성기에 표시할 코드 종류를 선택하세요.",
   "chordTypeFiltersSelection": "{selected} / {total} 활성화",
@@ -2746,7 +2745,17 @@
       "chordLabel": {}
     }
   },
-  "practiceFirstRunSetupButton": "맞춤 설정"
+  "practiceFirstRunSetupButton": "맞춤 설정",
+  "musicNotationLocale": "?? ?? ??",
+  "musicNotationLocaleHelp": "?? ?? ?? ??? ?? ??? ?? ??? ??? ??? ????.",
+  "musicNotationLocaleUiDefault": "? ??? ??",
+  "musicNotationLocaleEnglish": "??",
+  "noteNamingStyle": "? ?? ??",
+  "noteNamingStyleHelp": "?? ??? ??? ?? ???? ? ??? ? ??? ????.",
+  "noteNamingStyleEnglish": "?? ???",
+  "noteNamingStyleLatin": "???",
+  "showRomanNumeralAssist": "?? ?? ?? ?? ??",
+  "showRomanNumeralAssistHelp": "?? ?? ?? ?? ?? ??? ?????.",
+  "showChordTextAssist": "?? ??? ?? ?? ??",
+  "showChordTextAssistHelp": "?? ??? ??? ?? ?? ??? ?????."
 }
-
-

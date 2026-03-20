@@ -36,10 +36,19 @@ flutter build web --release --base-href /
 
 For GitHub Pages project sites, the workflow auto-detects the repository name and sets the correct `base-href`. If the repository is a user or org Pages repository such as `owner.github.io`, it builds with `/`.
 
+For local parity with the current project-site deployment, you can also run:
+
+```bash
+flutter build web --release --base-href /sightchord/
+```
+
 ## Repository Hygiene
 
 - Source-controlled: `lib/`, `web/`, `assets/` source assets, `test/`, `docs/`, `tool/`, and workflow files.
-- Generated or machine-local: `build/`, `.dart_tool/`, `.appdata/`, logs, scratch files, browser/profile data, `android/local.properties`, and root-level Flutter web outputs such as `main.dart.js`, `flutter*.js`, `canvaskit/`, `icons/`, and generated `assets/` manifests.
+- Source of truth for web shell assets: `web/`.
+- Source of truth for Pages deploy output: CI-built `build/web` uploaded as the GitHub Pages artifact.
+- Not source of truth: reproducible Flutter web output copied into the repository root such as root `index.html`, `manifest.json`, `flutter*.js`, `main.dart.js*`, `version.json`, `canvaskit/`, `icons/`, and generated root `assets/` manifests.
+- Generated or machine-local: `build/`, `.dart_tool/`, `.appdata/`, logs, scratch files, browser/profile data, `android/local.properties`, and any reproducible deploy output outside `web/`.
 - GitHub Pages deploys from CI-uploaded `build/web` artifacts, not from hand-maintained generated files at the repository root.
 
 ## Structure
@@ -65,6 +74,11 @@ lib/
   settings/practice_settings_drawer.dart # public barrel
   settings/practice_settings_drawer_view.dart
 
+web/
+  index.html                            # source web entry shell
+  manifest.json                         # source PWA manifest
+  icons/*                               # source web icons
+
 docs/
   architecture-overview.md
   codex-maintenance-plan.md
@@ -85,6 +99,8 @@ This repository uses `.github/workflows/deploy-pages.yml` with the standard Page
 8. Upload the Pages artifact
 9. Deploy with `actions/deploy-pages`
 
+The workflow deploys only `build/web`. Root-level generated Flutter web files are intentionally ignored and are not part of the deployment contract.
+
 To publish:
 
 1. Set GitHub Pages source to `GitHub Actions`.
@@ -92,7 +108,7 @@ To publish:
 
 ## Notes
 
-- Chord symbols, note names, Roman numeral tokens, tensions, and key names are not localized.
+- Default chord symbol semantics stay unchanged, but note naming, key labels, and optional Roman numeral / chord-text assists can now be switched independently from the app UI locale.
 - Chord Generator and Chord Analyzer remain separate entry points from the main menu.
 - Settings are persisted with `shared_preferences`.
 - The metronome uses `assets/tick.mp3` through `audioplayers`.

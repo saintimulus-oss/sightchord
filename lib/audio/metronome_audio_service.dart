@@ -2,19 +2,14 @@ import 'dart:developer' as developer;
 
 import 'package:audioplayers/audioplayers.dart';
 
+import 'metronome_audio_backend.dart';
 import 'metronome_audio_models.dart';
 import 'scheduled_metronome.dart';
 
 typedef MetronomeWarningLogger =
     void Function(String message, {Object? error, StackTrace? stackTrace});
 
-class MetronomeSoundLoadResult {
-  const MetronomeSoundLoadResult({this.preciseAssetReloaded = false});
-
-  final bool preciseAssetReloaded;
-}
-
-class MetronomeAudioService {
+class MetronomeAudioService implements MetronomeAudioBackend {
   MetronomeAudioService({
     ScheduledMetronome? scheduledMetronome,
     MetronomeWarningLogger? logWarning,
@@ -39,17 +34,21 @@ class MetronomeAudioService {
   bool _audioReady = false;
   bool _useAccentSource = false;
 
+  @override
   bool get supportsPreciseScheduling =>
       _scheduledMetronome.supportsPreciseScheduling;
 
+  @override
   bool get isReady => _audioReady;
 
+  @override
   double? get currentTimeSeconds => _scheduledMetronome.currentTimeSeconds;
 
   Future<void> initialize(MetronomeSound sound) async {
     await queueSoundLoad(sound);
   }
 
+  @override
   Future<MetronomeSoundLoadResult> queueSoundLoad(MetronomeSound sound) {
     return queueSourceLoad(
       primarySource: MetronomeSourceSpec.builtIn(sound: sound),
@@ -60,6 +59,7 @@ class MetronomeAudioService {
     );
   }
 
+  @override
   Future<MetronomeSoundLoadResult> queueSourceLoad({
     required MetronomeSourceSpec primarySource,
     required MetronomeSourceSpec accentSource,
@@ -175,10 +175,12 @@ class MetronomeAudioService {
     return const MetronomeSoundLoadResult();
   }
 
+  @override
   Future<void> playNow({required double volume}) async {
     await playBeat(MetronomeBeatState.normal, volume: volume);
   }
 
+  @override
   Future<void> playBeat(
     MetronomeBeatState state, {
     required double volume,
@@ -206,6 +208,7 @@ class MetronomeAudioService {
     await _playFromPool(role, resolvedVolume);
   }
 
+  @override
   Future<bool> ensurePreciseReady() async {
     if (!supportsPreciseScheduling) {
       return false;
@@ -223,6 +226,7 @@ class MetronomeAudioService {
     }
   }
 
+  @override
   void scheduleAt({required double whenSeconds, required double volume}) {
     scheduleBeatAt(
       MetronomeBeatState.normal,
@@ -231,6 +235,7 @@ class MetronomeAudioService {
     );
   }
 
+  @override
   void scheduleBeatAt(
     MetronomeBeatState state, {
     required double whenSeconds,
@@ -246,10 +251,12 @@ class MetronomeAudioService {
     );
   }
 
+  @override
   void cancelScheduled() {
     _scheduledMetronome.cancelScheduled();
   }
 
+  @override
   Future<void> dispose() async {
     final pendingLoad = _loadFuture;
     if (pendingLoad != null) {

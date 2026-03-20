@@ -3564,6 +3564,7 @@ class _AnchorSlotEditorSheetState extends State<_AnchorSlotEditorSheet> {
               },
               minLines: 1,
               maxLines: 1,
+              showAnalyzeAction: false,
             ),
             const SizedBox(height: 16),
             Row(

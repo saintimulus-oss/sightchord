@@ -5,6 +5,7 @@ import '../audio/metronome_audio_models.dart';
 import '../l10n/app_localizations.dart';
 import '../music/chord_anchor_loop.dart';
 import '../music/chord_theory.dart';
+import '../music/notation_presentation.dart';
 import '../music/progression_highlight_theme.dart';
 import 'inversion_settings.dart';
 
@@ -565,6 +566,10 @@ class PracticeSettings {
     this.preferredSuggestionKind = DefaultVoicingSuggestionKind.natural,
     this.chordLanguageLevel = ChordLanguageLevel.fullExtensions,
     this.romanPoolPreset = RomanPoolPreset.expandedColor,
+    this.musicNotationLocale = MusicNotationLocale.uiDefault,
+    this.noteNamingStyle = NoteNamingStyle.english,
+    this.showRomanNumeralAssist = false,
+    this.showChordTextAssist = false,
     this.metronomeEnabled = true,
     double metronomeVolume = 1,
     MetronomeSound metronomeSound = MetronomeSound.tick,
@@ -733,6 +738,10 @@ class PracticeSettings {
   final DefaultVoicingSuggestionKind preferredSuggestionKind;
   final ChordLanguageLevel chordLanguageLevel;
   final RomanPoolPreset romanPoolPreset;
+  final MusicNotationLocale musicNotationLocale;
+  final NoteNamingStyle noteNamingStyle;
+  final bool showRomanNumeralAssist;
+  final bool showChordTextAssist;
   final bool metronomeEnabled;
   final double metronomeVolume;
   final MetronomeSourceSpec metronomeSource;
@@ -799,6 +808,12 @@ class PracticeSettings {
 
   Locale? get locale => language.locale;
   ThemeMode get themeMode => appThemeMode.materialThemeMode;
+  NotationPreferences get notationPreferences => NotationPreferences(
+    locale: musicNotationLocale,
+    noteNamingStyle: noteNamingStyle,
+    showRomanNumeralAssist: showRomanNumeralAssist,
+    showChordTextAssist: showChordTextAssist,
+  );
   int get beatsPerBar => timeSignature.beatsPerBar;
   int get melodyRangeCenter => ((melodyRangeLow + melodyRangeHigh) / 2).round();
   MetronomeSound get metronomeSound => metronomeSource.builtInSound;
@@ -825,6 +840,10 @@ class PracticeSettings {
     DefaultVoicingSuggestionKind? preferredSuggestionKind,
     ChordLanguageLevel? chordLanguageLevel,
     RomanPoolPreset? romanPoolPreset,
+    MusicNotationLocale? musicNotationLocale,
+    NoteNamingStyle? noteNamingStyle,
+    bool? showRomanNumeralAssist,
+    bool? showChordTextAssist,
     bool? metronomeEnabled,
     double? metronomeVolume,
     MetronomeSound? metronomeSound,
@@ -914,6 +933,11 @@ class PracticeSettings {
           preferredSuggestionKind ?? this.preferredSuggestionKind,
       chordLanguageLevel: chordLanguageLevel ?? this.chordLanguageLevel,
       romanPoolPreset: romanPoolPreset ?? this.romanPoolPreset,
+      musicNotationLocale: musicNotationLocale ?? this.musicNotationLocale,
+      noteNamingStyle: noteNamingStyle ?? this.noteNamingStyle,
+      showRomanNumeralAssist:
+          showRomanNumeralAssist ?? this.showRomanNumeralAssist,
+      showChordTextAssist: showChordTextAssist ?? this.showChordTextAssist,
       metronomeEnabled: metronomeEnabled ?? this.metronomeEnabled,
       metronomeVolume: metronomeVolume ?? this.metronomeVolume,
       metronomeSound: resolvedMetronomeSource.builtInSound,

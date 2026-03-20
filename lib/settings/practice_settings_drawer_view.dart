@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../music/chord_formatting.dart';
 import '../music/chord_theory.dart';
+import '../music/notation_presentation.dart';
 import 'practice_setup_models.dart';
 import 'practice_settings_dispatcher.dart';
 import 'practice_settings.dart';
@@ -505,7 +506,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
                 };
                 return DropdownMenuItem<ChordSymbolStyle>(
                   value: style,
-                  child: Text('$label  ${ChordSymbolFormatter.example(style)}'),
+                  child: Text(
+                    '$label  ${ChordSymbolFormatter.example(style, preferences: settings.notationPreferences)}',
+                  ),
                 );
               })
               .toList(growable: false),
@@ -530,6 +533,85 @@ class PracticeSettingsDrawer extends StatelessWidget {
             }
             dispatcher.apply(
               (current) => current.copyWith(chordSymbolStyle: value),
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<NoteNamingStyle>(
+          key: const ValueKey('note-naming-style-dropdown'),
+          initialValue: settings.noteNamingStyle,
+          isExpanded: true,
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            labelText: l10n.noteNamingStyle,
+            helperText: l10n.noteNamingStyleHelp,
+          ),
+          items: NoteNamingStyle.values
+              .map(
+                (style) => DropdownMenuItem<NoteNamingStyle>(
+                  value: style,
+                  child: Text(style.localizedLabel(l10n)),
+                ),
+              )
+              .toList(growable: false),
+          onChanged: (value) {
+            if (value == null) {
+              return;
+            }
+            dispatcher.apply(
+              (current) => current.copyWith(noteNamingStyle: value),
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<MusicNotationLocale>(
+          key: const ValueKey('music-notation-locale-dropdown'),
+          initialValue: settings.musicNotationLocale,
+          isExpanded: true,
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            labelText: l10n.musicNotationLocale,
+            helperText: l10n.musicNotationLocaleHelp,
+          ),
+          items: MusicNotationLocale.values
+              .map(
+                (locale) => DropdownMenuItem<MusicNotationLocale>(
+                  value: locale,
+                  child: Text(locale.localizedLabel(l10n)),
+                ),
+              )
+              .toList(growable: false),
+          onChanged: (value) {
+            if (value == null) {
+              return;
+            }
+            dispatcher.apply(
+              (current) => current.copyWith(musicNotationLocale: value),
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        SwitchListTile.adaptive(
+          key: const ValueKey('show-roman-numeral-assist-toggle'),
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.showRomanNumeralAssist),
+          subtitle: Text(l10n.showRomanNumeralAssistHelp),
+          value: settings.showRomanNumeralAssist,
+          onChanged: (value) {
+            dispatcher.apply(
+              (current) => current.copyWith(showRomanNumeralAssist: value),
+            );
+          },
+        ),
+        SwitchListTile.adaptive(
+          key: const ValueKey('show-chord-text-assist-toggle'),
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.showChordTextAssist),
+          subtitle: Text(l10n.showChordTextAssistHelp),
+          value: settings.showChordTextAssist,
+          onChanged: (value) {
+            dispatcher.apply(
+              (current) => current.copyWith(showChordTextAssist: value),
             );
           },
         ),
@@ -639,7 +721,12 @@ class PracticeSettingsDrawer extends StatelessWidget {
   }
 
   String _keyCenterLabel(AppLocalizations l10n, KeyCenter center) {
-    return '${MusicTheory.displayRootForKey(center.tonicName)} ${l10n.modeMajor}';
+    return MusicNotationFormatter.formatKeyCenterLabel(
+      center: center,
+      labelStyle: KeyCenterLabelStyle.modeText,
+      preferences: settings.notationPreferences,
+      l10n: l10n,
+    );
   }
 
   String _notationSummaryLabel(AppLocalizations l10n, ChordSymbolStyle style) {

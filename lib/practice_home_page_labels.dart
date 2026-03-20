@@ -6,7 +6,15 @@ extension _PracticeHomePageLabels on _MyHomePageState {
       return '';
     }
     final analysisLabel = _localizedAnalysisLabel(l10n, _currentChord!);
-    return analysisLabel.isEmpty ? l10n.freeModeActive : analysisLabel;
+    if (analysisLabel.isNotEmpty) {
+      return analysisLabel;
+    }
+    final chordAssist = ChordRenderingHelper.chordAssistLabel(
+      _currentChord!,
+      l10n: l10n,
+      preferences: _settings.notationPreferences,
+    );
+    return chordAssist ?? l10n.freeModeActive;
   }
 
   String _localizedAnalysisLabel(AppLocalizations l10n, GeneratedChord chord) {
@@ -19,12 +27,23 @@ extension _PracticeHomePageLabels on _MyHomePageState {
     final centerLabel = keyCenter == null
         ? chord.keyName
         : _keyCenterLabel(l10n, keyCenter, trailingColon: false);
-    final roman = ChordRenderingHelper.displayedRomanToken(chord);
-
-    if (centerLabel == null || centerLabel.isEmpty) {
-      return roman;
+    final roman = ChordRenderingHelper.displayedRomanLabel(
+      chord,
+      l10n: l10n,
+      preferences: _settings.notationPreferences,
+    );
+    final analysis = centerLabel == null || centerLabel.isEmpty
+        ? roman
+        : l10n.analysisLabelWithCenter(centerLabel, roman);
+    final chordAssist = ChordRenderingHelper.chordAssistLabel(
+      chord,
+      l10n: l10n,
+      preferences: _settings.notationPreferences,
+    );
+    if (chordAssist == null || chordAssist.isEmpty) {
+      return analysis;
     }
-    return l10n.analysisLabelWithCenter(centerLabel, roman);
+    return '$analysis | $chordAssist';
   }
 
   String _keyCenterLabel(
@@ -32,21 +51,13 @@ extension _PracticeHomePageLabels on _MyHomePageState {
     KeyCenter center, {
     required bool trailingColon,
   }) {
-    final root = switch (_settings.keyCenterLabelStyle) {
-      KeyCenterLabelStyle.modeText => MusicTheory.displayRootForKey(
-        center.tonicName,
-      ),
-      KeyCenterLabelStyle.classicalCase =>
-        center.mode == KeyMode.major
-            ? MusicTheory.displayRootForKey(center.tonicName)
-            : MusicTheory.classicalDisplayRootForKey(center.tonicName),
-    };
-    final label = switch (_settings.keyCenterLabelStyle) {
-      KeyCenterLabelStyle.modeText =>
-        '$root ${center.mode == KeyMode.major ? l10n.modeMajor : l10n.modeMinor}',
-      KeyCenterLabelStyle.classicalCase => root,
-    };
-    return trailingColon ? '$label:' : label;
+    return MusicNotationFormatter.formatKeyCenterLabel(
+      center: center,
+      labelStyle: _settings.keyCenterLabelStyle,
+      preferences: _settings.notationPreferences,
+      l10n: l10n,
+      trailingColon: trailingColon,
+    );
   }
 
   String _selectedKeySummary(AppLocalizations l10n) {
@@ -58,8 +69,8 @@ extension _PracticeHomePageLabels on _MyHomePageState {
       return l10n.allKeysTag;
     }
     if (labels.length <= 2) {
-      return labels.join('  ·  ');
+      return labels.join('  |  ');
     }
-    return '${labels.take(2).join('  ·  ')} +${labels.length - 2}';
+    return '${labels.take(2).join('  |  ')} +${labels.length - 2}';
   }
 }

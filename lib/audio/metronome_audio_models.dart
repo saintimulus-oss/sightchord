@@ -194,11 +194,18 @@ class MetronomePatternSettings {
   }
 
   static MetronomePatternSettings fromStorageString(String source) {
-    final decoded = jsonDecode(source);
-    if (decoded is! Map<String, dynamic>) {
+    try {
+      final decoded = jsonDecode(source);
+      if (decoded is Map<String, dynamic>) {
+        return fromJson(decoded);
+      }
+      if (decoded is Map) {
+        return fromJson(Map<String, dynamic>.from(decoded));
+      }
+    } catch (_) {
       return const MetronomePatternSettings();
     }
-    return fromJson(decoded);
+    return const MetronomePatternSettings();
   }
 
   static MetronomePatternSettings fromJson(Map<String, dynamic> json) {
@@ -304,11 +311,18 @@ class MetronomeSourceSpec {
   }
 
   static MetronomeSourceSpec fromStorageString(String source) {
-    final decoded = jsonDecode(source);
-    if (decoded is! Map<String, dynamic>) {
+    try {
+      final decoded = jsonDecode(source);
+      if (decoded is Map<String, dynamic>) {
+        return fromJson(decoded);
+      }
+      if (decoded is Map) {
+        return fromJson(Map<String, dynamic>.from(decoded));
+      }
+    } catch (_) {
       return const MetronomeSourceSpec();
     }
-    return fromJson(decoded);
+    return const MetronomeSourceSpec();
   }
 
   static MetronomeSourceSpec fromJson(Map<String, dynamic> json) {

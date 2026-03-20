@@ -8,7 +8,9 @@ import 'package:chordest/audio/harmony_audio_service.dart';
 import 'package:chordest/l10n/app_localizations.dart';
 import 'package:chordest/music/chord_anchor_loop.dart';
 import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/music/notation_presentation.dart';
 import 'package:chordest/music/voicing_models.dart';
+import 'package:chordest/practice/practice_transport_controller.dart';
 import 'package:chordest/settings/practice_settings.dart';
 import 'package:chordest/settings/practice_advanced_settings_page.dart';
 import 'package:chordest/settings/practice_settings_factory.dart';
@@ -103,6 +105,7 @@ Future<void> pumpVoicingSection(
   WidgetTester tester, {
   required VoicingRecommendationSet recommendations,
   VoicingDisplayMode displayMode = VoicingDisplayMode.standard,
+  NotationPreferences notationPreferences = const NotationPreferences(),
   String? selectedSignature,
   bool showReasons = true,
 }) async {
@@ -118,6 +121,7 @@ Future<void> pumpVoicingSection(
               child: VoicingSuggestionsSection(
                 recommendations: recommendations,
                 displayMode: displayMode,
+                notationPreferences: notationPreferences,
                 selectedSignature: selectedSignature,
                 showReasons: showReasons,
                 onSelectSuggestion: (_) {},
@@ -544,6 +548,33 @@ void main() {
       find.byKey(const ValueKey('practice-play-arpeggio-button')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('app shell keeps main settings and practice advance flow wired', (
+    WidgetTester tester,
+  ) async {
+    await pumpMainMenuWithSettings(tester, PracticeSettings());
+
+    await openMainMenuSettings(tester);
+    expect(
+      find.byKey(const ValueKey('main-language-selector')),
+      findsOneWidget,
+    );
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
+
+    await openChordGenerator(tester);
+    expect(find.byKey(const ValueKey('current-chord-text')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('practice-play-chord-button')));
+    await tester.pumpAndSettle();
+
+    final beforeAdvance = currentChordText(tester);
+    await tapNextChordRegion(tester);
+
+    expect(currentChordText(tester), isNotEmpty);
+    expect(currentChordText(tester), isNot(equals(beforeAdvance)));
+    expect(find.byKey(const ValueKey('previous-chord-text')), findsOneWidget);
   });
 
   testWidgets('new users land on a ready chord with beginner-safe defaults', (
@@ -2270,6 +2301,7 @@ void main() {
 
     await tester.tap(find.byType(TextField).last);
     await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('analyzer-key-analyze')), findsNothing);
     await tester.tap(find.byKey(const ValueKey('analyzer-key-f')));
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('analyzer-key-minor')));
@@ -2292,6 +2324,19 @@ void main() {
     expect(slot?.trimmedChordSymbol, 'Fm7');
     expect(slot?.enabled, isTrue);
     expect(find.text('Fm7'), findsOneWidget);
+  });
+
+  testWidgets('generator keeps analyzer explanation panel out of the page', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(tester, PracticeSettings());
+
+    await advanceChord(tester);
+
+    expect(
+      find.byKey(const ValueKey('practice-explanation-panel')),
+      findsNothing,
+    );
   });
 
   testWidgets('exact anchor symbols recur across repeated cycle slots', (
@@ -2933,6 +2978,58 @@ void main() {
       expect(audio.preparedCompositeClips, isNotEmpty);
     },
   );
+
+  testWidgets('voicing suggestion note labels respect notation preferences', (
+    WidgetTester tester,
+  ) async {
+    final suggestion = buildTestSuggestion(
+      kind: VoicingSuggestionKind.natural,
+      voicing: buildTestVoicing(
+        family: VoicingFamily.shell,
+        midiNotes: const [48, 52, 58],
+        noteNames: const ['C', 'E', 'Bb'],
+        toneLabels: const ['R', '3', 'b7'],
+        containsRoot: true,
+        containsThird: true,
+        containsSeventh: true,
+      ),
+      reasonTags: const [VoicingReasonTag.essentialCore],
+      kinds: const [VoicingSuggestionKind.natural],
+    );
+    final recommendations = VoicingRecommendationSet(
+      currentChord: buildTestChord(
+        root: 'C',
+        quality: ChordQuality.major7,
+        repeatKey: 'notation-test',
+      ),
+      interpretation: const ChordVoicingInterpretation(
+        root: 'C',
+        rootSemitone: 0,
+        preferFlatSpelling: true,
+        essentialTones: [],
+        optionalTones: [],
+        avoidTones: [],
+        styleTags: {},
+      ),
+      rankedCandidates: const [],
+      suggestions: [suggestion],
+      effectiveTopNotePitchClass: 10,
+      topNoteSource: VoicingTopNoteSource.explicitPreference,
+      topNoteMatch: VoicingTopNoteMatch.exact,
+    );
+
+    await pumpVoicingSection(
+      tester,
+      recommendations: recommendations,
+      notationPreferences: const NotationPreferences(
+        noteNamingStyle: NoteNamingStyle.latin,
+      ),
+    );
+
+    expect(find.text('Do'), findsOneWidget);
+    expect(find.text('Mi'), findsOneWidget);
+    expect(find.text('Sib'), findsWidgets);
+  });
 
   testWidgets('voicing suggestions avoid overflow on narrow width', (
     WidgetTester tester,

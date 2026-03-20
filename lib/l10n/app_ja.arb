@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "ja",
   "settings": "設定",
   "closeSettings": "設定を閉じる",
@@ -2094,8 +2094,7 @@
   "studyHarmonyLessonBlueHourHorizonTitle": "二重の地平線",
   "studyHarmonyLessonBlueHourHorizonDescription": "2 つの可能性のある地平線が点滅し続ける間、実際の到着点を保持します。",
   "studyHarmonyLessonBlueHourBossTitle": "ツインランタンのボス",
-  "studyHarmonyLessonBlueHourBossDescription": "ブルーアワーの最後のボスは、センター、機能、借用カラー、欠落コードの修復全体で高速スワップを強制します。"
-,
+  "studyHarmonyLessonBlueHourBossDescription": "ブルーアワーの最後のボスは、センター、機能、借用カラー、欠落コードの修復全体で高速スワップを強制します。",
   "chordTypeFilters": "コード種類",
   "chordTypeFiltersHelp": "ジェネレーターに表示するコード種類を選択します。",
   "chordTypeFiltersSelection": "{selected} / {total} 有効",
@@ -2746,7 +2745,17 @@
       "chordLabel": {}
     }
   },
-  "practiceFirstRunSetupButton": "Personalize"
+  "practiceFirstRunSetupButton": "Personalize",
+  "musicNotationLocale": "Music notation language",
+  "musicNotationLocaleHelp": "Controls the language used for optional Roman numeral and chord-text assists.",
+  "musicNotationLocaleUiDefault": "Match app language",
+  "musicNotationLocaleEnglish": "English",
+  "noteNamingStyle": "Note naming",
+  "noteNamingStyleHelp": "Switches displayed note and key names without changing harmonic logic.",
+  "noteNamingStyleEnglish": "English letters",
+  "noteNamingStyleLatin": "Do Re Mi",
+  "showRomanNumeralAssist": "Show Roman numeral assist",
+  "showRomanNumeralAssistHelp": "Adds a short explanation next to Roman numeral labels.",
+  "showChordTextAssist": "Show chord text assist",
+  "showChordTextAssistHelp": "Adds a short text explanation for chord quality and tensions."
 }
-
-

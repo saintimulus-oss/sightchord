@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "en",
   "settings": "Settings",
   "closeSettings": "Close settings",
@@ -2745,6 +2745,17 @@
       "chordLabel": {}
     }
   },
-  "practiceFirstRunSetupButton": "Personalize"
+  "practiceFirstRunSetupButton": "Personalize",
+  "musicNotationLocale": "Music notation language",
+  "musicNotationLocaleHelp": "Controls the language used for optional Roman numeral and chord-text assists.",
+  "musicNotationLocaleUiDefault": "Match app language",
+  "musicNotationLocaleEnglish": "English",
+  "noteNamingStyle": "Note naming",
+  "noteNamingStyleHelp": "Switches displayed note and key names without changing harmonic logic.",
+  "noteNamingStyleEnglish": "English letters",
+  "noteNamingStyleLatin": "Do Re Mi",
+  "showRomanNumeralAssist": "Show Roman numeral assist",
+  "showRomanNumeralAssistHelp": "Adds a short explanation next to Roman numeral labels.",
+  "showChordTextAssist": "Show chord text assist",
+  "showChordTextAssistHelp": "Adds a short text explanation for chord quality and tensions."
 }
-

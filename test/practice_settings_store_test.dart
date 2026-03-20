@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chordest/audio/harmony_audio_models.dart';
 import 'package:chordest/music/chord_anchor_loop.dart';
+import 'package:chordest/music/notation_presentation.dart';
 import 'package:chordest/music/progression_analysis_models.dart';
 import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/settings/practice_settings.dart';
@@ -24,6 +25,10 @@ void main() {
         preferredSuggestionKind: DefaultVoicingSuggestionKind.colorful,
         chordLanguageLevel: ChordLanguageLevel.safeExtensions,
         romanPoolPreset: RomanPoolPreset.functionalJazz,
+        musicNotationLocale: MusicNotationLocale.english,
+        noteNamingStyle: NoteNamingStyle.latin,
+        showRomanNumeralAssist: true,
+        showChordTextAssist: true,
         timeSignature: PracticeTimeSignature.threeFour,
         harmonicRhythmPreset: HarmonicRhythmPreset.phraseAwareJazz,
         metronomePattern: const MetronomePatternSettings(
@@ -86,6 +91,10 @@ void main() {
       expect(preferences.getString('preferredSuggestionKind'), 'colorful');
       expect(preferences.getString('chordLanguageLevel'), 'safeExtensions');
       expect(preferences.getString('romanPoolPreset'), 'functionalJazz');
+      expect(preferences.getString('musicNotationLocale'), 'english');
+      expect(preferences.getString('noteNamingStyle'), 'latin');
+      expect(preferences.getBool('showRomanNumeralAssist'), isTrue);
+      expect(preferences.getBool('showChordTextAssist'), isTrue);
       expect(preferences.getString('timeSignature'), 'threeFour');
       expect(preferences.getString('harmonicRhythmPreset'), 'phraseAwareJazz');
       expect(preferences.getString('metronomePattern'), isNotNull);
@@ -152,6 +161,57 @@ void main() {
     },
   );
 
+  test(
+    'store falls back safely when structured storage JSON is malformed',
+    () async {
+      final fallbackTheme = ProgressionHighlightTheme().withPreset(
+        ProgressionHighlightThemePreset.highContrast,
+      );
+      final fallbackSettings = PracticeSettings(
+        metronomeSource: const MetronomeSourceSpec.localFile(
+          localFilePath: 'C:/clicks/primary.wav',
+          fallbackSound: MetronomeSound.tickE,
+        ),
+        metronomePattern: const MetronomePatternSettings(
+          preset: MetronomePatternPreset.custom,
+          customBeatStates: <MetronomeBeatState>[
+            MetronomeBeatState.accent,
+            MetronomeBeatState.mute,
+          ],
+        ),
+        metronomeAccentSource: const MetronomeSourceSpec.localFile(
+          localFilePath: 'C:/clicks/accent.wav',
+          fallbackSound: MetronomeSound.tickF,
+        ),
+        progressionHighlightTheme: fallbackTheme,
+      );
+      SharedPreferences.setMockInitialValues({
+        'metronomeSource': '{bad json',
+        'metronomePattern': '{bad json',
+        'metronomeAccentSource': '{bad json',
+        'progressionHighlightTheme': '{bad json',
+      });
+      const store = PracticeSettingsStore();
+
+      final loaded = await store.load(fallbackSettings: fallbackSettings);
+
+      expect(loaded.metronomeSource, fallbackSettings.metronomeSource);
+      expect(loaded.metronomePattern, fallbackSettings.metronomePattern);
+      expect(
+        loaded.metronomeAccentSource,
+        fallbackSettings.metronomeAccentSource,
+      );
+      expect(
+        loaded.progressionHighlightTheme.preset,
+        fallbackSettings.progressionHighlightTheme.preset,
+      );
+      expect(
+        loaded.progressionHighlightTheme.resolvedColorValues,
+        fallbackSettings.progressionHighlightTheme.resolvedColorValues,
+      );
+    },
+  );
+
   test('store saves and restores anchor loop settings', () async {
     const store = PracticeSettingsStore();
     final settings = PracticeSettings(
@@ -209,6 +269,10 @@ void main() {
       preferredSuggestionKind: DefaultVoicingSuggestionKind.easy,
       chordLanguageLevel: ChordLanguageLevel.triadsOnly,
       romanPoolPreset: RomanPoolPreset.corePrimary,
+      musicNotationLocale: MusicNotationLocale.english,
+      noteNamingStyle: NoteNamingStyle.latin,
+      showRomanNumeralAssist: true,
+      showChordTextAssist: true,
       metronomeSound: MetronomeSound.tickF,
       metronomePattern: const MetronomePatternSettings(
         preset: MetronomePatternPreset.custom,
@@ -298,6 +362,10 @@ void main() {
     expect(loaded.preferredSuggestionKind, DefaultVoicingSuggestionKind.easy);
     expect(loaded.chordLanguageLevel, ChordLanguageLevel.triadsOnly);
     expect(loaded.romanPoolPreset, RomanPoolPreset.corePrimary);
+    expect(loaded.musicNotationLocale, MusicNotationLocale.english);
+    expect(loaded.noteNamingStyle, NoteNamingStyle.latin);
+    expect(loaded.showRomanNumeralAssist, isTrue);
+    expect(loaded.showChordTextAssist, isTrue);
     expect(loaded.timeSignature, PracticeTimeSignature.twoFour);
     expect(
       loaded.harmonicRhythmPreset,

@@ -45,13 +45,16 @@ android/*.iml
 # Generated web build output accidentally copied to the repo root
 /assets/AssetManifest.bin
 /assets/AssetManifest.bin.json
+/assets/AssetManifest.json
 /assets/FontManifest.json
 /assets/NOTICES
+/assets/NOTICES.gz
 /assets/assets/
 /assets/fonts/MaterialIcons-Regular.otf
 /assets/packages/
 /assets/shaders/ink_sparkle.frag
 /assets/shaders/stretch_effect.frag
+/.nojekyll
 /canvaskit/
 /favicon.png
 /flutter.js
@@ -72,8 +75,13 @@ android/*.iml
 *.trace
 *.dmp
 chord_test.log
+/ci_run_*.log
+/full_test*.log
 flutter_*.log
+/narrow_overflow.log
+/recheck_test_output.log
 scratch*
+/scratch_test*.txt
 /lib.zip
 /browser-profile/
 /chrome-profile/

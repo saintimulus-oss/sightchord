@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import '../music/notation_presentation.dart';
 import '../music/voicing_models.dart';
 import '../settings/practice_settings.dart';
 import 'mini_keyboard.dart';
@@ -14,6 +15,7 @@ class VoicingSuggestionsSection extends StatefulWidget {
     super.key,
     required this.recommendations,
     required this.displayMode,
+    this.notationPreferences = const NotationPreferences(),
     required this.selectedSignature,
     required this.showReasons,
     required this.onSelectSuggestion,
@@ -23,6 +25,7 @@ class VoicingSuggestionsSection extends StatefulWidget {
 
   final VoicingRecommendationSet recommendations;
   final VoicingDisplayMode displayMode;
+  final NotationPreferences notationPreferences;
   final String? selectedSignature;
   final bool showReasons;
   final VoicingSuggestionCallback onSelectSuggestion;
@@ -123,11 +126,14 @@ class _VoicingSuggestionsSectionState extends State<VoicingSuggestionsSection> {
                         l10n,
                         suggestion.voicing.family,
                       ),
-                      topNoteLabel:
-                          '${l10n.voicingTopNoteLabel} ${suggestion.voicing.topNoteName}',
+                      topNoteLabel: _topNoteLabel(
+                        l10n,
+                        suggestion.voicing.topNoteName,
+                      ),
                       sharedMinMidi: sharedKeyboardRange.minMidi,
                       sharedMaxMidi: sharedKeyboardRange.maxMidi,
                       noteSlotCount: sharedNoteSlotCount,
+                      notationPreferences: widget.notationPreferences,
                       highlightsTopTarget:
                           widget.recommendations.effectiveTopNotePitchClass ==
                           suggestion.voicing.topNotePitchClass,
@@ -176,8 +182,14 @@ class _VoicingSuggestionsSectionState extends State<VoicingSuggestionsSection> {
     final topLinePathLabel = nextSuggestion == null
         ? null
         : l10n.voicingPerformanceTopLinePath(
-            currentSuggestion.voicing.topNoteName,
-            nextSuggestion.voicing.topNoteName,
+            MusicNotationFormatter.formatPitch(
+              currentSuggestion.voicing.topNoteName,
+              preferences: widget.notationPreferences,
+            ),
+            MusicNotationFormatter.formatPitch(
+              nextSuggestion.voicing.topNoteName,
+              preferences: widget.notationPreferences,
+            ),
           );
 
     return Card(
@@ -201,16 +213,19 @@ class _VoicingSuggestionsSectionState extends State<VoicingSuggestionsSection> {
           nextFamilyLabel: nextSuggestion == null
               ? null
               : _familyLabel(l10n, nextSuggestion.voicing.family),
-          currentTopNoteLabel:
-              '${l10n.voicingTopNoteLabel} ${currentSuggestion.voicing.topNoteName}',
+          currentTopNoteLabel: _topNoteLabel(
+            l10n,
+            currentSuggestion.voicing.topNoteName,
+          ),
           nextTopNoteLabel: nextSuggestion == null
               ? null
-              : '${l10n.voicingTopNoteLabel} ${nextSuggestion.voicing.topNoteName}',
+              : _topNoteLabel(l10n, nextSuggestion.voicing.topNoteName),
           topLinePathLabel: topLinePathLabel,
           currentSlotCount: currentSlotCount,
           nextSlotCount: nextSlotCount,
           sharedMinMidi: keyboardRange.minMidi,
           sharedMaxMidi: keyboardRange.maxMidi,
+          notationPreferences: widget.notationPreferences,
           currentOnlyNotes: preview.currentOnlyMidiNotes,
           sharedNotes: preview.sharedMidiNotes,
           nextOnlyNotes: preview.nextOnlyMidiNotes,
@@ -248,8 +263,10 @@ class _VoicingSuggestionsSectionState extends State<VoicingSuggestionsSection> {
     if (topNotePitchClass == null) {
       return l10n.voicingSuggestionsSubtitle;
     }
-    final note =
-        _pitchClassLabels[topNotePitchClass % _pitchClassLabels.length];
+    final note = MusicNotationFormatter.formatPitch(
+      _pitchClassLabels[topNotePitchClass % _pitchClassLabels.length],
+      preferences: widget.notationPreferences,
+    );
     final topNoteMatch = widget.recommendations.topNoteMatch;
     if (topNoteMatch == VoicingTopNoteMatch.unavailable) {
       return l10n.voicingTopNoteContextFallback(note);
@@ -272,6 +289,14 @@ class _VoicingSuggestionsSectionState extends State<VoicingSuggestionsSection> {
 
   String _performanceSectionSubtitle(AppLocalizations l10n) {
     return l10n.voicingPerformanceSubtitle;
+  }
+
+  String _topNoteLabel(AppLocalizations l10n, String noteName) {
+    final formattedNote = MusicNotationFormatter.formatPitch(
+      noteName,
+      preferences: widget.notationPreferences,
+    );
+    return '${l10n.voicingTopNoteLabel} $formattedNote';
   }
 
   String _suggestionSubtitle(
@@ -372,6 +397,7 @@ class _SuggestionCard extends StatelessWidget {
     required this.sharedMinMidi,
     required this.sharedMaxMidi,
     required this.noteSlotCount,
+    required this.notationPreferences,
     required this.highlightsTopTarget,
     required this.reasonLabels,
     required this.onSelect,
@@ -390,6 +416,7 @@ class _SuggestionCard extends StatelessWidget {
   final int sharedMinMidi;
   final int sharedMaxMidi;
   final int noteSlotCount;
+  final NotationPreferences notationPreferences;
   final bool highlightsTopTarget;
   final List<String> reasonLabels;
   final VoidCallback onSelect;
@@ -594,6 +621,7 @@ class _SuggestionCard extends StatelessWidget {
                   slotId: suggestion.cardKey,
                   noteNames: suggestion.voicing.noteNames,
                   slotCount: noteSlotCount,
+                  notationPreferences: notationPreferences,
                 ),
                 const SizedBox(height: 10),
                 MiniKeyboard(
@@ -696,6 +724,7 @@ class _PerformanceVoicingPanel extends StatelessWidget {
     required this.nextSlotCount,
     required this.sharedMinMidi,
     required this.sharedMaxMidi,
+    required this.notationPreferences,
     required this.currentOnlyNotes,
     required this.sharedNotes,
     required this.nextOnlyNotes,
@@ -724,6 +753,7 @@ class _PerformanceVoicingPanel extends StatelessWidget {
   final int nextSlotCount;
   final int sharedMinMidi;
   final int sharedMaxMidi;
+  final NotationPreferences notationPreferences;
   final Set<int> currentOnlyNotes;
   final Set<int> sharedNotes;
   final Set<int> nextOnlyNotes;
@@ -883,6 +913,7 @@ class _PerformanceVoicingPanel extends StatelessWidget {
                   slotId: 'performance-current',
                   noteNames: currentVoicing.noteNames,
                   slotCount: currentSlotCount,
+                  notationPreferences: notationPreferences,
                 ),
                 const SizedBox(height: 10),
                 MiniKeyboard(
@@ -961,6 +992,7 @@ class _PerformanceVoicingPanel extends StatelessWidget {
                     slotId: 'performance-next',
                     noteNames: nextVoicing!.noteNames,
                     slotCount: nextSlotCount,
+                    notationPreferences: notationPreferences,
                   ),
                   const SizedBox(height: 10),
                   Wrap(
@@ -1089,11 +1121,13 @@ class _NoteNameStrip extends StatelessWidget {
     required this.slotId,
     required this.noteNames,
     required this.slotCount,
+    required this.notationPreferences,
   });
 
   final String slotId;
   final List<String> noteNames;
   final int slotCount;
+  final NotationPreferences notationPreferences;
 
   @override
   Widget build(BuildContext context) {
@@ -1105,7 +1139,12 @@ class _NoteNameStrip extends StatelessWidget {
             Expanded(
               child: _NoteNameSlot(
                 key: ValueKey('voicing-note-slot-$slotId-$index'),
-                label: index < noteNames.length ? noteNames[index] : null,
+                label: index < noteNames.length
+                    ? MusicNotationFormatter.formatPitch(
+                        noteNames[index],
+                        preferences: notationPreferences,
+                      )
+                    : null,
               ),
             ),
             if (index < slotCount - 1) const SizedBox(width: 6),

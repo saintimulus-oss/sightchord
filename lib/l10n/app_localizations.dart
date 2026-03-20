@@ -8453,6 +8453,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Personalize'**
   String get practiceFirstRunSetupButton;
+
+  /// No description provided for @musicNotationLocale.
+  ///
+  /// In en, this message translates to:
+  /// **'Music notation language'**
+  String get musicNotationLocale;
+
+  /// No description provided for @musicNotationLocaleHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Controls the language used for optional Roman numeral and chord-text assists.'**
+  String get musicNotationLocaleHelp;
+
+  /// No description provided for @musicNotationLocaleUiDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Match app language'**
+  String get musicNotationLocaleUiDefault;
+
+  /// No description provided for @musicNotationLocaleEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get musicNotationLocaleEnglish;
+
+  /// No description provided for @noteNamingStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Note naming'**
+  String get noteNamingStyle;
+
+  /// No description provided for @noteNamingStyleHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Switches displayed note and key names without changing harmonic logic.'**
+  String get noteNamingStyleHelp;
+
+  /// No description provided for @noteNamingStyleEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English letters'**
+  String get noteNamingStyleEnglish;
+
+  /// No description provided for @noteNamingStyleLatin.
+  ///
+  /// In en, this message translates to:
+  /// **'Do Re Mi'**
+  String get noteNamingStyleLatin;
+
+  /// No description provided for @showRomanNumeralAssist.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Roman numeral assist'**
+  String get showRomanNumeralAssist;
+
+  /// No description provided for @showRomanNumeralAssistHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Adds a short explanation next to Roman numeral labels.'**
+  String get showRomanNumeralAssistHelp;
+
+  /// No description provided for @showChordTextAssist.
+  ///
+  /// In en, this message translates to:
+  /// **'Show chord text assist'**
+  String get showChordTextAssist;
+
+  /// No description provided for @showChordTextAssistHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Adds a short text explanation for chord quality and tensions.'**
+  String get showChordTextAssistHelp;
 }
 
 class _AppLocalizationsDelegate

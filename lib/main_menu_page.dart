@@ -1,11 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 import 'chord_analyzer_page.dart';
 import 'l10n/app_localizations.dart';
+import 'main_menu/main_menu_settings_sheet.dart';
+import 'main_menu/main_menu_view.dart';
 import 'practice_home_page.dart';
-import 'settings/practice_settings.dart';
 import 'settings/settings_controller.dart';
 import 'study_harmony/application/study_harmony_progress_controller.dart';
 import 'study_harmony/content/study_harmony_track_catalog.dart';
@@ -26,7 +25,7 @@ class MainMenuPage extends StatelessWidget {
     return showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      builder: (context) => _MainSettingsSheet(controller: controller),
+      builder: (context) => MainMenuSettingsSheet(controller: controller),
     );
   }
 
@@ -64,305 +63,35 @@ class MainMenuPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          Positioned(
-            top: -160,
-            left: -120,
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      colorScheme.primary.withValues(alpha: 0.18),
-                      colorScheme.primary.withValues(alpha: 0),
-                    ],
-                  ),
-                ),
-                child: const SizedBox(width: 380, height: 380),
-              ),
-            ),
-          ),
-          Positioned(
-            right: -140,
-            bottom: -180,
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      colorScheme.primaryContainer.withValues(alpha: 0.6),
-                      colorScheme.primaryContainer.withValues(alpha: 0),
-                    ],
-                  ),
-                ),
-                child: const SizedBox(width: 420, height: 420),
-              ),
-            ),
-          ),
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 680),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Align(
-                        alignment: Alignment.center,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 560),
-                          child: _MainMenuHeroCard(
-                            title: 'Chordest',
-                            body: l10n.mainMenuIntro,
-                            settingsLabel: l10n.settings,
-                            onSettingsPressed: () => _openMainSettings(context),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Align(
-                        alignment: Alignment.center,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 560),
-                          child: _MainActionButton(
-                            icon: Icons.auto_awesome_rounded,
-                            title: l10n.mainMenuGeneratorTitle,
-                            subtitle: l10n.mainMenuGeneratorDescription,
-                            isPrimary: true,
-                            buttonKey: const ValueKey(
-                              'main-open-generator-button',
-                            ),
-                            onPressed: () => _openCodeGenerator(context),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.center,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 560),
-                          child: _MainActionButton(
-                            icon: Icons.insights_rounded,
-                            title: l10n.mainMenuAnalyzerTitle,
-                            subtitle: l10n.mainMenuAnalyzerDescription,
-                            buttonKey: const ValueKey(
-                              'main-open-analyzer-button',
-                            ),
-                            onPressed: () => _openChordAnalyzer(context),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      AnimatedBuilder(
-                        animation: studyHarmonyProgressController,
-                        builder: (context, _) {
-                          final course = buildStudyHarmonyCourseForTrackId(
-                            l10n: l10n,
-                            trackId: studyHarmonyProgressController
-                                .lastPlayedTrackId,
-                          );
-                          final summary = _buildStudyHarmonyMenuSummary(
-                            l10n: l10n,
-                            course: course,
-                            progressController: studyHarmonyProgressController,
-                          );
-
-                          return Align(
-                            alignment: Alignment.center,
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 560),
-                              child: _MainActionButton(
-                                icon: Icons.school_rounded,
-                                title: l10n.mainMenuStudyHarmonyTitle,
-                                subtitle:
-                                    '${summary.resumeLabel} | ${summary.progressLabel}',
-                                buttonKey: const ValueKey(
-                                  'main-open-study-harmony-button',
-                                ),
-                                onPressed: () => _openStudyHarmony(context),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MainMenuHeroCard extends StatelessWidget {
-  const _MainMenuHeroCard({
-    required this.title,
-    required this.body,
-    required this.settingsLabel,
-    required this.onSettingsPressed,
-  });
-
-  final String title;
-  final String body;
-  final String settingsLabel;
-  final VoidCallback onSettingsPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: theme.textTheme.displayMedium?.copyWith(
-            color: colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 10),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520),
-          child: Text(
-            body,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              height: 1.4,
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        TextButton.icon(
-          key: const ValueKey('main-open-settings-button'),
-          onPressed: onSettingsPressed,
-          icon: const Icon(Icons.settings_rounded),
-          label: Text(settingsLabel),
-        ),
-      ],
-    );
-  }
-}
-
-class _MainActionButton extends StatelessWidget {
-  const _MainActionButton({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.buttonKey,
-    this.isPrimary = false,
-    required this.onPressed,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final ValueKey<String> buttonKey;
-  final bool isPrimary;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final backgroundColor = isPrimary
-        ? colorScheme.primary
-        : colorScheme.surfaceContainerLow.withValues(alpha: 0.9);
-    final foregroundColor = isPrimary
-        ? colorScheme.onPrimary
-        : colorScheme.onSurface;
-    final subtitleColor = isPrimary
-        ? colorScheme.onPrimary.withValues(alpha: 0.78)
-        : colorScheme.onSurfaceVariant;
-    final arrowColor = isPrimary
-        ? colorScheme.onPrimary
-        : colorScheme.onSurfaceVariant;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        key: buttonKey,
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(20),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(20),
-            border: isPrimary
-                ? null
-                : Border.all(color: colorScheme.outlineVariant),
-            boxShadow: [
-              if (isPrimary)
-                BoxShadow(
-                  color: colorScheme.primary.withValues(alpha: 0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: isPrimary
-                        ? Colors.white.withValues(alpha: 0.14)
-                        : colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: isPrimary
-                        ? colorScheme.onPrimary
-                        : colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: foregroundColor,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: subtitleColor,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Icon(Icons.arrow_forward_rounded, color: arrowColor),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return AnimatedBuilder(
+      animation: studyHarmonyProgressController,
+      builder: (context, _) {
+        final course = buildStudyHarmonyCourseForTrackId(
+          l10n: l10n,
+          trackId: studyHarmonyProgressController.lastPlayedTrackId,
+        );
+        final summary = _buildStudyHarmonyMenuSummary(
+          l10n: l10n,
+          course: course,
+          progressController: studyHarmonyProgressController,
+        );
+        return MainMenuView(
+          title: 'Chordest',
+          intro: l10n.mainMenuIntro,
+          settingsLabel: l10n.settings,
+          generatorTitle: l10n.mainMenuGeneratorTitle,
+          generatorSubtitle: l10n.mainMenuGeneratorDescription,
+          analyzerTitle: l10n.mainMenuAnalyzerTitle,
+          analyzerSubtitle: l10n.mainMenuAnalyzerDescription,
+          studyHarmonyTitle: l10n.mainMenuStudyHarmonyTitle,
+          studyHarmonySubtitle:
+              '${summary.resumeLabel} | ${summary.progressLabel}',
+          onOpenSettings: () => _openMainSettings(context),
+          onOpenGenerator: () => _openCodeGenerator(context),
+          onOpenAnalyzer: () => _openChordAnalyzer(context),
+          onOpenStudyHarmony: () => _openStudyHarmony(context),
+        );
+      },
     );
   }
 }
@@ -405,125 +134,4 @@ _StudyHarmonyMenuSummary _buildStudyHarmonyMenuSummary({
       totalLessons,
     ),
   );
-}
-
-String _languageLabel(AppLocalizations l10n, AppLanguage language) {
-  return switch (language) {
-    AppLanguage.system => l10n.systemDefaultLanguage,
-    _ => language.nativeLabel,
-  };
-}
-
-String _themeModeLabel(AppLocalizations l10n, AppThemeMode mode) {
-  return switch (mode) {
-    AppThemeMode.system => l10n.themeModeSystem,
-    AppThemeMode.light => l10n.themeModeLight,
-    AppThemeMode.dark => l10n.themeModeDark,
-  };
-}
-
-class _MainSettingsSheet extends StatelessWidget {
-  const _MainSettingsSheet({required this.controller});
-
-  final AppSettingsController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (context, _) {
-        final settings = controller.settings;
-        return SafeArea(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              8,
-              20,
-              24 + MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.settings,
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).maybePop(),
-                      icon: const Icon(Icons.close),
-                      tooltip: l10n.closeSettings,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<AppLanguage>(
-                  key: const ValueKey('main-language-selector'),
-                  initialValue: settings.language,
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    labelText: l10n.language,
-                  ),
-                  items: AppLanguage.values
-                      .map(
-                        (language) => DropdownMenuItem<AppLanguage>(
-                          value: language,
-                          child: Text(_languageLabel(l10n, language)),
-                        ),
-                      )
-                      .toList(growable: false),
-                  onChanged: (value) {
-                    if (value == null) {
-                      return;
-                    }
-                    unawaited(
-                      controller.mutate(
-                        (current) => current.copyWith(language: value),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 14),
-                DropdownButtonFormField<AppThemeMode>(
-                  key: const ValueKey('main-theme-mode-selector'),
-                  initialValue: settings.appThemeMode,
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    labelText: l10n.themeMode,
-                  ),
-                  items: AppThemeMode.values
-                      .map(
-                        (mode) => DropdownMenuItem<AppThemeMode>(
-                          value: mode,
-                          child: Text(_themeModeLabel(l10n, mode)),
-                        ),
-                      )
-                      .toList(growable: false),
-                  onChanged: (value) {
-                    if (value == null) {
-                      return;
-                    }
-                    unawaited(
-                      controller.mutate(
-                        (current) => current.copyWith(appThemeMode: value),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 }

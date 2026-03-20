@@ -1,8 +1,10 @@
 import 'dart:math';
 
+import '../l10n/app_localizations.dart';
 import '../settings/practice_settings.dart';
 import '../settings/inversion_settings.dart';
 import 'chord_theory.dart';
+import 'notation_presentation.dart';
 
 class ChordRenderingSelection {
   const ChordRenderingSelection({
@@ -24,23 +26,117 @@ class _WeightedTension {
 class ChordSymbolFormatter {
   const ChordSymbolFormatter._();
 
-  static String format(ChordSymbolData chord, ChordSymbolStyle style) {
+  static String format(
+    ChordSymbolData chord,
+    ChordSymbolStyle style, {
+    NotationPreferences preferences = const NotationPreferences(),
+  }) {
     final suffix = _qualitySuffixForStyle(chord.renderQuality, style);
     final tensionSuffix = chord.tensions.isEmpty
         ? ''
         : '(${chord.tensions.join(',')})';
-    final bassSuffix = chord.bass == null ? '' : '/${chord.bass}';
-    return '${chord.root}$suffix$tensionSuffix$bassSuffix';
+    final bassSuffix = chord.bass == null
+        ? ''
+        : '/${MusicNotationFormatter.formatPitch(chord.bass!, preferences: preferences)}';
+    return '${MusicNotationFormatter.formatPitch(chord.root, preferences: preferences)}'
+        '$suffix$tensionSuffix$bassSuffix';
   }
 
-  static String example(ChordSymbolStyle style) {
+  static String example(
+    ChordSymbolStyle style, {
+    NotationPreferences preferences = const NotationPreferences(),
+  }) {
     switch (style) {
       case ChordSymbolStyle.compact:
-        return 'CM7  Cm7  C7alt';
+        return [
+          format(
+            const ChordSymbolData(
+              root: 'C',
+              harmonicQuality: ChordQuality.major7,
+              renderQuality: ChordQuality.major7,
+            ),
+            style,
+            preferences: preferences,
+          ),
+          format(
+            const ChordSymbolData(
+              root: 'C',
+              harmonicQuality: ChordQuality.minor7,
+              renderQuality: ChordQuality.minor7,
+            ),
+            style,
+            preferences: preferences,
+          ),
+          format(
+            const ChordSymbolData(
+              root: 'C',
+              harmonicQuality: ChordQuality.dominant7Alt,
+              renderQuality: ChordQuality.dominant7Alt,
+            ),
+            style,
+            preferences: preferences,
+          ),
+        ].join('  ');
       case ChordSymbolStyle.majText:
-        return 'Cmaj7  CmMaj7  C13sus4';
+        return [
+          format(
+            const ChordSymbolData(
+              root: 'C',
+              harmonicQuality: ChordQuality.major7,
+              renderQuality: ChordQuality.major7,
+            ),
+            style,
+            preferences: preferences,
+          ),
+          format(
+            const ChordSymbolData(
+              root: 'C',
+              harmonicQuality: ChordQuality.minorMajor7,
+              renderQuality: ChordQuality.minorMajor7,
+            ),
+            style,
+            preferences: preferences,
+          ),
+          format(
+            const ChordSymbolData(
+              root: 'C',
+              harmonicQuality: ChordQuality.dominant13sus4,
+              renderQuality: ChordQuality.dominant13sus4,
+            ),
+            style,
+            preferences: preferences,
+          ),
+        ].join('  ');
       case ChordSymbolStyle.deltaJazz:
-        return 'CΔ7  C-Δ7  C7alt';
+        return [
+          format(
+            const ChordSymbolData(
+              root: 'C',
+              harmonicQuality: ChordQuality.major7,
+              renderQuality: ChordQuality.major7,
+            ),
+            style,
+            preferences: preferences,
+          ),
+          format(
+            const ChordSymbolData(
+              root: 'C',
+              harmonicQuality: ChordQuality.minorMajor7,
+              renderQuality: ChordQuality.minorMajor7,
+            ),
+            style,
+            preferences: preferences,
+          ),
+          format(
+            const ChordSymbolData(
+              root: 'C',
+              harmonicQuality: ChordQuality.dominant7Alt,
+              renderQuality: ChordQuality.dominant7Alt,
+            ),
+            style,
+            preferences: preferences,
+          ),
+        ].join('  ');
     }
   }
 
@@ -94,12 +190,12 @@ class ChordSymbolFormatter {
           ChordQuality.majorTriad => '',
           ChordQuality.minorTriad => '-',
           ChordQuality.dominant7 => '7',
-          ChordQuality.major7 => 'Δ7',
+          ChordQuality.major7 => '\u03947',
           ChordQuality.minor7 => '-7',
-          ChordQuality.minorMajor7 => '-Δ7',
-          ChordQuality.halfDiminished7 => 'ø7',
-          ChordQuality.diminishedTriad => '°',
-          ChordQuality.diminished7 => '°7',
+          ChordQuality.minorMajor7 => '-\u03947',
+          ChordQuality.halfDiminished7 => '\u00f87',
+          ChordQuality.diminishedTriad => '\u00b0',
+          ChordQuality.diminished7 => '\u00b07',
           ChordQuality.augmentedTriad => '+',
           ChordQuality.six => '6',
           ChordQuality.minor6 => '-6',
@@ -288,8 +384,16 @@ class ChordRenderingHelper {
     ],
   };
 
-  static String renderedSymbol(GeneratedChord chord, ChordSymbolStyle style) {
-    return ChordSymbolFormatter.format(chord.symbolData, style);
+  static String renderedSymbol(
+    GeneratedChord chord,
+    ChordSymbolStyle style, {
+    NotationPreferences preferences = const NotationPreferences(),
+  }) {
+    return ChordSymbolFormatter.format(
+      chord.symbolData,
+      style,
+      preferences: preferences,
+    );
   }
 
   static String displayedRomanToken(GeneratedChord chord) {
@@ -325,6 +429,35 @@ class ChordRenderingHelper {
     }
     return '${degreeToken.substring(0, slashIndex)}$suffix'
         '${degreeToken.substring(slashIndex)}';
+  }
+
+  static String displayedRomanLabel(
+    GeneratedChord chord, {
+    required AppLocalizations l10n,
+    NotationPreferences preferences = const NotationPreferences(),
+  }) {
+    final token = displayedRomanToken(chord);
+    final assist = MusicNotationFormatter.romanAssistForRomanNumeralId(
+      chord.romanNumeralId,
+      l10n: l10n,
+      preferences: preferences,
+    );
+    if (assist == null || assist.isEmpty) {
+      return token;
+    }
+    return '$token ($assist)';
+  }
+
+  static String? chordAssistLabel(
+    GeneratedChord chord, {
+    required AppLocalizations l10n,
+    NotationPreferences preferences = const NotationPreferences(),
+  }) {
+    return MusicNotationFormatter.chordAssistForSymbolData(
+      chord.symbolData,
+      l10n: l10n,
+      preferences: preferences,
+    );
   }
 
   static ChordQuality simplifyRenderQualityForLanguage({

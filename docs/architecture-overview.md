@@ -11,6 +11,7 @@ The repository now separates generated output from source code more clearly and 
 - the chord analyzer page separates state and result rendering
 - the settings drawer is exposed through a stable barrel entry point
 - the smart generator and voicing engine now expose public barrels backed by internal core/support files
+- web source assets stay under `web/`, while deploy output is treated as a CI-built artifact
 
 ## Source Layout
 
@@ -53,9 +54,14 @@ lib/
   settings/practice_settings_drawer_view.dart
   settings/settings_controller.dart
 
+web/
+  index.html
+  manifest.json
+  icons/*
+
 test/
   progression_analyzer_test.dart
-  smart_generator_test.dart
+  smart_generator/*
   settings_controller_test.dart
   settings_voicing_load_test.dart
   ...
@@ -127,6 +133,13 @@ flutter build web --release --base-href /sightchord/
 ```
 
 The GitHub Pages workflow follows the same source-of-truth model: CI builds `build/web`, uploads that artifact, and deploys it through Pages. Generated web output at the repository root is intentionally not treated as maintained source.
+
+Artifact policy:
+
+- `web/` is the source of truth for web shell files, manifest, and icons.
+- `build/web` is the reproducible deploy output used for local verification and CI uploads.
+- Root-level Flutter web outputs such as root `index.html`, `manifest.json`, `flutter*.js`, `main.dart.js*`, `version.json`, `canvaskit/`, `icons/`, and generated root `assets/` manifests are not maintained source.
+- GitHub Pages deployment is expected to work from the uploaded `build/web` artifact alone.
 
 ## Current Tradeoffs
 

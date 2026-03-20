@@ -21,6 +21,7 @@ class ChordInputEditor extends StatefulWidget {
     this.maxLines = 5,
     this.showDesktopKeyboardOnFocus = true,
     this.allowTouchRawInput = true,
+    this.showAnalyzeAction = true,
   });
 
   final TextEditingController controller;
@@ -34,6 +35,7 @@ class ChordInputEditor extends StatefulWidget {
   final int maxLines;
   final bool showDesktopKeyboardOnFocus;
   final bool allowTouchRawInput;
+  final bool showAnalyzeAction;
 
   @override
   State<ChordInputEditor> createState() => _ChordInputEditorState();
@@ -327,6 +329,7 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
                       onPaste: _pasteFromClipboard,
                       onAnalyze: widget.onAnalyze,
                       onToggleRawInput: _toggleRawInputMode,
+                      showAnalyzeAction: widget.showAnalyzeAction,
                     ),
                   ),
           ),
@@ -349,6 +352,7 @@ class _ChordKeyboardPanel extends StatelessWidget {
     required this.onPaste,
     required this.onAnalyze,
     required this.onToggleRawInput,
+    required this.showAnalyzeAction,
   });
 
   final AppLocalizations l10n;
@@ -362,6 +366,7 @@ class _ChordKeyboardPanel extends StatelessWidget {
   final Future<void> Function() onPaste;
   final VoidCallback onAnalyze;
   final Future<void> Function() onToggleRawInput;
+  final bool showAnalyzeAction;
 
   static const List<String> _roots = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
   static const List<_KeyboardInsertSpec> _modifiers = [
@@ -436,13 +441,15 @@ class _ChordKeyboardPanel extends StatelessWidget {
                   label: l10n.chordAnalyzerPaste,
                   onPressed: () => onPaste(),
                 ),
-                const SizedBox(width: 8),
-                _ActionButton(
-                  id: 'analyze',
-                  label: l10n.chordAnalyzerAnalyze,
-                  onPressed: onAnalyze,
-                  prominent: true,
-                ),
+                if (showAnalyzeAction) ...[
+                  const SizedBox(width: 8),
+                  _ActionButton(
+                    id: 'analyze',
+                    label: l10n.chordAnalyzerAnalyze,
+                    onPressed: onAnalyze,
+                    prominent: true,
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 8),

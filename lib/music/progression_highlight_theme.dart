@@ -126,35 +126,39 @@ class ProgressionHighlightTheme {
   final Map<ProgressionHighlightCategory, int> colorValues;
 
   factory ProgressionHighlightTheme.fromStorageString(String value) {
-    final decoded = jsonDecode(value);
-    if (decoded is! Map<String, dynamic>) {
+    try {
+      final decoded = jsonDecode(value);
+      if (decoded is! Map<String, dynamic>) {
+        return ProgressionHighlightTheme();
+      }
+      final preset = ProgressionHighlightThemePresetX.fromStorageKey(
+        decoded['preset'] as String?,
+      );
+      final colorMap = <ProgressionHighlightCategory, int>{};
+      final colors = decoded['colors'];
+      if (colors is Map<String, dynamic>) {
+        colors.forEach((key, rawValue) {
+          final category = ProgressionHighlightCategoryX.fromStorageKey(key);
+          if (category == null) {
+            return;
+          }
+          if (rawValue is int) {
+            colorMap[category] = rawValue;
+            return;
+          }
+          if (rawValue is String) {
+            colorMap[category] =
+                int.tryParse(rawValue) ?? colorMap[category] ?? 0;
+          }
+        });
+      }
+      return ProgressionHighlightTheme(
+        preset: preset,
+        colorValues: colorMap,
+      ).normalized();
+    } catch (_) {
       return ProgressionHighlightTheme();
     }
-    final preset = ProgressionHighlightThemePresetX.fromStorageKey(
-      decoded['preset'] as String?,
-    );
-    final colorMap = <ProgressionHighlightCategory, int>{};
-    final colors = decoded['colors'];
-    if (colors is Map<String, dynamic>) {
-      colors.forEach((key, rawValue) {
-        final category = ProgressionHighlightCategoryX.fromStorageKey(key);
-        if (category == null) {
-          return;
-        }
-        if (rawValue is int) {
-          colorMap[category] = rawValue;
-          return;
-        }
-        if (rawValue is String) {
-          colorMap[category] =
-              int.tryParse(rawValue) ?? colorMap[category] ?? 0;
-        }
-      });
-    }
-    return ProgressionHighlightTheme(
-      preset: preset,
-      colorValues: colorMap,
-    ).normalized();
   }
 
   ProgressionHighlightTheme normalized() {

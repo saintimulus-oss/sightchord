@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../audio/harmony_audio_models.dart';
 import '../music/anchor_loop_layout.dart';
 import '../music/chord_anchor_loop.dart';
 import '../music/chord_formatting.dart';
+import '../music/notation_presentation.dart';
 import '../music/chord_theory.dart';
 import 'practice_settings.dart';
 
@@ -21,6 +24,10 @@ class PracticeSettingsStore {
   static const String preferredSuggestionKindKey = 'preferredSuggestionKind';
   static const String chordLanguageLevelKey = 'chordLanguageLevel';
   static const String romanPoolPresetKey = 'romanPoolPreset';
+  static const String musicNotationLocaleKey = 'musicNotationLocale';
+  static const String noteNamingStyleKey = 'noteNamingStyle';
+  static const String showRomanNumeralAssistKey = 'showRomanNumeralAssist';
+  static const String showChordTextAssistKey = 'showChordTextAssist';
   static const String metronomeEnabledKey = 'metronomeEnabled';
   static const String metronomeVolumeKey = 'metronomeVolume';
   static const String metronomeSoundKey = 'metronomeSound';
@@ -100,6 +107,14 @@ class PracticeSettingsStore {
   static const List<String> _legacyStoredSettingsKeys = [
     languageKey,
     appThemeModeKey,
+    settingsComplexityModeKey,
+    preferredSuggestionKindKey,
+    chordLanguageLevelKey,
+    romanPoolPresetKey,
+    musicNotationLocaleKey,
+    noteNamingStyleKey,
+    showRomanNumeralAssistKey,
+    showChordTextAssistKey,
     metronomeEnabledKey,
     metronomeVolumeKey,
     metronomeSoundKey,
@@ -192,6 +207,10 @@ class PracticeSettingsStore {
       chordLanguageLevelKey,
     );
     final storedRomanPoolPreset = preferences.getString(romanPoolPresetKey);
+    final storedMusicNotationLocale = preferences.getString(
+      musicNotationLocaleKey,
+    );
+    final storedNoteNamingStyle = preferences.getString(noteNamingStyleKey);
     final storedMetronomeSound = preferences.getString(metronomeSoundKey);
     final storedMetronomeSource = preferences.getString(metronomeSourceKey);
     final storedMetronomePattern = preferences.getString(metronomePatternKey);
@@ -252,6 +271,20 @@ class PracticeSettingsStore {
     final resolvedRomanPoolPreset = storedRomanPoolPreset == null
         ? fallbackSettings.romanPoolPreset
         : RomanPoolPresetX.fromStorageKey(storedRomanPoolPreset);
+    final resolvedMusicNotationLocale = storedMusicNotationLocale == null
+        ? fallbackSettings.musicNotationLocale
+        : MusicNotationLocale.values.any(
+            (locale) => locale.storageKey == storedMusicNotationLocale,
+          )
+        ? MusicNotationLocaleX.fromStorageKey(storedMusicNotationLocale)
+        : fallbackSettings.musicNotationLocale;
+    final resolvedNoteNamingStyle = storedNoteNamingStyle == null
+        ? fallbackSettings.noteNamingStyle
+        : NoteNamingStyle.values.any(
+            (style) => style.storageKey == storedNoteNamingStyle,
+          )
+        ? NoteNamingStyleX.fromStorageKey(storedNoteNamingStyle)
+        : fallbackSettings.noteNamingStyle;
     final resolvedTimeSignature = storedTimeSignature == null
         ? fallbackSettings.timeSignature
         : PracticeTimeSignatureX.fromStorageKey(storedTimeSignature);
@@ -265,21 +298,37 @@ class PracticeSettingsStore {
         ? fallbackSettings.metronomeSource.copyWith(
             builtInSound: resolvedPrimaryFallbackSound,
           )
-        : MetronomeSourceSpec.fromStorageString(
+        : _parseStoredValue(
             storedMetronomeSource,
-          ).normalized(fallbackSound: resolvedPrimaryFallbackSound);
+            fallback: fallbackSettings.metronomeSource.copyWith(
+              builtInSound: resolvedPrimaryFallbackSound,
+            ),
+            parser: (value) => MetronomeSourceSpec.fromStorageString(
+              value,
+            ).normalized(fallbackSound: resolvedPrimaryFallbackSound),
+          );
     final resolvedMetronomePattern = storedMetronomePattern == null
         ? fallbackSettings.metronomePattern.normalized(
             beatsPerBar: resolvedTimeSignature.beatsPerBar,
           )
-        : MetronomePatternSettings.fromStorageString(
+        : _parseStoredValue(
             storedMetronomePattern,
-          ).normalized(beatsPerBar: resolvedTimeSignature.beatsPerBar);
+            fallback: fallbackSettings.metronomePattern.normalized(
+              beatsPerBar: resolvedTimeSignature.beatsPerBar,
+            ),
+            parser: (value) => MetronomePatternSettings.fromStorageString(
+              value,
+            ).normalized(beatsPerBar: resolvedTimeSignature.beatsPerBar),
+          );
     final resolvedMetronomeAccentSource = storedMetronomeAccentSource == null
         ? fallbackSettings.metronomeAccentSource
-        : MetronomeSourceSpec.fromStorageString(
+        : _parseStoredValue(
             storedMetronomeAccentSource,
-          ).normalized(fallbackSound: fallbackSettings.metronomeAccentSound);
+            fallback: fallbackSettings.metronomeAccentSource,
+            parser: (value) => MetronomeSourceSpec.fromStorageString(
+              value,
+            ).normalized(fallbackSound: fallbackSettings.metronomeAccentSound),
+          );
     final resolvedAnchorLoop = AnchorLoopLayout.sanitizeLoop(
       loop: storedChordAnchorLoop == null
           ? fallbackSettings.anchorLoop
@@ -299,6 +348,14 @@ class PracticeSettingsStore {
       preferredSuggestionKind: resolvedPreferredSuggestionKind,
       chordLanguageLevel: resolvedChordLanguageLevel,
       romanPoolPreset: resolvedRomanPoolPreset,
+      musicNotationLocale: resolvedMusicNotationLocale,
+      noteNamingStyle: resolvedNoteNamingStyle,
+      showRomanNumeralAssist:
+          preferences.getBool(showRomanNumeralAssistKey) ??
+          fallbackSettings.showRomanNumeralAssist,
+      showChordTextAssist:
+          preferences.getBool(showChordTextAssistKey) ??
+          fallbackSettings.showChordTextAssist,
       metronomeEnabled:
           preferences.getBool(metronomeEnabledKey) ??
           fallbackSettings.metronomeEnabled,
@@ -497,8 +554,10 @@ class PracticeSettingsStore {
       progressionHighlightTheme:
           preferences.getString(progressionHighlightThemeKey) == null
           ? fallbackSettings.progressionHighlightTheme
-          : ProgressionHighlightTheme.fromStorageString(
-              preferences.getString(progressionHighlightThemeKey)!,
+          : _parseStoredValue(
+              preferences.getString(progressionHighlightThemeKey),
+              fallback: fallbackSettings.progressionHighlightTheme,
+              parser: ProgressionHighlightTheme.fromStorageString,
             ),
       bpm: preferences.getInt(bpmKey) ?? fallbackSettings.bpm,
       inversionSettings: fallbackSettings.inversionSettings.copyWith(
@@ -544,6 +603,22 @@ class PracticeSettingsStore {
     await preferences.setString(
       romanPoolPresetKey,
       settings.romanPoolPreset.storageKey,
+    );
+    await preferences.setString(
+      musicNotationLocaleKey,
+      settings.musicNotationLocale.storageKey,
+    );
+    await preferences.setString(
+      noteNamingStyleKey,
+      settings.noteNamingStyle.storageKey,
+    );
+    await preferences.setBool(
+      showRomanNumeralAssistKey,
+      settings.showRomanNumeralAssist,
+    );
+    await preferences.setBool(
+      showChordTextAssistKey,
+      settings.showChordTextAssist,
     );
     await preferences.setBool(metronomeEnabledKey, settings.metronomeEnabled);
     await preferences.setDouble(metronomeVolumeKey, settings.metronomeVolume);
@@ -776,6 +851,25 @@ class PracticeSettingsStore {
       thirdInversionEnabledKey,
       settings.inversionSettings.thirdInversionEnabled,
     );
+  }
+
+  T _parseStoredValue<T>(
+    String? rawValue, {
+    required T fallback,
+    required T Function(String value) parser,
+  }) {
+    if (rawValue == null || rawValue.trim().isEmpty) {
+      return fallback;
+    }
+    try {
+      final decoded = jsonDecode(rawValue);
+      if (decoded is! Map) {
+        return fallback;
+      }
+      return parser(rawValue);
+    } catch (_) {
+      return fallback;
+    }
   }
 
   Set<String>? _sanitizeStoredTensionOptions(

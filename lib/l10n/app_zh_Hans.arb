@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "zh_Hans",
   "settings": "设置",
   "closeSettings": "关闭设置",
@@ -2094,8 +2094,7 @@
   "studyHarmonyLessonBlueHourHorizonTitle": "双重地平线",
   "studyHarmonyLessonBlueHourHorizonDescription": "保持真正的到达点，同时两个可能的地平线不断进出。",
   "studyHarmonyLessonBlueHourBossTitle": "双灯笼老板",
-  "studyHarmonyLessonBlueHourBossDescription": "最后的蓝色时刻 Boss 强制快速交换中心、功能、借用的颜色和缺少的和弦修复。"
-,
+  "studyHarmonyLessonBlueHourBossDescription": "最后的蓝色时刻 Boss 强制快速交换中心、功能、借用的颜色和缺少的和弦修复。",
   "chordTypeFilters": "和弦种类",
   "chordTypeFiltersHelp": "选择生成器中可出现的和弦种类。",
   "chordTypeFiltersSelection": "已启用 {selected} / {total}",
@@ -2746,7 +2745,17 @@
       "chordLabel": {}
     }
   },
-  "practiceFirstRunSetupButton": "Personalize"
+  "practiceFirstRunSetupButton": "Personalize",
+  "musicNotationLocale": "Music notation language",
+  "musicNotationLocaleHelp": "Controls the language used for optional Roman numeral and chord-text assists.",
+  "musicNotationLocaleUiDefault": "Match app language",
+  "musicNotationLocaleEnglish": "English",
+  "noteNamingStyle": "Note naming",
+  "noteNamingStyleHelp": "Switches displayed note and key names without changing harmonic logic.",
+  "noteNamingStyleEnglish": "English letters",
+  "noteNamingStyleLatin": "Do Re Mi",
+  "showRomanNumeralAssist": "Show Roman numeral assist",
+  "showRomanNumeralAssistHelp": "Adds a short explanation next to Roman numeral labels.",
+  "showChordTextAssist": "Show chord text assist",
+  "showChordTextAssistHelp": "Adds a short text explanation for chord quality and tensions."
 }
-
-

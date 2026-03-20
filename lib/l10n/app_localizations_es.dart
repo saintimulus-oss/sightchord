@@ -5219,4 +5219,44 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get practiceFirstRunSetupButton => 'Personalize';
+
+  @override
+  String get musicNotationLocale => 'Music notation language';
+
+  @override
+  String get musicNotationLocaleHelp =>
+      'Controls the language used for optional Roman numeral and chord-text assists.';
+
+  @override
+  String get musicNotationLocaleUiDefault => 'Match app language';
+
+  @override
+  String get musicNotationLocaleEnglish => 'English';
+
+  @override
+  String get noteNamingStyle => 'Note naming';
+
+  @override
+  String get noteNamingStyleHelp =>
+      'Switches displayed note and key names without changing harmonic logic.';
+
+  @override
+  String get noteNamingStyleEnglish => 'English letters';
+
+  @override
+  String get noteNamingStyleLatin => 'Do Re Mi';
+
+  @override
+  String get showRomanNumeralAssist => 'Show Roman numeral assist';
+
+  @override
+  String get showRomanNumeralAssistHelp =>
+      'Adds a short explanation next to Roman numeral labels.';
+
+  @override
+  String get showChordTextAssist => 'Show chord text assist';
+
+  @override
+  String get showChordTextAssistHelp =>
+      'Adds a short text explanation for chord quality and tensions.';
 }

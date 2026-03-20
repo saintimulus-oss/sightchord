@@ -1,7 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:chordest/l10n/app_localizations_en.dart';
+import 'package:chordest/l10n/app_localizations_ko.dart';
 import 'package:chordest/music/chord_formatting.dart';
+import 'package:chordest/music/notation_presentation.dart';
 import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/settings/inversion_settings.dart';
 import 'package:chordest/settings/practice_settings.dart';
@@ -92,7 +95,7 @@ void main() {
           _symbol('C', ChordQuality.halfDiminished7),
           ChordSymbolStyle.deltaJazz,
         ),
-        'Cø7',
+        'C\u00f87',
       );
       expect(
         ChordSymbolFormatter.format(
@@ -167,6 +170,69 @@ void main() {
           ChordSymbolStyle.majText,
         ),
         'D13sus4',
+      );
+    });
+
+    test(
+      'applies note naming preferences without changing chord semantics',
+      () {
+        final latinPreferences = const NotationPreferences(
+          noteNamingStyle: NoteNamingStyle.latin,
+        );
+
+        expect(
+          ChordSymbolFormatter.format(
+            _symbol('Bb', ChordQuality.major7, bass: 'D'),
+            ChordSymbolStyle.majText,
+            preferences: latinPreferences,
+          ),
+          'Sibmaj7/Re',
+        );
+        expect(
+          MusicNotationFormatter.formatKeyCenterLabel(
+            center: const KeyCenter(tonicName: 'Bb', mode: KeyMode.major),
+            labelStyle: KeyCenterLabelStyle.modeText,
+            preferences: latinPreferences,
+            l10n: AppLocalizationsEn(),
+          ),
+          'Sib major',
+        );
+      },
+    );
+  });
+
+  group('Notation assist', () {
+    test('can keep music notation in English under Korean UI', () {
+      final preferences = const NotationPreferences(
+        locale: MusicNotationLocale.english,
+        showRomanNumeralAssist: true,
+        showChordTextAssist: true,
+      );
+      final chord = GeneratedChord(
+        symbolData: _symbol('D', ChordQuality.dominant7, tensions: const ['9']),
+        repeatGuardKey: 'd7(9)',
+        harmonicComparisonKey: 'd7(9)',
+        keyName: 'C',
+        keyCenter: const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        romanNumeralId: RomanNumeralId.secondaryOfV,
+        harmonicFunction: HarmonicFunction.dominant,
+      );
+
+      expect(
+        ChordRenderingHelper.displayedRomanLabel(
+          chord,
+          l10n: AppLocalizationsKo(),
+          preferences: preferences,
+        ),
+        'V7(9)/V (dominant of dominant)',
+      );
+      expect(
+        ChordRenderingHelper.chordAssistLabel(
+          chord,
+          l10n: AppLocalizationsKo(),
+          preferences: preferences,
+        ),
+        'dominant seventh with nine',
       );
     });
   });

@@ -734,6 +734,11 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
               );
               final actionWidth = _cardWidthFor(contentWidth, actionColumns);
               final chapterWidth = _cardWidthFor(contentWidth, chapterColumns);
+              final heroWidth = min(
+                contentWidth,
+                actionWidth * (actionColumns > 1 ? 2 : 1) +
+                    (actionColumns > 1 ? 14 : 0),
+              );
 
               return Align(
                 alignment: Alignment.topCenter,
@@ -745,16 +750,20 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _HubHeroCard(
-                          eyebrow: l10n.studyHarmonyHubHeroEyebrow,
-                          title: course.title,
-                          subtitle: _selectedTrack == _StudyHarmonyHubTrack.core
-                              ? l10n.studyHarmonyHubHeroBody
-                              : trackRecommendationProfile.heroHeadline,
-                          body: selectedTrackDescription,
-                          metrics: heroMetrics,
-                          recommendationCopy: null,
-                          recommendationOnPressed: null,
+                        SizedBox(
+                          width: heroWidth,
+                          child: _HubHeroCard(
+                            eyebrow: l10n.studyHarmonyHubHeroEyebrow,
+                            title: course.title,
+                            subtitle:
+                                _selectedTrack == _StudyHarmonyHubTrack.core
+                                ? l10n.studyHarmonyHubHeroBody
+                                : trackRecommendationProfile.heroHeadline,
+                            body: selectedTrackDescription,
+                            metrics: heroMetrics,
+                            recommendationCopy: null,
+                            recommendationOnPressed: null,
+                          ),
                         ),
                         const SizedBox(height: 24),
                         Text(
@@ -3396,4 +3405,3 @@ String _recommendationBody(
     },
   };
 }
-

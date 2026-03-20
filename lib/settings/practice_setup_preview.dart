@@ -30,7 +30,11 @@ class PracticeSetupPreview {
   List<String> chordSymbols() {
     return [
       for (final chord in chords)
-        ChordRenderingHelper.renderedSymbol(chord, settings.chordSymbolStyle),
+        ChordRenderingHelper.renderedSymbol(
+          chord,
+          settings.chordSymbolStyle,
+          preferences: settings.notationPreferences,
+        ),
     ];
   }
 }

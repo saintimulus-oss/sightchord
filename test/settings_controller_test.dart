@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chordest/music/chord_theory.dart';
+import 'package:chordest/music/notation_presentation.dart';
 import 'package:chordest/settings/practice_settings.dart';
 import 'package:chordest/settings/settings_controller.dart';
 
@@ -47,6 +48,10 @@ void main() {
         preferredSuggestionKind: DefaultVoicingSuggestionKind.easy,
         chordLanguageLevel: ChordLanguageLevel.safeExtensions,
         romanPoolPreset: RomanPoolPreset.functionalJazz,
+        musicNotationLocale: MusicNotationLocale.english,
+        noteNamingStyle: NoteNamingStyle.latin,
+        showRomanNumeralAssist: true,
+        showChordTextAssist: true,
         allowTensions: false,
         sourceProfile: SourceProfile.recordingInspired,
         smartDiagnosticsEnabled: true,
@@ -70,6 +75,10 @@ void main() {
     expect(preferences.getString('preferredSuggestionKind'), 'easy');
     expect(preferences.getString('chordLanguageLevel'), 'safeExtensions');
     expect(preferences.getString('romanPoolPreset'), 'functionalJazz');
+    expect(preferences.getString('musicNotationLocale'), 'english');
+    expect(preferences.getString('noteNamingStyle'), 'latin');
+    expect(preferences.getBool('showRomanNumeralAssist'), isTrue);
+    expect(preferences.getBool('showChordTextAssist'), isTrue);
     expect(preferences.getBool('allowTensions'), isFalse);
     expect(preferences.getString('modulationIntensity'), 'medium');
     expect(preferences.getString('jazzPreset'), 'modulationStudy');
@@ -119,6 +128,10 @@ void main() {
       'preferredSuggestionKind': 'colorful',
       'chordLanguageLevel': 'seventhChords',
       'romanPoolPreset': 'coreDiatonic',
+      'musicNotationLocale': 'english',
+      'noteNamingStyle': 'latin',
+      'showRomanNumeralAssist': true,
+      'showChordTextAssist': true,
       'activeKeyCenters': ['A|minor', 'C|major'],
       'modulationIntensity': 'high',
       'jazzPreset': 'advanced',
@@ -162,6 +175,13 @@ void main() {
       ChordLanguageLevel.seventhChords,
     );
     expect(controller.settings.romanPoolPreset, RomanPoolPreset.coreDiatonic);
+    expect(
+      controller.settings.musicNotationLocale,
+      MusicNotationLocale.english,
+    );
+    expect(controller.settings.noteNamingStyle, NoteNamingStyle.latin);
+    expect(controller.settings.showRomanNumeralAssist, isTrue);
+    expect(controller.settings.showChordTextAssist, isTrue);
     expect(
       controller.settings.activeKeyCenters,
       contains(const KeyCenter(tonicName: 'A', mode: KeyMode.minor)),
@@ -208,6 +228,8 @@ void main() {
         'modulationIntensity': 'invalid',
         'jazzPreset': 'broken',
         'sourceProfile': 'unknown',
+        'musicNotationLocale': 'invalid',
+        'noteNamingStyle': 'invalid',
         'selectedTensions': ['bogus'],
       });
       final controller = AppSettingsController(
@@ -215,6 +237,8 @@ void main() {
           modulationIntensity: ModulationIntensity.medium,
           jazzPreset: JazzPreset.modulationStudy,
           sourceProfile: SourceProfile.recordingInspired,
+          musicNotationLocale: MusicNotationLocale.english,
+          noteNamingStyle: NoteNamingStyle.latin,
           selectedTensionOptions: {'9', '13'},
         ),
       );
@@ -232,8 +256,12 @@ void main() {
         controller.settings.sourceProfile,
         SourceProfile.recordingInspired,
       );
+      expect(
+        controller.settings.musicNotationLocale,
+        MusicNotationLocale.english,
+      );
+      expect(controller.settings.noteNamingStyle, NoteNamingStyle.latin);
       expect(controller.settings.selectedTensionOptions, {'9', '13'});
     },
   );
 }
-
