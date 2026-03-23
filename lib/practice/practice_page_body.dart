@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../ui/chordest_ui_tokens.dart';
+
 class PracticePageBody extends StatelessWidget {
   const PracticePageBody({
     super.key,
@@ -28,37 +30,24 @@ class PracticePageBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color.alphaBlend(
-              theme.colorScheme.primary.withValues(
-                alpha: theme.brightness == Brightness.dark ? 0.12 : 0.06,
-              ),
-              theme.scaffoldBackgroundColor,
-            ),
-            theme.scaffoldBackgroundColor,
-          ],
-        ),
-      ),
+      decoration: BoxDecoration(gradient: ChordestUiTokens.pageGradient(theme)),
       child: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
+            final shortViewport = constraints.maxHeight < 720;
             return SingleChildScrollView(
               child: Center(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxWidth: 760,
+                    maxWidth: compactLayout ? 760 : 920,
                     minHeight: constraints.maxHeight,
                   ),
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(
-                      compactLayout ? 14 : 20,
-                      compactLayout ? 12 : 18,
-                      compactLayout ? 14 : 20,
-                      compactLayout ? 18 : 28,
+                      compactLayout ? 14 : 18,
+                      compactLayout ? 10 : (shortViewport ? 8 : 10),
+                      compactLayout ? 14 : 18,
+                      compactLayout ? 16 : (shortViewport ? 14 : 18),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -66,16 +55,32 @@ class PracticePageBody extends StatelessWidget {
                         if (practiceSessionInitialized) ...[
                           transportStrip,
                           if (showFirstRunWelcomeCard && !compactLayout) ...[
-                            SizedBox(height: compactLayout ? 12 : 16),
+                            SizedBox(
+                              height: compactLayout
+                                  ? 12
+                                  : (shortViewport ? 12 : 16),
+                            ),
                             firstRunWelcomeCard,
                           ],
-                          SizedBox(height: compactLayout ? 14 : 20),
+                          SizedBox(
+                            height: compactLayout
+                                ? 12
+                                : (shortViewport ? 8 : 12),
+                          ),
                           chordDisplaySection,
                           if (voicingSuggestionsSection != null) ...[
-                            SizedBox(height: compactLayout ? 10 : 14),
+                            SizedBox(
+                              height: compactLayout
+                                  ? 10
+                                  : (shortViewport ? 10 : 14),
+                            ),
                             voicingSuggestionsSection!,
                           ],
-                          SizedBox(height: compactLayout ? 10 : 14),
+                          SizedBox(
+                            height: compactLayout
+                                ? 10
+                                : (shortViewport ? 10 : 14),
+                          ),
                           quickSettingsPanel,
                         ] else
                           setupPlaceholder,

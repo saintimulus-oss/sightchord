@@ -1,0 +1,9 @@
+Chordest 是一款面向和弦学习、即兴与和声词汇训练的本地优先音乐练习应用。
+
+审核说明:
+- 无需登录或创建账号。
+- 主要检查路径: Main Menu、Practice Generator、Smart Generator、Chord Analyzer、Settings
+- 设置与进度保存在设备本地。
+- 当前仓库构建未使用广告、账号登录、相机、麦克风或定位。
+
+如需验证音频，请关闭设备静音后检查钢琴播放与节拍器表现。

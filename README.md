@@ -4,6 +4,12 @@ Chordest is a Flutter chord-practice app for improvisation, reading, and harmoni
 
 Live demo: [saintimulus-oss.github.io](https://saintimulus-oss.github.io/)
 
+Launch policy pages:
+
+- Privacy policy: [saintimulus-oss.github.io/privacy-policy.html](https://saintimulus-oss.github.io/privacy-policy.html)
+- Support: [saintimulus-oss.github.io/support.html](https://saintimulus-oss.github.io/support.html)
+- Terms of use: [saintimulus-oss.github.io/terms.html](https://saintimulus-oss.github.io/terms.html)
+
 ## Features
 
 - Free mode across all 12 roots
@@ -34,12 +40,26 @@ flutter test
 flutter build web --release --base-href /
 ```
 
+## Mobile Release
+
+Android release signing now expects a real upload keystore via `android/key.properties` or environment variables. Start from [android/key.properties.example](android/key.properties.example) and keep the real keystore outside version control.
+
+For the full launch checklist, store copy, and the remaining macOS/Xcode-only iOS steps, see [docs/mobile-launch-runbook.md](docs/mobile-launch-runbook.md).
+
+The repository also includes store submission text templates in [store/google-play/en-US](store/google-play/en-US) and [store/app-store/en-US](store/app-store/en-US), plus a manual mobile validation workflow at [.github/workflows/mobile-release-validate.yml](.github/workflows/mobile-release-validate.yml).
+
+For local release validation on Windows, run [tool/validate_mobile_release.ps1](tool/validate_mobile_release.ps1). Store metadata length checks also run independently via [tool/validate_store_metadata.py](tool/validate_store_metadata.py).
+
+Draft store screenshots can be staged from the current Playwright captures with [tool/stage_store_screenshots.ps1](tool/stage_store_screenshots.ps1), and issue intake is standardized through the templates under [.github/ISSUE_TEMPLATE](.github/ISSUE_TEMPLATE).
+
+Store locale coverage can be checked with [tool/validate_store_locale_coverage.py](tool/validate_store_locale_coverage.py), and a submission handoff bundle can be assembled with [tool/package_mobile_release_artifacts.ps1](tool/package_mobile_release_artifacts.ps1).
+
 For GitHub Pages project sites, the workflow auto-detects the repository name and sets the correct `base-href`. If the repository is a user or org Pages repository such as `owner.github.io`, it builds with `/`.
 
 For local parity with the current project-site deployment, you can also run:
 
 ```bash
-flutter build web --release --base-href /sightchord/
+flutter build web --release --base-href /chordest/
 ```
 
 ## Repository Hygiene
@@ -112,4 +132,4 @@ To publish:
 - Chord Generator and Chord Analyzer remain separate entry points from the main menu.
 - Settings are persisted with `shared_preferences`.
 - The metronome uses `assets/tick.mp3` through `audioplayers`.
-- Architecture details and owner follow-ups live in [docs/architecture-overview.md](/Users/User/sightchord/docs/architecture-overview.md) and [docs/developer-notes.md](/Users/User/sightchord/docs/developer-notes.md).
+- Architecture details and owner follow-ups live in [docs/architecture-overview.md](docs/architecture-overview.md) and [docs/developer-notes.md](docs/developer-notes.md).

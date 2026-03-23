@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 
 import 'harmony_audio_service.dart';
 
-class SightChordAudioScope extends InheritedWidget {
-  const SightChordAudioScope({
+class ChordestAudioScope extends InheritedWidget {
+  const ChordestAudioScope({
     super.key,
     required this.harmonyAudio,
     required super.child,
@@ -12,20 +12,20 @@ class SightChordAudioScope extends InheritedWidget {
   final HarmonyAudioService harmonyAudio;
 
   static HarmonyAudioService of(BuildContext context) {
-    final scope =
-        context.dependOnInheritedWidgetOfExactType<SightChordAudioScope>();
-    assert(scope != null, 'No SightChordAudioScope found in context.');
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<ChordestAudioScope>();
+    assert(scope != null, 'No ChordestAudioScope found in context.');
     return scope!.harmonyAudio;
   }
 
   static HarmonyAudioService? maybeOf(BuildContext context) {
     return context
-        .dependOnInheritedWidgetOfExactType<SightChordAudioScope>()
+        .dependOnInheritedWidgetOfExactType<ChordestAudioScope>()
         ?.harmonyAudio;
   }
 
   @override
-  bool updateShouldNotify(SightChordAudioScope oldWidget) {
+  bool updateShouldNotify(ChordestAudioScope oldWidget) {
     return oldWidget.harmonyAudio != harmonyAudio;
   }
 }

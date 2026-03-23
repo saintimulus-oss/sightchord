@@ -1,4 +1,4 @@
-# SightChord Refactor Baseline Plan (2026-03)
+# Chordest Refactor Baseline Plan (2026-03)
 
 ## Scope
 

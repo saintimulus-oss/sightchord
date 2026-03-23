@@ -1061,4 +1061,177 @@ class PracticeSettings {
     final normalizedLow = _clampMelodyRangeLow(low);
     return high.clamp(normalizedLow + minMelodyRangeSpan, maxMelodyRangeMidi);
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return other is PracticeSettings &&
+        other.language == language &&
+        other.appThemeMode == appThemeMode &&
+        other.guidedSetupCompleted == guidedSetupCompleted &&
+        other.settingsComplexityMode == settingsComplexityMode &&
+        other.preferredSuggestionKind == preferredSuggestionKind &&
+        other.chordLanguageLevel == chordLanguageLevel &&
+        other.romanPoolPreset == romanPoolPreset &&
+        other.musicNotationLocale == musicNotationLocale &&
+        other.noteNamingStyle == noteNamingStyle &&
+        other.showRomanNumeralAssist == showRomanNumeralAssist &&
+        other.showChordTextAssist == showChordTextAssist &&
+        other.metronomeEnabled == metronomeEnabled &&
+        other.metronomeVolume == metronomeVolume &&
+        other.metronomeSource == metronomeSource &&
+        other.metronomePattern == metronomePattern &&
+        other.metronomeUseAccentSound == metronomeUseAccentSound &&
+        other.metronomeAccentSource == metronomeAccentSource &&
+        other.timeSignature == timeSignature &&
+        other.harmonicRhythmPreset == harmonicRhythmPreset &&
+        other.autoPlayChordChanges == autoPlayChordChanges &&
+        other.autoPlayPattern == autoPlayPattern &&
+        other.autoPlayHoldFactor == autoPlayHoldFactor &&
+        other.autoPlayMelodyWithChords == autoPlayMelodyWithChords &&
+        other.melodyGenerationEnabled == melodyGenerationEnabled &&
+        other.melodyDensity == melodyDensity &&
+        other.motifRepetitionStrength == motifRepetitionStrength &&
+        other.approachToneDensity == approachToneDensity &&
+        other.melodyRangeLow == melodyRangeLow &&
+        other.melodyRangeHigh == melodyRangeHigh &&
+        other.melodyStyle == melodyStyle &&
+        other.allowChromaticApproaches == allowChromaticApproaches &&
+        other.syncopationBias == syncopationBias &&
+        other.colorRealizationBias == colorRealizationBias &&
+        other.noveltyTarget == noveltyTarget &&
+        other.motifVariationBias == motifVariationBias &&
+        other.anticipationProbability == anticipationProbability &&
+        other.colorToneTarget == colorToneTarget &&
+        other.exactRepeatTarget == exactRepeatTarget &&
+        other.melodyPlaybackMode == melodyPlaybackMode &&
+        other.harmonySoundProfileSelection == harmonySoundProfileSelection &&
+        other.harmonyMasterVolume == harmonyMasterVolume &&
+        other.harmonyPreviewHoldFactor == harmonyPreviewHoldFactor &&
+        other.harmonyArpeggioStepSpeed == harmonyArpeggioStepSpeed &&
+        other.harmonyVelocityHumanization == harmonyVelocityHumanization &&
+        other.harmonyGainRandomness == harmonyGainRandomness &&
+        other.harmonyTimingHumanization == harmonyTimingHumanization &&
+        other.anchorLoop == anchorLoop &&
+        _sameSet(other.activeKeyCenters, activeKeyCenters) &&
+        other.smartGeneratorMode == smartGeneratorMode &&
+        other.secondaryDominantEnabled == secondaryDominantEnabled &&
+        other.substituteDominantEnabled == substituteDominantEnabled &&
+        other.modalInterchangeEnabled == modalInterchangeEnabled &&
+        other.modulationIntensity == modulationIntensity &&
+        other.jazzPreset == jazzPreset &&
+        other.sourceProfile == sourceProfile &&
+        other.smartDiagnosticsEnabled == smartDiagnosticsEnabled &&
+        other.chordSymbolStyle == chordSymbolStyle &&
+        other.allowV7sus4 == allowV7sus4 &&
+        other.allowTensions == allowTensions &&
+        _sameSet(other.enabledChordQualities, enabledChordQualities) &&
+        _sameSet(other.selectedTensionOptions, selectedTensionOptions) &&
+        other.inversionSettings == inversionSettings &&
+        other.voicingSuggestionsEnabled == voicingSuggestionsEnabled &&
+        other.voicingDisplayMode == voicingDisplayMode &&
+        other.voicingComplexity == voicingComplexity &&
+        other.voicingTopNotePreference == voicingTopNotePreference &&
+        other.allowRootlessVoicings == allowRootlessVoicings &&
+        other.maxVoicingNotes == maxVoicingNotes &&
+        other.lookAheadDepth == lookAheadDepth &&
+        other.showVoicingReasons == showVoicingReasons &&
+        other.bpm == bpm &&
+        other.keyCenterLabelStyle == keyCenterLabelStyle &&
+        other.progressionExplanationDetailLevel ==
+            progressionExplanationDetailLevel &&
+        other.progressionHighlightTheme == progressionHighlightTheme;
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    language,
+    appThemeMode,
+    guidedSetupCompleted,
+    settingsComplexityMode,
+    preferredSuggestionKind,
+    chordLanguageLevel,
+    romanPoolPreset,
+    musicNotationLocale,
+    noteNamingStyle,
+    showRomanNumeralAssist,
+    showChordTextAssist,
+    metronomeEnabled,
+    metronomeVolume,
+    metronomeSource,
+    metronomePattern,
+    metronomeUseAccentSound,
+    metronomeAccentSource,
+    timeSignature,
+    harmonicRhythmPreset,
+    autoPlayChordChanges,
+    autoPlayPattern,
+    autoPlayHoldFactor,
+    autoPlayMelodyWithChords,
+    melodyGenerationEnabled,
+    melodyDensity,
+    motifRepetitionStrength,
+    approachToneDensity,
+    melodyRangeLow,
+    melodyRangeHigh,
+    melodyStyle,
+    allowChromaticApproaches,
+    syncopationBias,
+    colorRealizationBias,
+    noveltyTarget,
+    motifVariationBias,
+    anticipationProbability,
+    colorToneTarget,
+    exactRepeatTarget,
+    melodyPlaybackMode,
+    harmonySoundProfileSelection,
+    harmonyMasterVolume,
+    harmonyPreviewHoldFactor,
+    harmonyArpeggioStepSpeed,
+    harmonyVelocityHumanization,
+    harmonyGainRandomness,
+    harmonyTimingHumanization,
+    anchorLoop,
+    Object.hashAllUnordered(activeKeyCenters),
+    smartGeneratorMode,
+    secondaryDominantEnabled,
+    substituteDominantEnabled,
+    modalInterchangeEnabled,
+    modulationIntensity,
+    jazzPreset,
+    sourceProfile,
+    smartDiagnosticsEnabled,
+    chordSymbolStyle,
+    allowV7sus4,
+    allowTensions,
+    Object.hashAllUnordered(enabledChordQualities),
+    Object.hashAllUnordered(selectedTensionOptions),
+    inversionSettings,
+    voicingSuggestionsEnabled,
+    voicingDisplayMode,
+    voicingComplexity,
+    voicingTopNotePreference,
+    allowRootlessVoicings,
+    maxVoicingNotes,
+    lookAheadDepth,
+    showVoicingReasons,
+    bpm,
+    keyCenterLabelStyle,
+    progressionExplanationDetailLevel,
+    progressionHighlightTheme,
+  ]);
+
+  static bool _sameSet<T>(Set<T> left, Set<T> right) {
+    if (left.length != right.length) {
+      return false;
+    }
+    for (final value in left) {
+      if (!right.contains(value)) {
+        return false;
+      }
+    }
+    return true;
+  }
 }

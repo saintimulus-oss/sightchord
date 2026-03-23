@@ -13,7 +13,7 @@
    - Expand `.gitignore` for generated artifacts, caches, logs, scratch files, browser/profile data, and machine-local files.
    - Remove tracked generated/local files from version control where appropriate.
    - Keep GitHub Pages deployment rooted in CI-generated `build/web` output.
-   - Validate with `flutter pub get`, `dart format .`, `flutter analyze`, `flutter test`, and `flutter build web --release --base-href /sightchord/`.
+   - Validate with `flutter pub get`, `dart format .`, `flutter analyze`, `flutter test`, and `flutter build web --release --base-href /chordest/`.
 
 2. Smart generation and voicing refactor
    - Split `lib/smart_generator.dart` by responsibility so planning, scoring, diagnostics, and helpers are easier to navigate.

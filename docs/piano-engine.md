@@ -71,7 +71,7 @@ Main files:
 - `lib/audio/sampled_instrument_engine.dart`
 - `lib/audio/harmony_preview_resolver.dart`
 - `lib/audio/harmony_audio_service.dart`
-- `lib/audio/sightchord_audio_scope.dart`
+- `lib/audio/chordest_audio_scope.dart`
 
 Responsibilities:
 
@@ -83,14 +83,14 @@ Responsibilities:
 - `harmony_preview_resolver.dart`: converts chords, voicings, progressions, and
   study prompts into note clips
 - `harmony_audio_service.dart`: app-facing reusable API for playback
-- `sightchord_audio_scope.dart`: exposes one shared service instance to the UI
+- `chordest_audio_scope.dart`: exposes one shared service instance to the UI
 
 ## API Usage
 
 Get the shared service from UI code:
 
 ```dart
-final audio = SightChordAudioScope.maybeOf(context);
+final audio = ChordestAudioScope.maybeOf(context);
 ```
 
 Play a generated chord:

@@ -5043,39 +5043,39 @@ class AppLocalizationsKo extends AppLocalizations {
   String get practiceFirstRunSetupButton => '맞춤 설정';
 
   @override
-  String get musicNotationLocale => '?? ?? ??';
+  String get musicNotationLocale => '악보 표기 언어';
 
   @override
   String get musicNotationLocaleHelp =>
-      '?? ?? ?? ??? ?? ??? ?? ??? ??? ??? ????.';
+      '선택형 로마 숫자 보조와 코드 텍스트 보조에 사용할 언어를 정합니다.';
 
   @override
-  String get musicNotationLocaleUiDefault => '? ??? ??';
+  String get musicNotationLocaleUiDefault => '앱 언어 따르기';
 
   @override
-  String get musicNotationLocaleEnglish => '??';
+  String get musicNotationLocaleEnglish => '영어';
 
   @override
-  String get noteNamingStyle => '? ?? ??';
+  String get noteNamingStyle => '음 이름 표기';
 
   @override
-  String get noteNamingStyleHelp => '?? ??? ??? ?? ???? ? ??? ? ??? ????.';
+  String get noteNamingStyleHelp => '화성 로직은 바꾸지 않고, 표시되는 음 이름과 조 이름만 바꿉니다.';
 
   @override
-  String get noteNamingStyleEnglish => '?? ???';
+  String get noteNamingStyleEnglish => '영문 표기';
 
   @override
-  String get noteNamingStyleLatin => '???';
+  String get noteNamingStyleLatin => '도레미';
 
   @override
-  String get showRomanNumeralAssist => '?? ?? ?? ?? ??';
+  String get showRomanNumeralAssist => '로마 숫자 보조 표시';
 
   @override
-  String get showRomanNumeralAssistHelp => '?? ?? ?? ?? ?? ??? ?????.';
+  String get showRomanNumeralAssistHelp => '로마 숫자 라벨 옆에 짧은 설명을 덧붙입니다.';
 
   @override
-  String get showChordTextAssist => '?? ??? ?? ?? ??';
+  String get showChordTextAssist => '코드 텍스트 보조 표시';
 
   @override
-  String get showChordTextAssistHelp => '?? ??? ??? ?? ?? ??? ?????.';
+  String get showChordTextAssistHelp => '코드 성격과 텐션을 짧은 텍스트로 설명해 줍니다.';
 }

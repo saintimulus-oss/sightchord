@@ -1,0 +1,9 @@
+Chordest is a local-first music practice app for chord study, improvisation, and harmonic vocabulary work.
+
+Reviewer guidance:
+- No sign-in or account setup is required.
+- Core flows to test: Main Menu, Practice Generator, Smart Generator, Chord Analyzer, and Settings.
+- The app stores settings and progress locally on the device.
+- The current repository build does not use ads, account login, camera, microphone, or location access.
+
+If a test device is muted, please enable audio output to verify piano playback and metronome behavior.

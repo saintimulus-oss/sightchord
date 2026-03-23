@@ -41,4 +41,24 @@ class InversionSettings {
     }
     return inversions;
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return other is InversionSettings &&
+        other.enabled == enabled &&
+        other.firstInversionEnabled == firstInversionEnabled &&
+        other.secondInversionEnabled == secondInversionEnabled &&
+        other.thirdInversionEnabled == thirdInversionEnabled;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    enabled,
+    firstInversionEnabled,
+    secondInversionEnabled,
+    thirdInversionEnabled,
+  );
 }

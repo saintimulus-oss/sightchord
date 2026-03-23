@@ -738,6 +738,12 @@ void main() {
     );
     expect(
       find.byKey(const ValueKey('open-advanced-settings-button')),
+      findsOneWidget,
+    );
+    expect(
+      find.text(
+        'Core controls stay close by here. Everything else is still available when you want it.',
+      ),
       findsNothing,
     );
 
@@ -751,6 +757,41 @@ void main() {
       SettingsComplexityMode.standard,
     );
     expect(controller.settings.guidedSetupCompleted, isTrue);
+    expect(
+      find.byKey(const ValueKey('open-advanced-settings-button')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('settings drawer setup card can be collapsed after opening', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithExactSettings(
+      tester,
+      PracticeSettings(
+        guidedSetupCompleted: true,
+        settingsComplexityMode: SettingsComplexityMode.guided,
+      ),
+    );
+
+    await openGeneratorSettings(tester);
+
+    expect(
+      find.byKey(const ValueKey('rerun-setup-assistant-button')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('settings-setup-card-toggle')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('rerun-setup-assistant-button')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('settings-complexity-mode-standard')),
+      findsNothing,
+    );
     expect(
       find.byKey(const ValueKey('open-advanced-settings-button')),
       findsOneWidget,

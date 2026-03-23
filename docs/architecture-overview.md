@@ -129,7 +129,7 @@ flutter pub get
 dart format .
 flutter analyze
 flutter test
-flutter build web --release --base-href /sightchord/
+flutter build web --release --base-href /chordest/
 ```
 
 The GitHub Pages workflow follows the same source-of-truth model: CI builds `build/web`, uploads that artifact, and deploys it through Pages. Generated web output at the repository root is intentionally not treated as maintained source.

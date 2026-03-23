@@ -1,0 +1,9 @@
+Chordest es una app local-first para practica de acordes, improvisacion y vocabulario armonico.
+
+Notas para revision:
+- No requiere inicio de sesion ni creacion de cuenta.
+- Flujos principales: Main Menu, Practice Generator, Smart Generator, Chord Analyzer y Settings.
+- La configuracion y el progreso se guardan localmente en el dispositivo.
+- La compilacion actual del repositorio no usa anuncios, inicio de sesion, camara, microfono ni ubicacion.
+
+Si el dispositivo esta en silencio, activa la salida de audio para comprobar la reproduccion de piano y el metronomo.

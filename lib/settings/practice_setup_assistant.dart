@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../audio/harmony_audio_models.dart';
 import '../audio/harmony_preview_resolver.dart';
-import '../audio/sightchord_audio_scope.dart';
+import '../audio/chordest_audio_scope.dart';
 import '../l10n/app_localizations.dart';
 import '../music/chord_formatting.dart';
 import '../music/chord_theory.dart';
@@ -181,7 +181,7 @@ class _PracticeSetupAssistantSheetState
     if (_playingPreview) {
       return;
     }
-    final harmonyAudio = SightChordAudioScope.maybeOf(context);
+    final harmonyAudio = ChordestAudioScope.maybeOf(context);
     if (harmonyAudio == null) {
       return;
     }
@@ -558,7 +558,7 @@ class _PracticeSetupAssistantSheetState
           _buildPreviewSummaryCard(context, preview),
           const SizedBox(height: 12),
           _buildPreviewProgressionCard(context, preview),
-          if (SightChordAudioScope.maybeOf(context) != null) ...[
+          if (ChordestAudioScope.maybeOf(context) != null) ...[
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,

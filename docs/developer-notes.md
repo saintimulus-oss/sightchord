@@ -9,7 +9,7 @@ flutter pub get
 dart format .
 flutter analyze
 flutter test
-flutter build web --release --base-href /sightchord/
+flutter build web --release --base-href /chordest/
 ```
 
 ## Source-Controlled vs Generated
@@ -39,7 +39,7 @@ GitHub Pages deploys from CI-generated `build/web` artifacts. Generated web outp
 
 The repository now uses the shared production identifier `io.github.saintimulusoss.chordest` across Android, iOS, macOS, and Linux. The remaining owner-only work is release provisioning rather than namespace cleanup.
 
-- [android/app/build.gradle.kts](/Users/User/sightchord/android/app/build.gradle.kts):28 still signs release builds with the debug keystore until owner-provided release signing is configured.
+- [android/app/build.gradle.kts](../android/app/build.gradle.kts):28 still signs release builds with the debug keystore until owner-provided release signing is configured.
 - Platform-specific release verification still needs to run on owner hardware and toolchains after signing/notarization setup.
 
 Recommended owner action:

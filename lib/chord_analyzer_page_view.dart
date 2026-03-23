@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'audio/harmony_audio_models.dart';
 import 'audio/harmony_audio_service.dart';
-import 'audio/sightchord_audio_scope.dart';
+import 'audio/chordest_audio_scope.dart';
 import 'l10n/app_localizations.dart';
 import 'music/progression_analysis_models.dart';
 import 'music/progression_analyzer.dart';
@@ -117,7 +117,7 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final harmonyAudio = SightChordAudioScope.maybeOf(context);
+    final harmonyAudio = ChordestAudioScope.maybeOf(context);
     if (!identical(_harmonyAudio, harmonyAudio)) {
       _harmonyAudio = harmonyAudio;
       _requestedHarmonyAudioWarmUp = false;

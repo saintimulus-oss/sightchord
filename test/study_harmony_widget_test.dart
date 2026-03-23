@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chordest/app.dart';
 import 'package:chordest/audio/harmony_audio_models.dart';
 import 'package:chordest/audio/harmony_audio_service.dart';
-import 'package:chordest/audio/sightchord_audio_scope.dart';
+import 'package:chordest/audio/chordest_audio_scope.dart';
 import 'package:chordest/l10n/app_localizations.dart';
 import 'package:chordest/l10n/app_localizations_en.dart';
 import 'package:chordest/settings/practice_settings.dart';
@@ -1218,7 +1218,7 @@ void main() {
         MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: SightChordAudioScope(
+          home: ChordestAudioScope(
             harmonyAudio: audio,
             child: StudyHarmonySessionPage(
               lesson: _buildPromptPreviewLesson(),
@@ -1246,9 +1246,9 @@ void main() {
       await tester.tap(
         find.byKey(const ValueKey('study-harmony-play-prompt-arpeggio-button')),
       );
-        await tester.pump();
-        expect(audio.promptPatterns.last, HarmonyPlaybackPattern.block);
-      },
+      await tester.pump();
+      expect(audio.promptPatterns.last, HarmonyPlaybackPattern.block);
+    },
   );
 
   testWidgets(
@@ -1272,7 +1272,7 @@ void main() {
         MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: SightChordAudioScope(
+          home: ChordestAudioScope(
             harmonyAudio: audio,
             child: StudyHarmonySessionPage(
               lesson: _buildPromptPreviewLesson(),
@@ -1292,8 +1292,7 @@ void main() {
 
       await settingsController.update(
         settingsController.settings.copyWith(
-          harmonySoundProfileSelection:
-              HarmonySoundProfileSelection.classical,
+          harmonySoundProfileSelection: HarmonySoundProfileSelection.classical,
         ),
       );
       await tester.pumpAndSettle();

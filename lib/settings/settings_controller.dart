@@ -17,15 +17,25 @@ class AppSettingsController extends ChangeNotifier {
   PracticeSettings? _pendingSaveSnapshot;
   bool _notifyScheduled = false;
   bool _isDisposed = false;
+  int _loadGeneration = 0;
 
   PracticeSettings get settings => _settings;
 
   Future<void> load() async {
-    _settings = await _store.load(fallbackSettings: _settings);
+    final loadGeneration = ++_loadGeneration;
+    final loaded = await _store.load(fallbackSettings: _settings);
+    if (_isDisposed || loadGeneration != _loadGeneration) {
+      return;
+    }
+    _settings = loaded;
     _notifySafely();
   }
 
   Future<void> update(PracticeSettings nextSettings) async {
+    if (_settings == nextSettings) {
+      return;
+    }
+    _loadGeneration += 1;
     _settings = nextSettings;
     _notifySafely();
     _pendingSaveSnapshot = nextSettings;
@@ -89,4 +99,3 @@ class AppSettingsController extends ChangeNotifier {
     super.dispose();
   }
 }
-

@@ -1,0 +1,13 @@
+Chordest es una app local-first para practicar armonia, lectura e improvisacion.
+
+Practica progresiones en las 12 tonicas, cambia entre el modo libre y el modo tonal, y explora movimiento armonico ponderado con Smart Generator. Usa el Chord Analyzer integrado para revisar centro tonal, numeros romanos, funcion armonica y resumentes mientras estudias.
+
+Funciones principales:
+- Practica de acordes en las 12 tonicas
+- Modo tonal con numeros romanos diatonicos
+- Smart Generator para progresiones con movimiento armonico ponderado
+- Chord Analyzer con contexto armonico
+- Metronomo, avance automatico, control de BPM y opciones de notacion
+- Interfaz localizada en ingles, espanol, chino simplificado, japones y coreano
+
+La version actual es local-first. La configuracion y el progreso quedan guardados en el dispositivo y no hace falta crear una cuenta.

@@ -1977,7 +1977,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chordAnalyzerPlaceholderExplanation =>
-      'This ? was inferred from the surrounding harmonic context, so treat it as a suggested fill rather than a certainty.';
+      '這個 ? 是根據前後和聲脈絡推定出的結果，請把它視為建議的補全，而不是確定答案。';
 
   @override
   String chordAnalyzerSuggestedFill(Object chord) {
@@ -4461,7 +4461,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get studyHarmonyTrackJazzFocus2 =>
-      'Major ii-V-I, minor ii-V-i, and turnaround behavior';
+      'major ii-V-I、minor iiø-V-i 與 turnaround 的走向';
 
   @override
   String get studyHarmonyTrackJazzFocus3 =>
@@ -4611,7 +4611,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get studyHarmonyJazzLessonMinorCadenceDescription =>
-      'Recognize how minor ii-V-i motion feels and why the dominant sounds more urgent there.';
+      '辨識 minor iiø-V-i 的進行感，以及為什麼那裡的屬功能聽起來更有緊迫感。';
 
   @override
   String get studyHarmonyJazzLessonRootlessVoicingsTitle => 'Rootless Voicings';
@@ -4640,7 +4640,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get studyHarmonyJazzLessonBossDescription =>
-      'Compare major and minor cadence pull, then hear how jazz dominant color changes the same route home.';
+      '結合 major ii-V-I、minor iiø-V-i、rootless 色彩與審慎的 reharm，同時確認終止目標仍然清楚可辨。';
 
   @override
   String get studyHarmonyClassicalChapterCadenceLabTitle => 'Cadence Lab';
@@ -5072,44 +5072,40 @@ class AppLocalizationsZh extends AppLocalizations {
   String get practiceFirstRunSetupButton => 'Personalize';
 
   @override
-  String get musicNotationLocale => 'Music notation language';
+  String get musicNotationLocale => '音樂記譜語言';
 
   @override
-  String get musicNotationLocaleHelp =>
-      'Controls the language used for optional Roman numeral and chord-text assists.';
+  String get musicNotationLocaleHelp => '控制可選的羅馬數字輔助與和弦文字輔助所使用的語言。';
 
   @override
-  String get musicNotationLocaleUiDefault => 'Match app language';
+  String get musicNotationLocaleUiDefault => '跟隨 App 語言';
 
   @override
-  String get musicNotationLocaleEnglish => 'English';
+  String get musicNotationLocaleEnglish => '英語';
 
   @override
-  String get noteNamingStyle => 'Note naming';
+  String get noteNamingStyle => '音名標示';
 
   @override
-  String get noteNamingStyleHelp =>
-      'Switches displayed note and key names without changing harmonic logic.';
+  String get noteNamingStyleHelp => '切換顯示的音名與調名，不會改變和聲邏輯。';
 
   @override
-  String get noteNamingStyleEnglish => 'English letters';
+  String get noteNamingStyleEnglish => '英文字母';
 
   @override
-  String get noteNamingStyleLatin => 'Do Re Mi';
+  String get noteNamingStyleLatin => '唱名';
 
   @override
-  String get showRomanNumeralAssist => 'Show Roman numeral assist';
+  String get showRomanNumeralAssist => '顯示羅馬數字輔助';
 
   @override
-  String get showRomanNumeralAssistHelp =>
-      'Adds a short explanation next to Roman numeral labels.';
+  String get showRomanNumeralAssistHelp => '在羅馬數字標籤旁加入簡短說明。';
 
   @override
-  String get showChordTextAssist => 'Show chord text assist';
+  String get showChordTextAssist => '顯示和弦文字輔助';
 
   @override
-  String get showChordTextAssistHelp =>
-      'Adds a short text explanation for chord quality and tensions.';
+  String get showChordTextAssistHelp => '為和弦性質與張力加入簡短文字說明。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -7085,7 +7081,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get chordAnalyzerPlaceholderExplanation =>
-      'This ? was inferred from the surrounding harmonic context, so treat it as a suggested fill rather than a certainty.';
+      '这个 ? 是根据前后和声语境推断出的结果，请把它视为建议的补全，而不是确定答案。';
 
   @override
   String chordAnalyzerSuggestedFill(Object chord) {
@@ -9569,7 +9565,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get studyHarmonyTrackJazzFocus2 =>
-      'Major ii-V-I, minor ii-V-i, and turnaround behavior';
+      'major ii-V-I、minor iiø-V-i 与 turnaround 的走向';
 
   @override
   String get studyHarmonyTrackJazzFocus3 =>
@@ -9719,7 +9715,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get studyHarmonyJazzLessonMinorCadenceDescription =>
-      'Recognize how minor ii-V-i motion feels and why the dominant sounds more urgent there.';
+      '识别 minor iiø-V-i 的进行感，以及为什么那里属功能听起来更有紧迫感。';
 
   @override
   String get studyHarmonyJazzLessonRootlessVoicingsTitle => 'Rootless Voicings';
@@ -9748,7 +9744,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get studyHarmonyJazzLessonBossDescription =>
-      'Compare major and minor cadence pull, then hear how jazz dominant color changes the same route home.';
+      '组合 major ii-V-I、minor iiø-V-i、rootless 色彩与谨慎的 reharm，同时确认终止目标仍然清晰可辨。';
 
   @override
   String get studyHarmonyClassicalChapterCadenceLabTitle => 'Cadence Lab';
@@ -10180,42 +10176,38 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get practiceFirstRunSetupButton => 'Personalize';
 
   @override
-  String get musicNotationLocale => 'Music notation language';
+  String get musicNotationLocale => '音乐记谱语言';
 
   @override
-  String get musicNotationLocaleHelp =>
-      'Controls the language used for optional Roman numeral and chord-text assists.';
+  String get musicNotationLocaleHelp => '控制可选的罗马数字辅助和和弦文字辅助所使用的语言。';
 
   @override
-  String get musicNotationLocaleUiDefault => 'Match app language';
+  String get musicNotationLocaleUiDefault => '跟随应用语言';
 
   @override
-  String get musicNotationLocaleEnglish => 'English';
+  String get musicNotationLocaleEnglish => '英语';
 
   @override
-  String get noteNamingStyle => 'Note naming';
+  String get noteNamingStyle => '音名标记';
 
   @override
-  String get noteNamingStyleHelp =>
-      'Switches displayed note and key names without changing harmonic logic.';
+  String get noteNamingStyleHelp => '切换显示的音名和调名，不会改变和声逻辑。';
 
   @override
-  String get noteNamingStyleEnglish => 'English letters';
+  String get noteNamingStyleEnglish => '英文字母';
 
   @override
-  String get noteNamingStyleLatin => 'Do Re Mi';
+  String get noteNamingStyleLatin => '唱名';
 
   @override
-  String get showRomanNumeralAssist => 'Show Roman numeral assist';
+  String get showRomanNumeralAssist => '显示罗马数字辅助';
 
   @override
-  String get showRomanNumeralAssistHelp =>
-      'Adds a short explanation next to Roman numeral labels.';
+  String get showRomanNumeralAssistHelp => '在罗马数字标签旁添加简短说明。';
 
   @override
-  String get showChordTextAssist => 'Show chord text assist';
+  String get showChordTextAssist => '显示和弦文字辅助';
 
   @override
-  String get showChordTextAssistHelp =>
-      'Adds a short text explanation for chord quality and tensions.';
+  String get showChordTextAssistHelp => '为和弦性质和张力添加简短文字说明。';
 }

@@ -1,0 +1,90 @@
+name: Validate Mobile Release Builds
+
+on:
+  workflow_dispatch:
+
+jobs:
+  android-release:
+    name: Android Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      - name: Generate temporary upload keystore
+        run: |
+          mkdir -p .ci-secrets
+          keytool -genkeypair -v \
+            -storetype PKCS12 \
+            -keystore .ci-secrets/chordest-upload.jks \
+            -alias upload \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 3650 \
+            -storepass ci-build-pass \
+            -keypass ci-build-pass \
+            -dname "CN=CI Validation, OU=Automation, O=Saintimulus OSS, L=Seoul, S=Seoul, C=KR"
+
+      - name: Build Android app bundle
+        env:
+          ANDROID_KEYSTORE_PATH: .ci-secrets/chordest-upload.jks
+          ANDROID_KEYSTORE_PASSWORD: ci-build-pass
+          ANDROID_KEY_ALIAS: upload
+          ANDROID_KEY_PASSWORD: ci-build-pass
+        run: flutter build appbundle --release
+
+      - name: Upload Android bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+
+  ios-release:
+    name: iOS Release
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Install CocoaPods dependencies
+        working-directory: ios
+        run: pod install
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      - name: Build iOS release without codesign
+        run: flutter build ios --release --no-codesign

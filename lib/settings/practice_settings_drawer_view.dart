@@ -11,7 +11,7 @@ import 'practice_settings_dispatcher.dart';
 import 'practice_settings.dart';
 import 'practice_settings_factory.dart';
 
-class PracticeSettingsDrawer extends StatelessWidget {
+class PracticeSettingsDrawer extends StatefulWidget {
   const PracticeSettingsDrawer({
     super.key,
     required this.settings,
@@ -28,6 +28,20 @@ class PracticeSettingsDrawer extends StatelessWidget {
   final VoidCallback? onOpenStudyHarmony;
   final VoidCallback onOpenAdvancedSettings;
   final ApplyPracticeSettings onApplySettings;
+
+  @override
+  State<PracticeSettingsDrawer> createState() => _PracticeSettingsDrawerState();
+}
+
+class _PracticeSettingsDrawerState extends State<PracticeSettingsDrawer> {
+  bool _isSetupCardExpanded = true;
+
+  PracticeSettings get settings => widget.settings;
+  VoidCallback get onClose => widget.onClose;
+  VoidCallback get onRunSetupAssistant => widget.onRunSetupAssistant;
+  VoidCallback? get onOpenStudyHarmony => widget.onOpenStudyHarmony;
+  VoidCallback get onOpenAdvancedSettings => widget.onOpenAdvancedSettings;
+  ApplyPracticeSettings get onApplySettings => widget.onApplySettings;
 
   bool get _isGuidedMode =>
       settings.settingsComplexityMode == SettingsComplexityMode.guided;
@@ -76,13 +90,11 @@ class PracticeSettingsDrawer extends StatelessWidget {
                       : _buildStandardContent(context, dispatcher),
                 ),
               ),
-              if (!_isGuidedMode) ...[
-                const Divider(height: 1),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                  child: _buildAdvancedSettingsButton(context),
-                ),
-              ],
+              const Divider(height: 1),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                child: _buildAdvancedSettingsButton(context),
+              ),
             ],
           ),
         ),
@@ -112,8 +124,6 @@ class PracticeSettingsDrawer extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         _buildMetronomeSection(context, dispatcher),
-        const SizedBox(height: 24),
-        _buildAdvancedExpansion(context),
       ],
     );
   }
@@ -148,6 +158,9 @@ class PracticeSettingsDrawer extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final profile = PracticeSettingsFactory.profileFromSettings(settings);
+    final title = guidedMode
+        ? l10n.setupAssistantGuidedSettingsTitle
+        : l10n.setupAssistantTitle;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -156,80 +169,123 @@ class PracticeSettingsDrawer extends StatelessWidget {
         border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Chip(
-              label: Text(
-                '${l10n.setupAssistantCurrentMode}: '
-                '${_settingsComplexityModeLabel(l10n)}',
+            InkWell(
+              key: const ValueKey('settings-setup-card-toggle'),
+              borderRadius: BorderRadius.circular(20),
+              onTap: () {
+                setState(() {
+                  _isSetupCardExpanded = !_isSetupCardExpanded;
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Chip(
+                            label: Text(
+                              '${l10n.setupAssistantCurrentMode}: '
+                              '${_settingsComplexityModeLabel(l10n)}',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Icon(
+                        _isSetupCardExpanded
+                            ? Icons.expand_less_rounded
+                            : Icons.expand_more_rounded,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 12),
-            Text(
-              guidedMode
-                  ? l10n.setupAssistantGuidedSettingsTitle
-                  : l10n.setupAssistantTitle,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
+            if (_isSetupCardExpanded)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (!guidedMode) ...[
+                      Text(
+                        l10n.setupAssistantCardBody,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          height: 1.35,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                    ],
+                    _buildComplexityModeSelector(context, dispatcher),
+                    const SizedBox(height: 16),
+                    Text(
+                      _profileSummaryTitle(l10n, profile),
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _SummaryRow(
+                      label: l10n.setupAssistantPreviewDifficultyLabel,
+                      value: _difficultySummaryLabel(l10n, settings),
+                    ),
+                    const SizedBox(height: 8),
+                    _SummaryRow(
+                      label: l10n.setupAssistantPreviewKeyLabel,
+                      value: _keyCenterLabel(l10n, _primaryKeyCenter),
+                    ),
+                    const SizedBox(height: 8),
+                    _SummaryRow(
+                      label: l10n.setupAssistantPreviewNotationLabel,
+                      value: _notationSummaryLabel(
+                        l10n,
+                        settings.chordSymbolStyle,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _SummaryRow(
+                      label: l10n.setupAssistantPreviewProgressionLabel,
+                      value: _profileSummaryBody(l10n, settings),
+                    ),
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.tonalIcon(
+                        key: const ValueKey('rerun-setup-assistant-button'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Future<void>.delayed(
+                            const Duration(milliseconds: 220),
+                            onRunSetupAssistant,
+                          );
+                        },
+                        icon: const Icon(Icons.auto_awesome_rounded),
+                        label: Text(l10n.setupAssistantRunAgain),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              guidedMode
-                  ? l10n.setupAssistantGuidedSettingsBody
-                  : l10n.setupAssistantCardBody,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-                height: 1.35,
-              ),
-            ),
-            const SizedBox(height: 14),
-            _buildComplexityModeSelector(context, dispatcher),
-            const SizedBox(height: 16),
-            Text(
-              _profileSummaryTitle(l10n, profile),
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 10),
-            _SummaryRow(
-              label: l10n.setupAssistantPreviewDifficultyLabel,
-              value: _difficultySummaryLabel(l10n, settings),
-            ),
-            const SizedBox(height: 8),
-            _SummaryRow(
-              label: l10n.setupAssistantPreviewKeyLabel,
-              value: _keyCenterLabel(l10n, _primaryKeyCenter),
-            ),
-            const SizedBox(height: 8),
-            _SummaryRow(
-              label: l10n.setupAssistantPreviewNotationLabel,
-              value: _notationSummaryLabel(l10n, settings.chordSymbolStyle),
-            ),
-            const SizedBox(height: 8),
-            _SummaryRow(
-              label: l10n.setupAssistantPreviewProgressionLabel,
-              value: _profileSummaryBody(l10n, settings),
-            ),
-            const SizedBox(height: 14),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.tonalIcon(
-                key: const ValueKey('rerun-setup-assistant-button'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  Future<void>.delayed(
-                    const Duration(milliseconds: 220),
-                    onRunSetupAssistant,
-                  );
-                },
-                icon: const Icon(Icons.auto_awesome_rounded),
-                label: Text(l10n.setupAssistantRunAgain),
-              ),
-            ),
           ],
         ),
       ),
@@ -323,43 +379,6 @@ class PracticeSettingsDrawer extends StatelessWidget {
                 label: Text(l10n.setupAssistantStudyHarmonyCta),
               ),
             ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAdvancedExpansion(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-      ),
-      child: Theme(
-        data: theme.copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          tilePadding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          title: Text(
-            l10n.setupAssistantAdvancedSectionTitle,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          subtitle: Text(
-            l10n.setupAssistantAdvancedSectionBody,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          children: [
-            SizedBox(
-              width: double.infinity,
-              child: _buildAdvancedSettingsButton(context),
-            ),
           ],
         ),
       ),

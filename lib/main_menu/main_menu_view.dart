@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+const _mainMenuContentMaxWidth = 560.0;
+
 class MainMenuView extends StatelessWidget {
   const MainMenuView({
     super.key,
@@ -95,7 +97,9 @@ class MainMenuView extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 560),
+                          constraints: const BoxConstraints(
+                            maxWidth: _mainMenuContentMaxWidth,
+                          ),
                           child: _MainActionButton(
                             icon: Icons.auto_awesome_rounded,
                             title: generatorTitle,
@@ -112,7 +116,9 @@ class MainMenuView extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 560),
+                          constraints: const BoxConstraints(
+                            maxWidth: _mainMenuContentMaxWidth,
+                          ),
                           child: _MainActionButton(
                             icon: Icons.insights_rounded,
                             title: analyzerTitle,
@@ -128,7 +134,9 @@ class MainMenuView extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 560),
+                          constraints: const BoxConstraints(
+                            maxWidth: _mainMenuContentMaxWidth,
+                          ),
                           child: _MainActionButton(
                             icon: Icons.school_rounded,
                             title: studyHarmonyTitle,
@@ -170,46 +178,49 @@ class _MainMenuHeroCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: _mainMenuContentMaxWidth),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Text(
-                title,
-                textAlign: TextAlign.left,
-                style: theme.textTheme.displayMedium?.copyWith(
-                  color: colorScheme.onSurface,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    textAlign: TextAlign.left,
+                    style: theme.textTheme.displayMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                IconButton(
+                  key: const ValueKey('main-open-settings-button'),
+                  onPressed: onSettingsPressed,
+                  tooltip: settingsLabel,
+                  style: IconButton.styleFrom(
+                    backgroundColor: colorScheme.surfaceContainerLow,
+                    foregroundColor: colorScheme.onSurface,
+                  ),
+                  icon: const Icon(Icons.settings_rounded),
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            IconButton(
-              key: const ValueKey('main-open-settings-button'),
-              onPressed: onSettingsPressed,
-              tooltip: settingsLabel,
-              style: IconButton.styleFrom(
-                backgroundColor: colorScheme.surfaceContainerLow,
-                foregroundColor: colorScheme.onSurface,
+            const SizedBox(height: 10),
+            Text(
+              body,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                height: 1.4,
               ),
-              icon: const Icon(Icons.settings_rounded),
             ),
           ],
         ),
-        const SizedBox(height: 10),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520),
-          child: Text(
-            body,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              height: 1.4,
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

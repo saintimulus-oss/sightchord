@@ -12,6 +12,12 @@ class PracticeChordDisplaySection extends StatelessWidget {
     required this.compact,
     required this.performanceMode,
     required this.statusLabel,
+    required this.currentInsight,
+    required this.nextInsight,
+    required this.playing,
+    required this.beatsPerBar,
+    required this.currentBeat,
+    required this.prioritizeControls,
     required this.availableBackSteps,
     required this.onTapAdvance,
     required this.onTapGoBack,
@@ -27,6 +33,12 @@ class PracticeChordDisplaySection extends StatelessWidget {
   final bool compact;
   final bool performanceMode;
   final String statusLabel;
+  final PracticeChordInsight currentInsight;
+  final PracticeChordInsight nextInsight;
+  final bool playing;
+  final int beatsPerBar;
+  final int? currentBeat;
+  final bool prioritizeControls;
   final int availableBackSteps;
   final VoidCallback onTapAdvance;
   final VoidCallback onTapGoBack;
@@ -44,6 +56,12 @@ class PracticeChordDisplaySection extends StatelessWidget {
       compact: compact,
       performanceMode: performanceMode,
       statusLabel: statusLabel,
+      currentInsight: currentInsight,
+      nextInsight: nextInsight,
+      playing: playing,
+      beatsPerBar: beatsPerBar,
+      currentBeat: currentBeat,
+      prioritizeControls: prioritizeControls,
       availableBackSteps: availableBackSteps,
       onTapAdvance: onTapAdvance,
       onTapGoBack: onTapGoBack,

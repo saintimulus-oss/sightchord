@@ -1,5 +1,21 @@
 import 'package:flutter/material.dart';
 
+import '../../ui/chordest_ui_tokens.dart';
+
+class PracticeChordInsight {
+  const PracticeChordInsight({
+    required this.sectionLabel,
+    required this.keyLabel,
+    required this.functionLabel,
+    this.description = '',
+  });
+
+  final String sectionLabel;
+  final String keyLabel;
+  final String functionLabel;
+  final String description;
+}
+
 class PracticeChordSwipeSurface extends StatefulWidget {
   const PracticeChordSwipeSurface({
     super.key,
@@ -9,6 +25,12 @@ class PracticeChordSwipeSurface extends StatefulWidget {
     this.compact = false,
     this.performanceMode = false,
     required this.statusLabel,
+    required this.currentInsight,
+    required this.nextInsight,
+    required this.playing,
+    required this.beatsPerBar,
+    required this.currentBeat,
+    this.prioritizeControls = false,
     required this.availableBackSteps,
     required this.onTapAdvance,
     required this.onTapGoBack,
@@ -23,6 +45,12 @@ class PracticeChordSwipeSurface extends StatefulWidget {
   final bool compact;
   final bool performanceMode;
   final String statusLabel;
+  final PracticeChordInsight currentInsight;
+  final PracticeChordInsight nextInsight;
+  final bool playing;
+  final int beatsPerBar;
+  final int? currentBeat;
+  final bool prioritizeControls;
   final int availableBackSteps;
   final VoidCallback onTapAdvance;
   final VoidCallback onTapGoBack;
@@ -41,9 +69,11 @@ class PracticeChordSwipeSurfaceState extends State<PracticeChordSwipeSurface>
   static const Duration _momentumSwipeDuration = Duration(milliseconds: 220);
   static const Duration _snapBackDuration = Duration(milliseconds: 190);
   static const Duration _edgeRevealDuration = Duration(milliseconds: 170);
+  static const Duration _pulseDuration = Duration(milliseconds: 1800);
 
   late final AnimationController _swipeController;
   late final AnimationController _edgeRevealController;
+  late final AnimationController _pulseController;
   Animation<double>? _swipeOffsetAnimation;
   VoidCallback? _sequenceCallback;
   _ChordSwipeTransition? _activeTransition;
@@ -135,11 +165,22 @@ class PracticeChordSwipeSurfaceState extends State<PracticeChordSwipeSurface>
             });
             _startNextQueuedStepIfNeeded();
           });
+    _pulseController =
+        AnimationController(vsync: this, duration: _pulseDuration)
+          ..addListener(() {
+            if (mounted && widget.playing) {
+              setState(() {});
+            }
+          });
+    _syncPulseState();
   }
 
   @override
   void didUpdateWidget(covariant PracticeChordSwipeSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.playing != widget.playing) {
+      _syncPulseState();
+    }
     final labelsChanged =
         oldWidget.previousLabel != widget.previousLabel ||
         oldWidget.currentLabel != widget.currentLabel ||
@@ -154,7 +195,17 @@ class PracticeChordSwipeSurfaceState extends State<PracticeChordSwipeSurface>
   void dispose() {
     _swipeController.dispose();
     _edgeRevealController.dispose();
+    _pulseController.dispose();
     super.dispose();
+  }
+
+  void _syncPulseState() {
+    if (widget.playing) {
+      _pulseController.repeat(reverse: true);
+      return;
+    }
+    _pulseController.stop();
+    _pulseController.value = 0;
   }
 
   void cancelTransition() {
@@ -480,38 +531,72 @@ class PracticeChordSwipeSurfaceState extends State<PracticeChordSwipeSurface>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accentGlow = theme.colorScheme.primary.withValues(
-      alpha: theme.brightness == Brightness.dark ? 0.18 : 0.1,
+    final colorScheme = theme.colorScheme;
+    final pulse = Curves.easeInOut.transform(_pulseController.value);
+    final accentGlow = colorScheme.primary.withValues(
+      alpha: widget.playing
+          ? 0.14 + (pulse * 0.08)
+          : (theme.brightness == Brightness.dark ? 0.14 : 0.08),
     );
     final hasStatusLabel = widget.statusLabel.trim().isNotEmpty;
+    final rhythmProgress = widget.currentBeat == null || widget.beatsPerBar <= 0
+        ? 0.0
+        : ((widget.currentBeat! + 1) / widget.beatsPerBar).clamp(0.0, 1.0);
     return Material(
       color: Colors.transparent,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth;
           _surfaceWidth = width;
+          final shortViewport = MediaQuery.sizeOf(context).height < 720;
+          final effectiveCompact = widget.compact || shortViewport;
+          final stageHeight = shortViewport
+              ? (widget.performanceMode ? 112.0 : 128.0)
+              : (effectiveCompact
+                    ? (widget.performanceMode ? 120.0 : 140.0)
+                    : (widget.performanceMode ? 132.0 : 146.0));
+          final useSplitDetailRail = !widget.compact && width >= 960;
+          final denseInsightLayout =
+              shortViewport ||
+              useSplitDetailRail ||
+              (!widget.compact && width < 860);
           final progress = width <= 0
               ? 0.0
               : (_effectiveOffset / width).clamp(-1.0, 1.0);
           return GestureDetector(
-            key: const ValueKey('chord-swipe-surface'),
             behavior: HitTestBehavior.opaque,
             onHorizontalDragUpdate: _handleDragUpdate,
             onHorizontalDragEnd: (details) => _handleDragEnd(details, width),
             onHorizontalDragCancel: _handleDragCancel,
             child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface.withValues(alpha: 0.94),
-                borderRadius: BorderRadius.circular(34),
-                border: Border.all(color: theme.colorScheme.outlineVariant),
-                boxShadow: [
-                  BoxShadow(
-                    color: accentGlow,
-                    blurRadius: 36,
-                    offset: const Offset(0, 16),
+              decoration:
+                  ChordestUiTokens.panelDecoration(
+                    theme,
+                    accent: widget.playing,
+                    elevated: true,
+                    borderRadius: ChordestUiTokens.radius(34),
+                  ).copyWith(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        colorScheme.surface.withValues(alpha: 0.98),
+                        colorScheme.surfaceContainerLow.withValues(alpha: 0.94),
+                      ],
+                    ),
+                    boxShadow: [
+                      ...ChordestUiTokens.panelShadows(
+                        theme,
+                        accent: widget.playing,
+                        elevated: true,
+                      ),
+                      BoxShadow(
+                        color: accentGlow,
+                        blurRadius: 56,
+                        offset: const Offset(0, 20),
+                      ),
+                    ],
                   ),
-                ],
-              ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(34),
                 child: Stack(
@@ -530,61 +615,60 @@ class PracticeChordSwipeSurfaceState extends State<PracticeChordSwipeSurface>
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.all(widget.compact ? 14 : 18),
+                      padding: EdgeInsets.fromLTRB(
+                        effectiveCompact ? 14 : 18,
+                        effectiveCompact ? 12 : 14,
+                        effectiveCompact ? 14 : 18,
+                        effectiveCompact ? 12 : 14,
+                      ),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          _ChordSurfaceHeader(
+                            compact: effectiveCompact,
+                            playing: widget.playing,
+                            currentLabel: widget.currentInsight.sectionLabel,
+                            nextLabel: widget.nextInsight.sectionLabel,
+                            statusLabel: widget.statusLabel,
+                            beatsPerBar: widget.beatsPerBar,
+                            currentBeat: widget.currentBeat,
+                          ),
                           if (hasStatusLabel) ...[
-                            Center(
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primaryContainer,
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  child: Text(
-                                    key: const ValueKey('current-status-label'),
-                                    widget.statusLabel,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style:
-                                        (widget.compact
-                                                ? theme.textTheme.labelMedium
-                                                : theme.textTheme.labelLarge)
-                                            ?.copyWith(
-                                              color: theme
-                                                  .colorScheme
-                                                  .onPrimaryContainer,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                  ),
-                                ),
-                              ),
+                            SizedBox(height: effectiveCompact ? 8 : 10),
+                            _ProgressLine(
+                              progress: rhythmProgress,
+                              active: widget.playing,
                             ),
-                            SizedBox(height: widget.compact ? 12 : 18),
-                          ],
+                            SizedBox(height: effectiveCompact ? 6 : 8),
+                          ] else
+                            SizedBox(height: effectiveCompact ? 8 : 10),
                           SizedBox(
-                            height: widget.compact
-                                ? (widget.performanceMode ? 118 : 132)
-                                : (widget.performanceMode ? 136 : 154),
+                            key: const ValueKey('chord-swipe-surface'),
+                            height: stageHeight,
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
                                 Positioned.fill(
                                   child: DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      color: theme
-                                          .colorScheme
-                                          .surfaceContainerLow
-                                          .withValues(alpha: 0.82),
-                                      borderRadius: BorderRadius.circular(28),
-                                      border: Border.all(
-                                        color: theme.colorScheme.outlineVariant,
-                                      ),
-                                    ),
+                                    decoration:
+                                        ChordestUiTokens.innerPanelDecoration(
+                                          theme,
+                                          accent: widget.playing,
+                                          borderRadius: ChordestUiTokens.radius(
+                                            28,
+                                          ),
+                                        ).copyWith(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              colorScheme.surfaceContainerLow
+                                                  .withValues(alpha: 0.98),
+                                              colorScheme.surfaceContainer
+                                                  .withValues(alpha: 0.88),
+                                            ],
+                                          ),
+                                        ),
                                   ),
                                 ),
                                 _ChordMotionStage(
@@ -649,8 +733,49 @@ class PracticeChordSwipeSurfaceState extends State<PracticeChordSwipeSurface>
                               ],
                             ),
                           ),
-                          SizedBox(height: widget.compact ? 12 : 18),
-                          widget.controls,
+                          SizedBox(
+                            height: shortViewport
+                                ? 6
+                                : (effectiveCompact ? 8 : 10),
+                          ),
+                          if (useSplitDetailRail) ...[
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 5, child: widget.controls),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  flex: 4,
+                                  child: _ChordInsightPanel(
+                                    compact: false,
+                                    dense: true,
+                                    currentInsight: widget.currentInsight,
+                                    nextInsight: widget.nextInsight,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ] else ...[
+                            if (widget.prioritizeControls) ...[
+                              widget.controls,
+                              SizedBox(height: effectiveCompact ? 8 : 10),
+                              _ChordInsightPanel(
+                                compact: effectiveCompact,
+                                dense: denseInsightLayout,
+                                currentInsight: widget.currentInsight,
+                                nextInsight: widget.nextInsight,
+                              ),
+                            ] else ...[
+                              _ChordInsightPanel(
+                                compact: effectiveCompact,
+                                dense: denseInsightLayout,
+                                currentInsight: widget.currentInsight,
+                                nextInsight: widget.nextInsight,
+                              ),
+                              SizedBox(height: effectiveCompact ? 8 : 10),
+                              widget.controls,
+                            ],
+                          ],
                         ],
                       ),
                     ),
@@ -660,6 +785,352 @@ class PracticeChordSwipeSurfaceState extends State<PracticeChordSwipeSurface>
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _ChordSurfaceHeader extends StatelessWidget {
+  const _ChordSurfaceHeader({
+    required this.compact,
+    required this.playing,
+    required this.currentLabel,
+    required this.nextLabel,
+    required this.statusLabel,
+    required this.beatsPerBar,
+    required this.currentBeat,
+  });
+
+  final bool compact;
+  final bool playing;
+  final String currentLabel;
+  final String nextLabel;
+  final String statusLabel;
+  final int beatsPerBar;
+  final int? currentBeat;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      runAlignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 12,
+      runSpacing: 10,
+      children: [
+        _HeaderBadge(label: currentLabel, accent: true, compact: compact),
+        if (statusLabel.trim().isNotEmpty)
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: compact ? 260 : 420),
+            child: Text(
+              key: const ValueKey('current-status-label'),
+              statusLabel,
+              maxLines: compact ? 2 : 1,
+              overflow: TextOverflow.ellipsis,
+              style:
+                  (compact
+                          ? theme.textTheme.bodySmall
+                          : theme.textTheme.bodyMedium)
+                      ?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                        height: 1.35,
+                      ),
+            ),
+          ),
+        _HeaderBadge(
+          label: playing
+              ? '${beatsPerBar > 0 && currentBeat != null ? '${currentBeat! + 1}/$beatsPerBar ' : ''}$nextLabel'
+              : nextLabel,
+          accent: false,
+          compact: compact,
+          leadingIcon: playing ? Icons.graphic_eq_rounded : Icons.arrow_forward,
+        ),
+      ],
+    );
+  }
+}
+
+class _HeaderBadge extends StatelessWidget {
+  const _HeaderBadge({
+    required this.label,
+    required this.accent,
+    required this.compact,
+    this.leadingIcon,
+  });
+
+  final String label;
+  final bool accent;
+  final bool compact;
+  final IconData? leadingIcon;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: accent
+            ? colorScheme.primaryContainer.withValues(alpha: 0.72)
+            : colorScheme.surfaceContainerLow.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: accent
+              ? colorScheme.primary.withValues(alpha: 0.22)
+              : colorScheme.outlineVariant.withValues(alpha: 0.84),
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 10 : 12,
+          vertical: compact ? 6 : 8,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (leadingIcon != null) ...[
+              Icon(
+                leadingIcon,
+                size: compact ? 14 : 16,
+                color: accent ? colorScheme.primary : colorScheme.onSurface,
+              ),
+              const SizedBox(width: 6),
+            ],
+            Text(
+              label,
+              style:
+                  (compact
+                          ? theme.textTheme.labelMedium
+                          : theme.textTheme.labelLarge)
+                      ?.copyWith(
+                        color: accent
+                            ? colorScheme.onPrimaryContainer
+                            : colorScheme.onSurface,
+                        fontWeight: FontWeight.w800,
+                      ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProgressLine extends StatelessWidget {
+  const _ProgressLine({required this.progress, required this.active});
+
+  final double progress;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(999),
+      child: SizedBox(
+        height: 4,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHigh,
+              ),
+            ),
+            FractionallySizedBox(
+              alignment: Alignment.centerLeft,
+              widthFactor: active ? progress : 0,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      colorScheme.primary.withValues(alpha: 0.72),
+                      colorScheme.primary,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChordInsightPanel extends StatelessWidget {
+  const _ChordInsightPanel({
+    required this.compact,
+    required this.dense,
+    required this.currentInsight,
+    required this.nextInsight,
+  });
+
+  final bool compact;
+  final bool dense;
+  final PracticeChordInsight currentInsight;
+  final PracticeChordInsight nextInsight;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final useStacked = compact && constraints.maxWidth < 560;
+        final gap = useStacked ? 8.0 : 10.0;
+        if (useStacked) {
+          return Column(
+            children: [
+              _ChordInsightCard(
+                insight: currentInsight,
+                accent: true,
+                dense: dense,
+              ),
+              SizedBox(height: gap),
+              _ChordInsightCard(insight: nextInsight, dense: dense),
+            ],
+          );
+        }
+        return Row(
+          children: [
+            Expanded(
+              child: _ChordInsightCard(
+                insight: currentInsight,
+                accent: true,
+                dense: dense,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: gap),
+              child: const Icon(Icons.arrow_forward_rounded, size: 18),
+            ),
+            Expanded(
+              child: _ChordInsightCard(insight: nextInsight, dense: dense),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ChordInsightCard extends StatelessWidget {
+  const _ChordInsightCard({
+    required this.insight,
+    this.accent = false,
+    this.dense = false,
+  });
+
+  final PracticeChordInsight insight;
+  final bool accent;
+  final bool dense;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return DecoratedBox(
+      decoration: ChordestUiTokens.innerPanelDecoration(theme, accent: accent),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          dense ? 12 : 14,
+          dense ? 10 : 12,
+          dense ? 12 : 14,
+          dense ? 10 : 12,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              insight.sectionLabel,
+              style: ChordestUiTokens.overlineStyle(theme),
+            ),
+            SizedBox(height: dense ? 6 : 8),
+            Wrap(
+              spacing: dense ? 6 : 8,
+              runSpacing: dense ? 6 : 8,
+              children: [
+                _MetaPill(
+                  label: insight.keyLabel,
+                  icon: Icons.music_note_rounded,
+                  accent: accent,
+                ),
+                if (insight.functionLabel.trim().isNotEmpty)
+                  _MetaPill(
+                    label: insight.functionLabel,
+                    icon: Icons.account_tree_outlined,
+                    accent: accent,
+                  ),
+              ],
+            ),
+            if (!dense && insight.description.trim().isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                insight.description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  height: 1.35,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MetaPill extends StatelessWidget {
+  const _MetaPill({
+    required this.label,
+    required this.icon,
+    required this.accent,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: accent
+            ? colorScheme.primaryContainer.withValues(alpha: 0.48)
+            : colorScheme.surface.withValues(alpha: 0.86),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 14,
+              color: accent
+                  ? colorScheme.primary
+                  : colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -909,12 +1380,11 @@ class _ChordMotionStage extends StatelessWidget {
     required double width,
   }) {
     final theme = Theme.of(context);
-    final sideColor = theme.colorScheme.onSurfaceVariant.withValues(
-      alpha: 0.72,
-    );
-    final currentColor = theme.colorScheme.onSurface;
+    final colorScheme = theme.colorScheme;
+    final sideColor = colorScheme.onSurfaceVariant.withValues(alpha: 0.84);
+    final currentColor = colorScheme.onSurface;
     final emphasis = layout.prominence.clamp(0.0, 1.0);
-    final boxWidth = width * _lerpDouble(0.18, 0.62, emphasis);
+    final boxWidth = width * _lerpDouble(0.24, 0.64, emphasis);
     final verticalOffset = _lerpDouble(10, 0, emphasis);
     final onTap = switch (role) {
       _ChordTokenRole.previous => onPreviousTap,
@@ -931,31 +1401,36 @@ class _ChordMotionStage extends StatelessWidget {
       _ChordTokenRole.next => null,
       _ChordTokenRole.current => const ValueKey('current-chord-text'),
     };
-    final textStyle = TextStyle.lerp(
-      performanceMode
-          ? theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.2,
-              height: 1,
-            )
-          : theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.3,
-              height: 1,
-            ),
-      performanceMode
-          ? theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.9,
-              height: 1,
-            )
-          : theme.textTheme.displayMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-              letterSpacing: -1.6,
-              height: 1,
-            ),
-      emphasis,
-    )?.copyWith(color: Color.lerp(sideColor, currentColor, emphasis));
+    final isCurrent = role == _ChordTokenRole.current;
+    final textStyle =
+        TextStyle.lerp(
+          performanceMode
+              ? theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.2,
+                  height: 1,
+                )
+              : theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                  height: 1,
+                ),
+          performanceMode
+              ? theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.9,
+                  height: 1,
+                )
+              : theme.textTheme.displayMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -1.6,
+                  height: 1,
+                ),
+          emphasis,
+        )?.copyWith(
+          color: Color.lerp(sideColor, currentColor, emphasis),
+          height: 0.94,
+        );
 
     return Align(
       alignment: Alignment(layout.alignmentX, 0),
@@ -976,16 +1451,43 @@ class _ChordMotionStage extends StatelessWidget {
                   behavior: HitTestBehavior.opaque,
                   onTap: label.isEmpty || onTap == null ? null : onTap,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isCurrent ? 12 : 8,
+                      vertical: isCurrent ? 8 : 4,
                     ),
-                    child: Text(
-                      key: textKey,
-                      label,
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
-                      style: textStyle,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: isCurrent
+                            ? colorScheme.surface.withValues(alpha: 0.62)
+                            : colorScheme.surface.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(
+                          isCurrent ? 24 : 18,
+                        ),
+                        boxShadow: isCurrent
+                            ? [
+                                BoxShadow(
+                                  color: colorScheme.primary.withValues(
+                                    alpha: 0.12,
+                                  ),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isCurrent ? 18 : 12,
+                          vertical: isCurrent ? 14 : 10,
+                        ),
+                        child: Text(
+                          key: textKey,
+                          label,
+                          maxLines: 1,
+                          textAlign: TextAlign.center,
+                          style: textStyle,
+                        ),
+                      ),
                     ),
                   ),
                 ),

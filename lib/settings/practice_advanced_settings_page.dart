@@ -11,6 +11,7 @@ import '../music/chord_anchor_loop.dart';
 import '../music/chord_formatting.dart';
 import '../music/chord_theory.dart';
 import '../widgets/chord_input_editor.dart';
+import '../ui/chordest_ui_tokens.dart';
 import 'practice_settings_factory.dart';
 import 'practice_settings.dart';
 import 'practice_settings_dispatcher.dart';
@@ -47,6 +48,7 @@ class _PracticeAdvancedSettingsPageState
 
   late PracticeSettings _settings;
   var _selectedCategory = _AdvancedSettingsCategory.rhythm;
+  final GlobalKey _autoPlayPatternFieldKey = GlobalKey();
 
   bool get _usesKeyMode => _settings.usesKeyMode;
   ChordAnchorLoop get _anchorLoop => AnchorLoopLayout.sanitizeLoop(
@@ -83,6 +85,21 @@ class _PracticeAdvancedSettingsPageState
       harmonicRhythmPreset: _settings.harmonicRhythmPreset,
     );
     _applySettings(_settings.copyWith(anchorLoop: sanitizedLoop), reseed: true);
+  }
+
+  void _ensureVisibleAfterFrame(GlobalKey key) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final context = key.currentContext;
+      if (!mounted || context == null) {
+        return;
+      }
+      Scrollable.ensureVisible(
+        context,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        alignment: 0.2,
+      );
+    });
   }
 
   List<_AnchorEditorSlotTiming> _anchorSlotTimingsForBar(int barOffset) {
@@ -223,8 +240,23 @@ class _PracticeAdvancedSettingsPageState
       _AdvancedSettingsCategory.metronome => l10n.metronomePatternTitle,
       _AdvancedSettingsCategory.sound => l10n.harmonySoundTitle,
       _AdvancedSettingsCategory.anchors => l10n.anchorLoopTitle,
-      _AdvancedSettingsCategory.harmony => l10n.advancedSmartGenerator,
+      _AdvancedSettingsCategory.harmony => l10n.smartGeneratorMode,
       _AdvancedSettingsCategory.voicing => l10n.voicingSuggestionsTitle,
+    };
+  }
+
+  String _categoryDescription(
+    AppLocalizations l10n,
+    _AdvancedSettingsCategory category,
+  ) {
+    return switch (category) {
+      _AdvancedSettingsCategory.rhythm => l10n.practiceMeterHelp,
+      _AdvancedSettingsCategory.melody => l10n.melodyGenerationHelp,
+      _AdvancedSettingsCategory.metronome => l10n.metronomePatternHelp,
+      _AdvancedSettingsCategory.sound => l10n.harmonySoundProfileSelectionHelp,
+      _AdvancedSettingsCategory.anchors => l10n.anchorLoopHelp,
+      _AdvancedSettingsCategory.harmony => l10n.smartPracticeDescription,
+      _AdvancedSettingsCategory.voicing => l10n.voicingSuggestionsHelp,
     };
   }
 
@@ -359,62 +391,74 @@ class _PracticeAdvancedSettingsPageState
           dispatcher.apply(
             (current) => current.copyWith(autoPlayChordChanges: value),
           );
-        },
-      ),
-      const SizedBox(height: 12),
-      DropdownButtonFormField<HarmonyPlaybackPattern>(
-        key: const ValueKey('auto-play-pattern-dropdown'),
-        initialValue: _settings.autoPlayPattern,
-        isExpanded: true,
-        decoration: InputDecoration(
-          border: const OutlineInputBorder(),
-          labelText: l10n.autoPlayPattern,
-          helperText: l10n.autoPlayPatternHelp,
-        ),
-        items: HarmonyPlaybackPattern.values
-            .map(
-              (value) => DropdownMenuItem<HarmonyPlaybackPattern>(
-                value: value,
-                child: Text(value.localizedLabel(l10n)),
-              ),
-            )
-            .toList(growable: false),
-        onChanged: (value) {
-          if (value == null) {
-            return;
+          if (value) {
+            _ensureVisibleAfterFrame(_autoPlayPatternFieldKey);
           }
-          dispatcher.apply(
-            (current) => current.copyWith(autoPlayPattern: value),
-          );
         },
       ),
       const SizedBox(height: 12),
-      _AdvancedSliderTile(
-        title: l10n.autoPlayHoldFactor,
-        subtitle: l10n.autoPlayHoldFactorHelp,
-        value: _settings.autoPlayHoldFactor,
-        min: PracticeSettings.minAutoPlayHoldFactor,
-        max: PracticeSettings.maxAutoPlayHoldFactor,
-        divisions: 12,
-        valueLabel: _percentLabel(_settings.autoPlayHoldFactor),
-        onChanged: (value) {
-          dispatcher.apply(
-            (current) => current.copyWith(autoPlayHoldFactor: value),
-          );
-        },
-      ),
-      const SizedBox(height: 12),
-      SwitchListTile.adaptive(
-        key: const ValueKey('auto-play-melody-toggle'),
-        contentPadding: EdgeInsets.zero,
-        title: Text(l10n.autoPlayMelodyWithChords),
-        subtitle: Text(l10n.autoPlayMelodyWithChordsPlaceholder),
-        value: _settings.autoPlayMelodyWithChords,
-        onChanged: (value) {
-          dispatcher.apply(
-            (current) => current.copyWith(autoPlayMelodyWithChords: value),
-          );
-        },
+      _AdvancedNestedGroup(
+        enabled: _settings.autoPlayChordChanges,
+        disabledMessage: l10n.autoPlayChordChangesHelp,
+        children: [
+          KeyedSubtree(
+            key: _autoPlayPatternFieldKey,
+            child: DropdownButtonFormField<HarmonyPlaybackPattern>(
+              key: const ValueKey('auto-play-pattern-dropdown'),
+              initialValue: _settings.autoPlayPattern,
+              isExpanded: true,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                labelText: l10n.autoPlayPattern,
+                helperText: l10n.autoPlayPatternHelp,
+              ),
+              items: HarmonyPlaybackPattern.values
+                  .map(
+                    (value) => DropdownMenuItem<HarmonyPlaybackPattern>(
+                      value: value,
+                      child: Text(value.localizedLabel(l10n)),
+                    ),
+                  )
+                  .toList(growable: false),
+              onChanged: (value) {
+                if (value == null) {
+                  return;
+                }
+                dispatcher.apply(
+                  (current) => current.copyWith(autoPlayPattern: value),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
+          _AdvancedSliderTile(
+            title: l10n.autoPlayHoldFactor,
+            subtitle: l10n.autoPlayHoldFactorHelp,
+            value: _settings.autoPlayHoldFactor,
+            min: PracticeSettings.minAutoPlayHoldFactor,
+            max: PracticeSettings.maxAutoPlayHoldFactor,
+            divisions: 12,
+            valueLabel: _percentLabel(_settings.autoPlayHoldFactor),
+            onChanged: (value) {
+              dispatcher.apply(
+                (current) => current.copyWith(autoPlayHoldFactor: value),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          SwitchListTile.adaptive(
+            key: const ValueKey('auto-play-melody-toggle'),
+            contentPadding: EdgeInsets.zero,
+            title: Text(l10n.autoPlayMelodyWithChords),
+            subtitle: Text(l10n.autoPlayMelodyWithChordsPlaceholder),
+            value: _settings.autoPlayMelodyWithChords,
+            onChanged: (value) {
+              dispatcher.apply(
+                (current) => current.copyWith(autoPlayMelodyWithChords: value),
+              );
+            },
+          ),
+        ],
       ),
     ];
   }
@@ -449,11 +493,7 @@ class _PracticeAdvancedSettingsPageState
       if (_settings.melodyGenerationEnabled) ...[
         const SizedBox(height: 12),
         DecoratedBox(
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: colorScheme.outlineVariant),
-          ),
+          decoration: ChordestUiTokens.innerPanelDecoration(theme),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
             child: Column(
@@ -940,13 +980,7 @@ class _PracticeAdvancedSettingsPageState
       ),
       const SizedBox(height: 12),
       DecoratedBox(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
-        ),
+        decoration: ChordestUiTokens.innerPanelDecoration(Theme.of(context)),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
           child: Column(
@@ -1161,11 +1195,7 @@ class _PracticeAdvancedSettingsPageState
         barOffset += 1
       ) ...[
         DecoratedBox(
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: colorScheme.outlineVariant),
-          ),
+          decoration: ChordestUiTokens.innerPanelDecoration(theme),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
@@ -1374,44 +1404,62 @@ class _PracticeAdvancedSettingsPageState
       ),
       const SizedBox(height: 24),
       _AdvancedSectionTitle(text: l10n.allowTensions),
-      Text(
-        l10n.tensionHelp,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: colorScheme.onSurfaceVariant,
-        ),
+      SwitchListTile.adaptive(
+        key: const ValueKey('allow-tensions-toggle'),
+        contentPadding: EdgeInsets.zero,
+        title: Text(l10n.allowTensions),
+        subtitle: Text(l10n.tensionHelp),
+        value: _settings.allowTensions,
+        onChanged: _usesKeyMode
+            ? (value) {
+                dispatcher.apply(
+                  (current) => current.copyWith(allowTensions: value),
+                  reseed: true,
+                );
+              }
+            : null,
       ),
-      const SizedBox(height: 10),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: ChordRenderingHelper.supportedTensionOptions
-            .map((tension) {
-              return FilterChip(
-                key: ValueKey('tension-chip-$tension'),
-                label: Text(tension),
-                selected: _settings.selectedTensionOptions.contains(tension),
-                showCheckmark: false,
-                onSelected: _usesKeyMode && _settings.allowTensions
-                    ? (selected) {
-                        final nextTensions = <String>{
-                          ..._settings.selectedTensionOptions,
-                        };
-                        if (selected) {
-                          nextTensions.add(tension);
-                        } else {
-                          nextTensions.remove(tension);
-                        }
-                        dispatcher.apply(
-                          (current) => current.copyWith(
-                            selectedTensionOptions: nextTensions,
-                          ),
-                          reseed: true,
-                        );
-                      }
-                    : null,
-              );
-            })
-            .toList(growable: false),
+      const SizedBox(height: 12),
+      _AdvancedNestedGroup(
+        enabled: _settings.allowTensions,
+        disabledMessage: l10n.tensionHelp,
+        showWhenDisabled: true,
+        children: [
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: ChordRenderingHelper.supportedTensionOptions
+                .map((tension) {
+                  return FilterChip(
+                    key: ValueKey('tension-chip-$tension'),
+                    label: Text(tension),
+                    selected: _settings.selectedTensionOptions.contains(
+                      tension,
+                    ),
+                    showCheckmark: false,
+                    onSelected: _usesKeyMode && _settings.allowTensions
+                        ? (selected) {
+                            final nextTensions = <String>{
+                              ..._settings.selectedTensionOptions,
+                            };
+                            if (selected) {
+                              nextTensions.add(tension);
+                            } else {
+                              nextTensions.remove(tension);
+                            }
+                            dispatcher.apply(
+                              (current) => current.copyWith(
+                                selectedTensionOptions: nextTensions,
+                              ),
+                              reseed: true,
+                            );
+                          }
+                        : null,
+                  );
+                })
+                .toList(growable: false),
+          ),
+        ],
       ),
     ];
   }
@@ -1581,70 +1629,85 @@ class _PracticeAdvancedSettingsPageState
       ),
       const SizedBox(height: 24),
       _AdvancedSectionTitle(text: l10n.inversions),
-      Text(
-        l10n.inversionHelp,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: colorScheme.onSurfaceVariant,
-        ),
+      SwitchListTile.adaptive(
+        key: const ValueKey('enable-inversions-toggle'),
+        contentPadding: EdgeInsets.zero,
+        title: Text(l10n.enableInversions),
+        subtitle: Text(l10n.inversionHelp),
+        value: _settings.inversionSettings.enabled,
+        onChanged: (value) {
+          dispatcher.apply(
+            (current) => current.copyWith(
+              inversionSettings: current.inversionSettings.copyWith(
+                enabled: value,
+              ),
+            ),
+            reseed: true,
+          );
+        },
       ),
-      const SizedBox(height: 10),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
+      const SizedBox(height: 12),
+      _AdvancedNestedGroup(
+        enabled: _settings.inversionSettings.enabled,
+        disabledMessage: l10n.inversionHelp,
+        showWhenDisabled: true,
         children: [
-          FilterChip(
-            key: const ValueKey('first-inversion-chip'),
-            label: Text(l10n.firstInversion),
-            selected: _settings.inversionSettings.firstInversionEnabled,
-            showCheckmark: false,
-            onSelected: _settings.inversionSettings.enabled
-                ? (selected) {
-                    dispatcher.apply(
-                      (current) => current.copyWith(
-                        inversionSettings: current.inversionSettings.copyWith(
-                          firstInversionEnabled: selected,
-                        ),
-                      ),
-                      reseed: true,
-                    );
-                  }
-                : null,
-          ),
-          FilterChip(
-            key: const ValueKey('second-inversion-chip'),
-            label: Text(l10n.secondInversion),
-            selected: _settings.inversionSettings.secondInversionEnabled,
-            showCheckmark: false,
-            onSelected: _settings.inversionSettings.enabled
-                ? (selected) {
-                    dispatcher.apply(
-                      (current) => current.copyWith(
-                        inversionSettings: current.inversionSettings.copyWith(
-                          secondInversionEnabled: selected,
-                        ),
-                      ),
-                      reseed: true,
-                    );
-                  }
-                : null,
-          ),
-          FilterChip(
-            key: const ValueKey('third-inversion-chip'),
-            label: Text(l10n.thirdInversion),
-            selected: _settings.inversionSettings.thirdInversionEnabled,
-            showCheckmark: false,
-            onSelected: _settings.inversionSettings.enabled
-                ? (selected) {
-                    dispatcher.apply(
-                      (current) => current.copyWith(
-                        inversionSettings: current.inversionSettings.copyWith(
-                          thirdInversionEnabled: selected,
-                        ),
-                      ),
-                      reseed: true,
-                    );
-                  }
-                : null,
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              FilterChip(
+                key: const ValueKey('first-inversion-chip'),
+                label: Text(l10n.firstInversion),
+                selected: _settings.inversionSettings.firstInversionEnabled,
+                showCheckmark: false,
+                onSelected: _settings.inversionSettings.enabled
+                    ? (selected) {
+                        dispatcher.apply(
+                          (current) => current.copyWith(
+                            inversionSettings: current.inversionSettings
+                                .copyWith(firstInversionEnabled: selected),
+                          ),
+                          reseed: true,
+                        );
+                      }
+                    : null,
+              ),
+              FilterChip(
+                key: const ValueKey('second-inversion-chip'),
+                label: Text(l10n.secondInversion),
+                selected: _settings.inversionSettings.secondInversionEnabled,
+                showCheckmark: false,
+                onSelected: _settings.inversionSettings.enabled
+                    ? (selected) {
+                        dispatcher.apply(
+                          (current) => current.copyWith(
+                            inversionSettings: current.inversionSettings
+                                .copyWith(secondInversionEnabled: selected),
+                          ),
+                          reseed: true,
+                        );
+                      }
+                    : null,
+              ),
+              FilterChip(
+                key: const ValueKey('third-inversion-chip'),
+                label: Text(l10n.thirdInversion),
+                selected: _settings.inversionSettings.thirdInversionEnabled,
+                showCheckmark: false,
+                onSelected: _settings.inversionSettings.enabled
+                    ? (selected) {
+                        dispatcher.apply(
+                          (current) => current.copyWith(
+                            inversionSettings: current.inversionSettings
+                                .copyWith(thirdInversionEnabled: selected),
+                          ),
+                          reseed: true,
+                        );
+                      }
+                    : null,
+              ),
+            ],
           ),
         ],
       ),
@@ -1656,7 +1719,7 @@ class _PracticeAdvancedSettingsPageState
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final size = MediaQuery.sizeOf(context);
-    final compactLayout = size.width < 860;
+    final compactLayout = size.width < 980;
     final categories = _AdvancedSettingsCategory.values;
     final dispatcher = PracticeSettingsDispatcher(
       settings: _settings,
@@ -1679,98 +1742,214 @@ class _PracticeAdvancedSettingsPageState
       ),
       body: DecoratedBox(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.primary.withValues(alpha: 0.05),
-              theme.scaffoldBackgroundColor,
-            ],
-          ),
+          gradient: ChordestUiTokens.pageGradient(theme),
         ),
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final sidebarWidth = compactLayout ? 108.0 : 134.0;
+              final sidebarWidth = compactLayout ? 178.0 : 224.0;
               return Center(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(
                     compactLayout ? 12 : 20,
-                    compactLayout ? 12 : 20,
+                    compactLayout ? 14 : 24,
                     compactLayout ? 12 : 20,
                     compactLayout ? 18 : 28,
                   ),
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1040),
+                    constraints: const BoxConstraints(maxWidth: 1180),
                     child: SizedBox(
                       height: constraints.maxHeight,
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          SizedBox(
-                            width: sidebarWidth,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                for (final category in categories)
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 10),
-                                    child: _AdvancedCategoryTab(
-                                      tabKey: ValueKey(
-                                        'advanced-settings-tab-${category.name}',
+                          DecoratedBox(
+                            decoration: ChordestUiTokens.panelDecoration(
+                              theme,
+                              borderRadius: ChordestUiTokens.radius(30),
+                            ),
+                            child: SizedBox(
+                              width: sidebarWidth,
+                              child: Padding(
+                                padding: EdgeInsets.fromLTRB(
+                                  compactLayout ? 10 : 14,
+                                  14,
+                                  compactLayout ? 10 : 14,
+                                  14,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        6,
+                                        4,
+                                        6,
+                                        14,
                                       ),
-                                      label: _categoryLabel(l10n, category),
-                                      icon: _categoryIcon(category),
-                                      selected: category == _selectedCategory,
-                                      compact: compactLayout,
-                                      onPressed: () {
-                                        setState(() {
-                                          _selectedCategory = category;
-                                        });
-                                      },
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            l10n.settings,
+                                            style:
+                                                ChordestUiTokens.overlineStyle(
+                                                  theme,
+                                                ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            l10n.setupAssistantAdvancedSectionBody,
+                                            style: theme.textTheme.bodySmall
+                                                ?.copyWith(
+                                                  color: colorScheme
+                                                      .onSurfaceVariant,
+                                                  height: 1.35,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                              ],
+                                    Expanded(
+                                      child: SingleChildScrollView(
+                                        child: Column(
+                                          children: [
+                                            for (final category in categories)
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                  bottom: 8,
+                                                ),
+                                                child: _AdvancedCategoryTab(
+                                                  tabKey: ValueKey(
+                                                    'advanced-settings-tab-${category.name}',
+                                                  ),
+                                                  label: _categoryLabel(
+                                                    l10n,
+                                                    category,
+                                                  ),
+                                                  icon: _categoryIcon(category),
+                                                  selected:
+                                                      category ==
+                                                      _selectedCategory,
+                                                  compact: compactLayout,
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      _selectedCategory =
+                                                          category;
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 14),
                           Expanded(
                             child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: colorScheme.surface.withValues(
-                                  alpha: 0.94,
-                                ),
-                                borderRadius: BorderRadius.circular(28),
-                                border: Border.all(
-                                  color: colorScheme.outlineVariant,
-                                ),
+                              decoration: ChordestUiTokens.panelDecoration(
+                                theme,
+                                accent: true,
+                                elevated: true,
+                                borderRadius: ChordestUiTokens.radius(32),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Padding(
-                                    padding: EdgeInsets.fromLTRB(
-                                      compactLayout ? 16 : 22,
-                                      compactLayout ? 16 : 22,
-                                      compactLayout ? 16 : 22,
-                                      0,
-                                    ),
-                                    child: Text(
-                                      _categoryLabel(l10n, _selectedCategory),
-                                      style: theme.textTheme.titleLarge
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w800,
+                                  DecoratedBox(
+                                    decoration:
+                                        ChordestUiTokens.innerPanelDecoration(
+                                          theme,
+                                          accent: true,
+                                          borderRadius:
+                                              const BorderRadius.vertical(
+                                                top: Radius.circular(32),
+                                              ),
+                                        ),
+                                    child: Padding(
+                                      padding: EdgeInsets.fromLTRB(
+                                        compactLayout ? 18 : 24,
+                                        compactLayout ? 18 : 22,
+                                        compactLayout ? 18 : 24,
+                                        compactLayout ? 16 : 18,
+                                      ),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          DecoratedBox(
+                                            decoration: BoxDecoration(
+                                              color: colorScheme
+                                                  .primaryContainer
+                                                  .withValues(alpha: 0.78),
+                                              borderRadius:
+                                                  ChordestUiTokens.radius(18),
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(12),
+                                              child: Icon(
+                                                _categoryIcon(
+                                                  _selectedCategory,
+                                                ),
+                                                color: colorScheme.primary,
+                                              ),
+                                            ),
                                           ),
+                                          const SizedBox(width: 14),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  _categoryLabel(
+                                                    l10n,
+                                                    _selectedCategory,
+                                                  ),
+                                                  style: theme
+                                                      .textTheme
+                                                      .headlineSmall
+                                                      ?.copyWith(
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                      ),
+                                                ),
+                                                const SizedBox(height: 6),
+                                                Text(
+                                                  _categoryDescription(
+                                                    l10n,
+                                                    _selectedCategory,
+                                                  ),
+                                                  style: theme
+                                                      .textTheme
+                                                      .bodyMedium
+                                                      ?.copyWith(
+                                                        color: colorScheme
+                                                            .onSurfaceVariant,
+                                                        height: 1.4,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(height: 12),
                                   Expanded(
                                     child: Scrollbar(
                                       child: SingleChildScrollView(
                                         padding: EdgeInsets.fromLTRB(
-                                          compactLayout ? 16 : 22,
-                                          0,
-                                          compactLayout ? 16 : 22,
-                                          compactLayout ? 18 : 22,
+                                          compactLayout ? 18 : 24,
+                                          compactLayout ? 18 : 20,
+                                          compactLayout ? 18 : 24,
+                                          compactLayout ? 22 : 26,
                                         ),
                                         child: Column(
                                           crossAxisAlignment:
@@ -3143,96 +3322,64 @@ class _AdvancedCategoryTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    return Transform.translate(
-      offset: Offset(selected ? 8 : 0, 0),
-      child: Tooltip(
-        message: compact ? label : '',
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                key: tabKey,
-                onTap: onPressed,
-                borderRadius: BorderRadius.horizontal(
-                  left: const Radius.circular(20),
-                  right: Radius.circular(selected ? 8 : 18),
-                ),
-                child: Ink(
-                  padding: EdgeInsets.fromLTRB(
-                    compact ? 10 : 12,
-                    compact ? 12 : 14,
-                    compact ? 10 : 12,
-                    compact ? 12 : 14,
-                  ),
-                  decoration: BoxDecoration(
-                    color: selected
-                        ? colorScheme.surface.withValues(alpha: 0.94)
-                        : colorScheme.surfaceContainerLow.withValues(
-                            alpha: 0.92,
-                          ),
-                    borderRadius: BorderRadius.horizontal(
-                      left: const Radius.circular(20),
-                      right: Radius.circular(selected ? 8 : 18),
-                    ),
-                    border: Border.all(color: colorScheme.outlineVariant),
-                    boxShadow: [
-                      if (!selected)
-                        BoxShadow(
-                          color: colorScheme.shadow.withValues(alpha: 0.06),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: compact
-                        ? MainAxisAlignment.center
-                        : MainAxisAlignment.start,
-                    children: [
-                      Icon(
-                        icon,
-                        size: compact ? 18 : 20,
-                        color: selected
-                            ? colorScheme.primary
-                            : colorScheme.onSurfaceVariant,
-                      ),
-                      if (!compact) ...[
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            label,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              color: selected
-                                  ? colorScheme.onSurface
-                                  : colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+    return Tooltip(
+      message: compact ? label : '',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          key: tabKey,
+          onTap: onPressed,
+          borderRadius: ChordestUiTokens.radius(20),
+          child: Ink(
+            padding: EdgeInsets.fromLTRB(
+              compact ? 12 : 14,
+              compact ? 12 : 13,
+              compact ? 12 : 14,
+              compact ? 12 : 13,
+            ),
+            decoration: BoxDecoration(
+              color: selected
+                  ? colorScheme.primaryContainer.withValues(alpha: 0.78)
+                  : colorScheme.surface.withValues(alpha: 0.72),
+              borderRadius: ChordestUiTokens.radius(20),
+              border: Border.all(
+                color: selected
+                    ? colorScheme.primary.withValues(alpha: 0.24)
+                    : colorScheme.outlineVariant.withValues(alpha: 0.84),
               ),
             ),
-            if (selected)
-              Positioned(
-                top: 2,
-                right: -8,
-                bottom: 2,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface.withValues(alpha: 0.94),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const SizedBox(width: 14),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  size: compact ? 18 : 20,
+                  color: selected
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant,
                 ),
-              ),
-          ],
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: selected
+                          ? colorScheme.onSurface
+                          : colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                if (selected)
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: colorScheme.primary,
+                    size: 18,
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -3247,8 +3394,13 @@ class _AdvancedSectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(text, style: Theme.of(context).textTheme.titleMedium),
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Text(
+        text,
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+      ),
     );
   }
 }
@@ -3280,13 +3432,9 @@ class _AdvancedSliderTile extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
+      decoration: ChordestUiTokens.innerPanelDecoration(theme, accent: true),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -3302,8 +3450,9 @@ class _AdvancedSliderTile extends StatelessWidget {
                 ),
                 Text(
                   valueLabel,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ],
@@ -3324,6 +3473,80 @@ class _AdvancedSliderTile extends StatelessWidget {
               onChanged: onChanged,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AdvancedNestedGroup extends StatelessWidget {
+  const _AdvancedNestedGroup({
+    required this.enabled,
+    required this.children,
+    required this.disabledMessage,
+    this.showWhenDisabled = false,
+  });
+
+  final bool enabled;
+  final List<Widget> children;
+  final String disabledMessage;
+  final bool showWhenDisabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    if (enabled) {
+      return DecoratedBox(
+        decoration: ChordestUiTokens.innerPanelDecoration(theme),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: children,
+          ),
+        ),
+      );
+    }
+    if (showWhenDisabled) {
+      return DecoratedBox(
+        decoration: ChordestUiTokens.innerPanelDecoration(theme),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                disabledMessage,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 10),
+              IgnorePointer(
+                child: Opacity(
+                  opacity: 0.46,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: children,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return DecoratedBox(
+      decoration: ChordestUiTokens.innerPanelDecoration(theme),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Text(
+          disabledMessage,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+            height: 1.35,
+          ),
         ),
       ),
     );
@@ -3357,11 +3580,7 @@ class _MetronomeSourceEditor extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-      ),
+      decoration: ChordestUiTokens.innerPanelDecoration(Theme.of(context)),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(

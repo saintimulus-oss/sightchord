@@ -1,0 +1,12 @@
+Chordest is a local-first harmony practice app for improvisation, reading, and harmonic vocabulary work.
+
+Practice across all 12 roots, switch between free and key-aware generation, and explore weighted harmonic motion with Smart Generator. Inspect progressions with the built-in Chord Analyzer, study harmonic function, and drill chord movement with metronome and autoplay tools.
+
+Chordest includes:
+- Free and key-based practice modes
+- Smart harmonic progression generation
+- Chord Analyzer summaries with harmonic context
+- Tensions, inversions, slash chords, and alternate symbol styles
+- Localized UI for English, Spanish, Simplified Chinese, Japanese, and Korean
+
+The current release is local-first. Settings and progress stay on the device and no account is required to start practicing.

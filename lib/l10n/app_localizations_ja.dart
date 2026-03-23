@@ -2007,7 +2007,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get chordAnalyzerPlaceholderExplanation =>
-      'This ? was inferred from the surrounding harmonic context, so treat it as a suggested fill rather than a certainty.';
+      'この ? は前後の和声文脈から推定されたものです。確定値ではなく、候補の補完として受け取ってください。';
 
   @override
   String chordAnalyzerSuggestedFill(Object chord) {
@@ -4515,7 +4515,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get studyHarmonyTrackJazzFocus2 =>
-      'Major ii-V-I, minor ii-V-i, and turnaround behavior';
+      'major ii-V-I、minor iiø-V-i、turnaround の流れ';
 
   @override
   String get studyHarmonyTrackJazzFocus3 =>
@@ -4665,7 +4665,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get studyHarmonyJazzLessonMinorCadenceDescription =>
-      'Recognize how minor ii-V-i motion feels and why the dominant sounds more urgent there.';
+      'minor iiø-V-i の進行感と、そこでドミナントがより切迫して聞こえる理由をつかみます。';
 
   @override
   String get studyHarmonyJazzLessonRootlessVoicingsTitle => 'Rootless Voicings';
@@ -4694,7 +4694,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get studyHarmonyJazzLessonBossDescription =>
-      'Compare major and minor cadence pull, then hear how jazz dominant color changes the same route home.';
+      'major ii-V-I、minor iiø-V-i、rootless color、慎重な reharm を組み合わせても、終止の着地点が読み取りやすいかを確かめます。';
 
   @override
   String get studyHarmonyClassicalChapterCadenceLabTitle => 'Cadence Lab';
@@ -5126,42 +5126,38 @@ class AppLocalizationsJa extends AppLocalizations {
   String get practiceFirstRunSetupButton => 'Personalize';
 
   @override
-  String get musicNotationLocale => 'Music notation language';
+  String get musicNotationLocale => '記譜言語';
 
   @override
-  String get musicNotationLocaleHelp =>
-      'Controls the language used for optional Roman numeral and chord-text assists.';
+  String get musicNotationLocaleHelp => 'ローマ数字補助やコードテキスト補助で使う言語を切り替えます。';
 
   @override
-  String get musicNotationLocaleUiDefault => 'Match app language';
+  String get musicNotationLocaleUiDefault => 'アプリの言語に合わせる';
 
   @override
-  String get musicNotationLocaleEnglish => 'English';
+  String get musicNotationLocaleEnglish => '英語';
 
   @override
-  String get noteNamingStyle => 'Note naming';
+  String get noteNamingStyle => '音名表記';
 
   @override
-  String get noteNamingStyleHelp =>
-      'Switches displayed note and key names without changing harmonic logic.';
+  String get noteNamingStyleHelp => '和声ロジックは変えずに、表示する音名と調名の表記だけを切り替えます。';
 
   @override
-  String get noteNamingStyleEnglish => 'English letters';
+  String get noteNamingStyleEnglish => '英字表記';
 
   @override
-  String get noteNamingStyleLatin => 'Do Re Mi';
+  String get noteNamingStyleLatin => 'ドレミ';
 
   @override
-  String get showRomanNumeralAssist => 'Show Roman numeral assist';
+  String get showRomanNumeralAssist => 'ローマ数字補助を表示';
 
   @override
-  String get showRomanNumeralAssistHelp =>
-      'Adds a short explanation next to Roman numeral labels.';
+  String get showRomanNumeralAssistHelp => 'ローマ数字ラベルの横に短い説明を添えます。';
 
   @override
-  String get showChordTextAssist => 'Show chord text assist';
+  String get showChordTextAssist => 'コードテキスト補助を表示';
 
   @override
-  String get showChordTextAssistHelp =>
-      'Adds a short text explanation for chord quality and tensions.';
+  String get showChordTextAssistHelp => 'コードの性質やテンションを短いテキストで補足します。';
 }

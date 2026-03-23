@@ -76,7 +76,7 @@ Future<void> main(List<String> args) async {
 
   final manifestRecord = <String, Object?>{
     'recordType': 'dataset_manifest',
-    'datasetName': 'sightchord_smart_generator_rounds_01_08_analysis_bundle',
+    'datasetName': 'chordest_smart_generator_rounds_01_08_analysis_bundle',
     'generatedAtUtc': DateTime.now().toUtc().toIso8601String(),
     'format': 'jsonl',
     'description':

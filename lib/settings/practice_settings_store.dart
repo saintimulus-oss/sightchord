@@ -579,278 +579,257 @@ class PracticeSettingsStore {
 
   Future<void> save(PracticeSettings settings) async {
     final preferences = await _preferencesLoader();
-    await preferences.setString(languageKey, settings.language.storageKey);
-    await preferences.setString(
-      appThemeModeKey,
-      settings.appThemeMode.storageKey,
+    final sanitizedAnchorLoop = AnchorLoopLayout.sanitizeLoop(
+      loop: settings.anchorLoop,
+      timeSignature: settings.timeSignature,
+      harmonicRhythmPreset: settings.harmonicRhythmPreset,
     );
-    await preferences.setBool(
-      guidedSetupCompletedKey,
-      settings.guidedSetupCompleted,
-    );
-    await preferences.setString(
-      settingsComplexityModeKey,
-      settings.settingsComplexityMode.storageKey,
-    );
-    await preferences.setString(
-      preferredSuggestionKindKey,
-      settings.preferredSuggestionKind.storageKey,
-    );
-    await preferences.setString(
-      chordLanguageLevelKey,
-      settings.chordLanguageLevel.storageKey,
-    );
-    await preferences.setString(
-      romanPoolPresetKey,
-      settings.romanPoolPreset.storageKey,
-    );
-    await preferences.setString(
-      musicNotationLocaleKey,
-      settings.musicNotationLocale.storageKey,
-    );
-    await preferences.setString(
-      noteNamingStyleKey,
-      settings.noteNamingStyle.storageKey,
-    );
-    await preferences.setBool(
-      showRomanNumeralAssistKey,
-      settings.showRomanNumeralAssist,
-    );
-    await preferences.setBool(
-      showChordTextAssistKey,
-      settings.showChordTextAssist,
-    );
-    await preferences.setBool(metronomeEnabledKey, settings.metronomeEnabled);
-    await preferences.setDouble(metronomeVolumeKey, settings.metronomeVolume);
-    await preferences.setString(
-      metronomeSoundKey,
-      settings.metronomeSound.storageKey,
-    );
-    await preferences.setString(
-      metronomeSourceKey,
-      settings.metronomeSource.toStorageString(),
-    );
-    await preferences.setString(
-      metronomePatternKey,
-      settings.metronomePattern.toStorageString(),
-    );
-    await preferences.setBool(
-      metronomeUseAccentSoundKey,
-      settings.metronomeUseAccentSound,
-    );
-    await preferences.setString(
-      metronomeAccentSourceKey,
-      settings.metronomeAccentSource.toStorageString(),
-    );
-    await preferences.setString(
-      timeSignatureKey,
-      settings.timeSignature.storageKey,
-    );
-    await preferences.setString(
-      harmonicRhythmPresetKey,
-      settings.harmonicRhythmPreset.storageKey,
-    );
-    await preferences.setBool(
-      autoPlayChordChangesKey,
-      settings.autoPlayChordChanges,
-    );
-    await preferences.setString(
-      autoPlayPatternKey,
-      settings.autoPlayPattern.storageKey,
-    );
-    await preferences.setDouble(
-      autoPlayHoldFactorKey,
-      settings.autoPlayHoldFactor,
-    );
-    await preferences.setBool(
-      autoPlayMelodyWithChordsKey,
-      settings.autoPlayMelodyWithChords,
-    );
-    await preferences.setBool(
-      melodyGenerationEnabledKey,
-      settings.melodyGenerationEnabled,
-    );
-    await preferences.setString(
-      melodyDensityKey,
-      settings.melodyDensity.storageKey,
-    );
-    await preferences.setDouble(
-      motifRepetitionStrengthKey,
-      settings.motifRepetitionStrength,
-    );
-    await preferences.setDouble(
-      approachToneDensityKey,
-      settings.approachToneDensity,
-    );
-    await preferences.setInt(melodyRangeLowKey, settings.melodyRangeLow);
-    await preferences.setInt(melodyRangeHighKey, settings.melodyRangeHigh);
-    await preferences.setString(
-      melodyStyleKey,
-      settings.melodyStyle.storageKey,
-    );
-    await preferences.setBool(
-      allowChromaticApproachesKey,
-      settings.allowChromaticApproaches,
-    );
-    await preferences.setDouble(syncopationBiasKey, settings.syncopationBias);
-    await preferences.setDouble(
-      colorRealizationBiasKey,
-      settings.colorRealizationBias,
-    );
-    await preferences.setDouble(noveltyTargetKey, settings.noveltyTarget);
-    await preferences.setDouble(
-      motifVariationBiasKey,
-      settings.motifVariationBias,
-    );
-    await preferences.setDouble(
-      anticipationProbabilityKey,
-      settings.anticipationProbability,
-    );
-    await preferences.setDouble(colorToneTargetKey, settings.colorToneTarget);
-    await preferences.setDouble(
-      exactRepeatTargetKey,
-      settings.exactRepeatTarget,
-    );
-    await preferences.setString(
-      melodyPlaybackModeKey,
-      settings.melodyPlaybackMode.storageKey,
-    );
-    await preferences.setString(
-      harmonySoundProfileSelectionKey,
-      settings.harmonySoundProfileSelection.storageKey,
-    );
-    await preferences.setDouble(
-      harmonyMasterVolumeKey,
-      settings.harmonyMasterVolume,
-    );
-    await preferences.setDouble(
-      harmonyPreviewHoldFactorKey,
-      settings.harmonyPreviewHoldFactor,
-    );
-    await preferences.setDouble(
-      harmonyArpeggioStepSpeedKey,
-      settings.harmonyArpeggioStepSpeed,
-    );
-    await preferences.setDouble(
-      harmonyVelocityHumanizationKey,
-      settings.harmonyVelocityHumanization,
-    );
-    await preferences.setDouble(
-      harmonyGainRandomnessKey,
-      settings.harmonyGainRandomness,
-    );
-    await preferences.setDouble(
-      harmonyTimingHumanizationKey,
-      settings.harmonyTimingHumanization,
-    );
-    await preferences.setString(
-      chordAnchorLoopKey,
-      AnchorLoopLayout.sanitizeLoop(
-        loop: settings.anchorLoop,
-        timeSignature: settings.timeSignature,
-        harmonicRhythmPreset: settings.harmonicRhythmPreset,
-      ).toStorageString(),
-    );
-    await preferences.setStringList(activeKeysKey, _sortedActiveKeys(settings));
-    await preferences.setStringList(
-      activeKeyCentersKey,
-      _sortedActiveKeyCenters(settings.activeKeyCenters),
-    );
-    await preferences.setBool(
-      smartGeneratorModeKey,
-      settings.smartGeneratorMode,
-    );
-    await preferences.setBool(
-      secondaryDominantEnabledKey,
-      settings.secondaryDominantEnabled,
-    );
-    await preferences.setBool(
-      substituteDominantEnabledKey,
-      settings.substituteDominantEnabled,
-    );
-    await preferences.setBool(
-      modalInterchangeEnabledKey,
-      settings.modalInterchangeEnabled,
-    );
-    await preferences.setString(
-      modulationIntensityKey,
-      settings.modulationIntensity.name,
-    );
-    await preferences.setString(jazzPresetKey, settings.jazzPreset.name);
-    await preferences.setString(sourceProfileKey, settings.sourceProfile.name);
-    await preferences.setBool(
-      smartDiagnosticsEnabledKey,
-      settings.smartDiagnosticsEnabled,
-    );
-    await preferences.setString(
-      chordSymbolStyleKey,
-      settings.chordSymbolStyle.name,
-    );
-    await preferences.setBool(allowV7sus4Key, settings.allowV7sus4);
-    await preferences.setBool(allowTensionsKey, settings.allowTensions);
-    await preferences.setStringList(
-      enabledChordQualitiesKey,
-      _sortedChordQualities(settings.enabledChordQualities),
-    );
-    await preferences.setStringList(
-      selectedTensionsKey,
-      _sortedTensionOptions(settings.selectedTensionOptions),
-    );
-    await preferences.setBool(
-      voicingSuggestionsEnabledKey,
-      settings.voicingSuggestionsEnabled,
-    );
-    await preferences.setString(
-      voicingDisplayModeKey,
-      settings.voicingDisplayMode.storageKey,
-    );
-    await preferences.setString(
-      voicingComplexityKey,
-      settings.voicingComplexity.name,
-    );
-    await preferences.setString(
-      voicingTopNotePreferenceKey,
-      settings.voicingTopNotePreference.storageKey,
-    );
-    await preferences.setBool(
-      allowRootlessVoicingsKey,
-      settings.allowRootlessVoicings,
-    );
-    await preferences.setInt(maxVoicingNotesKey, settings.maxVoicingNotes);
-    await preferences.setInt(lookAheadDepthKey, settings.lookAheadDepth);
-    await preferences.setBool(
-      showVoicingReasonsKey,
-      settings.showVoicingReasons,
-    );
-    await preferences.setString(
-      keyCenterLabelStyleKey,
-      settings.keyCenterLabelStyle.name,
-    );
-    await preferences.setString(
-      progressionExplanationDetailLevelKey,
-      settings.progressionExplanationDetailLevel.storageKey,
-    );
-    await preferences.setString(
-      progressionHighlightThemeKey,
-      settings.progressionHighlightTheme.toStorageString(),
-    );
-    await preferences.setInt(bpmKey, settings.bpm);
-    await preferences.setBool(
-      inversionsEnabledKey,
-      settings.inversionSettings.enabled,
-    );
-    await preferences.setBool(
-      firstInversionEnabledKey,
-      settings.inversionSettings.firstInversionEnabled,
-    );
-    await preferences.setBool(
-      secondInversionEnabledKey,
-      settings.inversionSettings.secondInversionEnabled,
-    );
-    await preferences.setBool(
-      thirdInversionEnabledKey,
-      settings.inversionSettings.thirdInversionEnabled,
-    );
+    await Future.wait<bool>([
+      preferences.setString(languageKey, settings.language.storageKey),
+      preferences.setString(appThemeModeKey, settings.appThemeMode.storageKey),
+      preferences.setBool(
+        guidedSetupCompletedKey,
+        settings.guidedSetupCompleted,
+      ),
+      preferences.setString(
+        settingsComplexityModeKey,
+        settings.settingsComplexityMode.storageKey,
+      ),
+      preferences.setString(
+        preferredSuggestionKindKey,
+        settings.preferredSuggestionKind.storageKey,
+      ),
+      preferences.setString(
+        chordLanguageLevelKey,
+        settings.chordLanguageLevel.storageKey,
+      ),
+      preferences.setString(
+        romanPoolPresetKey,
+        settings.romanPoolPreset.storageKey,
+      ),
+      preferences.setString(
+        musicNotationLocaleKey,
+        settings.musicNotationLocale.storageKey,
+      ),
+      preferences.setString(
+        noteNamingStyleKey,
+        settings.noteNamingStyle.storageKey,
+      ),
+      preferences.setBool(
+        showRomanNumeralAssistKey,
+        settings.showRomanNumeralAssist,
+      ),
+      preferences.setBool(showChordTextAssistKey, settings.showChordTextAssist),
+      preferences.setBool(metronomeEnabledKey, settings.metronomeEnabled),
+      preferences.setDouble(metronomeVolumeKey, settings.metronomeVolume),
+      preferences.setString(
+        metronomeSoundKey,
+        settings.metronomeSound.storageKey,
+      ),
+      preferences.setString(
+        metronomeSourceKey,
+        settings.metronomeSource.toStorageString(),
+      ),
+      preferences.setString(
+        metronomePatternKey,
+        settings.metronomePattern.toStorageString(),
+      ),
+      preferences.setBool(
+        metronomeUseAccentSoundKey,
+        settings.metronomeUseAccentSound,
+      ),
+      preferences.setString(
+        metronomeAccentSourceKey,
+        settings.metronomeAccentSource.toStorageString(),
+      ),
+      preferences.setString(
+        timeSignatureKey,
+        settings.timeSignature.storageKey,
+      ),
+      preferences.setString(
+        harmonicRhythmPresetKey,
+        settings.harmonicRhythmPreset.storageKey,
+      ),
+      preferences.setBool(
+        autoPlayChordChangesKey,
+        settings.autoPlayChordChanges,
+      ),
+      preferences.setString(
+        autoPlayPatternKey,
+        settings.autoPlayPattern.storageKey,
+      ),
+      preferences.setDouble(autoPlayHoldFactorKey, settings.autoPlayHoldFactor),
+      preferences.setBool(
+        autoPlayMelodyWithChordsKey,
+        settings.autoPlayMelodyWithChords,
+      ),
+      preferences.setBool(
+        melodyGenerationEnabledKey,
+        settings.melodyGenerationEnabled,
+      ),
+      preferences.setString(
+        melodyDensityKey,
+        settings.melodyDensity.storageKey,
+      ),
+      preferences.setDouble(
+        motifRepetitionStrengthKey,
+        settings.motifRepetitionStrength,
+      ),
+      preferences.setDouble(
+        approachToneDensityKey,
+        settings.approachToneDensity,
+      ),
+      preferences.setInt(melodyRangeLowKey, settings.melodyRangeLow),
+      preferences.setInt(melodyRangeHighKey, settings.melodyRangeHigh),
+      preferences.setString(melodyStyleKey, settings.melodyStyle.storageKey),
+      preferences.setBool(
+        allowChromaticApproachesKey,
+        settings.allowChromaticApproaches,
+      ),
+      preferences.setDouble(syncopationBiasKey, settings.syncopationBias),
+      preferences.setDouble(
+        colorRealizationBiasKey,
+        settings.colorRealizationBias,
+      ),
+      preferences.setDouble(noveltyTargetKey, settings.noveltyTarget),
+      preferences.setDouble(motifVariationBiasKey, settings.motifVariationBias),
+      preferences.setDouble(
+        anticipationProbabilityKey,
+        settings.anticipationProbability,
+      ),
+      preferences.setDouble(colorToneTargetKey, settings.colorToneTarget),
+      preferences.setDouble(exactRepeatTargetKey, settings.exactRepeatTarget),
+      preferences.setString(
+        melodyPlaybackModeKey,
+        settings.melodyPlaybackMode.storageKey,
+      ),
+      preferences.setString(
+        harmonySoundProfileSelectionKey,
+        settings.harmonySoundProfileSelection.storageKey,
+      ),
+      preferences.setDouble(
+        harmonyMasterVolumeKey,
+        settings.harmonyMasterVolume,
+      ),
+      preferences.setDouble(
+        harmonyPreviewHoldFactorKey,
+        settings.harmonyPreviewHoldFactor,
+      ),
+      preferences.setDouble(
+        harmonyArpeggioStepSpeedKey,
+        settings.harmonyArpeggioStepSpeed,
+      ),
+      preferences.setDouble(
+        harmonyVelocityHumanizationKey,
+        settings.harmonyVelocityHumanization,
+      ),
+      preferences.setDouble(
+        harmonyGainRandomnessKey,
+        settings.harmonyGainRandomness,
+      ),
+      preferences.setDouble(
+        harmonyTimingHumanizationKey,
+        settings.harmonyTimingHumanization,
+      ),
+      preferences.setString(
+        chordAnchorLoopKey,
+        sanitizedAnchorLoop.toStorageString(),
+      ),
+      preferences.setStringList(activeKeysKey, _sortedActiveKeys(settings)),
+      preferences.setStringList(
+        activeKeyCentersKey,
+        _sortedActiveKeyCenters(settings.activeKeyCenters),
+      ),
+      preferences.setBool(smartGeneratorModeKey, settings.smartGeneratorMode),
+      preferences.setBool(
+        secondaryDominantEnabledKey,
+        settings.secondaryDominantEnabled,
+      ),
+      preferences.setBool(
+        substituteDominantEnabledKey,
+        settings.substituteDominantEnabled,
+      ),
+      preferences.setBool(
+        modalInterchangeEnabledKey,
+        settings.modalInterchangeEnabled,
+      ),
+      preferences.setString(
+        modulationIntensityKey,
+        settings.modulationIntensity.name,
+      ),
+      preferences.setString(jazzPresetKey, settings.jazzPreset.name),
+      preferences.setString(sourceProfileKey, settings.sourceProfile.name),
+      preferences.setBool(
+        smartDiagnosticsEnabledKey,
+        settings.smartDiagnosticsEnabled,
+      ),
+      preferences.setString(
+        chordSymbolStyleKey,
+        settings.chordSymbolStyle.name,
+      ),
+      preferences.setBool(allowV7sus4Key, settings.allowV7sus4),
+      preferences.setBool(allowTensionsKey, settings.allowTensions),
+      preferences.setStringList(
+        enabledChordQualitiesKey,
+        _sortedChordQualities(settings.enabledChordQualities),
+      ),
+      preferences.setStringList(
+        selectedTensionsKey,
+        _sortedTensionOptions(settings.selectedTensionOptions),
+      ),
+      preferences.setBool(
+        voicingSuggestionsEnabledKey,
+        settings.voicingSuggestionsEnabled,
+      ),
+      preferences.setString(
+        voicingDisplayModeKey,
+        settings.voicingDisplayMode.storageKey,
+      ),
+      preferences.setString(
+        voicingComplexityKey,
+        settings.voicingComplexity.name,
+      ),
+      preferences.setString(
+        voicingTopNotePreferenceKey,
+        settings.voicingTopNotePreference.storageKey,
+      ),
+      preferences.setBool(
+        allowRootlessVoicingsKey,
+        settings.allowRootlessVoicings,
+      ),
+      preferences.setInt(maxVoicingNotesKey, settings.maxVoicingNotes),
+      preferences.setInt(lookAheadDepthKey, settings.lookAheadDepth),
+      preferences.setBool(showVoicingReasonsKey, settings.showVoicingReasons),
+      preferences.setString(
+        keyCenterLabelStyleKey,
+        settings.keyCenterLabelStyle.name,
+      ),
+      preferences.setString(
+        progressionExplanationDetailLevelKey,
+        settings.progressionExplanationDetailLevel.storageKey,
+      ),
+      preferences.setString(
+        progressionHighlightThemeKey,
+        settings.progressionHighlightTheme.toStorageString(),
+      ),
+      preferences.setInt(bpmKey, settings.bpm),
+      preferences.setBool(
+        inversionsEnabledKey,
+        settings.inversionSettings.enabled,
+      ),
+      preferences.setBool(
+        firstInversionEnabledKey,
+        settings.inversionSettings.firstInversionEnabled,
+      ),
+      preferences.setBool(
+        secondInversionEnabledKey,
+        settings.inversionSettings.secondInversionEnabled,
+      ),
+      preferences.setBool(
+        thirdInversionEnabledKey,
+        settings.inversionSettings.thirdInversionEnabled,
+      ),
+    ]);
   }
 
   T _parseStoredValue<T>(

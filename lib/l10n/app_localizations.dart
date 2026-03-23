@@ -654,7 +654,7 @@ abstract class AppLocalizations {
   /// No description provided for @setupAssistantNotationDelta.
   ///
   /// In en, this message translates to:
-  /// **'C?7 style'**
+  /// **'CΔ7 style'**
   String get setupAssistantNotationDelta;
 
   /// No description provided for @setupAssistantDifficultyTriads.
@@ -7887,7 +7887,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyHarmonyJazzLessonMinorCadenceDescription.
   ///
   /// In en, this message translates to:
-  /// **'Recognize how minor ii첩-V-i motion feels and why the dominant sounds more urgent there.'**
+  /// **'Recognize how minor iiø-V-i motion feels and why the dominant sounds more urgent there.'**
   String get studyHarmonyJazzLessonMinorCadenceDescription;
 
   /// No description provided for @studyHarmonyJazzLessonRootlessVoicingsTitle.

@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'audio/harmony_audio_service.dart';
-import 'audio/sightchord_audio_scope.dart';
+import 'audio/chordest_audio_scope.dart';
 import 'l10n/app_localizations.dart';
 import 'main_menu_page.dart';
 import 'settings/settings_controller.dart';
 import 'study_harmony/application/study_harmony_progress_controller.dart';
+import 'ui/chordest_ui_tokens.dart';
 
 class MyApp extends StatefulWidget {
   MyApp({
@@ -42,7 +43,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   static const Color _accentPurple = Color(0xFF6E56CF);
   static const Color _lightBackground = Color(0xFFFFFFFF);
-  static const Color _darkBackground = Color(0xFF1A1B20);
+  static const Color _darkBackground = Color(0xFF15171C);
 
   @override
   void dispose() {
@@ -81,19 +82,19 @@ class _MyAppState extends State<MyApp> {
               ? const Color(0xFFB9BDCA)
               : const Color(0xFF616775),
           surfaceContainerLowest: isDark
-              ? const Color(0xFF131419)
+              ? const Color(0xFF101216)
               : const Color(0xFFFFFFFF),
           surfaceContainerLow: isDark
-              ? const Color(0xFF1C1E25)
+              ? const Color(0xFF1B1D24)
               : const Color(0xFFF8F9FD),
           surfaceContainer: isDark
               ? const Color(0xFF23262E)
               : const Color(0xFFF2F4F9),
           surfaceContainerHigh: isDark
-              ? const Color(0xFF2A2D35)
+              ? const Color(0xFF292D36)
               : const Color(0xFFECEEF5),
           surfaceContainerHighest: isDark
-              ? const Color(0xFF31343D)
+              ? const Color(0xFF30343E)
               : const Color(0xFFE4E7EF),
           outline: isDark ? const Color(0xFF5C6170) : const Color(0xFFD1D6E1),
           outlineVariant: isDark
@@ -188,7 +189,7 @@ class _MyAppState extends State<MyApp> {
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: ChordestUiTokens.radius(18),
           ),
           textStyle: textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w700,
@@ -201,7 +202,7 @@ class _MyAppState extends State<MyApp> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           side: BorderSide(color: colorScheme.outlineVariant),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: ChordestUiTokens.radius(18),
           ),
           textStyle: textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w700,
@@ -213,21 +214,37 @@ class _MyAppState extends State<MyApp> {
           foregroundColor: colorScheme.onSurface,
           backgroundColor: colorScheme.surfaceContainerLow,
           minimumSize: const Size.square(52),
+          shape: RoundedRectangleBorder(
+            borderRadius: ChordestUiTokens.radius(18),
+          ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: colorScheme.surfaceContainerLow,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 16,
+        ),
+        helperMaxLines: 3,
+        labelStyle: textTheme.labelLarge?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+          fontWeight: FontWeight.w700,
+        ),
+        helperStyle: textTheme.bodySmall?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+          height: 1.35,
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: ChordestUiTokens.radius(20),
           borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: ChordestUiTokens.radius(20),
           borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: ChordestUiTokens.radius(20),
           borderSide: BorderSide(color: colorScheme.primary, width: 1.6),
         ),
       ),
@@ -244,6 +261,33 @@ class _MyAppState extends State<MyApp> {
           fontWeight: FontWeight.w600,
         ),
       ),
+      sliderTheme: SliderThemeData(
+        trackHeight: 4,
+        activeTrackColor: colorScheme.primary,
+        inactiveTrackColor: colorScheme.surfaceContainerHighest,
+        thumbColor: colorScheme.primary,
+        overlayColor: colorScheme.primary.withValues(alpha: 0.16),
+        valueIndicatorColor: colorScheme.primaryContainer,
+        valueIndicatorTextStyle: textTheme.labelMedium?.copyWith(
+          color: colorScheme.onPrimaryContainer,
+          fontWeight: FontWeight.w700,
+        ),
+        trackShape: const RoundedRectSliderTrackShape(),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return colorScheme.onPrimary;
+          }
+          return colorScheme.onSurfaceVariant;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return colorScheme.primary;
+          }
+          return colorScheme.surfaceContainerHighest;
+        }),
+      ),
       useMaterial3: true,
     );
   }
@@ -253,7 +297,7 @@ class _MyAppState extends State<MyApp> {
     return AnimatedBuilder(
       animation: widget.controller,
       builder: (context, _) {
-        return SightChordAudioScope(
+        return ChordestAudioScope(
           harmonyAudio: widget.harmonyAudioService,
           child: MaterialApp(
             title: 'Chordest',

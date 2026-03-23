@@ -323,7 +323,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get setupAssistantNotationCompact => 'CM7 style';
 
   @override
-  String get setupAssistantNotationDelta => 'C?7 style';
+  String get setupAssistantNotationDelta => 'CΔ7 style';
 
   @override
   String get setupAssistantDifficultyTriads =>
@@ -4726,7 +4726,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get studyHarmonyJazzLessonMinorCadenceDescription =>
-      'Recognize how minor ii첩-V-i motion feels and why the dominant sounds more urgent there.';
+      'Recognize how minor iiø-V-i motion feels and why the dominant sounds more urgent there.';
 
   @override
   String get studyHarmonyJazzLessonRootlessVoicingsTitle => 'Rootless Voicings';

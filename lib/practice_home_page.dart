@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'audio/harmony_audio_models.dart';
 import 'audio/harmony_preview_resolver.dart';
 import 'audio/harmony_audio_service.dart';
-import 'audio/sightchord_audio_scope.dart';
+import 'audio/chordest_audio_scope.dart';
 import 'l10n/app_localizations.dart';
 import 'music/chord_formatting.dart';
 import 'music/notation_presentation.dart';
@@ -27,6 +27,7 @@ import 'practice/widgets/practice_chord_swipe_surface.dart';
 import 'practice/widgets/practice_generator_controls.dart';
 import 'practice/widgets/practice_page_sections.dart';
 import 'practice/widgets/practice_transport_strip.dart';
+import 'ui/chordest_ui_tokens.dart';
 import 'music/voicing_models.dart';
 import 'settings/practice_settings.dart';
 import 'settings/practice_settings_effects.dart';
@@ -248,7 +249,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final harmonyAudio = SightChordAudioScope.maybeOf(context);
+    final harmonyAudio = ChordestAudioScope.maybeOf(context);
     if (!identical(_harmonyAudio, harmonyAudio)) {
       _resetHarmonyPreviewPrefetchCache();
     }

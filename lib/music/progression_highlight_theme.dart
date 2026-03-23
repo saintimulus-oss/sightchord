@@ -231,6 +231,26 @@ class ProgressionHighlightTheme {
     };
   }
 
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return other is ProgressionHighlightTheme &&
+        other.preset == preset &&
+        _sameColorValues(other.resolvedColorValues, resolvedColorValues);
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    preset,
+    Object.hashAll(
+      ProgressionHighlightCategory.values.map(
+        (category) => Object.hash(category, colorValueFor(category)),
+      ),
+    ),
+  );
+
   static const Map<ProgressionHighlightCategory, int> _defaultPalette = {
     ProgressionHighlightCategory.appliedDominant: 0xFFF59E0B,
     ProgressionHighlightCategory.tritoneSubstitute: 0xFFE76F51,
@@ -269,4 +289,19 @@ class ProgressionHighlightTheme {
     ProgressionHighlightCategory.chromaticLine: 0xFF7A7A00,
     ProgressionHighlightCategory.ambiguity: 0xFF666666,
   };
+
+  static bool _sameColorValues(
+    Map<ProgressionHighlightCategory, int> left,
+    Map<ProgressionHighlightCategory, int> right,
+  ) {
+    if (left.length != right.length) {
+      return false;
+    }
+    for (final category in ProgressionHighlightCategory.values) {
+      if (left[category] != right[category]) {
+        return false;
+      }
+    }
+    return true;
+  }
 }

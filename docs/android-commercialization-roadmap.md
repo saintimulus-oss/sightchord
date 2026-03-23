@@ -85,7 +85,7 @@ Outputs:
 
 Owner tasks:
 
-- Decide the canonical package name, for example `com.<brand>.sightchord`.
+- Decide the canonical package name, for example `com.<brand>.chordest`.
 - Decide whether the Play Console account should be Personal or Organization.
 - Decide whether Android v1 monetization is:
   - free app + one-time premium unlock, or

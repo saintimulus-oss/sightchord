@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import '../audio/harmony_audio_service.dart';
 import '../audio/harmony_audio_models.dart';
 import '../audio/sampled_instrument_engine.dart';
-import '../audio/sightchord_audio_scope.dart';
+import '../audio/chordest_audio_scope.dart';
 import '../l10n/app_localizations.dart';
 import '../settings/practice_settings.dart';
 import '../settings/settings_controller.dart';
@@ -93,7 +93,7 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final harmonyAudio = SightChordAudioScope.maybeOf(context);
+    final harmonyAudio = ChordestAudioScope.maybeOf(context);
     _harmonyAudio = harmonyAudio;
     if (harmonyAudio == null) {
       return;
@@ -170,7 +170,7 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
     return trackSoundProfileForSelection(
       l10n,
       selection: selection,
-        activeTrackId: widget.trackId,
+      activeTrackId: widget.trackId,
     );
   }
 

@@ -1,0 +1,70 @@
+name: Bug report
+description: Report a launch issue, regression, or store-review blocker.
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a problem in Chordest.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What went wrong?
+      placeholder: The analyzer screen freezes after tapping an example progression.
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Android
+        - iPhone
+        - iPad
+        - Web
+        - Windows
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: Include the app version and build number if you know them.
+      placeholder: 1.0.0 (1)
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the app
+        2. Go to Chord Analyzer
+        3. Tap the ii-V-I sample
+        4. Observe the issue
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: device
+    attributes:
+      label: Device details
+      description: Device model, OS version, locale, and whether audio was enabled.
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshots or recordings
+      description: Drag in screenshots, crash messages, or short recordings if helpful.

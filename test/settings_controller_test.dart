@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chordest/music/chord_theory.dart';
 import 'package:chordest/music/notation_presentation.dart';
+import 'package:chordest/music/progression_analysis_models.dart';
+import 'package:chordest/settings/inversion_settings.dart';
 import 'package:chordest/settings/practice_settings.dart';
+import 'package:chordest/settings/practice_settings_store.dart';
 import 'package:chordest/settings/settings_controller.dart';
 
 void main() {
@@ -24,6 +29,42 @@ void main() {
       controller.settings.copyWith(appThemeMode: AppThemeMode.dark),
     );
     expect(notifications, 2);
+  });
+
+  test('in-flight load does not overwrite a newer update', () async {
+    final loadCompleter = Completer<PracticeSettings>();
+    final store = _DelayedPracticeSettingsStore(loadCompleter);
+    final controller = AppSettingsController(
+      initialSettings: PracticeSettings(appThemeMode: AppThemeMode.light),
+      store: store,
+    );
+
+    final loadFuture = controller.load();
+    await controller.update(
+      controller.settings.copyWith(appThemeMode: AppThemeMode.dark),
+    );
+    loadCompleter.complete(PracticeSettings(appThemeMode: AppThemeMode.system));
+    await loadFuture;
+
+    expect(controller.settings.appThemeMode, AppThemeMode.dark);
+  });
+
+  test('no-op update skips listeners and persistence', () async {
+    final fixture = const _PracticeSettingsFixture().value;
+    final store = _CountingPracticeSettingsStore(loadedSettings: fixture);
+    final controller = AppSettingsController(
+      initialSettings: fixture,
+      store: store,
+    );
+    var notifications = 0;
+    controller.addListener(() {
+      notifications += 1;
+    });
+
+    await controller.update(fixture);
+
+    expect(notifications, 0);
+    expect(store.saveCount, 0);
   });
 
   test('serializes rapid saves using the update snapshot', () async {
@@ -263,5 +304,75 @@ void main() {
       expect(controller.settings.noteNamingStyle, NoteNamingStyle.latin);
       expect(controller.settings.selectedTensionOptions, {'9', '13'});
     },
+  );
+}
+
+class _DelayedPracticeSettingsStore extends PracticeSettingsStore {
+  _DelayedPracticeSettingsStore(this._loadCompleter);
+
+  final Completer<PracticeSettings> _loadCompleter;
+
+  @override
+  Future<PracticeSettings> load({required PracticeSettings fallbackSettings}) {
+    return _loadCompleter.future;
+  }
+
+  @override
+  Future<void> save(PracticeSettings settings) async {}
+}
+
+class _CountingPracticeSettingsStore extends PracticeSettingsStore {
+  _CountingPracticeSettingsStore({required this.loadedSettings});
+
+  final PracticeSettings loadedSettings;
+  int loadCount = 0;
+  int saveCount = 0;
+
+  @override
+  Future<PracticeSettings> load({
+    required PracticeSettings fallbackSettings,
+  }) async {
+    loadCount += 1;
+    return loadedSettings;
+  }
+
+  @override
+  Future<void> save(PracticeSettings settings) async {
+    saveCount += 1;
+  }
+}
+
+class _PracticeSettingsFixture {
+  const _PracticeSettingsFixture();
+
+  PracticeSettings get value => PracticeSettings(
+    language: AppLanguage.ko,
+    appThemeMode: AppThemeMode.dark,
+    guidedSetupCompleted: true,
+    settingsComplexityMode: SettingsComplexityMode.advanced,
+    preferredSuggestionKind: DefaultVoicingSuggestionKind.colorful,
+    chordLanguageLevel: ChordLanguageLevel.safeExtensions,
+    romanPoolPreset: RomanPoolPreset.functionalJazz,
+    musicNotationLocale: MusicNotationLocale.english,
+    noteNamingStyle: NoteNamingStyle.latin,
+    showRomanNumeralAssist: true,
+    showChordTextAssist: true,
+    activeKeyCenters: {
+      const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+      const KeyCenter(tonicName: 'A', mode: KeyMode.minor),
+    },
+    allowTensions: true,
+    selectedTensionOptions: {'9', '#11'},
+    enabledChordQualities: {ChordQuality.majorTriad, ChordQuality.minor7},
+    inversionSettings: const InversionSettings(
+      enabled: true,
+      firstInversionEnabled: true,
+      secondInversionEnabled: false,
+      thirdInversionEnabled: false,
+    ),
+    progressionHighlightTheme: ProgressionHighlightTheme(
+      preset: ProgressionHighlightThemePreset.custom,
+      colorValues: {ProgressionHighlightCategory.modulation: 0xFF112233},
+    ),
   );
 }

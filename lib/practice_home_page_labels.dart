@@ -1,6 +1,45 @@
 part of 'practice_home_page.dart';
 
 extension _PracticeHomePageLabels on _MyHomePageState {
+  PracticeChordInsight _buildChordInsight(
+    AppLocalizations l10n,
+    GeneratedChordEvent? event, {
+    required String sectionLabel,
+  }) {
+    final chord = event?.chord;
+    if (chord == null) {
+      return PracticeChordInsight(
+        sectionLabel: sectionLabel,
+        keyLabel: _selectedKeySummary(l10n),
+        functionLabel: '',
+        description: l10n.pressNextChordToBegin,
+      );
+    }
+    final keyLabel = chord.keyCenter != null
+        ? _keyCenterLabel(l10n, chord.keyCenter!, trailingColon: false)
+        : (chord.keyName?.trim().isNotEmpty ?? false)
+        ? chord.keyName!.trim()
+        : _selectedKeySummary(l10n);
+    final functionLabel = ChordRenderingHelper.displayedRomanLabel(
+      chord,
+      l10n: l10n,
+      preferences: _settings.notationPreferences,
+    );
+    final description =
+        ChordRenderingHelper.chordAssistLabel(
+          chord,
+          l10n: l10n,
+          preferences: _settings.notationPreferences,
+        ) ??
+        '';
+    return PracticeChordInsight(
+      sectionLabel: sectionLabel,
+      keyLabel: keyLabel,
+      functionLabel: functionLabel,
+      description: description,
+    );
+  }
+
   String _currentStatusLabel(AppLocalizations l10n) {
     if (_currentChord == null) {
       return '';

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Chordest support page
+    url: https://saintimulus-oss.github.io/support.html
+    about: Start with the support page for release help, known limitations, and bug-report guidance.

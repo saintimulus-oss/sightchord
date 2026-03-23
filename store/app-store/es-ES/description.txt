@@ -1,0 +1,13 @@
+Chordest te ayuda a practicar acordes, armonia e improvisacion con un flujo local-first.
+
+Genera progresiones en las 12 tonicas, cambia entre el modo libre y el modo tonal, y explora movimiento armonico ponderado con Smart Generator. Con el Chord Analyzer integrado puedes revisar centro tonal, numeros romanos, funcion armonica y resumentes en segundos.
+
+Incluye:
+- Practica de acordes en las 12 tonicas
+- Key mode con numeros romanos diatonicos
+- Smart Generator para movimiento armonico ponderado
+- Chord Analyzer con resumenes teoricos
+- Metronomo, avance automatico, control BPM y opciones de notacion
+- Interfaz localizada en ingles, espanol, chino simplificado, japones y coreano
+
+Actualmente Chordest guarda configuracion y progreso en el dispositivo y no requiere cuenta.

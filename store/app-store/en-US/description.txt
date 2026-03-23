@@ -1,0 +1,13 @@
+Chordest helps you practice chords, harmony, and improvisation with a focused local-first workflow.
+
+Generate progressions across all 12 roots, switch between free and key-aware modes, and explore weighted harmonic motion with Smart Generator. Use the built-in Chord Analyzer to inspect key center, Roman numerals, harmonic function, and summary output while you practice.
+
+Features include:
+- Chord practice across all 12 roots
+- Key mode with diatonic Roman numerals
+- Smart Generator for weighted harmonic motion
+- Chord Analyzer with theory-oriented summaries
+- Metronome, autoplay, BPM control, and notation options
+- Localized UI for English, Spanish, Simplified Chinese, Japanese, and Korean
+
+Chordest currently stores settings and progress on-device and does not require account creation.
