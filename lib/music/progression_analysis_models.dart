@@ -4,6 +4,7 @@ enum ProgressionHarmonicFunction { tonic, predominant, dominant, other }
 
 enum ProgressionHighlightCategory {
   appliedDominant,
+  alteredDominant,
   tritoneSubstitute,
   tonicization,
   modulation,
@@ -13,6 +14,29 @@ enum ProgressionHighlightCategory {
   deceptiveCadence,
   chromaticLine,
   ambiguity,
+}
+
+enum ProgressionDiagnosticStatus {
+  partialParse,
+  placeholderInference,
+  unresolvedHarmony,
+  ambiguousHarmony,
+  clean,
+}
+
+enum ProgressionWarningCode {
+  parseIssue,
+  invalidBass,
+  unknownModifier,
+  placeholderUsed,
+  unresolvedChord,
+  ambiguousInterpretation,
+}
+
+enum ProgressionSelectionReason {
+  highestScore,
+  segmentedModulation,
+  tieBreakerCadence,
 }
 
 enum ProgressionRemarkKind {
@@ -65,6 +89,42 @@ enum ProgressionEvidenceKind {
   deceptiveResolution,
   chromaticLine,
   competingReading,
+}
+
+enum ParsedChordTokenKind { chord, placeholder, noChord, ignored, issue }
+
+class UserFacingHarmonyLabel {
+  const UserFacingHarmonyLabel({
+    required this.primary,
+    this.alias,
+    this.explanation,
+  });
+
+  final String primary;
+  final String? alias;
+  final String? explanation;
+}
+
+class SuggestedFill {
+  const SuggestedFill({
+    required this.resolvedSymbol,
+    required this.romanNumeral,
+    required this.harmonicFunction,
+    required this.score,
+    required this.confidence,
+    required this.rationale,
+    this.sourceReason,
+    this.sourceKind,
+  });
+
+  final String resolvedSymbol;
+  final String romanNumeral;
+  final ProgressionHarmonicFunction harmonicFunction;
+  final double score;
+  final double confidence;
+  final String rationale;
+  final String? sourceReason;
+  final ChordSourceKind? sourceKind;
 }
 
 class ParsedChord {
@@ -143,6 +203,7 @@ class ParsedChordToken {
     required this.rawText,
     required this.measureIndex,
     required this.positionInMeasure,
+    this.tokenKind = ParsedChordTokenKind.issue,
     this.chord,
     this.isPlaceholder = false,
     this.error,
@@ -153,12 +214,16 @@ class ParsedChordToken {
   final String rawText;
   final int measureIndex;
   final int positionInMeasure;
+  final ParsedChordTokenKind tokenKind;
   final ParsedChord? chord;
   final bool isPlaceholder;
   final String? error;
   final String? errorDetail;
 
-  bool get isValid => chord != null || isPlaceholder;
+  bool get isValid => tokenKind != ParsedChordTokenKind.issue;
+  bool get isNoChord => tokenKind == ParsedChordTokenKind.noChord;
+  bool get isIgnored => tokenKind == ParsedChordTokenKind.ignored;
+  bool get isStructuralToken => isNoChord || isIgnored;
 }
 
 class ParsedMeasure {
@@ -166,6 +231,8 @@ class ParsedMeasure {
 
   final int measureIndex;
   final List<ParsedChordToken> tokens;
+
+  bool get isEmpty => tokens.isEmpty;
 
   List<ParsedChord> get validChords => [
     for (final token in tokens)
@@ -175,6 +242,16 @@ class ParsedMeasure {
   List<ParsedChordToken> get placeholders => [
     for (final token in tokens)
       if (token.isPlaceholder) token,
+  ];
+
+  List<ParsedChordToken> get noChords => [
+    for (final token in tokens)
+      if (token.isNoChord) token,
+  ];
+
+  List<ParsedChordToken> get ignoredTokens => [
+    for (final token in tokens)
+      if (token.isIgnored) token,
   ];
 
   List<ParsedChordToken> get issues => [
@@ -197,6 +274,16 @@ class ProgressionParseResult {
   List<ParsedChordToken> get placeholders => [
     for (final token in tokens)
       if (token.isPlaceholder) token,
+  ];
+
+  List<ParsedChordToken> get noChords => [
+    for (final token in tokens)
+      if (token.isNoChord) token,
+  ];
+
+  List<ParsedChordToken> get ignoredTokens => [
+    for (final token in tokens)
+      if (token.isIgnored) token,
   ];
 
   List<ParsedChordToken> get issues => [
@@ -262,9 +349,8 @@ class ProgressionEvidence {
 
   ProgressionHighlightCategory? get highlightCategory {
     return switch (kind) {
-      ProgressionEvidenceKind.alteredDominantColor ||
-      ProgressionEvidenceKind.resolution =>
-        ProgressionHighlightCategory.appliedDominant,
+      ProgressionEvidenceKind.alteredDominantColor =>
+        ProgressionHighlightCategory.alteredDominant,
       ProgressionEvidenceKind.borrowedColor =>
         ProgressionHighlightCategory.borrowedColor,
       ProgressionEvidenceKind.backdoorMotion =>
@@ -296,6 +382,9 @@ class ChordInterpretationCandidate {
     this.chordSymbol,
     this.romanNumeralId,
     this.sourceKind,
+    this.displayLabel,
+    this.displayAlias,
+    this.sourceReason,
     this.remarks = const [],
     this.evidence = const [],
   });
@@ -306,8 +395,16 @@ class ChordInterpretationCandidate {
   final RomanNumeralId? romanNumeralId;
   final ChordSourceKind? sourceKind;
   final double score;
+  final String? displayLabel;
+  final String? displayAlias;
+  final String? sourceReason;
   final List<ProgressionRemark> remarks;
   final List<ProgressionEvidence> evidence;
+
+  String get semanticKey =>
+      '$romanNumeral|${harmonicFunction.name}|${sourceKind?.name ?? 'none'}';
+
+  String get primaryDisplayLabel => displayLabel ?? romanNumeral;
 }
 
 class AnalyzedChord {
@@ -325,6 +422,10 @@ class AnalyzedChord {
     this.remarks = const [],
     this.evidence = const [],
     this.competingInterpretations = const [],
+    this.userFacingLabel,
+    this.suggestedFills = const [],
+    this.segmentIndex = 0,
+    this.segmentKeyDisplay = '',
   });
 
   final ParsedChord chord;
@@ -340,8 +441,14 @@ class AnalyzedChord {
   final List<ProgressionRemark> remarks;
   final List<ProgressionEvidence> evidence;
   final List<ChordInterpretationCandidate> competingInterpretations;
+  final UserFacingHarmonyLabel? userFacingLabel;
+  final List<SuggestedFill> suggestedFills;
+  final int segmentIndex;
+  final String segmentKeyDisplay;
 
-  String get resolvedSymbol => inferredSymbol ?? chord.sourceSymbol;
+  String get resolvedSymbol => inferredSymbol ?? chord.canonicalSymbol;
+  String get primaryDisplayLabel => userFacingLabel?.primary ?? romanNumeral;
+  String? get displayAlias => userFacingLabel?.alias;
 
   bool get isNonDiatonic =>
       sourceKind == ChordSourceKind.secondaryDominant ||
@@ -363,31 +470,82 @@ class AnalyzedChord {
 
   List<ProgressionHighlightCategory> get highlightCategories {
     final ordered = <ProgressionHighlightCategory>{};
-    for (final remark in remarks) {
-      final category = remark.highlightCategory;
-      if (category != null) {
-        ordered.add(category);
-      }
+    final hasAppliedDominant = remarks.any(
+      (remark) =>
+          remark.kind == ProgressionRemarkKind.possibleSecondaryDominant,
+    );
+    final hasTritoneSubstitute = remarks.any(
+      (remark) =>
+          remark.kind == ProgressionRemarkKind.possibleTritoneSubstitute,
+    );
+    final hasTonicization = remarks.any(
+      (remark) => remark.kind == ProgressionRemarkKind.tonicization,
+    );
+    final hasModulation = remarks.any(
+      (remark) =>
+          remark.kind == ProgressionRemarkKind.realModulation ||
+          remark.kind == ProgressionRemarkKind.pivotChordInterpretation ||
+          remark.kind == ProgressionRemarkKind.commonToneModulation,
+    );
+    final hasCommonToneDiminished = remarks.any(
+      (remark) => remark.kind == ProgressionRemarkKind.commonToneDiminished,
+    );
+    final hasBackdoor = remarks.any(
+      (remark) =>
+          remark.kind == ProgressionRemarkKind.backdoorDominant ||
+          remark.kind == ProgressionRemarkKind.backdoorChain,
+    );
+    final hasBorrowedColor = remarks.any(
+      (remark) =>
+          remark.kind == ProgressionRemarkKind.possibleModalInterchange ||
+          remark.kind == ProgressionRemarkKind.subdominantMinor,
+    );
+    final hasDeceptiveCadence = remarks.any(
+      (remark) => remark.kind == ProgressionRemarkKind.deceptiveCadence,
+    );
+    final hasChromaticLine = remarks.any(
+      (remark) => remark.kind == ProgressionRemarkKind.lineClicheColor,
+    );
+    final hasAlteredDominant =
+        !hasAppliedDominant &&
+        !hasTritoneSubstitute &&
+        evidence.any(
+          (item) => item.kind == ProgressionEvidenceKind.alteredDominantColor,
+        );
+
+    if (hasAppliedDominant || sourceKind == ChordSourceKind.secondaryDominant) {
+      ordered.add(ProgressionHighlightCategory.appliedDominant);
     }
-    for (final evidence in evidence) {
-      final category = evidence.highlightCategory;
-      if (category != null) {
-        ordered.add(category);
-      }
+    if (hasAlteredDominant) {
+      ordered.add(ProgressionHighlightCategory.alteredDominant);
     }
-    if (ordered.isEmpty) {
-      switch (sourceKind) {
-        case ChordSourceKind.secondaryDominant:
-          ordered.add(ProgressionHighlightCategory.appliedDominant);
-        case ChordSourceKind.substituteDominant:
-          ordered.add(ProgressionHighlightCategory.tritoneSubstitute);
-        case ChordSourceKind.modalInterchange:
-          ordered.add(ProgressionHighlightCategory.borrowedColor);
-        case ChordSourceKind.tonicization:
-          ordered.add(ProgressionHighlightCategory.tonicization);
-        case ChordSourceKind.free || ChordSourceKind.diatonic || null:
-          break;
-      }
+    if (hasTritoneSubstitute ||
+        sourceKind == ChordSourceKind.substituteDominant) {
+      ordered.add(ProgressionHighlightCategory.tritoneSubstitute);
+    }
+    if (hasTonicization ||
+        (sourceKind == ChordSourceKind.tonicization &&
+            !hasCommonToneDiminished &&
+            !hasTritoneSubstitute)) {
+      ordered.add(ProgressionHighlightCategory.tonicization);
+    }
+    if (hasModulation) {
+      ordered.add(ProgressionHighlightCategory.modulation);
+    }
+    if (hasBackdoor) {
+      ordered.add(ProgressionHighlightCategory.backdoor);
+    }
+    if (hasBorrowedColor || sourceKind == ChordSourceKind.modalInterchange) {
+      ordered.add(ProgressionHighlightCategory.borrowedColor);
+    }
+    if (hasCommonToneDiminished) {
+      ordered.add(ProgressionHighlightCategory.commonTone);
+    }
+    if (hasDeceptiveCadence) {
+      ordered.add(ProgressionHighlightCategory.deceptiveCadence);
+    }
+    if (hasChromaticLine) {
+      ordered.add(ProgressionHighlightCategory.chromaticLine);
     }
     if (isAmbiguous || hasRemark(ProgressionRemarkKind.unresolved)) {
       ordered.add(ProgressionHighlightCategory.ambiguity);
@@ -414,6 +572,10 @@ class AnalyzedChord {
     List<ProgressionRemark>? remarks,
     List<ProgressionEvidence>? evidence,
     List<ChordInterpretationCandidate>? competingInterpretations,
+    Object? userFacingLabel = _retainValue,
+    List<SuggestedFill>? suggestedFills,
+    int? segmentIndex,
+    String? segmentKeyDisplay,
   }) {
     return AnalyzedChord(
       chord: chord ?? this.chord,
@@ -442,6 +604,14 @@ class AnalyzedChord {
       evidence: evidence ?? this.evidence,
       competingInterpretations:
           competingInterpretations ?? this.competingInterpretations,
+      userFacingLabel: switch (userFacingLabel) {
+        _RetainValue() => this.userFacingLabel,
+        UserFacingHarmonyLabel value => value,
+        _ => null,
+      },
+      suggestedFills: suggestedFills ?? this.suggestedFills,
+      segmentIndex: segmentIndex ?? this.segmentIndex,
+      segmentKeyDisplay: segmentKeyDisplay ?? this.segmentKeyDisplay,
     );
   }
 
@@ -460,30 +630,73 @@ class ProgressionKeyCandidate {
   final double confidence;
 }
 
+class AnalysisSegment {
+  const AnalysisSegment({
+    required this.segmentIndex,
+    required this.startMeasureIndex,
+    required this.endMeasureIndex,
+    required this.keyCenter,
+    required this.reason,
+  });
+
+  final int segmentIndex;
+  final int startMeasureIndex;
+  final int endMeasureIndex;
+  final KeyCenter keyCenter;
+  final String reason;
+
+  String get keyDisplay => keyCenter.displayName;
+  String get tonic => MusicTheory.displayRootForKey(keyCenter.tonicName);
+  String get mode => keyCenter.mode.name;
+}
+
 class ProgressionAnalysis {
   const ProgressionAnalysis({
     required this.input,
     required this.parseResult,
     required this.primaryKey,
+    required this.globalAggregateKey,
     required this.keyCandidates,
     required this.chordAnalyses,
     required this.groupedMeasures,
     this.alternativeKey,
+    this.analysisSegments = const [],
     this.tags = const [],
+    this.keyConfidence = 0.5,
+    this.analysisReliability = 0.5,
     this.confidence = 0.5,
     this.ambiguity = 0.5,
+    this.diagnosticStatus = ProgressionDiagnosticStatus.clean,
+    this.warningCodes = const [],
+    this.selectionReason = ProgressionSelectionReason.highestScore,
   });
 
   final String input;
   final ProgressionParseResult parseResult;
   final ProgressionKeyCandidate primaryKey;
+  final ProgressionKeyCandidate globalAggregateKey;
   final ProgressionKeyCandidate? alternativeKey;
   final List<ProgressionKeyCandidate> keyCandidates;
   final List<AnalyzedChord> chordAnalyses;
   final List<AnalyzedMeasure> groupedMeasures;
+  final List<AnalysisSegment> analysisSegments;
   final List<ProgressionTagId> tags;
+  final double keyConfidence;
+  final double analysisReliability;
   final double confidence;
   final double ambiguity;
+  final ProgressionDiagnosticStatus diagnosticStatus;
+  final List<ProgressionWarningCode> warningCodes;
+  final ProgressionSelectionReason selectionReason;
+
+  double get finalSelectionConfidence => analysisReliability;
+  double get primaryKeyScore => primaryKey.score;
+  double? get alternativeKeyScore => alternativeKey?.score;
+  double get primaryKeyConfidence => primaryKey.confidence;
+  double get globalAggregateKeyConfidence => globalAggregateKey.confidence;
+  String get primaryKeyDisplay => primaryKey.keyCenter.displayName;
+  String get homeKeyDisplay => primaryKey.keyCenter.displayName;
+  String get globalAggregateKeyDisplay => globalAggregateKey.keyCenter.displayName;
 
   int get ambiguousChordCount =>
       chordAnalyses.where((analysis) => analysis.isAmbiguous).length;
@@ -494,27 +707,18 @@ class ProgressionAnalysis {
   int get unresolvedChordCount => chordAnalyses
       .where(
         (analysis) => analysis.remarks.any(
-          (remark) =>
-              remark.kind == ProgressionRemarkKind.ambiguousInterpretation ||
-              remark.kind == ProgressionRemarkKind.unresolved,
+          (remark) => remark.kind == ProgressionRemarkKind.unresolved,
         ),
       )
       .length;
 
-  bool get hasWarnings =>
-      parseResult.issues.isNotEmpty ||
-      parseResult.hasPlaceholders ||
-      alternativeKey != null ||
-      ambiguousChordCount > 0 ||
-      unresolvedChordCount > 0;
+  bool get hasWarnings => warningCodes.isNotEmpty;
 
-  bool get hasRealModulation => chordAnalyses.any(
-    (analysis) => analysis.hasRemark(ProgressionRemarkKind.realModulation),
-  );
+  bool get hasRealModulation =>
+      tags.contains(ProgressionTagId.realModulation) ||
+      analysisSegments.length > 1;
 
-  bool get hasTonicization => chordAnalyses.any(
-    (analysis) => analysis.hasRemark(ProgressionRemarkKind.tonicization),
-  );
+  bool get hasTonicization => tags.contains(ProgressionTagId.tonicization);
 
   Set<ProgressionHighlightCategory> get highlightCategories {
     final categories = <ProgressionHighlightCategory>{};
@@ -527,7 +731,7 @@ class ProgressionAnalysis {
         ProgressionTagId.backdoorChain => ProgressionHighlightCategory.backdoor,
         ProgressionTagId.tonicization =>
           ProgressionHighlightCategory.tonicization,
-        ProgressionTagId.realModulation || ProgressionTagId.commonToneMotion =>
+        ProgressionTagId.realModulation =>
           ProgressionHighlightCategory.modulation,
         ProgressionTagId.deceptiveCadence =>
           ProgressionHighlightCategory.deceptiveCadence,
@@ -539,8 +743,19 @@ class ProgressionAnalysis {
         categories.add(category);
       }
     }
+    if (!hasRealModulation) {
+      categories.remove(ProgressionHighlightCategory.modulation);
+    }
     return categories;
   }
+
+  bool get canGenerateVariations =>
+      diagnosticStatus == ProgressionDiagnosticStatus.clean &&
+      !parseResult.hasPartialFailure &&
+      parseResult.placeholders.isEmpty &&
+      unresolvedChordCount == 0 &&
+      !warningCodes.contains(ProgressionWarningCode.unknownModifier) &&
+      analysisReliability >= 0.75;
 }
 
 class AnalyzedMeasure {
@@ -573,4 +788,34 @@ class ProgressionAnalysisException implements Exception {
 
 class _RetainValue {
   const _RetainValue();
+}
+
+extension ProgressionDiagnosticStatusX on ProgressionDiagnosticStatus {
+  String get wireName => switch (this) {
+    ProgressionDiagnosticStatus.partialParse => 'partial_parse',
+    ProgressionDiagnosticStatus.placeholderInference => 'placeholder_inference',
+    ProgressionDiagnosticStatus.unresolvedHarmony => 'unresolved_harmony',
+    ProgressionDiagnosticStatus.ambiguousHarmony => 'ambiguous_harmony',
+    ProgressionDiagnosticStatus.clean => 'clean',
+  };
+}
+
+extension ProgressionWarningCodeX on ProgressionWarningCode {
+  String get wireName => switch (this) {
+    ProgressionWarningCode.parseIssue => 'parse_issue',
+    ProgressionWarningCode.invalidBass => 'invalid_bass',
+    ProgressionWarningCode.unknownModifier => 'unknown_modifier',
+    ProgressionWarningCode.placeholderUsed => 'placeholder_used',
+    ProgressionWarningCode.unresolvedChord => 'unresolved_chord',
+    ProgressionWarningCode.ambiguousInterpretation =>
+      'ambiguous_interpretation',
+  };
+}
+
+extension ProgressionSelectionReasonX on ProgressionSelectionReason {
+  String get wireName => switch (this) {
+    ProgressionSelectionReason.highestScore => 'highest_score',
+    ProgressionSelectionReason.segmentedModulation => 'segmented_modulation',
+    ProgressionSelectionReason.tieBreakerCadence => 'tie_breaker_cadence',
+  };
 }

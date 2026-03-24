@@ -719,25 +719,41 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
 
           return LayoutBuilder(
             builder: (context, constraints) {
+              const sectionCardSpacing = 14.0;
+              const pagePadding = EdgeInsets.fromLTRB(20, 20, 20, 32);
+              final horizontalContentPadding =
+                  pagePadding.left + pagePadding.right;
               final contentWidth = min(constraints.maxWidth, 1320.0);
+              final availableContentWidth = max(
+                0.0,
+                contentWidth - horizontalContentPadding,
+              );
               final actionColumns = _columnsFor(
-                contentWidth,
+                availableContentWidth,
                 compact: 1,
                 medium: 2,
                 large: 3,
               );
               final chapterColumns = _columnsFor(
-                contentWidth,
+                availableContentWidth,
                 compact: 1,
                 medium: 2,
                 large: 2,
               );
-              final actionWidth = _cardWidthFor(contentWidth, actionColumns);
-              final chapterWidth = _cardWidthFor(contentWidth, chapterColumns);
+              final actionWidth = _cardWidthFor(
+                availableContentWidth,
+                actionColumns,
+                spacing: sectionCardSpacing,
+              );
+              final chapterWidth = _cardWidthFor(
+                availableContentWidth,
+                chapterColumns,
+                spacing: sectionCardSpacing,
+              );
               final heroWidth = min(
-                contentWidth,
+                availableContentWidth,
                 actionWidth * (actionColumns > 1 ? 2 : 1) +
-                    (actionColumns > 1 ? 14 : 0),
+                    (actionColumns > 1 ? sectionCardSpacing : 0),
               );
 
               return Align(
@@ -746,7 +762,7 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                   width: contentWidth,
                   child: SingleChildScrollView(
                     key: const ValueKey('study-harmony-page'),
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+                    padding: pagePadding,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -802,8 +818,8 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                         ),
                         const SizedBox(height: 12),
                         Wrap(
-                          spacing: 14,
-                          runSpacing: 14,
+                          spacing: sectionCardSpacing,
+                          runSpacing: sectionCardSpacing,
                           children: [
                             SizedBox(
                               width: actionWidth,
@@ -965,8 +981,8 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                         ],
                         const SizedBox(height: 12),
                         Wrap(
-                          spacing: 14,
-                          runSpacing: 14,
+                          spacing: sectionCardSpacing,
+                          runSpacing: sectionCardSpacing,
                           children: [
                             for (final summary in chapterSummaries)
                               SizedBox(
@@ -1017,9 +1033,9 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                           const SizedBox(height: 24),
                           SizedBox(
                             width: min(
-                              contentWidth,
+                              availableContentWidth,
                               actionWidth * (actionColumns > 1 ? 2 : 1) +
-                                  (actionColumns > 1 ? 14 : 0),
+                                  (actionColumns > 1 ? sectionCardSpacing : 0),
                             ),
                             child: _HubActionCard(
                               key: const ValueKey('study-harmony-meta-preview'),
@@ -1115,8 +1131,8 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                           ),
                           const SizedBox(height: 12),
                           Wrap(
-                            spacing: 14,
-                            runSpacing: 14,
+                            spacing: sectionCardSpacing,
+                            runSpacing: sectionCardSpacing,
                             children: [
                               SizedBox(
                                 width: actionWidth,
@@ -1310,8 +1326,8 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                           ),
                           const SizedBox(height: 12),
                           Wrap(
-                            spacing: 14,
-                            runSpacing: 14,
+                            spacing: sectionCardSpacing,
+                            runSpacing: sectionCardSpacing,
                             children: [
                               for (final featured in featuredArcadeModes)
                                 SizedBox(
@@ -1522,8 +1538,8 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                           ),
                           const SizedBox(height: 12),
                           Wrap(
-                            spacing: 14,
-                            runSpacing: 14,
+                            spacing: sectionCardSpacing,
+                            runSpacing: sectionCardSpacing,
                             children: [
                               for (final item in featuredShopItems)
                                 SizedBox(
@@ -1596,8 +1612,8 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                           ),
                           const SizedBox(height: 24),
                           Wrap(
-                            spacing: 14,
-                            runSpacing: 14,
+                            spacing: sectionCardSpacing,
+                            runSpacing: sectionCardSpacing,
                             children: [
                               SizedBox(
                                 width: actionWidth,
@@ -1980,8 +1996,8 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                           ),
                           const SizedBox(height: 12),
                           Wrap(
-                            spacing: 14,
-                            runSpacing: 14,
+                            spacing: sectionCardSpacing,
+                            runSpacing: sectionCardSpacing,
                             children: [
                               for (final questCard in questCards)
                                 SizedBox(
@@ -2100,8 +2116,8 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                           ),
                           const SizedBox(height: 12),
                           Wrap(
-                            spacing: 14,
-                            runSpacing: 14,
+                            spacing: sectionCardSpacing,
+                            runSpacing: sectionCardSpacing,
                             children: [
                               for (final weeklyGoal in weeklyGoals)
                                 SizedBox(
@@ -2124,8 +2140,8 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                           ),
                           const SizedBox(height: 12),
                           Wrap(
-                            spacing: 14,
-                            runSpacing: 14,
+                            spacing: sectionCardSpacing,
+                            runSpacing: sectionCardSpacing,
                             children: [
                               for (final milestoneCard in milestoneCards)
                                 SizedBox(
@@ -2541,11 +2557,11 @@ int _columnsFor(
   return compact;
 }
 
-double _cardWidthFor(double width, int columns) {
+double _cardWidthFor(double width, int columns, {double spacing = 14}) {
   if (columns <= 1) {
     return width;
   }
-  return (width - ((columns - 1) * 16)) / columns;
+  return (width - ((columns - 1) * spacing)) / columns;
 }
 
 StudyHarmonyPersonalizationProfile _hubAdaptiveProfile({

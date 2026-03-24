@@ -39,15 +39,15 @@ class PracticePageBody extends StatelessWidget {
               child: Center(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxWidth: compactLayout ? 760 : 920,
+                    maxWidth: compactLayout ? 760 : 1040,
                     minHeight: constraints.maxHeight,
                   ),
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(
                       compactLayout ? 14 : 18,
-                      compactLayout ? 10 : (shortViewport ? 8 : 10),
+                      compactLayout ? 10 : (shortViewport ? 10 : 14),
                       compactLayout ? 14 : 18,
-                      compactLayout ? 16 : (shortViewport ? 14 : 18),
+                      compactLayout ? 16 : (shortViewport ? 16 : 22),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -160,9 +160,9 @@ class ProgressionExplainer {
       if (advancedFocus.competingInterpretations.isNotEmpty) {
         sentences.add(
           l10n.chordAnalyzerSummaryCompeting(
-            advancedFocus.competingInterpretations
+              advancedFocus.competingInterpretations
                 .take(2)
-                .map((candidate) => candidate.romanNumeral)
+                .map((candidate) => candidate.primaryDisplayLabel)
                 .join(', '),
           ),
         );
@@ -236,7 +236,7 @@ class ProgressionExplainer {
         l10n.chordAnalyzerAdvancedCompetingReadings(
           analysis.competingInterpretations
               .take(2)
-              .map((candidate) => candidate.romanNumeral)
+              .map((candidate) => candidate.primaryDisplayLabel)
               .join(', '),
         ),
       );

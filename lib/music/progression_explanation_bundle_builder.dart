@@ -64,7 +64,7 @@ class ProgressionExplanationBundleBuilder {
       for (final candidate in targetChord.competingInterpretations.take(2))
         AlternativeInterpretation(
           label: l10n.explanationAlternativeReadingLabel(
-            candidate.romanNumeral,
+            candidate.primaryDisplayLabel,
           ),
           detail: _alternativeReadingDetail(l10n, candidate),
           confidence: candidate.score.clamp(0.0, 1.0).toDouble(),

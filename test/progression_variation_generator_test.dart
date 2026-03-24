@@ -44,14 +44,10 @@ void main() {
     );
   });
 
-  test('placeholder slots are materialized in generated variations', () {
+  test('placeholder diagnostics gate generated variations', () {
     final analysis = analyzer.analyze('Dm7 G7 | ? Am');
     final variations = generator.generate(analysis);
 
-    expect(variations, isNotEmpty);
-    expect(
-      variations.every((variation) => !variation.progression.contains('?')),
-      isTrue,
-    );
+    expect(variations, isEmpty);
   });
 }

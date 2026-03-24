@@ -27,25 +27,23 @@ void main() {
     ]);
   });
 
-  test('treats N.C. as partial parse noise while keeping context chords', () {
+  test('treats N.C. as an explicit no-chord token without parse failure', () {
     final analysis = analyzer.analyze('N.C. Dm7 G7 Cmaj7');
 
-    expect(analysis.parseResult.hasPartialFailure, isTrue);
-    expect(analysis.parseResult.issues.first.rawText, 'N.C.');
+    expect(analysis.parseResult.hasPartialFailure, isFalse);
+    expect(analysis.parseResult.issues, isEmpty);
+    expect(analysis.parseResult.noChords, hasLength(1));
     expect(analysis.primaryKey.keyCenter.tonicName, 'C');
     expect(analysis.primaryKey.keyCenter.mode, KeyMode.major);
   });
 
   test(
-    'keeps harmonic reading when repeat and section markers are mixed in',
+    'ignores repeat and section markers while keeping harmonic reading',
     () {
       final analysis = analyzer.analyze('[A] Cmaj7 |: Dm7 G7 :| Cmaj7');
 
-      expect(analysis.parseResult.hasPartialFailure, isTrue);
-      expect(
-        analysis.parseResult.issues.map((issue) => issue.rawText).toList(),
-        containsAll(<String>['[A]', ':', ':']),
-      );
+      expect(analysis.parseResult.hasPartialFailure, isFalse);
+      expect(analysis.parseResult.issues, isEmpty);
       expect(analysis.primaryKey.keyCenter.tonicName, 'C');
       expect(analysis.primaryKey.keyCenter.mode, KeyMode.major);
     },
@@ -68,5 +66,22 @@ void main() {
       ),
       isTrue,
     );
+  });
+
+  test('keeps base chord analysis when parenthetical modifier is unknown', () {
+    final analysis = analyzer.analyze('C7(foo) Dm7 G7 Cmaj7');
+
+    expect(analysis.parseResult.issues, isEmpty);
+    expect(analysis.warningCodes, contains(ProgressionWarningCode.unknownModifier));
+    expect(
+      analysis.warningCodes,
+      isNot(contains(ProgressionWarningCode.unresolvedChord)),
+    );
+    expect(
+      analysis.diagnosticStatus,
+      isNot(ProgressionDiagnosticStatus.unresolvedHarmony),
+    );
+    expect(analysis.chordAnalyses.first.resolvedSymbol, 'C7');
+    expect(analysis.chordAnalyses.first.chord.ignoredTokens, contains('foo'));
   });
 }

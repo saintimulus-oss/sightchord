@@ -68,6 +68,7 @@ extension ProgressionHighlightCategoryX on ProgressionHighlightCategory {
     return switch (this) {
       ProgressionHighlightCategory.appliedDominant =>
         l10n.chordAnalyzerHighlightAppliedDominant,
+      ProgressionHighlightCategory.alteredDominant => 'Altered dominant',
       ProgressionHighlightCategory.tritoneSubstitute =>
         l10n.chordAnalyzerHighlightTritoneSubstitute,
       ProgressionHighlightCategory.tonicization =>
@@ -253,6 +254,7 @@ class ProgressionHighlightTheme {
 
   static const Map<ProgressionHighlightCategory, int> _defaultPalette = {
     ProgressionHighlightCategory.appliedDominant: 0xFFF59E0B,
+    ProgressionHighlightCategory.alteredDominant: 0xFFB45309,
     ProgressionHighlightCategory.tritoneSubstitute: 0xFFE76F51,
     ProgressionHighlightCategory.tonicization: 0xFFE9C46A,
     ProgressionHighlightCategory.modulation: 0xFF3B82F6,
@@ -266,6 +268,7 @@ class ProgressionHighlightTheme {
 
   static const Map<ProgressionHighlightCategory, int> _highContrastPalette = {
     ProgressionHighlightCategory.appliedDominant: 0xFF9A6700,
+    ProgressionHighlightCategory.alteredDominant: 0xFF7C2D12,
     ProgressionHighlightCategory.tritoneSubstitute: 0xFFB00020,
     ProgressionHighlightCategory.tonicization: 0xFF8A6A00,
     ProgressionHighlightCategory.modulation: 0xFF0047FF,
@@ -279,6 +282,7 @@ class ProgressionHighlightTheme {
 
   static const Map<ProgressionHighlightCategory, int> _colorBlindSafePalette = {
     ProgressionHighlightCategory.appliedDominant: 0xFFE69F00,
+    ProgressionHighlightCategory.alteredDominant: 0xFFCC7A00,
     ProgressionHighlightCategory.tritoneSubstitute: 0xFFD55E00,
     ProgressionHighlightCategory.tonicization: 0xFFF0E442,
     ProgressionHighlightCategory.modulation: 0xFF0072B2,

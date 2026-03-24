@@ -560,7 +560,7 @@ void main() {
   );
 
   testWidgets(
-    'placeholder chords surface inferred fills and clean variations',
+    'placeholder chords surface inferred fills and gate clean variations',
     (WidgetTester tester) async {
       addTearDown(() => restoreDisplay(tester));
       await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
@@ -593,13 +593,8 @@ void main() {
 
       expect(
         find.byKey(const ValueKey('analyzer-variation-colorLift')),
-        findsOneWidget,
+        findsNothing,
       );
-
-      final variationText = tester.widget<SelectableText>(
-        find.byKey(const ValueKey('analyzer-variation-colorLift')),
-      );
-      expect(variationText.data, isNot(contains('?')));
     },
   );
 

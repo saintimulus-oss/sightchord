@@ -11,11 +11,27 @@ class ProgressionParser {
   static final RegExp _whitespacePattern = RegExp(r'\s');
   static final RegExp _compactWhitespacePattern = RegExp(r'\s+');
   static final RegExp _uppercaseMajorPrefixPattern = RegExp(r'^[0-9(]');
+  static final RegExp _sectionMarkerPattern = RegExp(
+    r'\[(?:[^\]]+)\]',
+    caseSensitive: false,
+  );
+  static final RegExp _sectionWordPattern = RegExp(
+    r'\b(?:verse|chorus|intro|outro|bridge|tag)\b',
+    caseSensitive: false,
+  );
+  static final RegExp _noChordPhrasePattern = RegExp(
+    r'(?<![A-Za-z])(?:n\.?\s*c\.?|nc|no\s+chord)(?![A-Za-z])',
+    caseSensitive: false,
+  );
+  static final RegExp _noChordTokenPattern = RegExp(
+    r'^(?:N\.?C\.?|NC|NO_CHORD)$',
+    caseSensitive: false,
+  );
 
   ProgressionParseResult parse(String input) {
     final tokens = <ParsedChordToken>[];
     final measures = <ParsedMeasure>[];
-    final rawMeasures = _splitMeasures(input);
+    final rawMeasures = _splitMeasures(_preprocessInput(input));
     var tokenIndex = 0;
 
     for (
@@ -129,6 +145,7 @@ class ProgressionParser {
         rawText: token,
         measureIndex: measureIndex,
         positionInMeasure: positionInMeasure,
+        tokenKind: ParsedChordTokenKind.issue,
         error: 'empty',
       );
     }
@@ -139,7 +156,28 @@ class ProgressionParser {
         rawText: rawToken,
         measureIndex: measureIndex,
         positionInMeasure: positionInMeasure,
+        tokenKind: ParsedChordTokenKind.placeholder,
         isPlaceholder: true,
+      );
+    }
+
+    if (_noChordTokenPattern.hasMatch(rawToken)) {
+      return ParsedChordToken(
+        index: index,
+        rawText: rawToken,
+        measureIndex: measureIndex,
+        positionInMeasure: positionInMeasure,
+        tokenKind: ParsedChordTokenKind.noChord,
+      );
+    }
+
+    if (_isIgnoredToken(rawToken)) {
+      return ParsedChordToken(
+        index: index,
+        rawText: rawToken,
+        measureIndex: measureIndex,
+        positionInMeasure: positionInMeasure,
+        tokenKind: ParsedChordTokenKind.ignored,
       );
     }
 
@@ -152,6 +190,7 @@ class ProgressionParser {
         rawText: rawToken,
         measureIndex: measureIndex,
         positionInMeasure: positionInMeasure,
+        tokenKind: ParsedChordTokenKind.issue,
         error: 'invalid-root',
       );
     }
@@ -164,6 +203,7 @@ class ProgressionParser {
         rawText: rawToken,
         measureIndex: measureIndex,
         positionInMeasure: positionInMeasure,
+        tokenKind: ParsedChordTokenKind.issue,
         error: 'unknown-root',
         errorDetail: root,
       );
@@ -177,6 +217,7 @@ class ProgressionParser {
         rawText: rawToken,
         measureIndex: measureIndex,
         positionInMeasure: positionInMeasure,
+        tokenKind: ParsedChordTokenKind.issue,
         error: 'invalid-bass',
         errorDetail: parts.bass,
       );
@@ -190,6 +231,7 @@ class ProgressionParser {
         rawText: rawToken,
         measureIndex: measureIndex,
         positionInMeasure: positionInMeasure,
+        tokenKind: ParsedChordTokenKind.issue,
         error: suffixResult.errorCode,
         errorDetail: suffixResult.errorDetail,
       );
@@ -201,6 +243,7 @@ class ProgressionParser {
       rawText: rawToken,
       measureIndex: measureIndex,
       positionInMeasure: positionInMeasure,
+      tokenKind: ParsedChordTokenKind.chord,
       chord: ParsedChord(
         sourceSymbol: rawToken,
         root: root,
@@ -947,6 +990,27 @@ class ProgressionParser {
         token == '\u2013' ||
         token == '\u2014' ||
         token == '\u2212';
+  }
+
+  bool _isIgnoredToken(String token) {
+    final normalized = _normalizeInput(token);
+    return normalized == ':' ||
+        normalized == '|:' ||
+        normalized == ':|' ||
+        normalized == '::';
+  }
+
+  String _preprocessInput(String input) {
+    return input
+        .replaceAllMapped(
+          _noChordPhrasePattern,
+          (_) => ' NO_CHORD ',
+        )
+        .replaceAllMapped(_sectionMarkerPattern, (_) => ' ')
+        .replaceAllMapped(_sectionWordPattern, (_) => ' ')
+        .replaceAll('|:', '|')
+        .replaceAll(':|', '|')
+        .replaceAll(':', ' ');
   }
 
   String _normalizeInput(String input) {

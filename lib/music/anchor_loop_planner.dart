@@ -216,12 +216,17 @@ class AnchorLoopPlanner {
       }
       final analysisKey =
           '${middleCycleMeasureOffset + location.$1}:${location.$2}';
+      final primaryAnalysis = _resolveSlotAnalysis(
+        slot: slot,
+        defaultAnalysis: analysisByMeasurePosition[analysisKey],
+        seedKeyCenter: seedKeyCenter,
+      );
       resolvedPlans.add(
         AnchorLoopSlotPlan(
           timing: slot.timing,
           anchorSlot: slot.anchorSlot,
           parsedAnchorChord: slot.parsedAnchorChord,
-          primaryAnalysis: analysisByMeasurePosition[analysisKey],
+          primaryAnalysis: primaryAnalysis,
         ),
       );
     }
@@ -240,5 +245,30 @@ class AnchorLoopPlanner {
         : RomanNumeralId.iMin6;
     final root = MusicTheory.resolveChordRootForCenter(keyCenter, tonicRoman);
     return keyCenter.mode == KeyMode.major ? '${root}maj7' : '${root}m6';
+  }
+
+  AnalyzedChord? _resolveSlotAnalysis({
+    required AnchorLoopSlotPlan slot,
+    required AnalyzedChord? defaultAnalysis,
+    required KeyCenter? seedKeyCenter,
+  }) {
+    final parsedAnchorChord = slot.parsedAnchorChord;
+    if (parsedAnchorChord == null || seedKeyCenter == null) {
+      return defaultAnalysis;
+    }
+
+    final seedSymbol = _tonicSeedSymbolForKeyCenter(seedKeyCenter);
+    if (seedSymbol == null) {
+      return defaultAnalysis;
+    }
+
+    final contextualAnalysis = analyzer.analyze(
+      '$seedSymbol ${parsedAnchorChord.sourceSymbol} $seedSymbol',
+    );
+    if (contextualAnalysis.chordAnalyses.length < 2) {
+      return defaultAnalysis;
+    }
+
+    return contextualAnalysis.chordAnalyses[1];
   }
 }

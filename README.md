@@ -16,6 +16,7 @@ Launch policy pages:
 - Key mode with diatonic Roman numerals
 - Smart Generator mode with weighted harmonic motion
 - Chord Analyzer with key-center, Roman numeral, harmonic-function, and summary output
+- Chord Analyzer output now includes `analysisSegments`, `diagnosticStatus`, `warningCodes`, `finalSelectionConfidence`, `primaryKeyScore`, `alternativeKeyScore`, `selectionReason`, and the `alteredDominant` highlight taxonomy
 - Secondary dominants, substitute dominants, and modal interchange
 - Chord symbol styles: `Compact`, `MajText`, `DeltaJazz`
 - Tensions, `V7sus4`, and slash-bass inversions

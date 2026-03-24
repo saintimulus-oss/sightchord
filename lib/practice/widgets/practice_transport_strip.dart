@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../settings/practice_settings.dart';
 import '../../ui/chordest_ui_tokens.dart';
 import '../../widgets/beat_indicator_row.dart';
+import 'practice_generator_controls.dart';
 
 class PracticeTransportStrip extends StatelessWidget {
   const PracticeTransportStrip({
@@ -15,19 +16,24 @@ class PracticeTransportStrip extends StatelessWidget {
     required this.animationDuration,
     required this.meterLabel,
     required this.meterTooltip,
-    required this.rhythmTitle,
-    required this.rhythmEditingTitle,
-    required this.transportTitle,
     required this.startTooltip,
     required this.pauseTooltip,
     required this.resetTooltip,
+    required this.bpmLabel,
+    required this.decreaseBpmTooltip,
+    required this.increaseBpmTooltip,
     required this.autoRunning,
+    required this.bpmController,
     required this.onPressedBeatRow,
     required this.onPressedBeat,
     required this.onTogglePatternEditing,
     required this.onOpenTimeSignaturePicker,
     required this.onToggleAutoplay,
     required this.onResetGeneratedChords,
+    required this.onAdjustBpm,
+    required this.onBpmChanged,
+    required this.onBpmSubmitted,
+    required this.onBpmTapOutside,
   });
 
   final bool compact;
@@ -38,29 +44,33 @@ class PracticeTransportStrip extends StatelessWidget {
   final Duration animationDuration;
   final String meterLabel;
   final String meterTooltip;
-  final String rhythmTitle;
-  final String rhythmEditingTitle;
-  final String transportTitle;
   final String startTooltip;
   final String pauseTooltip;
   final String resetTooltip;
+  final String bpmLabel;
+  final String decreaseBpmTooltip;
+  final String increaseBpmTooltip;
   final bool autoRunning;
+  final TextEditingController bpmController;
   final VoidCallback onPressedBeatRow;
   final ValueChanged<int> onPressedBeat;
   final VoidCallback onTogglePatternEditing;
   final VoidCallback onOpenTimeSignaturePicker;
   final VoidCallback onToggleAutoplay;
   final VoidCallback onResetGeneratedChords;
+  final ValueChanged<int> onAdjustBpm;
+  final ValueChanged<String> onBpmChanged;
+  final ValueChanged<String> onBpmSubmitted;
+  final TapRegionCallback onBpmTapOutside;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final shortViewport = MediaQuery.sizeOf(context).height < 720;
     return LayoutBuilder(
       builder: (context, constraints) {
-        final shortViewport = MediaQuery.sizeOf(context).height < 720;
-        final effectiveCompact =
-            compact || shortViewport || constraints.maxWidth < 420;
-        final useStackedLayout = constraints.maxWidth < 680;
+        final dense = compact || shortViewport || constraints.maxWidth < 880;
+        final stacked = constraints.maxWidth < 760;
         final beatRow = BeatIndicatorRow(
           beatCount: beatsPerBar,
           activeBeat: currentBeat,
@@ -71,83 +81,92 @@ class PracticeTransportStrip extends StatelessWidget {
           animationDuration: animationDuration,
         );
 
-        final rhythmEditorAction = metronomePatternEditing
-            ? _TransportActionButton(
-                tooltip: MaterialLocalizations.of(context).okButtonLabel,
-                icon: Icons.check_rounded,
-                label: MaterialLocalizations.of(context).okButtonLabel,
-                selected: true,
-                compact: effectiveCompact,
-                onPressed: onTogglePatternEditing,
-              )
-            : null;
-
-        final sections = <Widget>[
-          _TransportInfoCard(
-            title: meterTooltip,
-            value: meterLabel,
-            icon: Icons.music_note_rounded,
-            compact: effectiveCompact,
-            onPressed: onOpenTimeSignaturePicker,
-            buttonKey: const ValueKey('practice-time-signature-button'),
-          ),
-          _TransportBeatCard(
-            title: metronomePatternEditing ? rhythmEditingTitle : rhythmTitle,
-            compact: effectiveCompact,
-            beatRow: beatRow,
-            trailing: rhythmEditorAction,
-            onPressed: metronomePatternEditing ? null : onPressedBeatRow,
-          ),
-          _TransportControlsCard(
-            compact: effectiveCompact,
-            title: transportTitle,
-            autoRunning: autoRunning,
-            startTooltip: startTooltip,
-            pauseTooltip: pauseTooltip,
-            resetTooltip: resetTooltip,
-            onToggleAutoplay: onToggleAutoplay,
-            onResetGeneratedChords: onResetGeneratedChords,
-          ),
-        ];
-
-        if (useStackedLayout) {
-          return DecoratedBox(
-            decoration: ChordestUiTokens.panelDecoration(
-              theme,
-              borderRadius: ChordestUiTokens.radius(28),
+        final controlRail = Wrap(
+          spacing: dense ? 8 : 10,
+          runSpacing: dense ? 8 : 10,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            _TransportPrimaryAction(
+              buttonKey: const ValueKey('practice-autoplay-button'),
+              icon: autoRunning
+                  ? Icons.pause_rounded
+                  : Icons.play_arrow_rounded,
+              tooltip: autoRunning ? pauseTooltip : startTooltip,
+              selected: autoRunning,
+              compact: dense,
+              onPressed: onToggleAutoplay,
             ),
-            child: Padding(
-              padding: EdgeInsets.all(shortViewport ? 6 : 8),
-              child: Column(
-                children: [
-                  for (var i = 0; i < sections.length; i++) ...[
-                    sections[i],
-                    if (i + 1 < sections.length)
-                      SizedBox(height: shortViewport ? 6 : 8),
-                  ],
-                ],
+            _TransportSecondaryAction(
+              buttonKey: const ValueKey(
+                'practice-reset-generated-chords-button',
               ),
+              icon: Icons.stop_rounded,
+              tooltip: resetTooltip,
+              compact: dense,
+              onPressed: onResetGeneratedChords,
             ),
-          );
-        }
+            _TransportInfoButton(
+              buttonKey: const ValueKey('practice-time-signature-button'),
+              icon: Icons.music_note_rounded,
+              label: meterLabel,
+              tooltip: meterTooltip,
+              compact: dense,
+              onPressed: onOpenTimeSignaturePicker,
+            ),
+            PracticeBpmControlCluster(
+              bpmController: bpmController,
+              bpmLabel: bpmLabel,
+              decreaseTooltip: decreaseBpmTooltip,
+              increaseTooltip: increaseBpmTooltip,
+              compact: true,
+              onAdjust: onAdjustBpm,
+              onChanged: onBpmChanged,
+              onSubmitted: onBpmSubmitted,
+              onTapOutside: onBpmTapOutside,
+            ),
+          ],
+        );
+
+        final beatLane = _BeatLane(
+          compact: dense,
+          beatRow: beatRow,
+          editing: metronomePatternEditing,
+          onPressed: onPressedBeatRow,
+          onCompleteEditing: onTogglePatternEditing,
+        );
 
         return DecoratedBox(
-          decoration: ChordestUiTokens.panelDecoration(
-            theme,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface.withValues(alpha: 0.74),
             borderRadius: ChordestUiTokens.radius(30),
+            border: Border.all(
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+            ),
+            boxShadow: ChordestUiTokens.panelShadows(theme),
           ),
           child: Padding(
-            padding: EdgeInsets.all(shortViewport ? 8 : 10),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: sections[0]),
-                SizedBox(width: shortViewport ? 8 : 10),
-                Expanded(flex: 2, child: sections[1]),
-                SizedBox(width: shortViewport ? 8 : 10),
-                Expanded(child: sections[2]),
-              ],
+            padding: EdgeInsets.fromLTRB(
+              dense ? 12 : 16,
+              dense ? 10 : 12,
+              dense ? 12 : 16,
+              dense ? 10 : 12,
             ),
+            child: stacked
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      controlRail,
+                      SizedBox(height: dense ? 10 : 12),
+                      beatLane,
+                    ],
+                  )
+                : Row(
+                    children: [
+                      Expanded(flex: 5, child: beatLane),
+                      _StripDivider(compact: dense),
+                      Flexible(flex: 4, child: controlRail),
+                    ],
+                  ),
           ),
         );
       },
@@ -155,271 +174,211 @@ class PracticeTransportStrip extends StatelessWidget {
   }
 }
 
-class _TransportInfoCard extends StatelessWidget {
-  const _TransportInfoCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.compact,
-    required this.onPressed,
-    required this.buttonKey,
-  });
-
-  final String title;
-  final String value;
-  final IconData icon;
-  final bool compact;
-  final VoidCallback onPressed;
-  final Key buttonKey;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return DecoratedBox(
-      decoration: ChordestUiTokens.innerPanelDecoration(theme),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-        // Keep the transport legible without consuming too much vertical space.
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: ChordestUiTokens.overlineStyle(theme)),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              key: buttonKey,
-              onPressed: onPressed,
-              style: OutlinedButton.styleFrom(
-                padding: EdgeInsets.symmetric(
-                  horizontal: compact ? 10 : 12,
-                  vertical: compact ? 10 : 12,
-                ),
-                alignment: Alignment.centerLeft,
-                side: BorderSide(color: colorScheme.outlineVariant),
-                backgroundColor: colorScheme.surface.withValues(alpha: 0.68),
-              ),
-              icon: Icon(icon, size: compact ? 18 : 20),
-              label: Text(
-                value,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TransportBeatCard extends StatelessWidget {
-  const _TransportBeatCard({
-    required this.title,
+class _BeatLane extends StatelessWidget {
+  const _BeatLane({
     required this.compact,
     required this.beatRow,
-    this.trailing,
-    this.onPressed,
+    required this.editing,
+    required this.onPressed,
+    required this.onCompleteEditing,
   });
 
-  final String title;
   final bool compact;
   final Widget beatRow;
-  final Widget? trailing;
-  final VoidCallback? onPressed;
+  final bool editing;
+  final VoidCallback onPressed;
+  final VoidCallback onCompleteEditing;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final headerChildren = <Widget>[
-      Expanded(
-        child: Text(title, style: ChordestUiTokens.overlineStyle(theme)),
-      ),
-    ];
-    if (trailing != null) {
-      headerChildren.add(trailing!);
-    }
-    return DecoratedBox(
-      decoration: ChordestUiTokens.innerPanelDecoration(theme, accent: true),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-        // Compact vertical rhythm matters because this strip sits above the main card.
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(children: headerChildren),
-            const SizedBox(height: 8),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: ChordestUiTokens.radius(20),
-                onTap: onPressed,
-                child: Ink(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: compact ? 8 : 10,
-                    vertical: compact ? 8 : 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface.withValues(alpha: 0.56),
-                    borderRadius: ChordestUiTokens.radius(20),
-                  ),
-                  child: Center(child: beatRow),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: ChordestUiTokens.radius(22),
+        onTap: editing ? null : onPressed,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface.withValues(alpha: 0.56),
+            borderRadius: ChordestUiTokens.radius(22),
+          ),
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 10 : 14,
+            vertical: compact ? 8 : 10,
+          ),
+          child: Row(
+            children: [
+              Expanded(child: Center(child: beatRow)),
+              if (editing) ...[
+                const SizedBox(width: 10),
+                _TransportPrimaryAction(
+                  icon: Icons.check_rounded,
+                  tooltip: MaterialLocalizations.of(context).okButtonLabel,
+                  selected: true,
+                  compact: compact,
+                  onPressed: onCompleteEditing,
                 ),
-              ),
-            ),
-          ],
+              ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _TransportControlsCard extends StatelessWidget {
-  const _TransportControlsCard({
+class _TransportPrimaryAction extends StatelessWidget {
+  const _TransportPrimaryAction({
+    required this.icon,
+    required this.tooltip,
+    required this.selected,
     required this.compact,
-    required this.title,
-    required this.autoRunning,
-    required this.startTooltip,
-    required this.pauseTooltip,
-    required this.resetTooltip,
-    required this.onToggleAutoplay,
-    required this.onResetGeneratedChords,
+    required this.onPressed,
+    this.buttonKey,
   });
 
+  final IconData icon;
+  final String tooltip;
+  final bool selected;
   final bool compact;
-  final String title;
-  final bool autoRunning;
-  final String startTooltip;
-  final String pauseTooltip;
-  final String resetTooltip;
-  final VoidCallback onToggleAutoplay;
-  final VoidCallback onResetGeneratedChords;
+  final VoidCallback onPressed;
+  final Key? buttonKey;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return DecoratedBox(
-      decoration: ChordestUiTokens.innerPanelDecoration(theme),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-        // The control group should stay tappable but still fit on smaller desktop heights.
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: ChordestUiTokens.overlineStyle(theme)),
-            const SizedBox(height: 8),
-            if (compact) ...[
-              _TransportActionButton(
-                tooltip: autoRunning ? pauseTooltip : startTooltip,
-                icon: autoRunning
-                    ? Icons.pause_rounded
-                    : Icons.play_arrow_rounded,
-                label: autoRunning ? pauseTooltip : startTooltip,
-                selected: autoRunning,
-                compact: true,
-                buttonKey: const ValueKey('practice-autoplay-button'),
-                onPressed: onToggleAutoplay,
-              ),
-              const SizedBox(height: 8),
-              _TransportActionButton(
-                tooltip: resetTooltip,
-                icon: Icons.stop_rounded,
-                label: resetTooltip,
-                compact: true,
-                buttonKey: const ValueKey(
-                  'practice-reset-generated-chords-button',
-                ),
-                onPressed: onResetGeneratedChords,
-              ),
-            ] else ...[
-              _TransportActionButton(
-                tooltip: autoRunning ? pauseTooltip : startTooltip,
-                icon: autoRunning
-                    ? Icons.pause_rounded
-                    : Icons.play_arrow_rounded,
-                label: autoRunning ? pauseTooltip : startTooltip,
-                selected: autoRunning,
-                buttonKey: const ValueKey('practice-autoplay-button'),
-                onPressed: onToggleAutoplay,
-              ),
-              const SizedBox(height: 8),
-              _TransportActionButton(
-                tooltip: resetTooltip,
-                icon: Icons.stop_rounded,
-                label: resetTooltip,
-                buttonKey: const ValueKey(
-                  'practice-reset-generated-chords-button',
-                ),
-                onPressed: onResetGeneratedChords,
-              ),
-            ],
-          ],
+    return Tooltip(
+      message: tooltip,
+      child: IconButton(
+        key: buttonKey,
+        onPressed: onPressed,
+        style: IconButton.styleFrom(
+          minimumSize: Size.square(compact ? 40 : 44),
+          backgroundColor: selected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.surface.withValues(alpha: 0.9),
+          foregroundColor: selected
+              ? theme.colorScheme.onPrimary
+              : theme.colorScheme.onSurface,
+          side: BorderSide(
+            color: selected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.outlineVariant.withValues(alpha: 0.7),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: ChordestUiTokens.radius(compact ? 14 : 16),
+          ),
         ),
+        icon: Icon(icon, size: compact ? 20 : 22),
       ),
     );
   }
 }
 
-class _TransportActionButton extends StatelessWidget {
-  const _TransportActionButton({
-    required this.tooltip,
+class _TransportSecondaryAction extends StatelessWidget {
+  const _TransportSecondaryAction({
+    required this.buttonKey,
     required this.icon,
-    required this.label,
-    this.selected = false,
-    this.compact = false,
-    this.buttonKey,
+    required this.tooltip,
+    required this.compact,
     required this.onPressed,
   });
 
-  final String tooltip;
+  final Key buttonKey;
   final IconData icon;
-  final String label;
-  final bool selected;
+  final String tooltip;
   final bool compact;
-  final Key? buttonKey;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     return Tooltip(
       message: tooltip,
-      child: FilledButton.tonalIcon(
+      child: IconButton(
         key: buttonKey,
         onPressed: onPressed,
-        style: FilledButton.styleFrom(
+        style: IconButton.styleFrom(
+          minimumSize: Size.square(compact ? 40 : 44),
+          backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.56),
+          foregroundColor: theme.colorScheme.onSurfaceVariant,
+          side: BorderSide(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.6),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: ChordestUiTokens.radius(compact ? 14 : 16),
+          ),
+        ),
+        icon: Icon(icon, size: compact ? 20 : 22),
+      ),
+    );
+  }
+}
+
+class _TransportInfoButton extends StatelessWidget {
+  const _TransportInfoButton({
+    required this.buttonKey,
+    required this.icon,
+    required this.label,
+    required this.tooltip,
+    required this.compact,
+    required this.onPressed,
+  });
+
+  final Key buttonKey;
+  final IconData icon;
+  final String label;
+  final String tooltip;
+  final bool compact;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Tooltip(
+      message: tooltip,
+      child: OutlinedButton.icon(
+        key: buttonKey,
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          minimumSize: Size(0, compact ? 40 : 44),
           padding: EdgeInsets.symmetric(
-            horizontal: compact ? 10 : 12,
+            horizontal: compact ? 12 : 14,
             vertical: compact ? 10 : 12,
           ),
-          minimumSize: Size.fromHeight(compact ? 40 : 44),
-          backgroundColor: selected
-              ? colorScheme.primary
-              : colorScheme.surface.withValues(alpha: 0.72),
-          foregroundColor: selected
-              ? colorScheme.onPrimary
-              : colorScheme.onSurface,
+          side: BorderSide(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.6),
+          ),
+          backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.56),
+          foregroundColor: theme.colorScheme.onSurface,
           shape: RoundedRectangleBorder(
-            borderRadius: ChordestUiTokens.radius(18),
-            side: BorderSide(
-              color: selected
-                  ? colorScheme.primary
-                  : colorScheme.outlineVariant.withValues(alpha: 0.92),
-            ),
+            borderRadius: ChordestUiTokens.radius(compact ? 14 : 16),
           ),
-          alignment: Alignment.centerLeft,
-        ),
-        icon: Icon(icon, size: compact ? 18 : 20),
-        label: Text(
-          compact ? label.split(' ').last : label,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w800,
+          textStyle: theme.textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w700,
           ),
         ),
+        icon: Icon(icon, size: compact ? 16 : 18),
+        label: Text(label),
       ),
+    );
+  }
+}
+
+class _StripDivider extends StatelessWidget {
+  const _StripDivider({required this.compact});
+
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      height: compact ? 36 : 44,
+      margin: EdgeInsets.symmetric(horizontal: compact ? 10 : 14),
+      color: Theme.of(
+        context,
+      ).colorScheme.outlineVariant.withValues(alpha: 0.26),
     );
   }
 }

@@ -274,6 +274,64 @@ void main() {
         expectedMode: KeyMode.major,
         requiredTags: const [ProgressionTagId.iiVI],
       ),
+    const _AnalysisFixture(
+      name: 'pure triad cadence',
+      progression: 'C F G C',
+      expectedKey: 'C',
+      expectedMode: KeyMode.major,
+      expectedRomans: ['I', 'IV', 'V', 'I'],
+      requiredTags: [ProgressionTagId.dominantResolution],
+    ),
+    const _AnalysisFixture(
+      name: 'deceptive cadence recovery',
+      progression: 'Cmaj7 G7 Am7 | Dm7 G7 Cmaj7',
+      expectedKey: 'C',
+      expectedMode: KeyMode.major,
+      requiredTags: [ProgressionTagId.deceptiveCadence],
+    ),
+    const _AnalysisFixture(
+      name: 'sparse progression anchor',
+      progression: 'C | | F | G',
+      expectedKey: 'C',
+      expectedMode: KeyMode.major,
+    ),
+    const _AnalysisFixture(
+      name: 'explicit backdoor fixture',
+      progression: 'Fm7 Bb7 Cmaj7',
+      expectedKey: 'C',
+      expectedMode: KeyMode.major,
+      requiredTags: [ProgressionTagId.backdoorChain],
+      requiredRemarks: [(1, ProgressionRemarkKind.backdoorDominant)],
+    ),
+    const _AnalysisFixture(
+      name: 'common-tone diminished fixture',
+      progression: 'C#dim7 Cmaj7',
+      expectedKey: 'C',
+      expectedMode: KeyMode.major,
+      requiredTags: [ProgressionTagId.commonToneMotion],
+      requiredRemarks: [(0, ProgressionRemarkKind.commonToneDiminished)],
+    ),
+    const _AnalysisFixture(
+      name: 'real modulation fixture',
+      progression:
+          'Cmaj7 Dm7 G7 Cmaj7 | Em7 A7 | Dmaj7 Gmaj7 | A7 Dmaj7 | G7 Cmaj7',
+      expectedKey: 'C',
+      expectedMode: KeyMode.major,
+      requiredTags: [ProgressionTagId.realModulation],
+    ),
+    const _AnalysisFixture(
+      name: 'placeholder ambiguity fixture',
+      progression: 'Dm7 - G7 - ? - Am7',
+      expectedKey: 'A',
+      expectedMode: KeyMode.minor,
+    ),
+    const _AnalysisFixture(
+      name: 'section and repeat marker fixture',
+      progression: '[A] Cmaj7 |: Dm7 G7 :| Cmaj7',
+      expectedKey: 'C',
+      expectedMode: KeyMode.major,
+      requiredTags: [ProgressionTagId.iiVI],
+    ),
   ];
 
   test(

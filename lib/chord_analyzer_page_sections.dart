@@ -609,11 +609,19 @@ class _ChordAnalysisRow extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(
-                analysis.romanNumeral,
+                analysis.primaryDisplayLabel,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
               ),
+              if (analysis.displayAlias case final alias?)
+                Text(
+                  alias,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
               Chip(
                 backgroundColor: theme.colorScheme.primaryContainer,
                 side: BorderSide.none,
@@ -690,7 +698,7 @@ class _ChordAnalysisRow extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               '${l10n.chordAnalyzerCompetingReadings}: '
-              '${analysis.competingInterpretations.map((item) => item.romanNumeral).join(', ')}',
+              '${analysis.competingInterpretations.map((item) => item.primaryDisplayLabel).join(', ')}',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -797,9 +805,8 @@ class _InferredChordAnalysisRow extends StatelessWidget {
           explainer.evidenceLabel(l10n, evidence),
     ];
     final competingLabels = [
-      for (final candidate in analysis.competingInterpretations)
-        if (candidate.chordSymbol case final symbol?)
-          '$symbol (${candidate.romanNumeral})',
+      for (final suggestion in analysis.suggestedFills.skip(1))
+        '${suggestion.resolvedSymbol} (${suggestion.romanNumeral})',
     ];
 
     final details = Expanded(
@@ -834,11 +841,19 @@ class _InferredChordAnalysisRow extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(
-                analysis.romanNumeral,
+                analysis.primaryDisplayLabel,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
               ),
+              if (analysis.displayAlias case final alias?)
+                Text(
+                  alias,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
               Chip(
                 backgroundColor: theme.colorScheme.primaryContainer,
                 side: BorderSide.none,

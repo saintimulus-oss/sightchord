@@ -26,6 +26,9 @@ class ProgressionVariationGenerator {
   const ProgressionVariationGenerator();
 
   List<ProgressionVariation> generate(ProgressionAnalysis analysis) {
+    if (!analysis.canGenerateVariations) {
+      return const [];
+    }
     final variations = <ProgressionVariation>[];
     final keyCenter = analysis.primaryKey.keyCenter;
     final cadence = _bestCadenceWindow(analysis);
