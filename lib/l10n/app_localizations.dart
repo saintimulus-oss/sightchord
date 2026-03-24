@@ -6675,7 +6675,7 @@ abstract class AppLocalizations {
   /// No description provided for @metronomeLocalFilePathHelp.
   ///
   /// In en, this message translates to:
-  /// **'Paste a local audio file path and press enter to apply it. Built-in sound remains the fallback.'**
+  /// **'Paste a local audio file path and press enter, or upload a file below. Built-in sound remains the fallback.'**
   String get metronomeLocalFilePathHelp;
 
   /// No description provided for @metronomeAccentLocalFilePath.
@@ -6687,8 +6687,62 @@ abstract class AppLocalizations {
   /// No description provided for @metronomeAccentLocalFilePathHelp.
   ///
   /// In en, this message translates to:
-  /// **'Paste a local accent file path and press enter to apply it. Built-in sound remains the fallback.'**
+  /// **'Paste a local accent file path and press enter, or upload a file below. Built-in sound remains the fallback.'**
   String get metronomeAccentLocalFilePathHelp;
+
+  /// No description provided for @metronomeCustomSoundHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload your own metronome click. The app stores a private copy and keeps the built-in sound as fallback.'**
+  String get metronomeCustomSoundHelp;
+
+  /// No description provided for @metronomeCustomSoundStatusBuiltIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Currently using a built-in sound.'**
+  String get metronomeCustomSoundStatusBuiltIn;
+
+  /// No description provided for @metronomeCustomSoundStatusFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom file: {fileName}'**
+  String metronomeCustomSoundStatusFile(Object fileName);
+
+  /// No description provided for @metronomeCustomSoundUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload custom sound'**
+  String get metronomeCustomSoundUpload;
+
+  /// No description provided for @metronomeCustomSoundReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace custom sound'**
+  String get metronomeCustomSoundReplace;
+
+  /// No description provided for @metronomeCustomSoundReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Use built-in sound'**
+  String get metronomeCustomSoundReset;
+
+  /// No description provided for @metronomeCustomSoundUploadSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom metronome sound saved.'**
+  String get metronomeCustomSoundUploadSuccess;
+
+  /// No description provided for @metronomeCustomSoundResetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched back to the built-in metronome sound.'**
+  String get metronomeCustomSoundResetSuccess;
+
+  /// No description provided for @metronomeCustomSoundUploadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the selected metronome audio file.'**
+  String get metronomeCustomSoundUploadError;
 
   /// No description provided for @harmonySoundTitle.
   ///

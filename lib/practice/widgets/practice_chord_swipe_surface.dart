@@ -22,6 +22,7 @@ class PracticeChordSwipeSurface extends StatefulWidget {
     required this.previousLabel,
     required this.currentLabel,
     required this.nextLabel,
+    required this.lookAheadLabel,
     this.compact = false,
     this.performanceMode = false,
     required this.statusLabel,
@@ -42,6 +43,7 @@ class PracticeChordSwipeSurface extends StatefulWidget {
   final String previousLabel;
   final String currentLabel;
   final String nextLabel;
+  final String lookAheadLabel;
   final bool compact;
   final bool performanceMode;
   final String statusLabel;
@@ -89,6 +91,7 @@ class PracticeChordSwipeSurfaceState extends State<PracticeChordSwipeSurface>
   late String _displayPreviousLabel;
   late String _displayCurrentLabel;
   late String _displayNextLabel;
+  late String _displayLookAheadLabel;
 
   bool get _canGoBack => widget.availableBackSteps > 0;
 
@@ -120,6 +123,7 @@ class PracticeChordSwipeSurfaceState extends State<PracticeChordSwipeSurface>
     _displayPreviousLabel = widget.previousLabel;
     _displayCurrentLabel = widget.currentLabel;
     _displayNextLabel = widget.nextLabel;
+    _displayLookAheadLabel = widget.lookAheadLabel;
     _swipeController =
         AnimationController(vsync: this, duration: _swipeDuration)
           ..addListener(_handleSwipeAnimationTick)
@@ -184,7 +188,8 @@ class PracticeChordSwipeSurfaceState extends State<PracticeChordSwipeSurface>
     final labelsChanged =
         oldWidget.previousLabel != widget.previousLabel ||
         oldWidget.currentLabel != widget.currentLabel ||
-        oldWidget.nextLabel != widget.nextLabel;
+        oldWidget.nextLabel != widget.nextLabel ||
+        oldWidget.lookAheadLabel != widget.lookAheadLabel;
     if (!labelsChanged || _activeTransition != null) {
       return;
     }
@@ -229,6 +234,7 @@ class PracticeChordSwipeSurfaceState extends State<PracticeChordSwipeSurface>
       _displayPreviousLabel = widget.previousLabel;
       _displayCurrentLabel = widget.currentLabel;
       _displayNextLabel = widget.nextLabel;
+      _displayLookAheadLabel = widget.lookAheadLabel;
     });
   }
 
@@ -383,6 +389,7 @@ class PracticeChordSwipeSurfaceState extends State<PracticeChordSwipeSurface>
           _displayPreviousLabel = widget.previousLabel;
           _displayCurrentLabel = widget.currentLabel;
           _displayNextLabel = widget.nextLabel;
+          _displayLookAheadLabel = widget.lookAheadLabel;
         });
       });
     }
@@ -395,7 +402,8 @@ class PracticeChordSwipeSurfaceState extends State<PracticeChordSwipeSurface>
     if (direction == _ChordSwipeTransition.advance) {
       _displayPreviousLabel = currentLabel;
       _displayCurrentLabel = nextLabel;
-      _displayNextLabel = '';
+      _displayNextLabel = _displayLookAheadLabel;
+      _displayLookAheadLabel = '';
       return;
     }
     _displayPreviousLabel = '';
@@ -419,6 +427,7 @@ class PracticeChordSwipeSurfaceState extends State<PracticeChordSwipeSurface>
       _displayPreviousLabel = widget.previousLabel;
       _displayCurrentLabel = widget.currentLabel;
       _displayNextLabel = widget.nextLabel;
+      _displayLookAheadLabel = widget.lookAheadLabel;
     });
   }
 
@@ -453,13 +462,26 @@ class PracticeChordSwipeSurfaceState extends State<PracticeChordSwipeSurface>
       _displayPreviousLabel = widget.previousLabel;
       _displayCurrentLabel = widget.currentLabel;
       _displayNextLabel = widget.nextLabel;
-      _edgeRevealTransition = revealTransition;
+      _displayLookAheadLabel = widget.lookAheadLabel;
+      _edgeRevealTransition = _shouldRevealEdgeAfterCommit(revealTransition)
+          ? revealTransition
+          : null;
     });
-    if (revealTransition == null) {
+    if (!_shouldRevealEdgeAfterCommit(revealTransition)) {
       _startNextQueuedStepIfNeeded();
       return;
     }
     _edgeRevealController.forward(from: 0);
+  }
+
+  bool _shouldRevealEdgeAfterCommit(_ChordSwipeTransition? transition) {
+    if (transition == null) {
+      return false;
+    }
+    return switch (transition) {
+      _ChordSwipeTransition.advance => _displayNextLabel.isEmpty,
+      _ChordSwipeTransition.goBack => true,
+    };
   }
 
   void _handleDragUpdate(DragUpdateDetails details) {
@@ -667,6 +689,7 @@ class PracticeChordSwipeSurfaceState extends State<PracticeChordSwipeSurface>
                                   previousLabel: _displayPreviousLabel,
                                   currentLabel: _displayCurrentLabel,
                                   nextLabel: _displayNextLabel,
+                                  lookAheadLabel: _displayLookAheadLabel,
                                   performanceMode: widget.performanceMode,
                                   progress: progress,
                                   edgeRevealTransition: _edgeRevealTransition,
@@ -1013,7 +1036,7 @@ class _RelationPill extends StatelessWidget {
 
 enum _ChordSwipeTransition { advance, goBack }
 
-enum _ChordTokenRole { previous, current, next }
+enum _ChordTokenRole { previous, current, next, lookAhead }
 
 class _ChordTokenLayout {
   const _ChordTokenLayout({
@@ -1044,6 +1067,7 @@ class _ChordMotionStage extends StatelessWidget {
     required this.previousLabel,
     required this.currentLabel,
     required this.nextLabel,
+    required this.lookAheadLabel,
     required this.performanceMode,
     required this.progress,
     required this.edgeRevealTransition,
@@ -1062,6 +1086,7 @@ class _ChordMotionStage extends StatelessWidget {
   final String previousLabel;
   final String currentLabel;
   final String nextLabel;
+  final String lookAheadLabel;
   final bool performanceMode;
   final double progress;
   final _ChordSwipeTransition? edgeRevealTransition;
@@ -1090,6 +1115,11 @@ class _ChordMotionStage extends StatelessWidget {
                 label: nextLabel,
                 role: _ChordTokenRole.next,
                 layout: _layoutForRole(_ChordTokenRole.next),
+              ),
+              _ChordTokenSpec(
+                label: lookAheadLabel,
+                role: _ChordTokenRole.lookAhead,
+                layout: _layoutForRole(_ChordTokenRole.lookAhead),
               ),
             ]..sort(
               (left, right) =>
@@ -1128,6 +1158,11 @@ class _ChordMotionStage extends StatelessWidget {
         alignmentX: _rightAnchor,
         prominence: _sideProminence,
         opacity: _restSideOpacity,
+      ),
+      _ChordTokenRole.lookAhead => const _ChordTokenLayout(
+        alignmentX: _offRightAnchor,
+        prominence: 0.08,
+        opacity: 0,
       ),
     };
   }
@@ -1244,6 +1279,15 @@ class _ChordMotionStage extends StatelessWidget {
           ),
           t,
         );
+      case _ChordTokenRole.lookAhead:
+        if (progress < 0) {
+          return _lerpLayout(
+            settled,
+            _restLayoutForRole(_ChordTokenRole.next),
+            t,
+          );
+        }
+        return settled;
     }
   }
 
@@ -1265,16 +1309,25 @@ class _ChordMotionStage extends StatelessWidget {
       _ChordTokenRole.previous => onPreviousTap,
       _ChordTokenRole.next => onNextTap,
       _ChordTokenRole.current => null,
+      _ChordTokenRole.lookAhead => null,
     };
     final tokenKey = switch (role) {
       _ChordTokenRole.previous => const ValueKey('previous-chord-text'),
       _ChordTokenRole.next => const ValueKey('next-chord-text'),
+      _ChordTokenRole.lookAhead => const ValueKey('lookahead-chord-text'),
       _ChordTokenRole.current => null,
+    };
+    final positionKey = switch (role) {
+      _ChordTokenRole.previous => const ValueKey('previous-chord-position'),
+      _ChordTokenRole.current => const ValueKey('current-chord-position'),
+      _ChordTokenRole.next => const ValueKey('next-chord-position'),
+      _ChordTokenRole.lookAhead => const ValueKey('lookahead-chord-position'),
     };
     final textKey = switch (role) {
       _ChordTokenRole.previous => null,
       _ChordTokenRole.next => null,
       _ChordTokenRole.current => const ValueKey('current-chord-text'),
+      _ChordTokenRole.lookAhead => null,
     };
     final isCurrent = role == _ChordTokenRole.current;
     final textStyle =
@@ -1312,6 +1365,7 @@ class _ChordMotionStage extends StatelessWidget {
       child: Opacity(
         opacity: label.isEmpty ? 0 : layout.opacity,
         child: Transform.translate(
+          key: positionKey,
           offset: Offset(0, verticalOffset),
           child: SizedBox(
             width: boxWidth,

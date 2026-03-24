@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 import 'audio_asset_path_utils.dart';
@@ -62,7 +63,7 @@ class _AudioPlayerVoice implements SamplePlayerVoice {
 
   @override
   Future<void> configure() async {
-    await _player.setPlayerMode(PlayerMode.mediaPlayer);
+    await _player.setPlayerMode(_preferredPlayerMode);
     await _player.setReleaseMode(ReleaseMode.stop);
   }
 
@@ -105,4 +106,14 @@ class _AudioPlayerVoice implements SamplePlayerVoice {
 
   @override
   Future<void> dispose() => _player.dispose();
+
+  PlayerMode get _preferredPlayerMode {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      // Android lowLatency mode does not reliably replay preloaded asset
+      // sources with our persistent-player + ReleaseMode.stop setup, which
+      // makes manual chord/arpeggio preview buttons go silent after reuse.
+      return PlayerMode.mediaPlayer;
+    }
+    return PlayerMode.mediaPlayer;
+  }
 }

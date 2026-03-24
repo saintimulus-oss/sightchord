@@ -205,8 +205,15 @@ class SampledInstrumentEngine {
     if (resolved == null) {
       return null;
     }
+    final assetPath =
+        '${bundle.assetRootPath}/${resolved.region.sampleAssetPath}'.replaceAll(
+          '//',
+          '/',
+        );
 
     final slot = await _acquireVoiceSlot(
+      preferredAssetPath: assetPath,
+      preferredPlaybackRate: resolved.playbackRate,
       allowVoiceStealing: allowVoiceStealing,
     );
     if (slot == null) {
@@ -220,17 +227,14 @@ class SampledInstrumentEngine {
                 _velocityGain(velocity, manifest.defaults.velocityCurvePower))
             .clamp(0.0, 1.0);
 
-    final assetPath =
-        '${bundle.assetRootPath}/${resolved.region.sampleAssetPath}'.replaceAll(
-          '//',
-          '/',
-        );
-
     try {
       await slot.voice.prepare(
         assetPath: assetPath,
         playbackRate: resolved.playbackRate,
       );
+      slot
+        ..preparedAssetPath = assetPath
+        ..preparedPlaybackRate = resolved.playbackRate;
       return _PreparedInstrumentNote(
         note: ActiveInstrumentNote(
           id: noteId,
@@ -277,6 +281,8 @@ class SampledInstrumentEngine {
       await prepared.slot.voice.start(volume: prepared.volume);
       prepared.slot
         ..lastStartedAt = DateTime.now()
+        ..activeVolume = prepared.volume
+        ..reserved = false
         ..activeNoteId = prepared.note.id;
       _activeNotes[prepared.note.id] = _ActiveVoiceLease(
         note: prepared.note,
@@ -361,22 +367,25 @@ class SampledInstrumentEngine {
   Future<void> stopAll() async {
     final leases = _activeNotes.values.toList(growable: false);
     _activeNotes.clear();
-    for (final lease in leases) {
-      try {
-        await lease.slot.voice.stop();
-      } catch (error, stackTrace) {
-        _logWarning(
-          'Stopping an active instrument voice failed.',
-          error: error,
-          stackTrace: stackTrace,
-        );
-      } finally {
-        lease.slot.activeNoteId = null;
-        if (!_idleVoices.contains(lease.slot)) {
-          _idleVoices.add(lease.slot);
-        }
-      }
-    }
+    await Future.wait<void>([
+      for (final lease in leases)
+        () async {
+          try {
+            await lease.slot.voice.stop();
+          } catch (error, stackTrace) {
+            _logWarning(
+              'Stopping an active instrument voice failed.',
+              error: error,
+              stackTrace: stackTrace,
+            );
+          } finally {
+            lease.slot.activeNoteId = null;
+            if (!_idleVoices.contains(lease.slot)) {
+              _idleVoices.add(lease.slot);
+            }
+          }
+        }(),
+    ]);
   }
 
   Future<void> dispose() async {
@@ -436,6 +445,8 @@ class SampledInstrumentEngine {
   }
 
   Future<_VoiceSlot?> _acquireVoiceSlot({
+    String? preferredAssetPath,
+    double? preferredPlaybackRate,
     bool allowVoiceStealing = true,
   }) async {
     final manifest = _manifest;
@@ -443,12 +454,23 @@ class SampledInstrumentEngine {
       throw StateError('The sampled instrument manifest has not been loaded.');
     }
     if (_idleVoices.isNotEmpty) {
-      return _idleVoices.removeFirst();
+      final matchedIdleSlot = _takeMatchingIdleVoiceSlot(
+        assetPath: preferredAssetPath,
+        playbackRate: preferredPlaybackRate,
+      );
+      if (matchedIdleSlot != null) {
+        matchedIdleSlot.reserved = true;
+        return matchedIdleSlot;
+      }
+      final slot = _idleVoices.removeFirst();
+      slot.reserved = true;
+      return slot;
     }
     if (_canCreateAdditionalVoice(manifest)) {
       _pendingVoiceCreations += 1;
       try {
         final slot = await _createVoiceSlot();
+        slot.reserved = true;
         _voicePool.add(slot);
         return slot;
       } finally {
@@ -459,17 +481,49 @@ class SampledInstrumentEngine {
       return null;
     }
 
-    _voicePool.sort(
-      (left, right) => left.lastStartedAt.compareTo(right.lastStartedAt),
-    );
-    final stolen = _voicePool.first;
+    _VoiceSlot? stolen;
+    for (final slot in _voicePool) {
+      if (slot.activeNoteId == null) {
+        continue;
+      }
+      if (stolen == null || slot.lastStartedAt.isBefore(stolen.lastStartedAt)) {
+        stolen = slot;
+      }
+    }
+    if (stolen == null) {
+      return null;
+    }
     final activeNoteId = stolen.activeNoteId;
     if (activeNoteId != null) {
       _activeNotes.remove(activeNoteId);
     }
     await stolen.voice.stop();
-    stolen.activeNoteId = null;
+    stolen
+      ..activeNoteId = null
+      ..activeVolume = 1.0
+      ..reserved = true;
     return stolen;
+  }
+
+  _VoiceSlot? _takeMatchingIdleVoiceSlot({
+    required String? assetPath,
+    required double? playbackRate,
+  }) {
+    if (assetPath == null || playbackRate == null) {
+      return null;
+    }
+    final idleSlots = _idleVoices.toList(growable: false);
+    for (final slot in idleSlots) {
+      if (!slot.matchesPreparedSample(
+        assetPath: assetPath,
+        playbackRate: playbackRate,
+      )) {
+        continue;
+      }
+      _idleVoices.remove(slot);
+      return slot;
+    }
+    return null;
   }
 
   bool _canCreateAdditionalVoice(SampledInstrumentManifest manifest) {
@@ -484,11 +538,12 @@ class SampledInstrumentEngine {
     try {
       if (fadeDuration > Duration.zero) {
         const steps = 4;
+        final startVolume = slot.activeVolume.clamp(0.0, 1.0).toDouble();
         final stepDelay = Duration(
           milliseconds: (fadeDuration.inMilliseconds / steps).round(),
         );
         for (var step = steps - 1; step >= 0; step -= 1) {
-          await slot.voice.setVolume(step / steps);
+          await slot.voice.setVolume(startVolume * (step / steps));
           await Future<void>.delayed(stepDelay);
         }
       }
@@ -508,7 +563,10 @@ class SampledInstrumentEngine {
   }
 
   Future<void> _releaseSlot(_VoiceSlot slot) async {
-    slot.activeNoteId = null;
+    slot
+      ..activeNoteId = null
+      ..activeVolume = 1.0
+      ..reserved = false;
     try {
       await slot.voice.setVolume(1.0);
     } catch (_) {}
@@ -544,6 +602,18 @@ class _VoiceSlot {
   final SamplePlayerVoice voice;
   int? activeNoteId;
   DateTime lastStartedAt = DateTime.fromMillisecondsSinceEpoch(0);
+  String? preparedAssetPath;
+  double preparedPlaybackRate = 1.0;
+  double activeVolume = 1.0;
+  bool reserved = false;
+
+  bool matchesPreparedSample({
+    required String assetPath,
+    required double playbackRate,
+  }) {
+    return preparedAssetPath == assetPath &&
+        (preparedPlaybackRate - playbackRate).abs() <= 0.0001;
+  }
 }
 
 class _ActiveVoiceLease {

@@ -10,8 +10,9 @@ import '../music/anchor_loop_planner.dart';
 import '../music/chord_anchor_loop.dart';
 import '../music/chord_formatting.dart';
 import '../music/chord_theory.dart';
-import '../widgets/chord_input_editor.dart';
 import '../ui/chordest_ui_tokens.dart';
+import '../widgets/chord_input_editor.dart';
+import 'metronome_custom_sound_service.dart';
 import 'practice_settings_factory.dart';
 import 'practice_settings.dart';
 import 'practice_settings_dispatcher.dart';
@@ -22,10 +23,12 @@ class PracticeAdvancedSettingsPage extends StatefulWidget {
     super.key,
     required this.settings,
     required this.onApplySettings,
+    this.metronomeCustomSoundService,
   });
 
   final PracticeSettings settings;
   final ApplyPracticeSettings onApplySettings;
+  final MetronomeCustomSoundService? metronomeCustomSoundService;
 
   @override
   State<PracticeAdvancedSettingsPage> createState() =>
@@ -49,6 +52,10 @@ class _PracticeAdvancedSettingsPageState
   late PracticeSettings _settings;
   var _selectedCategory = _AdvancedSettingsCategory.rhythm;
   final GlobalKey _autoPlayPatternFieldKey = GlobalKey();
+  bool _primaryMetronomeUploadInProgress = false;
+  bool _accentMetronomeUploadInProgress = false;
+  late final MetronomeCustomSoundService _metronomeCustomSoundService =
+      widget.metronomeCustomSoundService ?? createMetronomeCustomSoundService();
 
   bool get _usesKeyMode => _settings.usesKeyMode;
   ChordAnchorLoop get _anchorLoop => AnchorLoopLayout.sanitizeLoop(
@@ -131,6 +138,104 @@ class _PracticeAdvancedSettingsPageState
           ? _settings.copyWith(metronomeAccentSource: source)
           : _settings.copyWith(metronomeSource: source),
     );
+  }
+
+  Future<void> _uploadMetronomeSource({required bool accent}) async {
+    if (_metronomeUploadInProgress(accent: accent)) {
+      return;
+    }
+    _setMetronomeUploadInProgress(accent: accent, value: true);
+    try {
+      final selection = await _metronomeCustomSoundService.pickAndStore(
+        slot: accent
+            ? MetronomeCustomSoundSlot.accent
+            : MetronomeCustomSoundSlot.primary,
+        fallbackSound: accent
+            ? _settings.metronomeAccentSound
+            : _settings.metronomeSound,
+      );
+      if (!mounted || selection == null) {
+        return;
+      }
+      _applyMetronomeSource(selection.source, accent: accent);
+      _showMetronomeMessage(
+        AppLocalizations.of(context)!.metronomeCustomSoundUploadSuccess,
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      _showMetronomeMessage(
+        AppLocalizations.of(context)!.metronomeCustomSoundUploadError,
+      );
+    } finally {
+      _setMetronomeUploadInProgress(accent: accent, value: false);
+    }
+  }
+
+  Future<void> _resetMetronomeSource({required bool accent}) async {
+    if (_metronomeUploadInProgress(accent: accent)) {
+      return;
+    }
+    _setMetronomeUploadInProgress(accent: accent, value: true);
+    try {
+      await _metronomeCustomSoundService.clearSlot(
+        slot: accent
+            ? MetronomeCustomSoundSlot.accent
+            : MetronomeCustomSoundSlot.primary,
+      );
+      if (!mounted) {
+        return;
+      }
+      _applyMetronomeSource(
+        MetronomeSourceSpec.builtIn(
+          sound: accent
+              ? _settings.metronomeAccentSound
+              : _settings.metronomeSound,
+        ),
+        accent: accent,
+      );
+      _showMetronomeMessage(
+        AppLocalizations.of(context)!.metronomeCustomSoundResetSuccess,
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      _showMetronomeMessage(
+        AppLocalizations.of(context)!.metronomeCustomSoundUploadError,
+      );
+    } finally {
+      _setMetronomeUploadInProgress(accent: accent, value: false);
+    }
+  }
+
+  bool _metronomeUploadInProgress({required bool accent}) {
+    return accent
+        ? _accentMetronomeUploadInProgress
+        : _primaryMetronomeUploadInProgress;
+  }
+
+  void _setMetronomeUploadInProgress({
+    required bool accent,
+    required bool value,
+  }) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      if (accent) {
+        _accentMetronomeUploadInProgress = value;
+      } else {
+        _primaryMetronomeUploadInProgress = value;
+      }
+    });
+  }
+
+  void _showMetronomeMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _applyCustomMetronomeBeatState(int beatIndex, MetronomeBeatState state) {
@@ -888,6 +993,8 @@ class _PracticeAdvancedSettingsPageState
         localFilePath: _settings.metronomeSource.trimmedLocalFilePath,
         localFileLabel: l10n.metronomeLocalFilePath,
         localFileHelp: l10n.metronomeLocalFilePathHelp,
+        uploadsSupported: _metronomeCustomSoundService.isSupported,
+        uploadInProgress: _primaryMetronomeUploadInProgress,
         onKindChanged: (value) {
           _applyMetronomeSource(
             _settings.metronomeSource.copyWith(kind: value),
@@ -899,6 +1006,8 @@ class _PracticeAdvancedSettingsPageState
             (current) => current.copyWith(metronomeSound: value),
           );
         },
+        onPickLocalFile: () => _uploadMetronomeSource(accent: false),
+        onResetToBuiltIn: () => _resetMetronomeSource(accent: false),
         onLocalFileSubmitted: (value) {
           _applyMetronomeSource(
             _settings.metronomeSource.copyWith(localFilePath: value.trim()),
@@ -915,6 +1024,8 @@ class _PracticeAdvancedSettingsPageState
           localFilePath: _settings.metronomeAccentSource.trimmedLocalFilePath,
           localFileLabel: l10n.metronomeAccentLocalFilePath,
           localFileHelp: l10n.metronomeAccentLocalFilePathHelp,
+          uploadsSupported: _metronomeCustomSoundService.isSupported,
+          uploadInProgress: _accentMetronomeUploadInProgress,
           onKindChanged: (value) {
             _applyMetronomeSource(
               _settings.metronomeAccentSource.copyWith(kind: value),
@@ -926,6 +1037,8 @@ class _PracticeAdvancedSettingsPageState
               (current) => current.copyWith(metronomeAccentSound: value),
             );
           },
+          onPickLocalFile: () => _uploadMetronomeSource(accent: true),
+          onResetToBuiltIn: () => _resetMetronomeSource(accent: true),
           onLocalFileSubmitted: (value) {
             _applyMetronomeSource(
               _settings.metronomeAccentSource.copyWith(
@@ -2513,6 +2626,9 @@ class _PracticeAdvancedSettingsPageState
                               _settings.metronomeSource.trimmedLocalFilePath,
                           localFileLabel: l10n.metronomeLocalFilePath,
                           localFileHelp: l10n.metronomeLocalFilePathHelp,
+                          uploadsSupported:
+                              _metronomeCustomSoundService.isSupported,
+                          uploadInProgress: _primaryMetronomeUploadInProgress,
                           onKindChanged: (value) {
                             _applyMetronomeSource(
                               _settings.metronomeSource.copyWith(kind: value),
@@ -2525,6 +2641,10 @@ class _PracticeAdvancedSettingsPageState
                                   current.copyWith(metronomeSound: value),
                             );
                           },
+                          onPickLocalFile: () =>
+                              _uploadMetronomeSource(accent: false),
+                          onResetToBuiltIn: () =>
+                              _resetMetronomeSource(accent: false),
                           onLocalFileSubmitted: (value) {
                             _applyMetronomeSource(
                               _settings.metronomeSource.copyWith(
@@ -2546,6 +2666,11 @@ class _PracticeAdvancedSettingsPageState
                             localFileLabel: l10n.metronomeAccentLocalFilePath,
                             localFileHelp:
                                 l10n.metronomeAccentLocalFilePathHelp,
+                            uploadsSupported: widget
+                                .metronomeCustomSoundService
+                                .isSupported,
+                            uploadInProgress:
+                                _accentMetronomeUploadInProgress,
                             onKindChanged: (value) {
                               _applyMetronomeSource(
                                 _settings.metronomeAccentSource.copyWith(
@@ -2561,6 +2686,10 @@ class _PracticeAdvancedSettingsPageState
                                 ),
                               );
                             },
+                            onPickLocalFile: () =>
+                                _uploadMetronomeSource(accent: true),
+                            onResetToBuiltIn: () =>
+                                _resetMetronomeSource(accent: true),
                             onLocalFileSubmitted: (value) {
                               _applyMetronomeSource(
                                 _settings.metronomeAccentSource.copyWith(
@@ -3561,8 +3690,12 @@ class _MetronomeSourceEditor extends StatelessWidget {
     required this.localFilePath,
     required this.localFileLabel,
     required this.localFileHelp,
+    required this.uploadsSupported,
+    required this.uploadInProgress,
     required this.onKindChanged,
     required this.onBuiltInSoundChanged,
+    this.onPickLocalFile,
+    this.onResetToBuiltIn,
     required this.onLocalFileSubmitted,
   });
 
@@ -3572,8 +3705,12 @@ class _MetronomeSourceEditor extends StatelessWidget {
   final String localFilePath;
   final String localFileLabel;
   final String localFileHelp;
+  final bool uploadsSupported;
+  final bool uploadInProgress;
   final ValueChanged<MetronomeSourceKind> onKindChanged;
   final ValueChanged<MetronomeSound> onBuiltInSoundChanged;
+  final Future<void> Function()? onPickLocalFile;
+  final Future<void> Function()? onResetToBuiltIn;
   final ValueChanged<String> onLocalFileSubmitted;
 
   @override
@@ -3639,6 +3776,61 @@ class _MetronomeSourceEditor extends StatelessWidget {
               },
             ),
             if (kind == MetronomeSourceKind.localFile) ...[
+              const SizedBox(height: 12),
+              Text(
+                localFilePath.isEmpty
+                    ? l10n.metronomeCustomSoundStatusBuiltIn
+                    : l10n.metronomeCustomSoundStatusFile(
+                        MetronomeSourceSpec.localFile(
+                          localFilePath: localFilePath,
+                          fallbackSound: builtInSound,
+                        ).localFileName,
+                      ),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              if (uploadsSupported) ...[
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: uploadInProgress
+                          ? null
+                          : () {
+                              final callback = onPickLocalFile;
+                              if (callback != null) {
+                                unawaited(callback());
+                              }
+                            },
+                      icon: Icon(
+                        localFilePath.isEmpty
+                            ? Icons.audio_file_rounded
+                            : Icons.upload_file_rounded,
+                      ),
+                      label: Text(
+                        localFilePath.isEmpty
+                            ? l10n.metronomeCustomSoundUpload
+                            : l10n.metronomeCustomSoundReplace,
+                      ),
+                    ),
+                    if (localFilePath.isNotEmpty)
+                      TextButton(
+                        onPressed: uploadInProgress
+                            ? null
+                            : () {
+                                final callback = onResetToBuiltIn;
+                                if (callback != null) {
+                                  unawaited(callback());
+                                }
+                              },
+                        child: Text(l10n.metronomeCustomSoundReset),
+                      ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 12),
               TextFormField(
                 key: ValueKey('$title-local-file'),

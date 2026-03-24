@@ -273,6 +273,20 @@ class MetronomeSourceSpec {
 
   String get trimmedLocalFilePath => localFilePath?.trim() ?? '';
   bool get hasLocalFilePath => trimmedLocalFilePath.isNotEmpty;
+  String get localFileName {
+    final path = trimmedLocalFilePath;
+    if (path.isEmpty) {
+      return '';
+    }
+    final segments = path.split(RegExp(r'[\\/]'));
+    for (var index = segments.length - 1; index >= 0; index -= 1) {
+      final segment = segments[index].trim();
+      if (segment.isNotEmpty) {
+        return segment;
+      }
+    }
+    return path;
+  }
 
   MetronomeSourceSpec normalized({MetronomeSound? fallbackSound}) {
     final resolvedFallback = fallbackSound ?? builtInSound;

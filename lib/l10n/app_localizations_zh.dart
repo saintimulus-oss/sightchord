@@ -3872,14 +3872,48 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get metronomeLocalFilePathHelp =>
-      'Paste a local audio file path and press enter to apply it. Built-in sound remains the fallback.';
+      'Paste a local audio file path and press enter, or upload a file below. Built-in sound remains the fallback.';
 
   @override
   String get metronomeAccentLocalFilePath => 'Accent local file path';
 
   @override
   String get metronomeAccentLocalFilePathHelp =>
-      'Paste a local accent file path and press enter to apply it. Built-in sound remains the fallback.';
+      'Paste a local accent file path and press enter, or upload a file below. Built-in sound remains the fallback.';
+
+  @override
+  String get metronomeCustomSoundHelp =>
+      'Upload your own metronome click. The app stores a private copy and keeps the built-in sound as fallback.';
+
+  @override
+  String get metronomeCustomSoundStatusBuiltIn =>
+      'Currently using a built-in sound.';
+
+  @override
+  String metronomeCustomSoundStatusFile(Object fileName) {
+    return 'Custom file: $fileName';
+  }
+
+  @override
+  String get metronomeCustomSoundUpload => 'Upload custom sound';
+
+  @override
+  String get metronomeCustomSoundReplace => 'Replace custom sound';
+
+  @override
+  String get metronomeCustomSoundReset => 'Use built-in sound';
+
+  @override
+  String get metronomeCustomSoundUploadSuccess =>
+      'Custom metronome sound saved.';
+
+  @override
+  String get metronomeCustomSoundResetSuccess =>
+      'Switched back to the built-in metronome sound.';
+
+  @override
+  String get metronomeCustomSoundUploadError =>
+      'Couldn\'t save the selected metronome audio file.';
 
   @override
   String get harmonySoundTitle => 'Harmony Sound';
@@ -8976,14 +9010,48 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get metronomeLocalFilePathHelp =>
-      'Paste a local audio file path and press enter to apply it. Built-in sound remains the fallback.';
+      'Paste a local audio file path and press enter, or upload a file below. Built-in sound remains the fallback.';
 
   @override
   String get metronomeAccentLocalFilePath => 'Accent local file path';
 
   @override
   String get metronomeAccentLocalFilePathHelp =>
-      'Paste a local accent file path and press enter to apply it. Built-in sound remains the fallback.';
+      'Paste a local accent file path and press enter, or upload a file below. Built-in sound remains the fallback.';
+
+  @override
+  String get metronomeCustomSoundHelp =>
+      'Upload your own metronome click. The app stores a private copy and keeps the built-in sound as fallback.';
+
+  @override
+  String get metronomeCustomSoundStatusBuiltIn =>
+      'Currently using a built-in sound.';
+
+  @override
+  String metronomeCustomSoundStatusFile(Object fileName) {
+    return 'Custom file: $fileName';
+  }
+
+  @override
+  String get metronomeCustomSoundUpload => 'Upload custom sound';
+
+  @override
+  String get metronomeCustomSoundReplace => 'Replace custom sound';
+
+  @override
+  String get metronomeCustomSoundReset => 'Use built-in sound';
+
+  @override
+  String get metronomeCustomSoundUploadSuccess =>
+      'Custom metronome sound saved.';
+
+  @override
+  String get metronomeCustomSoundResetSuccess =>
+      'Switched back to the built-in metronome sound.';
+
+  @override
+  String get metronomeCustomSoundUploadError =>
+      'Couldn\'t save the selected metronome audio file.';
 
   @override
   String get harmonySoundTitle => 'Harmony Sound';

@@ -36,49 +36,123 @@ class _TrackFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    return DecoratedBox(
-      decoration: _hubPanelDecoration(colorScheme),
-      child: Padding(
-        padding: const EdgeInsets.all(6),
-        child: Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: [
-            for (final option in options)
-              Builder(
-                builder: (context) {
-                  final isSelected = option.track == selectedTrack;
-                  return ChoiceChip(
-                    key: ValueKey(
-                      'study-harmony-track-filter-${option.track.name}',
-                    ),
-                    selected: isSelected,
-                    backgroundColor: colorScheme.surfaceContainerLow,
-                    selectedColor: colorScheme.primaryContainer,
-                    side: BorderSide(
-                      color: isSelected
-                          ? colorScheme.primary.withValues(alpha: 0.18)
-                          : colorScheme.outlineVariant,
-                    ),
-                    avatar: Icon(
+
+    Widget buildOption(_TrackFilterChipData option, {bool expanded = false}) {
+      final isSelected = option.track == selectedTrack;
+      final optionChild = ChoiceChip(
+        key: ValueKey('study-harmony-track-filter-${option.track.name}'),
+        selected: isSelected,
+        backgroundColor: colorScheme.surfaceContainerLow,
+        selectedColor: colorScheme.primaryContainer,
+        side: BorderSide(
+          color: isSelected
+              ? colorScheme.primary.withValues(alpha: 0.18)
+              : colorScheme.outlineVariant,
+        ),
+        avatar: Icon(
+          option.icon,
+          size: 18,
+          color: isSelected
+              ? colorScheme.primary
+              : colorScheme.onSurfaceVariant,
+        ),
+        labelStyle: theme.textTheme.labelLarge?.copyWith(
+          color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+          fontWeight: FontWeight.w700,
+        ),
+        label: Text(option.label),
+        onSelected: (_) => onChanged(option.track),
+      );
+
+      if (!expanded) {
+        return optionChild;
+      }
+
+      return KeyedSubtree(
+        key: ValueKey('study-harmony-track-filter-${option.track.name}'),
+        child: SizedBox(
+          width: double.infinity,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(999),
+              onTap: () => onChanged(option.track),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutCubic,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? colorScheme.primaryContainer
+                      : colorScheme.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: isSelected
+                        ? colorScheme.primary.withValues(alpha: 0.22)
+                        : colorScheme.outlineVariant,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
                       option.icon,
                       size: 18,
                       color: isSelected
                           ? colorScheme.primary
                           : colorScheme.onSurfaceVariant,
                     ),
-                    labelStyle: theme.textTheme.labelLarge?.copyWith(
-                      color: isSelected
-                          ? colorScheme.primary
-                          : colorScheme.onSurface,
-                      fontWeight: FontWeight.w700,
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        option.label,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: isSelected
+                              ? colorScheme.primary
+                              : colorScheme.onSurface,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ),
-                    label: Text(option.label),
-                    onSelected: (_) => onChanged(option.track),
-                  );
-                },
+                  ],
+                ),
               ),
-          ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return DecoratedBox(
+      decoration: _hubPanelDecoration(colorScheme),
+      child: Padding(
+        padding: const EdgeInsets.all(6),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final useSegmentedControl = constraints.maxWidth >= 620;
+            if (useSegmentedControl) {
+              return Row(
+                children: [
+                  for (var index = 0; index < options.length; index += 1) ...[
+                    if (index > 0) const SizedBox(width: 10),
+                    Expanded(
+                      child: buildOption(options[index], expanded: true),
+                    ),
+                  ],
+                ],
+              );
+            }
+
+            return Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [for (final option in options) buildOption(option)],
+            );
+          },
         ),
       ),
     );

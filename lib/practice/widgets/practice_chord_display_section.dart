@@ -9,6 +9,7 @@ class PracticeChordDisplaySection extends StatelessWidget {
     required this.previousLabel,
     required this.currentLabel,
     required this.nextLabel,
+    required this.lookAheadLabel,
     required this.compact,
     required this.performanceMode,
     required this.statusLabel,
@@ -30,6 +31,7 @@ class PracticeChordDisplaySection extends StatelessWidget {
   final String previousLabel;
   final String currentLabel;
   final String nextLabel;
+  final String lookAheadLabel;
   final bool compact;
   final bool performanceMode;
   final String statusLabel;
@@ -53,6 +55,7 @@ class PracticeChordDisplaySection extends StatelessWidget {
       previousLabel: previousLabel,
       currentLabel: currentLabel,
       nextLabel: nextLabel,
+      lookAheadLabel: lookAheadLabel,
       compact: compact,
       performanceMode: performanceMode,
       statusLabel: statusLabel,

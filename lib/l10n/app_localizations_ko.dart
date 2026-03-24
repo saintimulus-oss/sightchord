@@ -3885,14 +3885,44 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get metronomeLocalFilePathHelp =>
-      '로컬 오디오 파일 경로를 붙여넣고 엔터를 누르세요. 실패하면 내장 사운드로 돌아갑니다.';
+      '로컬 오디오 파일 경로를 붙여넣고 엔터를 누르거나, 아래에서 파일을 업로드하세요. 실패하면 내장 사운드로 돌아갑니다.';
 
   @override
   String get metronomeAccentLocalFilePath => '강박 로컬 파일 경로';
 
   @override
   String get metronomeAccentLocalFilePathHelp =>
-      '강박용 로컬 파일 경로를 붙여넣고 엔터를 누르세요. 실패하면 내장 사운드로 돌아갑니다.';
+      '강박용 로컬 파일 경로를 붙여넣고 엔터를 누르거나, 아래에서 파일을 업로드하세요. 실패하면 내장 사운드로 돌아갑니다.';
+
+  @override
+  String get metronomeCustomSoundHelp =>
+      '원하는 메트로놈 클릭 파일을 업로드할 수 있습니다. 앱 안에 복사본을 저장하고, 문제가 생기면 내장 사운드를 대체 소리로 사용합니다.';
+
+  @override
+  String get metronomeCustomSoundStatusBuiltIn => '현재 내장 사운드를 사용 중입니다.';
+
+  @override
+  String metronomeCustomSoundStatusFile(Object fileName) {
+    return '커스텀 파일: $fileName';
+  }
+
+  @override
+  String get metronomeCustomSoundUpload => '커스텀 사운드 업로드';
+
+  @override
+  String get metronomeCustomSoundReplace => '커스텀 사운드 교체';
+
+  @override
+  String get metronomeCustomSoundReset => '내장 사운드 사용';
+
+  @override
+  String get metronomeCustomSoundUploadSuccess => '커스텀 메트로놈 사운드를 저장했습니다.';
+
+  @override
+  String get metronomeCustomSoundResetSuccess => '내장 메트로놈 사운드로 되돌렸습니다.';
+
+  @override
+  String get metronomeCustomSoundUploadError => '선택한 메트로놈 오디오 파일을 저장하지 못했습니다.';
 
   @override
   String get harmonySoundTitle => '화성 오디오';

@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../music/chord_formatting.dart';
 import '../music/chord_theory.dart';
 import '../music/notation_presentation.dart';
+import 'metronome_custom_sound_service.dart';
 import 'practice_setup_models.dart';
 import 'practice_settings_dispatcher.dart';
 import 'practice_settings.dart';
@@ -20,6 +21,7 @@ class PracticeSettingsDrawer extends StatefulWidget {
     this.onOpenStudyHarmony,
     required this.onOpenAdvancedSettings,
     required this.onApplySettings,
+    this.metronomeCustomSoundService,
   });
 
   final PracticeSettings settings;
@@ -28,6 +30,7 @@ class PracticeSettingsDrawer extends StatefulWidget {
   final VoidCallback? onOpenStudyHarmony;
   final VoidCallback onOpenAdvancedSettings;
   final ApplyPracticeSettings onApplySettings;
+  final MetronomeCustomSoundService? metronomeCustomSoundService;
 
   @override
   State<PracticeSettingsDrawer> createState() => _PracticeSettingsDrawerState();
@@ -35,6 +38,9 @@ class PracticeSettingsDrawer extends StatefulWidget {
 
 class _PracticeSettingsDrawerState extends State<PracticeSettingsDrawer> {
   bool _isSetupCardExpanded = true;
+  bool _primaryMetronomeUploadInProgress = false;
+  late final MetronomeCustomSoundService _metronomeCustomSoundService =
+      widget.metronomeCustomSoundService ?? createMetronomeCustomSoundService();
 
   PracticeSettings get settings => widget.settings;
   VoidCallback get onClose => widget.onClose;
@@ -45,6 +51,87 @@ class _PracticeSettingsDrawerState extends State<PracticeSettingsDrawer> {
 
   bool get _isGuidedMode =>
       settings.settingsComplexityMode == SettingsComplexityMode.guided;
+
+  Future<void> _uploadPrimaryCustomMetronome() async {
+    if (_primaryMetronomeUploadInProgress) {
+      return;
+    }
+    setState(() {
+      _primaryMetronomeUploadInProgress = true;
+    });
+    try {
+      final selection = await _metronomeCustomSoundService.pickAndStore(
+        slot: MetronomeCustomSoundSlot.primary,
+        fallbackSound: settings.metronomeSound,
+      );
+      if (!mounted || selection == null) {
+        return;
+      }
+      onApplySettings(settings.copyWith(metronomeSource: selection.source));
+      _showMetronomeMessage(
+        AppLocalizations.of(context)!.metronomeCustomSoundUploadSuccess,
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      _showMetronomeMessage(
+        AppLocalizations.of(context)!.metronomeCustomSoundUploadError,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _primaryMetronomeUploadInProgress = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _resetPrimaryCustomMetronome() async {
+    if (_primaryMetronomeUploadInProgress) {
+      return;
+    }
+    setState(() {
+      _primaryMetronomeUploadInProgress = true;
+    });
+    try {
+      await _metronomeCustomSoundService.clearSlot(
+        slot: MetronomeCustomSoundSlot.primary,
+      );
+      if (!mounted) {
+        return;
+      }
+      onApplySettings(
+        settings.copyWith(
+          metronomeSource: MetronomeSourceSpec.builtIn(
+            sound: settings.metronomeSound,
+          ),
+        ),
+      );
+      _showMetronomeMessage(
+        AppLocalizations.of(context)!.metronomeCustomSoundResetSuccess,
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      _showMetronomeMessage(
+        AppLocalizations.of(context)!.metronomeCustomSoundUploadError,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _primaryMetronomeUploadInProgress = false;
+        });
+      }
+    }
+  }
+
+  void _showMetronomeMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -449,6 +536,80 @@ class _PracticeSettingsDrawerState extends State<PracticeSettingsDrawer> {
           l10n.metronomeHelp,
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 16),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: theme.colorScheme.outlineVariant),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  settings.metronomeSource.kind == MetronomeSourceKind.localFile
+                      ? l10n.metronomeCustomSoundStatusFile(
+                          settings.metronomeSource.localFileName,
+                        )
+                      : l10n.metronomeCustomSoundStatusBuiltIn,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  l10n.metronomeCustomSoundHelp,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    height: 1.35,
+                  ),
+                ),
+                if (_metronomeCustomSoundService.isSupported) ...[
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      OutlinedButton.icon(
+                        key: const ValueKey(
+                          'metronome-custom-sound-upload-button',
+                        ),
+                        onPressed: _primaryMetronomeUploadInProgress
+                            ? null
+                            : _uploadPrimaryCustomMetronome,
+                        icon: Icon(
+                          settings.metronomeSource.kind ==
+                                  MetronomeSourceKind.localFile
+                              ? Icons.upload_file_rounded
+                              : Icons.audio_file_rounded,
+                        ),
+                        label: Text(
+                          settings.metronomeSource.kind ==
+                                  MetronomeSourceKind.localFile
+                              ? l10n.metronomeCustomSoundReplace
+                              : l10n.metronomeCustomSoundUpload,
+                        ),
+                      ),
+                      if (settings.metronomeSource.kind ==
+                          MetronomeSourceKind.localFile)
+                        TextButton(
+                          key: const ValueKey(
+                            'metronome-custom-sound-reset-button',
+                          ),
+                          onPressed: _primaryMetronomeUploadInProgress
+                              ? null
+                              : _resetPrimaryCustomMetronome,
+                          child: Text(l10n.metronomeCustomSoundReset),
+                        ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 16),

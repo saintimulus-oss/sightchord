@@ -213,7 +213,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
     if (_autoRunning) {
-      _practiceTransportController.stopAutoplay();
+      _stopAutoplayAndHarmonyPreview();
     }
     final nextSettings = await showPracticeSetupAssistant(
       context: context,
@@ -1193,7 +1193,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     _dismissFirstRunWelcomeCard();
     if (_autoRunning) {
-      _practiceTransportController.stopAutoplay(resetBeat: false);
+      _stopAutoplayAndHarmonyPreview(resetBeat: false);
       return;
     }
     final harmonyAudio = _harmonyAudio;
@@ -1210,15 +1210,19 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
     _chordSwipeSurfaceKey.currentState?.cancelTransition();
-    _practiceTransportController.stopAutoplay();
-    final harmonyAudio = _harmonyAudio;
-    if (harmonyAudio != null) {
-      unawaited(harmonyAudio.stopAll());
-    }
+    _stopAutoplayAndHarmonyPreview();
     setState(() {
       _melodyGenerationSeed += 1;
       _reseedChordQueue();
     });
+  }
+
+  void _stopAutoplayAndHarmonyPreview({bool resetBeat = true}) {
+    _practiceTransportController.stopAutoplay(resetBeat: resetBeat);
+    final harmonyAudio = _harmonyAudio;
+    if (harmonyAudio != null) {
+      unawaited(harmonyAudio.stopAll());
+    }
   }
 
   bool _isEditableTextFocused() {

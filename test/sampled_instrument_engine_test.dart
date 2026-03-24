@@ -1,9 +1,8 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:chordest/audio/sampled_instrument_engine.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -53,7 +52,7 @@ void main() {
         );
 
         expect(backend.calls, <String>[
-          'setPlayerMode:PlayerMode.mediaPlayer',
+          'setPlayerMode:${_expectedPlayerMode()}',
           'setReleaseMode:ReleaseMode.stop',
           'setSourceAsset:piano/salamander_essential/samples/C4v10.flac',
           'setVolume:0.0',
@@ -65,7 +64,7 @@ void main() {
         await voice.start(volume: 0.72);
 
         expect(backend.calls, <String>[
-          'setPlayerMode:PlayerMode.mediaPlayer',
+          'setPlayerMode:${_expectedPlayerMode()}',
           'setReleaseMode:ReleaseMode.stop',
           'setSourceAsset:piano/salamander_essential/samples/C4v10.flac',
           'setVolume:0.0',
@@ -249,8 +248,91 @@ void main() {
       );
       expect(events, contains('setVolume:1.0'));
     });
+
+    test('reuses prefetched voice slots for the same notes', () async {
+      final eventLog = <String>[];
+      final engine = SampledInstrumentEngine(
+        bundle: const SampledInstrumentAssetBundle(
+          id: 'test-piano',
+          manifestAssetPath: manifestAssetPath,
+          assetRootPath: 'assets/test-piano',
+        ),
+        voiceFactory: _RecordingVoiceFactory(
+          eventLog,
+          cacheRepeatedPrepare: true,
+        ),
+      );
+
+      await engine.prefetchNotes(const <InstrumentNoteRequest>[
+        InstrumentNoteRequest(midiNote: 60),
+        InstrumentNoteRequest(midiNote: 64),
+        InstrumentNoteRequest(midiNote: 67),
+      ]);
+
+      eventLog.clear();
+
+      final activeNotes = await engine.noteOnBatch(const <InstrumentNoteRequest>[
+        InstrumentNoteRequest(midiNote: 60),
+        InstrumentNoteRequest(midiNote: 64),
+        InstrumentNoteRequest(midiNote: 67),
+      ]);
+
+      expect(activeNotes, hasLength(3));
+      expect(
+        eventLog.where((event) => event.contains('.prepare')),
+        isEmpty,
+      );
+      expect(
+        eventLog.where((event) => event.contains('.start')).length,
+        3,
+      );
+    });
+
+    test('fade out never boosts a quiet note before release', () async {
+      final eventLog = <String>[];
+      final engine = SampledInstrumentEngine(
+        bundle: const SampledInstrumentAssetBundle(
+          id: 'test-piano',
+          manifestAssetPath: manifestAssetPath,
+          assetRootPath: 'assets/test-piano',
+        ),
+        voiceFactory: _SingleVoiceFactory(
+          _ControlledVoice(eventLog: eventLog),
+        ),
+      );
+
+      final note = await engine.noteOn(midiNote: 60, velocity: 16, gain: 0.2);
+
+      expect(note, isNotNull);
+
+      await engine.noteOff(
+        note!,
+        fadeOut: const Duration(milliseconds: 20),
+      );
+
+      final stopIndex = eventLog.indexOf('stop');
+      expect(stopIndex, greaterThan(0));
+
+      final startEvent = eventLog.firstWhere((event) => event.startsWith('start:'));
+      final startVolume = double.parse(startEvent.split(':')[1]);
+      final fadeVolumes = eventLog
+          .take(stopIndex)
+          .where((event) => event.startsWith('setVolume:'))
+          .map((event) => double.parse(event.split(':')[1]))
+          .toList(growable: false);
+
+      expect(fadeVolumes, isNotEmpty);
+      expect(
+        fadeVolumes.every((volume) => volume <= startVolume + 0.0001),
+        isTrue,
+      );
+      expect(fadeVolumes.last, closeTo(0.0, 0.0001));
+    });
   });
 }
+
+PlayerMode _expectedPlayerMode() =>
+    PlayerMode.mediaPlayer;
 
 class _FakeAudioPlayerBackend implements AudioPlayerBackend {
   final List<String> calls = <String>[];
@@ -297,11 +379,15 @@ class _FakeAudioPlayerBackend implements AudioPlayerBackend {
 }
 
 class _RecordingVoiceFactory implements SamplePlayerVoiceFactory {
-  _RecordingVoiceFactory(this.eventLog, {List<Duration>? prepareDurations})
-    : _prepareDurations = prepareDurations ?? const <Duration>[];
+  _RecordingVoiceFactory(
+    this.eventLog, {
+    List<Duration>? prepareDurations,
+    this.cacheRepeatedPrepare = false,
+  }) : _prepareDurations = prepareDurations ?? const <Duration>[];
 
   final List<String> eventLog;
   final List<Duration> _prepareDurations;
+  final bool cacheRepeatedPrepare;
   int _createdVoices = 0;
 
   @override
@@ -315,6 +401,7 @@ class _RecordingVoiceFactory implements SamplePlayerVoiceFactory {
       id: voiceId,
       eventLog: eventLog,
       prepareDelay: prepareDelay,
+      cacheRepeatedPrepare: cacheRepeatedPrepare,
     );
     await voice.configure();
     return voice;
@@ -322,15 +409,19 @@ class _RecordingVoiceFactory implements SamplePlayerVoiceFactory {
 }
 
 class _RecordingVoice implements SamplePlayerVoice {
-  const _RecordingVoice({
+  _RecordingVoice({
     required this.id,
     required this.eventLog,
     required this.prepareDelay,
+    this.cacheRepeatedPrepare = false,
   });
 
   final int id;
   final List<String> eventLog;
   final Duration prepareDelay;
+  final bool cacheRepeatedPrepare;
+  String? _preparedAssetPath;
+  double _preparedPlaybackRate = 1.0;
 
   @override
   Future<void> configure() async {
@@ -342,7 +433,14 @@ class _RecordingVoice implements SamplePlayerVoice {
     required String assetPath,
     required double playbackRate,
   }) async {
+    if (cacheRepeatedPrepare &&
+        _preparedAssetPath == assetPath &&
+        (_preparedPlaybackRate - playbackRate).abs() <= 0.0001) {
+      return;
+    }
     eventLog.add('voice$id.prepare:$assetPath@$playbackRate');
+    _preparedAssetPath = assetPath;
+    _preparedPlaybackRate = playbackRate;
     if (prepareDelay > Duration.zero) {
       await Future<void>.delayed(prepareDelay);
     }

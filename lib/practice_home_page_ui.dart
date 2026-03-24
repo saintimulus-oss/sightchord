@@ -1181,6 +1181,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
     final previousDisplay = _displaySymbolForEvent(_queueState.previousEvent);
     final currentDisplay = _displaySymbolForEvent(_currentChordEvent);
     final nextDisplay = _displaySymbolForEvent(_nextChordEvent);
+    final lookAheadDisplay = _displaySymbolForEvent(_lookAheadChordEvent);
     final compactLayout = _usesCompactMobileLayout(context);
     final currentSectionLabel = _usesKoreanUiCopy(context)
         ? '현재 코드'
@@ -1246,6 +1247,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
               previousLabel: previousDisplay,
               currentLabel: currentDisplay,
               nextLabel: nextDisplay,
+              lookAheadLabel: lookAheadDisplay,
               compact: compactLayout,
               performanceMode:
                   _settings.voicingDisplayMode ==

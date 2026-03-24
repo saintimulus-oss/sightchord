@@ -178,89 +178,99 @@ class _HubActionCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: Padding(
           padding: EdgeInsets.all(dense ? 16 : 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _HubIconBadge(icon: icon),
-              SizedBox(height: dense ? 12 : 14),
-              Text(
-                title,
-                style:
-                    (dense
-                            ? theme.textTheme.titleSmall
-                            : theme.textTheme.titleMedium)
-                        ?.copyWith(
-                          color: colorScheme.primary,
-                          fontWeight: FontWeight.w800,
-                        ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                headline,
-                maxLines: dense ? 2 : null,
-                overflow: dense ? TextOverflow.ellipsis : TextOverflow.visible,
-                style:
-                    (dense
-                            ? theme.textTheme.titleLarge
-                            : theme.textTheme.headlineSmall)
-                        ?.copyWith(fontWeight: FontWeight.w900),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                supportingLabel,
-                maxLines: dense ? 1 : 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                body,
-                maxLines: dense ? 3 : null,
-                overflow: dense ? TextOverflow.ellipsis : TextOverflow.visible,
-                style:
-                    (dense
-                            ? theme.textTheme.bodySmall
-                            : theme.textTheme.bodyMedium)
-                        ?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          height: 1.4,
-                        ),
-              ),
-              if (footerLabels.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final footer in footerLabels)
-                      Chip(
-                        label: Text(footer),
-                        visualDensity: VisualDensity.compact,
-                      ),
-                  ],
-                ),
-              ],
-              if (showAction)
-                if (actionLabel case final label?) ...[
-                  SizedBox(height: dense ? 14 : 18),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      style: dense
-                          ? FilledButton.styleFrom(
-                              minimumSize: const Size.fromHeight(44),
-                            )
-                          : null,
-                      onPressed: onPressed,
-                      icon: const Icon(Icons.arrow_forward_rounded),
-                      label: Text(label),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: dense ? 272 : 0),
+            child: IntrinsicHeight(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _HubIconBadge(icon: icon),
+                  SizedBox(height: dense ? 12 : 14),
+                  Text(
+                    title,
+                    style:
+                        (dense
+                                ? theme.textTheme.titleSmall
+                                : theme.textTheme.titleMedium)
+                            ?.copyWith(
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.w800,
+                            ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    headline,
+                    maxLines: dense ? 2 : null,
+                    overflow: dense
+                        ? TextOverflow.ellipsis
+                        : TextOverflow.visible,
+                    style:
+                        (dense
+                                ? theme.textTheme.titleLarge
+                                : theme.textTheme.headlineSmall)
+                            ?.copyWith(fontWeight: FontWeight.w900),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    supportingLabel,
+                    maxLines: dense ? 2 : 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
+                  const SizedBox(height: 10),
+                  Text(
+                    body,
+                    maxLines: dense ? 4 : null,
+                    overflow: dense
+                        ? TextOverflow.ellipsis
+                        : TextOverflow.visible,
+                    style:
+                        (dense
+                                ? theme.textTheme.bodySmall
+                                : theme.textTheme.bodyMedium)
+                            ?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                              height: 1.45,
+                            ),
+                  ),
+                  if (footerLabels.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final footer in footerLabels)
+                          Chip(
+                            label: Text(footer),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                      ],
+                    ),
+                  ],
+                  if (showAction)
+                    if (actionLabel case final label?) ...[
+                      const Spacer(),
+                      SizedBox(height: dense ? 16 : 18),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          style: dense
+                              ? FilledButton.styleFrom(
+                                  minimumSize: const Size.fromHeight(46),
+                                )
+                              : null,
+                          onPressed: onPressed,
+                          icon: const Icon(Icons.arrow_forward_rounded),
+                          label: Text(label),
+                        ),
+                      ),
+                    ],
                 ],
-            ],
+              ),
+            ),
           ),
         ),
       ),
