@@ -2,7 +2,7 @@
 
 ## Main Menu
 
-Start practice, analysis, and study from one focused launch hub.
+Start in Chordest, then open Analyzer only when you need extra context.
 
 ## Practice Generator
 
@@ -14,11 +14,11 @@ Explore weighted harmonic motion for more musical progression practice.
 
 ## Chord Analyzer
 
-Inspect key center, Roman numerals, and harmonic function in seconds.
+Inspect likely keys, Roman numerals, and warnings with a conservative read.
 
-## Study Harmony
+## Advanced Settings
 
-Work through structured harmony lessons and progression drills.
+Tune sound, notation, and voicing behavior for your practice flow.
 
 ## Settings
 

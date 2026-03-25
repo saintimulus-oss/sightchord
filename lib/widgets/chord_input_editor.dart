@@ -60,7 +60,6 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
   void initState() {
     super.initState();
     _focusNode.addListener(_handleFocusChanged);
-    widget.controller.addListener(_handleControllerChanged);
   }
 
   @override
@@ -77,13 +76,10 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
     if (oldWidget.controller == widget.controller) {
       return;
     }
-    oldWidget.controller.removeListener(_handleControllerChanged);
-    widget.controller.addListener(_handleControllerChanged);
   }
 
   @override
   void dispose() {
-    widget.controller.removeListener(_handleControllerChanged);
     _focusNode
       ..removeListener(_handleFocusChanged)
       ..dispose();
@@ -102,13 +98,6 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
     setState(() {
       _showKeyboard = _focusNode.hasFocus;
     });
-  }
-
-  void _handleControllerChanged() {
-    if (!mounted) {
-      return;
-    }
-    setState(() {});
   }
 
   void _toggleDesktopKeyboardVisible() {
@@ -248,9 +237,6 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final editorContext = _EditorTokenContext.fromValue(
-      widget.controller.value,
-    );
     final showKeyboardPanel = _usesTouchKeyboard
         ? _showKeyboard
         : (widget.showDesktopKeyboardOnFocus
@@ -314,22 +300,27 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
                 ? const SizedBox.shrink()
                 : Padding(
                     padding: const EdgeInsets.only(top: 12),
-                    child: _ChordKeyboardPanel(
-                      l10n: l10n,
-                      usesTouchKeyboard: _usesTouchKeyboard,
-                      allowRawInput: widget.allowTouchRawInput,
-                      rawInputMode: _rawInputMode,
-                      editorContext: editorContext,
-                      onInsert: _handleInsert,
-                      onBackspace: _backspace,
-                      onClearAll: () {
-                        widget.controller.clear();
-                        _focusNode.requestFocus();
+                    child: ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: widget.controller,
+                      builder: (context, value, _) {
+                        return _ChordKeyboardPanel(
+                          l10n: l10n,
+                          usesTouchKeyboard: _usesTouchKeyboard,
+                          allowRawInput: widget.allowTouchRawInput,
+                          rawInputMode: _rawInputMode,
+                          editorContext: _EditorTokenContext.fromValue(value),
+                          onInsert: _handleInsert,
+                          onBackspace: _backspace,
+                          onClearAll: () {
+                            widget.controller.clear();
+                            _focusNode.requestFocus();
+                          },
+                          onPaste: _pasteFromClipboard,
+                          onAnalyze: widget.onAnalyze,
+                          onToggleRawInput: _toggleRawInputMode,
+                          showAnalyzeAction: widget.showAnalyzeAction,
+                        );
                       },
-                      onPaste: _pasteFromClipboard,
-                      onAnalyze: widget.onAnalyze,
-                      onToggleRawInput: _toggleRawInputMode,
-                      showAnalyzeAction: widget.showAnalyzeAction,
                     ),
                   ),
           ),

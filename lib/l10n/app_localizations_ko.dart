@@ -631,6 +631,9 @@ class AppLocalizationsKo extends AppLocalizations {
       'Space: 다음 코드  Enter: 자동 재생 시작/일시정지  위/아래: BPM 조절';
 
   @override
+  String get currentChord => '현재 코드';
+
+  @override
   String get nextChord => '다음 코드';
 
   @override
@@ -950,13 +953,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get voicingReasonGentleMotion => '부드러운 손 이동';
 
   @override
-  String get mainMenuIntro => '코드 연습, 진행 분석, 화성 학습을 한 화면에서 시작하세요.';
+  String get mainMenuIntro =>
+      'Chordest에서 다음 코드 루프를 만들고, 필요할 때만 Analyzer로 신중한 화성 해석을 확인하세요.';
 
   @override
-  String get mainMenuGeneratorTitle => '코드 생성기';
+  String get mainMenuGeneratorTitle => 'Chordest 생성기';
 
   @override
-  String get mainMenuGeneratorDescription => '스마트 진행과 보이싱 힌트로 연습용 코드를 바로 만듭니다.';
+  String get mainMenuGeneratorDescription =>
+      '바로 연주할 수 있는 코드 루프와 보이싱 힌트, 빠른 연습 제어를 한 번에 엽니다.';
 
   @override
   String get openGenerator => '코드 연습 시작';
@@ -969,7 +974,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get mainMenuAnalyzerDescription =>
-      '진행을 읽고 조성, 로마 숫자, 화성 기능을 빠르게 확인합니다.';
+      '가능한 조성, 로마 숫자, 경고를 보수적인 진행 해석으로 확인합니다.';
 
   @override
   String get mainMenuStudyHarmonyTitle => '화성 학습';
@@ -1913,7 +1918,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chordAnalyzerTitle => '코드 분석기';
 
   @override
-  String get chordAnalyzerSubtitle => '진행을 넣으면 조성, 로마 숫자, 화성 기능을 바로 확인합니다.';
+  String get chordAnalyzerSubtitle =>
+      '진행을 넣으면 가능한 조성, 로마 숫자, 화성 기능을 보수적으로 읽어 줍니다.';
 
   @override
   String get chordAnalyzerInputLabel => '코드 진행';
@@ -1923,7 +1929,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chordAnalyzerInputHelper =>
-      '코드 사이에는 Spacebar, |, 쉼표를 쓸 수 있습니다. 괄호 안의 쉼표는 같은 코드 안의 텐션 구분자로 유지됩니다.\n\n?는 아직 정하지 않은 코드 자리를 뜻합니다. 분석기는 앞뒤 화성 맥락을 바탕으로 가장 자연스러운 채움을 추론하고, 해석이 모호하면 후보도 함께 제안합니다. 변주 만들기에서는 그 자리를 더 자유롭게 리하모나이즈할 수 있습니다.\n\n소문자 루트, 슬래시 베이스, sus/alt/add 표기와 C7(b9, #11) 같은 괄호형 텐션을 지원합니다.\n\n터치 기기에서는 코드 패드를 쓰거나, 자유 입력이 필요할 때 ABC 입력으로 전환할 수 있습니다.';
+      '코드 사이에는 Spacebar, |, 쉼표를 쓸 수 있습니다. 괄호 안의 쉼표는 같은 코드 안의 텐션 구분자로 유지됩니다.\n\n?는 아직 정하지 않은 코드 자리를 뜻합니다. 분석기는 앞뒤 화성 맥락을 바탕으로 가장 자연스러운 채움을 추론하고, 해석이 모호하면 후보도 함께 제안합니다.\n\n소문자 루트, 슬래시 베이스, sus/alt/add 표기와 C7(b9, #11) 같은 괄호형 텐션을 지원합니다.\n\n터치 기기에서는 코드 패드를 쓰거나, 자유 입력이 필요할 때 ABC 입력으로 전환할 수 있습니다.';
 
   @override
   String get chordAnalyzerInputHelpTitle => '입력 팁';
@@ -1968,7 +1974,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chordAnalyzerInitialBody =>
-      'Dm7, G7 | ? Am 또는 Cmaj7 | Am7 D7 | Gmaj7 같은 진행을 입력하면 가능한 조성, 로마 숫자, 추론된 채움, 짧은 요약을 볼 수 있습니다.';
+      'Dm7, G7 | ? Am 또는 Cmaj7 | Am7 D7 | Gmaj7 같은 진행을 입력하면 가능한 조성, 로마 숫자, 경고, 추론된 채움, 짧은 요약을 볼 수 있습니다.';
 
   @override
   String get chordAnalyzerPlaceholderExplanation =>
@@ -3970,7 +3976,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get harmonySoundProfileSelectionHelp =>
-      '중립 프리뷰를 쓰거나, Study Harmony 트랙을 따라가거나, 특정 트랙의 재생 성향을 고정할 수 있습니다.';
+      '균형형 기본 사운드를 쓰거나, 팝/재즈/클래식 중 한 가지 재생 성향을 고정하세요.';
 
   @override
   String get harmonySoundProfileSelectionNeutral => '중립 공용 피아노';
@@ -5108,4 +5114,168 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get showChordTextAssistHelp => '코드 성격과 텐션을 짧은 텍스트로 설명해 줍니다.';
+
+  @override
+  String get premiumUnlockTitle => 'Chordest Premium';
+
+  @override
+  String get premiumUnlockBody =>
+      '한 번 구매하면 Smart Generator와 고급 화성 컬러 제어가 영구 해금됩니다. 기본 Generator, Analyzer, 메트로놈, 언어 지원은 계속 무료로 사용할 수 있습니다.';
+
+  @override
+  String get premiumUnlockRequestedFeatureTitle => '지금 열려고 한 기능';
+
+  @override
+  String get premiumUnlockOfflineCacheTitle => '최근 확인된 해금을 사용 중입니다';
+
+  @override
+  String get premiumUnlockOfflineCacheBody =>
+      '지금은 스토어 연결이 되지 않아, 최근 확인된 프리미엄 해금 캐시를 사용하고 있습니다.';
+
+  @override
+  String get premiumUnlockFreeTierTitle => '무료';
+
+  @override
+  String get premiumUnlockFreeTierLineGenerator =>
+      '기본 Generator, 코드 표기, 전위, slash bass, 핵심 메트로놈';
+
+  @override
+  String get premiumUnlockFreeTierLineAnalyzer =>
+      'confidence와 ambiguity 경고를 포함한 보수적 Analyzer';
+
+  @override
+  String get premiumUnlockFreeTierLineMetronome =>
+      '언어, 테마, setup assistant, 표준 연습 설정';
+
+  @override
+  String get premiumUnlockPremiumTierTitle => '프리미엄 해금';
+
+  @override
+  String get premiumUnlockPremiumLineSmartGenerator =>
+      '선택한 key를 따라가는 Smart Generator 모드';
+
+  @override
+  String get premiumUnlockPremiumLineHarmonyColors =>
+      'secondary dominant, substitute dominant, modal interchange, 고급 tension';
+
+  @override
+  String get premiumUnlockPremiumLineAdvancedSmartControls =>
+      'Smart Generator용 전조 강도, 재즈 프리셋, source profile 제어';
+
+  @override
+  String premiumUnlockBuyButton(Object priceLabel) {
+    return '영구 해금 ($priceLabel)';
+  }
+
+  @override
+  String get premiumUnlockBuyButtonUnavailable => '영구 해금';
+
+  @override
+  String get premiumUnlockRestoreButton => '구매 복원';
+
+  @override
+  String get premiumUnlockKeepFreeButton => '무료로 계속 사용';
+
+  @override
+  String get premiumUnlockStoreFallbackBody =>
+      '지금은 스토어 상품 정보를 불러오지 못했습니다. 무료 기능은 그대로 사용할 수 있고, 나중에 다시 시도하거나 복원할 수 있습니다.';
+
+  @override
+  String get premiumUnlockStorePriceHint =>
+      '가격은 스토어 상품 정보에서 가져옵니다. 앱 안에 고정 가격을 넣지 않습니다.';
+
+  @override
+  String get premiumUnlockStoreUnavailableTitle => '스토어 연결 불가';
+
+  @override
+  String get premiumUnlockStoreUnavailableBody =>
+      '지금은 스토어에 연결할 수 없습니다. 무료 기능은 그대로 사용할 수 있습니다.';
+
+  @override
+  String get premiumUnlockProductUnavailableTitle => '상품 정보를 아직 불러오지 못했습니다';
+
+  @override
+  String get premiumUnlockProductUnavailableBody =>
+      '지금은 프리미엄 상품 정보를 확인할 수 없습니다. 잠시 후 다시 시도해 주세요.';
+
+  @override
+  String get premiumUnlockPurchaseSuccessTitle => '프리미엄이 해금되었습니다';
+
+  @override
+  String get premiumUnlockPurchaseSuccessBody => '이 기기에서 영구 프리미엄 해금이 활성화되었습니다.';
+
+  @override
+  String get premiumUnlockRestoreSuccessTitle => '구매를 복원했습니다';
+
+  @override
+  String get premiumUnlockRestoreSuccessBody => '스토어에서 프리미엄 해금을 복원했습니다.';
+
+  @override
+  String get premiumUnlockRestoreNotFoundTitle => '복원할 구매가 없습니다';
+
+  @override
+  String get premiumUnlockRestoreNotFoundBody =>
+      '이 스토어 계정에서 일치하는 프리미엄 해금을 찾지 못했습니다.';
+
+  @override
+  String get premiumUnlockPurchaseCancelledTitle => '구매를 취소했습니다';
+
+  @override
+  String get premiumUnlockPurchaseCancelledBody =>
+      '과금되지 않았습니다. 무료 기능은 계속 사용할 수 있습니다.';
+
+  @override
+  String get premiumUnlockPurchasePendingTitle => '구매 대기 중';
+
+  @override
+  String get premiumUnlockPurchasePendingBody =>
+      '스토어에서 구매를 대기 상태로 표시했습니다. 확인이 끝나면 프리미엄이 활성화됩니다.';
+
+  @override
+  String get premiumUnlockPurchaseFailedTitle => '구매에 실패했습니다';
+
+  @override
+  String get premiumUnlockPurchaseFailedBody =>
+      '구매를 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.';
+
+  @override
+  String get premiumUnlockAlreadyOwned => '프리미엄 사용 중';
+
+  @override
+  String get premiumUnlockAlreadyOwnedTitle => '이미 해금되었습니다';
+
+  @override
+  String get premiumUnlockAlreadyOwnedBody => '이 스토어 계정에는 이미 프리미엄 해금이 있습니다.';
+
+  @override
+  String get premiumUnlockHighlightSmartGenerator =>
+      'Smart Generator 모드와 그 안의 고급 진행 제어는 프리미엄 해금 대상입니다.';
+
+  @override
+  String get premiumUnlockHighlightAdvancedHarmony =>
+      '비다이아토닉 컬러 옵션과 고급 tension은 프리미엄 해금 대상입니다.';
+
+  @override
+  String get premiumUnlockCardTitle => '프리미엄 해금';
+
+  @override
+  String get premiumUnlockCardBodyUnlocked => '1회 구매형 프리미엄 해금이 활성화되어 있습니다.';
+
+  @override
+  String get premiumUnlockCardBodyLocked =>
+      'Smart Generator와 고급 화성 컬러 제어를 1회 구매로 해금합니다.';
+
+  @override
+  String get premiumUnlockCardButton => '프리미엄 보기';
+
+  @override
+  String get premiumUnlockGeneratorHint =>
+      'Smart Generator와 고급 화성 컬러는 1회 구매형 프리미엄 해금으로 열립니다.';
+
+  @override
+  String get premiumUnlockSettingsHintTitle => '프리미엄 제어 항목';
+
+  @override
+  String get premiumUnlockSettingsHintBody =>
+      'Smart Generator, 비다이아토닉 컬러 제어, 고급 tension은 1회 구매형 프리미엄 해금에 포함됩니다.';
 }

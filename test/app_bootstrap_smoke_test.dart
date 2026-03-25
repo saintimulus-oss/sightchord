@@ -24,7 +24,7 @@ void main() {
     );
     expect(
       find.byKey(const ValueKey('main-open-study-harmony-button')),
-      findsOneWidget,
+      findsNothing,
     );
     expect(
       find.byKey(const ValueKey('main-open-settings-button')),

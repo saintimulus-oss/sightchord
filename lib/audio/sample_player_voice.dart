@@ -30,6 +30,8 @@ abstract class AudioPlayerBackend {
 
   Future<void> setSourceAsset(String path);
 
+  Future<void> seek(Duration position);
+
   Future<void> setPlaybackRate(double playbackRate);
 
   Future<void> setVolume(double volume);

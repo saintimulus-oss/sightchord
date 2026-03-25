@@ -6,6 +6,44 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('guided drawer hides the Study Harmony card without a callback', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      _TestSettingsDrawerHost(
+        initialSettings: PracticeSettings().copyWith(
+          guidedSetupCompleted: true,
+          settingsComplexityMode: SettingsComplexityMode.guided,
+        ),
+        metronomeCustomSoundService: _FakeMetronomeCustomSoundService(),
+        onApplied: (_) {},
+      ),
+    );
+
+    expect(find.text('Want a gentler theory path too?'), findsNothing);
+    expect(find.text('Start Study Harmony'), findsNothing);
+  });
+
+  testWidgets(
+    'guided drawer keeps the Study Harmony card sealed even with a callback',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        _TestSettingsDrawerHost(
+          initialSettings: PracticeSettings().copyWith(
+            guidedSetupCompleted: true,
+            settingsComplexityMode: SettingsComplexityMode.guided,
+          ),
+          metronomeCustomSoundService: _FakeMetronomeCustomSoundService(),
+          onStudyHarmonyRequested: () {},
+          onApplied: (_) {},
+        ),
+      );
+
+      expect(find.text('Want a gentler theory path too?'), findsNothing);
+      expect(find.text('Start Study Harmony'), findsNothing);
+    },
+  );
+
   testWidgets('uploading a custom metronome sound updates settings', (
     WidgetTester tester,
   ) async {
@@ -92,11 +130,13 @@ class _TestSettingsDrawerHost extends StatefulWidget {
   const _TestSettingsDrawerHost({
     this.initialSettings,
     required this.metronomeCustomSoundService,
+    this.onStudyHarmonyRequested,
     required this.onApplied,
   });
 
   final PracticeSettings? initialSettings;
   final MetronomeCustomSoundService metronomeCustomSoundService;
+  final VoidCallback? onStudyHarmonyRequested;
   final ValueChanged<PracticeSettings> onApplied;
 
   @override
@@ -123,6 +163,7 @@ class _TestSettingsDrawerHostState extends State<_TestSettingsDrawerHost> {
           settings: _settings,
           onClose: () {},
           onRunSetupAssistant: () {},
+          onOpenStudyHarmony: widget.onStudyHarmonyRequested,
           onOpenAdvancedSettings: () {},
           onApplySettings: (nextSettings, {reseed = false}) {
             setState(() {

@@ -75,6 +75,8 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
   StudyHarmonySessionProgressEffect? _lastProgressEffect;
   bool _requestedHarmonyAudioWarmUp = false;
   HarmonyAudioService? _harmonyAudio;
+  PracticeSettings _lastSettingsSnapshot = PracticeSettings();
+  _StudyHarmonySessionBuildData? _cachedSessionBuildData;
   final Map<String, ActiveInstrumentNote> _activePreviewNotes =
       <String, ActiveInstrumentNote>{};
 
@@ -82,6 +84,7 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
   void initState() {
     super.initState();
     _pageFocusNode = FocusNode(debugLabel: 'studyHarmonySessionPage');
+    _lastSettingsSnapshot = _currentSettingsSnapshot();
     _attachSettingsController(widget.settingsController);
     _syncCourseIfNeeded();
     _controller = _buildController();
@@ -112,6 +115,7 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
     if (oldWidget.lesson.id != widget.lesson.id) {
       final previousController = _controller;
       previousController.removeListener(_handleSessionChanged);
+      _cachedSessionBuildData = null;
       _controller = _buildController();
       _controller.addListener(_handleSessionChanged);
       _hasPersistedCurrentRun = false;
@@ -125,6 +129,9 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
 
     if (oldWidget.progressController != widget.progressController ||
         oldWidget.courseToSync?.id != widget.courseToSync?.id) {
+      if (oldWidget.progressController != widget.progressController) {
+        _cachedSessionBuildData = null;
+      }
       _syncCourseIfNeeded();
     }
 
@@ -139,6 +146,7 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
       if (oldWidget.settingsController != widget.settingsController) {
         _detachSettingsController(oldWidget.settingsController);
         _attachSettingsController(widget.settingsController);
+        _lastSettingsSnapshot = _currentSettingsSnapshot();
       }
       final harmonyAudio = _harmonyAudio;
       if (harmonyAudio != null) {
@@ -186,7 +194,23 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
     if (!mounted) {
       return;
     }
-    setState(() {});
+    final nextSettings = _currentSettingsSnapshot();
+    final previousSettings = _lastSettingsSnapshot;
+    _lastSettingsSnapshot = nextSettings;
+    final shouldRefreshPromptPreview = _didPromptPreviewSettingsChange(
+      previousSettings,
+      nextSettings,
+    );
+    final shouldRefreshHarmonyAudio = _didHarmonyAudioSettingsChange(
+      previousSettings,
+      nextSettings,
+    );
+    if (shouldRefreshPromptPreview) {
+      setState(() {});
+    }
+    if (!shouldRefreshHarmonyAudio) {
+      return;
+    }
     final harmonyAudio = _harmonyAudio;
     if (harmonyAudio != null) {
       unawaited(_syncTrackSoundProfile(harmonyAudio));
@@ -211,23 +235,13 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
   ) {
     final localeTag = WidgetsBinding.instance.platformDispatcher.locale
         .toLanguageTag();
-    final snapshot = widget.progressController.snapshot;
-    final recentPerformance =
-        StudyHarmonyRecentPerformance.fromProgressSnapshot(snapshot);
-    final adaptiveProfile = _sessionAdaptiveProfile(
-      snapshot: snapshot,
+    final sessionBuildData = _sessionBuildData(
       localeTag: localeTag,
-      recentPerformance: recentPerformance,
-    );
-    final difficultyPlan = StudyHarmonyDifficultyDesign.design(
+      liveComboPeak: 0,
       mode: lesson.sessionMode,
-      input: _difficultyInputForSession(
-        recentPerformance: recentPerformance,
-        adaptiveProfile: adaptiveProfile,
-        progressController: widget.progressController,
-        liveComboPeak: 0,
-      ),
     );
+    final snapshot = sessionBuildData.snapshot;
+    final difficultyPlan = sessionBuildData.difficultyPlan;
     final runtimeTuning = StudyHarmonyRuntimeTuningRules.tuneFromPlan(
       plan: difficultyPlan,
       baseStartingLives: lesson.startingLives,
@@ -373,6 +387,79 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
 
   void _toggleAnswer(StudyHarmonyAnswerOptionId answerId) {
     _controller.toggleAnswer(answerId);
+  }
+
+  PracticeSettings _currentSettingsSnapshot() {
+    return widget.settingsController?.settings ?? PracticeSettings();
+  }
+
+  bool _didPromptPreviewSettingsChange(
+    PracticeSettings previous,
+    PracticeSettings next,
+  ) {
+    return previous.harmonySoundProfileSelection !=
+        next.harmonySoundProfileSelection;
+  }
+
+  bool _didHarmonyAudioSettingsChange(
+    PracticeSettings previous,
+    PracticeSettings next,
+  ) {
+    return _didPromptPreviewSettingsChange(previous, next) ||
+        previous.harmonyMasterVolume != next.harmonyMasterVolume ||
+        previous.harmonyPreviewHoldFactor != next.harmonyPreviewHoldFactor ||
+        previous.harmonyArpeggioStepSpeed != next.harmonyArpeggioStepSpeed ||
+        previous.harmonyVelocityHumanization !=
+            next.harmonyVelocityHumanization ||
+        previous.harmonyGainRandomness != next.harmonyGainRandomness ||
+        previous.harmonyTimingHumanization != next.harmonyTimingHumanization;
+  }
+
+  _StudyHarmonySessionBuildData _sessionBuildData({
+    required String localeTag,
+    required int liveComboPeak,
+    required StudyHarmonySessionMode mode,
+  }) {
+    final snapshot = widget.progressController.snapshot;
+    final cached = _cachedSessionBuildData;
+    if (cached != null &&
+        identical(cached.snapshot, snapshot) &&
+        cached.localeTag == localeTag &&
+        cached.liveComboPeak == liveComboPeak &&
+        cached.mode == mode) {
+      return cached;
+    }
+
+    final recentPerformance =
+        StudyHarmonyRecentPerformance.fromProgressSnapshot(snapshot);
+    final adaptiveProfile = _sessionAdaptiveProfile(
+      snapshot: snapshot,
+      localeTag: localeTag,
+      recentPerformance: recentPerformance,
+    );
+    final adaptivePlan = personalizeStudyHarmony(
+      profile: adaptiveProfile,
+      recentPerformance: recentPerformance,
+    );
+    final difficultyPlan = StudyHarmonyDifficultyDesign.design(
+      mode: mode,
+      input: _difficultyInputForSession(
+        recentPerformance: recentPerformance,
+        adaptiveProfile: adaptiveProfile,
+        progressController: widget.progressController,
+        liveComboPeak: liveComboPeak,
+      ),
+    );
+    final next = _StudyHarmonySessionBuildData(
+      snapshot: snapshot,
+      localeTag: localeTag,
+      liveComboPeak: liveComboPeak,
+      mode: mode,
+      adaptivePlan: adaptivePlan,
+      difficultyPlan: difficultyPlan,
+    );
+    _cachedSessionBuildData = next;
+    return next;
   }
 
   Future<void> _syncTrackSoundProfile(HarmonyAudioService harmonyAudio) async {
@@ -611,28 +698,13 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
           state: state,
         );
         final localeTag = Localizations.localeOf(context).toLanguageTag();
-        final recentPerformance =
-            StudyHarmonyRecentPerformance.fromProgressSnapshot(
-              widget.progressController.snapshot,
-            );
-        final adaptiveProfile = _sessionAdaptiveProfile(
-          snapshot: widget.progressController.snapshot,
+        final sessionBuildData = _sessionBuildData(
           localeTag: localeTag,
-          recentPerformance: recentPerformance,
-        );
-        final adaptivePlan = personalizeStudyHarmony(
-          profile: adaptiveProfile,
-          recentPerformance: recentPerformance,
-        );
-        final difficultyPlan = StudyHarmonyDifficultyDesign.design(
+          liveComboPeak: state.bestCombo,
           mode: lesson.sessionMode,
-          input: _difficultyInputForSession(
-            recentPerformance: recentPerformance,
-            adaptiveProfile: adaptiveProfile,
-            progressController: widget.progressController,
-            liveComboPeak: state.bestCombo,
-          ),
         );
+        final adaptivePlan = sessionBuildData.adaptivePlan;
+        final difficultyPlan = sessionBuildData.difficultyPlan;
         final arcadeMode = lesson.sessionMetadata.arcadeModeId == null
             ? null
             : studyHarmonyArcadeModeById(lesson.sessionMetadata.arcadeModeId!);
@@ -1416,6 +1488,24 @@ class _StudyHarmonySessionPageState extends State<StudyHarmonySessionPage> {
       ),
     };
   }
+}
+
+class _StudyHarmonySessionBuildData {
+  const _StudyHarmonySessionBuildData({
+    required this.snapshot,
+    required this.localeTag,
+    required this.liveComboPeak,
+    required this.mode,
+    required this.adaptivePlan,
+    required this.difficultyPlan,
+  });
+
+  final StudyHarmonyProgressSnapshot snapshot;
+  final String localeTag;
+  final int liveComboPeak;
+  final StudyHarmonySessionMode mode;
+  final StudyHarmonyAdaptivePlan adaptivePlan;
+  final StudyHarmonyDifficultyPlan difficultyPlan;
 }
 
 class _SessionBriefingCard extends StatelessWidget {

@@ -19,6 +19,9 @@ class AudioplayersAudioPlayerBackend implements AudioPlayerBackend {
   Future<void> setSourceAsset(String path) => _player.setSourceAsset(path);
 
   @override
+  Future<void> seek(Duration position) => _player.seek(position);
+
+  @override
   Future<void> setPlaybackRate(double playbackRate) =>
       _player.setPlaybackRate(playbackRate);
 
@@ -84,6 +87,7 @@ class _AudioPlayerVoice implements SamplePlayerVoice {
     if (_playbackRateNeedsPriming) {
       // Apply rate changes before the audible start so piano attacks are not
       // muted while the backend catches up.
+      await _rewindForReplay();
       await _player.setVolume(0.0);
       await _player.resume();
       await _player.setPlaybackRate(_currentPlaybackRate);
@@ -94,6 +98,7 @@ class _AudioPlayerVoice implements SamplePlayerVoice {
 
   @override
   Future<void> start({required double volume}) async {
+    await _rewindForReplay();
     await _player.setVolume(volume);
     await _player.resume();
   }
@@ -106,6 +111,8 @@ class _AudioPlayerVoice implements SamplePlayerVoice {
 
   @override
   Future<void> dispose() => _player.dispose();
+
+  Future<void> _rewindForReplay() => _player.seek(Duration.zero);
 
   PlayerMode get _preferredPlayerMode {
     if (defaultTargetPlatform == TargetPlatform.android) {

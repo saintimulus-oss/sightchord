@@ -26,6 +26,8 @@ class _StudyHarmonyAudioSpy extends HarmonyAudioService {
   _StudyHarmonyAudioSpy() : super();
 
   HarmonyAudioRuntimeProfile? appliedRuntimeProfile;
+  HarmonyAudioConfig? appliedBaseConfig;
+  int applyRuntimeProfileCallCount = 0;
   final List<HarmonyPlaybackPattern> promptPatterns =
       <HarmonyPlaybackPattern>[];
 
@@ -37,7 +39,9 @@ class _StudyHarmonyAudioSpy extends HarmonyAudioService {
     HarmonyAudioRuntimeProfile profile, {
     HarmonyAudioConfig? baseConfig,
   }) async {
+    applyRuntimeProfileCallCount += 1;
     appliedRuntimeProfile = profile;
+    appliedBaseConfig = baseConfig;
   }
 
   @override
@@ -205,6 +209,43 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> pumpStudyHarmonyPage(
+    WidgetTester tester, {
+    StudyHarmonyProgressSnapshot? progressSnapshot,
+    AppLanguage language = AppLanguage.en,
+    StudyHarmonyProgressController? progressController,
+  }) async {
+    tester.view.physicalSize = const Size(1280, 1800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final settingsController = AppSettingsController(
+      initialSettings: PracticeSettings(language: language),
+    );
+    addTearDown(settingsController.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: settingsController.settings.locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: StudyHarmonyPage(
+          settingsController: settingsController,
+          progressController:
+              progressController ??
+              StudyHarmonyProgressController(
+                initialSnapshot:
+                    progressSnapshot ?? StudyHarmonyProgressSnapshot.initial(),
+              ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
   StudyHarmonyLessonProgressSummary clearedLessonSummary(
     String lessonId,
     int index,
@@ -270,76 +311,21 @@ void main() {
     );
   }
 
-  testWidgets('main menu shows a study harmony entry point', (
-    WidgetTester tester,
-  ) async {
-    await pumpApp(tester);
-
-    expect(
-      find.byKey(const ValueKey('main-open-study-harmony-button')),
-      findsOneWidget,
-    );
-    expect(find.text('Study Harmony'), findsWidgets);
-  });
-
-  testWidgets(
-    'main menu surfaces a lightweight study harmony progress summary',
-    (WidgetTester tester) async {
-      final snapshot = StudyHarmonyProgressSnapshot.initial().copyWith(
-        lastPlayedTrackId: studyHarmonyCoreTrackId,
-        lastPlayedChapterId: studyHarmonyCoreNotesChapterId,
-        lastPlayedLessonId: 'core-notes-2-name-preview',
-        unlockedChapterIds: {studyHarmonyCoreNotesChapterId},
-        unlockedLessonIds: {
-          'core-notes-1-note-keyboard',
-          'core-notes-2-name-preview',
-        },
-        lessonResults: {
-          'core-notes-1-note-keyboard': const StudyHarmonyLessonProgressSummary(
-            lessonId: 'core-notes-1-note-keyboard',
-            isCleared: true,
-            bestAccuracy: 0.92,
-            bestAttemptCount: 2,
-            bestStars: 3,
-            bestRank: 'A',
-            bestElapsedMillis: 16000,
-            playCount: 1,
-            lastPlayedAtIso8601: '2026-03-12T00:00:00.000Z',
-          ),
-        },
-      );
-
-      await pumpApp(tester, progressSnapshot: snapshot);
-
-      expect(
-        find.byKey(const ValueKey('main-open-study-harmony-button')),
-        findsOneWidget,
-      );
-      expect(
-        find.textContaining('Continue: Name the Highlighted Note'),
-        findsOneWidget,
-      );
-      expect(find.textContaining('1/69 lessons cleared'), findsOneWidget);
-      expect(find.text('Chapter 1: Notes & Keyboard'), findsNothing);
-      expect(find.text('3 stars'), findsNothing);
-    },
-  );
-
-  testWidgets('main menu summary follows the last played non-core track', (
+  testWidgets('main menu hides the study harmony entry point for release', (
     WidgetTester tester,
   ) async {
     final snapshot = StudyHarmonyProgressSnapshot.initial().copyWith(
-      lastPlayedTrackId: studyHarmonyJazzTrackId,
-      lastPlayedChapterId: 'jazz-chapter-notes-keyboard',
-      lastPlayedLessonId: 'jazz-notes-2-name-preview',
-      unlockedChapterIds: {'jazz-chapter-notes-keyboard'},
+      lastPlayedTrackId: studyHarmonyCoreTrackId,
+      lastPlayedChapterId: studyHarmonyCoreNotesChapterId,
+      lastPlayedLessonId: 'core-notes-2-name-preview',
+      unlockedChapterIds: {studyHarmonyCoreNotesChapterId},
       unlockedLessonIds: {
-        'jazz-notes-1-note-keyboard',
-        'jazz-notes-2-name-preview',
+        'core-notes-1-note-keyboard',
+        'core-notes-2-name-preview',
       },
       lessonResults: {
-        'jazz-notes-1-note-keyboard': const StudyHarmonyLessonProgressSummary(
-          lessonId: 'jazz-notes-1-note-keyboard',
+        'core-notes-1-note-keyboard': const StudyHarmonyLessonProgressSummary(
+          lessonId: 'core-notes-1-note-keyboard',
           isCleared: true,
           bestAccuracy: 0.92,
           bestAttemptCount: 2,
@@ -354,10 +340,14 @@ void main() {
     await pumpApp(tester, progressSnapshot: snapshot);
 
     expect(
-      find.textContaining('Continue: Name the Highlighted Note'),
-      findsOneWidget,
+      find.byKey(const ValueKey('main-open-study-harmony-button')),
+      findsNothing,
     );
-    expect(find.textContaining('1/76 lessons cleared'), findsOneWidget);
+    expect(
+      find.textContaining('Continue: Name the Highlighted Note'),
+      findsNothing,
+    );
+    expect(find.textContaining('lessons cleared'), findsNothing);
   });
 
   testWidgets(
@@ -367,12 +357,7 @@ void main() {
         initialSnapshot: buildProgressedHubSnapshot(),
       );
 
-      await pumpApp(tester, progressController: controller);
-
-      await tester.tap(
-        find.byKey(const ValueKey('main-open-study-harmony-button')),
-      );
-      await tester.pumpAndSettle();
+      await pumpStudyHarmonyPage(tester, progressController: controller);
 
       expect(
         find.byKey(const ValueKey('study-harmony-tour-card')),
@@ -391,15 +376,7 @@ void main() {
   testWidgets(
     'study harmony hub puts the learning loop ahead of meta systems early on',
     (WidgetTester tester) async {
-      await pumpApp(tester);
-
-      await tester.ensureVisible(
-        find.byKey(const ValueKey('main-open-study-harmony-button')),
-      );
-      await tester.tap(
-        find.byKey(const ValueKey('main-open-study-harmony-button')),
-      );
-      await tester.pumpAndSettle();
+      await pumpStudyHarmonyPage(tester);
 
       expect(find.byKey(const ValueKey('study-harmony-page')), findsOneWidget);
       expect(
@@ -487,16 +464,11 @@ void main() {
   testWidgets('study harmony Korean locale keeps the director card readable', (
     WidgetTester tester,
   ) async {
-    await pumpApp(
+    await pumpStudyHarmonyPage(
       tester,
       language: AppLanguage.ko,
       progressSnapshot: buildProgressedHubSnapshot(),
     );
-
-    await tester.tap(
-      find.byKey(const ValueKey('main-open-study-harmony-button')),
-    );
-    await tester.pumpAndSettle();
 
     final pageElement = tester.element(
       find.byKey(const ValueKey('study-harmony-page')),
@@ -550,12 +522,7 @@ void main() {
   testWidgets('track filter switches to live track content', (
     WidgetTester tester,
   ) async {
-    await pumpApp(tester);
-
-    await tester.tap(
-      find.byKey(const ValueKey('main-open-study-harmony-button')),
-    );
-    await tester.pumpAndSettle();
+    await pumpStudyHarmonyPage(tester);
 
     final jazzChip = find.byKey(
       const ValueKey('study-harmony-track-filter-jazz'),
@@ -586,17 +553,12 @@ void main() {
   testWidgets(
     'jazz track shows expectation copy and keeps learning cards above league meta',
     (WidgetTester tester) async {
-      await pumpApp(
+      await pumpStudyHarmonyPage(
         tester,
         progressSnapshot: buildProgressedHubSnapshot(
           trackId: studyHarmonyJazzTrackId,
         ),
       );
-
-      await tester.tap(
-        find.byKey(const ValueKey('main-open-study-harmony-button')),
-      );
-      await tester.pumpAndSettle();
 
       final jazzChip = find.byKey(
         const ValueKey('study-harmony-track-filter-jazz'),
@@ -631,12 +593,7 @@ void main() {
   testWidgets(
     'jazz expectation card shows focus, lighter focus, and recommended copy',
     (WidgetTester tester) async {
-      await pumpApp(tester);
-
-      await tester.tap(
-        find.byKey(const ValueKey('main-open-study-harmony-button')),
-      );
-      await tester.pumpAndSettle();
+      await pumpStudyHarmonyPage(tester);
 
       final jazzChip = find.byKey(
         const ValueKey('study-harmony-track-filter-jazz'),
@@ -797,12 +754,7 @@ void main() {
   testWidgets('chapter card opens lesson sheet and launches a session', (
     WidgetTester tester,
   ) async {
-    await pumpApp(tester);
-
-    await tester.tap(
-      find.byKey(const ValueKey('main-open-study-harmony-button')),
-    );
-    await tester.pumpAndSettle();
+    await pumpStudyHarmonyPage(tester);
 
     await tester.ensureVisible(
       find.byKey(
@@ -1299,6 +1251,109 @@ void main() {
 
       expect(audio.appliedRuntimeProfile?.profileId, 'classical-clear-focused');
       expect(find.text('Play Prompt'), findsWidgets);
+    },
+  );
+
+  testWidgets(
+    'session ignores unrelated settings updates while the page is open',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1280, 1800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final audio = _StudyHarmonyAudioSpy();
+      final settingsController = AppSettingsController(
+        initialSettings: PracticeSettings(
+          harmonySoundProfileSelection: HarmonySoundProfileSelection.trackAware,
+          bpm: 84,
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ChordestAudioScope(
+            harmonyAudio: audio,
+            child: StudyHarmonySessionPage(
+              lesson: _buildPromptPreviewLesson(),
+              trackId: studyHarmonyJazzTrackId,
+              progressController: StudyHarmonyProgressController(
+                initialSnapshot: StudyHarmonyProgressSnapshot.initial(),
+              ),
+              settingsController: settingsController,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final initialApplyCount = audio.applyRuntimeProfileCallCount;
+      expect(find.text('Play Arpeggio'), findsOneWidget);
+
+      await settingsController.update(
+        settingsController.settings.copyWith(bpm: 120),
+      );
+      await tester.pumpAndSettle();
+
+      expect(audio.applyRuntimeProfileCallCount, initialApplyCount);
+      expect(audio.appliedRuntimeProfile?.profileId, 'jazz-dry-warm');
+      expect(find.text('Play Arpeggio'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'session refreshes harmony audio config without relabeling prompt controls',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1280, 1800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final audio = _StudyHarmonyAudioSpy();
+      final settingsController = AppSettingsController(
+        initialSettings: PracticeSettings(
+          harmonySoundProfileSelection: HarmonySoundProfileSelection.trackAware,
+          harmonyMasterVolume: 1,
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ChordestAudioScope(
+            harmonyAudio: audio,
+            child: StudyHarmonySessionPage(
+              lesson: _buildPromptPreviewLesson(),
+              trackId: studyHarmonyJazzTrackId,
+              progressController: StudyHarmonyProgressController(
+                initialSnapshot: StudyHarmonyProgressSnapshot.initial(),
+              ),
+              settingsController: settingsController,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final initialApplyCount = audio.applyRuntimeProfileCallCount;
+      expect(find.text('Play Arpeggio'), findsOneWidget);
+
+      await settingsController.update(
+        settingsController.settings.copyWith(harmonyMasterVolume: 0.42),
+      );
+      await tester.pumpAndSettle();
+
+      expect(audio.applyRuntimeProfileCallCount, initialApplyCount + 1);
+      expect(audio.appliedRuntimeProfile?.profileId, 'jazz-dry-warm');
+      expect(audio.appliedBaseConfig?.masterVolume, closeTo(0.42, 0.0001));
+      expect(find.text('Play Arpeggio'), findsOneWidget);
     },
   );
 

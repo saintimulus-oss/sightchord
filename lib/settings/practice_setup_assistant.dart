@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import '../audio/harmony_audio_models.dart';
 import '../audio/harmony_preview_resolver.dart';
 import '../audio/chordest_audio_scope.dart';
+import '../billing/premium_feature_access.dart';
 import '../l10n/app_localizations.dart';
 import '../music/chord_formatting.dart';
 import '../music/chord_theory.dart';
 import '../music/notation_presentation.dart';
+import '../release_feature_flags.dart';
 import 'practice_setup_models.dart';
 import 'practice_setup_preview.dart';
 import 'practice_settings.dart';
@@ -18,6 +20,7 @@ Future<PracticeSettings?> showPracticeSetupAssistant({
   required BuildContext context,
   required PracticeSettings currentSettings,
   bool mandatory = false,
+  bool premiumUnlocked = false,
   VoidCallback? onOpenStudyHarmony,
 }) {
   return showModalBottomSheet<PracticeSettings>(
@@ -33,6 +36,7 @@ Future<PracticeSettings?> showPracticeSetupAssistant({
         child: PracticeSetupAssistantSheet(
           currentSettings: currentSettings,
           mandatory: mandatory,
+          premiumUnlocked: premiumUnlocked,
           onOpenStudyHarmony: onOpenStudyHarmony,
         ),
       );
@@ -45,11 +49,13 @@ class PracticeSetupAssistantSheet extends StatefulWidget {
     super.key,
     required this.currentSettings,
     required this.mandatory,
+    required this.premiumUnlocked,
     this.onOpenStudyHarmony,
   });
 
   final PracticeSettings currentSettings;
   final bool mandatory;
+  final bool premiumUnlocked;
   final VoidCallback? onOpenStudyHarmony;
 
   @override
@@ -65,15 +71,23 @@ class _PracticeSetupAssistantSheetState
   bool _playingPreview = false;
 
   PracticeSettings get _resolvedPreviewSettings =>
-      _previewSettingsOverride ??
-      PracticeSettingsFactory.fromGeneratorProfile(
-        _profile,
-        baseSettings: widget.currentSettings,
+      sanitizePracticeSettingsForEntitlement(
+        _previewSettingsOverride ??
+            PracticeSettingsFactory.fromGeneratorProfile(
+              _profile,
+              baseSettings: widget.currentSettings,
+            ),
+        premiumUnlocked: widget.premiumUnlocked,
       );
 
   PracticeSetupPreview get _preview => PracticeSetupPreviewBuilder.fromSettings(
     settings: _resolvedPreviewSettings,
   );
+
+  VoidCallback? get _studyHarmonyCallback =>
+      kEnableStudyHarmonyEntryPoints ? widget.onOpenStudyHarmony : null;
+
+  bool get _canOpenStudyHarmony => _studyHarmonyCallback != null;
 
   @override
   void initState() {
@@ -153,7 +167,10 @@ class _PracticeSetupAssistantSheetState
     PracticeSettings Function(PracticeSettings current) transform,
   ) {
     setState(() {
-      final adjustedSettings = transform(_resolvedPreviewSettings);
+      final adjustedSettings = sanitizePracticeSettingsForEntitlement(
+        transform(_resolvedPreviewSettings),
+        premiumUnlocked: widget.premiumUnlocked,
+      );
       _previewSettingsOverride = adjustedSettings;
       _profile = PracticeSettingsFactory.profileFromSettings(adjustedSettings);
       _normalizeStepIndex();
@@ -164,7 +181,10 @@ class _PracticeSetupAssistantSheetState
     PracticeSettings Function(PracticeSettings current) transform,
   ) {
     final current = _resolvedPreviewSettings;
-    final adjusted = transform(current);
+    final adjusted = sanitizePracticeSettingsForEntitlement(
+      transform(current),
+      premiumUnlocked: widget.premiumUnlocked,
+    );
     return adjusted.settingsComplexityMode != current.settingsComplexityMode ||
         adjusted.preferredSuggestionKind != current.preferredSuggestionKind ||
         adjusted.chordLanguageLevel != current.chordLanguageLevel ||
@@ -220,7 +240,7 @@ class _PracticeSetupAssistantSheetState
   }
 
   Future<void> _openStudyHarmony() async {
-    final callback = widget.onOpenStudyHarmony;
+    final callback = _studyHarmonyCallback;
     if (callback == null) {
       return;
     }
@@ -577,7 +597,7 @@ class _PracticeSetupAssistantSheetState
               ),
             ),
           ],
-          if (preview.recommendsStudyHarmony) ...[
+          if (preview.recommendsStudyHarmony && _canOpenStudyHarmony) ...[
             const SizedBox(height: 12),
             _buildStudyHarmonyCard(context),
           ],
@@ -786,7 +806,7 @@ class _PracticeSetupAssistantSheetState
                 height: 1.35,
               ),
             ),
-            if (widget.onOpenStudyHarmony != null) ...[
+            if (_canOpenStudyHarmony) ...[
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 onPressed: _openStudyHarmony,

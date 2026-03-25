@@ -9,6 +9,9 @@ import 'audio/harmony_audio_models.dart';
 import 'audio/harmony_preview_resolver.dart';
 import 'audio/harmony_audio_service.dart';
 import 'audio/chordest_audio_scope.dart';
+import 'billing/billing_scope.dart';
+import 'billing/paywall_sheet.dart';
+import 'billing/premium_feature_access.dart';
 import 'l10n/app_localizations.dart';
 import 'music/chord_formatting.dart';
 import 'music/notation_presentation.dart';
@@ -29,6 +32,7 @@ import 'practice/widgets/practice_page_sections.dart';
 import 'practice/widgets/practice_transport_strip.dart';
 import 'ui/chordest_ui_tokens.dart';
 import 'music/voicing_models.dart';
+import 'release_feature_flags.dart';
 import 'settings/practice_settings.dart';
 import 'settings/practice_settings_effects.dart';
 import 'settings/practice_advanced_settings_page.dart';
@@ -59,11 +63,13 @@ class MyHomePage extends StatefulWidget {
     super.key,
     required this.title,
     required this.controller,
+    this.initialPremiumUnlocked = false,
     this.onOpenStudyHarmony,
   });
 
   final String title;
   final AppSettingsController controller;
+  final bool initialPremiumUnlocked;
   final VoidCallback? onOpenStudyHarmony;
 
   @override
@@ -92,12 +98,27 @@ class _MyHomePageState extends State<MyHomePage> {
   HarmonyAudioService? _harmonyAudio;
   String? _lastCurrentPreviewPrefetchKey;
   String? _lastNextPreviewPrefetchKey;
+  late bool _premiumUnlockedSnapshot;
+  bool _billingScopeReady = false;
   PracticeMelodyQueueState _melodyState = const PracticeMelodyQueueState();
   int _melodyGenerationSeed = 0;
   final List<_PracticeHistoryEntry> _practiceHistory =
       <_PracticeHistoryEntry>[];
 
-  PracticeSettings get _settings => widget.controller.settings;
+  PracticeSettings get _settings => sanitizePracticeSettingsForEntitlement(
+    widget.controller.settings,
+    premiumUnlocked: _isPremiumUnlocked,
+  );
+  bool get _isPremiumUnlocked {
+    if (!_billingScopeReady) {
+      return _premiumUnlockedSnapshot;
+    }
+    final scopedValue = BillingScope.maybeOf(context)?.isPremiumUnlocked;
+    if (scopedValue != null) {
+      _premiumUnlockedSnapshot = scopedValue;
+    }
+    return _premiumUnlockedSnapshot;
+  }
   int get _beatsPerBar => _settings.beatsPerBar;
   PracticeTransportState get _transportState =>
       _practiceTransportController.state;
@@ -125,6 +146,17 @@ class _MyHomePageState extends State<MyHomePage> {
       _settings.settingsComplexityMode == SettingsComplexityMode.guided;
   bool get _isSetupAssistantRequired => !_settings.guidedSetupCompleted;
   int get _nextChangeBeat => _nextChordEvent?.timing.changeBeat ?? 0;
+  VoidCallback? get _studyHarmonyEntryPoint =>
+      kEnableStudyHarmonyEntryPoints ? widget.onOpenStudyHarmony : null;
+
+  Future<void> _openPremiumPaywall({
+    PremiumFeature? highlightedFeature,
+  }) {
+    return showPremiumPaywallSheet(
+      context,
+      highlightedFeature: highlightedFeature,
+    );
+  }
 
   void _setMetronomePatternEditing(bool value) {
     if (!mounted || _metronomePatternEditing == value) {
@@ -174,11 +206,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    _premiumUnlockedSnapshot = widget.initialPremiumUnlocked;
     _practiceSessionController = PracticeSessionController();
     _practiceTransportController = PracticeTransportController(
       logWarning: _logAudioWarning,
     );
-    _practiceTransportController.addListener(_handleTransportStateChanged);
     _bpmController = TextEditingController(text: '${_settings.bpm}');
     _syncTransportBindings();
     unawaited(_initAudio());
@@ -192,13 +224,6 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       _initializePracticeSession();
     }
-  }
-
-  void _handleTransportStateChanged() {
-    if (!mounted) {
-      return;
-    }
-    setState(() {});
   }
 
   void _initializePracticeSession() {
@@ -219,7 +244,8 @@ class _MyHomePageState extends State<MyHomePage> {
       context: context,
       currentSettings: _settings,
       mandatory: mandatory,
-      onOpenStudyHarmony: widget.onOpenStudyHarmony,
+      premiumUnlocked: _isPremiumUnlocked,
+      onOpenStudyHarmony: _studyHarmonyEntryPoint,
     );
     if (!mounted) {
       return;
@@ -249,6 +275,10 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _billingScopeReady = true;
+    _premiumUnlockedSnapshot =
+        BillingScope.maybeOf(context)?.isPremiumUnlocked ??
+        _premiumUnlockedSnapshot;
     final harmonyAudio = ChordestAudioScope.maybeOf(context);
     if (!identical(_harmonyAudio, harmonyAudio)) {
       _resetHarmonyPreviewPrefetchCache();
@@ -438,30 +468,38 @@ class _MyHomePageState extends State<MyHomePage> {
     bool reseed = false,
     bool syncBpmText = false,
   }) {
+    final requestedPremium = requestedPremiumFeatures(nextSettings);
+    final resolvedSettings = sanitizePracticeSettingsForEntitlement(
+      nextSettings,
+      premiumUnlocked: _isPremiumUnlocked,
+    );
+    if (!_isPremiumUnlocked && requestedPremium.isNotEmpty) {
+      unawaited(_openPremiumPaywall(highlightedFeature: requestedPremium.first));
+    }
     final previousSettings = _settings;
     if (PracticeSettingsEffects.harmonyAudioChanged(
       previousSettings,
-      nextSettings,
+      resolvedSettings,
     )) {
-      unawaited(_syncHarmonyAudioConfig(nextSettings));
+      unawaited(_syncHarmonyAudioConfig(resolvedSettings));
     }
     final shouldRegenerateMelody =
         !reseed &&
         PracticeSettingsEffects.melodyGenerationChanged(
           previousSettings,
-          nextSettings,
+          resolvedSettings,
         );
     final forceLookAheadRefresh =
         !reseed &&
         PracticeSettingsEffects.shouldForceLookAheadRefresh(
           previousSettings,
-          nextSettings,
+          resolvedSettings,
         );
-    unawaited(_persistSettingsUpdate(nextSettings));
+    unawaited(_persistSettingsUpdate(resolvedSettings));
     setState(() {
       _practiceHistory.clear();
       if (syncBpmText) {
-        _bpmController.text = '${nextSettings.bpm}';
+        _bpmController.text = '${resolvedSettings.bpm}';
       }
       if (reseed) {
         _melodyGenerationSeed += 1;
@@ -473,13 +511,13 @@ class _MyHomePageState extends State<MyHomePage> {
         _recomputeVoicingSuggestions(
           forceLookAheadRefresh: forceLookAheadRefresh,
         );
-        if (nextSettings.melodyGenerationEnabled) {
+        if (resolvedSettings.melodyGenerationEnabled) {
           _rebuildMelodyQueue();
         } else {
           _melodyState = _melodyState.reset();
         }
       }
-      _syncTransportBindings(settings: nextSettings);
+      _syncTransportBindings(settings: resolvedSettings);
     });
     _queueHarmonyPreviewPrefetch();
     unawaited(
@@ -1270,7 +1308,6 @@ class _MyHomePageState extends State<MyHomePage> {
       _syncTransportBindings(bpm: normalized);
       _practiceTransportController.handleLiveBpmChanged(normalized);
     }
-    setState(() {});
   }
 
   void _normalizeBpm() {
@@ -1280,7 +1317,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
-    _practiceTransportController.removeListener(_handleTransportStateChanged);
     _bpmController.dispose();
     unawaited(_practiceTransportController.shutdown());
     _practiceTransportController.dispose();

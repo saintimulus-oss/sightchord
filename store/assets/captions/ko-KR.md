@@ -2,7 +2,7 @@
 
 ## Main Menu
 
-하나의 진입 화면에서 연습, 분석, 학습을 바로 시작하세요.
+Chordest에서 시작하고, 추가 맥락이 필요할 때만 Analyzer를 여세요.
 
 ## Practice Generator
 
@@ -14,11 +14,11 @@
 
 ## Chord Analyzer
 
-조성 중심, 로마 숫자, 화성 기능을 빠르게 확인하세요.
+가능한 조성, 로마 숫자, 경고를 보수적으로 확인하세요.
 
-## Study Harmony
+## Advanced Settings
 
-구조화된 화성 학습과 진행 드릴을 단계적으로 진행하세요.
+사운드, 표기, 보이싱 동작을 내 연습 흐름에 맞게 조정하세요.
 
 ## Settings
 

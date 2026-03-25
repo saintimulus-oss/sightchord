@@ -8,7 +8,7 @@ Recommended coverage:
 - Practice generator with progression visible
 - Smart Generator progression
 - Chord Analyzer result view
-- Study Harmony surface
+- Advanced settings / sound profile
 - Settings / playback controls
 
 Use portrait orientation unless the final store strategy intentionally leads with landscape.

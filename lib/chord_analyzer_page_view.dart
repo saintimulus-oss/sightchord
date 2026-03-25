@@ -5,11 +5,13 @@ import 'audio/harmony_audio_models.dart';
 import 'audio/harmony_audio_service.dart';
 import 'audio/chordest_audio_scope.dart';
 import 'l10n/app_localizations.dart';
+import 'music/explanation_models.dart';
 import 'music/progression_analysis_models.dart';
 import 'music/progression_analyzer.dart';
 import 'music/progression_explanation_bundle_builder.dart';
 import 'music/progression_explainer.dart';
 import 'music/progression_variation_generator.dart';
+import 'release_feature_flags.dart';
 import 'settings/practice_settings.dart';
 import 'settings/settings_controller.dart';
 import 'widgets/chord_input_editor.dart';
@@ -61,6 +63,7 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   ProgressionHighlightTheme get _highlightTheme =>
       widget.controller?.settings.progressionHighlightTheme ??
       _localHighlightTheme;
+  bool get _advancedActionsEnabled => kEnableAdvancedAnalyzerActions;
 
   @override
   void initState() {
@@ -89,29 +92,22 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
 
     await Future<void>.delayed(Duration.zero);
 
+    ProgressionAnalysis? nextAnalysis;
+    String? nextErrorKey;
     try {
-      final analysis = _analyzer.analyze(input);
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _analysis = analysis;
-      });
+      nextAnalysis = _analyzer.analyze(input);
     } on ProgressionAnalysisException catch (error) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _analysis = null;
-        _errorKey = error.message;
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isAnalyzing = false;
-        });
-      }
+      nextErrorKey = error.message;
     }
+
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _analysis = nextAnalysis;
+      _errorKey = nextErrorKey;
+      _isAnalyzing = false;
+    });
   }
 
   @override
@@ -159,7 +155,7 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
 
   void _generateVariations() {
     final analysis = _analysis;
-    if (analysis == null) {
+    if (!_advancedActionsEnabled || analysis == null) {
       return;
     }
     setState(() {
@@ -392,20 +388,13 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     ThemeData theme, {
     required ProgressionAnalysis analysis,
     required List<ProgressionVariation> variations,
+    required List<String> summary,
+    required List<String> warnings,
+    required ExplanationBundle explanationBundle,
     bool includeResultsCardKey = false,
   }) {
-    final summary = _explainer.buildSummary(
-      l10n,
-      analysis,
-      detailLevel: _detailLevel,
-    );
-    final warnings = _warningTexts(l10n, analysis);
     final keyCandidates = analysis.keyCandidates.take(5).toList();
     final groupedMeasures = analysis.groupedMeasures;
-    final explanationBundle = _bundleBuilder.build(
-      l10n: l10n,
-      analysis: analysis,
-    );
     final sections = <Widget>[];
 
     void addSection(Widget section) {
@@ -624,9 +613,20 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final analysis = _analysis;
-    final variations = _variations;
+    final variations = _advancedActionsEnabled
+        ? _variations
+        : const <ProgressionVariation>[];
     final size = MediaQuery.sizeOf(context);
     final compactLayout = size.width < 720 && size.height < 980;
+    final summary = analysis == null
+        ? const <String>[]
+        : _explainer.buildSummary(l10n, analysis, detailLevel: _detailLevel);
+    final warnings = analysis == null
+        ? const <String>[]
+        : _warningTexts(l10n, analysis);
+    final explanationBundle = analysis == null
+        ? null
+        : _bundleBuilder.build(l10n: l10n, analysis: analysis);
 
     final heroCard = _buildAnalyzerHeroCard(
       context,
@@ -634,6 +634,7 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
       theme,
       colorScheme,
       compactLayout,
+      summary,
     );
 
     final resultsBody = Column(
@@ -647,6 +648,9 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
             theme,
             analysis: analysis,
             variations: variations,
+            summary: summary,
+            warnings: warnings,
+            explanationBundle: explanationBundle!,
             includeResultsCardKey: true,
           ),
         ],
@@ -729,23 +733,17 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   String _analysisBannerTitle(
     AppLocalizations l10n,
     ProgressionAnalysis? analysis,
+    List<String> summary,
     String? errorKey,
   ) {
     if (_isAnalyzing) {
       return l10n.chordAnalyzerAnalyzing;
     }
     if (errorKey != null) {
-      return l10n.chordAnalyzerWarnings;
+      return l10n.chordAnalyzerInputLabel;
     }
-    if (analysis != null) {
-      final summary = _explainer.buildSummary(
-        l10n,
-        analysis,
-        detailLevel: _detailLevel,
-      );
-      if (summary.isNotEmpty) {
-        return summary.first;
-      }
+    if (analysis != null && summary.isNotEmpty) {
+      return summary.first;
     }
     return l10n.chordAnalyzerInitialTitle;
   }
@@ -753,6 +751,7 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   String _analysisBannerBody(
     AppLocalizations l10n,
     ProgressionAnalysis? analysis,
+    List<String> summary,
     String? errorKey,
   ) {
     if (_isAnalyzing) {
@@ -762,11 +761,6 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
       return _errorTextForKey(l10n, errorKey);
     }
     if (analysis != null) {
-      final summary = _explainer.buildSummary(
-        l10n,
-        analysis,
-        detailLevel: _detailLevel,
-      );
       if (summary.length > 1) {
         return summary.skip(1).take(2).join(' ');
       }
@@ -860,7 +854,7 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
               icon: const Icon(Icons.multitrack_audio_rounded),
               label: Text(l10n.audioPlayArpeggio),
             ),
-          if (hasAnalysis)
+          if (hasAnalysis && _advancedActionsEnabled)
             OutlinedButton.icon(
               key: const ValueKey('analyzer-generate-variations-button'),
               onPressed: _generateVariations,
@@ -878,6 +872,7 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     ThemeData theme,
     ColorScheme colorScheme,
     bool compactLayout,
+    List<String> summary,
   ) {
     final analysis = _analysis;
 
@@ -926,8 +921,8 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
                   : _errorKey != null
                   ? Icons.warning_amber_rounded
                   : Icons.input_rounded,
-              title: _analysisBannerTitle(l10n, analysis, _errorKey),
-              body: _analysisBannerBody(l10n, analysis, _errorKey),
+              title: _analysisBannerTitle(l10n, analysis, summary, _errorKey),
+              body: _analysisBannerBody(l10n, analysis, summary, _errorKey),
               chips: _analysisBannerChips(l10n, analysis, _errorKey),
               accent: analysis != null || _isAnalyzing,
               busy: _isAnalyzing,

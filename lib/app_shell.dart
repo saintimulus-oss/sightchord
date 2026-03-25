@@ -5,6 +5,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'audio/harmony_audio_service.dart';
 import 'audio/chordest_audio_scope.dart';
+import 'billing/billing_controller.dart';
+import 'billing/billing_scope.dart';
 import 'l10n/app_localizations.dart';
 import 'main_menu_page.dart';
 import 'settings/settings_controller.dart';
@@ -15,10 +17,13 @@ class MyApp extends StatefulWidget {
   MyApp({
     super.key,
     AppSettingsController? controller,
+    BillingController? billingController,
     StudyHarmonyProgressController? studyHarmonyProgressController,
     HarmonyAudioService? harmonyAudioService,
   }) : controller = controller ?? AppSettingsController(),
        _ownsController = controller == null,
+       billingController = billingController ?? BillingController.noop(),
+       _ownsBillingController = billingController == null,
        studyHarmonyProgressController =
            studyHarmonyProgressController ?? StudyHarmonyProgressController(),
        _ownsStudyHarmonyProgressController =
@@ -28,6 +33,8 @@ class MyApp extends StatefulWidget {
 
   final AppSettingsController controller;
   final bool _ownsController;
+  final BillingController billingController;
+  final bool _ownsBillingController;
   final StudyHarmonyProgressController studyHarmonyProgressController;
   final bool _ownsStudyHarmonyProgressController;
   final HarmonyAudioService harmonyAudioService;
@@ -40,18 +47,42 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   static const Color _accentPurple = Color(0xFF6E56CF);
   static const Color _lightBackground = Color(0xFFFFFFFF);
   static const Color _darkBackground = Color(0xFF15171C);
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    unawaited(widget.billingController.initialize());
+    unawaited(
+      widget.billingController.synchronize(
+        reason: BillingRefreshReason.startup,
+      ),
+    );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) {
+      return;
+    }
+    unawaited(widget.billingController.refreshForAppResume());
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     if (widget._ownsHarmonyAudioService) {
       unawaited(widget.harmonyAudioService.dispose());
     }
     if (widget._ownsStudyHarmonyProgressController) {
       widget.studyHarmonyProgressController.dispose();
+    }
+    if (widget._ownsBillingController) {
+      widget.billingController.dispose();
     }
     if (widget._ownsController) {
       widget.controller.dispose();
@@ -299,24 +330,23 @@ class _MyAppState extends State<MyApp> {
       builder: (context, _) {
         return ChordestAudioScope(
           harmonyAudio: widget.harmonyAudioService,
-          child: MaterialApp(
-            title: 'Chordest',
-            debugShowCheckedModeBanner: false,
-            locale: widget.controller.settings.locale,
-            supportedLocales: MyApp.supportedLocales,
-            localizationsDelegates: [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            themeMode: widget.controller.settings.themeMode,
-            theme: _buildTheme(Brightness.light),
-            darkTheme: _buildTheme(Brightness.dark),
-            home: MainMenuPage(
-              controller: widget.controller,
-              studyHarmonyProgressController:
-                  widget.studyHarmonyProgressController,
+          child: BillingScope(
+            controller: widget.billingController,
+            child: MaterialApp(
+              title: 'Chordest',
+              debugShowCheckedModeBanner: false,
+              locale: widget.controller.settings.locale,
+              supportedLocales: MyApp.supportedLocales,
+              localizationsDelegates: [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              themeMode: widget.controller.settings.themeMode,
+              theme: _buildTheme(Brightness.light),
+              darkTheme: _buildTheme(Brightness.dark),
+              home: MainMenuPage(controller: widget.controller),
             ),
           ),
         );

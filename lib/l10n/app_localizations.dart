@@ -1293,6 +1293,12 @@ abstract class AppLocalizations {
   /// **'Space: next chord  Enter: start or pause autoplay  Up/Down: adjust BPM'**
   String get keyboardShortcutHelp;
 
+  /// No description provided for @currentChord.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Chord'**
+  String get currentChord;
+
   /// No description provided for @nextChord.
   ///
   /// In en, this message translates to:
@@ -1884,19 +1890,19 @@ abstract class AppLocalizations {
   /// No description provided for @mainMenuIntro.
   ///
   /// In en, this message translates to:
-  /// **'Practice chords, analyze progressions, and study harmony in one place.'**
+  /// **'Generate your next chord loop in Chordest, then use Analyzer for a cautious harmony read when you need context.'**
   String get mainMenuIntro;
 
   /// No description provided for @mainMenuGeneratorTitle.
   ///
   /// In en, this message translates to:
-  /// **'Chord Generator'**
+  /// **'Chordest Generator'**
   String get mainMenuGeneratorTitle;
 
   /// No description provided for @mainMenuGeneratorDescription.
   ///
   /// In en, this message translates to:
-  /// **'Generate focused chord prompts with smart motion and voicing support.'**
+  /// **'Start with a playable chord loop, voicing support, and quick practice controls.'**
   String get mainMenuGeneratorDescription;
 
   /// No description provided for @openGenerator.
@@ -1920,7 +1926,7 @@ abstract class AppLocalizations {
   /// No description provided for @mainMenuAnalyzerDescription.
   ///
   /// In en, this message translates to:
-  /// **'Read a progression for likely keys, Roman numerals, and harmonic function.'**
+  /// **'Check likely keys, Roman numerals, and warnings with a conservative progression read.'**
   String get mainMenuAnalyzerDescription;
 
   /// No description provided for @mainMenuStudyHarmonyTitle.
@@ -3471,7 +3477,7 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Enter a progression to see likely keys, Roman numerals, and harmonic function.'**
+  /// **'Paste a progression to get a conservative read of likely keys, Roman numerals, and harmonic function.'**
   String get chordAnalyzerSubtitle;
 
   /// No description provided for @chordAnalyzerInputLabel.
@@ -3489,7 +3495,7 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerInputHelper.
   ///
   /// In en, this message translates to:
-  /// **'Use spaces, |, or commas between chords. Commas inside parentheses stay in the same chord.\n\nUse ? for an unknown chord slot. The analyzer will infer the most natural fill from context and suggest alternatives when the reading is ambiguous. Variation generation can also reharmonize that slot more freely.\n\nLowercase roots, slash bass, sus/alt/add forms, and tensions like C7(b9, #11) are supported.\n\nOn touch devices, use the chord pad or switch to ABC input when you want free typing.'**
+  /// **'Use spaces, |, or commas between chords. Commas inside parentheses stay in the same chord.\n\nUse ? for an unknown chord slot. The analyzer will infer the most natural fill from context and surface alternatives when the reading is ambiguous.\n\nLowercase roots, slash bass, sus/alt/add forms, and tensions like C7(b9, #11) are supported.\n\nOn touch devices, use the chord pad or switch to ABC input when you want free typing.'**
   String get chordAnalyzerInputHelper;
 
   /// No description provided for @chordAnalyzerInputHelpTitle.
@@ -3573,7 +3579,7 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerInitialBody.
   ///
   /// In en, this message translates to:
-  /// **'Enter a progression such as Dm7, G7 | ? Am or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, inferred fills, and a short summary.'**
+  /// **'Enter a progression such as Dm7, G7 | ? Am or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, warnings, inferred fills, and a short summary.'**
   String get chordAnalyzerInitialBody;
 
   /// No description provided for @chordAnalyzerPlaceholderExplanation.
@@ -6831,7 +6837,7 @@ abstract class AppLocalizations {
   /// No description provided for @harmonySoundProfileSelectionHelp.
   ///
   /// In en, this message translates to:
-  /// **'Choose a neutral preview, follow the active Study Harmony track, or pin one track\'s playback feel.'**
+  /// **'Choose a balanced default sound or pin one playback character for pop, jazz, or classical practice.'**
   String get harmonySoundProfileSelectionHelp;
 
   /// No description provided for @harmonySoundProfileSelectionNeutral.
@@ -8579,6 +8585,288 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Adds a short text explanation for chord quality and tensions.'**
   String get showChordTextAssistHelp;
+
+  /// No description provided for @premiumUnlockTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chordest Premium'**
+  String get premiumUnlockTitle;
+
+  /// No description provided for @premiumUnlockBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A one-time purchase permanently unlocks Smart Generator and advanced harmonic color controls. Free Generator, Analyzer, metronome, and language support stay available.'**
+  String get premiumUnlockBody;
+
+  /// No description provided for @premiumUnlockRequestedFeatureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested in this flow'**
+  String get premiumUnlockRequestedFeatureTitle;
+
+  /// No description provided for @premiumUnlockOfflineCacheTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Using your last confirmed unlock'**
+  String get premiumUnlockOfflineCacheTitle;
+
+  /// No description provided for @premiumUnlockOfflineCacheBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The store is unavailable right now, so the app is using your last confirmed premium unlock cache.'**
+  String get premiumUnlockOfflineCacheBody;
+
+  /// No description provided for @premiumUnlockFreeTierTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get premiumUnlockFreeTierTitle;
+
+  /// No description provided for @premiumUnlockFreeTierLineGenerator.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic Generator, chord display, inversions, slash bass, and core metronome'**
+  String get premiumUnlockFreeTierLineGenerator;
+
+  /// No description provided for @premiumUnlockFreeTierLineAnalyzer.
+  ///
+  /// In en, this message translates to:
+  /// **'Conservative Analyzer with confidence and ambiguity warnings'**
+  String get premiumUnlockFreeTierLineAnalyzer;
+
+  /// No description provided for @premiumUnlockFreeTierLineMetronome.
+  ///
+  /// In en, this message translates to:
+  /// **'Language, theme, setup assistant, and standard practice settings'**
+  String get premiumUnlockFreeTierLineMetronome;
+
+  /// No description provided for @premiumUnlockPremiumTierTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium unlock'**
+  String get premiumUnlockPremiumTierTitle;
+
+  /// No description provided for @premiumUnlockPremiumLineSmartGenerator.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Generator mode for progression-aware generation in selected keys'**
+  String get premiumUnlockPremiumLineSmartGenerator;
+
+  /// No description provided for @premiumUnlockPremiumLineHarmonyColors.
+  ///
+  /// In en, this message translates to:
+  /// **'Secondary dominants, substitute dominants, modal interchange, and advanced tensions'**
+  String get premiumUnlockPremiumLineHarmonyColors;
+
+  /// No description provided for @premiumUnlockPremiumLineAdvancedSmartControls.
+  ///
+  /// In en, this message translates to:
+  /// **'Modulation intensity, jazz preset, and source profile controls for Smart Generator'**
+  String get premiumUnlockPremiumLineAdvancedSmartControls;
+
+  /// No description provided for @premiumUnlockBuyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock permanently ({priceLabel})'**
+  String premiumUnlockBuyButton(Object priceLabel);
+
+  /// No description provided for @premiumUnlockBuyButtonUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock permanently'**
+  String get premiumUnlockBuyButtonUnavailable;
+
+  /// No description provided for @premiumUnlockRestoreButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore purchase'**
+  String get premiumUnlockRestoreButton;
+
+  /// No description provided for @premiumUnlockKeepFreeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep using free'**
+  String get premiumUnlockKeepFreeButton;
+
+  /// No description provided for @premiumUnlockStoreFallbackBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Store product info is not available right now. Free features keep working, and you can retry or restore later.'**
+  String get premiumUnlockStoreFallbackBody;
+
+  /// No description provided for @premiumUnlockStorePriceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Price comes from the store. The app does not hardcode a fixed price.'**
+  String get premiumUnlockStorePriceHint;
+
+  /// No description provided for @premiumUnlockStoreUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Store unavailable'**
+  String get premiumUnlockStoreUnavailableTitle;
+
+  /// No description provided for @premiumUnlockStoreUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The store connection is unavailable right now. Free features still work.'**
+  String get premiumUnlockStoreUnavailableBody;
+
+  /// No description provided for @premiumUnlockProductUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Product not ready'**
+  String get premiumUnlockProductUnavailableTitle;
+
+  /// No description provided for @premiumUnlockProductUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium product info is unavailable right now. Please try again later.'**
+  String get premiumUnlockProductUnavailableBody;
+
+  /// No description provided for @premiumUnlockPurchaseSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium unlocked'**
+  String get premiumUnlockPurchaseSuccessTitle;
+
+  /// No description provided for @premiumUnlockPurchaseSuccessBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your permanent premium unlock is now active on this device.'**
+  String get premiumUnlockPurchaseSuccessBody;
+
+  /// No description provided for @premiumUnlockRestoreSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase restored'**
+  String get premiumUnlockRestoreSuccessTitle;
+
+  /// No description provided for @premiumUnlockRestoreSuccessBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your premium unlock was restored from the store.'**
+  String get premiumUnlockRestoreSuccessBody;
+
+  /// No description provided for @premiumUnlockRestoreNotFoundTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to restore'**
+  String get premiumUnlockRestoreNotFoundTitle;
+
+  /// No description provided for @premiumUnlockRestoreNotFoundBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching premium unlock was found for this store account.'**
+  String get premiumUnlockRestoreNotFoundBody;
+
+  /// No description provided for @premiumUnlockPurchaseCancelledTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase canceled'**
+  String get premiumUnlockPurchaseCancelledTitle;
+
+  /// No description provided for @premiumUnlockPurchaseCancelledBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No charge was made. Free features are still available.'**
+  String get premiumUnlockPurchaseCancelledBody;
+
+  /// No description provided for @premiumUnlockPurchasePendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase pending'**
+  String get premiumUnlockPurchasePendingTitle;
+
+  /// No description provided for @premiumUnlockPurchasePendingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The store marked this purchase as pending. Premium unlock will activate after confirmation.'**
+  String get premiumUnlockPurchasePendingBody;
+
+  /// No description provided for @premiumUnlockPurchaseFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase failed'**
+  String get premiumUnlockPurchaseFailedTitle;
+
+  /// No description provided for @premiumUnlockPurchaseFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The purchase could not be completed. Please try again later.'**
+  String get premiumUnlockPurchaseFailedBody;
+
+  /// No description provided for @premiumUnlockAlreadyOwned.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium unlocked'**
+  String get premiumUnlockAlreadyOwned;
+
+  /// No description provided for @premiumUnlockAlreadyOwnedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Already unlocked'**
+  String get premiumUnlockAlreadyOwnedTitle;
+
+  /// No description provided for @premiumUnlockAlreadyOwnedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This store account already has the premium unlock.'**
+  String get premiumUnlockAlreadyOwnedBody;
+
+  /// No description provided for @premiumUnlockHighlightSmartGenerator.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Generator mode and its deeper progression controls are part of the premium unlock.'**
+  String get premiumUnlockHighlightSmartGenerator;
+
+  /// No description provided for @premiumUnlockHighlightAdvancedHarmony.
+  ///
+  /// In en, this message translates to:
+  /// **'Non-diatonic color options and advanced tensions are part of the premium unlock.'**
+  String get premiumUnlockHighlightAdvancedHarmony;
+
+  /// No description provided for @premiumUnlockCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium unlock'**
+  String get premiumUnlockCardTitle;
+
+  /// No description provided for @premiumUnlockCardBodyUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Your one-time premium unlock is active.'**
+  String get premiumUnlockCardBodyUnlocked;
+
+  /// No description provided for @premiumUnlockCardBodyLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Smart Generator and advanced harmonic color controls with one purchase.'**
+  String get premiumUnlockCardBodyLocked;
+
+  /// No description provided for @premiumUnlockCardButton.
+  ///
+  /// In en, this message translates to:
+  /// **'View premium'**
+  String get premiumUnlockCardButton;
+
+  /// No description provided for @premiumUnlockGeneratorHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Generator and advanced harmonic colors unlock with a one-time premium purchase.'**
+  String get premiumUnlockGeneratorHint;
+
+  /// No description provided for @premiumUnlockSettingsHintTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium controls'**
+  String get premiumUnlockSettingsHintTitle;
+
+  /// No description provided for @premiumUnlockSettingsHintBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Generator, non-diatonic color controls, and advanced tensions are part of the one-time premium unlock.'**
+  String get premiumUnlockSettingsHintBody;
 }
 
 class _AppLocalizationsDelegate

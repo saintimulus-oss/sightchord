@@ -5,6 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chordest/app.dart';
 import 'package:chordest/audio/harmony_audio_models.dart';
 import 'package:chordest/audio/harmony_audio_service.dart';
+import 'package:chordest/billing/billing_controller.dart';
+import 'package:chordest/billing/billing_models.dart';
+import 'package:chordest/billing/billing_store.dart';
 import 'package:chordest/l10n/app_localizations.dart';
 import 'package:chordest/music/chord_anchor_loop.dart';
 import 'package:chordest/music/chord_theory.dart';
@@ -236,6 +239,7 @@ void main() {
     WidgetTester tester,
     PracticeSettings settings, {
     required HarmonyAudioService harmonyAudioService,
+    BillingController? billingController,
     bool completeGuidedSetup = true,
   }) async {
     final resolvedSettings = completeGuidedSetup
@@ -246,10 +250,46 @@ void main() {
         : settings;
     final controller = AppSettingsController(initialSettings: resolvedSettings);
     await tester.pumpWidget(
-      MyApp(controller: controller, harmonyAudioService: harmonyAudioService),
+      MyApp(
+        controller: controller,
+        harmonyAudioService: harmonyAudioService,
+        billingController: billingController,
+      ),
     );
     await tester.pumpAndSettle();
     return controller;
+  }
+
+  Future<AppSettingsController> pumpMainMenuWithPremiumUnlock(
+    WidgetTester tester,
+    PracticeSettings settings, {
+    bool completeGuidedSetup = true,
+  }) async {
+    final billingController = BillingController.noop(
+      store: _TestBillingStore(
+        snapshot: BillingStoreSnapshot(
+          entitlements: <AppEntitlement, BillingEntitlementRecord>{
+            AppEntitlement.premiumUnlock: BillingEntitlementRecord(
+              entitlement: AppEntitlement.premiumUnlock,
+              productId: kPremiumUnlockProductId,
+              isActive: true,
+              source: BillingEntitlementSource.purchase,
+              updatedAt: DateTime(2026, 3, 25, 9),
+              lastVerifiedAt: DateTime(2026, 3, 25, 9),
+              purchaseId: 'test-premium',
+            ),
+          },
+          lastSyncAt: DateTime(2026, 3, 25, 9),
+        ),
+      ),
+    );
+    return pumpMainMenuWithAudioService(
+      tester,
+      settings,
+      billingController: billingController,
+      harmonyAudioService: HarmonyAudioService(),
+      completeGuidedSetup: completeGuidedSetup,
+    );
   }
 
   Future<void> openChordGenerator(WidgetTester tester) async {
@@ -360,12 +400,28 @@ void main() {
     WidgetTester tester,
     PracticeSettings settings, {
     required HarmonyAudioService harmonyAudioService,
+    BillingController? billingController,
     bool completeGuidedSetup = true,
   }) async {
     final controller = await pumpMainMenuWithAudioService(
       tester,
       settings,
       harmonyAudioService: harmonyAudioService,
+      billingController: billingController,
+      completeGuidedSetup: completeGuidedSetup,
+    );
+    await openChordGenerator(tester);
+    return controller;
+  }
+
+  Future<AppSettingsController> pumpAppWithPremiumUnlock(
+    WidgetTester tester,
+    PracticeSettings settings, {
+    bool completeGuidedSetup = true,
+  }) async {
+    final controller = await pumpMainMenuWithPremiumUnlock(
+      tester,
+      settings,
       completeGuidedSetup: completeGuidedSetup,
     );
     await openChordGenerator(tester);
@@ -840,6 +896,31 @@ void main() {
     expect(controller.settings.metronomeEnabled, isFalse);
   });
 
+  testWidgets('main menu settings can open the premium paywall safely', (
+    WidgetTester tester,
+  ) async {
+    await pumpMainMenuWithSettings(tester, PracticeSettings());
+
+    await openMainMenuSettings(tester);
+
+    expect(find.byKey(const ValueKey('main-premium-open-button')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('main-premium-restore-button')),
+      findsOneWidget,
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('main-premium-open-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('main-premium-open-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('premium-buy-button')), findsOneWidget);
+    expect(find.byKey(const ValueKey('premium-restore-button')), findsOneWidget);
+    expect(find.byKey(const ValueKey('premium-close-button')), findsOneWidget);
+  });
+
   testWidgets('hides Roman-numeral tension controls in free mode', (
     WidgetTester tester,
   ) async {
@@ -1062,9 +1143,9 @@ void main() {
   );
 
   testWidgets(
-    'advanced smart-generator controls sync back into settings state',
+    'premium users can change advanced smart-generator controls',
     (WidgetTester tester) async {
-      final controller = await pumpAppWithController(
+      final controller = await pumpAppWithPremiumUnlock(
         tester,
         PracticeSettings(activeKeys: const {'C'}, smartGeneratorMode: true),
       );
@@ -3195,9 +3276,18 @@ void main() {
       PracticeSettings(language: AppLanguage.ko),
     );
 
-    expect(find.text('\uCF54\uB4DC \uC0DD\uC131\uAE30'), findsOneWidget);
+    expect(find.text('Chordest \uC0DD\uC131\uAE30'), findsOneWidget);
     expect(find.text('\uCF54\uB4DC \uBD84\uC11D\uAE30'), findsOneWidget);
-    expect(find.text('\uD654\uC131 \uD559\uC2B5'), findsOneWidget);
+    expect(
+      find.text(
+        'Chordest\uC5D0\uC11C \uB2E4\uC74C \uCF54\uB4DC \uB8E8\uD504\uB97C '
+        '\uB9CC\uB4E4\uACE0, \uD544\uC694\uD560 \uB54C\uB9CC Analyzer\uB85C '
+        '\uC2E0\uC911\uD55C \uD654\uC131 \uD574\uC11D\uC744 \uD655\uC778\uD558'
+        '\uC138\uC694.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('\uD654\uC131 \uD559\uC2B5'), findsNothing);
     expect(find.text('\uC0DD\uC131\uAE30 \uC5F4\uAE30'), findsNothing);
     expect(find.text('\uBD84\uC11D\uAE30 \uC5F4\uAE30'), findsNothing);
     expect(find.text('Open Generator'), findsNothing);
@@ -3252,4 +3342,25 @@ void main() {
     expect(find.text('\u7BC0\u62CD\u5668'), findsWidgets);
     expect(find.text('\u7BC0\u62CD\u5668\u97F3\u8272'), findsOneWidget);
   });
+}
+
+class _TestBillingStore extends BillingStore {
+  _TestBillingStore({required this.snapshot})
+    : super(
+        preferencesLoader: _unsupportedTestPreferencesLoader,
+      );
+
+  BillingStoreSnapshot snapshot;
+
+  static Future<SharedPreferences> _unsupportedTestPreferencesLoader() {
+    throw UnsupportedError('Widget tests use the in-memory billing snapshot.');
+  }
+
+  @override
+  Future<BillingStoreSnapshot> loadSnapshot() async => snapshot;
+
+  @override
+  Future<void> saveSnapshot(BillingStoreSnapshot nextSnapshot) async {
+    snapshot = nextSnapshot;
+  }
 }

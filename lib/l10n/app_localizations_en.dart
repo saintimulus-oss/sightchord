@@ -673,6 +673,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Space: next chord  Enter: start or pause autoplay  Up/Down: adjust BPM';
 
   @override
+  String get currentChord => 'Current Chord';
+
+  @override
   String get nextChord => 'Next Chord';
 
   @override
@@ -1006,14 +1009,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mainMenuIntro =>
-      'Practice chords, analyze progressions, and study harmony in one place.';
+      'Generate your next chord loop in Chordest, then use Analyzer for a cautious harmony read when you need context.';
 
   @override
-  String get mainMenuGeneratorTitle => 'Chord Generator';
+  String get mainMenuGeneratorTitle => 'Chordest Generator';
 
   @override
   String get mainMenuGeneratorDescription =>
-      'Generate focused chord prompts with smart motion and voicing support.';
+      'Start with a playable chord loop, voicing support, and quick practice controls.';
 
   @override
   String get openGenerator => 'Start Practice';
@@ -1026,7 +1029,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mainMenuAnalyzerDescription =>
-      'Read a progression for likely keys, Roman numerals, and harmonic function.';
+      'Check likely keys, Roman numerals, and warnings with a conservative progression read.';
 
   @override
   String get mainMenuStudyHarmonyTitle => 'Study Harmony';
@@ -1999,7 +2002,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chordAnalyzerSubtitle =>
-      'Enter a progression to see likely keys, Roman numerals, and harmonic function.';
+      'Paste a progression to get a conservative read of likely keys, Roman numerals, and harmonic function.';
 
   @override
   String get chordAnalyzerInputLabel => 'Chord progression';
@@ -2009,7 +2012,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chordAnalyzerInputHelper =>
-      'Use spaces, |, or commas between chords. Commas inside parentheses stay in the same chord.\n\nUse ? for an unknown chord slot. The analyzer will infer the most natural fill from context and suggest alternatives when the reading is ambiguous. Variation generation can also reharmonize that slot more freely.\n\nLowercase roots, slash bass, sus/alt/add forms, and tensions like C7(b9, #11) are supported.\n\nOn touch devices, use the chord pad or switch to ABC input when you want free typing.';
+      'Use spaces, |, or commas between chords. Commas inside parentheses stay in the same chord.\n\nUse ? for an unknown chord slot. The analyzer will infer the most natural fill from context and surface alternatives when the reading is ambiguous.\n\nLowercase roots, slash bass, sus/alt/add forms, and tensions like C7(b9, #11) are supported.\n\nOn touch devices, use the chord pad or switch to ABC input when you want free typing.';
 
   @override
   String get chordAnalyzerInputHelpTitle => 'Input tips';
@@ -2054,7 +2057,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chordAnalyzerInitialBody =>
-      'Enter a progression such as Dm7, G7 | ? Am or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, inferred fills, and a short summary.';
+      'Enter a progression such as Dm7, G7 | ? Am or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, warnings, inferred fills, and a short summary.';
 
   @override
   String get chordAnalyzerPlaceholderExplanation =>
@@ -4080,7 +4083,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get harmonySoundProfileSelectionHelp =>
-      'Choose a neutral preview, follow the active Study Harmony track, or pin one track\'s playback feel.';
+      'Choose a balanced default sound or pin one playback character for pop, jazz, or classical practice.';
 
   @override
   String get harmonySoundProfileSelectionNeutral => 'Neutral shared piano';
@@ -5259,4 +5262,173 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get showChordTextAssistHelp =>
       'Adds a short text explanation for chord quality and tensions.';
+
+  @override
+  String get premiumUnlockTitle => 'Chordest Premium';
+
+  @override
+  String get premiumUnlockBody =>
+      'A one-time purchase permanently unlocks Smart Generator and advanced harmonic color controls. Free Generator, Analyzer, metronome, and language support stay available.';
+
+  @override
+  String get premiumUnlockRequestedFeatureTitle => 'Requested in this flow';
+
+  @override
+  String get premiumUnlockOfflineCacheTitle =>
+      'Using your last confirmed unlock';
+
+  @override
+  String get premiumUnlockOfflineCacheBody =>
+      'The store is unavailable right now, so the app is using your last confirmed premium unlock cache.';
+
+  @override
+  String get premiumUnlockFreeTierTitle => 'Free';
+
+  @override
+  String get premiumUnlockFreeTierLineGenerator =>
+      'Basic Generator, chord display, inversions, slash bass, and core metronome';
+
+  @override
+  String get premiumUnlockFreeTierLineAnalyzer =>
+      'Conservative Analyzer with confidence and ambiguity warnings';
+
+  @override
+  String get premiumUnlockFreeTierLineMetronome =>
+      'Language, theme, setup assistant, and standard practice settings';
+
+  @override
+  String get premiumUnlockPremiumTierTitle => 'Premium unlock';
+
+  @override
+  String get premiumUnlockPremiumLineSmartGenerator =>
+      'Smart Generator mode for progression-aware generation in selected keys';
+
+  @override
+  String get premiumUnlockPremiumLineHarmonyColors =>
+      'Secondary dominants, substitute dominants, modal interchange, and advanced tensions';
+
+  @override
+  String get premiumUnlockPremiumLineAdvancedSmartControls =>
+      'Modulation intensity, jazz preset, and source profile controls for Smart Generator';
+
+  @override
+  String premiumUnlockBuyButton(Object priceLabel) {
+    return 'Unlock permanently ($priceLabel)';
+  }
+
+  @override
+  String get premiumUnlockBuyButtonUnavailable => 'Unlock permanently';
+
+  @override
+  String get premiumUnlockRestoreButton => 'Restore purchase';
+
+  @override
+  String get premiumUnlockKeepFreeButton => 'Keep using free';
+
+  @override
+  String get premiumUnlockStoreFallbackBody =>
+      'Store product info is not available right now. Free features keep working, and you can retry or restore later.';
+
+  @override
+  String get premiumUnlockStorePriceHint =>
+      'Price comes from the store. The app does not hardcode a fixed price.';
+
+  @override
+  String get premiumUnlockStoreUnavailableTitle => 'Store unavailable';
+
+  @override
+  String get premiumUnlockStoreUnavailableBody =>
+      'The store connection is unavailable right now. Free features still work.';
+
+  @override
+  String get premiumUnlockProductUnavailableTitle => 'Product not ready';
+
+  @override
+  String get premiumUnlockProductUnavailableBody =>
+      'Premium product info is unavailable right now. Please try again later.';
+
+  @override
+  String get premiumUnlockPurchaseSuccessTitle => 'Premium unlocked';
+
+  @override
+  String get premiumUnlockPurchaseSuccessBody =>
+      'Your permanent premium unlock is now active on this device.';
+
+  @override
+  String get premiumUnlockRestoreSuccessTitle => 'Purchase restored';
+
+  @override
+  String get premiumUnlockRestoreSuccessBody =>
+      'Your premium unlock was restored from the store.';
+
+  @override
+  String get premiumUnlockRestoreNotFoundTitle => 'Nothing to restore';
+
+  @override
+  String get premiumUnlockRestoreNotFoundBody =>
+      'No matching premium unlock was found for this store account.';
+
+  @override
+  String get premiumUnlockPurchaseCancelledTitle => 'Purchase canceled';
+
+  @override
+  String get premiumUnlockPurchaseCancelledBody =>
+      'No charge was made. Free features are still available.';
+
+  @override
+  String get premiumUnlockPurchasePendingTitle => 'Purchase pending';
+
+  @override
+  String get premiumUnlockPurchasePendingBody =>
+      'The store marked this purchase as pending. Premium unlock will activate after confirmation.';
+
+  @override
+  String get premiumUnlockPurchaseFailedTitle => 'Purchase failed';
+
+  @override
+  String get premiumUnlockPurchaseFailedBody =>
+      'The purchase could not be completed. Please try again later.';
+
+  @override
+  String get premiumUnlockAlreadyOwned => 'Premium unlocked';
+
+  @override
+  String get premiumUnlockAlreadyOwnedTitle => 'Already unlocked';
+
+  @override
+  String get premiumUnlockAlreadyOwnedBody =>
+      'This store account already has the premium unlock.';
+
+  @override
+  String get premiumUnlockHighlightSmartGenerator =>
+      'Smart Generator mode and its deeper progression controls are part of the premium unlock.';
+
+  @override
+  String get premiumUnlockHighlightAdvancedHarmony =>
+      'Non-diatonic color options and advanced tensions are part of the premium unlock.';
+
+  @override
+  String get premiumUnlockCardTitle => 'Premium unlock';
+
+  @override
+  String get premiumUnlockCardBodyUnlocked =>
+      'Your one-time premium unlock is active.';
+
+  @override
+  String get premiumUnlockCardBodyLocked =>
+      'Unlock Smart Generator and advanced harmonic color controls with one purchase.';
+
+  @override
+  String get premiumUnlockCardButton => 'View premium';
+
+  @override
+  String get premiumUnlockGeneratorHint =>
+      'Smart Generator and advanced harmonic colors unlock with a one-time premium purchase.';
+
+  @override
+  String get premiumUnlockSettingsHintTitle => 'Premium controls';
+
+  @override
+  String get premiumUnlockSettingsHintBody =>
+      'Smart Generator, non-diatonic color controls, and advanced tensions are part of the one-time premium unlock.';
 }

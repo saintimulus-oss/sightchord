@@ -6,6 +6,12 @@ import json
 
 
 ROOT = Path(__file__).resolve().parents[1]
+ANDROID_SIGNING_ENV_VARS = (
+    "ANDROID_KEYSTORE_PATH",
+    "ANDROID_KEYSTORE_PASSWORD",
+    "ANDROID_KEY_ALIAS",
+    "ANDROID_KEY_PASSWORD",
+)
 
 
 @dataclass
@@ -24,6 +30,32 @@ def file_exists(path: str, label: str) -> CheckResult:
     return CheckResult(label, target.exists(), path if target.exists() else f"Missing: {path}")
 
 
+def android_signing_configured() -> CheckResult:
+    key_properties_path = ROOT / "android/key.properties"
+    if key_properties_path.exists():
+        return CheckResult(
+            "Local Android release signing",
+            True,
+            "android/key.properties present",
+        )
+
+    missing = [
+        name for name in ANDROID_SIGNING_ENV_VARS if not __import__("os").environ.get(name, "").strip()
+    ]
+    if not missing:
+        return CheckResult(
+            "Local Android release signing",
+            True,
+            "ANDROID_KEYSTORE_PATH / ANDROID_KEYSTORE_PASSWORD / ANDROID_KEY_ALIAS / ANDROID_KEY_PASSWORD set",
+        )
+
+    return CheckResult(
+        "Local Android release signing",
+        False,
+        "Missing android/key.properties and signing env vars",
+    )
+
+
 def make_checks() -> list[CheckResult]:
     checks: list[CheckResult] = []
 
@@ -40,6 +72,13 @@ def make_checks() -> list[CheckResult]:
     checks.append(file_exists("docs/mobile-launch-runbook.md", "Mobile launch runbook"))
     checks.append(file_exists("docs/store-submission-checklist.md", "Store submission checklist"))
     checks.append(file_exists("docs/device-qa-matrix.md", "Device QA matrix"))
+    checks.append(android_signing_configured())
+    checks.append(
+        file_exists(
+            "store/assets/google-play/feature-graphic/feature-graphic.png",
+            "Google Play feature graphic",
+        )
+    )
     checks.append(file_exists("store/google-play/data-safety-notes.md", "Google Play Data safety draft"))
     checks.append(file_exists("store/google-play/app-content-notes.md", "Google Play App content draft"))
     checks.append(file_exists("store/google-play/content-rating-notes.md", "Google Play content rating draft"))
@@ -182,7 +221,7 @@ def main() -> int:
     print(markdown, end="")
     print(f"\nWrote {report_path}")
     print(f"Wrote {json_path}")
-    return 0
+    return 0 if all(check.ok for check in checks) else 1
 
 
 if __name__ == "__main__":

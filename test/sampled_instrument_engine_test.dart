@@ -55,6 +55,7 @@ void main() {
           'setPlayerMode:${_expectedPlayerMode()}',
           'setReleaseMode:ReleaseMode.stop',
           'setSourceAsset:piano/salamander_essential/samples/C4v10.flac',
+          'seek:0',
           'setVolume:0.0',
           'resume',
           'setPlaybackRate:0.5',
@@ -67,10 +68,12 @@ void main() {
           'setPlayerMode:${_expectedPlayerMode()}',
           'setReleaseMode:ReleaseMode.stop',
           'setSourceAsset:piano/salamander_essential/samples/C4v10.flac',
+          'seek:0',
           'setVolume:0.0',
           'resume',
           'setPlaybackRate:0.5',
           'stop',
+          'seek:0',
           'setVolume:0.72',
           'resume',
         ]);
@@ -97,7 +100,61 @@ void main() {
       );
       await voice.start(volume: 0.64);
 
-      expect(backend.calls, <String>['setVolume:0.64', 'resume']);
+      expect(backend.calls, <String>['seek:0', 'setVolume:0.64', 'resume']);
+    });
+
+    test('rewinds before replaying a stopped asset on the same voice', () async {
+      final backend = _ResumeNeedsSeekBackend();
+      final voice = await AudioPlayerVoiceFactory(
+        backendFactory: () => backend,
+      ).createVoice();
+
+      await voice.prepare(
+        assetPath: 'assets/piano/salamander_essential/samples/C4v10.flac',
+        playbackRate: 1.0,
+      );
+      await voice.start(volume: 0.6);
+      await voice.stop();
+
+      await expectLater(voice.start(volume: 0.55), completes);
+      final replayTail = backend.calls.sublist(backend.calls.length - 3);
+      expect(
+        replayTail,
+        <String>['seek:0', 'setVolume:0.55', 'resume'],
+      );
+    });
+
+    test('rewinds before muted playback-rate priming after a stop', () async {
+      final backend = _ResumeNeedsSeekBackend();
+      final voice = await AudioPlayerVoiceFactory(
+        backendFactory: () => backend,
+      ).createVoice();
+
+      await voice.prepare(
+        assetPath: 'assets/piano/salamander_essential/samples/C4v10.flac',
+        playbackRate: 1.0,
+      );
+      await voice.start(volume: 0.6);
+      await voice.stop();
+
+      await expectLater(
+        voice.prepare(
+          assetPath: 'assets/piano/salamander_essential/samples/C4v10.flac',
+          playbackRate: 0.75,
+        ),
+        completes,
+      );
+      final primingTail = backend.calls.sublist(backend.calls.length - 5);
+      expect(
+        primingTail,
+        <String>[
+          'seek:0',
+          'setVolume:0.0',
+          'resume',
+          'setPlaybackRate:0.75',
+          'stop',
+        ],
+      );
     });
   });
 
@@ -348,6 +405,11 @@ class _FakeAudioPlayerBackend implements AudioPlayerBackend {
   }
 
   @override
+  Future<void> seek(Duration position) async {
+    calls.add('seek:${position.inMilliseconds}');
+  }
+
+  @override
   Future<void> setPlaybackRate(double playbackRate) async {
     calls.add('setPlaybackRate:$playbackRate');
   }
@@ -375,6 +437,32 @@ class _FakeAudioPlayerBackend implements AudioPlayerBackend {
   @override
   Future<void> stop() async {
     calls.add('stop');
+  }
+}
+
+class _ResumeNeedsSeekBackend extends _FakeAudioPlayerBackend {
+  bool _requiresSeekBeforeResume = false;
+
+  @override
+  Future<void> resume() async {
+    if (_requiresSeekBeforeResume) {
+      throw StateError('resume called without rewinding after stop');
+    }
+    await super.resume();
+  }
+
+  @override
+  Future<void> seek(Duration position) async {
+    await super.seek(position);
+    if (position == Duration.zero) {
+      _requiresSeekBeforeResume = false;
+    }
+  }
+
+  @override
+  Future<void> stop() async {
+    await super.stop();
+    _requiresSeekBeforeResume = true;
   }
 }
 

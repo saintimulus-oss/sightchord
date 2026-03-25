@@ -362,7 +362,7 @@ void main() {
     );
   });
 
-  testWidgets('generated analyzer variations can be previewed and applied', (
+  testWidgets('release analyzer keeps variation actions hidden', (
     WidgetTester tester,
   ) async {
     addTearDown(() => restoreDisplay(tester));
@@ -379,35 +379,9 @@ void main() {
 
     expect(
       find.byKey(const ValueKey('analyzer-generate-variations-button')),
-      findsOneWidget,
+      findsNothing,
     );
-
-    await tester.tap(
-      find.byKey(const ValueKey('analyzer-generate-variations-button')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Natural variations'), findsOneWidget);
-    expect(
-      find.byKey(const ValueKey('analyzer-variation-cadentialColor')),
-      findsOneWidget,
-    );
-    expect(find.text('Dm7b5 Db7 Cmaj9'), findsOneWidget);
-    expect(find.text('Fm7 Bb7 C6/9'), findsOneWidget);
-
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('analyzer-apply-variation-cadentialColor')),
-    );
-    await tester.tap(
-      find.byKey(const ValueKey('analyzer-apply-variation-cadentialColor')),
-    );
-    await tester.pump();
-    await tester.pumpAndSettle();
-
-    final field = tester.widget<TextField>(
-      find.byKey(const ValueKey('analyzer-input-field')),
-    );
-    expect(field.controller!.text, 'Dm7b5 Db7 Cmaj9');
+    expect(find.text('Natural variations'), findsNothing);
   });
 
   testWidgets(
@@ -586,13 +560,8 @@ void main() {
         findsWidgets,
       );
 
-      await tester.tap(
-        find.byKey(const ValueKey('analyzer-generate-variations-button')),
-      );
-      await tester.pumpAndSettle();
-
       expect(
-        find.byKey(const ValueKey('analyzer-variation-colorLift')),
+        find.byKey(const ValueKey('analyzer-generate-variations-button')),
         findsNothing,
       );
     },

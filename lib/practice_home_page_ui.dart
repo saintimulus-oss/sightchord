@@ -8,7 +8,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
       settings: _settings,
       onClose: () => Navigator.of(context).maybePop(),
       onRunSetupAssistant: _openSetupAssistantFromSettings,
-      onOpenStudyHarmony: widget.onOpenStudyHarmony,
+      onOpenStudyHarmony: _studyHarmonyEntryPoint,
       onOpenAdvancedSettings: _openAdvancedSettings,
       onApplySettings: (nextSettings, {bool reseed = false}) {
         _applySettings(nextSettings, reseed: reseed);
@@ -932,6 +932,84 @@ extension _PracticeHomePageUi on _MyHomePageState {
     );
   }
 
+  Widget _buildTransportStripListenable(
+    BuildContext context, {
+    required bool compact,
+  }) {
+    return ListenableBuilder(
+      listenable: _practiceTransportController,
+      builder: (context, _) {
+        return _buildTransportStrip(context, compact: compact);
+      },
+    );
+  }
+
+  Widget _buildChordDisplaySection(
+    BuildContext context, {
+    required bool compactLayout,
+    required String previousDisplay,
+    required String currentDisplay,
+    required String nextDisplay,
+    required String lookAheadDisplay,
+    required PracticeChordInsight currentInsight,
+    required PracticeChordInsight nextInsight,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    return PracticeChordDisplaySection(
+      surfaceKey: _chordSwipeSurfaceKey,
+      previousLabel: previousDisplay,
+      currentLabel: currentDisplay,
+      nextLabel: nextDisplay,
+      lookAheadLabel: lookAheadDisplay,
+      compact: compactLayout,
+      performanceMode:
+          _settings.voicingDisplayMode == VoicingDisplayMode.performance,
+      statusLabel: _currentStatusLabel(l10n),
+      currentInsight: currentInsight,
+      nextInsight: nextInsight,
+      playing: _autoRunning,
+      beatsPerBar: _beatsPerBar,
+      currentBeat: _currentBeat,
+      prioritizeControls: _settings.melodyGenerationEnabled,
+      availableBackSteps: _practiceHistory.length,
+      onTapAdvance: _performManualAdvanceChord,
+      onTapGoBack: () => _restorePreviousChord(playAutoPreview: true),
+      onSwipeAdvance: () => _performManualAdvanceChord(playAutoPreview: false),
+      onSwipeGoBack: () => _restorePreviousChord(playAutoPreview: false),
+      controls: _buildGeneratorTransportAndBpmRow(
+        context,
+        compact: compactLayout,
+      ),
+    );
+  }
+
+  Widget _buildChordDisplaySectionListenable(
+    BuildContext context, {
+    required bool compactLayout,
+    required String previousDisplay,
+    required String currentDisplay,
+    required String nextDisplay,
+    required String lookAheadDisplay,
+    required PracticeChordInsight currentInsight,
+    required PracticeChordInsight nextInsight,
+  }) {
+    return ListenableBuilder(
+      listenable: _practiceTransportController,
+      builder: (context, _) {
+        return _buildChordDisplaySection(
+          context,
+          compactLayout: compactLayout,
+          previousDisplay: previousDisplay,
+          currentDisplay: currentDisplay,
+          nextDisplay: nextDisplay,
+          lookAheadDisplay: lookAheadDisplay,
+          currentInsight: currentInsight,
+          nextInsight: nextInsight,
+        );
+      },
+    );
+  }
+
   Widget _buildCompactGeneratorQuickSettingsPanel(BuildContext context) {
     return _buildGeneratorQuickSettingsPanel(context);
   }
@@ -1035,6 +1113,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
                   chipKey: const ValueKey('smart-generator-mode-toggle'),
                   label: l10n.smartGeneratorMode,
                   selected: _settings.smartGeneratorMode,
+                  locked: !_isPremiumUnlocked,
                   onSelected: _usesKeyMode ? _toggleQuickSmartGenerator : null,
                 ),
                 _GeneratorQuickSettingChip(
@@ -1054,6 +1133,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
                     chipKey: const ValueKey('non-diatonic-toggle'),
                     label: l10n.nonDiatonic,
                     selected: _hasEnabledNonDiatonicOptions,
+                    locked: !_isPremiumUnlocked,
                     onSelected: _usesKeyMode ? _toggleQuickNonDiatonic : null,
                   ),
                 if (showExpandedGeneratorControls)
@@ -1061,6 +1141,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
                     chipKey: const ValueKey('allow-tensions-toggle'),
                     label: l10n.allowTensions,
                     selected: _settings.allowTensions,
+                    locked: !_isPremiumUnlocked,
                     onSelected: _usesKeyMode ? _toggleQuickTensions : null,
                   ),
                 if (showExpandedGeneratorControls)
@@ -1094,6 +1175,15 @@ extension _PracticeHomePageUi on _MyHomePageState {
               SizedBox(height: compact ? 10 : 12),
               Text(
                 l10n.keyModeRequiredForSmartGenerator,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.35,
+                ),
+              ),
+            ] else if (!_isPremiumUnlocked) ...[
+              SizedBox(height: compact ? 10 : 12),
+              Text(
+                l10n.premiumUnlockGeneratorHint,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                   height: 1.35,
@@ -1183,12 +1273,8 @@ extension _PracticeHomePageUi on _MyHomePageState {
     final nextDisplay = _displaySymbolForEvent(_nextChordEvent);
     final lookAheadDisplay = _displaySymbolForEvent(_lookAheadChordEvent);
     final compactLayout = _usesCompactMobileLayout(context);
-    final currentSectionLabel = _usesKoreanUiCopy(context)
-        ? '현재 코드'
-        : 'Current Chord';
-    final nextSectionLabel = _usesKoreanUiCopy(context)
-        ? '다음 코드'
-        : 'Next Chord';
+    final currentSectionLabel = l10n.currentChord;
+    final nextSectionLabel = l10n.nextChord;
     final currentInsight = _buildChordInsight(
       l10n,
       _currentChordEvent,
@@ -1237,39 +1323,20 @@ extension _PracticeHomePageUi on _MyHomePageState {
             compactLayout: compactLayout,
             practiceSessionInitialized: _practiceSessionInitialized,
             showFirstRunWelcomeCard: _showFirstRunWelcomeCard,
-            transportStrip: _buildTransportStrip(
+            transportStrip: _buildTransportStripListenable(
               context,
               compact: compactLayout,
             ),
             firstRunWelcomeCard: _buildFirstRunWelcomeCard(context),
-            chordDisplaySection: PracticeChordDisplaySection(
-              surfaceKey: _chordSwipeSurfaceKey,
-              previousLabel: previousDisplay,
-              currentLabel: currentDisplay,
-              nextLabel: nextDisplay,
-              lookAheadLabel: lookAheadDisplay,
-              compact: compactLayout,
-              performanceMode:
-                  _settings.voicingDisplayMode ==
-                  VoicingDisplayMode.performance,
-              statusLabel: _currentStatusLabel(l10n),
+            chordDisplaySection: _buildChordDisplaySectionListenable(
+              context,
+              compactLayout: compactLayout,
+              previousDisplay: previousDisplay,
+              currentDisplay: currentDisplay,
+              nextDisplay: nextDisplay,
+              lookAheadDisplay: lookAheadDisplay,
               currentInsight: currentInsight,
               nextInsight: nextInsight,
-              playing: _autoRunning,
-              beatsPerBar: _beatsPerBar,
-              currentBeat: _currentBeat,
-              prioritizeControls: _settings.melodyGenerationEnabled,
-              availableBackSteps: _practiceHistory.length,
-              onTapAdvance: _performManualAdvanceChord,
-              onTapGoBack: () => _restorePreviousChord(playAutoPreview: true),
-              onSwipeAdvance: () =>
-                  _performManualAdvanceChord(playAutoPreview: false),
-              onSwipeGoBack: () =>
-                  _restorePreviousChord(playAutoPreview: false),
-              controls: _buildGeneratorTransportAndBpmRow(
-                context,
-                compact: compactLayout,
-              ),
             ),
             voicingSuggestionsSection: null,
             quickSettingsPanel: _buildGeneratorQuickSettingsPanel(context),
@@ -1840,19 +1907,30 @@ class _GeneratorQuickSettingChip extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onSelected,
+    this.locked = false,
   });
 
   final Key chipKey;
   final String label;
   final bool selected;
   final ValueChanged<bool>? onSelected;
+  final bool locked;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return FilterChip(
       key: chipKey,
-      label: Text(label),
+      label: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (locked) ...[
+            const Icon(Icons.lock_outline_rounded, size: 16),
+            const SizedBox(width: 6),
+          ],
+          Flexible(child: Text(label)),
+        ],
+      ),
       selected: selected,
       showCheckmark: false,
       backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.74),

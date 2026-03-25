@@ -22,7 +22,7 @@ Use this file as a working draft when completing the App content section in Play
 
 - Capture screenshots that clearly show the practice and analyzer surfaces.
 - Review all lesson text and catalog copy for age-sensitive content before submission.
-- If the final launch keeps Study Harmony and analyzer content educational-only, the rating should likely remain low-risk, but complete the official questionnaire directly in the console.
+- If the final launch keeps Chordest and Analyzer educational-only, the rating should likely remain low-risk, but complete the official questionnaire directly in the console.
 
 ## Declarations to revisit if product scope changes
 

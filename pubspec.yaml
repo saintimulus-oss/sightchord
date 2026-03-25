@@ -1,4 +1,4 @@
-﻿name: chordest
+name: chordest
 description: "Chordest: cross-platform chord randomizer for improvisation and harmony practice."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -34,6 +34,8 @@ dependencies:
     sdk: flutter
   audioplayers: ^6.1.0
   file_selector: ^1.0.3
+  in_app_purchase: ^3.2.3
+  in_app_purchase_android: ^0.4.0+8
   intl: ^0.20.2
   path: ^1.9.1
   path_provider: ^2.1.5

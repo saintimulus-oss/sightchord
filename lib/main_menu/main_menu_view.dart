@@ -12,12 +12,9 @@ class MainMenuView extends StatelessWidget {
     required this.generatorSubtitle,
     required this.analyzerTitle,
     required this.analyzerSubtitle,
-    required this.studyHarmonyTitle,
-    required this.studyHarmonySubtitle,
     required this.onOpenSettings,
     required this.onOpenGenerator,
     required this.onOpenAnalyzer,
-    required this.onOpenStudyHarmony,
   });
 
   final String title;
@@ -27,12 +24,9 @@ class MainMenuView extends StatelessWidget {
   final String generatorSubtitle;
   final String analyzerTitle;
   final String analyzerSubtitle;
-  final String studyHarmonyTitle;
-  final String studyHarmonySubtitle;
   final VoidCallback onOpenSettings;
   final VoidCallback onOpenGenerator;
   final VoidCallback onOpenAnalyzer;
-  final VoidCallback onOpenStudyHarmony;
 
   @override
   Widget build(BuildContext context) {
@@ -131,23 +125,6 @@ class MainMenuView extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            maxWidth: _mainMenuContentMaxWidth,
-                          ),
-                          child: _MainActionButton(
-                            icon: Icons.school_rounded,
-                            title: studyHarmonyTitle,
-                            subtitle: studyHarmonySubtitle,
-                            buttonKey: const ValueKey(
-                              'main-open-study-harmony-button',
-                            ),
-                            onPressed: onOpenStudyHarmony,
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),

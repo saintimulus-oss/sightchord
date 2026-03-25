@@ -74,7 +74,7 @@ void main() {
       ko.keysSelectedHelp,
       '\uC120\uD0DD\uD55C \uD0A4\uB294 \uD0A4 \uC778\uC2DD \uB79C\uB364 \uBAA8\uB4DC\uC640 Smart Generator \uBAA8\uB4DC\uC5D0\uC11C \uC0AC\uC6A9\uB429\uB2C8\uB2E4.',
     );
-    expect(ko.mainMenuGeneratorTitle, '\uCF54\uB4DC \uC0DD\uC131\uAE30');
+    expect(ko.mainMenuGeneratorTitle, 'Chordest \uC0DD\uC131\uAE30');
     expect(ko.openAnalyzer, '\uC9C4\uD589 \uBD84\uC11D \uC2DC\uC791');
     expect(ko.chordAnalyzerTitle, '\uCF54\uB4DC \uBD84\uC11D\uAE30');
     expect(ko.chordAnalyzerAnalyze, '\uBD84\uC11D\uD558\uAE30');
@@ -105,6 +105,40 @@ void main() {
     expect(
       ko.pressNextChordToBegin,
       '\uC2DC\uC791\uD558\uB824\uBA74 \uB2E4\uC74C \uCF54\uB4DC\uB97C \uB204\uB974\uC138\uC694',
+    );
+  });
+
+  test('release copy localizes the current chord label and billing error wording', () {
+    expect(AppLocalizationsEn().currentChord, 'Current Chord');
+    expect(AppLocalizationsEs().currentChord, 'Acorde actual');
+    expect(AppLocalizationsJa().currentChord, '\u73FE\u5728\u306E\u30B3\u30FC\u30C9');
+    expect(AppLocalizationsKo().currentChord, '\uD604\uC7AC \uCF54\uB4DC');
+    expect(AppLocalizationsZh().currentChord, '\u76EE\u524D\u548C\u5F26');
+    expect(AppLocalizationsZhHans().currentChord, '\u5F53\u524D\u548C\u5F26');
+
+    expect(
+      AppLocalizationsEn().premiumUnlockProductUnavailableBody,
+      'Premium product info is unavailable right now. Please try again later.',
+    );
+    expect(
+      AppLocalizationsKo().premiumUnlockProductUnavailableBody,
+      '\uC9C0\uAE08\uC740 \uD504\uB9AC\uBBF8\uC5C4 \uC0C1\uD488 \uC815\uBCF4\uB97C \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uC7A0\uC2DC \uD6C4 \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694.',
+    );
+    expect(
+      AppLocalizationsEs().premiumUnlockProductUnavailableBody.contains('Play Console'),
+      isFalse,
+    );
+    expect(
+      AppLocalizationsJa().premiumUnlockProductUnavailableBody.contains('Play Console'),
+      isFalse,
+    );
+    expect(
+      AppLocalizationsZh().premiumUnlockProductUnavailableBody.contains('Play Console'),
+      isFalse,
+    );
+    expect(
+      AppLocalizationsZhHans().premiumUnlockProductUnavailableBody.contains('Play Console'),
+      isFalse,
     );
   });
 

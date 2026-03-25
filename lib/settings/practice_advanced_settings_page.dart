@@ -4,12 +4,16 @@ import 'package:flutter/material.dart';
 
 import '../audio/instrument_library_registry.dart';
 import '../audio/harmony_audio_models.dart';
+import '../billing/billing_scope.dart';
+import '../billing/paywall_sheet.dart';
+import '../billing/premium_feature_access.dart';
 import '../l10n/app_localizations.dart';
 import '../music/anchor_loop_layout.dart';
 import '../music/anchor_loop_planner.dart';
 import '../music/chord_anchor_loop.dart';
 import '../music/chord_formatting.dart';
 import '../music/chord_theory.dart';
+import '../release_feature_flags.dart';
 import '../ui/chordest_ui_tokens.dart';
 import '../widgets/chord_input_editor.dart';
 import 'metronome_custom_sound_service.dart';
@@ -58,6 +62,18 @@ class _PracticeAdvancedSettingsPageState
       widget.metronomeCustomSoundService ?? createMetronomeCustomSoundService();
 
   bool get _usesKeyMode => _settings.usesKeyMode;
+  List<HarmonySoundProfileSelection> get _visibleHarmonySoundProfiles =>
+      kEnableStudyHarmonyEntryPoints
+      ? HarmonySoundProfileSelection.values
+      : HarmonySoundProfileSelection.values
+            .where((value) => value != HarmonySoundProfileSelection.trackAware)
+            .toList(growable: false);
+  HarmonySoundProfileSelection get _selectedVisibleHarmonySoundProfile =>
+      !kEnableStudyHarmonyEntryPoints &&
+          _settings.harmonySoundProfileSelection ==
+              HarmonySoundProfileSelection.trackAware
+      ? HarmonySoundProfileSelection.neutral
+      : _settings.harmonySoundProfileSelection;
   ChordAnchorLoop get _anchorLoop => AnchorLoopLayout.sanitizeLoop(
     loop: _settings.anchorLoop,
     timeSignature: _settings.timeSignature,
@@ -79,10 +95,23 @@ class _PracticeAdvancedSettingsPageState
   }
 
   void _applySettings(PracticeSettings nextSettings, {bool reseed = false}) {
+    final requestedPremium = requestedPremiumFeatures(nextSettings);
+    final resolvedSettings = sanitizePracticeSettingsForEntitlement(
+      nextSettings,
+      premiumUnlocked: _isPremiumUnlocked,
+    );
+    if (!_isPremiumUnlocked && requestedPremium.isNotEmpty) {
+      unawaited(
+        showPremiumPaywallSheet(
+          context,
+          highlightedFeature: requestedPremium.first,
+        ),
+      );
+    }
     setState(() {
-      _settings = nextSettings;
+      _settings = resolvedSettings;
     });
-    widget.onApplySettings(nextSettings, reseed: reseed);
+    widget.onApplySettings(resolvedSettings, reseed: reseed);
   }
 
   void _applyAnchorLoop(ChordAnchorLoop nextLoop) {
@@ -215,6 +244,9 @@ class _PracticeAdvancedSettingsPageState
         ? _accentMetronomeUploadInProgress
         : _primaryMetronomeUploadInProgress;
   }
+
+  bool get _isPremiumUnlocked =>
+      BillingScope.maybeOf(context)?.isPremiumUnlocked ?? false;
 
   void _setMetronomeUploadInProgress({
     required bool accent,
@@ -1056,9 +1088,10 @@ class _PracticeAdvancedSettingsPageState
     required AppLocalizations l10n,
     required PracticeSettingsDispatcher dispatcher,
   }) {
+    final selectedProfile = _selectedVisibleHarmonySoundProfile;
     final soundProfile = trackSoundProfileForSelection(
       l10n,
-      selection: _settings.harmonySoundProfileSelection,
+      selection: selectedProfile,
     );
     final instrumentName = InstrumentLibraryRegistry.byId(
       soundProfile.suggestedInstrumentId,
@@ -1067,14 +1100,14 @@ class _PracticeAdvancedSettingsPageState
       _AdvancedSectionTitle(text: l10n.harmonySoundTitle),
       DropdownButtonFormField<HarmonySoundProfileSelection>(
         key: const ValueKey('harmony-sound-profile-selection-dropdown'),
-        initialValue: _settings.harmonySoundProfileSelection,
+        initialValue: selectedProfile,
         isExpanded: true,
         decoration: InputDecoration(
           border: const OutlineInputBorder(),
           labelText: l10n.harmonySoundProfileSelectionTitle,
           helperText: l10n.harmonySoundProfileSelectionHelp,
         ),
-        items: HarmonySoundProfileSelection.values
+        items: _visibleHarmonySoundProfiles
             .map(
               (value) => DropdownMenuItem<HarmonySoundProfileSelection>(
                 value: value,
@@ -1138,7 +1171,7 @@ class _PracticeAdvancedSettingsPageState
                   ],
                 ),
               ],
-              if (_settings.harmonySoundProfileSelection ==
+              if (selectedProfile ==
                   HarmonySoundProfileSelection.trackAware) ...[
                 const SizedBox(height: 8),
                 Text(
@@ -1371,6 +1404,43 @@ class _PracticeAdvancedSettingsPageState
     required PracticeSettingsDispatcher dispatcher,
   }) {
     return [
+      if (!_isPremiumUnlocked) ...[
+        DecoratedBox(
+          decoration: ChordestUiTokens.innerPanelDecoration(theme),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.premiumUnlockSettingsHintTitle,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  l10n.premiumUnlockSettingsHintBody,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                FilledButton.icon(
+                  onPressed: () => showPremiumPaywallSheet(
+                    context,
+                    highlightedFeature: PremiumFeature.smartGenerator,
+                  ),
+                  icon: const Icon(Icons.workspace_premium_rounded),
+                  label: Text(l10n.premiumUnlockCardButton),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
       if (_usesKeyMode && _settings.smartGeneratorMode) ...[
         _AdvancedSectionTitle(text: l10n.advancedSmartGenerator),
         DropdownButtonFormField<ModulationIntensity>(

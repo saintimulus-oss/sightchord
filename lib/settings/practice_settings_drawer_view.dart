@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../music/chord_formatting.dart';
 import '../music/chord_theory.dart';
 import '../music/notation_presentation.dart';
+import '../release_feature_flags.dart';
 import 'metronome_custom_sound_service.dart';
 import 'practice_setup_models.dart';
 import 'practice_settings_dispatcher.dart';
@@ -45,7 +46,8 @@ class _PracticeSettingsDrawerState extends State<PracticeSettingsDrawer> {
   PracticeSettings get settings => widget.settings;
   VoidCallback get onClose => widget.onClose;
   VoidCallback get onRunSetupAssistant => widget.onRunSetupAssistant;
-  VoidCallback? get onOpenStudyHarmony => widget.onOpenStudyHarmony;
+  VoidCallback? get onOpenStudyHarmony =>
+      kEnableStudyHarmonyEntryPoints ? widget.onOpenStudyHarmony : null;
   VoidCallback get onOpenAdvancedSettings => widget.onOpenAdvancedSettings;
   ApplyPracticeSettings get onApplySettings => widget.onApplySettings;
 
@@ -845,6 +847,9 @@ class _PracticeSettingsDrawerState extends State<PracticeSettingsDrawer> {
   }
 
   bool get _shouldShowStudyHarmonyCta {
+    if (onOpenStudyHarmony == null) {
+      return false;
+    }
     final profile = PracticeSettingsFactory.profileFromSettings(settings);
     return profile.harmonyLiteracy == HarmonyLiteracy.absoluteBeginner;
   }

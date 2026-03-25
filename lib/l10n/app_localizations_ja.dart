@@ -666,6 +666,9 @@ class AppLocalizationsJa extends AppLocalizations {
       'スペース: 次のコード Enter: 自動再生の開始/一時停止 Up/Down: BPM の調整';
 
   @override
+  String get currentChord => '現在のコード';
+
+  @override
   String get nextChord => '次のコード';
 
   @override
@@ -988,13 +991,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get voicingReasonGentleMotion => 'スムーズな手の動き';
 
   @override
-  String get mainMenuIntro => 'コード練習、進行分析、和声学習をひとつの場所から始めましょう。';
+  String get mainMenuIntro =>
+      'Chordestで次のコードループを作り、必要なときだけ Analyzer で慎重な和声読解を確認しましょう。';
 
   @override
-  String get mainMenuGeneratorTitle => 'コード生成';
+  String get mainMenuGeneratorTitle => 'Chordest 生成';
 
   @override
-  String get mainMenuGeneratorDescription => 'スマートな進行とボイシング補助で練習用コードをすぐ作れます。';
+  String get mainMenuGeneratorDescription =>
+      'すぐ弾けるコードループ、ボイシング補助、素早い練習操作をまとめて始められます。';
 
   @override
   String get openGenerator => '練習を始める';
@@ -1006,7 +1011,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get mainMenuAnalyzerTitle => 'コード解析';
 
   @override
-  String get mainMenuAnalyzerDescription => '進行を読み取り、調性・ローマ数字・機能をすばやく確認できます。';
+  String get mainMenuAnalyzerDescription => '考えられるキー、ローマ数字、警告を保守的な進行解釈で確認できます。';
 
   @override
   String get mainMenuStudyHarmonyTitle => '和声学習';
@@ -1948,7 +1953,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chordAnalyzerTitle => 'コード解析';
 
   @override
-  String get chordAnalyzerSubtitle => '進行を貼り付けると、保守的な和声解釈を返します。';
+  String get chordAnalyzerSubtitle =>
+      '進行を貼り付けると、考えられるキー、ローマ数字、和声機能を保守的に読み取ります。';
 
   @override
   String get chordAnalyzerInputLabel => 'コード進行';
@@ -1958,7 +1964,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get chordAnalyzerInputHelper =>
-      '括弧の外では、スペース、|、カンマでコードを区切れます。括弧内のカンマは同じコード内に残ります。\n\n不明なコード枠には ? を使えます。アナライザーが前後の文脈から最も自然な補完を推定し、解釈が曖昧な場合は候補も提案します。変化生成でもその枠はより自由に再ハーモナイズできます。\n\n小文字ルート、スラッシュベース、sus/alt/add 形式、C7(b9, #11) のようなテンション表記に対応しています。\n\nタッチ端末ではコードパッドを使うか、自由入力したいときに ABC 入力へ切り替えられます。';
+      '括弧の外では、スペース、|、カンマでコードを区切れます。括弧内のカンマは同じコード内に残ります。\n\n不明なコード枠には ? を使えます。アナライザーが前後の文脈から最も自然な補完を推定し、解釈が曖昧な場合は候補も提案します。\n\n小文字ルート、スラッシュベース、sus/alt/add 形式、C7(b9, #11) のようなテンション表記に対応しています。\n\nタッチ端末ではコードパッドを使うか、自由入力したいときに ABC 入力へ切り替えられます。';
 
   @override
   String get chordAnalyzerInputHelpTitle => '入力のヒント';
@@ -2003,7 +2009,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get chordAnalyzerInitialBody =>
-      'Dm7, G7 | ? Am や Cmaj7 | Am7 D7 | Gmaj7 のような進行を入力すると、考えられるキー、ローマ数字、推定補完、短い要約を確認できます。';
+      'Dm7, G7 | ? Am や Cmaj7 | Am7 D7 | Gmaj7 のような進行を入力すると、考えられるキー、ローマ数字、警告、推定補完、短い要約を確認できます。';
 
   @override
   String get chordAnalyzerPlaceholderExplanation =>
@@ -4019,7 +4025,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get harmonySoundProfileSelectionHelp =>
-      'Choose a neutral preview, follow the active Study Harmony track, or pin one track\'s playback feel.';
+      'バランス型の標準サウンドを使うか、ポップ / ジャズ / クラシックの再生キャラクターを固定できます。';
 
   @override
   String get harmonySoundProfileSelectionNeutral => 'Neutral shared piano';
@@ -5145,15 +5151,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get melodyMetricChromaticLabel => 'Chromatic';
 
   @override
-  String get practiceFirstRunWelcomeTitle => 'Your first chord is ready';
+  String get practiceFirstRunWelcomeTitle => '最初のコードが準備できました';
 
   @override
   String get practiceFirstRunWelcomeBodyEmpty =>
-      'A beginner-friendly starting profile is already applied. Listen first, then swipe the card to explore the next chord.';
+      '初心者向けの開始プロファイルがすでに適用されています。まずは音を聴いて、カードをスワイプして次のコードを見てみましょう。';
 
   @override
   String practiceFirstRunWelcomeBodyReady(Object chordLabel) {
-    return '$chordLabel is ready to go. Listen first, then swipe the card to explore what comes next. You can still open the setup assistant to personalize the start.';
+    return '$chordLabel の準備ができました。まずは音を聴いて、カードをスワイプして次の流れを見てみましょう。必要ならセットアップアシスタントで開始内容を調整できます。';
   }
 
   @override
@@ -5194,4 +5200,173 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get showChordTextAssistHelp => 'コードの性質やテンションを短いテキストで補足します。';
+
+  @override
+  String get premiumUnlockTitle => 'Chordest Premium';
+
+  @override
+  String get premiumUnlockBody =>
+      'A one-time purchase permanently unlocks Smart Generator and advanced harmonic color controls. Free Generator, Analyzer, metronome, and language support stay available.';
+
+  @override
+  String get premiumUnlockRequestedFeatureTitle => 'Requested in this flow';
+
+  @override
+  String get premiumUnlockOfflineCacheTitle =>
+      'Using your last confirmed unlock';
+
+  @override
+  String get premiumUnlockOfflineCacheBody =>
+      'The store is unavailable right now, so the app is using your last confirmed premium unlock cache.';
+
+  @override
+  String get premiumUnlockFreeTierTitle => 'Free';
+
+  @override
+  String get premiumUnlockFreeTierLineGenerator =>
+      'Basic Generator, chord display, inversions, slash bass, and core metronome';
+
+  @override
+  String get premiumUnlockFreeTierLineAnalyzer =>
+      'Conservative Analyzer with confidence and ambiguity warnings';
+
+  @override
+  String get premiumUnlockFreeTierLineMetronome =>
+      'Language, theme, setup assistant, and standard practice settings';
+
+  @override
+  String get premiumUnlockPremiumTierTitle => 'Premium unlock';
+
+  @override
+  String get premiumUnlockPremiumLineSmartGenerator =>
+      'Smart Generator mode for progression-aware generation in selected keys';
+
+  @override
+  String get premiumUnlockPremiumLineHarmonyColors =>
+      'Secondary dominants, substitute dominants, modal interchange, and advanced tensions';
+
+  @override
+  String get premiumUnlockPremiumLineAdvancedSmartControls =>
+      'Modulation intensity, jazz preset, and source profile controls for Smart Generator';
+
+  @override
+  String premiumUnlockBuyButton(Object priceLabel) {
+    return '永久アンロック ($priceLabel)';
+  }
+
+  @override
+  String get premiumUnlockBuyButtonUnavailable => 'Unlock permanently';
+
+  @override
+  String get premiumUnlockRestoreButton => 'Restore purchase';
+
+  @override
+  String get premiumUnlockKeepFreeButton => 'Keep using free';
+
+  @override
+  String get premiumUnlockStoreFallbackBody =>
+      'Store product info is not available right now. Free features keep working, and you can retry or restore later.';
+
+  @override
+  String get premiumUnlockStorePriceHint =>
+      'Price comes from the store. The app does not hardcode a fixed price.';
+
+  @override
+  String get premiumUnlockStoreUnavailableTitle => 'Store unavailable';
+
+  @override
+  String get premiumUnlockStoreUnavailableBody =>
+      '現在ストアに接続できません。無料機能はそのまま使えます。';
+
+  @override
+  String get premiumUnlockProductUnavailableTitle => 'Product not ready';
+
+  @override
+  String get premiumUnlockProductUnavailableBody =>
+      '現在、プレミアム商品の情報を取得できません。しばらくしてからもう一度お試しください。';
+
+  @override
+  String get premiumUnlockPurchaseSuccessTitle => 'Premium unlocked';
+
+  @override
+  String get premiumUnlockPurchaseSuccessBody =>
+      'Your permanent premium unlock is now active on this device.';
+
+  @override
+  String get premiumUnlockRestoreSuccessTitle => 'Purchase restored';
+
+  @override
+  String get premiumUnlockRestoreSuccessBody =>
+      'Your premium unlock was restored from the store.';
+
+  @override
+  String get premiumUnlockRestoreNotFoundTitle => 'Nothing to restore';
+
+  @override
+  String get premiumUnlockRestoreNotFoundBody =>
+      'No matching premium unlock was found for this store account.';
+
+  @override
+  String get premiumUnlockPurchaseCancelledTitle => 'Purchase canceled';
+
+  @override
+  String get premiumUnlockPurchaseCancelledBody =>
+      'No charge was made. Free features are still available.';
+
+  @override
+  String get premiumUnlockPurchasePendingTitle => 'Purchase pending';
+
+  @override
+  String get premiumUnlockPurchasePendingBody =>
+      'The store marked this purchase as pending. Premium unlock will activate after confirmation.';
+
+  @override
+  String get premiumUnlockPurchaseFailedTitle => 'Purchase failed';
+
+  @override
+  String get premiumUnlockPurchaseFailedBody =>
+      '購入を完了できませんでした。しばらくしてからもう一度お試しください。';
+
+  @override
+  String get premiumUnlockAlreadyOwned => 'Premium unlocked';
+
+  @override
+  String get premiumUnlockAlreadyOwnedTitle => 'Already unlocked';
+
+  @override
+  String get premiumUnlockAlreadyOwnedBody =>
+      'This store account already has the premium unlock.';
+
+  @override
+  String get premiumUnlockHighlightSmartGenerator =>
+      'Smart Generator mode and its deeper progression controls are part of the premium unlock.';
+
+  @override
+  String get premiumUnlockHighlightAdvancedHarmony =>
+      'Non-diatonic color options and advanced tensions are part of the premium unlock.';
+
+  @override
+  String get premiumUnlockCardTitle => 'Premium unlock';
+
+  @override
+  String get premiumUnlockCardBodyUnlocked =>
+      'Your one-time premium unlock is active.';
+
+  @override
+  String get premiumUnlockCardBodyLocked =>
+      'Unlock Smart Generator and advanced harmonic color controls with one purchase.';
+
+  @override
+  String get premiumUnlockCardButton => 'View premium';
+
+  @override
+  String get premiumUnlockGeneratorHint =>
+      'Smart Generator and advanced harmonic colors unlock with a one-time premium purchase.';
+
+  @override
+  String get premiumUnlockSettingsHintTitle => 'Premium controls';
+
+  @override
+  String get premiumUnlockSettingsHintBody =>
+      'Smart Generator, non-diatonic color controls, and advanced tensions are part of the one-time premium unlock.';
 }
