@@ -244,6 +244,11 @@ class _NotationPhraseBook {
 class MusicNotationFormatter {
   const MusicNotationFormatter._();
 
+  static final RegExp _chordSuffixAccidentalPattern = RegExp(r'([#b])(?=\d)');
+  static final RegExp _romanAccidentalPattern = RegExp(
+    r'(^|/)([#b])(?=[IViv]+)',
+  );
+
   static const Map<String, String> _latinNames = {
     'C': 'Do',
     'C#': 'Do#',
@@ -288,7 +293,26 @@ class MusicNotationFormatter {
             pitch: normalized,
             noteNamingStyle: preferences.noteNamingStyle,
           );
-    return lowercase ? formatted.toLowerCase() : formatted;
+    final cased = lowercase ? formatted.toLowerCase() : formatted;
+    return formatPitchAccidentals(cased);
+  }
+
+  static String formatPitchAccidentals(String value) {
+    return value.replaceAll('#', '\u266f').replaceAll('b', '\u266d');
+  }
+
+  static String formatChordSuffixAccidentals(String value) {
+    return value.replaceAllMapped(_chordSuffixAccidentalPattern, (match) {
+      return match.group(1) == '#' ? '\u266f' : '\u266d';
+    });
+  }
+
+  static String formatRomanTokenAccidentals(String value) {
+    return value.replaceAllMapped(_romanAccidentalPattern, (match) {
+      final prefix = match.group(1) ?? '';
+      final accidental = match.group(2) == '#' ? '\u266f' : '\u266d';
+      return '$prefix$accidental';
+    });
   }
 
   static String formatPitchWithOctave(

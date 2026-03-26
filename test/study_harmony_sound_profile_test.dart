@@ -34,49 +34,59 @@ void main() {
     },
   );
 
-  test('track sound profiles shape base playback config differently', () {
-    final baseSettings = PracticeSettings(
-      harmonyMasterVolume: 0.8,
-      harmonyPreviewHoldFactor: 1.0,
-      harmonyArpeggioStepSpeed: 1.0,
-      harmonyVelocityHumanization: 0.0,
-      harmonyGainRandomness: 0.0,
-      harmonyTimingHumanization: 0.0,
-    );
-    final baseConfig = harmonyAudioBaseConfigForSettings(baseSettings);
-    final popProfile = trackSoundProfileForTrack(l10n, studyHarmonyPopTrackId);
-    final jazzProfile = trackSoundProfileForTrack(
-      l10n,
-      studyHarmonyJazzTrackId,
-    );
-    final classicalProfile = trackSoundProfileForTrack(
-      l10n,
-      studyHarmonyClassicalTrackId,
-    );
+  test(
+    'track sound profiles keep loudness humanization disabled until settings enable it',
+    () {
+      final baseSettings = PracticeSettings(
+        harmonyMasterVolume: 0.8,
+        harmonyPreviewHoldFactor: 1.0,
+        harmonyArpeggioStepSpeed: 1.0,
+        harmonyVelocityHumanization: 0.0,
+        harmonyGainRandomness: 0.0,
+        harmonyTimingHumanization: 0.0,
+      );
+      final baseConfig = harmonyAudioBaseConfigForSettings(baseSettings);
+      final popProfile = trackSoundProfileForTrack(
+        l10n,
+        studyHarmonyPopTrackId,
+      );
+      final jazzProfile = trackSoundProfileForTrack(
+        l10n,
+        studyHarmonyJazzTrackId,
+      );
+      final classicalProfile = trackSoundProfileForTrack(
+        l10n,
+        studyHarmonyClassicalTrackId,
+      );
 
-    final popConfig = popProfile.runtimeProfile.resolveConfig(baseConfig);
-    final jazzConfig = jazzProfile.runtimeProfile.resolveConfig(baseConfig);
-    final classicalConfig = classicalProfile.runtimeProfile.resolveConfig(
-      baseConfig,
-    );
+      final popConfig = popProfile.runtimeProfile.resolveConfig(baseConfig);
+      final jazzConfig = jazzProfile.runtimeProfile.resolveConfig(baseConfig);
+      final classicalConfig = classicalProfile.runtimeProfile.resolveConfig(
+        baseConfig,
+      );
 
-    expect(
-      popConfig.previewHoldFactor,
-      greaterThan(baseConfig.previewHoldFactor),
-    );
-    expect(
-      jazzConfig.previewHoldFactor,
-      lessThan(baseConfig.previewHoldFactor),
-    );
-    expect(
-      jazzConfig.arpeggioStepSpeed,
-      greaterThan(classicalConfig.arpeggioStepSpeed),
-    );
-    expect(popConfig.velocityHumanization, greaterThan(0));
-    expect(jazzConfig.gainRandomness, greaterThan(popConfig.gainRandomness));
-    expect(
-      classicalConfig.timingHumanization,
-      lessThan(jazzConfig.timingHumanization),
-    );
-  });
+      expect(
+        popConfig.previewHoldFactor,
+        greaterThan(baseConfig.previewHoldFactor),
+      );
+      expect(
+        jazzConfig.previewHoldFactor,
+        lessThan(baseConfig.previewHoldFactor),
+      );
+      expect(
+        jazzConfig.arpeggioStepSpeed,
+        greaterThan(classicalConfig.arpeggioStepSpeed),
+      );
+      expect(popConfig.velocityHumanization, 0);
+      expect(popConfig.gainRandomness, 0);
+      expect(jazzConfig.velocityHumanization, 0);
+      expect(jazzConfig.gainRandomness, 0);
+      expect(classicalConfig.velocityHumanization, 0);
+      expect(classicalConfig.gainRandomness, 0);
+      expect(
+        classicalConfig.timingHumanization,
+        lessThan(jazzConfig.timingHumanization),
+      );
+    },
+  );
 }

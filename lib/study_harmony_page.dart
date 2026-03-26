@@ -1413,7 +1413,14 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                             progress: arcadeProgress,
                                           ),
                                         ).take(1),
-                                        ...featured.mode.unlockConditionLabels
+                                        ...featured.mode.unlockRules
+                                            .map(
+                                              (rule) =>
+                                                  studyHarmonyArcadeUnlockLabelForLocale(
+                                                    localeTag,
+                                                    rule,
+                                                  ),
+                                            )
                                             .take(1),
                                       ],
                                       actionLabel:

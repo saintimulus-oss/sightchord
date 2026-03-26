@@ -9,6 +9,7 @@ import 'billing/billing_controller.dart';
 import 'billing/billing_scope.dart';
 import 'l10n/app_localizations.dart';
 import 'main_menu_page.dart';
+import 'settings/practice_settings.dart';
 import 'settings/settings_controller.dart';
 import 'study_harmony/application/study_harmony_progress_controller.dart';
 import 'ui/chordest_ui_tokens.dart';
@@ -40,8 +41,7 @@ class MyApp extends StatefulWidget {
   final HarmonyAudioService harmonyAudioService;
   final bool _ownsHarmonyAudioService;
 
-  static const List<Locale> supportedLocales =
-      AppLocalizations.supportedLocales;
+  static const List<Locale> supportedLocales = supportedAppLocales;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -335,7 +335,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             child: MaterialApp(
               title: 'Chordest',
               debugShowCheckedModeBanner: false,
-              locale: widget.controller.settings.locale,
+              locale: widget.controller.settings.appLocale,
               supportedLocales: MyApp.supportedLocales,
               localizationsDelegates: [
                 AppLocalizations.delegate,

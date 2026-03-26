@@ -123,15 +123,15 @@ void main() {
 
       expect(
         ChordSymbolFormatter.format(symbol, ChordSymbolStyle.compact),
-        'CM7(#11)/E',
+        'CM7(♯11)/E',
       );
       expect(
         ChordSymbolFormatter.format(symbol, ChordSymbolStyle.majText),
-        'Cmaj7(#11)/E',
+        'Cmaj7(♯11)/E',
       );
       expect(
         ChordSymbolFormatter.format(symbol, ChordSymbolStyle.deltaJazz),
-        'C\u03947(#11)/E',
+        'C\u03947(♯11)/E',
       );
     });
 
@@ -186,7 +186,7 @@ void main() {
             ChordSymbolStyle.majText,
             preferences: latinPreferences,
           ),
-          'Sibmaj7/Re',
+          'Si♭maj7/Re',
         );
         expect(
           MusicNotationFormatter.formatKeyCenterLabel(
@@ -195,7 +195,7 @@ void main() {
             preferences: latinPreferences,
             l10n: AppLocalizationsEn(),
           ),
-          'Sib major',
+          'Si♭ major',
         );
       },
     );
@@ -241,11 +241,11 @@ void main() {
     test('resolves borrowed roots in C major with pragmatic spelling', () {
       final modalSymbols = <RomanNumeralId, String>{
         RomanNumeralId.borrowedIvMin7: 'Fm7',
-        RomanNumeralId.borrowedFlatVII7: 'Bb7',
-        RomanNumeralId.borrowedFlatVIMaj7: 'Abmaj7',
-        RomanNumeralId.borrowedFlatIIIMaj7: 'Ebmaj7',
-        RomanNumeralId.borrowedIiHalfDiminished7: 'Dm7b5',
-        RomanNumeralId.borrowedFlatIIMaj7: 'Dbmaj7',
+        RomanNumeralId.borrowedFlatVII7: 'B♭7',
+        RomanNumeralId.borrowedFlatVIMaj7: 'A♭maj7',
+        RomanNumeralId.borrowedFlatIIIMaj7: 'E♭maj7',
+        RomanNumeralId.borrowedIiHalfDiminished7: 'Dm7♭5',
+        RomanNumeralId.borrowedFlatIIMaj7: 'D♭maj7',
       };
 
       for (final entry in modalSymbols.entries) {

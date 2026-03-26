@@ -904,7 +904,7 @@ class _ChordRelationLine extends StatelessWidget {
       );
     }
 
-    if (nextSummary.isEmpty || currentSummary == nextSummary) {
+    if (nextSummary.isEmpty) {
       return Text(
         fallbackText.isNotEmpty ? fallbackText : currentSummary,
         maxLines: compact ? 2 : 1,
@@ -1082,6 +1082,7 @@ class _ChordMotionStage extends StatelessWidget {
   static const double _offRightAnchor = 1.22;
   static const double _sideProminence = 0.18;
   static const double _restSideOpacity = 0.46;
+  static const double _highlightHandoffWindow = 0.18;
 
   final String previousLabel;
   final String currentLabel;
@@ -1291,6 +1292,46 @@ class _ChordMotionStage extends StatelessWidget {
     }
   }
 
+  double _highlightAmountForRole(_ChordTokenRole role) {
+    if (progress.abs() < 0.0001) {
+      return role == _ChordTokenRole.current ? 1 : 0;
+    }
+    final handoffProgress = Curves.easeOutCubic.transform(
+      (progress.abs() / _highlightHandoffWindow).clamp(0.0, 1.0),
+    );
+    if (progress < 0) {
+      return switch (role) {
+        _ChordTokenRole.current => 1 - handoffProgress,
+        _ChordTokenRole.next => handoffProgress,
+        _ChordTokenRole.previous => 0,
+        _ChordTokenRole.lookAhead => 0,
+      };
+    }
+    return switch (role) {
+      _ChordTokenRole.current => 1 - handoffProgress,
+      _ChordTokenRole.previous => handoffProgress,
+      _ChordTokenRole.next => 0,
+      _ChordTokenRole.lookAhead => 0,
+    };
+  }
+
+  BoxDecoration _highlightDecoration(
+    ColorScheme colorScheme,
+    double highlightAmount,
+  ) {
+    return BoxDecoration(
+      color: colorScheme.surface.withValues(alpha: 0.18 * highlightAmount),
+      borderRadius: BorderRadius.circular(28),
+      boxShadow: [
+        BoxShadow(
+          color: colorScheme.primary.withValues(alpha: 0.14 * highlightAmount),
+          blurRadius: 28 * highlightAmount,
+          offset: Offset(0, 14 * highlightAmount),
+        ),
+      ],
+    );
+  }
+
   Widget _buildToken(
     BuildContext context, {
     required String label,
@@ -1329,7 +1370,13 @@ class _ChordMotionStage extends StatelessWidget {
       _ChordTokenRole.current => const ValueKey('current-chord-text'),
       _ChordTokenRole.lookAhead => null,
     };
-    final isCurrent = role == _ChordTokenRole.current;
+    final highlightKey = switch (role) {
+      _ChordTokenRole.previous => const ValueKey('previous-chord-highlight'),
+      _ChordTokenRole.current => const ValueKey('current-chord-highlight'),
+      _ChordTokenRole.next => const ValueKey('next-chord-highlight'),
+      _ChordTokenRole.lookAhead => const ValueKey('lookahead-chord-highlight'),
+    };
+    final highlightAmount = _highlightAmountForRole(role);
     final textStyle =
         TextStyle.lerp(
           performanceMode
@@ -1381,31 +1428,19 @@ class _ChordMotionStage extends StatelessWidget {
                   onTap: label.isEmpty || onTap == null ? null : onTap,
                   child: Padding(
                     padding: EdgeInsets.symmetric(
-                      horizontal: isCurrent ? 12 : 4,
-                      vertical: isCurrent ? 10 : 6,
+                      horizontal: _lerpDouble(4, 12, highlightAmount),
+                      vertical: _lerpDouble(6, 10, highlightAmount),
                     ),
                     child: DecoratedBox(
-                      decoration: isCurrent
-                          ? BoxDecoration(
-                              color: colorScheme.surface.withValues(
-                                alpha: 0.18,
-                              ),
-                              borderRadius: BorderRadius.circular(28),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: colorScheme.primary.withValues(
-                                    alpha: 0.14,
-                                  ),
-                                  blurRadius: 28,
-                                  offset: const Offset(0, 14),
-                                ),
-                              ],
-                            )
-                          : const BoxDecoration(),
+                      key: highlightKey,
+                      decoration: _highlightDecoration(
+                        colorScheme,
+                        highlightAmount,
+                      ),
                       child: Padding(
                         padding: EdgeInsets.symmetric(
-                          horizontal: isCurrent ? 20 : 0,
-                          vertical: isCurrent ? 16 : 0,
+                          horizontal: _lerpDouble(0, 20, highlightAmount),
+                          vertical: _lerpDouble(0, 16, highlightAmount),
                         ),
                         child: Text(
                           key: textKey,

@@ -13,6 +13,7 @@ import '../music/anchor_loop_planner.dart';
 import '../music/chord_anchor_loop.dart';
 import '../music/chord_formatting.dart';
 import '../music/chord_theory.dart';
+import '../music/notation_presentation.dart';
 import '../release_feature_flags.dart';
 import '../ui/chordest_ui_tokens.dart';
 import '../widgets/chord_input_editor.dart';
@@ -365,6 +366,44 @@ class _PracticeAdvancedSettingsPageState
     final note = MusicTheory.spellPitch(midi % 12, preferFlat: false);
     final octave = (midi ~/ 12) - 1;
     return '$note$octave';
+  }
+
+  String _keySelectionOptionLabel(KeySelectionOption option) {
+    return option.displayTonicNames
+        .map(
+          (tonicName) => MusicNotationFormatter.formatPitch(
+            MusicTheory.displayRootForKey(tonicName),
+            preferences: _settings.notationPreferences,
+          ),
+        )
+        .join('/');
+  }
+
+  String? _selectedTonicNameForKeyOption(KeySelectionOption option) {
+    return MusicTheory.selectedTonicNameForOption(
+      _settings.activeKeyCenters,
+      option,
+    );
+  }
+
+  void _toggleAdvancedKeySelection(KeySelectionOption option) {
+    final selectedTonicName = _selectedTonicNameForKeyOption(option);
+    final currentIndex = option.cycleTonicNames.indexOf(
+      selectedTonicName ?? '',
+    );
+    final nextTonicName = currentIndex == -1
+        ? option.cycleTonicNames.first
+        : null;
+    final nextCenters = MusicTheory.replaceKeyCenterSelection(
+      _settings.activeKeyCenters,
+      mode: option.mode,
+      semitone: option.semitone,
+      tonicName: nextTonicName,
+    );
+    _applySettings(
+      _settings.copyWith(activeKeyCenters: nextCenters),
+      reseed: true,
+    );
   }
 
   String _categoryLabel(
@@ -1441,6 +1480,38 @@ class _PracticeAdvancedSettingsPageState
         ),
         const SizedBox(height: 16),
       ],
+      _AdvancedSectionTitle(text: l10n.keys),
+      for (final mode in KeyMode.values) ...[
+        Text(
+          mode == KeyMode.major ? l10n.modeMajor : l10n.modeMinor,
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final option in MusicTheory.advancedKeySelectionOptionsForMode(
+              mode,
+            ))
+              FilterChip(
+                key: ValueKey(
+                  'advanced-key-center-'
+                  '${option.displayTonicNames.join('-')}-${option.mode.name}',
+                ),
+                label: Text(_keySelectionOptionLabel(option)),
+                selected: option.cycleTonicNames.contains(
+                  _selectedTonicNameForKeyOption(option),
+                ),
+                showCheckmark: false,
+                onSelected: (_) => _toggleAdvancedKeySelection(option),
+              ),
+          ],
+        ),
+        const SizedBox(height: 16),
+      ],
       if (_usesKeyMode && _settings.smartGeneratorMode) ...[
         _AdvancedSectionTitle(text: l10n.advancedSmartGenerator),
         DropdownButtonFormField<ModulationIntensity>(
@@ -1615,7 +1686,11 @@ class _PracticeAdvancedSettingsPageState
                 .map((tension) {
                   return FilterChip(
                     key: ValueKey('tension-chip-$tension'),
-                    label: Text(tension),
+                    label: Text(
+                      MusicNotationFormatter.formatChordSuffixAccidentals(
+                        tension,
+                      ),
+                    ),
                     selected: _settings.selectedTensionOptions.contains(
                       tension,
                     ),
@@ -3194,7 +3269,10 @@ class _PracticeAdvancedSettingsPageState
                               .map((tension) {
                                 return FilterChip(
                                   key: ValueKey('tension-chip-$tension'),
-                                  label: Text(tension),
+                                  label: Text(
+                                    MusicNotationFormatter
+                                        .formatChordSuffixAccidentals(tension),
+                                  ),
                                   selected: _settings.selectedTensionOptions
                                       .contains(tension),
                                   showCheckmark: false,

@@ -394,7 +394,7 @@ SmartSimulationSummary? findChromaticMediantSummary({
       random: Random(seed),
       steps: 1600,
       request: buildStartRequest(
-        activeKeys: const ['C', 'D#/Eb', 'G'],
+        activeKeys: const ['C', 'Eb', 'G'],
         jazzPreset: jazzPreset,
         sourceProfile: SourceProfile.recordingInspired,
         modulationIntensity: ModulationIntensity.high,

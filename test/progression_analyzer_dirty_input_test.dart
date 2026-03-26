@@ -18,7 +18,7 @@ void main() {
     final analysis = analyzer.analyze('Bb-7 Eb7 Abmaj7');
 
     expect(analysis.parseResult.issues, isEmpty);
-    expect(analysis.primaryKey.keyCenter.tonicName, 'G#/Ab');
+    expect(analysis.primaryKey.keyCenter.tonicName, 'Ab');
     expect(analysis.primaryKey.keyCenter.mode, KeyMode.major);
     expect(analysis.chordAnalyses.map((item) => item.romanNumeral).toList(), [
       'IIm7',
@@ -37,17 +37,14 @@ void main() {
     expect(analysis.primaryKey.keyCenter.mode, KeyMode.major);
   });
 
-  test(
-    'ignores repeat and section markers while keeping harmonic reading',
-    () {
-      final analysis = analyzer.analyze('[A] Cmaj7 |: Dm7 G7 :| Cmaj7');
+  test('ignores repeat and section markers while keeping harmonic reading', () {
+    final analysis = analyzer.analyze('[A] Cmaj7 |: Dm7 G7 :| Cmaj7');
 
-      expect(analysis.parseResult.hasPartialFailure, isFalse);
-      expect(analysis.parseResult.issues, isEmpty);
-      expect(analysis.primaryKey.keyCenter.tonicName, 'C');
-      expect(analysis.primaryKey.keyCenter.mode, KeyMode.major);
-    },
-  );
+    expect(analysis.parseResult.hasPartialFailure, isFalse);
+    expect(analysis.parseResult.issues, isEmpty);
+    expect(analysis.primaryKey.keyCenter.tonicName, 'C');
+    expect(analysis.primaryKey.keyCenter.mode, KeyMode.major);
+  });
 
   test('keeps slash-bass evidence in slash-heavy real-book style input', () {
     final analysis = analyzer.analyze('C/E A7(b9) Dm7 G7/B');
@@ -72,7 +69,10 @@ void main() {
     final analysis = analyzer.analyze('C7(foo) Dm7 G7 Cmaj7');
 
     expect(analysis.parseResult.issues, isEmpty);
-    expect(analysis.warningCodes, contains(ProgressionWarningCode.unknownModifier));
+    expect(
+      analysis.warningCodes,
+      contains(ProgressionWarningCode.unknownModifier),
+    );
     expect(
       analysis.warningCodes,
       isNot(contains(ProgressionWarningCode.unresolvedChord)),

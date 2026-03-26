@@ -285,13 +285,6 @@ class _PracticeSettingsDrawerState extends State<PracticeSettingsDrawer> {
                               fontWeight: FontWeight.w800,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Chip(
-                            label: Text(
-                              '${l10n.setupAssistantCurrentMode}: '
-                              '${_settingsComplexityModeLabel(l10n)}',
-                            ),
-                          ),
                         ],
                       ),
                     ),
@@ -325,8 +318,6 @@ class _PracticeSettingsDrawerState extends State<PracticeSettingsDrawer> {
                       ),
                       const SizedBox(height: 14),
                     ],
-                    _buildComplexityModeSelector(context, dispatcher),
-                    const SizedBox(height: 16),
                     Text(
                       _profileSummaryTitle(l10n, profile),
                       style: theme.textTheme.titleSmall?.copyWith(
@@ -378,49 +369,6 @@ class _PracticeSettingsDrawerState extends State<PracticeSettingsDrawer> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildComplexityModeSelector(
-    BuildContext context,
-    PracticeSettingsDispatcher dispatcher,
-  ) {
-    final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l10n.setupAssistantCurrentMode,
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final mode in SettingsComplexityMode.values)
-              ChoiceChip(
-                key: ValueKey('settings-complexity-mode-${mode.name}'),
-                label: Text(_settingsComplexityModeOptionLabel(l10n, mode)),
-                selected: settings.settingsComplexityMode == mode,
-                onSelected: (selected) {
-                  if (!selected || settings.settingsComplexityMode == mode) {
-                    return;
-                  }
-                  dispatcher.apply(
-                    (current) => current.copyWith(
-                      guidedSetupCompleted: true,
-                      settingsComplexityMode: mode,
-                    ),
-                  );
-                },
-              ),
-          ],
-        ),
-      ],
     );
   }
 
@@ -485,13 +433,13 @@ class _PracticeSettingsDrawerState extends State<PracticeSettingsDrawer> {
         _SettingsSectionTitle(text: l10n.language),
         DropdownButtonFormField<AppLanguage>(
           key: const ValueKey('language-selector'),
-          initialValue: settings.language,
+          initialValue: settings.language.selectableValue,
           decoration: InputDecoration(
             border: const OutlineInputBorder(),
             labelText: l10n.language,
             isDense: true,
           ),
-          items: AppLanguage.values
+          items: selectableAppLanguages
               .map(
                 (language) => DropdownMenuItem<AppLanguage>(
                   value: language,
@@ -860,11 +808,7 @@ class _PracticeSettingsDrawerState extends State<PracticeSettingsDrawer> {
       return GeneratorProfile.defaultStartingKeyCenter;
     }
     centers.sort((a, b) {
-      final modeCompare = a.mode.index.compareTo(b.mode.index);
-      if (modeCompare != 0) {
-        return modeCompare;
-      }
-      return a.tonicName.compareTo(b.tonicName);
+      return MusicTheory.compareKeyCenters(a, b);
     });
     return centers.first;
   }
@@ -884,24 +828,6 @@ class _PracticeSettingsDrawerState extends State<PracticeSettingsDrawer> {
       KeyCenterLabelStyle.modeText => l10n.keyCenterLabelStyleModeText,
       KeyCenterLabelStyle.classicalCase =>
         l10n.keyCenterLabelStyleClassicalCase,
-    };
-  }
-
-  String _settingsComplexityModeLabel(AppLocalizations l10n) {
-    return _settingsComplexityModeOptionLabel(
-      l10n,
-      settings.settingsComplexityMode,
-    );
-  }
-
-  String _settingsComplexityModeOptionLabel(
-    AppLocalizations l10n,
-    SettingsComplexityMode mode,
-  ) {
-    return switch (mode) {
-      SettingsComplexityMode.guided => l10n.setupAssistantModeGuided,
-      SettingsComplexityMode.standard => l10n.setupAssistantModeStandard,
-      SettingsComplexityMode.advanced => l10n.setupAssistantModeAdvanced,
     };
   }
 

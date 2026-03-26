@@ -31,10 +31,12 @@ class ChordSymbolFormatter {
     ChordSymbolStyle style, {
     NotationPreferences preferences = const NotationPreferences(),
   }) {
-    final suffix = _qualitySuffixForStyle(chord.renderQuality, style);
+    final suffix = MusicNotationFormatter.formatChordSuffixAccidentals(
+      _qualitySuffixForStyle(chord.renderQuality, style),
+    );
     final tensionSuffix = chord.tensions.isEmpty
         ? ''
-        : '(${chord.tensions.join(',')})';
+        : '(${chord.tensions.map(MusicNotationFormatter.formatChordSuffixAccidentals).join(',')})';
     final bassSuffix = chord.bass == null
         ? ''
         : '/${MusicNotationFormatter.formatPitch(chord.bass!, preferences: preferences)}';
@@ -404,31 +406,45 @@ class ChordRenderingHelper {
     final spec = MusicTheory.specFor(romanNumeralId);
     if (chord.symbolData.renderQuality == spec.quality &&
         chord.symbolData.tensions.isEmpty) {
-      return MusicTheory.romanTokenOf(romanNumeralId);
+      return MusicNotationFormatter.formatRomanTokenAccidentals(
+        MusicTheory.romanTokenOf(romanNumeralId),
+      );
     }
 
     final rendered = ChordSymbolFormatter.format(
       chord.symbolData,
       ChordSymbolStyle.majText,
     );
-    if (!rendered.startsWith(chord.symbolData.root)) {
-      return MusicTheory.romanTokenOf(romanNumeralId);
+    final renderedRoot = MusicNotationFormatter.formatPitch(
+      chord.symbolData.root,
+    );
+    if (!rendered.startsWith(renderedRoot)) {
+      return MusicNotationFormatter.formatRomanTokenAccidentals(
+        MusicTheory.romanTokenOf(romanNumeralId),
+      );
     }
-    var suffix = rendered.substring(chord.symbolData.root.length);
+    var suffix = rendered.substring(renderedRoot.length);
     final bassSuffix = chord.symbolData.bass == null
         ? null
-        : '/${chord.symbolData.bass}';
+        : '/${MusicNotationFormatter.formatPitch(chord.symbolData.bass!)}';
     if (bassSuffix != null && suffix.endsWith(bassSuffix)) {
       suffix = suffix.substring(0, suffix.length - bassSuffix.length);
     }
 
     final degreeToken = MusicTheory.romanDegreeTokenOf(romanNumeralId);
+    final renderedDegreeToken =
+        MusicNotationFormatter.formatRomanTokenAccidentals(degreeToken);
+    final renderedSuffix = MusicNotationFormatter.formatChordSuffixAccidentals(
+      suffix,
+    );
     final slashIndex = degreeToken.indexOf('/');
     if (slashIndex < 0) {
-      return '$degreeToken$suffix';
+      return '$renderedDegreeToken$renderedSuffix';
     }
-    return '${degreeToken.substring(0, slashIndex)}$suffix'
-        '${degreeToken.substring(slashIndex)}';
+    final renderedSlashIndex = renderedDegreeToken.indexOf('/');
+    return '${renderedDegreeToken.substring(0, renderedSlashIndex)}'
+        '$renderedSuffix'
+        '${renderedDegreeToken.substring(renderedSlashIndex)}';
   }
 
   static String displayedRomanLabel(

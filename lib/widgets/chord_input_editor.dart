@@ -14,9 +14,11 @@ class ChordInputEditor extends StatefulWidget {
     required this.labelText,
     required this.hintText,
     this.helperText,
+    this.tooltipMessage,
     required this.onAnalyze,
     this.platformOverride,
     this.fieldKey,
+    this.focusNode,
     this.minLines = 3,
     this.maxLines = 5,
     this.showDesktopKeyboardOnFocus = true,
@@ -28,9 +30,11 @@ class ChordInputEditor extends StatefulWidget {
   final String labelText;
   final String hintText;
   final String? helperText;
+  final String? tooltipMessage;
   final VoidCallback onAnalyze;
   final TargetPlatform? platformOverride;
   final Key? fieldKey;
+  final FocusNode? focusNode;
   final int minLines;
   final int maxLines;
   final bool showDesktopKeyboardOnFocus;
@@ -42,11 +46,12 @@ class ChordInputEditor extends StatefulWidget {
 }
 
 class _ChordInputEditorState extends State<ChordInputEditor> {
-  final FocusNode _focusNode = FocusNode();
+  final FocusNode _internalFocusNode = FocusNode();
 
   bool _showKeyboard = false;
   bool _rawInputMode = false;
   bool _desktopKeyboardVisible = false;
+  FocusNode get _focusNode => widget.focusNode ?? _internalFocusNode;
 
   bool get _usesTouchKeyboard {
     if (kIsWeb) {
@@ -65,6 +70,12 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
   @override
   void didUpdateWidget(covariant ChordInputEditor oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusNode != widget.focusNode) {
+      (oldWidget.focusNode ?? _internalFocusNode).removeListener(
+        _handleFocusChanged,
+      );
+      _focusNode.addListener(_handleFocusChanged);
+    }
     if (!widget.allowTouchRawInput && _rawInputMode) {
       _rawInputMode = false;
     }
@@ -80,9 +91,8 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
 
   @override
   void dispose() {
-    _focusNode
-      ..removeListener(_handleFocusChanged)
-      ..dispose();
+    _focusNode.removeListener(_handleFocusChanged);
+    _internalFocusNode.dispose();
     super.dispose();
   }
 
@@ -242,6 +252,28 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
         : (widget.showDesktopKeyboardOnFocus
               ? _showKeyboard
               : _desktopKeyboardVisible);
+    final textField = TextField(
+      key: widget.fieldKey,
+      controller: widget.controller,
+      focusNode: _focusNode,
+      minLines: widget.minLines,
+      maxLines: widget.maxLines,
+      keyboardType: _usesTouchKeyboard && !_rawInputMode
+          ? TextInputType.none
+          : TextInputType.multiline,
+      readOnly: _usesTouchKeyboard && !_rawInputMode,
+      showCursor: true,
+      onTap: _ensureValidSelection,
+      onTapOutside: (_) => _focusNode.unfocus(),
+      decoration: InputDecoration(
+        labelText: widget.labelText,
+        hintText: widget.hintText,
+        helperText: widget.helperText?.isEmpty ?? true
+            ? null
+            : widget.helperText,
+        border: const OutlineInputBorder(),
+      ),
+    );
 
     return TextFieldTapRegion(
       child: Column(
@@ -254,28 +286,9 @@ class _ChordInputEditorState extends State<ChordInputEditor> {
               const SingleActivator(LogicalKeyboardKey.enter, meta: true):
                   widget.onAnalyze,
             },
-            child: TextField(
-              key: widget.fieldKey,
-              controller: widget.controller,
-              focusNode: _focusNode,
-              minLines: widget.minLines,
-              maxLines: widget.maxLines,
-              keyboardType: _usesTouchKeyboard && !_rawInputMode
-                  ? TextInputType.none
-                  : TextInputType.multiline,
-              readOnly: _usesTouchKeyboard && !_rawInputMode,
-              showCursor: true,
-              onTap: _ensureValidSelection,
-              onTapOutside: (_) => _focusNode.unfocus(),
-              decoration: InputDecoration(
-                labelText: widget.labelText,
-                hintText: widget.hintText,
-                helperText: widget.helperText?.isEmpty ?? true
-                    ? null
-                    : widget.helperText,
-                border: const OutlineInputBorder(),
-              ),
-            ),
+            child: widget.tooltipMessage == null
+                ? textField
+                : Tooltip(message: widget.tooltipMessage!, child: textField),
           ),
           if (!_usesTouchKeyboard && !widget.showDesktopKeyboardOnFocus)
             Padding(
@@ -719,8 +732,8 @@ class _EditorTokenContext {
   final bool inTension;
 
   static final RegExp _separatorPattern = RegExp(r'[\s,|]');
-  static final RegExp _rootPattern = RegExp(r'^[A-Ga-g](?:#|b)?');
-  static final RegExp _bassFragmentPattern = RegExp(r'^[A-Ga-g](?:#|b)?$');
+  static final RegExp _rootPattern = RegExp(r'^[A-Ga-g](?:#|b|♯|♭)?');
+  static final RegExp _bassFragmentPattern = RegExp(r'^[A-Ga-g](?:#|b|♯|♭)?$');
   static final RegExp _numericFragmentPattern = RegExp(r'^\d+$');
 
   static _EditorTokenContext fromValue(TextEditingValue value) {

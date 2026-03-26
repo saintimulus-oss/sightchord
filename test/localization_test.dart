@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chordest/l10n/app_localizations.dart';
 import 'package:chordest/l10n/app_localizations_en.dart';
 import 'package:chordest/l10n/app_localizations_es.dart';
 import 'package:chordest/l10n/app_localizations_ja.dart';
@@ -108,39 +107,53 @@ void main() {
     );
   });
 
-  test('release copy localizes the current chord label and billing error wording', () {
-    expect(AppLocalizationsEn().currentChord, 'Current Chord');
-    expect(AppLocalizationsEs().currentChord, 'Acorde actual');
-    expect(AppLocalizationsJa().currentChord, '\u73FE\u5728\u306E\u30B3\u30FC\u30C9');
-    expect(AppLocalizationsKo().currentChord, '\uD604\uC7AC \uCF54\uB4DC');
-    expect(AppLocalizationsZh().currentChord, '\u76EE\u524D\u548C\u5F26');
-    expect(AppLocalizationsZhHans().currentChord, '\u5F53\u524D\u548C\u5F26');
+  test(
+    'release copy localizes the current chord label and billing error wording',
+    () {
+      expect(AppLocalizationsEn().currentChord, 'Current Chord');
+      expect(AppLocalizationsEs().currentChord, 'Acorde actual');
+      expect(
+        AppLocalizationsJa().currentChord,
+        '\u73FE\u5728\u306E\u30B3\u30FC\u30C9',
+      );
+      expect(AppLocalizationsKo().currentChord, '\uD604\uC7AC \uCF54\uB4DC');
+      expect(AppLocalizationsZh().currentChord, '\u76EE\u524D\u548C\u5F26');
+      expect(AppLocalizationsZhHans().currentChord, '\u5F53\u524D\u548C\u5F26');
 
-    expect(
-      AppLocalizationsEn().premiumUnlockProductUnavailableBody,
-      'Premium product info is unavailable right now. Please try again later.',
-    );
-    expect(
-      AppLocalizationsKo().premiumUnlockProductUnavailableBody,
-      '\uC9C0\uAE08\uC740 \uD504\uB9AC\uBBF8\uC5C4 \uC0C1\uD488 \uC815\uBCF4\uB97C \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uC7A0\uC2DC \uD6C4 \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694.',
-    );
-    expect(
-      AppLocalizationsEs().premiumUnlockProductUnavailableBody.contains('Play Console'),
-      isFalse,
-    );
-    expect(
-      AppLocalizationsJa().premiumUnlockProductUnavailableBody.contains('Play Console'),
-      isFalse,
-    );
-    expect(
-      AppLocalizationsZh().premiumUnlockProductUnavailableBody.contains('Play Console'),
-      isFalse,
-    );
-    expect(
-      AppLocalizationsZhHans().premiumUnlockProductUnavailableBody.contains('Play Console'),
-      isFalse,
-    );
-  });
+      expect(
+        AppLocalizationsEn().premiumUnlockProductUnavailableBody,
+        'Premium product info is unavailable right now. Please try again later.',
+      );
+      expect(
+        AppLocalizationsKo().premiumUnlockProductUnavailableBody,
+        '\uC9C0\uAE08\uC740 \uD504\uB9AC\uBBF8\uC5C4 \uC0C1\uD488 \uC815\uBCF4\uB97C \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uC7A0\uC2DC \uD6C4 \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694.',
+      );
+      expect(
+        AppLocalizationsEs().premiumUnlockProductUnavailableBody.contains(
+          'Play Console',
+        ),
+        isFalse,
+      );
+      expect(
+        AppLocalizationsJa().premiumUnlockProductUnavailableBody.contains(
+          'Play Console',
+        ),
+        isFalse,
+      );
+      expect(
+        AppLocalizationsZh().premiumUnlockProductUnavailableBody.contains(
+          'Play Console',
+        ),
+        isFalse,
+      );
+      expect(
+        AppLocalizationsZhHans().premiumUnlockProductUnavailableBody.contains(
+          'Play Console',
+        ),
+        isFalse,
+      );
+    },
+  );
 
   test('locale arb files stay aligned with the English template', () {
     final en = _readArb('app_en.arb');
@@ -161,11 +174,41 @@ void main() {
     }
   });
 
-  test('app language locales stay aligned with generated localizations', () {
-    final settingLocales = AppLanguage.values
-        .where((language) => language.locale != null)
-        .map((language) => language.locale!)
-        .toSet();
-    expect(settingLocales, AppLocalizations.supportedLocales.toSet());
+  test(
+    'app language locales exposed in the app stay aligned with supported locales',
+    () {
+      final settingLocales = selectableAppLanguages
+          .where((language) => language.locale != null)
+          .map((language) => language.appLocale!)
+          .toSet();
+      expect(settingLocales, supportedAppLocales.toSet());
+    },
+  );
+
+  test('selectable locales avoid broad English fallback', () {
+    final en = _readArb('app_en.arb');
+    final ko = _readArb('app_ko.arb');
+    final keys = en.keys.where((key) => !key.startsWith('@'));
+    final sameAsEnglish = <String>[
+      for (final key in keys)
+        if (en[key] is String &&
+            ko[key] is String &&
+            en[key] == ko[key] &&
+            RegExp(r'[A-Za-z]{3,}').hasMatch(en[key] as String))
+          key,
+    ];
+    expect(
+      sameAsEnglish.length,
+      lessThanOrEqualTo(20),
+      reason: 'Selectable locales should be substantially translated.',
+    );
+  });
+
+  test('incomplete locales are not exposed in the language selector', () {
+    expect(selectableAppLanguages, <AppLanguage>[
+      AppLanguage.system,
+      AppLanguage.en,
+      AppLanguage.ko,
+    ]);
   });
 }

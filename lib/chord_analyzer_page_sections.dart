@@ -329,10 +329,6 @@ class _KeyCandidateRow extends StatelessWidget {
   }
 }
 
-Color _highlightForeground(Color background) {
-  return background.computeLuminance() > 0.45 ? Colors.black : Colors.white;
-}
-
 Color _softHighlightBackground(Color color) {
   return color.withValues(alpha: 0.14);
 }
@@ -353,7 +349,6 @@ class _HighlightCategoryChip extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final color = highlightTheme.colorFor(category);
-    final foreground = _highlightForeground(color);
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: compact ? 8 : 10,
@@ -380,7 +375,9 @@ class _HighlightCategoryChip extends StatelessWidget {
                         ? theme.textTheme.labelSmall
                         : theme.textTheme.labelMedium)
                     ?.copyWith(
-                      color: foreground.withValues(alpha: 0.92),
+                      color: theme.colorScheme.onSurface.withValues(
+                        alpha: 0.92,
+                      ),
                       fontWeight: FontWeight.w700,
                     ),
           ),

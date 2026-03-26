@@ -235,7 +235,8 @@ class PracticeSettingsStore {
     );
     final legacyActiveKeys = preferences
         .getStringList(activeKeysKey)
-        ?.where(MusicTheory.keyOptions.contains)
+        ?.map((key) => MusicTheory.normalizeStoredKeyName(key))
+        .where(MusicTheory.keyOptions.contains)
         .toSet();
     final storedSelectedTensions = preferences.getStringList(
       selectedTensionsKey,
@@ -935,7 +936,6 @@ class PracticeSettingsStore {
   }
 
   int _keyOrder(String key) {
-    final index = MusicTheory.keyOptions.indexOf(key);
-    return index == -1 ? MusicTheory.keyOptions.length : index;
+    return MusicTheory.keyOrder(key);
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 enum KeyMode { major, minor }
 
 enum KeyCenterLabelStyle { modeText, classicalCase }
@@ -222,12 +224,13 @@ class KeyCenter {
     if (parts.length != 2) {
       return const KeyCenter(tonicName: 'C', mode: KeyMode.major);
     }
+    final mode = KeyMode.values.firstWhere(
+      (candidate) => candidate.name == parts.last,
+      orElse: () => KeyMode.major,
+    );
     return KeyCenter(
-      tonicName: parts.first,
-      mode: KeyMode.values.firstWhere(
-        (candidate) => candidate.name == parts.last,
-        orElse: () => KeyMode.major,
-      ),
+      tonicName: MusicTheory.normalizeStoredKeyName(parts.first, mode: mode),
+      mode: mode,
     );
   }
 
@@ -240,6 +243,31 @@ class KeyCenter {
 
   @override
   int get hashCode => Object.hash(tonicName, mode);
+}
+
+class KeySelectionOption {
+  const KeySelectionOption({
+    required this.mode,
+    required this.semitone,
+    required this.displayTonicNames,
+    required this.cycleTonicNames,
+  });
+
+  final KeyMode mode;
+  final int semitone;
+  final List<String> displayTonicNames;
+  final List<String> cycleTonicNames;
+
+  List<String> get tonicNames {
+    final ordered = <String>[];
+    final seen = <String>{};
+    for (final tonicName in [...cycleTonicNames, ...displayTonicNames]) {
+      if (seen.add(tonicName)) {
+        ordered.add(tonicName);
+      }
+    }
+    return ordered;
+  }
 }
 
 class LocalScope {
@@ -561,22 +589,464 @@ class MusicTheory {
 
   static const List<String> keyOptions = [
     'C',
-    'C#/Db',
+    'C#',
+    'Db',
     'D',
-    'D#/Eb',
+    'D#',
+    'Eb',
     'E',
+    'Fb',
     'F',
-    'F#/Gb',
+    'E#',
+    'F#',
+    'Gb',
     'G',
-    'G#/Ab',
+    'G#',
+    'Ab',
     'A',
-    'A#/Bb',
+    'A#',
+    'Bb',
     'B',
+    'Cb',
   ];
 
-  static List<KeyCenter> orderedKeyCentersForMode(KeyMode mode) => [
-    for (final key in keyOptions) KeyCenter(tonicName: key, mode: mode),
+  static const List<KeySelectionOption> _commonMajorKeySelectionOptions = [
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 0,
+      displayTonicNames: ['C'],
+      cycleTonicNames: ['C'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 1,
+      displayTonicNames: ['Db'],
+      cycleTonicNames: ['Db'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 2,
+      displayTonicNames: ['D'],
+      cycleTonicNames: ['D'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 3,
+      displayTonicNames: ['Eb'],
+      cycleTonicNames: ['Eb'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 4,
+      displayTonicNames: ['E'],
+      cycleTonicNames: ['E'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 5,
+      displayTonicNames: ['F'],
+      cycleTonicNames: ['F'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 6,
+      displayTonicNames: ['F#', 'Gb'],
+      cycleTonicNames: ['Gb', 'F#'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 7,
+      displayTonicNames: ['G'],
+      cycleTonicNames: ['G'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 8,
+      displayTonicNames: ['Ab'],
+      cycleTonicNames: ['Ab'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 9,
+      displayTonicNames: ['A'],
+      cycleTonicNames: ['A'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 10,
+      displayTonicNames: ['Bb'],
+      cycleTonicNames: ['Bb'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 11,
+      displayTonicNames: ['B'],
+      cycleTonicNames: ['B'],
+    ),
   ];
+
+  static const List<KeySelectionOption> _commonMinorKeySelectionOptions = [
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 0,
+      displayTonicNames: ['C'],
+      cycleTonicNames: ['C'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 1,
+      displayTonicNames: ['C#'],
+      cycleTonicNames: ['C#'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 2,
+      displayTonicNames: ['D'],
+      cycleTonicNames: ['D'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 3,
+      displayTonicNames: ['Eb'],
+      cycleTonicNames: ['Eb'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 4,
+      displayTonicNames: ['E'],
+      cycleTonicNames: ['E'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 5,
+      displayTonicNames: ['F'],
+      cycleTonicNames: ['F'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 6,
+      displayTonicNames: ['F#'],
+      cycleTonicNames: ['F#'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 7,
+      displayTonicNames: ['G'],
+      cycleTonicNames: ['G'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 8,
+      displayTonicNames: ['G#'],
+      cycleTonicNames: ['G#'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 9,
+      displayTonicNames: ['A'],
+      cycleTonicNames: ['A'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 10,
+      displayTonicNames: ['Bb'],
+      cycleTonicNames: ['Bb'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 11,
+      displayTonicNames: ['B'],
+      cycleTonicNames: ['B'],
+    ),
+  ];
+
+  static const List<KeySelectionOption> _advancedMajorKeySelectionOptions = [
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 1,
+      displayTonicNames: ['C#'],
+      cycleTonicNames: ['C#'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 3,
+      displayTonicNames: ['D#'],
+      cycleTonicNames: ['D#'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 4,
+      displayTonicNames: ['Fb'],
+      cycleTonicNames: ['Fb'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 5,
+      displayTonicNames: ['E#'],
+      cycleTonicNames: ['E#'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 8,
+      displayTonicNames: ['G#'],
+      cycleTonicNames: ['G#'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 10,
+      displayTonicNames: ['A#'],
+      cycleTonicNames: ['A#'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.major,
+      semitone: 11,
+      displayTonicNames: ['Cb'],
+      cycleTonicNames: ['Cb'],
+    ),
+  ];
+
+  static const List<KeySelectionOption> _advancedMinorKeySelectionOptions = [
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 1,
+      displayTonicNames: ['Db'],
+      cycleTonicNames: ['Db'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 3,
+      displayTonicNames: ['D#'],
+      cycleTonicNames: ['D#'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 4,
+      displayTonicNames: ['Fb'],
+      cycleTonicNames: ['Fb'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 5,
+      displayTonicNames: ['E#'],
+      cycleTonicNames: ['E#'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 6,
+      displayTonicNames: ['Gb'],
+      cycleTonicNames: ['Gb'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 8,
+      displayTonicNames: ['Ab'],
+      cycleTonicNames: ['Ab'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 10,
+      displayTonicNames: ['A#'],
+      cycleTonicNames: ['A#'],
+    ),
+    KeySelectionOption(
+      mode: KeyMode.minor,
+      semitone: 11,
+      displayTonicNames: ['Cb'],
+      cycleTonicNames: ['Cb'],
+    ),
+  ];
+
+  static List<String> orderedKeyOptionsForMode(KeyMode mode) {
+    final ordered = <String>[];
+    final seen = <String>{};
+    for (final option in [
+      ...commonKeySelectionOptionsForMode(mode),
+      ...advancedKeySelectionOptionsForMode(mode),
+    ]) {
+      for (final tonicName in option.tonicNames) {
+        if (seen.add(tonicName)) {
+          ordered.add(tonicName);
+        }
+      }
+    }
+    for (final key in keyOptions) {
+      if (seen.add(key)) {
+        ordered.add(key);
+      }
+    }
+    return ordered;
+  }
+
+  static List<KeyCenter> orderedKeyCentersForMode(KeyMode mode) => [
+    for (final key in orderedKeyOptionsForMode(mode))
+      KeyCenter(tonicName: key, mode: mode),
+  ];
+
+  static List<KeySelectionOption> commonKeySelectionOptionsForMode(
+    KeyMode mode,
+  ) => switch (mode) {
+    KeyMode.major => _commonMajorKeySelectionOptions,
+    KeyMode.minor => _commonMinorKeySelectionOptions,
+  };
+
+  static List<KeySelectionOption> advancedKeySelectionOptionsForMode(
+    KeyMode mode,
+  ) => switch (mode) {
+    KeyMode.major => _advancedMajorKeySelectionOptions,
+    KeyMode.minor => _advancedMinorKeySelectionOptions,
+  };
+
+  static String normalizeStoredKeyName(
+    String key, {
+    KeyMode mode = KeyMode.major,
+  }) {
+    if (keyOptions.contains(key)) {
+      return key;
+    }
+    switch (key) {
+      case 'C#/Db':
+        return mode == KeyMode.major ? 'Db' : 'C#';
+      case 'D#/Eb':
+        return 'Eb';
+      case 'F#/Gb':
+        return mode == KeyMode.major ? 'Gb' : 'F#';
+      case 'G#/Ab':
+        return mode == KeyMode.major ? 'Ab' : 'G#';
+      case 'A#/Bb':
+        return 'Bb';
+      case 'B/Cb':
+        return mode == KeyMode.major ? 'B' : 'B';
+    }
+    final semitone = noteToSemitone[key];
+    if (semitone == null) {
+      return key;
+    }
+    return defaultKeyNameForSemitone(semitone, mode: mode);
+  }
+
+  static String defaultKeyNameForSemitone(
+    int semitone, {
+    required KeyMode mode,
+  }) {
+    for (final option in commonKeySelectionOptionsForMode(mode)) {
+      if (option.semitone == semitone) {
+        return option.cycleTonicNames.first;
+      }
+    }
+    for (final key in keyOptions) {
+      if (keyTonicSemitone(key) == semitone) {
+        return key;
+      }
+    }
+    return spellPitch(semitone, preferFlat: mode == KeyMode.major);
+  }
+
+  static int keyOrder(String key) {
+    final normalized = normalizeStoredKeyName(key);
+    final index = keyOptions.indexOf(normalized);
+    return index == -1 ? keyOptions.length : index;
+  }
+
+  static int compareKeyNames(String left, String right) =>
+      keyOrder(left).compareTo(keyOrder(right));
+
+  static int keyOrderForMode(String key, KeyMode mode) {
+    final normalized = normalizeStoredKeyName(key, mode: mode);
+    final ordered = orderedKeyOptionsForMode(mode);
+    final index = ordered.indexOf(normalized);
+    return index == -1 ? ordered.length : index;
+  }
+
+  static int compareKeyCenters(KeyCenter left, KeyCenter right) {
+    final modeCompare = left.mode.index.compareTo(right.mode.index);
+    if (modeCompare != 0) {
+      return modeCompare;
+    }
+    return keyOrderForMode(
+      left.tonicName,
+      left.mode,
+    ).compareTo(keyOrderForMode(right.tonicName, right.mode));
+  }
+
+  static List<String> enharmonicKeyOptionsForModeAndSemitone(
+    KeyMode mode,
+    int semitone,
+  ) {
+    final ordered = <String>[];
+    final seen = <String>{};
+    for (final option in [
+      ...commonKeySelectionOptionsForMode(mode),
+      ...advancedKeySelectionOptionsForMode(mode),
+    ]) {
+      if (option.semitone != semitone) {
+        continue;
+      }
+      for (final tonicName in option.tonicNames) {
+        if (seen.add(tonicName)) {
+          ordered.add(tonicName);
+        }
+      }
+    }
+    return ordered;
+  }
+
+  static String? selectedTonicNameForOption(
+    Iterable<KeyCenter> selectedCenters,
+    KeySelectionOption option,
+  ) {
+    for (final center in selectedCenters) {
+      if (center.mode == option.mode &&
+          center.tonicSemitone == option.semitone) {
+        return normalizeStoredKeyName(center.tonicName, mode: center.mode);
+      }
+    }
+    return null;
+  }
+
+  static Set<KeyCenter> replaceKeyCenterSelection(
+    Iterable<KeyCenter> currentCenters, {
+    required KeyMode mode,
+    required int semitone,
+    String? tonicName,
+  }) {
+    final nextCenters = <KeyCenter>[
+      for (final center in currentCenters)
+        if (center.mode != mode || center.tonicSemitone != semitone)
+          KeyCenter(
+            tonicName: normalizeStoredKeyName(
+              center.tonicName,
+              mode: center.mode,
+            ),
+            mode: center.mode,
+            closenessClass: center.closenessClass,
+            relationToParent: center.relationToParent,
+            enteredBy: center.enteredBy,
+            confidence: center.confidence,
+            confirmationsRemaining: center.confirmationsRemaining,
+          ),
+    ];
+    if (tonicName != null) {
+      nextCenters.add(KeyCenter(tonicName: tonicName, mode: mode));
+    }
+    return normalizeKeyCenters(nextCenters);
+  }
+
+  static Set<KeyCenter> normalizeKeyCenters(Iterable<KeyCenter> centers) {
+    final deduped = <String, KeyCenter>{};
+    for (final center in centers) {
+      final normalized = center.copyWith(
+        tonicName: normalizeStoredKeyName(center.tonicName, mode: center.mode),
+      );
+      final semitone = normalized.tonicSemitone;
+      if (semitone == null) {
+        continue;
+      }
+      deduped['${normalized.mode.name}|$semitone'] = normalized;
+    }
+    final ordered = deduped.values.toList(growable: false)
+      ..sort(compareKeyCenters);
+    return LinkedHashSet<KeyCenter>.from(ordered);
+  }
 
   static const List<String> freeModeRoots = [
     'C',
@@ -675,13 +1145,13 @@ class MusicTheory {
       ChordQuality.major7 => 'maj7',
       ChordQuality.minor7 => 'm7',
       ChordQuality.minorMajor7 => 'mMaj7',
-      ChordQuality.halfDiminished7 => 'm7b5',
+      ChordQuality.halfDiminished7 => 'm7\u266d5',
       ChordQuality.diminished7 => 'dim7',
       ChordQuality.six => '6',
       ChordQuality.minor6 => 'm6',
       ChordQuality.major69 => '6/9',
       ChordQuality.dominant7Alt => '7alt',
-      ChordQuality.dominant7Sharp11 => '7(#11)',
+      ChordQuality.dominant7Sharp11 => '7(\u266f11)',
       ChordQuality.dominant13sus4 => '13sus4',
       ChordQuality.dominant7sus4 => 'V7sus4',
     };
@@ -1066,32 +1536,48 @@ class MusicTheory {
 
   static const Map<String, int> _keyTonicSemitones = {
     'C': 0,
-    'C#/Db': 1,
+    'C#': 1,
+    'Db': 1,
     'D': 2,
-    'D#/Eb': 3,
+    'D#': 3,
+    'Eb': 3,
     'E': 4,
+    'Fb': 4,
     'F': 5,
-    'F#/Gb': 6,
+    'E#': 5,
+    'F#': 6,
+    'Gb': 6,
     'G': 7,
-    'G#/Ab': 8,
+    'G#': 8,
+    'Ab': 8,
     'A': 9,
-    'A#/Bb': 10,
+    'A#': 10,
+    'Bb': 10,
     'B': 11,
+    'Cb': 11,
   };
 
   static const Map<String, String> _displayRootsByKey = {
     'C': 'C',
-    'C#/Db': 'Db',
+    'C#': 'C#',
+    'Db': 'Db',
     'D': 'D',
-    'D#/Eb': 'Eb',
+    'D#': 'D#',
+    'Eb': 'Eb',
     'E': 'E',
+    'Fb': 'Fb',
     'F': 'F',
-    'F#/Gb': 'Gb',
+    'E#': 'E#',
+    'F#': 'F#',
+    'Gb': 'Gb',
     'G': 'G',
-    'G#/Ab': 'Ab',
+    'G#': 'G#',
+    'Ab': 'Ab',
     'A': 'A',
-    'A#/Bb': 'Bb',
+    'A#': 'A#',
+    'Bb': 'Bb',
     'B': 'B',
+    'Cb': 'Cb',
   };
 
   static const Map<String, int> noteToSemitone = {
@@ -1150,11 +1636,13 @@ class MusicTheory {
 
   static const Set<String> _flatPreferredKeys = {
     'F',
-    'C#/Db',
-    'D#/Eb',
-    'F#/Gb',
-    'G#/Ab',
-    'A#/Bb',
+    'Db',
+    'Eb',
+    'Fb',
+    'Gb',
+    'Ab',
+    'Bb',
+    'Cb',
   };
 
   static RomanSpec specFor(RomanNumeralId romanNumeralId) =>
@@ -1252,18 +1740,24 @@ class MusicTheory {
   }
 
   static KeyCenter keyCenterFor(String key, {KeyMode mode = KeyMode.major}) {
-    return KeyCenter(tonicName: key, mode: mode);
+    return KeyCenter(
+      tonicName: normalizeStoredKeyName(key, mode: mode),
+      mode: mode,
+    );
   }
 
-  static int? keyTonicSemitone(String key) => _keyTonicSemitones[key];
+  static int? keyTonicSemitone(String key) =>
+      _keyTonicSemitones[normalizeStoredKeyName(key)];
 
-  static String displayRootForKey(String key) => _displayRootsByKey[key] ?? key;
+  static String displayRootForKey(String key) =>
+      _displayRootsByKey[normalizeStoredKeyName(key)] ??
+      normalizeStoredKeyName(key);
 
   static String classicalDisplayRootForKey(String key) =>
       displayRootForKey(key).toLowerCase();
 
   static bool prefersFlatSpellingForKey(String key) =>
-      _flatPreferredKeys.contains(key);
+      _flatPreferredKeys.contains(normalizeStoredKeyName(key));
 
   static bool prefersFlatSpellingForRoot(String root) =>
       root.contains('b') || root == 'F';

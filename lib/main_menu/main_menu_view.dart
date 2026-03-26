@@ -169,6 +169,9 @@ class _MainMenuHeroCard extends StatelessWidget {
                   child: Text(
                     title,
                     textAlign: TextAlign.left,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: false,
                     style: theme.textTheme.displayMedium?.copyWith(
                       color: colorScheme.onSurface,
                     ),
@@ -190,6 +193,9 @@ class _MainMenuHeroCard extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               body,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
                 height: 1.4,
@@ -285,6 +291,9 @@ class _MainActionButton extends StatelessWidget {
                     children: [
                       Text(
                         title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                           color: foregroundColor,
@@ -293,8 +302,9 @@ class _MainActionButton extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         subtitle,
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                        softWrap: false,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: subtitleColor,
                           height: 1.35,

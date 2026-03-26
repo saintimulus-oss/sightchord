@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chordest/app.dart';
@@ -38,10 +39,14 @@ void main() {
     WidgetTester tester, {
     required TargetPlatform platform,
     AppSettingsController? controller,
+    ThemeMode themeMode = ThemeMode.light,
   }) async {
     configureLargeDisplay(tester);
     await tester.pumpWidget(
       MaterialApp(
+        theme: ThemeData(useMaterial3: true, brightness: Brightness.light),
+        darkTheme: ThemeData(useMaterial3: true, brightness: Brightness.dark),
+        themeMode: themeMode,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: ChordAnalyzerPage(
@@ -78,6 +83,14 @@ void main() {
     return tester
         .widget<FilledButton>(find.byKey(ValueKey('analyzer-key-$id')))
         .onPressed;
+  }
+
+  List<Color> renderedTextColors(WidgetTester tester, String text) {
+    return tester
+        .widgetList<Text>(find.text(text))
+        .map((widget) => widget.style?.color)
+        .whereType<Color>()
+        .toList(growable: false);
   }
 
   testWidgets('main menu shows a chord analyzer entry point', (
@@ -302,6 +315,664 @@ void main() {
     expect(field.controller!.text, 'Db7(#11), Cmaj7');
   });
 
+  testWidgets('example chips advertise tap-to-analyze behavior', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+    final l10n = AppLocalizations.of(
+      tester.element(find.byKey(const ValueKey('analyzer-input-field'))),
+    )!;
+    final exampleKey = const ValueKey('analyzer-example-Db7(#11), Cmaj7');
+
+    final tooltip = tester.widget<Tooltip>(
+      find.ancestor(of: find.byKey(exampleKey), matching: find.byType(Tooltip)),
+    );
+
+    expect(tooltip.message, '${l10n.chordAnalyzerAnalyze}: Db7(#11), Cmaj7');
+    expect(
+      find.descendant(
+        of: find.byKey(exampleKey),
+        matching: find.byIcon(Icons.insights_rounded),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('restores the last saved analyzer draft on reopen', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    SharedPreferences.setMockInitialValues({
+      'chord_analyzer_input_draft': 'Dm7 G7 Cmaj7',
+    });
+
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    final field = tester.widget<TextField>(
+      find.byKey(const ValueKey('analyzer-input-field')),
+    );
+    expect(field.controller!.text, 'Dm7 G7 Cmaj7');
+  });
+
+  testWidgets('clearing the analyzer input removes the saved draft', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    SharedPreferences.setMockInitialValues({
+      'chord_analyzer_input_draft': 'Dm7 G7 Cmaj7',
+    });
+
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    final input = find.byKey(const ValueKey('analyzer-input-field'));
+    await tester.enterText(input, '');
+    await tester.pump(const Duration(milliseconds: 400));
+
+    final preferences = await SharedPreferences.getInstance();
+    expect(preferences.getString('chord_analyzer_input_draft'), isNull);
+  });
+
+  testWidgets('clear action resets analyzer input, results, and saved draft', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    SharedPreferences.setMockInitialValues({});
+
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    final input = find.byKey(const ValueKey('analyzer-input-field'));
+    await tester.enterText(input, 'Dm7 G7 Cmaj7');
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('analyzer-results-card')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('analyzer-clear-button')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    final field = tester.widget<TextField>(input);
+    expect(field.controller!.text, isEmpty);
+    expect(field.focusNode!.hasFocus, isTrue);
+    expect(find.byKey(const ValueKey('analyzer-results-card')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('analyzer-result-input-card')),
+      findsNothing,
+    );
+
+    final preferences = await SharedPreferences.getInstance();
+    expect(preferences.getString('chord_analyzer_input_draft'), isNull);
+  });
+
+  testWidgets('editing input clears stale analyzer results immediately', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    SharedPreferences.setMockInitialValues({});
+
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    final input = find.byKey(const ValueKey('analyzer-input-field'));
+    await tester.enterText(input, 'Dm7 G7 Cmaj7');
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('analyzer-results-card')), findsOneWidget);
+
+    await tester.enterText(input, 'Dm7 G7 Cmaj7 Fmaj7');
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('analyzer-results-card')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('analyzer-result-input-card')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('analyze action enables only when trimmed input is present', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    SharedPreferences.setMockInitialValues({});
+
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    FilledButton analyzeButton() => tester.widget<FilledButton>(
+      find.byKey(const ValueKey('analyzer-analyze-button')),
+    );
+
+    expect(analyzeButton().onPressed, isNull);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('analyzer-input-field')),
+      '   ',
+    );
+    await tester.pump();
+    expect(analyzeButton().onPressed, isNull);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('analyzer-input-field')),
+      'Dm7 G7 Cmaj7',
+    );
+    await tester.pump();
+    expect(analyzeButton().onPressed, isNotNull);
+  });
+
+  testWidgets('copy action copies analyzed progression to clipboard', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    SharedPreferences.setMockInitialValues({});
+    String? clipboardText;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          switch (call.method) {
+            case 'Clipboard.setData':
+              clipboardText =
+                  (call.arguments as Map<Object?, Object?>)['text'] as String?;
+              return null;
+            case 'Clipboard.getData':
+              return <String, Object?>{'text': clipboardText};
+            default:
+              return null;
+          }
+        });
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('analyzer-input-field')),
+      'Dm7 G7 Cmaj7',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('analyzer-copy-progression-button')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('analyzer-copy-default-icon')),
+      findsOneWidget,
+    );
+
+    await Clipboard.setData(const ClipboardData(text: 'stale'));
+    await tester.tap(
+      find.byKey(const ValueKey('analyzer-copy-progression-button')),
+    );
+    await tester.pump();
+
+    final clipboard = await Clipboard.getData(Clipboard.kTextPlain);
+    expect(clipboard?.text, 'Dm7 G7 Cmaj7');
+    expect(
+      find.byKey(const ValueKey('analyzer-copy-success-icon')),
+      findsOneWidget,
+    );
+
+    await tester.pump(const Duration(milliseconds: 1500));
+    expect(
+      find.byKey(const ValueKey('analyzer-copy-default-icon')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('re-analyzing immediately clears stale copy success feedback', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    SharedPreferences.setMockInitialValues({});
+    String? clipboardText;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          switch (call.method) {
+            case 'Clipboard.setData':
+              clipboardText =
+                  (call.arguments as Map<Object?, Object?>)['text'] as String?;
+              return null;
+            case 'Clipboard.getData':
+              return <String, Object?>{'text': clipboardText};
+            default:
+              return null;
+          }
+        });
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('analyzer-input-field')),
+      'Dm7 G7 Cmaj7',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey('analyzer-copy-progression-button')),
+    );
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('analyzer-copy-success-icon')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('analyzer-copy-default-icon')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('analyzer-copy-success-icon')),
+      findsNothing,
+    );
+
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('analyzer-copy-default-icon')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('paste action replaces analyzer input from clipboard', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    SharedPreferences.setMockInitialValues({});
+    String? clipboardText = 'Fm7 Bb7 Cmaj7';
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          switch (call.method) {
+            case 'Clipboard.getData':
+              return <String, Object?>{'text': clipboardText};
+            case 'Clipboard.setData':
+              clipboardText =
+                  (call.arguments as Map<Object?, Object?>)['text'] as String?;
+              return null;
+            default:
+              return null;
+          }
+        });
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('analyzer-input-field')),
+      'Dm7 G7',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('analyzer-paste-button')));
+    await tester.pump();
+
+    final field = tester.widget<TextField>(
+      find.byKey(const ValueKey('analyzer-input-field')),
+    );
+    expect(field.controller!.text, 'Fm7 Bb7 Cmaj7');
+  });
+
+  testWidgets(
+    'paste action trims surrounding whitespace and ignores blank clipboard text',
+    (WidgetTester tester) async {
+      addTearDown(() => restoreDisplay(tester));
+      SharedPreferences.setMockInitialValues({});
+      String? clipboardText = '  \nFm7 Bb7 Cmaj7  \n';
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+            switch (call.method) {
+              case 'Clipboard.getData':
+                return <String, Object?>{'text': clipboardText};
+              case 'Clipboard.setData':
+                clipboardText =
+                    (call.arguments as Map<Object?, Object?>)['text']
+                        as String?;
+                return null;
+              default:
+                return null;
+            }
+          });
+      addTearDown(() {
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, null);
+      });
+
+      await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+      await tester.tap(find.byKey(const ValueKey('analyzer-paste-button')));
+      await tester.pump();
+
+      TextField field = tester.widget<TextField>(
+        find.byKey(const ValueKey('analyzer-input-field')),
+      );
+      expect(field.controller!.text, 'Fm7 Bb7 Cmaj7');
+
+      clipboardText = '   \n  ';
+      await tester.tap(find.byKey(const ValueKey('analyzer-paste-button')));
+      await tester.pump();
+
+      field = tester.widget<TextField>(
+        find.byKey(const ValueKey('analyzer-input-field')),
+      );
+      expect(field.controller!.text, 'Fm7 Bb7 Cmaj7');
+    },
+  );
+
+  testWidgets('paste shortcut replaces analyzer input from clipboard', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    SharedPreferences.setMockInitialValues({});
+    String? clipboardText = 'Fm7 Bb7 Cmaj7';
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          switch (call.method) {
+            case 'Clipboard.getData':
+              return <String, Object?>{'text': clipboardText};
+            case 'Clipboard.setData':
+              clipboardText =
+                  (call.arguments as Map<Object?, Object?>)['text'] as String?;
+              return null;
+            default:
+              return null;
+          }
+        });
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyV);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await tester.pump();
+
+    final field = tester.widget<TextField>(
+      find.byKey(const ValueKey('analyzer-input-field')),
+    );
+    expect(field.controller!.text, 'Fm7 Bb7 Cmaj7');
+  });
+
+  testWidgets('focus shortcut selects the full analyzer input', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    SharedPreferences.setMockInitialValues({});
+
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('analyzer-input-field')),
+      'Dm7 G7 Cmaj7',
+    );
+    await tester.pump();
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyL);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await tester.pump();
+
+    final field = tester.widget<TextField>(
+      find.byKey(const ValueKey('analyzer-input-field')),
+    );
+    expect(field.controller!.selection.baseOffset, 0);
+    expect(field.controller!.selection.extentOffset, 'Dm7 G7 Cmaj7'.length);
+  });
+
+  testWidgets('select-all shortcut also focuses and selects analyzer input', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    SharedPreferences.setMockInitialValues({});
+
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('analyzer-input-field')),
+      'Dm7 G7 Cmaj7',
+    );
+    await tester.pump();
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await tester.pump();
+
+    final field = tester.widget<TextField>(
+      find.byKey(const ValueKey('analyzer-input-field')),
+    );
+    expect(field.focusNode!.hasFocus, isTrue);
+    expect(field.controller!.selection.baseOffset, 0);
+    expect(field.controller!.selection.extentOffset, 'Dm7 G7 Cmaj7'.length);
+  });
+
+  testWidgets('analyze shortcut works after paste action', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    SharedPreferences.setMockInitialValues({});
+    String? clipboardText = 'Fm7 Bb7 Cmaj7';
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          switch (call.method) {
+            case 'Clipboard.getData':
+              return <String, Object?>{'text': clipboardText};
+            case 'Clipboard.setData':
+              clipboardText =
+                  (call.arguments as Map<Object?, Object?>)['text'] as String?;
+              return null;
+            default:
+              return null;
+          }
+        });
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    await tester.tap(find.byKey(const ValueKey('analyzer-paste-button')));
+    await tester.pump();
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('analyzer-results-card')), findsOneWidget);
+    final resultInput = tester.widget<SelectableText>(
+      find.byKey(const ValueKey('analyzer-result-input')),
+    );
+    expect(resultInput.data, 'Fm7 Bb7 Cmaj7');
+  });
+
+  testWidgets('copy shortcut copies analyzed progression to clipboard', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    SharedPreferences.setMockInitialValues({});
+    String? clipboardText;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          switch (call.method) {
+            case 'Clipboard.setData':
+              clipboardText =
+                  (call.arguments as Map<Object?, Object?>)['text'] as String?;
+              return null;
+            case 'Clipboard.getData':
+              return <String, Object?>{'text': clipboardText};
+            default:
+              return null;
+          }
+        });
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('analyzer-input-field')),
+      'Dm7 G7 Cmaj7',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyC);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await tester.pump();
+
+    final clipboard = await Clipboard.getData(Clipboard.kTextPlain);
+    expect(clipboard?.text, 'Dm7 G7 Cmaj7');
+  });
+
+  testWidgets('escape shortcut clears analyzer input and results', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    SharedPreferences.setMockInitialValues({});
+
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    final input = find.byKey(const ValueKey('analyzer-input-field'));
+    await tester.enterText(input, 'Dm7 G7 Cmaj7');
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('analyzer-results-card')), findsOneWidget);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    final field = tester.widget<TextField>(input);
+    expect(field.controller!.text, isEmpty);
+    expect(find.byKey(const ValueKey('analyzer-results-card')), findsNothing);
+  });
+
+  testWidgets('F1 shortcut opens analyzer input help', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    expect(find.byKey(const ValueKey('analyzer-help-dialog')), findsNothing);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.f1);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('analyzer-help-dialog')), findsOneWidget);
+    expect(find.text('Input tips'), findsOneWidget);
+  });
+
+  testWidgets('display settings shortcut opens analyzer display sheet', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+
+    expect(find.text('Analysis display'), findsNothing);
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.comma);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Analysis display'), findsOneWidget);
+  });
+
+  testWidgets('analyzer action tooltips advertise keyboard shortcuts', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+    await pumpAnalyzerPage(tester, platform: TargetPlatform.windows);
+    final l10n = AppLocalizations.of(
+      tester.element(find.byKey(const ValueKey('analyzer-input-field'))),
+    )!;
+
+    Tooltip tooltipFor(Key key) => tester.widget<Tooltip>(
+      find.ancestor(of: find.byKey(key), matching: find.byType(Tooltip)).first,
+    );
+
+    expect(
+      tooltipFor(const ValueKey('analyzer-help-button')).message,
+      'Input tips (F1)',
+    );
+    expect(
+      tooltipFor(const ValueKey('analyzer-display-settings-button')).message,
+      'Analysis display (Ctrl/Cmd+,)',
+    );
+    expect(
+      tooltipFor(const ValueKey('analyzer-input-field')).message,
+      'Chord progression (Ctrl/Cmd+L, Ctrl/Cmd+A)',
+    );
+    expect(
+      tooltipFor(const ValueKey('analyzer-analyze-button')).message,
+      'Analyze (Ctrl/Cmd+Enter)',
+    );
+    expect(
+      tooltipFor(const ValueKey('analyzer-paste-button')).message,
+      'Paste (Ctrl/Cmd+V)',
+    );
+    expect(
+      tooltipFor(const ValueKey('analyzer-clear-button')).message,
+      'Clear text (Esc)',
+    );
+
+    await tester.enterText(
+      find.byKey(const ValueKey('analyzer-input-field')),
+      'Dm7 G7 Cmaj7',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(
+      tooltipFor(const ValueKey('analyzer-copy-progression-button')).message,
+      'Copy (Ctrl/Cmd+C)',
+    );
+    expect(
+      tooltipFor(const ValueKey('analyzer-play-progression-button')).message,
+      l10n.audioPlayProgression,
+    );
+    expect(
+      tooltipFor(
+        const ValueKey('analyzer-play-progression-arpeggio-button'),
+      ).message,
+      l10n.audioPlayArpeggio,
+    );
+  });
+
   testWidgets('input help opens from the top-right help marker', (
     WidgetTester tester,
   ) async {
@@ -372,6 +1043,7 @@ void main() {
       find.byKey(const ValueKey('analyzer-input-field')),
       'Dm7 G7 Cmaj7',
     );
+    await tester.pump();
     await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
     await tester.pump();
     await tester.pumpAndSettle();
@@ -543,6 +1215,7 @@ void main() {
         find.byKey(const ValueKey('analyzer-input-field')),
         'Dm7 G7 | ? Am',
       );
+      await tester.pump();
       await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
       await tester.pump();
       await tester.pumpAndSettle();
@@ -577,6 +1250,7 @@ void main() {
       find.byKey(const ValueKey('analyzer-input-field')),
       'Cmaj7/E A7(b9) Dm7 G7',
     );
+    await tester.pump();
     await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
     await tester.pump();
     await tester.pumpAndSettle();
@@ -599,6 +1273,7 @@ void main() {
         find.byKey(const ValueKey('analyzer-input-field')),
         'Fm7 Bb7 Cmaj7',
       );
+      await tester.pump();
       await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
       await tester.pump();
       await tester.pumpAndSettle();
@@ -608,6 +1283,40 @@ void main() {
       expect(find.text('Borrowed color'), findsWidgets);
     },
   );
+
+  testWidgets('highlight legend text stays readable in light and dark themes', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(() => restoreDisplay(tester));
+
+    for (final themeMode in [ThemeMode.light, ThemeMode.dark]) {
+      await pumpAnalyzerPage(
+        tester,
+        platform: TargetPlatform.windows,
+        themeMode: themeMode,
+      );
+
+      await tester.enterText(
+        find.byKey(const ValueKey('analyzer-input-field')),
+        'Fm7 Bb7 Cmaj7',
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
+      await tester.pump();
+      await tester.pumpAndSettle();
+      await closeResultDialogIfOpen(tester);
+
+      final colors = renderedTextColors(tester, 'Backdoor / subdominant minor');
+      expect(colors, isNotEmpty);
+
+      final expectedBrightness = themeMode == ThemeMode.dark
+          ? Brightness.light
+          : Brightness.dark;
+      for (final color in colors) {
+        expect(ThemeData.estimateBrightnessForColor(color), expectedBrightness);
+      }
+    }
+  });
 
   testWidgets('ignored parser modifiers are surfaced as warnings', (
     WidgetTester tester,
@@ -619,6 +1328,7 @@ void main() {
       find.byKey(const ValueKey('analyzer-input-field')),
       'C7(foo) Dm7 G7 Cmaj7',
     );
+    await tester.pump();
     await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
     await tester.pump();
     await tester.pumpAndSettle();
@@ -638,6 +1348,7 @@ void main() {
         find.byKey(const ValueKey('analyzer-input-field')),
         'C | | H7 | G',
       );
+      await tester.pump();
       await tester.tap(find.byKey(const ValueKey('analyzer-analyze-button')));
       await tester.pump();
       await tester.pumpAndSettle();

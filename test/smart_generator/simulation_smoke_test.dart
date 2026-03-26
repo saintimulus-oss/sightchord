@@ -111,7 +111,7 @@ void main() {
           random: Random(33),
           steps: 120,
           request: buildStartRequest(
-            activeKeys: const ['C', 'D#/Eb', 'G'],
+            activeKeys: const ['C', 'Eb', 'G'],
             jazzPreset: JazzPreset.advanced,
             sourceProfile: SourceProfile.recordingInspired,
             modulationIntensity: ModulationIntensity.high,
@@ -177,7 +177,7 @@ void main() {
     );
     final advanced = aggregateFor(
       JazzPreset.advanced,
-      activeKeys: const ['C', 'D#/Eb', 'G'],
+      activeKeys: const ['C', 'Eb', 'G'],
       sourceProfile: SourceProfile.recordingInspired,
     );
 

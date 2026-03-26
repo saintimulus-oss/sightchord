@@ -775,49 +775,34 @@ void main() {
     expect(find.byKey(const ValueKey('analyzer-result-dialog')), findsNothing);
   });
 
-  testWidgets('settings drawer lets users switch guided mode off directly', (
-    WidgetTester tester,
-  ) async {
-    final controller = await pumpAppWithExactSettings(
-      tester,
-      PracticeSettings(
-        guidedSetupCompleted: true,
-        settingsComplexityMode: SettingsComplexityMode.guided,
-      ),
-    );
+  testWidgets(
+    'settings drawer hides setup mode chips and keeps advanced entry',
+    (WidgetTester tester) async {
+      await pumpAppWithExactSettings(
+        tester,
+        PracticeSettings(
+          guidedSetupCompleted: true,
+          settingsComplexityMode: SettingsComplexityMode.guided,
+        ),
+      );
 
-    await openGeneratorSettings(tester);
+      await openGeneratorSettings(tester);
 
-    expect(
-      find.byKey(const ValueKey('settings-complexity-mode-guided')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey('open-advanced-settings-button')),
-      findsOneWidget,
-    );
-    expect(
-      find.text(
-        'Core controls stay close by here. Everything else is still available when you want it.',
-      ),
-      findsNothing,
-    );
-
-    await tester.tap(
-      find.byKey(const ValueKey('settings-complexity-mode-standard')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(
-      controller.settings.settingsComplexityMode,
-      SettingsComplexityMode.standard,
-    );
-    expect(controller.settings.guidedSetupCompleted, isTrue);
-    expect(
-      find.byKey(const ValueKey('open-advanced-settings-button')),
-      findsOneWidget,
-    );
-  });
+      expect(
+        find.byKey(const ValueKey('settings-complexity-mode-guided')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('open-advanced-settings-button')),
+        findsOneWidget,
+      );
+      expect(find.text('Current setup'), findsNothing);
+      expect(
+        find.byKey(const ValueKey('open-advanced-settings-button')),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets('settings drawer setup card can be collapsed after opening', (
     WidgetTester tester,
@@ -903,7 +888,10 @@ void main() {
 
     await openMainMenuSettings(tester);
 
-    expect(find.byKey(const ValueKey('main-premium-open-button')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('main-premium-open-button')),
+      findsOneWidget,
+    );
     expect(
       find.byKey(const ValueKey('main-premium-restore-button')),
       findsOneWidget,
@@ -917,7 +905,36 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('premium-buy-button')), findsOneWidget);
-    expect(find.byKey(const ValueKey('premium-restore-button')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('premium-restore-button')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('premium-close-button')), findsOneWidget);
+  });
+
+  testWidgets('smart generator chip opens premium paywall without inline hint', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(
+      tester,
+      PracticeSettings(activeKeyCenters: {MusicTheory.keyCenterFor('C')}),
+    );
+
+    expect(
+      find.text(
+        'Smart Generator and advanced harmonic colors unlock with a one-time premium purchase.',
+      ),
+      findsNothing,
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('smart-generator-mode-toggle')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('smart-generator-mode-toggle')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('premium-buy-button')), findsOneWidget);
     expect(find.byKey(const ValueKey('premium-close-button')), findsOneWidget);
   });
 
@@ -1054,6 +1071,76 @@ void main() {
     );
   });
 
+  testWidgets('major F sharp/G flat chip cycles Gb, F#, then clears', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithController(tester, PracticeSettings());
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('practice-key-selector-button')),
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('practice-key-selector-button')),
+    );
+    await tester.pumpAndSettle();
+
+    final chip = find.byKey(const ValueKey('practice-key-center-F#-Gb-major'));
+
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    expect(
+      controller.settings.activeKeyCenters,
+      contains(const KeyCenter(tonicName: 'Gb', mode: KeyMode.major)),
+    );
+
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    expect(
+      controller.settings.activeKeyCenters,
+      contains(const KeyCenter(tonicName: 'F#', mode: KeyMode.major)),
+    );
+    expect(
+      controller.settings.activeKeyCenters,
+      isNot(contains(const KeyCenter(tonicName: 'Gb', mode: KeyMode.major))),
+    );
+
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    expect(controller.settings.activeKeyCenters, isEmpty);
+  });
+
+  testWidgets(
+    'advanced harmony settings can swap a common key for a rare enharmonic spelling',
+    (WidgetTester tester) async {
+      final controller = await pumpAppWithController(
+        tester,
+        PracticeSettings(
+          activeKeyCenters: {
+            const KeyCenter(tonicName: 'Db', mode: KeyMode.major),
+          },
+        ),
+      );
+
+      await openAdvancedGeneratorSettings(tester, category: 'harmony');
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('advanced-key-center-C#-major')),
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('advanced-key-center-C#-major')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        controller.settings.activeKeyCenters,
+        contains(const KeyCenter(tonicName: 'C#', mode: KeyMode.major)),
+      );
+      expect(
+        controller.settings.activeKeyCenters,
+        isNot(contains(const KeyCenter(tonicName: 'Db', mode: KeyMode.major))),
+      );
+    },
+  );
+
   testWidgets('minor-only key selection produces a minor analysis label', (
     WidgetTester tester,
   ) async {
@@ -1142,40 +1229,39 @@ void main() {
     },
   );
 
-  testWidgets(
-    'premium users can change advanced smart-generator controls',
-    (WidgetTester tester) async {
-      final controller = await pumpAppWithPremiumUnlock(
-        tester,
-        PracticeSettings(activeKeys: const {'C'}, smartGeneratorMode: true),
-      );
+  testWidgets('premium users can change advanced smart-generator controls', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithPremiumUnlock(
+      tester,
+      PracticeSettings(activeKeys: const {'C'}, smartGeneratorMode: true),
+    );
 
-      await openAdvancedGeneratorSettings(tester, category: 'harmony');
+    await openAdvancedGeneratorSettings(tester, category: 'harmony');
 
-      expect(find.text('Advanced Smart Generator'), findsWidgets);
-      expect(
-        find.byKey(const ValueKey('modulation-intensity-dropdown')),
-        findsOneWidget,
-      );
+    expect(find.text('Advanced Smart Generator'), findsWidgets);
+    expect(
+      find.byKey(const ValueKey('modulation-intensity-dropdown')),
+      findsOneWidget,
+    );
 
-      await tester.ensureVisible(
-        find.byKey(const ValueKey('modulation-intensity-dropdown')),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(const ValueKey('modulation-intensity-dropdown')),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('High').last);
-      await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('modulation-intensity-dropdown')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('modulation-intensity-dropdown')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('High').last);
+    await tester.pumpAndSettle();
 
-      expect(controller.settings.modulationIntensity, ModulationIntensity.high);
-      expect(
-        find.byKey(const ValueKey('smart-diagnostics-toggle')),
-        findsNothing,
-      );
-    },
-  );
+    expect(controller.settings.modulationIntensity, ModulationIntensity.high);
+    expect(
+      find.byKey(const ValueKey('smart-diagnostics-toggle')),
+      findsNothing,
+    );
+  });
 
   testWidgets('voicing complexity dropdown updates to modern mode', (
     WidgetTester tester,
@@ -1327,7 +1413,7 @@ void main() {
       findsOneWidget,
     );
     expect(voicingNotesFor(tester, 'easy'), 'E B E');
-    expect(voicingNotesFor(tester, 'colorful'), 'B F# B E G');
+    expect(voicingNotesFor(tester, 'colorful'), 'B F♯ B E G');
 
     await expandVoicingCard(tester, 'colorful');
 
@@ -1784,7 +1870,7 @@ void main() {
 
       await expandVoicingCard(tester, 'natural');
 
-      expect(find.text('No exact top line for Db'), findsOneWidget);
+      expect(find.text('No exact top line for D♭'), findsOneWidget);
       expect(find.text('Top E'), findsWidgets);
       expect(tester.takeException(), isNull);
     },
@@ -2747,6 +2833,36 @@ void main() {
     expect(audio.playedCompositeClips.last.melodyClip, isNotNull);
   });
 
+  testWidgets(
+    'manual preview falls back to chord playback when melody generation is disabled',
+    (WidgetTester tester) async {
+      final audio = _SpyHarmonyAudioService();
+      final controller = await pumpAppWithAudioService(
+        tester,
+        PracticeSettings(
+          melodyGenerationEnabled: false,
+          melodyPlaybackMode: MelodyPlaybackMode.melodyOnly,
+          metronomeEnabled: false,
+        ),
+        harmonyAudioService: audio,
+      );
+
+      expect(
+        controller.settings.melodyPlaybackMode,
+        MelodyPlaybackMode.chordsOnly,
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey('practice-play-chord-button')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(audio.playedCompositeClips, isNotEmpty);
+      expect(audio.playedCompositeClips.last.chordClip, isNotNull);
+      expect(audio.playedCompositeClips.last.melodyClip, isNull);
+    },
+  );
+
   testWidgets('combined playback keeps the melody louder than the chord bed', (
     WidgetTester tester,
   ) async {
@@ -3150,7 +3266,7 @@ void main() {
 
     expect(find.text('Do'), findsOneWidget);
     expect(find.text('Mi'), findsOneWidget);
-    expect(find.text('Sib'), findsWidgets);
+    expect(find.text('Si♭'), findsWidgets);
   });
 
   testWidgets('voicing suggestions avoid overflow on narrow width', (
@@ -3327,9 +3443,16 @@ void main() {
     expect(find.text('\uBA54\uD2B8\uB85C\uB188'), findsWidgets);
   });
 
-  testWidgets('traditional Chinese localization is selectable', (
+  testWidgets('unsupported saved locales fall back to English copy', (
     WidgetTester tester,
   ) async {
+    tester.binding.platformDispatcher.localeTestValue = const Locale('zh');
+    tester.binding.platformDispatcher.localesTestValue = const <Locale>[
+      Locale('zh'),
+    ];
+    addTearDown(tester.binding.platformDispatcher.clearLocaleTestValue);
+    addTearDown(tester.binding.platformDispatcher.clearLocalesTestValue);
+
     await pumpAppWithSettings(
       tester,
       PracticeSettings(language: AppLanguage.zh),
@@ -3338,17 +3461,16 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();
 
-    expect(find.text('\u8A2D\u5B9A'), findsWidgets);
-    expect(find.text('\u7BC0\u62CD\u5668'), findsWidgets);
-    expect(find.text('\u7BC0\u62CD\u5668\u97F3\u8272'), findsOneWidget);
+    expect(find.text('Settings'), findsWidgets);
+    expect(find.text('Metronome'), findsWidgets);
+    expect(find.text('Metronome Sound'), findsOneWidget);
+    expect(find.text('\u8A2D\u5B9A'), findsNothing);
   });
 }
 
 class _TestBillingStore extends BillingStore {
   _TestBillingStore({required this.snapshot})
-    : super(
-        preferencesLoader: _unsupportedTestPreferencesLoader,
-      );
+    : super(preferencesLoader: _unsupportedTestPreferencesLoader);
 
   BillingStoreSnapshot snapshot;
 

@@ -14,6 +14,19 @@ export '../music/progression_highlight_theme.dart';
 
 enum AppLanguage { system, en, es, zh, zhHans, ja, ko }
 
+const List<AppLanguage> supportedAppLanguages = <AppLanguage>[
+  AppLanguage.en,
+  AppLanguage.ko,
+];
+
+const List<AppLanguage> selectableAppLanguages = <AppLanguage>[
+  AppLanguage.system,
+  AppLanguage.en,
+  AppLanguage.ko,
+];
+
+const List<Locale> supportedAppLocales = <Locale>[Locale('en'), Locale('ko')];
+
 enum AppThemeMode { system, light, dark }
 
 enum PracticeTimeSignature {
@@ -124,6 +137,22 @@ extension AppLanguageX on AppLanguage {
       case AppLanguage.ko:
         return '\ud55c\uad6d\uc5b4';
     }
+  }
+
+  bool get isSelectableInApp => selectableAppLanguages.contains(this);
+
+  AppLanguage get selectableValue {
+    if (isSelectableInApp) {
+      return this;
+    }
+    return AppLanguage.system;
+  }
+
+  Locale? get appLocale {
+    if (!supportedAppLanguages.contains(this)) {
+      return null;
+    }
+    return locale;
   }
 
   static AppLanguage fromStorageKey(String? value) {
@@ -598,7 +627,7 @@ class PracticeSettings {
     double anticipationProbability = 0.18,
     double colorToneTarget = 0.22,
     double exactRepeatTarget = 0.04,
-    this.melodyPlaybackMode = MelodyPlaybackMode.chordsOnly,
+    MelodyPlaybackMode melodyPlaybackMode = MelodyPlaybackMode.chordsOnly,
     this.harmonySoundProfileSelection = HarmonySoundProfileSelection.trackAware,
     double harmonyMasterVolume = 1,
     double harmonyPreviewHoldFactor = 1,
@@ -681,6 +710,10 @@ class PracticeSettings {
        exactRepeatTarget = exactRepeatTarget
            .clamp(minMelodyBias, maxMelodyBias)
            .toDouble(),
+       melodyPlaybackMode = _normalizeMelodyPlaybackMode(
+         enabled: melodyGenerationEnabled,
+         mode: melodyPlaybackMode,
+       ),
        melodyRangeLow = _clampMelodyRangeLow(melodyRangeLow),
        melodyRangeHigh = _clampMelodyRangeHigh(
          low: _clampMelodyRangeLow(melodyRangeLow),
@@ -705,12 +738,12 @@ class PracticeSettings {
            .clamp(minHumanizationAmount, maxHumanizationAmount)
            .toDouble(),
        activeKeyCenters = Set.unmodifiable(
-         activeKeyCenters ??
-             (activeKeys == null
-                 ? const <KeyCenter>{}
-                 : activeKeys
-                       .map((key) => MusicTheory.keyCenterFor(key))
-                       .toSet()),
+         MusicTheory.normalizeKeyCenters(
+           activeKeyCenters ??
+               (activeKeys == null
+                   ? const <KeyCenter>{}
+                   : activeKeys.map((key) => MusicTheory.keyCenterFor(key))),
+         ),
        ),
        selectedTensionOptions = Set.unmodifiable(
          selectedTensionOptions ??
@@ -807,6 +840,7 @@ class PracticeSettings {
   final ProgressionHighlightTheme progressionHighlightTheme;
 
   Locale? get locale => language.locale;
+  Locale? get appLocale => language.appLocale;
   ThemeMode get themeMode => appThemeMode.materialThemeMode;
   NotationPreferences get notationPreferences => NotationPreferences(
     locale: musicNotationLocale,
@@ -1048,6 +1082,16 @@ class PracticeSettings {
       return ordered;
     }
     return MusicTheory.defaultGeneratorChordQualities(allowV7sus4: allowV7sus4);
+  }
+
+  static MelodyPlaybackMode _normalizeMelodyPlaybackMode({
+    required bool enabled,
+    required MelodyPlaybackMode mode,
+  }) {
+    if (!enabled) {
+      return MelodyPlaybackMode.chordsOnly;
+    }
+    return mode;
   }
 
   static int _clampMelodyRangeLow(int value) {

@@ -330,11 +330,7 @@ class PracticeSetupPreviewBuilder {
       return const [GeneratorProfile.defaultStartingKeyCenter];
     }
     centers.sort((a, b) {
-      final modeCompare = a.mode.index.compareTo(b.mode.index);
-      if (modeCompare != 0) {
-        return modeCompare;
-      }
-      return a.tonicName.compareTo(b.tonicName);
+      return MusicTheory.compareKeyCenters(a, b);
     });
     return centers;
   }

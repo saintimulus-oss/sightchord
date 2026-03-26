@@ -1,5 +1,6 @@
 import '../l10n/app_localizations.dart';
 import 'chord_theory.dart';
+import 'notation_presentation.dart';
 import 'progression_analysis_models.dart';
 import 'progression_highlight_theme.dart';
 
@@ -160,7 +161,7 @@ class ProgressionExplainer {
       if (advancedFocus.competingInterpretations.isNotEmpty) {
         sentences.add(
           l10n.chordAnalyzerSummaryCompeting(
-              advancedFocus.competingInterpretations
+            advancedFocus.competingInterpretations
                 .take(2)
                 .map((candidate) => candidate.primaryDisplayLabel)
                 .join(', '),
@@ -373,7 +374,9 @@ class ProgressionExplainer {
   }
 
   String _keyLabel(AppLocalizations l10n, KeyCenter keyCenter) {
-    final tonic = MusicTheory.displayRootForKey(keyCenter.tonicName);
+    final tonic = MusicNotationFormatter.formatPitch(
+      MusicTheory.displayRootForKey(keyCenter.tonicName),
+    );
     final mode = keyCenter.mode == KeyMode.major
         ? l10n.modeMajor
         : l10n.modeMinor;

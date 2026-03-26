@@ -161,13 +161,36 @@ extension _PracticeHomePageUi on _MyHomePageState {
     final theme = Theme.of(context);
     var modalSettings = _settings;
 
-    String compactLabel(KeyCenter center) {
-      return MusicNotationFormatter.formatKeyCenterLabel(
-        center: center,
-        labelStyle: KeyCenterLabelStyle.classicalCase,
-        preferences: _settings.notationPreferences,
-        l10n: l10n,
+    String compactLabelForTonics(List<String> tonicNames) {
+      return tonicNames
+          .map(
+            (tonicName) => MusicNotationFormatter.formatPitch(
+              MusicTheory.displayRootForKey(tonicName),
+              preferences: _settings.notationPreferences,
+            ),
+          )
+          .join('/');
+    }
+
+    String? selectedTonicNameForOption(KeySelectionOption option) {
+      return MusicTheory.selectedTonicNameForOption(
+        modalSettings.activeKeyCenters,
+        option,
       );
+    }
+
+    String? nextTonicNameForCommonOption(KeySelectionOption option) {
+      final selectedTonicName = selectedTonicNameForOption(option);
+      final currentIndex = option.cycleTonicNames.indexOf(
+        selectedTonicName ?? '',
+      );
+      if (currentIndex == -1) {
+        return option.cycleTonicNames.first;
+      }
+      if (currentIndex + 1 < option.cycleTonicNames.length) {
+        return option.cycleTonicNames[currentIndex + 1];
+      }
+      return null;
     }
 
     void applyKeyCenters(
@@ -205,27 +228,29 @@ extension _PracticeHomePageUi on _MyHomePageState {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      for (final center in MusicTheory.orderedKeyCentersForMode(
-                        mode,
-                      ))
+                      for (final option
+                          in MusicTheory.commonKeySelectionOptionsForMode(mode))
                         FilterChip(
                           key: ValueKey(
-                            'practice-key-center-${center.tonicName}-${center.mode.name}',
+                            'practice-key-center-'
+                            '${option.displayTonicNames.join('-')}-${option.mode.name}',
                           ),
-                          label: Text(compactLabel(center)),
-                          selected: modalSettings.activeKeyCenters.contains(
-                            center,
+                          label: Text(
+                            compactLabelForTonics(option.displayTonicNames),
                           ),
+                          selected: selectedTonicNameForOption(option) != null,
                           showCheckmark: false,
-                          onSelected: (selected) {
-                            final nextCenters = <KeyCenter>{
-                              ...modalSettings.activeKeyCenters,
-                            };
-                            if (selected) {
-                              nextCenters.add(center);
-                            } else {
-                              nextCenters.remove(center);
-                            }
+                          onSelected: (_) {
+                            final nextTonicName = nextTonicNameForCommonOption(
+                              option,
+                            );
+                            final nextCenters =
+                                MusicTheory.replaceKeyCenterSelection(
+                                  modalSettings.activeKeyCenters,
+                                  mode: option.mode,
+                                  semitone: option.semitone,
+                                  tonicName: nextTonicName,
+                                );
                             applyKeyCenters(setModalState, nextCenters);
                           },
                         ),
@@ -290,6 +315,12 @@ extension _PracticeHomePageUi on _MyHomePageState {
 
   void _toggleQuickSmartGenerator(bool selected) {
     if (!_usesKeyMode) {
+      return;
+    }
+    if (selected && !_isPremiumUnlocked) {
+      unawaited(
+        _openPremiumPaywall(highlightedFeature: PremiumFeature.smartGenerator),
+      );
       return;
     }
     _applySettings(
@@ -1175,15 +1206,6 @@ extension _PracticeHomePageUi on _MyHomePageState {
               SizedBox(height: compact ? 10 : 12),
               Text(
                 l10n.keyModeRequiredForSmartGenerator,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  height: 1.35,
-                ),
-              ),
-            ] else if (!_isPremiumUnlocked) ...[
-              SizedBox(height: compact ? 10 : 12),
-              Text(
-                l10n.premiumUnlockGeneratorHint,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                   height: 1.35,

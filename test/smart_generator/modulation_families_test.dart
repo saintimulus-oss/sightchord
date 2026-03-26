@@ -799,7 +799,7 @@ void main() {
           random: FixedRandom(seed),
           request: buildRequest(
             stepIndex: 22,
-            activeKeys: const ['C', 'D#/Eb'],
+            activeKeys: const ['C', 'Eb'],
             currentKeyCenter: const KeyCenter(
               tonicName: 'C',
               mode: KeyMode.major,
@@ -844,7 +844,7 @@ void main() {
       );
       expect(
         selectedPlan.remainingQueuedChords.first.keyCenter.tonicName,
-        'D#/Eb',
+        'Eb',
       );
       expect(
         selectedPlan.remainingQueuedChords.first.modulationKind,
@@ -857,7 +857,7 @@ void main() {
       expect(
         selectedPlan.remainingQueuedChords.any(
           (item) =>
-              item.keyCenter.tonicName == 'D#/Eb' &&
+              item.keyCenter.tonicName == 'Eb' &&
               item.cadentialArrival &&
               item.finalRomanNumeralId == RomanNumeralId.iMaj69,
         ),
@@ -884,7 +884,7 @@ void main() {
           random: FixedRandom(seed),
           request: buildRequest(
             stepIndex: 22,
-            activeKeys: const ['C', 'D#/Eb'],
+            activeKeys: const ['C', 'Eb'],
             currentKeyCenter: const KeyCenter(
               tonicName: 'C',
               mode: KeyMode.major,
@@ -908,7 +908,7 @@ void main() {
         random: FixedRandom(0),
         request: buildRequest(
           stepIndex: 23,
-          activeKeys: const ['C', 'D#/Eb'],
+          activeKeys: const ['C', 'Eb'],
           currentKeyCenter: pivotPlan!.finalKeyCenter,
           currentRomanNumeralId: pivotPlan.finalRomanNumeralId,
           currentHarmonicFunction: MusicTheory.specFor(
@@ -928,7 +928,7 @@ void main() {
         cadenceHead.patternTag,
         'chromatic_mediant_common_tone_modulation',
       );
-      expect(cadenceHead.finalKeyCenter.tonicName, 'D#/Eb');
+      expect(cadenceHead.finalKeyCenter.tonicName, 'Eb');
       expect(cadenceHead.finalRomanNumeralId, RomanNumeralId.iiMin7);
       expect(cadenceHead.modulationKind, ModulationKind.real);
       expect(
@@ -961,7 +961,7 @@ void main() {
           random: FixedRandom(seed),
           request: buildRequest(
             stepIndex: 22,
-            activeKeys: const ['C', 'D#/Eb'],
+            activeKeys: const ['C', 'Eb'],
             currentKeyCenter: const KeyCenter(
               tonicName: 'C',
               mode: KeyMode.major,
@@ -1033,7 +1033,7 @@ void main() {
           random: FixedRandom(seed),
           request: buildRequest(
             stepIndex: 22,
-            activeKeys: const ['C', 'D#/Eb'],
+            activeKeys: const ['C', 'Eb'],
             currentKeyCenter: const KeyCenter(
               tonicName: 'C',
               mode: KeyMode.major,
@@ -1059,7 +1059,7 @@ void main() {
           random: FixedRandom(0),
           request: buildRequest(
             stepIndex: currentPlan.debug.stepIndex + 1,
-            activeKeys: const ['C', 'D#/Eb'],
+            activeKeys: const ['C', 'Eb'],
             currentKeyCenter: currentPlan.finalKeyCenter,
             currentRomanNumeralId: currentPlan.finalRomanNumeralId,
             currentHarmonicFunction: MusicTheory.specFor(
@@ -1080,7 +1080,7 @@ void main() {
       }
 
       expect(cadenceArrival, isNotNull);
-      expect(cadenceArrival!.finalKeyCenter.tonicName, 'D#/Eb');
+      expect(cadenceArrival!.finalKeyCenter.tonicName, 'Eb');
       expect(
         cadenceArrival.debug.surfaceTags.contains('returnHomePending'),
         isTrue,
@@ -1108,7 +1108,7 @@ void main() {
           random: FixedRandom(seed),
           request: buildRequest(
             stepIndex: currentPlan.debug.stepIndex + 1,
-            activeKeys: const ['C', 'D#/Eb'],
+            activeKeys: const ['C', 'Eb'],
             currentKeyCenter: currentPlan.finalKeyCenter,
             currentRomanNumeralId: currentPlan.finalRomanNumeralId,
             currentHarmonicFunction: MusicTheory.specFor(
@@ -1151,7 +1151,7 @@ void main() {
           random: FixedRandom(seed),
           request: buildRequest(
             stepIndex: 22,
-            activeKeys: const ['C', 'E', 'G#/Ab'],
+            activeKeys: const ['C', 'E', 'Ab'],
             currentKeyCenter: const KeyCenter(
               tonicName: 'C',
               mode: KeyMode.major,
@@ -1179,7 +1179,7 @@ void main() {
           random: FixedRandom(0),
           request: buildRequest(
             stepIndex: currentPlan.debug.stepIndex + 1,
-            activeKeys: const ['C', 'E', 'G#/Ab'],
+            activeKeys: const ['C', 'E', 'Ab'],
             currentKeyCenter: currentPlan.finalKeyCenter,
             currentRomanNumeralId: currentPlan.finalRomanNumeralId,
             currentHarmonicFunction: MusicTheory.specFor(
@@ -1203,10 +1203,10 @@ void main() {
         'E:iiMin7',
         'E:vDom7',
         'E:iMaj69',
-        'G#/Ab:iiMin7',
-        'G#/Ab:vDom7',
-        'G#/Ab:iMaj69',
-        'G#/Ab:viMin7',
+        'Ab:iiMin7',
+        'Ab:vDom7',
+        'Ab:iMaj69',
+        'Ab:viMin7',
       ]);
       expect(
         currentPlan.debug.surfaceTags.contains('cycleConfirmation'),
@@ -1241,7 +1241,7 @@ void main() {
           random: FixedRandom(seed),
           request: buildRequest(
             stepIndex: 22,
-            activeKeys: const ['C', 'E', 'G#/Ab'],
+            activeKeys: const ['C', 'E', 'Ab'],
             currentKeyCenter: const KeyCenter(
               tonicName: 'C',
               mode: KeyMode.major,
@@ -1267,7 +1267,7 @@ void main() {
           random: FixedRandom(0),
           request: buildRequest(
             stepIndex: currentPlan.debug.stepIndex + 1,
-            activeKeys: const ['C', 'E', 'G#/Ab'],
+            activeKeys: const ['C', 'E', 'Ab'],
             currentKeyCenter: currentPlan.finalKeyCenter,
             currentRomanNumeralId: currentPlan.finalRomanNumeralId,
             currentHarmonicFunction: MusicTheory.specFor(
@@ -1283,7 +1283,7 @@ void main() {
           ),
         );
         if (currentPlan.cadentialArrival &&
-            currentPlan.finalKeyCenter.tonicName == 'G#/Ab') {
+            currentPlan.finalKeyCenter.tonicName == 'Ab') {
           secondArrival = currentPlan;
         }
       }
@@ -1317,7 +1317,7 @@ void main() {
           random: FixedRandom(seed),
           request: buildRequest(
             stepIndex: currentPlan.debug.stepIndex + 1,
-            activeKeys: const ['C', 'E', 'G#/Ab'],
+            activeKeys: const ['C', 'E', 'Ab'],
             currentKeyCenter: currentPlan.finalKeyCenter,
             currentRomanNumeralId: currentPlan.finalRomanNumeralId,
             currentHarmonicFunction: MusicTheory.specFor(
@@ -1376,7 +1376,7 @@ void main() {
           random: FixedRandom(seed),
           request: buildRequest(
             stepIndex: 22,
-            activeKeys: const ['C', 'E', 'G#/Ab'],
+            activeKeys: const ['C', 'E', 'Ab'],
             currentKeyCenter: const KeyCenter(
               tonicName: 'C',
               mode: KeyMode.major,

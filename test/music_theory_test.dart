@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:chordest/music/chord_theory.dart';
 
 void main() {
@@ -52,7 +52,7 @@ void main() {
         expect(
           MusicTheory.relationBetweenCenters(
             cMajor,
-            const KeyCenter(tonicName: 'G#/Ab', mode: KeyMode.major),
+            const KeyCenter(tonicName: 'Ab', mode: KeyMode.major),
           ),
           KeyRelation.mediant,
         );
@@ -60,4 +60,3 @@ void main() {
     );
   });
 }
-

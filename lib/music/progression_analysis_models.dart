@@ -1,4 +1,5 @@
 import 'chord_theory.dart';
+import 'notation_presentation.dart';
 
 enum ProgressionHarmonicFunction { tonic, predominant, dominant, other }
 
@@ -645,8 +646,11 @@ class AnalysisSegment {
   final KeyCenter keyCenter;
   final String reason;
 
-  String get keyDisplay => keyCenter.displayName;
-  String get tonic => MusicTheory.displayRootForKey(keyCenter.tonicName);
+  String get keyDisplay =>
+      '${MusicNotationFormatter.formatPitch(MusicTheory.displayRootForKey(keyCenter.tonicName))} ${keyCenter.mode.name}';
+  String get tonic => MusicNotationFormatter.formatPitch(
+    MusicTheory.displayRootForKey(keyCenter.tonicName),
+  );
   String get mode => keyCenter.mode.name;
 }
 
@@ -694,9 +698,11 @@ class ProgressionAnalysis {
   double? get alternativeKeyScore => alternativeKey?.score;
   double get primaryKeyConfidence => primaryKey.confidence;
   double get globalAggregateKeyConfidence => globalAggregateKey.confidence;
-  String get primaryKeyDisplay => primaryKey.keyCenter.displayName;
-  String get homeKeyDisplay => primaryKey.keyCenter.displayName;
-  String get globalAggregateKeyDisplay => globalAggregateKey.keyCenter.displayName;
+  String get primaryKeyDisplay =>
+      '${MusicNotationFormatter.formatPitch(MusicTheory.displayRootForKey(primaryKey.keyCenter.tonicName))} ${primaryKey.keyCenter.mode.name}';
+  String get homeKeyDisplay => primaryKeyDisplay;
+  String get globalAggregateKeyDisplay =>
+      '${MusicNotationFormatter.formatPitch(MusicTheory.displayRootForKey(globalAggregateKey.keyCenter.tonicName))} ${globalAggregateKey.keyCenter.mode.name}';
 
   int get ambiguousChordCount =>
       chordAnalyses.where((analysis) => analysis.isAmbiguous).length;

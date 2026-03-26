@@ -284,7 +284,7 @@ void main() {
         random: FixedRandom(0),
         request: buildRequest(
           stepIndex: 12,
-          activeKeys: const ['C', 'F#/Gb'],
+          activeKeys: const ['C', 'Gb'],
           currentKeyCenter: const KeyCenter(
             tonicName: 'C',
             mode: KeyMode.major,

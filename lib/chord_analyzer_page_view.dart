@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'audio/harmony_audio_models.dart';
 import 'audio/harmony_audio_service.dart';
@@ -34,6 +36,10 @@ class ChordAnalyzerPage extends StatefulWidget {
 }
 
 class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
+  static const String _draftPreferenceKey = 'chord_analyzer_input_draft';
+  static const Duration _draftSaveDebounceDuration = Duration(
+    milliseconds: 320,
+  );
   final TextEditingController _controller = TextEditingController();
   final ProgressionAnalyzer _analyzer = const ProgressionAnalyzer();
   final ProgressionExplanationBundleBuilder _bundleBuilder =
@@ -56,6 +62,18 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   List<ProgressionVariation> _variations = const [];
   late ProgressionExplanationDetailLevel _localExplanationDetailLevel;
   late ProgressionHighlightTheme _localHighlightTheme;
+  Timer? _draftSaveDebounce;
+  Timer? _copyFeedbackTimer;
+  String _lastSavedDraft = '';
+  String _lastSubmittedInput = '';
+  int _analysisRevision = 0;
+  bool _copyFeedbackVisible = false;
+  bool _inputHelpDialogOpen = false;
+  bool _displaySettingsSheetOpen = false;
+  final FocusNode _shortcutFocusNode = FocusNode(
+    debugLabel: 'analyzerShortcutFocus',
+  );
+  final FocusNode _inputFocusNode = FocusNode(debugLabel: 'analyzerInputFocus');
 
   ProgressionExplanationDetailLevel get _detailLevel =>
       widget.controller?.settings.progressionExplanationDetailLevel ??
@@ -71,11 +89,15 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     final settings = widget.controller?.settings ?? PracticeSettings();
     _localExplanationDetailLevel = settings.progressionExplanationDetailLevel;
     _localHighlightTheme = settings.progressionHighlightTheme;
+    _controller.addListener(_handleDraftChanged);
+    unawaited(_restoreDraft());
   }
 
   Future<void> _analyze() async {
-    final input = _controller.text.trim();
+    _resetCopyFeedback();
+    final input = _normalizedDraft(_controller.text);
     if (input.isEmpty) {
+      _lastSubmittedInput = '';
       setState(() {
         _analysis = null;
         _errorKey = 'empty';
@@ -83,7 +105,10 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
       return;
     }
 
+    final analysisRevision = ++_analysisRevision;
+    _lastSubmittedInput = input;
     FocusScope.of(context).unfocus();
+    _shortcutFocusNode.requestFocus();
     setState(() {
       _isAnalyzing = true;
       _errorKey = null;
@@ -100,7 +125,9 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
       nextErrorKey = error.message;
     }
 
-    if (!mounted) {
+    if (!mounted ||
+        analysisRevision != _analysisRevision ||
+        _normalizedDraft(_controller.text) != input) {
       return;
     }
     setState(() {
@@ -130,8 +157,102 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
 
   @override
   void dispose() {
+    _draftSaveDebounce?.cancel();
+    _copyFeedbackTimer?.cancel();
+    _controller.removeListener(_handleDraftChanged);
+    unawaited(_persistDraft(_controller.text));
+    _inputFocusNode.dispose();
+    _shortcutFocusNode.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _handleDraftChanged() {
+    _analysisRevision += 1;
+    final hadCopyFeedback = _resetCopyFeedback();
+    final nextDraft = _normalizedDraft(_controller.text);
+    final shouldInvalidateCurrentOutput =
+        nextDraft != _lastSubmittedInput &&
+        (_analysis != null ||
+            _errorKey != null ||
+            _isAnalyzing ||
+            _variations.isNotEmpty);
+    if ((shouldInvalidateCurrentOutput || hadCopyFeedback) && mounted) {
+      setState(() {
+        if (shouldInvalidateCurrentOutput) {
+          _analysis = null;
+          _errorKey = null;
+          _isAnalyzing = false;
+          _variations = const [];
+        }
+      });
+    }
+    _draftSaveDebounce?.cancel();
+    _draftSaveDebounce = Timer(_draftSaveDebounceDuration, () {
+      final currentDraft = _normalizedDraft(_controller.text);
+      if (currentDraft == _lastSavedDraft) {
+        return;
+      }
+      _lastSavedDraft = currentDraft;
+      unawaited(_persistDraft(currentDraft));
+    });
+  }
+
+  String _normalizedDraft(String text) => text.trim();
+
+  Future<void> _restoreDraft() async {
+    final preferences = await SharedPreferences.getInstance();
+    if (!mounted) {
+      return;
+    }
+    final savedDraft = _normalizedDraft(
+      preferences.getString(_draftPreferenceKey) ?? '',
+    );
+    _lastSavedDraft = savedDraft;
+    if (savedDraft.isEmpty || _normalizedDraft(_controller.text).isNotEmpty) {
+      return;
+    }
+    _controller.value = TextEditingValue(
+      text: savedDraft,
+      selection: TextSelection.collapsed(offset: savedDraft.length),
+    );
+  }
+
+  Future<void> _persistDraft(String text) async {
+    final draft = _normalizedDraft(text);
+    final preferences = await SharedPreferences.getInstance();
+    if (draft.isEmpty) {
+      await preferences.remove(_draftPreferenceKey);
+      return;
+    }
+    await preferences.setString(_draftPreferenceKey, draft);
+  }
+
+  bool _resetCopyFeedback() {
+    _copyFeedbackTimer?.cancel();
+    _copyFeedbackTimer = null;
+    final hadCopyFeedback = _copyFeedbackVisible;
+    _copyFeedbackVisible = false;
+    return hadCopyFeedback;
+  }
+
+  void _clearAnalyzerState() {
+    if (_isAnalyzing) {
+      return;
+    }
+    _resetCopyFeedback();
+    _draftSaveDebounce?.cancel();
+    _lastSavedDraft = '';
+    _lastSubmittedInput = '';
+    _analysisRevision += 1;
+    _controller.clear();
+    _focusAnalyzerInput(selectAll: false);
+    unawaited(_persistDraft(''));
+    setState(() {
+      _analysis = null;
+      _errorKey = null;
+      _variations = const [];
+    });
   }
 
   void _applyExample(String progression) {
@@ -190,148 +311,162 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   }
 
   Future<void> _openDisplaySettings() async {
+    if (_displaySettingsSheetOpen) {
+      return;
+    }
+    _displaySettingsSheetOpen = true;
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     var draftDetailLevel = _detailLevel;
     var draftTheme = _highlightTheme;
 
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            Future<void> applyTheme(ProgressionHighlightTheme nextTheme) async {
-              setModalState(() {
-                draftTheme = nextTheme;
-              });
-              await _updateAnalyzerSettings(highlightTheme: nextTheme);
-            }
+    try {
+      await showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        isScrollControlled: true,
+        builder: (sheetContext) {
+          return StatefulBuilder(
+            builder: (context, setModalState) {
+              Future<void> applyTheme(
+                ProgressionHighlightTheme nextTheme,
+              ) async {
+                setModalState(() {
+                  draftTheme = nextTheme;
+                });
+                await _updateAnalyzerSettings(highlightTheme: nextTheme);
+              }
 
-            return SafeArea(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(
-                  20,
-                  8,
-                  20,
-                  24 + MediaQuery.of(sheetContext).viewInsets.bottom,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.chordAnalyzerDisplaySettings,
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
+              return SafeArea(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    8,
+                    20,
+                    24 + MediaQuery.of(sheetContext).viewInsets.bottom,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.chordAnalyzerDisplaySettings,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      l10n.chordAnalyzerDisplaySettingsHelp,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.chordAnalyzerDisplaySettingsHelp,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<ProgressionExplanationDetailLevel>(
-                      key: const ValueKey('analyzer-detail-level-selector'),
-                      initialValue: draftDetailLevel,
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        labelText: l10n.chordAnalyzerDetailLevel,
-                      ),
-                      items: ProgressionExplanationDetailLevel.values
-                          .map(
-                            (level) =>
-                                DropdownMenuItem<
-                                  ProgressionExplanationDetailLevel
-                                >(
-                                  value: level,
-                                  child: Text(level.localizedLabel(l10n)),
-                                ),
-                          )
-                          .toList(growable: false),
-                      onChanged: (value) {
-                        if (value == null) {
-                          return;
-                        }
-                        setModalState(() {
-                          draftDetailLevel = value;
-                        });
-                        unawaited(_updateAnalyzerSettings(detailLevel: value));
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<ProgressionHighlightThemePreset>(
-                      key: const ValueKey('analyzer-theme-preset-selector'),
-                      initialValue: draftTheme.preset,
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        labelText: l10n.chordAnalyzerHighlightTheme,
-                      ),
-                      items: ProgressionHighlightThemePreset.values
-                          .map(
-                            (preset) =>
-                                DropdownMenuItem<
-                                  ProgressionHighlightThemePreset
-                                >(
-                                  value: preset,
-                                  child: Text(preset.localizedLabel(l10n)),
-                                ),
-                          )
-                          .toList(growable: false),
-                      onChanged: (value) {
-                        if (value == null) {
-                          return;
-                        }
-                        final nextTheme = draftTheme.withPreset(value);
-                        unawaited(applyTheme(nextTheme));
-                      },
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      l10n.chordAnalyzerThemeLegend,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    _AnalyzerLegendWrap(
-                      categories: ProgressionHighlightCategory.values,
-                      highlightTheme: draftTheme,
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      l10n.chordAnalyzerCustomColors,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    for (final category
-                        in ProgressionHighlightCategory.values) ...[
-                      _ThemeCategoryEditorRow(
-                        category: category,
-                        highlightTheme: draftTheme,
-                        onPickColor: (colorValue) {
-                          final nextTheme = draftTheme.withColor(
-                            category,
-                            Color(colorValue),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<
+                        ProgressionExplanationDetailLevel
+                      >(
+                        key: const ValueKey('analyzer-detail-level-selector'),
+                        initialValue: draftDetailLevel,
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: l10n.chordAnalyzerDetailLevel,
+                        ),
+                        items: ProgressionExplanationDetailLevel.values
+                            .map(
+                              (level) =>
+                                  DropdownMenuItem<
+                                    ProgressionExplanationDetailLevel
+                                  >(
+                                    value: level,
+                                    child: Text(level.localizedLabel(l10n)),
+                                  ),
+                            )
+                            .toList(growable: false),
+                        onChanged: (value) {
+                          if (value == null) {
+                            return;
+                          }
+                          setModalState(() {
+                            draftDetailLevel = value;
+                          });
+                          unawaited(
+                            _updateAnalyzerSettings(detailLevel: value),
                           );
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<ProgressionHighlightThemePreset>(
+                        key: const ValueKey('analyzer-theme-preset-selector'),
+                        initialValue: draftTheme.preset,
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: l10n.chordAnalyzerHighlightTheme,
+                        ),
+                        items: ProgressionHighlightThemePreset.values
+                            .map(
+                              (preset) =>
+                                  DropdownMenuItem<
+                                    ProgressionHighlightThemePreset
+                                  >(
+                                    value: preset,
+                                    child: Text(preset.localizedLabel(l10n)),
+                                  ),
+                            )
+                            .toList(growable: false),
+                        onChanged: (value) {
+                          if (value == null) {
+                            return;
+                          }
+                          final nextTheme = draftTheme.withPreset(value);
                           unawaited(applyTheme(nextTheme));
                         },
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 18),
+                      Text(
+                        l10n.chordAnalyzerThemeLegend,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      _AnalyzerLegendWrap(
+                        categories: ProgressionHighlightCategory.values,
+                        highlightTheme: draftTheme,
+                      ),
+                      const SizedBox(height: 18),
+                      Text(
+                        l10n.chordAnalyzerCustomColors,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      for (final category
+                          in ProgressionHighlightCategory.values) ...[
+                        _ThemeCategoryEditorRow(
+                          category: category,
+                          highlightTheme: draftTheme,
+                          onPickColor: (colorValue) {
+                            final nextTheme = draftTheme.withColor(
+                              category,
+                              Color(colorValue),
+                            );
+                            unawaited(applyTheme(nextTheme));
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            );
-          },
-        );
-      },
-    );
+              );
+            },
+          );
+        },
+      );
+    } finally {
+      _displaySettingsSheetOpen = false;
+    }
   }
 
   Future<void> _applyVariation(ProgressionVariation variation) async {
@@ -340,27 +475,35 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   }
 
   Future<void> _showInputHelp() async {
+    if (_inputHelpDialogOpen) {
+      return;
+    }
+    _inputHelpDialogOpen = true;
     final l10n = AppLocalizations.of(context)!;
     final materialL10n = MaterialLocalizations.of(context);
-    await showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        key: const ValueKey('analyzer-help-dialog'),
-        title: Text(l10n.chordAnalyzerInputHelpTitle),
-        content: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 440),
-          child: SingleChildScrollView(
-            child: Text(l10n.chordAnalyzerInputHelper),
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          key: const ValueKey('analyzer-help-dialog'),
+          title: Text(l10n.chordAnalyzerInputHelpTitle),
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: SingleChildScrollView(
+              child: Text(l10n.chordAnalyzerInputHelper),
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(materialL10n.closeButtonLabel),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(materialL10n.closeButtonLabel),
-          ),
-        ],
-      ),
-    );
+      );
+    } finally {
+      _inputHelpDialogOpen = false;
+    }
   }
 
   Future<void> _playAnalysis({required HarmonyPlaybackPattern pattern}) async {
@@ -381,6 +524,58 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
       return;
     }
     await harmonyAudio.playParsedChord(chord, pattern: pattern);
+  }
+
+  Future<void> _copyAnalyzedProgression() async {
+    final analysis = _analysis;
+    if (analysis == null) {
+      return;
+    }
+    await Clipboard.setData(ClipboardData(text: analysis.input));
+    if (!mounted) {
+      return;
+    }
+    _copyFeedbackTimer?.cancel();
+    setState(() {
+      _copyFeedbackVisible = true;
+    });
+    _copyFeedbackTimer = Timer(const Duration(milliseconds: 1400), () {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _copyFeedbackVisible = false;
+      });
+    });
+  }
+
+  Future<void> _pasteIntoAnalyzerInput() async {
+    if (_isAnalyzing) {
+      return;
+    }
+    final clipboard = await Clipboard.getData(Clipboard.kTextPlain);
+    final text = clipboard?.text;
+    if (text == null) {
+      return;
+    }
+    final normalizedText = _normalizedDraft(text);
+    if (normalizedText.isEmpty) {
+      return;
+    }
+    _resetCopyFeedback();
+    _controller.value = TextEditingValue(
+      text: normalizedText,
+      selection: TextSelection.collapsed(offset: normalizedText.length),
+    );
+    _inputFocusNode.requestFocus();
+  }
+
+  void _focusAnalyzerInput({required bool selectAll}) {
+    final text = _controller.text;
+    _inputFocusNode.requestFocus();
+    _controller.selection = selectAll && text.isNotEmpty
+        ? TextSelection(baseOffset: 0, extentOffset: text.length)
+        : TextSelection.collapsed(offset: text.length);
   }
 
   List<Widget> _buildAnalysisSections(
@@ -664,68 +859,128 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
         actions: [
-          IconButton(
-            key: const ValueKey('analyzer-display-settings-button'),
-            onPressed: _openDisplaySettings,
-            tooltip: l10n.chordAnalyzerDisplaySettings,
-            icon: const Icon(Icons.palette_outlined),
+          Tooltip(
+            message: '${l10n.chordAnalyzerDisplaySettings} (Ctrl/Cmd+,)',
+            child: IconButton(
+              key: const ValueKey('analyzer-display-settings-button'),
+              onPressed: _openDisplaySettings,
+              icon: const Icon(Icons.palette_outlined),
+            ),
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          Positioned(
-            top: -170,
-            right: -120,
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      colorScheme.primary.withValues(
-                        alpha: isDark ? 0.2 : 0.11,
-                      ),
-                      colorScheme.primary.withValues(alpha: 0),
-                    ],
+      body: Focus(
+        focusNode: _shortcutFocusNode,
+        autofocus: true,
+        onKeyEvent: (_, event) {
+          if (event is! KeyDownEvent) {
+            return KeyEventResult.ignored;
+          }
+          final keyboard = HardwareKeyboard.instance;
+          if (event.logicalKey == LogicalKeyboardKey.f1) {
+            unawaited(_showInputHelp());
+            return KeyEventResult.handled;
+          }
+          final isDisplaySettingsShortcut =
+              event.logicalKey == LogicalKeyboardKey.comma &&
+              (keyboard.isControlPressed || keyboard.isMetaPressed);
+          if (isDisplaySettingsShortcut) {
+            unawaited(_openDisplaySettings());
+            return KeyEventResult.handled;
+          }
+          final isAnalyzeShortcut =
+              (event.logicalKey == LogicalKeyboardKey.enter ||
+                  event.logicalKey == LogicalKeyboardKey.numpadEnter) &&
+              (keyboard.isControlPressed || keyboard.isMetaPressed);
+          final isFocusInputShortcut =
+              (event.logicalKey == LogicalKeyboardKey.keyL ||
+                  event.logicalKey == LogicalKeyboardKey.keyA) &&
+              (keyboard.isControlPressed || keyboard.isMetaPressed);
+          if (isFocusInputShortcut) {
+            _focusAnalyzerInput(selectAll: true);
+            return KeyEventResult.handled;
+          }
+          if (isAnalyzeShortcut &&
+              !_isAnalyzing &&
+              _normalizedDraft(_controller.text).isNotEmpty) {
+            unawaited(_analyze());
+            return KeyEventResult.handled;
+          }
+          final isPasteShortcut =
+              event.logicalKey == LogicalKeyboardKey.keyV &&
+              (keyboard.isControlPressed || keyboard.isMetaPressed);
+          if (isPasteShortcut && !_isAnalyzing) {
+            unawaited(_pasteIntoAnalyzerInput());
+            return KeyEventResult.handled;
+          }
+          final isCopyShortcut =
+              event.logicalKey == LogicalKeyboardKey.keyC &&
+              (keyboard.isControlPressed || keyboard.isMetaPressed);
+          if (isCopyShortcut && _analysis != null) {
+            unawaited(_copyAnalyzedProgression());
+            return KeyEventResult.handled;
+          }
+          if (event.logicalKey != LogicalKeyboardKey.escape) {
+            return KeyEventResult.ignored;
+          }
+          _clearAnalyzerState();
+          return KeyEventResult.handled;
+        },
+        child: Stack(
+          children: [
+            Positioned(
+              top: -170,
+              right: -120,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        colorScheme.primary.withValues(
+                          alpha: isDark ? 0.2 : 0.11,
+                        ),
+                        colorScheme.primary.withValues(alpha: 0),
+                      ],
+                    ),
+                  ),
+                  child: const SizedBox(width: 340, height: 340),
+                ),
+              ),
+            ),
+            Positioned(
+              left: -150,
+              bottom: -210,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        colorScheme.primaryContainer.withValues(
+                          alpha: isDark ? 0.28 : 0.5,
+                        ),
+                        colorScheme.primaryContainer.withValues(alpha: 0),
+                      ],
+                    ),
+                  ),
+                  child: const SizedBox(width: 380, height: 380),
+                ),
+              ),
+            ),
+            SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 760),
+                    child: resultsBody,
                   ),
                 ),
-                child: const SizedBox(width: 340, height: 340),
               ),
             ),
-          ),
-          Positioned(
-            left: -150,
-            bottom: -210,
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      colorScheme.primaryContainer.withValues(
-                        alpha: isDark ? 0.28 : 0.5,
-                      ),
-                      colorScheme.primaryContainer.withValues(alpha: 0),
-                    ],
-                  ),
-                ),
-                child: const SizedBox(width: 380, height: 380),
-              ),
-            ),
-          ),
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 760),
-                  child: resultsBody,
-                ),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -822,8 +1077,15 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     return chips;
   }
 
-  Widget _buildAnalyzerActionRow(AppLocalizations l10n) {
+  Widget _buildAnalyzerActionRow(
+    AppLocalizations l10n,
+    MaterialLocalizations materialL10n, {
+    required bool hasInput,
+  }) {
     final hasAnalysis = _analysis != null;
+    final canAnalyze = hasInput && !_isAnalyzing;
+    final canClear =
+        hasInput || hasAnalysis || _errorKey != null || _variations.isNotEmpty;
 
     return Align(
       alignment: Alignment.centerRight,
@@ -832,34 +1094,85 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
         runSpacing: 10,
         alignment: WrapAlignment.end,
         children: [
-          FilledButton.icon(
-            key: const ValueKey('analyzer-analyze-button'),
-            onPressed: _isAnalyzing ? null : _analyze,
-            icon: const Icon(Icons.insights_rounded),
-            label: Text(l10n.chordAnalyzerAnalyze),
+          Tooltip(
+            message: '${l10n.chordAnalyzerAnalyze} (Ctrl/Cmd+Enter)',
+            child: FilledButton.icon(
+              key: const ValueKey('analyzer-analyze-button'),
+              onPressed: canAnalyze ? _analyze : null,
+              icon: const Icon(Icons.insights_rounded),
+              label: Text(l10n.chordAnalyzerAnalyze),
+            ),
+          ),
+          Tooltip(
+            message: '${materialL10n.pasteButtonLabel} (Ctrl/Cmd+V)',
+            child: OutlinedButton.icon(
+              key: const ValueKey('analyzer-paste-button'),
+              onPressed: _isAnalyzing ? null : _pasteIntoAnalyzerInput,
+              icon: const Icon(Icons.content_paste_rounded),
+              label: Text(materialL10n.pasteButtonLabel),
+            ),
+          ),
+          Tooltip(
+            message: '${materialL10n.clearButtonTooltip} (Esc)',
+            child: OutlinedButton.icon(
+              key: const ValueKey('analyzer-clear-button'),
+              onPressed: _isAnalyzing || !canClear ? null : _clearAnalyzerState,
+              icon: const Icon(Icons.clear_rounded),
+              label: Text(materialL10n.clearButtonTooltip),
+            ),
           ),
           if (hasAnalysis)
-            OutlinedButton.icon(
-              key: const ValueKey('analyzer-play-progression-button'),
-              onPressed: () =>
-                  _playAnalysis(pattern: HarmonyPlaybackPattern.block),
-              icon: const Icon(Icons.music_note_rounded),
-              label: Text(l10n.audioPlayProgression),
+            Tooltip(
+              message: '${materialL10n.copyButtonLabel} (Ctrl/Cmd+C)',
+              child: OutlinedButton.icon(
+                key: const ValueKey('analyzer-copy-progression-button'),
+                onPressed: _copyAnalyzedProgression,
+                icon: Icon(
+                  _copyFeedbackVisible
+                      ? Icons.check_rounded
+                      : Icons.content_copy_rounded,
+                  key: ValueKey(
+                    _copyFeedbackVisible
+                        ? 'analyzer-copy-success-icon'
+                        : 'analyzer-copy-default-icon',
+                  ),
+                ),
+                label: Text(materialL10n.copyButtonLabel),
+              ),
             ),
           if (hasAnalysis)
-            OutlinedButton.icon(
-              key: const ValueKey('analyzer-play-progression-arpeggio-button'),
-              onPressed: () =>
-                  _playAnalysis(pattern: HarmonyPlaybackPattern.arpeggio),
-              icon: const Icon(Icons.multitrack_audio_rounded),
-              label: Text(l10n.audioPlayArpeggio),
+            Tooltip(
+              message: l10n.audioPlayProgression,
+              child: OutlinedButton.icon(
+                key: const ValueKey('analyzer-play-progression-button'),
+                onPressed: () =>
+                    _playAnalysis(pattern: HarmonyPlaybackPattern.block),
+                icon: const Icon(Icons.music_note_rounded),
+                label: Text(l10n.audioPlayProgression),
+              ),
+            ),
+          if (hasAnalysis)
+            Tooltip(
+              message: l10n.audioPlayArpeggio,
+              child: OutlinedButton.icon(
+                key: const ValueKey(
+                  'analyzer-play-progression-arpeggio-button',
+                ),
+                onPressed: () =>
+                    _playAnalysis(pattern: HarmonyPlaybackPattern.arpeggio),
+                icon: const Icon(Icons.multitrack_audio_rounded),
+                label: Text(l10n.audioPlayArpeggio),
+              ),
             ),
           if (hasAnalysis && _advancedActionsEnabled)
-            OutlinedButton.icon(
-              key: const ValueKey('analyzer-generate-variations-button'),
-              onPressed: _generateVariations,
-              icon: const Icon(Icons.auto_fix_high_rounded),
-              label: Text(l10n.chordAnalyzerGenerateVariations),
+            Tooltip(
+              message: l10n.chordAnalyzerGenerateVariations,
+              child: OutlinedButton.icon(
+                key: const ValueKey('analyzer-generate-variations-button'),
+                onPressed: _generateVariations,
+                icon: const Icon(Icons.auto_fix_high_rounded),
+                label: Text(l10n.chordAnalyzerGenerateVariations),
+              ),
             ),
         ],
       ),
@@ -875,6 +1188,7 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     List<String> summary,
   ) {
     final analysis = _analysis;
+    final materialL10n = MaterialLocalizations.of(context);
 
     return DecoratedBox(
       decoration: _analyzerPanelDecoration(colorScheme, accent: true),
@@ -898,7 +1212,7 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
                 ),
                 const SizedBox(width: 12),
                 Tooltip(
-                  message: l10n.chordAnalyzerInputHelpTitle,
+                  message: '${l10n.chordAnalyzerInputHelpTitle} (F1)',
                   child: IconButton.filledTonal(
                     key: const ValueKey('analyzer-help-button'),
                     onPressed: _showInputHelp,
@@ -931,9 +1245,12 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
             ChordInputEditor(
               fieldKey: const ValueKey('analyzer-input-field'),
               controller: _controller,
+              focusNode: _inputFocusNode,
               labelText: l10n.chordAnalyzerInputLabel,
               hintText: l10n.chordAnalyzerInputHint,
               helperText: _analyzerQuickStartHint(context),
+              tooltipMessage:
+                  '${l10n.chordAnalyzerInputLabel} (Ctrl/Cmd+L, Ctrl/Cmd+A)',
               platformOverride: widget.inputPlatformOverride,
               minLines: compactLayout ? 2 : 3,
               maxLines: compactLayout ? 3 : 5,
@@ -955,17 +1272,30 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
               runSpacing: 8,
               children: [
                 for (final example in _exampleProgressions)
-                  ActionChip(
-                    key: ValueKey('analyzer-example-$example'),
-                    label: Text(example),
-                    onPressed: _isAnalyzing
-                        ? null
-                        : () => unawaited(_applyExampleAndAnalyze(example)),
+                  Tooltip(
+                    message: '${l10n.chordAnalyzerAnalyze}: $example',
+                    child: ActionChip(
+                      key: ValueKey('analyzer-example-$example'),
+                      avatar: const Icon(Icons.insights_rounded, size: 18),
+                      label: Text(example),
+                      onPressed: _isAnalyzing
+                          ? null
+                          : () => unawaited(_applyExampleAndAnalyze(example)),
+                    ),
                   ),
               ],
             ),
             SizedBox(height: compactLayout ? 12 : 16),
-            _buildAnalyzerActionRow(l10n),
+            ValueListenableBuilder<TextEditingValue>(
+              valueListenable: _controller,
+              builder: (context, value, _) {
+                return _buildAnalyzerActionRow(
+                  l10n,
+                  materialL10n,
+                  hasInput: value.text.trim().isNotEmpty,
+                );
+              },
+            ),
           ],
         ),
       ),
