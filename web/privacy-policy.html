@@ -12,20 +12,39 @@
     <section class="hero">
       <span class="eyebrow">Chordest</span>
       <h1>Privacy Policy</h1>
-      <p>Chordest is designed as a local-first music practice app. This policy covers the Android, iOS, and web builds published by Saintimulus OSS.</p>
+      <p>Chordest is designed as a local-first music practice app with optional account-linked premium sync. This policy covers the Android, iOS, macOS, and web builds published by Saintimulus OSS.</p>
       <div class="nav">
         <a href="support.html">Support</a>
+        <a href="delete-account.html">Delete Account</a>
         <a href="terms.html">Terms of Use</a>
         <a href="./">Open App</a>
       </div>
-      <p class="meta">Last updated: March 21, 2026</p>
+      <p class="meta">Last updated: March 27, 2026</p>
     </section>
 
     <div class="grid">
       <section class="card">
-        <h2>What Chordest collects</h2>
-        <p>The current Chordest mobile release does not require account creation and does not intentionally collect personal information from inside the app.</p>
-        <p>The app stores practice settings, notation preferences, and learning progress locally on the device so your sessions can resume with the same configuration later.</p>
+        <h2>What Chordest stores locally</h2>
+        <p>The current app does not require account creation for its core practice flows.</p>
+        <p>The app stores practice settings, notation preferences, lesson and study progress, and a local cache of premium unlock status on your device so your sessions and entitlements can resume later.</p>
+      </section>
+
+      <section class="card">
+        <h2>Optional account sign-in and premium sync</h2>
+        <p>If you choose to create an account, Chordest uses Firebase Authentication with email and password so you can sign in across devices.</p>
+        <p>When you are signed in, the app can sync account-linked premium entitlement state through Cloud Firestore so your premium status can follow the same account on another device.</p>
+      </section>
+
+      <section class="card">
+        <h2>Purchases and premium unlock</h2>
+        <p>On supported store platforms, Chordest includes a one-time premium unlock. The app can query product details, listen for purchase updates, restore past purchases, and cache the last confirmed unlock state locally on the device.</p>
+        <p>Purchase checkout, billing, and store-account handling are provided by Google Play or the App Store under their own privacy policies. When you are signed in, the app may also sync premium entitlement state to a Chordest-managed Firebase project. The current repository build does not yet include a dedicated Chordest-operated server-side purchase verification service.</p>
+      </section>
+
+      <section class="card">
+        <h2>Optional custom audio files</h2>
+        <p>If you choose a custom metronome or accent sound, the app uses the system file picker so you can select an audio file yourself. A private copy of the selected file is then stored inside the app's own support directory on your device.</p>
+        <p>You can replace or remove that copied file from inside the app by switching back to the built-in sound or choosing another file.</p>
       </section>
 
       <section class="card">
@@ -33,29 +52,38 @@
         <ul>
           <li>No in-app ads.</li>
           <li>No in-app analytics or crash-reporting SDKs in the current repository build.</li>
-          <li>No account login, profile system, or cloud sync in the current repository build.</li>
           <li>No camera, microphone, location, contacts, or photo-library access in the current repository build.</li>
+          <li>No social feed, public profile directory, or community messaging features in the current repository build.</li>
         </ul>
       </section>
 
       <section class="card">
         <h2>How data is stored</h2>
-        <p>Practice progress and app settings are stored locally on your device through platform preference storage. If you uninstall the app, clear app data, or move to a new device, that local data may be lost unless a future release adds sync or export features.</p>
+        <p>Practice progress, app settings, and premium entitlement cache are stored locally on your device through platform preference storage. Optional custom metronome files are copied into app-private storage on supported platforms.</p>
+        <p>If you use account sign-in, Firebase Authentication stores account identity data and Cloud Firestore stores synced entitlement state for that signed-in account. If you uninstall the app, clear app data, or move to a new device, local settings and copied files may be lost. Store-managed purchases may still be restorable through the same store account, subject to the store's rules.</p>
       </section>
 
       <section class="card">
-        <h2>Third-party platforms</h2>
-        <p>If you download Chordest from Google Play or the App Store, those platforms may process technical or account information under their own privacy policies. If you access the public website, GitHub Pages and related infrastructure may process standard web request logs under GitHub's policies.</p>
+        <h2>Account deletion</h2>
+        <p>If you created a Chordest account, you can delete it from Main Menu &gt; Settings &gt; Account inside the app.</p>
+        <p>That flow deletes the app account and synced entitlement data associated with that account. It does not delete purchase history managed by Google Play or the App Store, and it does not automatically erase data that exists only on your local device.</p>
+        <p>An outside-app deletion instruction page is also available at <a href="delete-account.html">delete-account.html</a>.</p>
+      </section>
+
+      <section class="card">
+        <h2>Third-party platforms and support</h2>
+        <p>If you download Chordest from Google Play or the App Store, those platforms may process technical, billing, purchase, or account information under their own privacy policies. If you use optional account sign-in, Firebase Authentication and Cloud Firestore process account and entitlement-sync data under Google's policies. If you access the public website, GitHub Pages and related infrastructure may process standard web request logs under GitHub's policies.</p>
+        <p>If you submit a support request or bug report through the linked GitHub issue tracker, the information you submit is processed by GitHub and may be visible according to that platform's settings and policies.</p>
       </section>
 
       <section class="card">
         <h2>Children's privacy</h2>
-        <p>Chordest is a general-audience music education app. It is not directed to children under 13 as a standalone child-focused service, and the current release does not knowingly collect personal information from children.</p>
+        <p>Chordest is a general-audience music education app. It is not directed to children under 13 as a standalone child-focused service. If account features are enabled in a published build, personal information such as email address may be processed only as needed to provide that optional sign-in flow.</p>
       </section>
 
       <section class="card">
         <h2>Changes to this policy</h2>
-        <p>If a future release adds analytics, accounts, cloud sync, purchases, or any new data use, this policy will be updated before or alongside that release.</p>
+        <p>If a future release adds analytics, crash reporting, ads, new device permissions, server-side purchase verification, or any new data use, this policy will be updated before or alongside that release.</p>
       </section>
 
       <section class="card">

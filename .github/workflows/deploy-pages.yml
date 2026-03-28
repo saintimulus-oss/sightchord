@@ -56,6 +56,9 @@ jobs:
       - name: Build web app
         run: flutter build web --release --base-href "${{ steps.base_href.outputs.value }}"
 
+      - name: Prune bulky sampled instrument assets from web build
+        run: dart run tool/prune_web_release.dart build/web
+
       - name: Disable Jekyll
         run: touch build/web/.nojekyll
 

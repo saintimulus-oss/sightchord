@@ -7,25 +7,12 @@ import '../music/chord_anchor_loop.dart';
 import '../music/chord_theory.dart';
 import '../music/notation_presentation.dart';
 import '../music/progression_highlight_theme.dart';
+import 'app_language_registry.dart';
 import 'inversion_settings.dart';
 
+export 'app_language_registry.dart';
 export '../audio/metronome_audio_models.dart';
 export '../music/progression_highlight_theme.dart';
-
-enum AppLanguage { system, en, es, zh, zhHans, ja, ko }
-
-const List<AppLanguage> supportedAppLanguages = <AppLanguage>[
-  AppLanguage.en,
-  AppLanguage.ko,
-];
-
-const List<AppLanguage> selectableAppLanguages = <AppLanguage>[
-  AppLanguage.system,
-  AppLanguage.en,
-  AppLanguage.ko,
-];
-
-const List<Locale> supportedAppLocales = <Locale>[Locale('en'), Locale('ko')];
 
 enum AppThemeMode { system, light, dark }
 
@@ -80,88 +67,6 @@ enum VoicingComplexity { basic, standard, modern }
 enum VoicingDisplayMode { standard, performance }
 
 enum VoicingTopNotePreference { auto, c, db, d, eb, e, f, gb, g, ab, a, bb, b }
-
-extension AppLanguageX on AppLanguage {
-  Locale? get locale {
-    switch (this) {
-      case AppLanguage.system:
-        return null;
-      case AppLanguage.en:
-        return const Locale('en');
-      case AppLanguage.es:
-        return const Locale('es');
-      case AppLanguage.zh:
-        return const Locale('zh');
-      case AppLanguage.zhHans:
-        return const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans');
-      case AppLanguage.ja:
-        return const Locale('ja');
-      case AppLanguage.ko:
-        return const Locale('ko');
-    }
-  }
-
-  String get storageKey {
-    switch (this) {
-      case AppLanguage.system:
-        return 'system';
-      case AppLanguage.en:
-        return 'en';
-      case AppLanguage.es:
-        return 'es';
-      case AppLanguage.zh:
-        return 'zh';
-      case AppLanguage.zhHans:
-        return 'zh_Hans';
-      case AppLanguage.ja:
-        return 'ja';
-      case AppLanguage.ko:
-        return 'ko';
-    }
-  }
-
-  String get nativeLabel {
-    switch (this) {
-      case AppLanguage.system:
-        return 'System';
-      case AppLanguage.en:
-        return 'English';
-      case AppLanguage.es:
-        return 'Espa\u00f1ol';
-      case AppLanguage.zh:
-        return '\u7e41\u9ad4\u4e2d\u6587';
-      case AppLanguage.zhHans:
-        return '\u7b80\u4f53\u4e2d\u6587';
-      case AppLanguage.ja:
-        return '\u65e5\u672c\u8a9e';
-      case AppLanguage.ko:
-        return '\ud55c\uad6d\uc5b4';
-    }
-  }
-
-  bool get isSelectableInApp => selectableAppLanguages.contains(this);
-
-  AppLanguage get selectableValue {
-    if (isSelectableInApp) {
-      return this;
-    }
-    return AppLanguage.system;
-  }
-
-  Locale? get appLocale {
-    if (!supportedAppLanguages.contains(this)) {
-      return null;
-    }
-    return locale;
-  }
-
-  static AppLanguage fromStorageKey(String? value) {
-    return AppLanguage.values.firstWhere(
-      (language) => language.storageKey == value,
-      orElse: () => AppLanguage.system,
-    );
-  }
-}
 
 extension AppThemeModeX on AppThemeMode {
   ThemeMode get materialThemeMode {

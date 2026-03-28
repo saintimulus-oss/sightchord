@@ -39,6 +39,7 @@ dart format .
 flutter analyze
 flutter test
 flutter build web --release --base-href /
+dart run tool/prune_web_release.dart build/web
 ```
 
 ## Mobile Release
@@ -51,6 +52,8 @@ The repository also includes store submission text templates in [store/google-pl
 
 For local release validation on Windows, run [tool/validate_mobile_release.ps1](tool/validate_mobile_release.ps1). Store metadata length checks also run independently via [tool/validate_store_metadata.py](tool/validate_store_metadata.py).
 
+Optional account auth and premium sync now use Firebase Authentication plus Firestore runtime configuration. Setup details live in [docs/account_sync_setup.md](docs/account_sync_setup.md).
+
 Draft store screenshots can be staged from the current Playwright captures with [tool/stage_store_screenshots.ps1](tool/stage_store_screenshots.ps1), and issue intake is standardized through the templates under [.github/ISSUE_TEMPLATE](.github/ISSUE_TEMPLATE).
 
 Store locale coverage can be checked with [tool/validate_store_locale_coverage.py](tool/validate_store_locale_coverage.py), and a submission handoff bundle can be assembled with [tool/package_mobile_release_artifacts.ps1](tool/package_mobile_release_artifacts.ps1).
@@ -61,6 +64,7 @@ For local parity with the current project-site deployment, you can also run:
 
 ```bash
 flutter build web --release --base-href /chordest/
+dart run tool/prune_web_release.dart build/web
 ```
 
 ## Repository Hygiene
@@ -117,10 +121,12 @@ This repository uses `.github/workflows/deploy-pages.yml` with the standard Page
 5. `flutter analyze`
 6. `flutter test`
 7. `flutter build web --release`
-8. Upload the Pages artifact
-9. Deploy with `actions/deploy-pages`
+8. `dart run tool/prune_web_release.dart build/web`
+9. Upload the Pages artifact
+10. Deploy with `actions/deploy-pages`
 
 The workflow deploys only `build/web`. Root-level generated Flutter web files are intentionally ignored and are not part of the deployment contract.
+Pages builds also prune the large sampled piano bundle after compilation because the web runtime now synthesizes preview tones instead of downloading the full mobile sample set.
 
 To publish:
 
@@ -132,5 +138,7 @@ To publish:
 - Default chord symbol semantics stay unchanged, but note naming, key labels, and optional Roman numeral / chord-text assists can now be switched independently from the app UI locale.
 - Chord Generator and Chord Analyzer remain separate entry points from the main menu.
 - Settings are persisted with `shared_preferences`.
+- Optional account sign-in uses Firebase Authentication when runtime configuration is provided.
+- Account-linked premium sync uses Cloud Firestore when runtime configuration is provided.
 - The metronome uses `assets/tick.mp3` through `audioplayers`.
 - Architecture details and owner follow-ups live in [docs/architecture-overview.md](docs/architecture-overview.md) and [docs/developer-notes.md](docs/developer-notes.md).

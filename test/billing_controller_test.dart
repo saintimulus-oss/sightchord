@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:chordest/billing/account_entitlement_store.dart';
 import 'package:chordest/billing/billing_controller.dart';
 import 'package:chordest/billing/billing_gateway.dart';
 import 'package:chordest/billing/billing_models.dart';
@@ -13,6 +14,7 @@ void main() {
   late DateTime now;
   late _FakeBillingGateway gateway;
   late _MemoryBillingStore store;
+  late _MemoryAccountEntitlementStore accountStore;
   late BillingProduct product;
 
   setUp(() {
@@ -20,6 +22,7 @@ void main() {
     now = DateTime(2026, 3, 25, 9);
     gateway = _FakeBillingGateway();
     store = _MemoryBillingStore();
+    accountStore = _MemoryAccountEntitlementStore();
     product = BillingProduct(
       productId: kPremiumUnlockProductId,
       title: 'Chordest Premium',
@@ -33,6 +36,7 @@ void main() {
     return BillingController(
       gateway: gateway,
       store: store,
+      accountEntitlementStore: accountStore,
       now: () => now,
     );
   }
@@ -150,30 +154,26 @@ void main() {
     final controller = createController();
     await controller.initialize();
 
-    gateway.emit(
-      const <BillingPurchase>[
-        BillingPurchase(
-          productId: kPremiumUnlockProductId,
-          status: BillingGatewayPurchaseStatus.pending,
-          pendingCompletePurchase: false,
-        ),
-      ],
-    );
+    gateway.emit(const <BillingPurchase>[
+      BillingPurchase(
+        productId: kPremiumUnlockProductId,
+        status: BillingGatewayPurchaseStatus.pending,
+        pendingCompletePurchase: false,
+      ),
+    ]);
     await Future<void>.delayed(const Duration(milliseconds: 10));
     expect(
       controller.state.operation.messageCode,
       BillingMessageCode.purchasePending,
     );
 
-    gateway.emit(
-      const <BillingPurchase>[
-        BillingPurchase(
-          productId: kPremiumUnlockProductId,
-          status: BillingGatewayPurchaseStatus.canceled,
-          pendingCompletePurchase: false,
-        ),
-      ],
-    );
+    gateway.emit(const <BillingPurchase>[
+      BillingPurchase(
+        productId: kPremiumUnlockProductId,
+        status: BillingGatewayPurchaseStatus.canceled,
+        pendingCompletePurchase: false,
+      ),
+    ]);
     await Future<void>.delayed(const Duration(milliseconds: 10));
     expect(
       controller.state.operation.messageCode,
@@ -185,6 +185,7 @@ void main() {
     final controller = BillingController(
       gateway: gateway,
       store: _FailingBillingStore(),
+      accountEntitlementStore: accountStore,
       now: () => now,
     );
 
@@ -192,6 +193,93 @@ void main() {
 
     expect(controller.state.entitlements, isEmpty);
     expect(controller.state.storeStatus, BillingStoreStatus.unknown);
+  });
+
+  test('계정 전환 시 원격 entitlement snapshot을 병합한다', () async {
+    accountStore.snapshots['user-1'] = BillingStoreSnapshot(
+      entitlements: <AppEntitlement, BillingEntitlementRecord>{
+        AppEntitlement.premiumUnlock: BillingEntitlementRecord(
+          entitlement: AppEntitlement.premiumUnlock,
+          productId: kPremiumUnlockProductId,
+          isActive: true,
+          source: BillingEntitlementSource.restore,
+          updatedAt: now,
+          lastVerifiedAt: now,
+          purchaseId: 'remote-premium',
+        ),
+      },
+      lastSyncAt: now,
+    );
+
+    final controller = createController();
+    await controller.setAccount('user-1');
+
+    expect(controller.accountId, 'user-1');
+    expect(controller.state.isPremiumUnlocked, isTrue);
+  });
+  test('stale account switch does not overwrite the latest snapshot', () async {
+    final delayedStore = _DelayedBillingStore();
+    final controller = BillingController(
+      gateway: gateway,
+      store: delayedStore,
+      accountEntitlementStore: const NoopAccountEntitlementStore(),
+      now: () => now,
+    );
+
+    await controller.initialize();
+
+    final firstSwitch = controller.setAccount('user-1');
+    final secondSwitch = controller.setAccount('user-2');
+
+    delayedStore.complete(
+      'user-2',
+      BillingStoreSnapshot(
+        entitlements: <AppEntitlement, BillingEntitlementRecord>{
+          AppEntitlement.premiumUnlock: BillingEntitlementRecord(
+            entitlement: AppEntitlement.premiumUnlock,
+            productId: kPremiumUnlockProductId,
+            isActive: true,
+            source: BillingEntitlementSource.purchase,
+            updatedAt: now,
+            lastVerifiedAt: now,
+            purchaseId: 'user-2',
+          ),
+        },
+        lastSyncAt: now,
+      ),
+    );
+    await secondSwitch;
+
+    expect(controller.accountId, 'user-2');
+    expect(
+      controller.state.entitlements[AppEntitlement.premiumUnlock]?.purchaseId,
+      'user-2',
+    );
+
+    delayedStore.complete(
+      'user-1',
+      BillingStoreSnapshot(
+        entitlements: <AppEntitlement, BillingEntitlementRecord>{
+          AppEntitlement.premiumUnlock: BillingEntitlementRecord(
+            entitlement: AppEntitlement.premiumUnlock,
+            productId: kPremiumUnlockProductId,
+            isActive: true,
+            source: BillingEntitlementSource.purchase,
+            updatedAt: now.subtract(const Duration(days: 1)),
+            lastVerifiedAt: now.subtract(const Duration(days: 1)),
+            purchaseId: 'user-1',
+          ),
+        },
+        lastSyncAt: now.subtract(const Duration(days: 1)),
+      ),
+    );
+    await firstSwitch;
+
+    expect(controller.accountId, 'user-2');
+    expect(
+      controller.state.entitlements[AppEntitlement.premiumUnlock]?.purchaseId,
+      'user-2',
+    );
   });
 }
 
@@ -218,7 +306,9 @@ class _FakeBillingGateway implements BillingGateway {
   Future<bool> isAvailable() async => available;
 
   @override
-  Future<BillingProductQueryResult> queryProducts(Set<String> productIds) async {
+  Future<BillingProductQueryResult> queryProducts(
+    Set<String> productIds,
+  ) async {
     return queryResult;
   }
 
@@ -257,10 +347,14 @@ class _MemoryBillingStore extends BillingStore {
   }
 
   @override
-  Future<BillingStoreSnapshot> loadSnapshot() async => snapshot;
+  Future<BillingStoreSnapshot> loadSnapshot({String? accountId}) async =>
+      snapshot;
 
   @override
-  Future<void> saveSnapshot(BillingStoreSnapshot nextSnapshot) async {
+  Future<void> saveSnapshot(
+    BillingStoreSnapshot nextSnapshot, {
+    String? accountId,
+  }) async {
     snapshot = nextSnapshot;
     saveCalls += 1;
   }
@@ -268,10 +362,64 @@ class _MemoryBillingStore extends BillingStore {
 
 class _FailingBillingStore extends BillingStore {
   _FailingBillingStore()
-    : super(preferencesLoader: _MemoryBillingStore._unsupportedPreferencesLoader);
+    : super(
+        preferencesLoader: _MemoryBillingStore._unsupportedPreferencesLoader,
+      );
 
   @override
-  Future<BillingStoreSnapshot> loadSnapshot() async {
+  Future<BillingStoreSnapshot> loadSnapshot({String? accountId}) async {
     throw StateError('simulated billing cache load failure');
+  }
+}
+
+class _DelayedBillingStore extends BillingStore {
+  _DelayedBillingStore()
+    : super(
+        preferencesLoader: _MemoryBillingStore._unsupportedPreferencesLoader,
+      );
+
+  final Map<String, Completer<BillingStoreSnapshot>> _completers =
+      <String, Completer<BillingStoreSnapshot>>{};
+
+  @override
+  Future<BillingStoreSnapshot> loadSnapshot({String? accountId}) async {
+    if (accountId == null) {
+      return const BillingStoreSnapshot();
+    }
+    return (_completers[accountId] ??= Completer<BillingStoreSnapshot>())
+        .future;
+  }
+
+  @override
+  Future<void> saveSnapshot(
+    BillingStoreSnapshot nextSnapshot, {
+    String? accountId,
+  }) async {}
+
+  void complete(String accountId, BillingStoreSnapshot snapshot) {
+    final completer = _completers[accountId] ??=
+        Completer<BillingStoreSnapshot>();
+    if (completer.isCompleted) {
+      return;
+    }
+    completer.complete(snapshot);
+  }
+}
+
+class _MemoryAccountEntitlementStore implements AccountEntitlementStore {
+  final Map<String, BillingStoreSnapshot> snapshots =
+      <String, BillingStoreSnapshot>{};
+
+  @override
+  Future<BillingStoreSnapshot?> fetchSnapshot(String accountId) async {
+    return snapshots[accountId];
+  }
+
+  @override
+  Future<void> saveSnapshot(
+    String accountId,
+    BillingStoreSnapshot snapshot,
+  ) async {
+    snapshots[accountId] = snapshot;
   }
 }

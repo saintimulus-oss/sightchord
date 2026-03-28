@@ -1,10 +1,10 @@
 import 'dart:developer' as developer;
 import 'dart:js_interop';
 
-import 'package:flutter/services.dart';
 import 'package:web/web.dart' as web;
 
 import 'sample_player_voice.dart';
+import 'web_synth_pitch.dart';
 
 class WebAudioSamplePlayerVoiceFactory implements SamplePlayerVoiceFactory {
   const WebAudioSamplePlayerVoiceFactory();
@@ -20,13 +20,10 @@ class WebAudioSamplePlayerVoiceFactory implements SamplePlayerVoiceFactory {
 class _WebAudioSamplePlayerVoice implements SamplePlayerVoice {
   static web.AudioContext? _sharedAudioContext;
   static int _liveVoiceCount = 0;
-  static final Map<String, Future<web.AudioBuffer>> _decodedBuffers =
-      <String, Future<web.AudioBuffer>>{};
 
   String? _currentAssetPath;
-  web.AudioBuffer? _buffer;
-  double _currentPlaybackRate = 1.0;
-  _ActiveWebSamplePlayback? _activePlayback;
+  double? _currentFrequencyHz;
+  _ActiveWebSynthPlayback? _activePlayback;
 
   @override
   Future<void> configure() async {
@@ -39,43 +36,68 @@ class _WebAudioSamplePlayerVoice implements SamplePlayerVoice {
     required String assetPath,
     required double playbackRate,
   }) async {
-    _currentPlaybackRate = playbackRate;
-    if (_currentAssetPath == assetPath && _buffer != null) {
+    if (_currentAssetPath == assetPath && _currentFrequencyHz != null) {
       return;
     }
     _currentAssetPath = assetPath;
-    _buffer = await _decodedBuffers.putIfAbsent(
-      assetPath,
-      () => _decodeAsset(assetPath),
+    _currentFrequencyHz = resolveWebSynthFrequency(
+      assetPath: assetPath,
+      playbackRate: playbackRate,
     );
+    if (_currentFrequencyHz == null) {
+      throw StateError(
+        'The web synth backend could not resolve a pitch for $assetPath.',
+      );
+    }
   }
 
   @override
   Future<void> start({required double volume}) async {
     final context = _sharedAudioContext;
-    final buffer = _buffer;
-    if (context == null || buffer == null) {
+    final frequencyHz = _currentFrequencyHz;
+    if (context == null || frequencyHz == null) {
       throw StateError('The web sample voice must be prepared before start().');
     }
     await activateWebAudio();
 
     await stop();
 
-    final source = context.createBufferSource();
-    final gain = context.createGain();
-    gain.gain.value = volume.clamp(0.0, 1.0).toDouble();
-    source.buffer = buffer;
-    source.playbackRate.value = _currentPlaybackRate;
-    source.connect(gain);
-    gain.connect(context.destination);
-    source.start(0);
+    final clampedVolume = volume.clamp(0.0, 1.0).toDouble();
+    final fundamentalGain = context.createGain();
+    final overtoneGain = context.createGain();
+    final fundamental = context.createOscillator();
+    final overtone = context.createOscillator();
 
-    _activePlayback = _ActiveWebSamplePlayback(source: source, gain: gain);
+    fundamental.frequency.value = frequencyHz;
+    overtone.frequency.value = frequencyHz * 2;
+    fundamentalGain.gain.value = clampedVolume;
+    overtoneGain.gain.value = clampedVolume * 0.32;
+
+    fundamental.connect(fundamentalGain);
+    overtone.connect(overtoneGain);
+    overtoneGain.connect(fundamentalGain);
+    fundamentalGain.connect(context.destination);
+
+    fundamental.start(0);
+    overtone.start(0);
+
+    _activePlayback = _ActiveWebSynthPlayback(
+      fundamental: fundamental,
+      overtone: overtone,
+      masterGain: fundamentalGain,
+      overtoneGain: overtoneGain,
+    );
   }
 
   @override
   Future<void> setVolume(double volume) async {
-    _activePlayback?.gain.gain.value = volume.clamp(0.0, 1.0).toDouble();
+    final activePlayback = _activePlayback;
+    if (activePlayback == null) {
+      return;
+    }
+    final clampedVolume = volume.clamp(0.0, 1.0).toDouble();
+    activePlayback.masterGain.gain.value = clampedVolume;
+    activePlayback.overtoneGain.gain.value = clampedVolume * 0.32;
   }
 
   @override
@@ -99,26 +121,8 @@ class _WebAudioSamplePlayerVoice implements SamplePlayerVoice {
 
     final context = _sharedAudioContext;
     _sharedAudioContext = null;
-    _decodedBuffers.clear();
     if (context != null) {
       await context.close().toDart;
-    }
-  }
-
-  static Future<web.AudioBuffer> _decodeAsset(String assetPath) async {
-    final context = _sharedAudioContext ??= web.AudioContext();
-    final assetData = await rootBundle.load(assetPath);
-    final tightBytes = Uint8List.fromList(
-      assetData.buffer.asUint8List(
-        assetData.offsetInBytes,
-        assetData.lengthInBytes,
-      ),
-    );
-    try {
-      return await context.decodeAudioData(tightBytes.buffer.toJS).toDart;
-    } catch (_) {
-      _decodedBuffers.remove(assetPath);
-      rethrow;
     }
   }
 }
@@ -163,18 +167,35 @@ void _playSilentUnlockPulse(web.AudioContext context) {
   }
 }
 
-class _ActiveWebSamplePlayback {
-  _ActiveWebSamplePlayback({required this.source, required this.gain});
+class _ActiveWebSynthPlayback {
+  _ActiveWebSynthPlayback({
+    required this.fundamental,
+    required this.overtone,
+    required this.masterGain,
+    required this.overtoneGain,
+  });
 
-  final web.AudioBufferSourceNode source;
-  final web.GainNode gain;
+  final web.OscillatorNode fundamental;
+  final web.OscillatorNode overtone;
+  final web.GainNode masterGain;
+  final web.GainNode overtoneGain;
 
   void stop() {
     try {
-      source.stop();
+      fundamental.stop();
     } catch (error, stackTrace) {
       developer.log(
-        'Stopping a web harmony sample voice failed.',
+        'Stopping a web harmony synth voice failed.',
+        name: 'chordest.audio.web',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+    try {
+      overtone.stop();
+    } catch (error, stackTrace) {
+      developer.log(
+        'Stopping a web harmony synth overtone failed.',
         name: 'chordest.audio.web',
         error: error,
         stackTrace: stackTrace,
@@ -184,20 +205,40 @@ class _ActiveWebSamplePlayback {
 
   void dispose() {
     try {
-      source.disconnect();
+      fundamental.disconnect();
     } catch (error, stackTrace) {
       developer.log(
-        'Disconnecting a web harmony sample source failed.',
+        'Disconnecting a web harmony synth oscillator failed.',
         name: 'chordest.audio.web',
         error: error,
         stackTrace: stackTrace,
       );
     }
     try {
-      gain.disconnect();
+      overtone.disconnect();
+    } catch (error, stackTrace) {
+      developer.log(
+        'Disconnecting a web harmony synth overtone failed.',
+        name: 'chordest.audio.web',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+    try {
+      masterGain.disconnect();
     } catch (error, stackTrace) {
       developer.log(
         'Disconnecting a web harmony sample gain node failed.',
+        name: 'chordest.audio.web',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+    try {
+      overtoneGain.disconnect();
+    } catch (error, stackTrace) {
+      developer.log(
+        'Disconnecting a web harmony synth overtone gain failed.',
         name: 'chordest.audio.web',
         error: error,
         stackTrace: stackTrace,

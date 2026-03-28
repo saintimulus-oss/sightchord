@@ -32,6 +32,1101 @@ extension _PracticeHomePageUi on _MyHomePageState {
     return _settings.settingsComplexityMode.localizedLabel(l10n);
   }
 
+  void _applyQuickComplexityMode(SettingsComplexityMode mode) {
+    if (_settings.settingsComplexityMode == mode) {
+      return;
+    }
+    final previousSettings = _settings;
+    _applySettings(
+      PracticeSettingsFactory.applyComplexityModeMelodyPreset(_settings, mode),
+      reseed: true,
+    );
+    _showComplexityUndoSnackBar(previousSettings, mode);
+  }
+
+  void _showUndoSnackBar({
+    required String message,
+    required VoidCallback onUndo,
+  }) {
+    if (!mounted) {
+      return;
+    }
+    final messenger = ScaffoldMessenger.of(context);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            key: const ValueKey('practice-undo-snackbar-action'),
+            label: 'Undo',
+            onPressed: onUndo,
+          ),
+        ),
+      );
+  }
+
+  void _showInfoSnackBar(String message) {
+    if (!mounted) {
+      return;
+    }
+    final messenger = ScaffoldMessenger.of(context);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+      );
+  }
+
+  void _showComplexityUndoSnackBar(
+    PracticeSettings previousSettings,
+    SettingsComplexityMode mode,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    _showUndoSnackBar(
+      message:
+          '${l10n.setupAssistantCurrentMode}: ${mode.localizedLabel(l10n)}',
+      onUndo: () {
+        _applySettings(
+          previousSettings,
+          reseed: true,
+          syncBpmText: previousSettings.bpm != _settings.bpm,
+        );
+      },
+    );
+  }
+
+  void _showResetUndoSnackBar(_PracticeResetSnapshot snapshot) {
+    final l10n = AppLocalizations.of(context)!;
+    _showUndoSnackBar(
+      message: l10n.resetGeneratedChords,
+      onUndo: () {
+        _restoreResetSnapshot(snapshot);
+      },
+    );
+  }
+
+  String _favoriteStartsTitle(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '利먭꺼李얘린 ?쒖옉' : 'Favorite starts';
+  }
+
+  String _favoriteStartSlotTitle(BuildContext context, int index) {
+    return _usesKoreanUiCopy(context)
+        ? '利먭꺼李얘린 ${index + 1}'
+        : 'Favorite ${index + 1}';
+  }
+
+  String _favoriteStartLabel(FavoriteStartPreset preset) {
+    return preset.displayLabel;
+  }
+
+  String _favoriteStartEmptyMessage(BuildContext context) {
+    return _usesKoreanUiCopy(context)
+        ? '?꾩쭅 ??ν맂 ?쒖옉 ?ㅼ젙???놁뼱??'
+        : 'No saved start preset yet.';
+  }
+
+  String _favoriteStartSaveLabel(
+    BuildContext context, {
+    required bool hasPreset,
+  }) {
+    if (_usesKoreanUiCopy(context)) {
+      return hasPreset ? '?덉옱 ?ㅼ젙?쇰줈 ?묐뜲?댄듃' : '?꾩옱 ?ㅼ젙 ??ν븯湲?';
+    }
+    return hasPreset ? 'Update' : 'Save current';
+  }
+
+  String _favoriteStartApplyLabel(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '諛붾줈 ?곸슜' : 'Apply';
+  }
+
+  String _favoriteStartRenameLabel(BuildContext context) {
+    return 'Rename';
+  }
+
+  String _favoriteStartClearLabel(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '?ㅼ뭅 鍮꾩슦湲?' : 'Clear';
+  }
+
+  String _favoriteStartSavedMessage(BuildContext context, int index) {
+    return _usesKoreanUiCopy(context)
+        ? '${index + 1}踰?利먭꺼李얘린???꾩옱 ?ㅼ젙?쇰? ??ν뻽?댁슂.'
+        : 'Saved the current setup to Favorite ${index + 1}.';
+  }
+
+  String _favoriteStartAppliedMessage(BuildContext context, int index) {
+    return _usesKoreanUiCopy(context)
+        ? '${index + 1}踰?利먭꺼李얘린濡??ㅼ젙??諛붾줈 ?곸슜?덉뼱??'
+        : 'Applied Favorite ${index + 1}.';
+  }
+
+  String _favoriteStartClearedMessage(BuildContext context, int index) {
+    return _usesKoreanUiCopy(context)
+        ? '${index + 1}踰?利먭꺼李얘린瑜?鍮꿉뼱?덉뼱??'
+        : 'Cleared Favorite ${index + 1}.';
+  }
+
+  String _favoriteStartRenamedMessage(
+    BuildContext context,
+    int index,
+    FavoriteStartPreset preset,
+  ) {
+    return 'Updated Favorite ${index + 1} to "${preset.displayLabel}".';
+  }
+
+  String _favoriteStartRenameDialogTitle(BuildContext context, int index) {
+    return 'Name Favorite ${index + 1}';
+  }
+
+  String _favoriteStartRenameDialogHelper(BuildContext context) {
+    return 'Leave this blank to use the automatic label.';
+  }
+
+  String _favoriteStartRenameFieldHint(
+    BuildContext context,
+    FavoriteStartPreset preset,
+  ) {
+    return preset.suggestedLabel;
+  }
+
+  String _favoriteStartRenameConfirmLabel(BuildContext context) {
+    return 'Save name';
+  }
+
+  String _favoriteStartSummary(
+    AppLocalizations l10n,
+    FavoriteStartPreset preset,
+  ) {
+    final resolved = preset.applyTo(_settings);
+    final melody = !resolved.melodyGenerationEnabled
+        ? l10n.melodyQuickPresetCompactOffLabel
+        : PracticeSettingsFactory.quickMelodyPresetForSettings(
+            resolved,
+          ).compactLocalizedLabel(l10n);
+    final orderedKeyCenters = <KeyCenter>[
+      for (final mode in KeyMode.values)
+        for (final center in MusicTheory.orderedKeyCentersForMode(mode))
+          if (resolved.activeKeyCenters.contains(center)) center,
+    ];
+    final keyLabel = orderedKeyCenters.isEmpty
+        ? l10n.allKeysTag
+        : orderedKeyCenters
+              .take(2)
+              .map(
+                (center) => MusicNotationFormatter.formatKeyCenterLabel(
+                  center: center,
+                  labelStyle: KeyCenterLabelStyle.modeText,
+                  preferences: resolved.notationPreferences,
+                  l10n: l10n,
+                  trailingColon: false,
+                ),
+              )
+              .join(' | ');
+    return '${resolved.settingsComplexityMode.localizedLabel(l10n)} | '
+        '$keyLabel | $melody | ${resolved.bpm} ${l10n.bpmLabel}';
+  }
+
+  Future<void> _saveCurrentFavoriteStartToSlot(int index) async {
+    final previousPreset = _favoriteStartSlots.slotAt(index);
+    await _replaceFavoriteStartSlot(
+      index,
+      FavoriteStartPreset.fromSettings(
+        _settings,
+        customLabel: previousPreset?.customLabel,
+      ),
+    );
+    if (!mounted) {
+      return;
+    }
+    _showUndoSnackBar(
+      message: _favoriteStartSavedMessage(context, index),
+      onUndo: () {
+        unawaited(_replaceFavoriteStartSlot(index, previousPreset));
+      },
+    );
+  }
+
+  Future<void> _clearFavoriteStartSlot(int index) async {
+    final previousPreset = _favoriteStartSlots.slotAt(index);
+    if (previousPreset == null) {
+      return;
+    }
+    await _replaceFavoriteStartSlot(index, null);
+    if (!mounted) {
+      return;
+    }
+    _showUndoSnackBar(
+      message: _favoriteStartClearedMessage(context, index),
+      onUndo: () {
+        unawaited(_replaceFavoriteStartSlot(index, previousPreset));
+      },
+    );
+  }
+
+  void _applyFavoriteStartPreset(int index, FavoriteStartPreset preset) {
+    final previousSettings = _settings;
+    final nextSettings = preset.applyTo(_settings);
+    _applySettings(
+      nextSettings,
+      reseed: true,
+      syncBpmText: previousSettings.bpm != nextSettings.bpm,
+    );
+    _showUndoSnackBar(
+      message: _favoriteStartAppliedMessage(context, index),
+      onUndo: () {
+        _applySettings(
+          previousSettings,
+          reseed: true,
+          syncBpmText: previousSettings.bpm != nextSettings.bpm,
+        );
+      },
+    );
+  }
+
+  Future<void> _renameFavoriteStartSlot(int index) async {
+    final preset = _favoriteStartSlots.slotAt(index);
+    if (preset == null || !mounted) {
+      return;
+    }
+    var draftLabel = preset.customLabel ?? '';
+    final nextLabel = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        final materialLocalizations = MaterialLocalizations.of(dialogContext);
+        return AlertDialog(
+          title: Text(_favoriteStartRenameDialogTitle(context, index)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _favoriteStartRenameDialogHelper(context),
+                  style: Theme.of(dialogContext).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  key: ValueKey('favorite-start-slot-$index-name-field'),
+                  initialValue: draftLabel,
+                  autofocus: true,
+                  maxLength: 28,
+                  textInputAction: TextInputAction.done,
+                  onChanged: (value) => draftLabel = value,
+                  onFieldSubmitted: (value) =>
+                      Navigator.of(dialogContext).pop(value),
+                  decoration: InputDecoration(
+                    hintText: _favoriteStartRenameFieldHint(context, preset),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              key: ValueKey('favorite-start-slot-$index-name-cancel-button'),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(materialLocalizations.cancelButtonLabel),
+            ),
+            FilledButton(
+              key: ValueKey('favorite-start-slot-$index-name-save-button'),
+              onPressed: () => Navigator.of(dialogContext).pop(draftLabel),
+              child: Text(_favoriteStartRenameConfirmLabel(context)),
+            ),
+          ],
+        );
+      },
+    );
+    if (nextLabel == null) {
+      return;
+    }
+    final previousPreset = preset;
+    final renamedPreset = preset.withCustomLabel(nextLabel);
+    if (previousPreset.customLabel == renamedPreset.customLabel) {
+      return;
+    }
+    await _replaceFavoriteStartSlot(index, renamedPreset);
+    if (!mounted) {
+      return;
+    }
+    _showUndoSnackBar(
+      message: _favoriteStartRenamedMessage(context, index, renamedPreset),
+      onUndo: () {
+        unawaited(_replaceFavoriteStartSlot(index, previousPreset));
+      },
+    );
+  }
+
+  Future<void> _openFavoriteStartsSheet() async {
+    await _restoreFavoriteStartSlots();
+    if (!mounted) {
+      return;
+    }
+    final materialLocalizations = MaterialLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        final colorScheme = theme.colorScheme;
+        return SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _favoriteStartsTitle(context),
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      key: const ValueKey('favorite-starts-close-button'),
+                      onPressed: () => Navigator.of(sheetContext).maybePop(),
+                      icon: const Icon(Icons.close_rounded),
+                      tooltip: materialLocalizations.closeButtonTooltip,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                for (
+                  var index = 0;
+                  index < FavoriteStartSlots.slotCount;
+                  index++
+                )
+                  Padding(
+                    padding: EdgeInsets.only(
+                      bottom: index == FavoriteStartSlots.slotCount - 1
+                          ? 0
+                          : 12,
+                    ),
+                    child: Builder(
+                      builder: (_) {
+                        final preset = _favoriteStartSlots.slotAt(index);
+                        return DecoratedBox(
+                          key: ValueKey('favorite-start-slot-$index'),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: colorScheme.outlineVariant,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  preset == null
+                                      ? _favoriteStartSlotTitle(context, index)
+                                      : _favoriteStartLabel(preset),
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                if (preset != null &&
+                                    preset.hasCustomLabel) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    _favoriteStartSlotTitle(context, index),
+                                    style: theme.textTheme.labelMedium
+                                        ?.copyWith(
+                                          color: colorScheme.onSurfaceVariant,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                ],
+                                const SizedBox(height: 6),
+                                Text(
+                                  preset == null
+                                      ? _favoriteStartEmptyMessage(context)
+                                      : _favoriteStartSummary(l10n, preset),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                    height: 1.35,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: [
+                                    FilledButton.tonal(
+                                      key: ValueKey(
+                                        'favorite-start-slot-$index-save-button',
+                                      ),
+                                      onPressed: () {
+                                        Navigator.of(sheetContext).maybePop();
+                                        unawaited(
+                                          _saveCurrentFavoriteStartToSlot(
+                                            index,
+                                          ),
+                                        );
+                                      },
+                                      child: Text(
+                                        _favoriteStartSaveLabel(
+                                          context,
+                                          hasPreset: preset != null,
+                                        ),
+                                      ),
+                                    ),
+                                    if (preset != null)
+                                      OutlinedButton(
+                                        key: ValueKey(
+                                          'favorite-start-slot-$index-rename-button',
+                                        ),
+                                        onPressed: () async {
+                                          await Navigator.of(
+                                            sheetContext,
+                                          ).maybePop();
+                                          if (!mounted) {
+                                            return;
+                                          }
+                                          unawaited(
+                                            _renameFavoriteStartSlot(index),
+                                          );
+                                        },
+                                        child: Text(
+                                          _favoriteStartRenameLabel(context),
+                                        ),
+                                      ),
+                                    if (preset != null)
+                                      OutlinedButton(
+                                        key: ValueKey(
+                                          'favorite-start-slot-$index-apply-button',
+                                        ),
+                                        onPressed: () {
+                                          Navigator.of(sheetContext).maybePop();
+                                          _applyFavoriteStartPreset(
+                                            index,
+                                            preset,
+                                          );
+                                        },
+                                        child: Text(
+                                          _favoriteStartApplyLabel(context),
+                                        ),
+                                      ),
+                                    if (preset != null)
+                                      OutlinedButton(
+                                        key: ValueKey(
+                                          'favorite-start-slot-$index-clear-button',
+                                        ),
+                                        onPressed: () {
+                                          Navigator.of(sheetContext).maybePop();
+                                          unawaited(
+                                            _clearFavoriteStartSlot(index),
+                                          );
+                                        },
+                                        child: Text(
+                                          _favoriteStartClearLabel(context),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _copyToolsTitle(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '복사 도구' : 'Copy tools';
+  }
+
+  String _copyCurrentChordLabel(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '현재 코드 복사' : 'Copy current chord';
+  }
+
+  String _copyVisibleLoopLabel(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '보이는 루프 복사' : 'Copy visible loop';
+  }
+
+  String _copyMelodyPreviewLabel(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '멜로디 미리보기 복사' : 'Copy melody preview';
+  }
+
+  String _recentCopiesTitle(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '최근 복사' : 'Recent copies';
+  }
+
+  String _recentCopyKindLabel(BuildContext context, RecentCopyKind kind) {
+    return switch (kind) {
+      RecentCopyKind.currentChord =>
+        _usesKoreanUiCopy(context) ? '현재 코드' : 'Current chord',
+      RecentCopyKind.visibleLoop =>
+        _usesKoreanUiCopy(context) ? '보이는 루프' : 'Visible loop',
+      RecentCopyKind.melodyPreview =>
+        _usesKoreanUiCopy(context) ? '멜로디 미리보기' : 'Melody preview',
+    };
+  }
+
+  IconData _recentCopyKindIcon(RecentCopyKind kind) {
+    return switch (kind) {
+      RecentCopyKind.currentChord => Icons.music_note_rounded,
+      RecentCopyKind.visibleLoop => Icons.linear_scale_rounded,
+      RecentCopyKind.melodyPreview => Icons.graphic_eq_rounded,
+    };
+  }
+
+  String _analyzeVisibleLoopLabel(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '보이는 루프 분석하기' : 'Analyze visible loop';
+  }
+
+  String _quickMovesTitle(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '빠른 다음 동작' : 'Quick moves';
+  }
+
+  String _nudgeEasierLabel(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '더 쉽게' : 'Make easier';
+  }
+
+  String _nudgeRicherLabel(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '더 풍성하게' : 'Make richer';
+  }
+
+  String _nothingToCopyMessage(BuildContext context) {
+    return _usesKoreanUiCopy(context)
+        ? '아직 복사할 내용이 없어요.'
+        : 'There is nothing to copy yet.';
+  }
+
+  String _noRecentCopiesMessage(BuildContext context) {
+    return _usesKoreanUiCopy(context)
+        ? '최근에 복사한 내용이 아직 없어요.'
+        : 'There is no recent copied text yet.';
+  }
+
+  String _nothingToAnalyzeMessage(BuildContext context) {
+    return _usesKoreanUiCopy(context)
+        ? '아직 분석할 흐름이 없어요.'
+        : 'There is no visible loop to analyze yet.';
+  }
+
+  String _copiedCurrentChordMessage(BuildContext context) {
+    return _usesKoreanUiCopy(context)
+        ? '현재 코드를 복사했어요.'
+        : 'Copied the current chord.';
+  }
+
+  String _copiedVisibleLoopMessage(BuildContext context) {
+    return _usesKoreanUiCopy(context)
+        ? '보이는 루프를 복사했어요.'
+        : 'Copied the visible loop.';
+  }
+
+  String _copiedMelodyPreviewMessage(BuildContext context) {
+    return _usesKoreanUiCopy(context)
+        ? '멜로디 미리보기를 복사했어요.'
+        : 'Copied the melody preview.';
+  }
+
+  String _copiedRecentCopyMessage(BuildContext context) {
+    return _usesKoreanUiCopy(context)
+        ? '최근 복사 내용을 다시 복사했어요.'
+        : 'Copied from recent history.';
+  }
+
+  String _nudgedEasierMessage(BuildContext context) {
+    return _usesKoreanUiCopy(context)
+        ? '조금 더 쉬운 방향으로 맞췄어요.'
+        : 'Shifted toward an easier profile.';
+  }
+
+  String _nudgedRicherMessage(BuildContext context) {
+    return _usesKoreanUiCopy(context)
+        ? '조금 더 풍성한 방향으로 맞췄어요.'
+        : 'Shifted toward a richer profile.';
+  }
+
+  String _alreadyEasyMessage(BuildContext context) {
+    return _usesKoreanUiCopy(context)
+        ? '이미 가장 쉬운 쪽에 가까워요.'
+        : 'This is already near the easiest setting.';
+  }
+
+  String _alreadyRicherMessage(BuildContext context) {
+    return _usesKoreanUiCopy(context)
+        ? '이미 충분히 풍성한 쪽이에요.'
+        : 'This is already near the richest quick setting.';
+  }
+
+  List<String> _visibleChordLoopLabels() {
+    return <String>[
+      _displaySymbolForEvent(_queueState.previousEvent),
+      _displaySymbolForEvent(_currentChordEvent),
+      _displaySymbolForEvent(_nextChordEvent),
+      _displaySymbolForEvent(_lookAheadChordEvent),
+    ].where((label) => label.isNotEmpty).toList(growable: false);
+  }
+
+  String _visibleChordLoopCopyText() {
+    final labels = _visibleChordLoopLabels();
+    return labels.join(' -> ');
+  }
+
+  String _visibleChordLoopAnalyzerText() {
+    final labels = _visibleChordLoopLabels();
+    return labels.join(' | ');
+  }
+
+  String _melodyPreviewCopyText(BuildContext context) {
+    final currentPreview = _previewTextForMelodyEvent(_currentMelodyEvent);
+    final nextPreview = _previewTextForMelodyEvent(_nextMelodyEvent);
+    if (currentPreview.isEmpty && nextPreview.isEmpty) {
+      return '';
+    }
+    final currentLabel = _usesKoreanUiCopy(context) ? '현재' : 'Current';
+    final nextLabel = _usesKoreanUiCopy(context) ? '다음' : 'Next';
+    final lines = <String>[
+      if (currentPreview.isNotEmpty) '$currentLabel: $currentPreview',
+      if (nextPreview.isNotEmpty) '$nextLabel: $nextPreview',
+    ];
+    return lines.join('\n');
+  }
+
+  Future<void> _copyTextToClipboard(
+    String text, {
+    required String successMessage,
+    RecentCopyKind? rememberAs,
+  }) async {
+    final normalized = text.trim();
+    if (normalized.isEmpty) {
+      _showInfoSnackBar(_nothingToCopyMessage(context));
+      return;
+    }
+    await Clipboard.setData(ClipboardData(text: normalized));
+    if (rememberAs != null) {
+      try {
+        await _recentCopyHistoryStore.remember(rememberAs, normalized);
+      } catch (error, stackTrace) {
+        FlutterError.reportError(
+          FlutterErrorDetails(
+            exception: error,
+            stack: stackTrace,
+            library: 'chordest',
+            context: ErrorDescription('while saving recent copy history'),
+          ),
+        );
+      }
+    }
+    _showInfoSnackBar(successMessage);
+  }
+
+  Future<void> _copyCurrentChordToClipboard() {
+    return _copyTextToClipboard(
+      _displaySymbolForEvent(_currentChordEvent),
+      successMessage: _copiedCurrentChordMessage(context),
+      rememberAs: RecentCopyKind.currentChord,
+    );
+  }
+
+  Future<void> _copyVisibleLoopToClipboard() {
+    return _copyTextToClipboard(
+      _visibleChordLoopCopyText(),
+      successMessage: _copiedVisibleLoopMessage(context),
+      rememberAs: RecentCopyKind.visibleLoop,
+    );
+  }
+
+  Future<void> _copyMelodyPreviewToClipboard() {
+    return _copyTextToClipboard(
+      _melodyPreviewCopyText(context),
+      successMessage: _copiedMelodyPreviewMessage(context),
+      rememberAs: RecentCopyKind.melodyPreview,
+    );
+  }
+
+  Future<void> _copyRecentEntryToClipboard(RecentCopyEntry entry) {
+    return _copyTextToClipboard(
+      entry.text,
+      successMessage: _copiedRecentCopyMessage(context),
+      rememberAs: entry.kind,
+    );
+  }
+
+  Future<void> _openAnalyzerFromVisibleLoop() async {
+    final progression = _visibleChordLoopAnalyzerText().trim();
+    if (progression.isEmpty) {
+      _showInfoSnackBar(_nothingToAnalyzeMessage(context));
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => ChordAnalyzerPage(
+          controller: widget.controller,
+          initialInput: progression,
+          autoAnalyzeOnStart: true,
+        ),
+      ),
+    );
+  }
+
+  void _applyQuickNudge({
+    required PracticeSettings nextSettings,
+    required String successMessage,
+    required String noChangeMessage,
+  }) {
+    final resolvedSettings = sanitizePracticeSettingsForEntitlement(
+      nextSettings,
+      premiumUnlocked: _isPremiumUnlocked,
+    );
+    if (resolvedSettings == _settings) {
+      _showInfoSnackBar(noChangeMessage);
+      return;
+    }
+    final previousSettings = _settings;
+    _applySettings(resolvedSettings, reseed: true);
+    _showUndoSnackBar(
+      message: successMessage,
+      onUndo: () {
+        _applySettings(
+          previousSettings,
+          reseed: true,
+          syncBpmText: previousSettings.bpm != _settings.bpm,
+        );
+      },
+    );
+  }
+
+  void _nudgeTowardEasier() {
+    _applyQuickNudge(
+      nextSettings: PracticeSettingsFactory.nudgeTowardEasier(_settings),
+      successMessage: _nudgedEasierMessage(context),
+      noChangeMessage: _alreadyEasyMessage(context),
+    );
+  }
+
+  void _nudgeTowardRicher() {
+    _applyQuickNudge(
+      nextSettings: PracticeSettingsFactory.nudgeTowardJazzier(_settings),
+      successMessage: _nudgedRicherMessage(context),
+      noChangeMessage: _alreadyRicherMessage(context),
+    );
+  }
+
+  Future<void> _openCopyToolsSheet() async {
+    if (!mounted) {
+      return;
+    }
+    final theme = Theme.of(context);
+    final materialLocalizations = MaterialLocalizations.of(context);
+    final currentChord = _displaySymbolForEvent(_currentChordEvent);
+    final visibleLoop = _visibleChordLoopCopyText();
+    final analyzerLoop = _visibleChordLoopAnalyzerText();
+    final melodyPreview = _melodyPreviewCopyText(context);
+    final recentCopies = await _recentCopyHistoryStore.load();
+    if (!mounted) {
+      return;
+    }
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: FractionallySizedBox(
+            heightFactor: 0.66,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _copyToolsTitle(context),
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      IconButton(
+                        key: const ValueKey('practice-copy-tools-close-button'),
+                        onPressed: () => Navigator.of(sheetContext).maybePop(),
+                        icon: const Icon(Icons.close_rounded),
+                        tooltip: materialLocalizations.closeButtonTooltip,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: ListView(
+                      key: const ValueKey('practice-copy-tools-sheet-list'),
+                      children: [
+                        ListTile(
+                          key: const ValueKey(
+                            'practice-copy-current-chord-button',
+                          ),
+                          leading: const Icon(Icons.music_note_rounded),
+                          title: Text(_copyCurrentChordLabel(context)),
+                          subtitle: Text(
+                            currentChord.isEmpty ? '...' : currentChord,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: () {
+                            Navigator.of(sheetContext).pop();
+                            unawaited(_copyCurrentChordToClipboard());
+                          },
+                        ),
+                        ListTile(
+                          key: const ValueKey(
+                            'practice-copy-visible-loop-button',
+                          ),
+                          leading: const Icon(Icons.linear_scale_rounded),
+                          title: Text(_copyVisibleLoopLabel(context)),
+                          subtitle: Text(
+                            visibleLoop.isEmpty ? '...' : visibleLoop,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: () {
+                            Navigator.of(sheetContext).pop();
+                            unawaited(_copyVisibleLoopToClipboard());
+                          },
+                        ),
+                        ListTile(
+                          key: const ValueKey(
+                            'practice-open-analyzer-from-copy-tools-button',
+                          ),
+                          leading: const Icon(Icons.insights_rounded),
+                          title: Text(_analyzeVisibleLoopLabel(context)),
+                          subtitle: Text(
+                            analyzerLoop.isEmpty ? '...' : analyzerLoop,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: () async {
+                            Navigator.of(sheetContext).pop();
+                            await Future<void>.delayed(Duration.zero);
+                            if (!mounted) {
+                              return;
+                            }
+                            await _openAnalyzerFromVisibleLoop();
+                          },
+                        ),
+                        if (_settings.melodyGenerationEnabled)
+                          ListTile(
+                            key: const ValueKey(
+                              'practice-copy-melody-preview-button',
+                            ),
+                            leading: const Icon(Icons.graphic_eq_rounded),
+                            title: Text(_copyMelodyPreviewLabel(context)),
+                            subtitle: Text(
+                              melodyPreview.isEmpty ? '...' : melodyPreview,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onTap: () {
+                              Navigator.of(sheetContext).pop();
+                              unawaited(_copyMelodyPreviewToClipboard());
+                            },
+                          ),
+                        if (recentCopies.isNotEmpty) ...[
+                          const Divider(height: 28),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                            child: Text(
+                              _recentCopiesTitle(context),
+                              key: const ValueKey(
+                                'practice-recent-copy-section',
+                              ),
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                          for (
+                            var index = 0;
+                            index < recentCopies.items.length;
+                            index += 1
+                          )
+                            ListTile(
+                              key: ValueKey(
+                                'practice-recent-copy-entry-$index-button',
+                              ),
+                              leading: Icon(
+                                _recentCopyKindIcon(
+                                  recentCopies.items[index].kind,
+                                ),
+                              ),
+                              title: Text(
+                                _recentCopyKindLabel(
+                                  context,
+                                  recentCopies.items[index].kind,
+                                ),
+                              ),
+                              subtitle: Text(
+                                recentCopies.items[index].text,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              onTap: () {
+                                final entry = recentCopies.items[index];
+                                Navigator.of(sheetContext).pop();
+                                unawaited(_copyRecentEntryToClipboard(entry));
+                              },
+                            ),
+                        ] else ...[
+                          const Divider(height: 28),
+                          ListTile(
+                            leading: const Icon(Icons.history_rounded),
+                            title: Text(_recentCopiesTitle(context)),
+                            subtitle: Text(_noRecentCopiesMessage(context)),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _openKeyboardShortcutsHelp() async {
+    if (!mounted) {
+      return;
+    }
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final materialLocalizations = MaterialLocalizations.of(context);
+    final shortcuts = <({String keyLabel, String actionLabel})>[
+      (keyLabel: '?', actionLabel: l10n.keyboardShortcutHelp),
+      (keyLabel: 'S', actionLabel: l10n.settings),
+      (keyLabel: 'Right / Space', actionLabel: l10n.nextChord),
+      (keyLabel: 'Left', actionLabel: materialLocalizations.backButtonTooltip),
+      (
+        keyLabel: 'Enter',
+        actionLabel: '${l10n.startAutoplay} / ${l10n.pauseAutoplay}',
+      ),
+      (keyLabel: 'P', actionLabel: l10n.audioPlayPrompt),
+      (keyLabel: 'Shift+P', actionLabel: l10n.audioPlayArpeggio),
+      (keyLabel: 'R', actionLabel: l10n.resetGeneratedChords),
+      (
+        keyLabel: '1 / 2 / 3',
+        actionLabel:
+            '${l10n.setupAssistantModeGuided} / '
+            '${l10n.setupAssistantModeStandard} / '
+            '${l10n.setupAssistantModeAdvanced}',
+      ),
+      (
+        keyLabel: 'Up / Down',
+        actionLabel: '${l10n.increaseBpm} / ${l10n.decreaseBpm}',
+      ),
+      (keyLabel: 'A', actionLabel: _analyzeVisibleLoopLabel(context)),
+      (keyLabel: 'C', actionLabel: _copyCurrentChordLabel(context)),
+      (keyLabel: 'Shift+C', actionLabel: _copyVisibleLoopLabel(context)),
+    ];
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: FractionallySizedBox(
+            heightFactor: 0.82,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          l10n.keyboardShortcutHelp,
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      IconButton(
+                        key: const ValueKey(
+                          'practice-shortcuts-help-close-button',
+                        ),
+                        onPressed: () => Navigator.of(sheetContext).maybePop(),
+                        icon: const Icon(Icons.close_rounded),
+                        tooltip: materialLocalizations.closeButtonTooltip,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          for (final shortcut in shortcuts) ...[
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: 112,
+                                  child: Text(
+                                    shortcut.keyLabel,
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    shortcut.actionLabel,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                      height: 1.35,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (shortcut != shortcuts.last)
+                              const SizedBox(height: 12),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _openAdvancedSettings() async {
     if (!mounted) {
       return;
@@ -1113,6 +2208,55 @@ extension _PracticeHomePageUi on _MyHomePageState {
               spacing: 10,
               runSpacing: 10,
               children: [
+                for (final mode in SettingsComplexityMode.values)
+                  ChoiceChip(
+                    key: ValueKey('practice-complexity-chip-${mode.name}'),
+                    label: Text(mode.localizedLabel(l10n)),
+                    selected: _settings.settingsComplexityMode == mode,
+                    onSelected: (selected) {
+                      if (!selected) {
+                        return;
+                      }
+                      _applyQuickComplexityMode(mode);
+                    },
+                  ),
+              ],
+            ),
+            SizedBox(height: compact ? 12 : 14),
+            Text(
+              _quickMovesTitle(context),
+              style: ChordestUiTokens.overlineStyle(theme),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                OutlinedButton.icon(
+                  key: const ValueKey('practice-open-analyzer-button'),
+                  onPressed: _openAnalyzerFromVisibleLoop,
+                  icon: const Icon(Icons.insights_rounded),
+                  label: Text(_analyzeVisibleLoopLabel(context)),
+                ),
+                OutlinedButton.icon(
+                  key: const ValueKey('practice-nudge-easier-button'),
+                  onPressed: _nudgeTowardEasier,
+                  icon: const Icon(Icons.south_west_rounded),
+                  label: Text(_nudgeEasierLabel(context)),
+                ),
+                OutlinedButton.icon(
+                  key: const ValueKey('practice-nudge-richer-button'),
+                  onPressed: _nudgeTowardRicher,
+                  icon: const Icon(Icons.north_east_rounded),
+                  label: Text(_nudgeRicherLabel(context)),
+                ),
+              ],
+            ),
+            SizedBox(height: compact ? 12 : 14),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
                 OutlinedButton.icon(
                   key: const ValueKey('practice-key-selector-button'),
                   onPressed: _openKeyCenterPicker,
@@ -1313,14 +2457,78 @@ extension _PracticeHomePageUi on _MyHomePageState {
         const SingleActivator(LogicalKeyboardKey.space): _guardGlobalShortcut(
           _requestAdvanceChord,
         ),
+        const SingleActivator(LogicalKeyboardKey.arrowRight):
+            _guardGlobalShortcut(_requestAdvanceChord),
+        const SingleActivator(
+          LogicalKeyboardKey.arrowLeft,
+        ): _guardGlobalShortcut(
+          () => _restorePreviousChord(playAutoPreview: true),
+        ),
         const SingleActivator(LogicalKeyboardKey.enter): _guardGlobalShortcut(
           _toggleAutoPlay,
+        ),
+        const SingleActivator(LogicalKeyboardKey.keyP): _guardGlobalShortcut(
+          () {
+            unawaited(
+              _playCurrentChordPreview(pattern: HarmonyPlaybackPattern.block),
+            );
+          },
+        ),
+        const SingleActivator(
+          LogicalKeyboardKey.keyP,
+          shift: true,
+        ): _guardGlobalShortcut(() {
+          unawaited(
+            _playCurrentChordPreview(pattern: HarmonyPlaybackPattern.arpeggio),
+          );
+        }),
+        const SingleActivator(LogicalKeyboardKey.keyR): _guardGlobalShortcut(
+          _resetGeneratedChords,
+        ),
+        const SingleActivator(LogicalKeyboardKey.keyC): _guardGlobalShortcut(
+          () {
+            unawaited(_copyCurrentChordToClipboard());
+          },
+        ),
+        const SingleActivator(LogicalKeyboardKey.keyA): _guardGlobalShortcut(
+          () {
+            unawaited(_openAnalyzerFromVisibleLoop());
+          },
+        ),
+        const SingleActivator(
+          LogicalKeyboardKey.keyC,
+          shift: true,
+        ): _guardGlobalShortcut(() {
+          unawaited(_copyVisibleLoopToClipboard());
+        }),
+        const SingleActivator(LogicalKeyboardKey.keyS): _guardGlobalShortcut(
+          () => _scaffoldKey.currentState?.openEndDrawer(),
+        ),
+        const SingleActivator(LogicalKeyboardKey.digit1): _guardGlobalShortcut(
+          () => _applyQuickComplexityMode(SettingsComplexityMode.guided),
+        ),
+        const SingleActivator(LogicalKeyboardKey.digit2): _guardGlobalShortcut(
+          () => _applyQuickComplexityMode(SettingsComplexityMode.standard),
+        ),
+        const SingleActivator(LogicalKeyboardKey.digit3): _guardGlobalShortcut(
+          () => _applyQuickComplexityMode(SettingsComplexityMode.advanced),
         ),
         const SingleActivator(LogicalKeyboardKey.arrowUp): _guardGlobalShortcut(
           () => _adjustBpm(5),
         ),
         const SingleActivator(LogicalKeyboardKey.arrowDown):
             _guardGlobalShortcut(() => _adjustBpm(-5)),
+        const SingleActivator(
+          LogicalKeyboardKey.slash,
+          shift: true,
+        ): _guardGlobalShortcut(() {
+          unawaited(_openKeyboardShortcutsHelp());
+        }),
+        const SingleActivator(LogicalKeyboardKey.keyH): _guardGlobalShortcut(
+          () {
+            unawaited(_openKeyboardShortcutsHelp());
+          },
+        ),
       },
       child: Focus(
         autofocus: true,
@@ -1334,6 +2542,24 @@ extension _PracticeHomePageUi on _MyHomePageState {
             scrolledUnderElevation: 0,
             title: Text(widget.title),
             actions: [
+              IconButton(
+                key: const ValueKey('practice-open-favorite-starts-button'),
+                onPressed: _openFavoriteStartsSheet,
+                icon: const Icon(Icons.bookmark_rounded),
+                tooltip: _favoriteStartsTitle(context),
+              ),
+              IconButton(
+                key: const ValueKey('practice-open-shortcuts-help-button'),
+                onPressed: _openKeyboardShortcutsHelp,
+                icon: const Icon(Icons.keyboard_command_key_rounded),
+                tooltip: l10n.keyboardShortcutHelp,
+              ),
+              IconButton(
+                key: const ValueKey('practice-open-copy-tools-button'),
+                onPressed: _openCopyToolsSheet,
+                icon: const Icon(Icons.content_copy_rounded),
+                tooltip: _copyToolsTitle(context),
+              ),
               IconButton(
                 onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
                 icon: const Icon(Icons.settings),

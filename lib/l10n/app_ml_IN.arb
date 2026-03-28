@@ -1,0 +1,2884 @@
+{
+  "@@locale": "ml_IN",
+  "settings": "Settings",
+  "closeSettings": "Close settings",
+  "language": "Language",
+  "systemDefaultLanguage": "System default",
+  "themeMode": "Theme",
+  "themeModeSystem": "System",
+  "themeModeLight": "Light",
+  "themeModeDark": "Dark",
+  "setupAssistantTitle": "Setup Assistant",
+  "setupAssistantSubtitle": "A few quick choices will make your first practice session feel calmer. You can rerun this anytime.",
+  "setupAssistantCurrentMode": "Current setup",
+  "setupAssistantModeGuided": "Guided mode",
+  "setupAssistantModeStandard": "Standard mode",
+  "setupAssistantModeAdvanced": "Advanced mode",
+  "setupAssistantRunAgain": "Run setup assistant again",
+  "setupAssistantCardBody": "Use a gentler profile now, then open advanced controls whenever you want more room.",
+  "setupAssistantPreparingTitle": "We'll start gently",
+  "setupAssistantPreparingBody": "Before the generator shows any chords, we'll set up a comfortable starting point in a few taps.",
+  "setupAssistantProgress": "Step {current} of {total}",
+  "@setupAssistantProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "setupAssistantSkip": "Skip",
+  "setupAssistantBack": "Back",
+  "setupAssistantNext": "Next",
+  "setupAssistantApply": "Apply",
+  "setupAssistantGoalQuestionTitle": "What would you like this generator to help with first?",
+  "setupAssistantGoalQuestionBody": "Pick the one that sounds closest. Nothing here is permanent.",
+  "setupAssistantGoalEarTitle": "Hear and recognize chords",
+  "setupAssistantGoalEarBody": "Short, friendly prompts for listening and recognition.",
+  "setupAssistantGoalKeyboardTitle": "Keyboard hand practice",
+  "setupAssistantGoalKeyboardBody": "Simple shapes and readable symbols for your hands first.",
+  "setupAssistantGoalSongTitle": "Song ideas",
+  "setupAssistantGoalSongBody": "Keep the generator musical without dumping you into chaos.",
+  "setupAssistantGoalHarmonyTitle": "Harmony study",
+  "setupAssistantGoalHarmonyBody": "Start clear, then leave room to grow into deeper harmony.",
+  "setupAssistantLiteracyQuestionTitle": "Which sentence feels closest right now?",
+  "setupAssistantLiteracyQuestionBody": "Choose the most comfortable answer, not the most ambitious one.",
+  "setupAssistantLiteracyAbsoluteTitle": "C, Cm, C7, and Cmaj7 still blur together",
+  "setupAssistantLiteracyAbsoluteBody": "Keep things extra readable and familiar.",
+  "setupAssistantLiteracyBasicTitle": "I can read maj7 / m7 / 7",
+  "setupAssistantLiteracyBasicBody": "Stay safe, but allow a little more range.",
+  "setupAssistantLiteracyFunctionalTitle": "I mostly follow ii-V-I and diatonic function",
+  "setupAssistantLiteracyFunctionalBody": "Keep the harmony clear with a bit more motion.",
+  "setupAssistantLiteracyAdvancedTitle": "Colorful reharmonization and extensions already feel familiar",
+  "setupAssistantLiteracyAdvancedBody": "Leave more of the power-user range available.",
+  "setupAssistantHandQuestionTitle": "How comfortable do your hands feel on keys?",
+  "setupAssistantHandQuestionBody": "We'll use this to keep voicings playable.",
+  "setupAssistantHandThreeTitle": "Three-note shapes feel best",
+  "setupAssistantHandThreeBody": "Keep the hand shape compact.",
+  "setupAssistantHandFourTitle": "Four notes are okay",
+  "setupAssistantHandFourBody": "Allow a little more spread.",
+  "setupAssistantHandJazzTitle": "Jazzier shapes feel comfortable",
+  "setupAssistantHandJazzBody": "Open the door to larger voicings later.",
+  "setupAssistantColorQuestionTitle": "How colorful should the sound feel at first?",
+  "setupAssistantColorQuestionBody": "When in doubt, start simpler.",
+  "setupAssistantColorSafeTitle": "Safe and familiar",
+  "setupAssistantColorSafeBody": "Stay close to classic, readable harmony.",
+  "setupAssistantColorJazzyTitle": "A little jazzy",
+  "setupAssistantColorJazzyBody": "Add a touch of color without getting wild.",
+  "setupAssistantColorColorfulTitle": "Quite colorful",
+  "setupAssistantColorColorfulBody": "Leave more room for modern color.",
+  "setupAssistantSymbolQuestionTitle": "Which chord spelling feels easiest to read?",
+  "setupAssistantSymbolQuestionBody": "This only changes how the chord is shown.",
+  "setupAssistantSymbolMajTextBody": "Clear and beginner-friendly.",
+  "setupAssistantSymbolCompactBody": "Shorter if you already like compact symbols.",
+  "setupAssistantSymbolDeltaBody": "Jazz-style if that is what your eyes expect.",
+  "setupAssistantKeyQuestionTitle": "Which key should we start in?",
+  "setupAssistantKeyQuestionBody": "C major is the easiest default, but you can change it later.",
+  "setupAssistantKeyCMajorBody": "Best beginner starting point.",
+  "setupAssistantKeyGMajorBody": "A bright major key with one sharp.",
+  "setupAssistantKeyFMajorBody": "A warm major key with one flat.",
+  "setupAssistantPreviewTitle": "Try your first result",
+  "setupAssistantPreviewBody": "This is about what the generator will feel like. You can make it simpler or a little jazzier before you start.",
+  "setupAssistantPreviewListen": "Hear this sample",
+  "setupAssistantPreviewPlaying": "Playing sample...",
+  "setupAssistantStartNow": "Start with this",
+  "setupAssistantAdjustEasier": "Make it easier",
+  "setupAssistantAdjustJazzier": "A little more jazzy",
+  "setupAssistantPreviewKeyLabel": "Key",
+  "setupAssistantPreviewNotationLabel": "Notation",
+  "setupAssistantPreviewDifficultyLabel": "Feel",
+  "setupAssistantPreviewProgressionLabel": "Sample progression",
+  "setupAssistantPreviewProgressionBody": "A short four-chord sample built from your setup.",
+  "setupAssistantPreviewSummaryAbsolute": "Beginner-friendly start",
+  "setupAssistantPreviewSummaryBasic": "Readable seventh-chord start",
+  "setupAssistantPreviewSummaryFunctional": "Functional harmony start",
+  "setupAssistantPreviewSummaryAdvanced": "Colorful jazz start",
+  "setupAssistantPreviewBodyTriads": "Mostly familiar triads in a safe key, with compact voicings and no spicy surprises.",
+  "setupAssistantPreviewBodySevenths": "maj7, m7, and 7 show up clearly, while the progression still stays calm and readable.",
+  "setupAssistantPreviewBodySafeExtensions": "A little extra color can appear, but it stays within safe, familiar extensions.",
+  "setupAssistantPreviewBodyFullExtensions": "The preview leaves more room for modern color, richer movement, and denser harmony.",
+  "setupAssistantNotationMajText": "Cmaj7 style",
+  "setupAssistantNotationCompact": "CM7 style",
+  "setupAssistantNotationDelta": "C?7 style",
+  "setupAssistantDifficultyTriads": "Simple triads and core movement",
+  "setupAssistantDifficultySevenths": "maj7 / m7 / 7 centered",
+  "setupAssistantDifficultySafeExtensions": "Safe color with 9 / 11 / 13",
+  "setupAssistantDifficultyFullExtensions": "Full color and wider motion",
+  "setupAssistantStudyHarmonyTitle": "Want a gentler theory path too?",
+  "setupAssistantStudyHarmonyBody": "Study Harmony can walk you through the basics while this generator stays in a safe lane.",
+  "setupAssistantStudyHarmonyCta": "Start Study Harmony",
+  "setupAssistantGuidedSettingsTitle": "Beginner-friendly setup is on",
+  "setupAssistantGuidedSettingsBody": "Core controls stay close by here. Everything else is still available when you want it.",
+  "setupAssistantAdvancedSectionTitle": "More controls",
+  "setupAssistantAdvancedSectionBody": "Open the full settings page if you want every generator option.",
+  "metronome": "Metronome",
+  "enabled": "Enabled",
+  "disabled": "Disabled",
+  "metronomeHelp": "Turn the metronome on to hear a click on every beat while you practice.",
+  "metronomeSound": "Metronome Sound",
+  "metronomeSoundClassic": "Classic",
+  "metronomeSoundClickB": "Click B",
+  "metronomeSoundClickC": "Click C",
+  "metronomeSoundClickD": "Click D",
+  "metronomeSoundClickE": "Click E",
+  "metronomeSoundClickF": "Click F",
+  "metronomeVolume": "Metronome Volume",
+  "practiceMeter": "Time Signature",
+  "practiceMeterHelp": "Choose how many beats are in each bar for transport and metronome timing.",
+  "practiceTimeSignatureTwoFour": "2/4",
+  "practiceTimeSignatureThreeFour": "3/4",
+  "practiceTimeSignatureFourFour": "4/4",
+  "practiceTimeSignatureFiveFour": "5/4",
+  "practiceTimeSignatureSixEight": "6/8",
+  "practiceTimeSignatureSevenEight": "7/8",
+  "practiceTimeSignatureTwelveEight": "12/8",
+  "harmonicRhythm": "Harmonic Rhythm",
+  "harmonicRhythmHelp": "Choose how often chord changes can happen inside the bar.",
+  "harmonicRhythmOnePerBar": "One per bar",
+  "harmonicRhythmTwoPerBar": "Two per bar",
+  "harmonicRhythmPhraseAwareJazz": "Phrase-aware jazz",
+  "harmonicRhythmCadenceCompression": "Cadence compression",
+  "keys": "Keys",
+  "noKeysSelected": "No keys selected. Leave all keys off to practice in free mode across every root.",
+  "keysSelectedHelp": "Selected keys are used for key-aware random mode and Smart Generator mode.",
+  "smartGeneratorMode": "Smart Generator Mode",
+  "smartGeneratorHelp": "Prioritizes functional harmonic motion while preserving the enabled non-diatonic options.",
+  "advancedSmartGenerator": "Advanced Smart Generator",
+  "modulationIntensity": "Modulation Intensity",
+  "modulationIntensityOff": "Off",
+  "modulationIntensityLow": "Low",
+  "modulationIntensityMedium": "Medium",
+  "modulationIntensityHigh": "High",
+  "jazzPreset": "Jazz Preset",
+  "jazzPresetStandardsCore": "Standards Core",
+  "jazzPresetModulationStudy": "Modulation Study",
+  "jazzPresetAdvanced": "Advanced",
+  "sourceProfile": "Source Profile",
+  "sourceProfileFakebookStandard": "Fakebook Standard",
+  "sourceProfileRecordingInspired": "Recording Inspired",
+  "smartDiagnostics": "Smart Diagnostics",
+  "smartDiagnosticsHelp": "Logs Smart Generator decision traces for debugging.",
+  "keyModeRequiredForSmartGenerator": "Select at least one key to use Smart Generator mode.",
+  "nonDiatonic": "Non-Diatonic",
+  "nonDiatonicRequiresKeyMode": "Non-diatonic options are available in key mode only.",
+  "secondaryDominant": "Secondary Dominant",
+  "substituteDominant": "Substitute Dominant",
+  "modalInterchange": "Modal Interchange",
+  "modalInterchangeDisabledHelp": "Modal interchange only appears in key mode, so this option is disabled in free mode.",
+  "rendering": "Rendering",
+  "keyCenterLabelStyle": "Key Label Style",
+  "keyCenterLabelStyleHelp": "Choose between explicit mode names and classical uppercase/lowercase tonic labels.",
+  "chordSymbolStyle": "Chord Symbol Style",
+  "chordSymbolStyleHelp": "Changes the display layer only. Harmonic logic stays canonical.",
+  "styleCompact": "Compact",
+  "styleMajText": "MajText",
+  "styleDeltaJazz": "DeltaJazz",
+  "keyCenterLabelStyleModeText": "C major: / C minor:",
+  "keyCenterLabelStyleClassicalCase": "C: / c:",
+  "allowV7sus4": "Allow V7sus4 (V7, V7/x)",
+  "allowTensions": "Allow Tensions",
+  "chordTypeFilters": "Chord Types",
+  "chordTypeFiltersHelp": "Choose which chord types can appear in the generator.",
+  "chordTypeFiltersSelection": "{selected} / {total} enabled",
+  "@chordTypeFiltersSelection": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "chordTypeGroupTriads": "Triads",
+  "chordTypeGroupSevenths": "Sevenths",
+  "chordTypeGroupSixthsAndAddedTone": "Sixths & Added Tone",
+  "chordTypeGroupDominantVariants": "Dominant Variants",
+  "chordTypeRequiresKeyMode": "V7sus4 is available only when at least one key is selected.",
+  "chordTypeKeepOneEnabled": "Keep at least one chord type enabled.",
+  "tensionHelp": "Roman numeral profile and selected chips only",
+  "inversions": "Inversions",
+  "enableInversions": "Enable Inversions",
+  "inversionHelp": "Random slash-bass rendering after chord selection; it does not track the previous bass.",
+  "firstInversion": "1st Inversion",
+  "secondInversion": "2nd Inversion",
+  "thirdInversion": "3rd Inversion",
+  "keyPracticeOverview": "Key Practice Overview",
+  "freePracticeOverview": "Free Practice Overview",
+  "keyModeTag": "Key Mode",
+  "freeModeTag": "Free Mode",
+  "allKeysTag": "All Keys",
+  "metronomeOnTag": "Metronome On",
+  "metronomeOffTag": "Metronome Off",
+  "pressNextChordToBegin": "Press Next Chord to begin",
+  "freeModeActive": "Free mode active",
+  "freePracticeDescription": "Uses all 12 chromatic roots with random chord qualities for broad reading practice.",
+  "smartPracticeDescription": "Follows harmonic function flow in the selected keys while allowing tasteful smart-generator movement.",
+  "keyPracticeDescription": "Uses the selected keys and enabled Roman numerals to generate diatonic practice material.",
+  "keyboardShortcutHelp": "Space: next chord  Enter: start or pause autoplay  Up/Down: adjust BPM",
+  "currentChord": "Current Chord",
+  "nextChord": "Next Chord",
+  "audioPlayChord": "Play Chord",
+  "audioPlayArpeggio": "Play Arpeggio",
+  "audioPlayProgression": "Play Progression",
+  "audioPlayPrompt": "Play Prompt",
+  "startAutoplay": "Start Autoplay",
+  "pauseAutoplay": "Pause Autoplay",
+  "stopAutoplay": "Stop Autoplay",
+  "resetGeneratedChords": "Reset Generated Chords",
+  "decreaseBpm": "Decrease BPM",
+  "increaseBpm": "Increase BPM",
+  "bpmLabel": "BPM",
+  "bpmTag": "{value} BPM",
+  "@bpmTag": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "allowedRange": "Allowed range: {min}-{max}",
+  "@allowedRange": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "modeMajor": "major",
+  "modeMinor": "minor",
+  "analysisLabelWithCenter": "{center}: {roman}",
+  "@analysisLabelWithCenter": {
+    "placeholders": {
+      "center": {},
+      "roman": {}
+    }
+  },
+  "voicingSuggestionsTitle": "Voicing Suggestions",
+  "voicingSuggestionsSubtitle": "See concrete note choices for this chord.",
+  "voicingSuggestionsEnabled": "Enable Voicing Suggestions",
+  "voicingSuggestionsHelp": "Shows three playable note-level voicing ideas for the current chord.",
+  "voicingDisplayMode": "Voicing Display Mode",
+  "voicingDisplayModeHelp": "Switch between the standard three-card view and a performance-focused current/next preview.",
+  "voicingDisplayModeStandard": "Standard",
+  "voicingDisplayModePerformance": "Performance",
+  "voicingComplexity": "Voicing Complexity",
+  "voicingComplexityHelp": "Controls how colorful the suggestions may become.",
+  "voicingComplexityBasic": "Basic",
+  "voicingComplexityStandard": "Standard",
+  "voicingComplexityModern": "Modern",
+  "voicingTopNotePreference": "Top Note Preference",
+  "voicingTopNotePreferenceHelp": "Leans suggestions toward a chosen top line. Locked voicings win first, then repeated chords keep it steady.",
+  "voicingTopNotePreferenceAuto": "Auto",
+  "allowRootlessVoicings": "Allow Rootless Voicings",
+  "allowRootlessVoicingsHelp": "Lets suggestions omit the root when the guide tones stay clear.",
+  "maxVoicingNotes": "Max Voicing Notes",
+  "lookAheadDepth": "Look-Ahead Depth",
+  "lookAheadDepthHelp": "How many future chords the ranking may consider.",
+  "showVoicingReasons": "Show Voicing Reasons",
+  "showVoicingReasonsHelp": "Displays short explanation chips on each suggestion card.",
+  "voicingSuggestionNatural": "Most Natural",
+  "voicingSuggestionColorful": "Most Colorful",
+  "voicingSuggestionEasy": "Easiest",
+  "voicingSuggestionNaturalSubtitle": "Voice-leading first",
+  "voicingSuggestionColorfulSubtitle": "Leans into color tones",
+  "voicingSuggestionEasySubtitle": "Compact hand shape",
+  "voicingSuggestionNaturalConnectedSubtitle": "Connection and resolution first",
+  "voicingSuggestionNaturalStableSubtitle": "Same shape, steady comping",
+  "voicingSuggestionTopLineSubtitle": "Top line leads",
+  "voicingSuggestionColorfulAlteredSubtitle": "Altered tension up front",
+  "voicingSuggestionColorfulQuartalSubtitle": "Modern quartal color",
+  "voicingSuggestionColorfulTritoneSubtitle": "Tritone-sub edge with bright guide tones",
+  "voicingSuggestionColorfulUpperStructureSubtitle": "Guide tones with bright extensions",
+  "voicingSuggestionEasyAnchoredSubtitle": "Core tones, smaller reach",
+  "voicingSuggestionEasyStableSubtitle": "Repeat-friendly hand shape",
+  "voicingPerformanceSubtitle": "Feature one representative comping shape and keep the next move in view.",
+  "voicingPerformanceCurrentTitle": "Current voicing",
+  "voicingPerformanceNextTitle": "Next preview",
+  "voicingPerformanceCurrentOnly": "Current only",
+  "voicingPerformanceShared": "Shared",
+  "voicingPerformanceNextOnly": "Next move",
+  "voicingPerformanceTopLinePath": "Top line: {current} -> {next}",
+  "@voicingPerformanceTopLinePath": {
+    "placeholders": {
+      "current": {},
+      "next": {}
+    }
+  },
+  "voicingTopNoteLabel": "Top",
+  "voicingTopNoteContextExplicit": "Top line target: {note}",
+  "@voicingTopNoteContextExplicit": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextLocked": "Locked top line: {note}",
+  "@voicingTopNoteContextLocked": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextCarry": "Repeated top line: {note}",
+  "@voicingTopNoteContextCarry": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextNearby": "Nearest top line to {note}",
+  "@voicingTopNoteContextNearby": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingTopNoteContextFallback": "No exact top line for {note}",
+  "@voicingTopNoteContextFallback": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "voicingFamilyShell": "Shell",
+  "voicingFamilyRootlessA": "Rootless A",
+  "voicingFamilyRootlessB": "Rootless B",
+  "voicingFamilySpread": "Spread",
+  "voicingFamilySus": "Sus",
+  "voicingFamilyQuartal": "Quartal",
+  "voicingFamilyAltered": "Altered",
+  "voicingFamilyUpperStructure": "Upper Structure",
+  "voicingLockSuggestion": "Lock suggestion",
+  "voicingUnlockSuggestion": "Unlock suggestion",
+  "voicingSelected": "Selected",
+  "voicingLocked": "Locked",
+  "voicingReasonEssentialCore": "Essential tones covered",
+  "voicingReasonGuideToneAnchor": "3rd/7th anchor",
+  "voicingReasonGuideResolution": "{count} guide-tone resolves",
+  "@voicingReasonGuideResolution": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "voicingReasonCommonToneRetention": "{count} common tones kept",
+  "@voicingReasonCommonToneRetention": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "voicingReasonStableRepeat": "Stable repeat",
+  "voicingReasonTopLineTarget": "Top line target",
+  "voicingReasonLowMudAvoided": "Low-register clarity",
+  "voicingReasonCompactReach": "Comfortable reach",
+  "voicingReasonBassAnchor": "Bass anchor respected",
+  "voicingReasonNextChordReady": "Next chord ready",
+  "voicingReasonAlteredColor": "Altered tensions",
+  "voicingReasonRootlessClarity": "Light rootless shape",
+  "voicingReasonSusRelease": "Sus release set up",
+  "voicingReasonQuartalColor": "Quartal color",
+  "voicingReasonUpperStructureColor": "Upper-structure color",
+  "voicingReasonTritoneSubFlavor": "Tritone-sub flavor",
+  "voicingReasonLockedContinuity": "Locked continuity",
+  "voicingReasonGentleMotion": "Smooth hand move",
+  "mainMenuIntro": "Generate your next chord loop in Chordest, then use Analyzer for a cautious harmony read when you need context.",
+  "mainMenuGeneratorTitle": "Chordest Generator",
+  "mainMenuGeneratorDescription": "Start with a playable chord loop, voicing support, and quick practice controls.",
+  "openGenerator": "Start Practice",
+  "openAnalyzer": "Analyze Progression",
+  "mainMenuAnalyzerTitle": "Chord Analyzer",
+  "mainMenuAnalyzerDescription": "Check likely keys, Roman numerals, and warnings with a conservative progression read.",
+  "mainMenuStudyHarmonyTitle": "Study Harmony",
+  "mainMenuStudyHarmonyDescription": "Continue lessons, review chapters, and build practical harmony fluency.",
+  "openStudyHarmony": "Start Study Harmony",
+  "studyHarmonyTitle": "Study Harmony",
+  "studyHarmonySubtitle": "Work through a structured harmony hub with quick lesson entries and chapter progress.",
+  "studyHarmonyPlaceholderTag": "Study deck",
+  "studyHarmonyPlaceholderBody": "Lesson data, prompts, and answer surfaces already share one reusable study flow for notes, chords, scales, and progression drills.",
+  "studyHarmonyTestLevelTag": "Practice drill",
+  "studyHarmonyTestLevelAction": "Open drill",
+  "studyHarmonySubmit": "Submit",
+  "studyHarmonyNextPrompt": "Next prompt",
+  "studyHarmonySelectedAnswers": "Selected answers",
+  "studyHarmonySelectionEmpty": "No answers selected yet.",
+  "studyHarmonyClearProgress": "{current}/{total} correct",
+  "@studyHarmonyClearProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyAttempts": "Attempts",
+  "studyHarmonyAccuracy": "Accuracy",
+  "studyHarmonyElapsedTime": "Time",
+  "studyHarmonyObjective": "Goal",
+  "studyHarmonyPromptInstruction": "Pick the matching answer",
+  "studyHarmonyNeedSelection": "Choose at least one answer before submitting.",
+  "studyHarmonyCorrectLabel": "Correct",
+  "studyHarmonyIncorrectLabel": "Incorrect",
+  "studyHarmonyCorrectFeedback": "Correct. {answer} was the right answer.",
+  "@studyHarmonyCorrectFeedback": {
+    "placeholders": {
+      "answer": {}
+    }
+  },
+  "studyHarmonyIncorrectFeedback": "Incorrect. {answer} was the right answer and you lost one life.",
+  "@studyHarmonyIncorrectFeedback": {
+    "placeholders": {
+      "answer": {}
+    }
+  },
+  "studyHarmonyGameOverTitle": "Game Over",
+  "studyHarmonyGameOverBody": "All three lives are gone. Retry this level or go back to the Study Harmony hub.",
+  "studyHarmonyLevelCompleteTitle": "Level Cleared",
+  "studyHarmonyLevelCompleteBody": "You reached the lesson goal. Check your accuracy and clear time below.",
+  "studyHarmonyBackToHub": "Back to Study Harmony",
+  "studyHarmonyRetry": "Retry",
+  "studyHarmonyHubHeroEyebrow": "Study Hub",
+  "studyHarmonyHubHeroBody": "Use Continue to resume momentum, Review to revisit weak spots, and Daily to get one deterministic lesson from your unlocked path.",
+  "studyHarmonyTrackFilterLabel": "Tracks",
+  "studyHarmonyTrackCoreFilterLabel": "Core",
+  "studyHarmonyTrackPopFilterLabel": "Pop",
+  "studyHarmonyTrackJazzFilterLabel": "Jazz",
+  "studyHarmonyTrackClassicalFilterLabel": "Classical",
+  "studyHarmonyHubLessonsProgress": "{cleared}/{total} lessons cleared",
+  "@studyHarmonyHubLessonsProgress": {
+    "placeholders": {
+      "cleared": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyHubChaptersProgress": "{cleared}/{total} chapters completed",
+  "@studyHarmonyHubChaptersProgress": {
+    "placeholders": {
+      "cleared": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyProgressStars": "{stars} stars",
+  "@studyHarmonyProgressStars": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyProgressSkillsMastered": "{mastered}/{total} skills mastered",
+  "@studyHarmonyProgressSkillsMastered": {
+    "placeholders": {
+      "mastered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyProgressReviewsReady": "{count} reviews ready",
+  "@studyHarmonyProgressReviewsReady": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyProgressStreak": "Streak x{count}",
+  "@studyHarmonyProgressStreak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyProgressRuns": "{count} runs",
+  "@studyHarmonyProgressRuns": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyProgressBestRank": "Best {rank}",
+  "@studyHarmonyProgressBestRank": {
+    "placeholders": {
+      "rank": {}
+    }
+  },
+  "studyHarmonyBossTag": "Boss",
+  "studyHarmonyContinueCardTitle": "Continue",
+  "studyHarmonyContinueResumeHint": "Resume the lesson you touched most recently.",
+  "studyHarmonyContinueFrontierHint": "Jump to the next lesson at your current frontier.",
+  "studyHarmonyContinueLessonLabel": "Continue: {lessonTitle}",
+  "@studyHarmonyContinueLessonLabel": {
+    "placeholders": {
+      "lessonTitle": {}
+    }
+  },
+  "studyHarmonyContinueAction": "Continue",
+  "studyHarmonyReviewCardTitle": "Review",
+  "studyHarmonyReviewQueueHint": "Pulled from your current review queue.",
+  "studyHarmonyReviewWeakHint": "Picked from the weakest result in your played lessons.",
+  "studyHarmonyReviewFallbackHint": "No review debt yet, so this falls back to your current frontier.",
+  "studyHarmonyReviewRetryNeededHint": "This lesson needs another pass after a miss or unfinished run.",
+  "studyHarmonyReviewAccuracyRefreshHint": "This lesson is queued for a quick accuracy refresh.",
+  "studyHarmonyReviewAction": "Review",
+  "studyHarmonyDailyCardTitle": "Daily Challenge",
+  "studyHarmonyDailyCardHint": "Open today's deterministic pick from your unlocked lessons.",
+  "studyHarmonyDailyCardHintCompleted": "Today's daily is cleared. Replay it if you want, or come back tomorrow to keep the streak going.",
+  "studyHarmonyDailyAction": "Play daily",
+  "studyHarmonyDailyDateBadge": "Seed {dateKey}",
+  "@studyHarmonyDailyDateBadge": {
+    "placeholders": {
+      "dateKey": {}
+    }
+  },
+  "studyHarmonyDailyClearedTodayTag": "Daily cleared today",
+  "studyHarmonyReviewSessionTitle": "Weak Spot Review",
+  "studyHarmonyReviewSessionDescription": "Mix a short review set around {chapterTitle} and your weakest recent skills.",
+  "@studyHarmonyReviewSessionDescription": {
+    "placeholders": {
+      "chapterTitle": {}
+    }
+  },
+  "studyHarmonyDailySessionTitle": "Daily Challenge",
+  "studyHarmonyDailySessionDescription": "Play today's seeded mix built from {chapterTitle} and your current frontier.",
+  "@studyHarmonyDailySessionDescription": {
+    "placeholders": {
+      "chapterTitle": {}
+    }
+  },
+  "studyHarmonyModeLesson": "Lesson Mode",
+  "studyHarmonyModeReview": "Review Mode",
+  "studyHarmonyModeDaily": "Daily Mode",
+  "studyHarmonyModeLegacy": "Practice Mode",
+  "studyHarmonyShortcutHint": "Enter submits or moves on. R restarts. 1-9 chooses an answer. Tab and Shift+Tab move focus.",
+  "studyHarmonyLivesRemaining": "{remaining} of {total} lives remaining",
+  "@studyHarmonyLivesRemaining": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyResultSkillGainTitle": "Skill gains",
+  "studyHarmonyResultReviewFocusTitle": "Review focus",
+  "studyHarmonyResultRewardTitle": "Session reward",
+  "studyHarmonyBonusGoalsTitle": "Bonus goals",
+  "studyHarmonyResultRankLine": "Rank {rank}",
+  "@studyHarmonyResultRankLine": {
+    "placeholders": {
+      "rank": {}
+    }
+  },
+  "studyHarmonyResultStarsLine": "{stars} stars",
+  "@studyHarmonyResultStarsLine": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyResultBestLine": "Best {rank} 夷?{stars} stars",
+  "@studyHarmonyResultBestLine": {
+    "placeholders": {
+      "rank": {},
+      "stars": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyResultDailyStreakLine": "Daily streak x{count}",
+  "@studyHarmonyResultDailyStreakLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyResultNewBestTag": "New personal best",
+  "studyHarmonyResultSkillGainLine": "{skill} {delta}",
+  "@studyHarmonyResultSkillGainLine": {
+    "placeholders": {
+      "skill": {},
+      "delta": {}
+    }
+  },
+  "studyHarmonyReviewReasonRetryNeeded": "Review reason: retry needed",
+  "studyHarmonyReviewReasonAccuracyRefresh": "Review reason: accuracy refresh",
+  "studyHarmonyReviewReasonLowMastery": "Review reason: low mastery",
+  "studyHarmonyReviewReasonStaleSkill": "Review reason: stale skill",
+  "studyHarmonyReviewReasonWeakSpot": "Review reason: weak spot",
+  "studyHarmonyReviewReasonFrontierRefresh": "Review reason: frontier refresh",
+  "studyHarmonyQuestBoardTitle": "Quest Board",
+  "studyHarmonyQuestCompletedTag": "Completed",
+  "studyHarmonyQuestTodayTag": "Today",
+  "studyHarmonyQuestProgressLabel": "{current}/{target} complete",
+  "@studyHarmonyQuestProgressLabel": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyQuestDailyTitle": "Daily streak",
+  "studyHarmonyQuestDailyBody": "Clear today's seeded mix to extend your streak.",
+  "studyHarmonyQuestDailyBodyCompleted": "Today's daily is already cleared. The streak is safe for now.",
+  "studyHarmonyQuestFrontierTitle": "Frontier push",
+  "studyHarmonyQuestFrontierBody": "Clear {lessonTitle} to move the path forward.",
+  "@studyHarmonyQuestFrontierBody": {
+    "placeholders": {
+      "lessonTitle": {}
+    }
+  },
+  "studyHarmonyQuestFrontierBodyCompleted": "Every currently unlocked lesson is cleared. Replay a boss or chase more stars.",
+  "studyHarmonyQuestStarsTitle": "Star hunt",
+  "studyHarmonyQuestStarsBody": "Push extra stars inside {chapterTitle}.",
+  "@studyHarmonyQuestStarsBody": {
+    "placeholders": {
+      "chapterTitle": {}
+    }
+  },
+  "studyHarmonyQuestStarsBodyFallback": "Push extra stars in your current chapter.",
+  "studyHarmonyComboLabel": "Combo x{count}",
+  "@studyHarmonyComboLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyBestComboLabel": "Best combo x{count}",
+  "@studyHarmonyBestComboLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyBonusFullHearts": "Keep all hearts",
+  "studyHarmonyBonusAccuracyTarget": "Reach {percent}% accuracy",
+  "@studyHarmonyBonusAccuracyTarget": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyBonusComboTarget": "Reach combo x{count}",
+  "@studyHarmonyBonusComboTarget": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyBonusSweepTag": "Bonus sweep",
+  "studyHarmonySkillNoteRead": "Note reading",
+  "studyHarmonySkillNoteFindKeyboard": "Keyboard note finding",
+  "studyHarmonySkillNoteAccidentals": "Sharps and flats",
+  "studyHarmonySkillChordSymbolToKeys": "Chord symbol to keys",
+  "studyHarmonySkillChordNameFromTones": "Chord naming",
+  "studyHarmonySkillScaleBuild": "Scale building",
+  "studyHarmonySkillRomanRealize": "Roman numeral realization",
+  "studyHarmonySkillRomanIdentify": "Roman numeral identification",
+  "studyHarmonySkillHarmonyDiatonicity": "Diatonicity",
+  "studyHarmonySkillHarmonyFunction": "Function basics",
+  "studyHarmonySkillProgressionKeyCenter": "Progression key center",
+  "studyHarmonySkillProgressionFunction": "Progression function reading",
+  "studyHarmonySkillProgressionNonDiatonic": "Progression non-diatonic detection",
+  "studyHarmonySkillProgressionFillBlank": "Progression fill-in",
+  "studyHarmonyHubChapterSectionTitle": "Chapters",
+  "studyHarmonyChapterProgressText": "{cleared}/{total} lessons cleared",
+  "@studyHarmonyChapterProgressText": {
+    "placeholders": {
+      "cleared": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyLessonsCount": "{count} lessons",
+  "@studyHarmonyLessonsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyCompletedLessonsCount": "{count} cleared",
+  "@studyHarmonyCompletedLessonsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyOpenChapterAction": "Open chapter",
+  "studyHarmonyLockedChapterTag": "Locked chapter",
+  "studyHarmonyChapterNextUp": "Next up: {lessonTitle}",
+  "@studyHarmonyChapterNextUp": {
+    "placeholders": {
+      "lessonTitle": {}
+    }
+  },
+  "studyHarmonyChapterViewTitle": "{chapterTitle}",
+  "@studyHarmonyChapterViewTitle": {
+    "placeholders": {
+      "chapterTitle": {}
+    }
+  },
+  "studyHarmonyTrackPlaceholderBody": "This track is still locked. Switch back to {coreTrack} to keep studying today.",
+  "@studyHarmonyTrackPlaceholderBody": {
+    "placeholders": {
+      "coreTrack": {}
+    }
+  },
+  "studyHarmonyCoreTrackTitle": "Core Track",
+  "studyHarmonyCoreTrackDescription": "Start with notes and the keyboard, then build up through chords, scales, Roman numerals, diatonic basics, and short progression analysis.",
+  "studyHarmonyChapterNotesTitle": "Chapter 1: Notes & Keyboard",
+  "studyHarmonyChapterNotesDescription": "Map note names to the keyboard and get comfortable with white keys and simple accidentals.",
+  "studyHarmonyChapterChordsTitle": "Chapter 2: Chord Basics",
+  "studyHarmonyChapterChordsDescription": "Spell basic triads and sevenths, then name common chord shapes from their tones.",
+  "studyHarmonyChapterScalesTitle": "Chapter 3: Scales & Keys",
+  "studyHarmonyChapterScalesDescription": "Build major and minor scales, then spot which tones belong inside a key.",
+  "studyHarmonyChapterRomanTitle": "Chapter 4: Roman Numerals & Diatonicity",
+  "studyHarmonyChapterRomanDescription": "Turn simple Roman numerals into chords, identify them from chords, and sort diatonic basics by function.",
+  "studyHarmonyChapterProgressionDetectiveTitle": "Chapter 5: Progression Detective I",
+  "studyHarmonyChapterProgressionDetectiveDescription": "Read short core progressions, find the likely key center, and spot the chord function or odd one out.",
+  "studyHarmonyChapterMissingChordTitle": "Chapter 6: Missing Chord I",
+  "studyHarmonyChapterMissingChordDescription": "Fill one blank inside a short progression and learn where cadence and function want to go next.",
+  "studyHarmonyOpenLessonAction": "Open lesson",
+  "studyHarmonyLockedLessonAction": "Locked",
+  "studyHarmonyClearedTag": "Cleared",
+  "studyHarmonyComingSoonTag": "Coming soon",
+  "studyHarmonyPopTrackTitle": "Pop Track",
+  "studyHarmonyPopTrackDescription": "Run the full harmony path in a pop lane with its own progress, daily picks, and review queue.",
+  "studyHarmonyJazzTrackTitle": "Jazz Track",
+  "studyHarmonyJazzTrackDescription": "Practice the full curriculum in a jazz lane with separate progress, daily picks, and review queue.",
+  "studyHarmonyClassicalTrackTitle": "Classical Track",
+  "studyHarmonyClassicalTrackDescription": "Study the full curriculum in a classical lane with independent progress, daily picks, and review queue.",
+  "studyHarmonyObjectiveQuickDrill": "Quick Drill",
+  "studyHarmonyObjectiveBossReview": "Boss Review",
+  "studyHarmonyLessonNotesKeyboardTitle": "White-Key Note Hunt",
+  "studyHarmonyLessonNotesKeyboardDescription": "Read note names and tap the matching white key.",
+  "studyHarmonyLessonNotesPreviewTitle": "Name the Highlighted Note",
+  "studyHarmonyLessonNotesPreviewDescription": "Look at a highlighted key and choose the correct note name.",
+  "studyHarmonyLessonNotesAccidentalsTitle": "Black Keys and Twins",
+  "studyHarmonyLessonNotesAccidentalsDescription": "Get a first look at sharp and flat spellings for the black keys.",
+  "studyHarmonyLessonNotesBossTitle": "Boss: Fast Note Hunt",
+  "studyHarmonyLessonNotesBossDescription": "Mix note reading and keyboard finding into one short speed round.",
+  "studyHarmonyLessonTriadKeyboardTitle": "Triads on the Keyboard",
+  "studyHarmonyLessonTriadKeyboardDescription": "Build common major, minor, and diminished triads directly on the keyboard.",
+  "studyHarmonyLessonSeventhKeyboardTitle": "Sevenths on the Keyboard",
+  "studyHarmonyLessonSeventhKeyboardDescription": "Add the seventh and spell a few common 7th chords on the keyboard.",
+  "studyHarmonyLessonChordNameTitle": "Name the Highlighted Chord",
+  "studyHarmonyLessonChordNameDescription": "Read a highlighted chord shape and choose the correct chord name.",
+  "studyHarmonyLessonChordsBossTitle": "Boss: Triads and Sevenths Review",
+  "studyHarmonyLessonChordsBossDescription": "Switch between chord spelling and chord naming in one mixed review.",
+  "studyHarmonyLessonMajorScaleTitle": "Build Major Scales",
+  "studyHarmonyLessonMajorScaleDescription": "Choose every tone that belongs to a simple major scale.",
+  "studyHarmonyLessonMinorScaleTitle": "Build Minor Scales",
+  "studyHarmonyLessonMinorScaleDescription": "Build natural minor and harmonic minor scales from a few common keys.",
+  "studyHarmonyLessonKeyMembershipTitle": "Key Membership",
+  "studyHarmonyLessonKeyMembershipDescription": "Find which tones belong inside a named key.",
+  "studyHarmonyLessonScalesBossTitle": "Boss: Scale Repair",
+  "studyHarmonyLessonScalesBossDescription": "Mix scale building and key membership in a short repair round.",
+  "studyHarmonyLessonRomanToChordTitle": "Roman to Chord",
+  "studyHarmonyLessonRomanToChordDescription": "Read a key and Roman numeral, then choose the matching chord.",
+  "studyHarmonyLessonChordToRomanTitle": "Chord to Roman",
+  "studyHarmonyLessonChordToRomanDescription": "Read a chord inside a key and choose the matching Roman numeral.",
+  "studyHarmonyLessonDiatonicityTitle": "Diatonic or Not",
+  "studyHarmonyLessonDiatonicityDescription": "Sort chords into diatonic and non-diatonic answers in simple keys.",
+  "studyHarmonyLessonFunctionTitle": "Function Basics",
+  "studyHarmonyLessonFunctionDescription": "Classify easy chords as tonic, predominant, or dominant.",
+  "studyHarmonyLessonRomanBossTitle": "Boss: Functional Basics Mix",
+  "studyHarmonyLessonRomanBossDescription": "Review Roman-to-chord, chord-to-Roman, diatonicity, and function together.",
+  "studyHarmonyLessonProgressionKeyCenterTitle": "Find the Key Center",
+  "studyHarmonyLessonProgressionKeyCenterDescription": "Read a short progression and choose the key center that makes the clearest sense.",
+  "studyHarmonyLessonProgressionFunctionTitle": "Function in Context",
+  "studyHarmonyLessonProgressionFunctionDescription": "Focus on one highlighted chord and name its role inside a short progression.",
+  "studyHarmonyLessonProgressionNonDiatonicTitle": "Find the Outsider",
+  "studyHarmonyLessonProgressionNonDiatonicDescription": "Spot the one chord that falls outside the main diatonic reading.",
+  "studyHarmonyLessonProgressionBossTitle": "Boss: Mixed Analysis",
+  "studyHarmonyLessonProgressionBossDescription": "Mix key-center reading, function spotting, and non-diatonic detection in one short detective round.",
+  "studyHarmonyLessonMissingChordPatternTitle": "Fill the Missing Chord",
+  "studyHarmonyLessonMissingChordPatternDescription": "Complete a short four-chord progression by choosing the chord that fits the local function best.",
+  "studyHarmonyLessonMissingChordCadenceTitle": "Cadence Fill-In",
+  "studyHarmonyLessonMissingChordCadenceDescription": "Use the pull toward a cadence to choose the missing chord near the end of a phrase.",
+  "studyHarmonyLessonMissingChordBossTitle": "Boss: Mixed Fill-In",
+  "studyHarmonyLessonMissingChordBossDescription": "Solve a short set of fill-in progression questions with a little more harmonic pressure.",
+  "studyHarmonyChapterCheckpointTitle": "Checkpoint Gauntlet",
+  "studyHarmonyChapterCheckpointDescription": "Combine key-center, function, color, and fill-in drills in faster mixed review sets.",
+  "studyHarmonyLessonCheckpointCadenceRushTitle": "Cadence Rush",
+  "studyHarmonyLessonCheckpointCadenceRushDescription": "Read the harmonic role quickly, then plug the missing cadential chord under light pressure.",
+  "studyHarmonyLessonCheckpointColorKeyTitle": "Color and Key Shift",
+  "studyHarmonyLessonCheckpointColorKeyDescription": "Switch between center detection and non-diatonic color calls without losing the thread.",
+  "studyHarmonyLessonCheckpointBossTitle": "Boss: Checkpoint Gauntlet",
+  "studyHarmonyLessonCheckpointBossDescription": "Clear one integrated checkpoint that mixes key-center, function, color, and cadence repair prompts.",
+  "studyHarmonyChapterCapstoneTitle": "Capstone Trials",
+  "studyHarmonyChapterCapstoneDescription": "Finish the core path with tougher mixed progression rounds that ask for speed, color hearing, and clean resolution choices.",
+  "studyHarmonyLessonCapstoneTurnaroundTitle": "Turnaround Relay",
+  "studyHarmonyLessonCapstoneTurnaroundDescription": "Swap between function reading and missing-chord repair across compact turnarounds.",
+  "studyHarmonyLessonCapstoneBorrowedColorTitle": "Borrowed Color Calls",
+  "studyHarmonyLessonCapstoneBorrowedColorDescription": "Catch modal color quickly, then confirm the key center before it slips away.",
+  "studyHarmonyLessonCapstoneResolutionTitle": "Resolution Lab",
+  "studyHarmonyLessonCapstoneResolutionDescription": "Track where each phrase wants to land and choose the chord that best resolves the motion.",
+  "studyHarmonyLessonCapstoneBossTitle": "Boss: Final Progression Exam",
+  "studyHarmonyLessonCapstoneBossDescription": "Pass one final mixed exam with center, function, color, and resolution all under pressure.",
+  "studyHarmonyPromptFindNoteOnKeyboard": "Find {note} on the keyboard",
+  "@studyHarmonyPromptFindNoteOnKeyboard": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "studyHarmonyPromptNameHighlightedNote": "Which note is highlighted?",
+  "studyHarmonyPromptFindChordOnKeyboard": "Build {chord} on the keyboard",
+  "@studyHarmonyPromptFindChordOnKeyboard": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "studyHarmonyPromptNameHighlightedChord": "Which chord is highlighted?",
+  "studyHarmonyPromptBuildScale": "Pick every note in {scaleName}",
+  "@studyHarmonyPromptBuildScale": {
+    "placeholders": {
+      "scaleName": {}
+    }
+  },
+  "studyHarmonyPromptKeyMembership": "Pick the notes that belong to {keyName}",
+  "@studyHarmonyPromptKeyMembership": {
+    "placeholders": {
+      "keyName": {}
+    }
+  },
+  "studyHarmonyPromptRomanToChord": "In {keyName}, which chord matches {roman}?",
+  "@studyHarmonyPromptRomanToChord": {
+    "placeholders": {
+      "keyName": {},
+      "roman": {}
+    }
+  },
+  "studyHarmonyPromptChordToRoman": "In {keyName}, what Roman numeral matches {chord}?",
+  "@studyHarmonyPromptChordToRoman": {
+    "placeholders": {
+      "keyName": {},
+      "chord": {}
+    }
+  },
+  "studyHarmonyPromptDiatonicity": "In {keyName}, is {chord} diatonic?",
+  "@studyHarmonyPromptDiatonicity": {
+    "placeholders": {
+      "keyName": {},
+      "chord": {}
+    }
+  },
+  "studyHarmonyPromptFunction": "In {keyName}, what function does {chord} have?",
+  "@studyHarmonyPromptFunction": {
+    "placeholders": {
+      "keyName": {},
+      "chord": {}
+    }
+  },
+  "studyHarmonyProgressionStripLabel": "Progression",
+  "studyHarmonyPromptProgressionKeyCenter": "Which key center best fits this progression?",
+  "studyHarmonyPromptProgressionFunction": "What function does {chord} play here?",
+  "@studyHarmonyPromptProgressionFunction": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "studyHarmonyPromptProgressionNonDiatonic": "Which chord feels least diatonic in this progression?",
+  "studyHarmonyPromptProgressionMissingChord": "Which chord best fills the blank?",
+  "studyHarmonyProgressionExplanationKeyCenter": "One likely reading keeps this progression centered on {keyLabel}.",
+  "@studyHarmonyProgressionExplanationKeyCenter": {
+    "placeholders": {
+      "keyLabel": {}
+    }
+  },
+  "studyHarmonyProgressionExplanationFunction": "{chord} can be heard as a {functionLabel} chord in this context.",
+  "@studyHarmonyProgressionExplanationFunction": {
+    "placeholders": {
+      "chord": {},
+      "functionLabel": {}
+    }
+  },
+  "studyHarmonyProgressionExplanationNonDiatonic": "{chord} sits outside the main {keyLabel} reading, so it stands out as a plausible non-diatonic color.",
+  "@studyHarmonyProgressionExplanationNonDiatonic": {
+    "placeholders": {
+      "chord": {},
+      "keyLabel": {}
+    }
+  },
+  "studyHarmonyProgressionExplanationMissingChord": "{chord} can restore some of the expected {functionLabel} pull in this progression.",
+  "@studyHarmonyProgressionExplanationMissingChord": {
+    "placeholders": {
+      "chord": {},
+      "functionLabel": {}
+    }
+  },
+  "studyHarmonyProgressionChoiceSlot": "{index}. {chord}",
+  "@studyHarmonyProgressionChoiceSlot": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "chord": {}
+    }
+  },
+  "studyHarmonyScaleNameMajor": "{tonic} major",
+  "@studyHarmonyScaleNameMajor": {
+    "placeholders": {
+      "tonic": {}
+    }
+  },
+  "studyHarmonyScaleNameNaturalMinor": "{tonic} natural minor",
+  "@studyHarmonyScaleNameNaturalMinor": {
+    "placeholders": {
+      "tonic": {}
+    }
+  },
+  "studyHarmonyScaleNameHarmonicMinor": "{tonic} harmonic minor",
+  "@studyHarmonyScaleNameHarmonicMinor": {
+    "placeholders": {
+      "tonic": {}
+    }
+  },
+  "studyHarmonyKeyNameMajor": "{tonic} major",
+  "@studyHarmonyKeyNameMajor": {
+    "placeholders": {
+      "tonic": {}
+    }
+  },
+  "studyHarmonyKeyNameMinor": "{tonic} minor",
+  "@studyHarmonyKeyNameMinor": {
+    "placeholders": {
+      "tonic": {}
+    }
+  },
+  "studyHarmonyChoiceDiatonic": "Diatonic",
+  "studyHarmonyChoiceNonDiatonic": "Non-diatonic",
+  "studyHarmonyChoiceTonic": "Tonic",
+  "studyHarmonyChoicePredominant": "Predominant",
+  "studyHarmonyChoiceDominant": "Dominant",
+  "studyHarmonyChoiceOther": "Other",
+  "chordAnalyzerTitle": "Chord Analyzer",
+  "chordAnalyzerSubtitle": "Paste a progression to get a conservative read of likely keys, Roman numerals, and harmonic function.",
+  "chordAnalyzerInputLabel": "Chord progression",
+  "chordAnalyzerInputHint": "Dm7, G7 | ? Am",
+  "chordAnalyzerInputHelper": "Use spaces, |, or commas between chords. Commas inside parentheses stay in the same chord.\n\nUse ? for an unknown chord slot. The analyzer will infer the most natural fill from context and surface alternatives when the reading is ambiguous.\n\nLowercase roots, slash bass, sus/alt/add forms, and tensions like C7(b9, #11) are supported.\n\nOn touch devices, use the chord pad or switch to ABC input when you want free typing.",
+  "chordAnalyzerInputHelpTitle": "Input tips",
+  "chordAnalyzerAnalyze": "Analyze",
+  "chordAnalyzerKeyboardTitle": "Chord Pad",
+  "chordAnalyzerKeyboardTouchHint": "Tap tokens to build a progression. ABC input keeps the system keyboard available when you need free typing.",
+  "chordAnalyzerKeyboardDesktopHint": "Type, paste, or tap tokens to insert them at the cursor.",
+  "chordAnalyzerChordPad": "Pad",
+  "chordAnalyzerRawInput": "ABC",
+  "chordAnalyzerPaste": "Paste",
+  "chordAnalyzerClear": "Reset",
+  "chordAnalyzerBackspace": "Backspace",
+  "chordAnalyzerSpace": "Spacebar",
+  "chordAnalyzerAnalyzing": "Analyzing progression...",
+  "chordAnalyzerInitialTitle": "Start with a progression",
+  "chordAnalyzerInitialBody": "Enter a progression such as Dm7, G7 | ? Am or Cmaj7 | Am7 D7 | Gmaj7 to see likely keys, Roman numerals, warnings, inferred fills, and a short summary.",
+  "chordAnalyzerPlaceholderExplanation": "This ? was inferred from the surrounding harmonic context, so treat it as a suggested fill rather than a certainty.",
+  "chordAnalyzerSuggestedFill": "Suggested fill: {chord}",
+  "@chordAnalyzerSuggestedFill": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "chordAnalyzerDetectedKeys": "Detected Keys",
+  "chordAnalyzerPrimaryReading": "Primary reading",
+  "chordAnalyzerAlternativeReading": "Alternative reading",
+  "chordAnalyzerChordAnalysis": "Chord-by-chord analysis",
+  "chordAnalyzerMeasureLabel": "Measure {index}",
+  "@chordAnalyzerMeasureLabel": {
+    "placeholders": {
+      "index": {}
+    }
+  },
+  "chordAnalyzerProgressionSummary": "Progression summary",
+  "chordAnalyzerWarnings": "Warnings and ambiguities",
+  "chordAnalyzerNoInputError": "Enter a chord progression to analyze.",
+  "chordAnalyzerNoRecognizedChordsError": "No recognizable chords were found in the progression.",
+  "chordAnalyzerPartialParseWarning": "Some symbols were skipped: {tokens}",
+  "@chordAnalyzerPartialParseWarning": {
+    "placeholders": {
+      "tokens": {}
+    }
+  },
+  "chordAnalyzerKeyAmbiguityWarning": "The key center is still somewhat ambiguous between {primary} and {alternative}.",
+  "@chordAnalyzerKeyAmbiguityWarning": {
+    "placeholders": {
+      "primary": {},
+      "alternative": {}
+    }
+  },
+  "chordAnalyzerUnresolvedWarning": "Some chords stay ambiguous, so this reading remains intentionally conservative.",
+  "chordAnalyzerFunctionTonic": "Tonic",
+  "chordAnalyzerFunctionPredominant": "Predominant",
+  "chordAnalyzerFunctionDominant": "Dominant",
+  "chordAnalyzerFunctionOther": "Other",
+  "chordAnalyzerRemarkSecondaryDominant": "Possible secondary dominant targeting {target}.",
+  "@chordAnalyzerRemarkSecondaryDominant": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "chordAnalyzerRemarkTritoneSub": "Possible tritone substitute targeting {target}.",
+  "@chordAnalyzerRemarkTritoneSub": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "chordAnalyzerRemarkModalInterchange": "Possible modal interchange from the parallel minor.",
+  "chordAnalyzerRemarkAmbiguous": "This chord stays ambiguous in the current reading.",
+  "chordAnalyzerRemarkUnresolved": "This chord stays unresolved under the current conservative heuristics.",
+  "chordAnalyzerTagIiVI": "ii-V-I cadence",
+  "chordAnalyzerTagTurnaround": "Turnaround",
+  "chordAnalyzerTagDominantResolution": "Dominant resolution",
+  "chordAnalyzerTagPlagalColor": "Plagal/modal color",
+  "chordAnalyzerSummaryCenter": "This progression most likely centers on {key}.",
+  "@chordAnalyzerSummaryCenter": {
+    "placeholders": {
+      "key": {}
+    }
+  },
+  "chordAnalyzerSummaryAlternative": "An alternative reading is {key}.",
+  "@chordAnalyzerSummaryAlternative": {
+    "placeholders": {
+      "key": {}
+    }
+  },
+  "chordAnalyzerSummaryTag": "It suggests a {tag}.",
+  "@chordAnalyzerSummaryTag": {
+    "placeholders": {
+      "tag": {}
+    }
+  },
+  "chordAnalyzerSummaryFlow": "{from} and {through} behave like {fromFunction} and {throughFunction} chords leading into {target}.",
+  "@chordAnalyzerSummaryFlow": {
+    "placeholders": {
+      "from": {},
+      "through": {},
+      "fromFunction": {},
+      "throughFunction": {},
+      "target": {}
+    }
+  },
+  "chordAnalyzerSummarySecondaryDominant": "{chord} can be heard as a possible secondary dominant pointing toward {target}.",
+  "@chordAnalyzerSummarySecondaryDominant": {
+    "placeholders": {
+      "chord": {},
+      "target": {}
+    }
+  },
+  "chordAnalyzerSummaryTritoneSub": "{chord} can be heard as a possible tritone substitute pointing toward {target}.",
+  "@chordAnalyzerSummaryTritoneSub": {
+    "placeholders": {
+      "chord": {},
+      "target": {}
+    }
+  },
+  "chordAnalyzerSummaryModalInterchange": "{chord} adds a possible modal interchange color.",
+  "@chordAnalyzerSummaryModalInterchange": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "chordAnalyzerSummaryAmbiguous": "Some details remain ambiguous, so this reading stays intentionally conservative.",
+  "chordAnalyzerExamplesTitle": "Examples",
+  "chordAnalyzerConfidenceLabel": "Confidence",
+  "chordAnalyzerAmbiguityLabel": "Ambiguity",
+  "chordAnalyzerWhyThisReading": "Why this reading",
+  "chordAnalyzerCompetingReadings": "Also plausible",
+  "chordAnalyzerIgnoredModifiersWarning": "Ignored modifiers: {details}",
+  "@chordAnalyzerIgnoredModifiersWarning": {
+    "placeholders": {
+      "details": {}
+    }
+  },
+  "chordAnalyzerGenerateVariations": "Create Variations",
+  "chordAnalyzerVariationsTitle": "Natural variations",
+  "chordAnalyzerVariationsBody": "These reharmonize the same flow with nearby functional substitutes. Apply one to send it back through the analyzer.",
+  "chordAnalyzerApplyVariation": "Use Variation",
+  "chordAnalyzerVariationCadentialColorTitle": "Cadential color",
+  "chordAnalyzerVariationCadentialColorBody": "Darkens the predominant and swaps in a tritone dominant while keeping the same arrival.",
+  "chordAnalyzerVariationBackdoorTitle": "Backdoor color",
+  "chordAnalyzerVariationBackdoorBody": "Uses ivm7-bVII7 color from the parallel minor before landing on the same tonic.",
+  "chordAnalyzerVariationAppliedApproachTitle": "Targeted ii-V",
+  "chordAnalyzerVariationAppliedApproachBody": "Builds a related ii-V that still points to the same destination chord.",
+  "chordAnalyzerVariationMinorCadenceTitle": "Minor cadence color",
+  "chordAnalyzerVariationMinorCadenceBody": "Keeps the minor cadence intact but leans into ii筌?Valt-i color.",
+  "chordAnalyzerVariationColorLiftTitle": "Color lift",
+  "chordAnalyzerVariationColorLiftBody": "Keeps the roots and functions close, but upgrades the chords with natural extensions.",
+  "chordAnalyzerParserDiagnosticWarning": "Input warning: {details}",
+  "@chordAnalyzerParserDiagnosticWarning": {
+    "placeholders": {
+      "details": {}
+    }
+  },
+  "chordAnalyzerDiagnosticUnbalancedParentheses": "Unbalanced parentheses left part of the symbol uncertain.",
+  "chordAnalyzerDiagnosticUnexpectedCloseParenthesis": "An unexpected closing parenthesis was ignored.",
+  "chordAnalyzerEvidenceExtensionColor": "Explicit {extension} color strengthens this reading.",
+  "@chordAnalyzerEvidenceExtensionColor": {
+    "placeholders": {
+      "extension": {}
+    }
+  },
+  "chordAnalyzerEvidenceAlteredDominantColor": "Altered dominant color supports a dominant function.",
+  "chordAnalyzerEvidenceSlashBass": "Slash bass {bass} keeps the bass line or inversion meaningful.",
+  "@chordAnalyzerEvidenceSlashBass": {
+    "placeholders": {
+      "bass": {}
+    }
+  },
+  "chordAnalyzerEvidenceResolution": "The next chord supports a resolution toward {target}.",
+  "@chordAnalyzerEvidenceResolution": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "chordAnalyzerEvidenceBorrowedColor": "This color can be heard as borrowed from the parallel mode.",
+  "chordAnalyzerEvidenceSuspensionColor": "Suspension color softens the dominant pull without erasing it.",
+  "chordAnalyzerLowConfidenceTitle": "Low-confidence reading",
+  "chordAnalyzerLowConfidenceBody": "The key candidates are close together or some symbols were only partially recovered, so treat this as a cautious first pass.",
+  "chordAnalyzerEmptyMeasure": "This measure is empty and was preserved in the count.",
+  "chordAnalyzerNoAnalyzableChordsInMeasure": "No analyzable chord symbols were recovered in this measure.",
+  "chordAnalyzerParseIssuesTitle": "Parse issues",
+  "chordAnalyzerParseIssueLine": "{token}: {reason}",
+  "@chordAnalyzerParseIssueLine": {
+    "placeholders": {
+      "token": {},
+      "reason": {}
+    }
+  },
+  "chordAnalyzerParseIssueEmpty": "Empty token.",
+  "chordAnalyzerParseIssueInvalidRoot": "The root could not be recognized.",
+  "chordAnalyzerParseIssueUnknownRoot": "{root} is not a supported root spelling.",
+  "@chordAnalyzerParseIssueUnknownRoot": {
+    "placeholders": {
+      "root": {}
+    }
+  },
+  "chordAnalyzerParseIssueInvalidBass": "Slash bass {bass} is not a supported bass spelling.",
+  "@chordAnalyzerParseIssueInvalidBass": {
+    "placeholders": {
+      "bass": {}
+    }
+  },
+  "chordAnalyzerParseIssueUnsupportedSuffix": "Unsupported suffix or modifier: {suffix}",
+  "@chordAnalyzerParseIssueUnsupportedSuffix": {
+    "placeholders": {
+      "suffix": {}
+    }
+  },
+  "chordAnalyzerDisplaySettings": "Analysis display",
+  "chordAnalyzerDisplaySettingsHelp": "Choose how much theory detail appears and how non-diatonic categories are highlighted.",
+  "chordAnalyzerQuickStartHint": "Tap an example to see instant results, or press Ctrl+Enter on desktop to analyze.",
+  "chordAnalyzerDetailLevel": "Explanation detail",
+  "chordAnalyzerDetailLevelConcise": "Concise",
+  "chordAnalyzerDetailLevelDetailed": "Detailed",
+  "chordAnalyzerDetailLevelAdvanced": "Advanced",
+  "chordAnalyzerHighlightTheme": "Highlight theme",
+  "chordAnalyzerThemePresetDefault": "Default",
+  "chordAnalyzerThemePresetHighContrast": "High contrast",
+  "chordAnalyzerThemePresetColorBlindSafe": "Color-blind safe",
+  "chordAnalyzerThemePresetCustom": "Custom",
+  "chordAnalyzerThemeLegend": "Category legend",
+  "chordAnalyzerCustomColors": "Custom category colors",
+  "chordAnalyzerHighlightAppliedDominant": "Applied dominant",
+  "chordAnalyzerHighlightTritoneSubstitute": "Tritone substitute",
+  "chordAnalyzerHighlightTonicization": "Tonicization",
+  "chordAnalyzerHighlightModulation": "Modulation",
+  "chordAnalyzerHighlightBackdoor": "Backdoor / subdominant minor",
+  "chordAnalyzerHighlightBorrowedColor": "Borrowed color",
+  "chordAnalyzerHighlightCommonTone": "Common-tone motion",
+  "chordAnalyzerHighlightDeceptiveCadence": "Deceptive cadence",
+  "chordAnalyzerHighlightChromaticLine": "Chromatic line color",
+  "chordAnalyzerHighlightAmbiguity": "Ambiguity",
+  "chordAnalyzerSummaryRealModulation": "It makes a stronger case for a real modulation toward {key}.",
+  "@chordAnalyzerSummaryRealModulation": {
+    "placeholders": {
+      "key": {}
+    }
+  },
+  "chordAnalyzerSummaryTonicization": "It briefly tonicizes {target} without fully settling there.",
+  "@chordAnalyzerSummaryTonicization": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "chordAnalyzerSummaryBackdoor": "The progression leans into backdoor or subdominant-minor color before resolving.",
+  "chordAnalyzerSummaryDeceptiveCadence": "One cadence sidesteps the expected tonic for a deceptive effect.",
+  "chordAnalyzerSummaryChromaticLine": "A chromatic inner-line or line-cliche color helps connect part of the phrase.",
+  "chordAnalyzerSummaryBackdoorDominant": "{chord} works like a backdoor dominant rather than a plain borrowed dominant.",
+  "@chordAnalyzerSummaryBackdoorDominant": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "chordAnalyzerSummarySubdominantMinor": "{chord} reads more naturally as subdominant-minor color than as a random non-diatonic chord.",
+  "@chordAnalyzerSummarySubdominantMinor": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "chordAnalyzerSummaryCommonToneDiminished": "{chord} can be heard as a common-tone diminished color that resolves by shared pitch content.",
+  "@chordAnalyzerSummaryCommonToneDiminished": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "chordAnalyzerSummaryDeceptiveTarget": "{chord} participates in a deceptive landing instead of a plain authentic cadence.",
+  "@chordAnalyzerSummaryDeceptiveTarget": {
+    "placeholders": {
+      "chord": {}
+    }
+  },
+  "chordAnalyzerSummaryCompeting": "An advanced reading keeps competing interpretations in play, such as {readings}.",
+  "@chordAnalyzerSummaryCompeting": {
+    "placeholders": {
+      "readings": {}
+    }
+  },
+  "chordAnalyzerFunctionLine": "Function: {function}",
+  "@chordAnalyzerFunctionLine": {
+    "placeholders": {
+      "function": {}
+    }
+  },
+  "chordAnalyzerEvidenceLead": "Evidence: {evidence}",
+  "@chordAnalyzerEvidenceLead": {
+    "placeholders": {
+      "evidence": {}
+    }
+  },
+  "chordAnalyzerAdvancedCompetingReadings": "Competing readings remain possible here: {readings}.",
+  "@chordAnalyzerAdvancedCompetingReadings": {
+    "placeholders": {
+      "readings": {}
+    }
+  },
+  "chordAnalyzerRemarkTonicization": "This sounds more like a local tonicization of {target} than a full modulation.",
+  "@chordAnalyzerRemarkTonicization": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "chordAnalyzerRemarkRealModulation": "This supports a real modulation toward {key}.",
+  "@chordAnalyzerRemarkRealModulation": {
+    "placeholders": {
+      "key": {}
+    }
+  },
+  "chordAnalyzerRemarkBackdoorDominant": "This can be heard as a backdoor dominant with subdominant-minor color.",
+  "chordAnalyzerRemarkBackdoorChain": "This belongs to a backdoor chain rather than a plain borrowed detour.",
+  "chordAnalyzerRemarkSubdominantMinor": "This borrowed iv or subdominant-minor color behaves like a predominant area.",
+  "chordAnalyzerRemarkCommonToneDiminished": "This diminished chord works through common-tone reinterpretation.",
+  "chordAnalyzerRemarkPivotChord": "This chord can act as a pivot into the next local key area.",
+  "chordAnalyzerRemarkCommonToneModulation": "Common-tone continuity helps the modulation feel plausible.",
+  "chordAnalyzerRemarkDeceptiveCadence": "This points toward a deceptive cadence rather than a direct tonic arrival.",
+  "chordAnalyzerRemarkLineCliche": "Chromatic inner-line motion colors this chord choice.",
+  "chordAnalyzerRemarkDualFunction": "More than one functional reading stays credible here.",
+  "chordAnalyzerTagTonicization": "Tonicization",
+  "chordAnalyzerTagRealModulation": "Real modulation",
+  "chordAnalyzerTagBackdoorChain": "Backdoor chain",
+  "chordAnalyzerTagDeceptiveCadence": "Deceptive cadence",
+  "chordAnalyzerTagChromaticLine": "Chromatic line color",
+  "chordAnalyzerTagCommonToneMotion": "Common-tone motion",
+  "chordAnalyzerEvidenceCadentialArrival": "A local cadential arrival supports hearing a temporary target.",
+  "chordAnalyzerEvidenceFollowThrough": "Follow-through chords continue to support the new local center.",
+  "chordAnalyzerEvidencePhraseBoundary": "The change lands near a phrase boundary or structural accent.",
+  "chordAnalyzerEvidencePivotSupport": "A pivot-like shared reading supports the local shift.",
+  "chordAnalyzerEvidenceCommonToneSupport": "Shared common tones help connect the reinterpretation.",
+  "chordAnalyzerEvidenceHomeGravityWeakening": "The original tonic loses some of its pull in this window.",
+  "chordAnalyzerEvidenceBackdoorMotion": "The motion matches a backdoor or subdominant-minor resolution pattern.",
+  "chordAnalyzerEvidenceDeceptiveResolution": "The dominant resolves away from the expected tonic target.",
+  "chordAnalyzerEvidenceChromaticLine": "Chromatic line support: {detail}.",
+  "@chordAnalyzerEvidenceChromaticLine": {
+    "placeholders": {
+      "detail": {}
+    }
+  },
+  "chordAnalyzerEvidenceCompetingReading": "Competing reading: {detail}.",
+  "@chordAnalyzerEvidenceCompetingReading": {
+    "placeholders": {
+      "detail": {}
+    }
+  },
+  "studyHarmonyDailyReplayAction": "Replay daily",
+  "studyHarmonyMilestoneCabinetTitle": "Milestone Medals",
+  "studyHarmonyMilestoneLessonsTitle": "Pathfinder Medal",
+  "studyHarmonyMilestoneLessonsBody": "Clear {target} lessons in Core Foundations.",
+  "@studyHarmonyMilestoneLessonsBody": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "studyHarmonyMilestoneStarsTitle": "Star Collector",
+  "studyHarmonyMilestoneStarsBody": "Collect {target} stars across Study Harmony.",
+  "@studyHarmonyMilestoneStarsBody": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "studyHarmonyMilestoneStreakTitle": "Streak Legend",
+  "studyHarmonyMilestoneStreakBody": "Reach a best daily streak of {target}.",
+  "@studyHarmonyMilestoneStreakBody": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "studyHarmonyMilestoneMasteryTitle": "Mastery Scholar",
+  "studyHarmonyMilestoneMasteryBody": "Master {target} skills.",
+  "@studyHarmonyMilestoneMasteryBody": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "studyHarmonyMilestoneEarnedLabel": "{earned}/{total} medals earned",
+  "@studyHarmonyMilestoneEarnedLabel": {
+    "placeholders": {
+      "earned": {},
+      "total": {}
+    }
+  },
+  "studyHarmonyMilestoneCompletedTag": "Cabinet complete",
+  "studyHarmonyMilestoneTierBronze": "Bronze Medal",
+  "studyHarmonyMilestoneTierSilver": "Silver Medal",
+  "studyHarmonyMilestoneTierGold": "Gold Medal",
+  "studyHarmonyMilestoneTierPlatinum": "Platinum Medal",
+  "studyHarmonyMilestoneUnlockedLabel": "{tier} {title}",
+  "@studyHarmonyMilestoneUnlockedLabel": {
+    "placeholders": {
+      "title": {},
+      "tier": {}
+    }
+  },
+  "studyHarmonyResultMilestonesTitle": "New medals",
+  "studyHarmonyChapterRemixTitle": "Remix Arena",
+  "studyHarmonyChapterRemixDescription": "Longer mixed sets that shuffle key center, function, and borrowed color without warning.",
+  "studyHarmonyLessonRemixBridgeTitle": "Bridge Builder",
+  "studyHarmonyLessonRemixBridgeDescription": "Stitch function reads and missing-chord fills into one flowing chain.",
+  "studyHarmonyLessonRemixPivotTitle": "Color Pivot",
+  "studyHarmonyLessonRemixPivotDescription": "Track borrowed color and key-center pivots as the progression shifts underneath you.",
+  "studyHarmonyLessonRemixSprintTitle": "Resolution Sprint",
+  "studyHarmonyLessonRemixSprintDescription": "Read function, cadence fill, and tonal gravity back-to-back at a quicker pace.",
+  "studyHarmonyLessonRemixBossTitle": "Remix Marathon",
+  "studyHarmonyLessonRemixBossDescription": "A final mixed marathon that throws every progression-reading lens back into the set.",
+  "studyHarmonyProgressStreakSaver": "Savers x{count}",
+  "@studyHarmonyProgressStreakSaver": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyProgressLegendCrowns": "Legend crowns {count}",
+  "@studyHarmonyProgressLegendCrowns": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyModeFocus": "Focus Mode",
+  "studyHarmonyModeLegend": "Legend Trial",
+  "studyHarmonyFocusCardTitle": "Focus Sprint",
+  "studyHarmonyFocusCardHint": "Target the weakest overlap in your current path with fewer lives and tighter goals.",
+  "studyHarmonyFocusFallbackHint": "Run a harder mixed drill to pressure-test your current weak spots.",
+  "studyHarmonyFocusAction": "Start sprint",
+  "studyHarmonyFocusSessionTitle": "Focus Sprint",
+  "studyHarmonyFocusSessionDescription": "A tighter mixed sprint built from the weakest spots around {chapter}.",
+  "@studyHarmonyFocusSessionDescription": {
+    "placeholders": {
+      "chapter": {}
+    }
+  },
+  "studyHarmonyFocusMixLabel": "{count} lessons mixed",
+  "@studyHarmonyFocusMixLabel": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyFocusRewardLabel": "Weekly saver reward",
+  "studyHarmonyLegendCardTitle": "Legend Trial",
+  "studyHarmonyLegendCardHint": "Replay a silver-or-better chapter as a two-life mastery run to secure a legend crown.",
+  "studyHarmonyLegendFallbackHint": "Finish a chapter and push it to about 2 stars per lesson to unlock a Legend Trial.",
+  "studyHarmonyLegendAction": "Chase legend",
+  "studyHarmonyLegendSessionTitle": "Legend Trial",
+  "studyHarmonyLegendSessionDescription": "A no-slack mastery replay of {chapter} built to secure its legend crown.",
+  "@studyHarmonyLegendSessionDescription": {
+    "placeholders": {
+      "chapter": {}
+    }
+  },
+  "studyHarmonyLegendMixLabel": "{count} lessons chained",
+  "@studyHarmonyLegendMixLabel": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyLegendRiskLabel": "Legend crown at stake",
+  "studyHarmonyWeeklyPlanTitle": "Weekly Training Plan",
+  "studyHarmonyWeeklyRewardLabel": "Reward: Streak Saver",
+  "studyHarmonyWeeklyRewardReadyTag": "Reward ready",
+  "studyHarmonyWeeklyRewardClaimedTag": "Reward claimed",
+  "studyHarmonyWeeklyGoalActiveDaysTitle": "Show up on multiple days",
+  "studyHarmonyWeeklyGoalActiveDaysBody": "Be active on {target} different days this week.",
+  "@studyHarmonyWeeklyGoalActiveDaysBody": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "studyHarmonyWeeklyGoalDailyTitle": "Keep the daily loop alive",
+  "studyHarmonyWeeklyGoalDailyBody": "Log {target} daily clears this week.",
+  "@studyHarmonyWeeklyGoalDailyBody": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "studyHarmonyWeeklyGoalFocusTitle": "Finish a Focus Sprint",
+  "studyHarmonyWeeklyGoalFocusBody": "Complete {target} Focus Sprints this week.",
+  "@studyHarmonyWeeklyGoalFocusBody": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "studyHarmonyResultStreakSaverUsedLine": "Streak Saver used to protect yesterday.",
+  "studyHarmonyResultStreakSaverEarnedLine": "New Streak Saver earned. Inventory: {count}",
+  "@studyHarmonyResultStreakSaverEarnedLine": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyResultFocusSprintLine": "Focus Sprint cleared.",
+  "studyHarmonyResultLegendLine": "Legend crown secured for {chapter}.",
+  "@studyHarmonyResultLegendLine": {
+    "placeholders": {
+      "chapter": {}
+    }
+  },
+  "studyHarmonyChapterEncoreTitle": "Encore Ladder",
+  "studyHarmonyChapterEncoreDescription": "A short finishing ladder that compresses the whole progression toolkit into a final encore set.",
+  "studyHarmonyLessonEncorePulseTitle": "Tonal Pulse",
+  "studyHarmonyLessonEncorePulseDescription": "Lock in tonal center and function without any warm-up prompts.",
+  "studyHarmonyLessonEncoreSwapTitle": "Color Swap",
+  "studyHarmonyLessonEncoreSwapDescription": "Alternate borrowed color calls with missing-chord restoration to keep the ear honest.",
+  "studyHarmonyLessonEncoreBossTitle": "Encore Finale",
+  "studyHarmonyLessonEncoreBossDescription": "One last compact boss round that checks every progression lens in quick succession.",
+  "studyHarmonyChapterMasteryBronze": "Bronze Clear",
+  "studyHarmonyChapterMasterySilver": "Silver Crown",
+  "studyHarmonyChapterMasteryGold": "Gold Crown",
+  "studyHarmonyChapterMasteryLegendary": "Legend Crown",
+  "studyHarmonyModeBossRush": "Boss Rush Mode",
+  "studyHarmonyBossRushCardTitle": "Boss Rush",
+  "studyHarmonyBossRushCardHint": "Chain together the unlocked boss lessons with fewer lives and a bigger score ceiling.",
+  "studyHarmonyBossRushFallbackHint": "Unlock at least two boss lessons to open a real mixed boss run.",
+  "studyHarmonyBossRushAction": "Start rush",
+  "studyHarmonyBossRushSessionTitle": "Boss Rush",
+  "studyHarmonyBossRushSessionDescription": "A high-pressure boss gauntlet built from the unlocked boss lessons around {chapter}.",
+  "@studyHarmonyBossRushSessionDescription": {
+    "placeholders": {
+      "chapter": {}
+    }
+  },
+  "studyHarmonyBossRushMixLabel": "{count} boss lessons mixed",
+  "@studyHarmonyBossRushMixLabel": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyBossRushHighRiskLabel": "2 lives only",
+  "studyHarmonyResultBossRushLine": "Boss Rush cleared.",
+  "studyHarmonyChapterSpotlightTitle": "Spotlight Showdown",
+  "studyHarmonyChapterSpotlightDescription": "A final spotlight set that isolates borrowed color, cadence pressure, and boss-level integration.",
+  "studyHarmonyLessonSpotlightLensTitle": "Borrowed Lens",
+  "studyHarmonyLessonSpotlightLensDescription": "Track key center while borrowed color keeps trying to pull your read sideways.",
+  "studyHarmonyLessonSpotlightCadenceTitle": "Cadence Swap",
+  "studyHarmonyLessonSpotlightCadenceDescription": "Switch between function reading and cadence restoration without losing the landing point.",
+  "studyHarmonyLessonSpotlightBossTitle": "Spotlight Showdown",
+  "studyHarmonyLessonSpotlightBossDescription": "A closing boss set that forces every progression lens to stay sharp under pressure.",
+  "studyHarmonyChapterAfterHoursTitle": "After Hours Lab",
+  "studyHarmonyChapterAfterHoursDescription": "A late-game lab that strips away warm-up clues and mixes borrowed color, cadence pressure, and center tracking.",
+  "studyHarmonyLessonAfterHoursShadowTitle": "Modal Shadow",
+  "studyHarmonyLessonAfterHoursShadowDescription": "Keep hold of the key center while borrowed color keeps dragging the read into the dark.",
+  "studyHarmonyLessonAfterHoursFeintTitle": "Resolution Feint",
+  "studyHarmonyLessonAfterHoursFeintDescription": "Catch function and cadence fakeouts before the phrase slips past its true landing spot.",
+  "studyHarmonyLessonAfterHoursCrossfadeTitle": "Center Crossfade",
+  "studyHarmonyLessonAfterHoursCrossfadeDescription": "Blend center detection, function reading, and missing-chord repair without any extra scaffolding.",
+  "studyHarmonyLessonAfterHoursBossTitle": "Last Call Boss",
+  "studyHarmonyLessonAfterHoursBossDescription": "A final late-night boss set that asks every progression lens to stay clear under pressure.",
+  "studyHarmonyProgressRelayWins": "Relay wins {count}",
+  "@studyHarmonyProgressRelayWins": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyModeRelay": "Arena Relay",
+  "studyHarmonyRelayCardTitle": "Arena Relay",
+  "studyHarmonyRelayCardHint": "Interleave unlocked lessons from different chapters into one mixed run that tests fast switching as much as raw recall.",
+  "studyHarmonyRelayFallbackHint": "Unlock at least two chapters to open Arena Relay.",
+  "studyHarmonyRelayAction": "Start relay",
+  "studyHarmonyRelaySessionTitle": "Arena Relay",
+  "studyHarmonyRelaySessionDescription": "An interleaved relay run mixing unlocked chapters around {chapter}.",
+  "@studyHarmonyRelaySessionDescription": {
+    "placeholders": {
+      "chapter": {}
+    }
+  },
+  "studyHarmonyRelayMixLabel": "{count} lessons relayed",
+  "@studyHarmonyRelayMixLabel": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyRelayChapterSpreadLabel": "{count} chapters mixed",
+  "@studyHarmonyRelayChapterSpreadLabel": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyRelayChainLabel": "Interleaving under pressure",
+  "studyHarmonyResultRelayLine": "Relay wins {count}",
+  "@studyHarmonyResultRelayLine": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyMilestoneRelayTitle": "Relay Runner",
+  "studyHarmonyMilestoneRelayBody": "Clear {target} Arena Relay runs.",
+  "@studyHarmonyMilestoneRelayBody": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "studyHarmonyChapterNeonTitle": "Neon Detours",
+  "studyHarmonyChapterNeonDescription": "A late-game chapter that keeps bending the path with borrowed color, pivot pressure, and recovery reads.",
+  "studyHarmonyLessonNeonDetourTitle": "Modal Detour",
+  "studyHarmonyLessonNeonDetourDescription": "Track the true center even while borrowed color keeps shoving the phrase into a side street.",
+  "studyHarmonyLessonNeonPivotTitle": "Pivot Pressure",
+  "studyHarmonyLessonNeonPivotDescription": "Read center shifts and function pressure back to back before the harmonic lane changes again.",
+  "studyHarmonyLessonNeonLandingTitle": "Borrowed Landing",
+  "studyHarmonyLessonNeonLandingDescription": "Repair the missing landing chord after a borrowed-color fakeout changes the expected resolution.",
+  "studyHarmonyLessonNeonBossTitle": "City Lights Boss",
+  "studyHarmonyLessonNeonBossDescription": "A closing neon boss that mixes pivot reads, borrowed color, and cadence recovery without a soft landing.",
+  "studyHarmonyProgressLeague": "{tier} league",
+  "@studyHarmonyProgressLeague": {
+    "placeholders": {
+      "tier": {}
+    }
+  },
+  "studyHarmonyLeagueCardTitle": "Harmony League",
+  "studyHarmonyLeagueCardHint": "Push toward {tier} league this week. The cleanest boost right now is {mode}.",
+  "@studyHarmonyLeagueCardHint": {
+    "placeholders": {
+      "tier": {},
+      "mode": {}
+    }
+  },
+  "studyHarmonyLeagueCardHintMax": "Diamond is secured for this week. Keep chaining high-pressure clears to hold the pace.",
+  "studyHarmonyLeagueFallbackHint": "Your league climb will light up once there is a recommended run to push this week.",
+  "studyHarmonyLeagueAction": "Climb league",
+  "studyHarmonyHubStartHereTitle": "Start Here",
+  "studyHarmonyHubNextLessonTitle": "Next Lesson",
+  "studyHarmonyHubWhyItMattersTitle": "Why It Matters",
+  "studyHarmonyHubQuickPracticeTitle": "Quick Practice",
+  "studyHarmonyHubMetaPreviewTitle": "More Opens Soon",
+  "studyHarmonyHubMetaPreviewHeadline": "Build a little momentum first",
+  "studyHarmonyHubMetaPreviewBody": "League, shop, and reward systems open up more fully after a few clears. For now, finish your next lesson and one quick practice run.",
+  "studyHarmonyHubPlayNowAction": "Play Now",
+  "studyHarmonyHubKeepMomentumAction": "Keep Momentum",
+  "studyHarmonyClearTitleAction": "Clear title",
+  "studyHarmonyPlayerDeckTitle": "Player Deck",
+  "studyHarmonyPlayerDeckCardTitle": "Playstyle",
+  "studyHarmonyPlayerDeckOverviewAction": "Overview",
+  "studyHarmonyRunDirectorTitle": "Run Director",
+  "studyHarmonyRunDirectorAction": "Play Recommended",
+  "studyHarmonyGameEconomyTitle": "Game Economy",
+  "studyHarmonyGameEconomyBody": "Shop stock, utility tokens, and meta items all react to your recent run history.",
+  "studyHarmonyGameEconomyTitlesOwned": "{count} titles owned",
+  "@studyHarmonyGameEconomyTitlesOwned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyGameEconomyCosmeticsOwned": "{count} cosmetics owned",
+  "@studyHarmonyGameEconomyCosmeticsOwned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyGameEconomyShopPurchases": "{count} shop purchases",
+  "@studyHarmonyGameEconomyShopPurchases": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyGameEconomyWalletAction": "View Wallet",
+  "studyHarmonyArcadeSpotlightTitle": "Arcade Spotlight",
+  "studyHarmonyArcadePlayAction": "Play Arcade",
+  "studyHarmonyArcadeModeCount": "{count} modes",
+  "@studyHarmonyArcadeModeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyArcadePlaylistAction": "Play Set",
+  "studyHarmonyNightMarketTitle": "Night Market",
+  "studyHarmonyPurchaseSuccess": "Purchased {itemTitle}",
+  "@studyHarmonyPurchaseSuccess": {
+    "placeholders": {
+      "itemTitle": {}
+    }
+  },
+  "studyHarmonyPurchaseAndEquipSuccess": "Purchased and equipped {itemTitle}",
+  "@studyHarmonyPurchaseAndEquipSuccess": {
+    "placeholders": {
+      "itemTitle": {}
+    }
+  },
+  "studyHarmonyPurchaseFailure": "Cannot purchase {itemTitle} yet",
+  "@studyHarmonyPurchaseFailure": {
+    "placeholders": {
+      "itemTitle": {}
+    }
+  },
+  "studyHarmonyRewardEquipped": "Equipped {itemTitle}",
+  "@studyHarmonyRewardEquipped": {
+    "placeholders": {
+      "itemTitle": {}
+    }
+  },
+  "studyHarmonyLeagueScoreLabel": "{score} XP this week",
+  "@studyHarmonyLeagueScoreLabel": {
+    "placeholders": {
+      "score": {}
+    }
+  },
+  "studyHarmonyLeagueProgressLabel": "{score}/{target} XP this week",
+  "@studyHarmonyLeagueProgressLabel": {
+    "placeholders": {
+      "score": {},
+      "target": {}
+    }
+  },
+  "studyHarmonyLeagueNextTierLabel": "Next: {tier}",
+  "@studyHarmonyLeagueNextTierLabel": {
+    "placeholders": {
+      "tier": {}
+    }
+  },
+  "studyHarmonyLeagueBoostLabel": "Best boost: {mode}",
+  "@studyHarmonyLeagueBoostLabel": {
+    "placeholders": {
+      "mode": {}
+    }
+  },
+  "studyHarmonyResultLeagueXpLine": "League XP +{count}",
+  "@studyHarmonyResultLeagueXpLine": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyResultLeaguePromotionLine": "Promoted to {tier} league",
+  "@studyHarmonyResultLeaguePromotionLine": {
+    "placeholders": {
+      "tier": {}
+    }
+  },
+  "studyHarmonyLeagueTierRookie": "Rookie",
+  "studyHarmonyLeagueTierBronze": "Bronze",
+  "studyHarmonyLeagueTierSilver": "Silver",
+  "studyHarmonyLeagueTierGold": "Gold",
+  "studyHarmonyLeagueTierDiamond": "Diamond",
+  "studyHarmonyChapterMidnightTitle": "Midnight Switchboard",
+  "studyHarmonyChapterMidnightDescription": "A final control-room chapter that forces fast reads across drifting centers, false cadences, and borrowed reroutes.",
+  "studyHarmonyLessonMidnightDriftTitle": "Signal Drift",
+  "studyHarmonyLessonMidnightDriftDescription": "Track the true tonal signal even while the surface keeps drifting into borrowed color.",
+  "studyHarmonyLessonMidnightLineTitle": "False Line",
+  "studyHarmonyLessonMidnightLineDescription": "Read function pressure through fake resolutions before the line folds back into place.",
+  "studyHarmonyLessonMidnightRerouteTitle": "Borrowed Reroute",
+  "studyHarmonyLessonMidnightRerouteDescription": "Recover the expected landing after borrowed color reroutes the phrase midstream.",
+  "studyHarmonyLessonMidnightBossTitle": "Blackout Boss",
+  "studyHarmonyLessonMidnightBossDescription": "A closing blackout set that mixes every late-game lens without giving you a safe reset.",
+  "studyHarmonyProgressQuestChests": "Quest chests {count}",
+  "@studyHarmonyProgressQuestChests": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyProgressLeagueBoost": "2x league XP x{count}",
+  "@studyHarmonyProgressLeagueBoost": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyQuestChestTitle": "Quest Chest",
+  "studyHarmonyQuestChestLockedHeadline": "{count} quests left",
+  "@studyHarmonyQuestChestLockedHeadline": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyQuestChestReadyHeadline": "Quest Chest ready",
+  "studyHarmonyQuestChestOpenedHeadline": "Quest Chest opened",
+  "studyHarmonyQuestChestBoostHeadline": "2x League XP live",
+  "studyHarmonyQuestChestRewardLabel": "Reward: +{xp} league XP",
+  "@studyHarmonyQuestChestRewardLabel": {
+    "placeholders": {
+      "xp": {}
+    }
+  },
+  "studyHarmonyQuestChestLockedBody": "Finish today's quest trio to cash out a bonus chest and keep the weekly climb moving.",
+  "studyHarmonyQuestChestReadyBody": "All three quests are done. Clear one more run to cash out today's chest bonus.",
+  "studyHarmonyQuestChestOpenedBody": "Today's trio is complete and the chest bonus has already been converted into league XP.",
+  "studyHarmonyQuestChestOpenedBoostBody": "Today's chest is open and 2x League XP is active for your next {count} clears.",
+  "@studyHarmonyQuestChestOpenedBoostBody": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyQuestChestAction": "Finish trio",
+  "studyHarmonyQuestChestBoostLabel": "Best finish: {mode}",
+  "@studyHarmonyQuestChestBoostLabel": {
+    "placeholders": {
+      "mode": {}
+    }
+  },
+  "studyHarmonyQuestChestBoostReadyLabel": "2x XP x{count}",
+  "@studyHarmonyQuestChestBoostReadyLabel": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyQuestChestProgressLabel": "Daily quests {count}/{target}",
+  "@studyHarmonyQuestChestProgressLabel": {
+    "placeholders": {
+      "count": {},
+      "target": {}
+    }
+  },
+  "studyHarmonyResultQuestChestLine": "Quest Chest opened.",
+  "studyHarmonyResultQuestChestXpLine": "Quest Chest bonus +{count} League XP",
+  "@studyHarmonyResultQuestChestXpLine": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyResultLeagueBoostReadyLine": "2x League XP boost ready for the next {count} clears",
+  "@studyHarmonyResultLeagueBoostReadyLine": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyResultLeagueBoostAppliedLine": "Boost bonus +{count} League XP",
+  "@studyHarmonyResultLeagueBoostAppliedLine": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyResultLeagueBoostRemainingLine": "2x boost clears left {count}",
+  "@studyHarmonyResultLeagueBoostRemainingLine": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyLeagueBoostReadyLabel": "2x XP x{count}",
+  "@studyHarmonyLeagueBoostReadyLabel": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyLeagueCardHintBoosted": "2x League XP is live for {count} clears. Spend it on {mode} while the boost lasts.",
+  "@studyHarmonyLeagueCardHintBoosted": {
+    "placeholders": {
+      "count": {},
+      "mode": {}
+    }
+  },
+  "studyHarmonyChapterSkylineTitle": "Skyline Circuit",
+  "studyHarmonyChapterSkylineDescription": "A final skyline circuit that forces fast mixed reads across ghosted centers, borrowed gravity, and false homes.",
+  "studyHarmonyLessonSkylinePulseTitle": "Afterimage Pulse",
+  "studyHarmonyLessonSkylinePulseDescription": "Catch center and function in the afterimage before the phrase locks into a new lane.",
+  "studyHarmonyLessonSkylineSwapTitle": "Gravity Swap",
+  "studyHarmonyLessonSkylineSwapDescription": "Handle borrowed gravity and missing-chord repair while the progression keeps swapping its weight.",
+  "studyHarmonyLessonSkylineHomeTitle": "False Home",
+  "studyHarmonyLessonSkylineHomeDescription": "Read through the false arrival and rebuild the true landing before the progression snaps shut.",
+  "studyHarmonyLessonSkylineBossTitle": "Final Signal Boss",
+  "studyHarmonyLessonSkylineBossDescription": "A last skyline boss that chains every late-game progression lens into one closing signal test.",
+  "studyHarmonyChapterAfterglowTitle": "Afterglow Runway",
+  "studyHarmonyChapterAfterglowDescription": "A closing runway of split decisions, borrowed bait, and flickering centers that rewards clean late-game reads under pressure.",
+  "studyHarmonyLessonAfterglowSplitTitle": "Split Decision",
+  "studyHarmonyLessonAfterglowSplitDescription": "Choose the repair chord that keeps the function moving without letting the phrase drift off course.",
+  "studyHarmonyLessonAfterglowLureTitle": "Borrowed Lure",
+  "studyHarmonyLessonAfterglowLureDescription": "Spot the borrowed color chord that looks like a pivot before the progression snaps back home.",
+  "studyHarmonyLessonAfterglowFlickerTitle": "Center Flicker",
+  "studyHarmonyLessonAfterglowFlickerDescription": "Hold the tonal center while cadence cues blink and reroute in quick succession.",
+  "studyHarmonyLessonAfterglowBossTitle": "Redline Return Boss",
+  "studyHarmonyLessonAfterglowBossDescription": "A final mixed test of key center, function, borrowed color, and missing-chord repair at full speed.",
+  "studyHarmonyProgressTour": "Tour stamps {count}/{target}",
+  "@studyHarmonyProgressTour": {
+    "placeholders": {
+      "count": {},
+      "target": {}
+    }
+  },
+  "studyHarmonyProgressTourClaimed": "Monthly tour cleared",
+  "studyHarmonyTourTitle": "Harmony Tour",
+  "studyHarmonyTourProgressHeadline": "{count}/{target} tour stamps",
+  "@studyHarmonyTourProgressHeadline": {
+    "placeholders": {
+      "count": {},
+      "target": {}
+    }
+  },
+  "studyHarmonyTourReadyHeadline": "Tour finale ready",
+  "studyHarmonyTourClaimedHeadline": "Monthly tour cleared",
+  "studyHarmonyTourRewardLabel": "Reward: +{xp} league XP and {count} Streak Saver",
+  "@studyHarmonyTourRewardLabel": {
+    "placeholders": {
+      "xp": {},
+      "count": {}
+    }
+  },
+  "studyHarmonyTourActiveDaysBody": "Show up on {target} different days this month to lock in the tour bonus.",
+  "@studyHarmonyTourActiveDaysBody": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "studyHarmonyTourQuestChestBody": "Open {target} Quest Chests this month to keep the tour stamp book moving.",
+  "@studyHarmonyTourQuestChestBody": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "studyHarmonyTourSpotlightBody": "Clear {target} spotlight runs this month. Boss Rush, Relay, Focus, Legend, and boss lessons all count.",
+  "@studyHarmonyTourSpotlightBody": {
+    "placeholders": {
+      "target": {}
+    }
+  },
+  "studyHarmonyTourEmptyBody": "Monthly tour goals will appear here as you log activity this month.",
+  "studyHarmonyTourReadyBody": "Every monthly stamp is in. One more clear locks in the tour bonus.",
+  "studyHarmonyTourClaimedBody": "This month's tour is complete. Keep the rhythm sharp so next month's route starts hot.",
+  "studyHarmonyTourAction": "Advance tour",
+  "studyHarmonyTourActiveDaysLabel": "Active days {count}/{target}",
+  "@studyHarmonyTourActiveDaysLabel": {
+    "placeholders": {
+      "count": {},
+      "target": {}
+    }
+  },
+  "studyHarmonyTourQuestChestsLabel": "Quest Chests {count}/{target}",
+  "@studyHarmonyTourQuestChestsLabel": {
+    "placeholders": {
+      "count": {},
+      "target": {}
+    }
+  },
+  "studyHarmonyTourSpotlightLabel": "Spotlights {count}/{target}",
+  "@studyHarmonyTourSpotlightLabel": {
+    "placeholders": {
+      "count": {},
+      "target": {}
+    }
+  },
+  "studyHarmonyResultTourCompleteLine": "Harmony Tour complete",
+  "studyHarmonyResultTourXpLine": "Tour bonus +{count} League XP",
+  "@studyHarmonyResultTourXpLine": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyResultTourStreakSaverLine": "Streak Saver stock {count}",
+  "@studyHarmonyResultTourStreakSaverLine": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyChapterDaybreakTitle": "Daybreak Frequency",
+  "studyHarmonyChapterDaybreakDescription": "A sunrise encore of ghost cadences, false dawn pivots, and borrowed blooms that forces clean late-game reads after a long run.",
+  "studyHarmonyLessonDaybreakGhostTitle": "Ghost Cadence",
+  "studyHarmonyLessonDaybreakGhostDescription": "Repair the cadence and function at the same time when the phrase pretends to close without actually landing.",
+  "studyHarmonyLessonDaybreakDawnTitle": "False Dawn",
+  "studyHarmonyLessonDaybreakDawnDescription": "Catch the center shift hiding inside a too-early sunrise before the progression pulls away again.",
+  "studyHarmonyLessonDaybreakBloomTitle": "Borrowed Bloom",
+  "studyHarmonyLessonDaybreakBloomDescription": "Track borrowed color and function together while the harmony opens into a brighter but unstable lane.",
+  "studyHarmonyLessonDaybreakBossTitle": "Sunrise Overdrive Boss",
+  "studyHarmonyLessonDaybreakBossDescription": "A final dawn-speed boss that chains key center, function, non-diatonic color, and missing-chord repair into one last overdrive set.",
+  "studyHarmonyProgressDuetPact": "Duet streak {count}",
+  "@studyHarmonyProgressDuetPact": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyDuetTitle": "Duet Pact",
+  "studyHarmonyDuetStartHeadline": "Start today's duet",
+  "studyHarmonyDuetInProgressHeadline": "Duet streak {count}",
+  "@studyHarmonyDuetInProgressHeadline": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyDuetReadyHeadline": "Duet locked for day {count}",
+  "@studyHarmonyDuetReadyHeadline": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyDuetRewardLabel": "Reward: +{xp} league XP at key streaks",
+  "@studyHarmonyDuetRewardLabel": {
+    "placeholders": {
+      "xp": {}
+    }
+  },
+  "studyHarmonyDuetNeedDailyBody": "Clear today's Daily first, then land one spotlight run to keep the duet alive.",
+  "studyHarmonyDuetNeedSpotlightBody": "Daily is in. Finish one spotlight run like Focus, Relay, Boss Rush, Legend, or a boss lesson to seal the duet.",
+  "studyHarmonyDuetActiveBody": "Today's duet is sealed and the shared streak is now {count} days long.",
+  "@studyHarmonyDuetActiveBody": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyDuetDailyDone": "Daily in",
+  "studyHarmonyDuetDailyMissing": "Daily missing",
+  "studyHarmonyDuetSpotlightDone": "Spotlight in",
+  "studyHarmonyDuetSpotlightMissing": "Spotlight missing",
+  "studyHarmonyDuetDailyLabel": "Daily {done}",
+  "@studyHarmonyDuetDailyLabel": {
+    "placeholders": {
+      "done": {
+        "type": "bool"
+      }
+    }
+  },
+  "studyHarmonyDuetSpotlightLabel": "Spotlight {done}",
+  "@studyHarmonyDuetSpotlightLabel": {
+    "placeholders": {
+      "done": {
+        "type": "bool"
+      }
+    }
+  },
+  "studyHarmonyDuetTargetLabel": "Streak {count}/{target}",
+  "@studyHarmonyDuetTargetLabel": {
+    "placeholders": {
+      "count": {},
+      "target": {}
+    }
+  },
+  "studyHarmonyDuetAction": "Keep duet going",
+  "studyHarmonyResultDuetLine": "Duet streak {count}",
+  "@studyHarmonyResultDuetLine": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyResultDuetRewardLine": "Duet reward +{count} League XP",
+  "studyHarmonySolfegeDo": "Do",
+  "@studyHarmonySolfegeDo": {
+    "description": "Localized solfege syllable for Do in legacy prototype lessons."
+  },
+  "studyHarmonySolfegeRe": "Re",
+  "@studyHarmonySolfegeRe": {
+    "description": "Localized solfege syllable for Re in legacy prototype lessons."
+  },
+  "studyHarmonySolfegeMi": "Mi",
+  "@studyHarmonySolfegeMi": {
+    "description": "Localized solfege syllable for Mi in legacy prototype lessons."
+  },
+  "studyHarmonySolfegeFa": "Fa",
+  "@studyHarmonySolfegeFa": {
+    "description": "Localized solfege syllable for Fa in legacy prototype lessons."
+  },
+  "studyHarmonySolfegeSol": "Sol",
+  "@studyHarmonySolfegeSol": {
+    "description": "Localized solfege syllable for Sol in legacy prototype lessons."
+  },
+  "studyHarmonySolfegeLa": "La",
+  "@studyHarmonySolfegeLa": {
+    "description": "Localized solfege syllable for La in legacy prototype lessons."
+  },
+  "studyHarmonySolfegeTi": "Ti",
+  "@studyHarmonySolfegeTi": {
+    "description": "Localized solfege syllable for Ti or Si in legacy prototype lessons."
+  },
+  "studyHarmonyPrototypeCourseTitle": "Study Harmony Prototype",
+  "@studyHarmonyPrototypeCourseTitle": {
+    "description": "Title for the legacy prototype course carried into Study Harmony."
+  },
+  "studyHarmonyPrototypeCourseDescription": "Legacy prototype levels carried into the lesson system.",
+  "@studyHarmonyPrototypeCourseDescription": {
+    "description": "Description for the legacy prototype course."
+  },
+  "studyHarmonyPrototypeChapterTitle": "Prototype Lessons",
+  "@studyHarmonyPrototypeChapterTitle": {
+    "description": "Title for the legacy prototype chapter."
+  },
+  "studyHarmonyPrototypeChapterDescription": "Temporary lessons preserved while the expandable study system is introduced.",
+  "@studyHarmonyPrototypeChapterDescription": {
+    "description": "Description for the legacy prototype chapter."
+  },
+  "studyHarmonyPrototypeLevelObjective": "Clear by answering 10 prompts before you lose all 3 lives.",
+  "@studyHarmonyPrototypeLevelObjective": {
+    "description": "Objective label for the legacy prototype levels."
+  },
+  "studyHarmonyPrototypeLevel1Title": "Prototype Level 1 夷?Do / Mi / Sol",
+  "@studyHarmonyPrototypeLevel1Title": {
+    "description": "Title for the first legacy prototype level."
+  },
+  "studyHarmonyPrototypeLevel1Description": "A basic warm-up that asks you to distinguish only Do, Mi, and Sol.",
+  "@studyHarmonyPrototypeLevel1Description": {
+    "description": "Description for the first legacy prototype level."
+  },
+  "studyHarmonyPrototypeLevel2Title": "Prototype Level 2 夷?Do / Re / Mi / Sol / La",
+  "@studyHarmonyPrototypeLevel2Title": {
+    "description": "Title for the second legacy prototype level."
+  },
+  "studyHarmonyPrototypeLevel2Description": "A mid-stage note hunt that speeds up recognition for Do, Re, Mi, Sol, and La.",
+  "@studyHarmonyPrototypeLevel2Description": {
+    "description": "Description for the second legacy prototype level."
+  },
+  "studyHarmonyPrototypeLevel3Title": "Prototype Level 3 夷?Do / Re / Mi / Fa / Sol / La / Ti / Do",
+  "@studyHarmonyPrototypeLevel3Title": {
+    "description": "Title for the third legacy prototype level."
+  },
+  "studyHarmonyPrototypeLevel3Description": "An octave-complete test that runs across the full Do-Re-Mi-Fa-Sol-La-Ti-Do span.",
+  "@studyHarmonyPrototypeLevel3Description": {
+    "description": "Description for the third legacy prototype level."
+  },
+  "studyHarmonyPrototypeLowCLabel": "{noteName} (low C)",
+  "@studyHarmonyPrototypeLowCLabel": {
+    "description": "Label for the low C prompt in legacy prototype lessons.",
+    "placeholders": {
+      "noteName": {
+        "type": "String"
+      }
+    }
+  },
+  "studyHarmonyPrototypeHighCLabel": "{noteName} (high C)",
+  "@studyHarmonyPrototypeHighCLabel": {
+    "description": "Label for the high C prompt in legacy prototype lessons.",
+    "placeholders": {
+      "noteName": {
+        "type": "String"
+      }
+    }
+  },
+  "studyHarmonyTemplateChoiceLabel": "Template",
+  "@studyHarmonyTemplateChoiceLabel": {
+    "description": "Placeholder answer label for generated Study Harmony templates."
+  },
+  "@studyHarmonyResultDuetRewardLine": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "studyHarmonyChapterBlueHourTitle": "Blue Hour Exchange",
+  "studyHarmonyChapterBlueHourDescription": "A twilight encore of crossing currents, haloed borrows, and dual horizons that keeps late-game reads unstable in the best way.",
+  "studyHarmonyLessonBlueHourCurrentTitle": "Cross Current",
+  "studyHarmonyLessonBlueHourCurrentDescription": "Track key center and function while the progression starts pulling in two directions at once.",
+  "studyHarmonyLessonBlueHourHaloTitle": "Halo Borrow",
+  "studyHarmonyLessonBlueHourHaloDescription": "Read the borrowed color and restore the missing chord before the phrase turns hazy.",
+  "studyHarmonyLessonBlueHourHorizonTitle": "Dual Horizon",
+  "studyHarmonyLessonBlueHourHorizonDescription": "Hold the real arrival point while two possible horizons keep flashing in and out.",
+  "studyHarmonyLessonBlueHourBossTitle": "Twin Lanterns Boss",
+  "studyHarmonyLessonBlueHourBossDescription": "A final blue-hour boss that forces fast swaps across center, function, borrowed color, and missing-chord repair.",
+  "anchorLoopTitle": "Anchor Loop",
+  "anchorLoopHelp": "Fix specific cycle slots so the same chord returns every cycle while the other slots can still be generated around it.",
+  "anchorLoopCycleLength": "Cycle Length (bars)",
+  "anchorLoopCycleLengthHelp": "Choose how many bars the repeating anchor cycle lasts.",
+  "anchorLoopVaryNonAnchorSlots": "Vary non-anchor slots",
+  "anchorLoopVaryNonAnchorSlotsHelp": "Keep anchor slots exact while letting the generated filler vary inside the same local function.",
+  "anchorLoopBarLabel": "Bar {bar}",
+  "@anchorLoopBarLabel": {
+    "placeholders": {
+      "bar": {
+        "type": "int"
+      }
+    }
+  },
+  "anchorLoopBeatLabel": "Beat {beat}",
+  "@anchorLoopBeatLabel": {
+    "placeholders": {
+      "beat": {
+        "type": "int"
+      }
+    }
+  },
+  "anchorLoopSlotEmpty": "No anchor chord set",
+  "anchorLoopEditTitle": "Edit anchor for bar {bar}, beat {beat}",
+  "@anchorLoopEditTitle": {
+    "placeholders": {
+      "bar": {
+        "type": "int"
+      },
+      "beat": {
+        "type": "int"
+      }
+    }
+  },
+  "anchorLoopChordSymbol": "Anchor chord symbol",
+  "anchorLoopChordHint": "Enter one chord symbol for this slot. Leave it empty to clear the anchor.",
+  "anchorLoopInvalidChord": "Enter a supported chord symbol before saving this anchor slot.",
+  "harmonyPlaybackPatternBlock": "Block",
+  "harmonyPlaybackPatternArpeggio": "Arpeggio",
+  "metronomeBeatStateNormal": "Normal",
+  "metronomeBeatStateAccent": "Accent",
+  "metronomeBeatStateMute": "Mute",
+  "metronomePatternPresetCustom": "Custom",
+  "metronomePatternPresetMeterAccent": "Meter accent",
+  "metronomePatternPresetJazzTwoAndFour": "Jazz 2 & 4",
+  "metronomeSourceKindBuiltIn": "Built-in asset",
+  "metronomeSourceKindLocalFile": "Local file",
+  "transportAudioTitle": "Transport Audio",
+  "autoPlayChordChanges": "Auto-play chord changes",
+  "autoPlayChordChangesHelp": "Play the next chord automatically when the transport reaches a chord-change event.",
+  "autoPlayPattern": "Auto-play pattern",
+  "autoPlayPatternHelp": "Choose whether auto-play uses a block chord or a short arpeggio.",
+  "autoPlayHoldFactor": "Auto-play hold length",
+  "autoPlayHoldFactorHelp": "Scale how long auto-played chord changes ring relative to the event duration.",
+  "autoPlayMelodyWithChords": "Play melody with chords",
+  "autoPlayMelodyWithChordsPlaceholder": "When melody generation is enabled, include the current melody line in auto-play chord-change previews.",
+  "melodyGenerationTitle": "Melody line",
+  "melodyGenerationHelp": "Generate a simple performance-ready melody that follows the current chord timeline.",
+  "melodyDensity": "Melody density",
+  "melodyDensityHelp": "Choose how many melody notes tend to appear inside each chord event.",
+  "melodyDensitySparse": "Sparse",
+  "melodyDensityBalanced": "Balanced",
+  "melodyDensityActive": "Active",
+  "motifRepetitionStrength": "Motif repetition",
+  "motifRepetitionStrengthHelp": "Higher values keep the contour identity of recent melody fragments more often.",
+  "approachToneDensity": "Approach tone density",
+  "approachToneDensityHelp": "Control how often passing, neighbor, and approach gestures appear before arrivals.",
+  "melodyRangeLow": "Melody range low",
+  "melodyRangeHigh": "Melody range high",
+  "melodyRangeHelp": "Keep generated melody notes inside this playable register window.",
+  "melodyStyle": "Melody style",
+  "melodyStyleHelp": "Bias the line toward safer guide tones, bebop motion, lyrical space, or colorful tensions.",
+  "melodyStyleSafe": "Safe",
+  "melodyStyleBebop": "Bebop",
+  "melodyStyleLyrical": "Lyrical",
+  "melodyStyleColorful": "Colorful",
+  "allowChromaticApproaches": "Allow chromatic approaches",
+  "allowChromaticApproachesHelp": "Permit enclosures and chromatic approach notes on weak beats when the style allows it.",
+  "melodyPlaybackMode": "Melody playback",
+  "melodyPlaybackModeHelp": "Choose whether manual preview buttons play chords, melody, or both together.",
+  "melodyPlaybackModeChordsOnly": "Chords only",
+  "melodyPlaybackModeMelodyOnly": "Melody only",
+  "melodyPlaybackModeBoth": "Both",
+  "regenerateMelody": "Regenerate melody",
+  "melodyPreviewCurrent": "Current line",
+  "melodyPreviewNext": "Next arrival",
+  "metronomePatternTitle": "Metronome Pattern",
+  "metronomePatternHelp": "Choose a meter-aware click pattern or define each beat manually.",
+  "metronomeUseAccentSound": "Use separate accent sound",
+  "metronomeUseAccentSoundHelp": "Use a different click source for accented beats instead of only raising the gain.",
+  "metronomePrimarySource": "Primary click source",
+  "metronomeAccentSource": "Accent click source",
+  "metronomeSourceKind": "Source type",
+  "metronomeLocalFilePath": "Local file path",
+  "metronomeLocalFilePathHelp": "Paste a local audio file path and press enter, or upload a file below. Built-in sound remains the fallback.",
+  "metronomeAccentLocalFilePath": "Accent local file path",
+  "metronomeAccentLocalFilePathHelp": "Paste a local accent file path and press enter, or upload a file below. Built-in sound remains the fallback.",
+  "metronomeCustomSoundHelp": "Upload your own metronome click. The app stores a private copy and keeps the built-in sound as fallback.",
+  "metronomeCustomSoundStatusBuiltIn": "Currently using a built-in sound.",
+  "metronomeCustomSoundStatusFile": "Custom file: {fileName}",
+  "@metronomeCustomSoundStatusFile": {
+    "placeholders": {
+      "fileName": {}
+    }
+  },
+  "metronomeCustomSoundUpload": "Upload custom sound",
+  "metronomeCustomSoundReplace": "Replace custom sound",
+  "metronomeCustomSoundReset": "Use built-in sound",
+  "metronomeCustomSoundUploadSuccess": "Custom metronome sound saved.",
+  "metronomeCustomSoundResetSuccess": "Switched back to the built-in metronome sound.",
+  "metronomeCustomSoundUploadError": "Couldn't save the selected metronome audio file.",
+  "harmonySoundTitle": "Harmony Sound",
+  "harmonyMasterVolume": "Master volume",
+  "harmonyMasterVolumeHelp": "Overall harmony preview loudness for manual and automatic chord playback.",
+  "harmonyPreviewHoldFactor": "Chord hold length",
+  "harmonyPreviewHoldFactorHelp": "Scale how long previewed chords and notes sustain.",
+  "harmonyArpeggioStepSpeed": "Arpeggio step speed",
+  "harmonyArpeggioStepSpeedHelp": "Control how quickly arpeggiated notes step forward.",
+  "harmonyVelocityHumanization": "Velocity humanization",
+  "harmonyVelocityHumanizationHelp": "Add small velocity variation so repeated previews feel less mechanical.",
+  "harmonyGainRandomness": "Gain randomness",
+  "harmonyGainRandomnessHelp": "Add slight per-note loudness variation on supported playback paths.",
+  "harmonyTimingHumanization": "Timing humanization",
+  "harmonyTimingHumanizationHelp": "Slightly loosen simultaneous note attacks for a less rigid block chord.",
+  "harmonySoundProfileSelectionTitle": "Sound profile mode",
+  "harmonySoundProfileSelectionHelp": "Choose a balanced default sound or pin one playback character for pop, jazz, or classical practice.",
+  "harmonySoundProfileSelectionNeutral": "Neutral shared piano",
+  "harmonySoundProfileSelectionTrackAware": "Track-aware",
+  "harmonySoundProfileSelectionPop": "Pop profile",
+  "harmonySoundProfileSelectionJazz": "Jazz profile",
+  "harmonySoundProfileSelectionClassical": "Classical profile",
+  "harmonySoundProfileSummaryLine": "Instrument: {instrument}. Recommended preview: {pattern}.",
+  "@harmonySoundProfileSummaryLine": {
+    "placeholders": {
+      "instrument": {},
+      "pattern": {}
+    }
+  },
+  "harmonySoundProfileTrackAwareFallback": "In free practice this stays on the shared piano profile. Study Harmony sessions switch to the active track's sound shaping.",
+  "harmonySoundProfileNeutralLabel": "Balanced / shared piano",
+  "harmonySoundProfileNeutralSummary": "Use the shared piano asset with a steady, all-purpose preview shape.",
+  "harmonySoundTagBalanced": "balanced",
+  "harmonySoundTagPiano": "piano",
+  "harmonySoundTagSoft": "soft",
+  "harmonySoundTagOpen": "open",
+  "harmonySoundTagModern": "modern",
+  "harmonySoundTagDry": "dry",
+  "harmonySoundTagWarm": "warm",
+  "harmonySoundTagEpReady": "EP-ready",
+  "harmonySoundTagClear": "clear",
+  "harmonySoundTagAcoustic": "acoustic",
+  "harmonySoundTagFocused": "focused",
+  "harmonySoundNeutralTrait1": "Steady hold for general harmonic checking",
+  "harmonySoundNeutralTrait2": "Balanced attack with low coloration",
+  "harmonySoundNeutralTrait3": "Safe fallback for any lesson or free-play context",
+  "harmonySoundNeutralExpansion1": "Future split by piano register or room size",
+  "harmonySoundNeutralExpansion2": "Possible alternate shared instrument set for headphones",
+  "harmonySoundPopTrait1": "Longer sustain for open hooks and add9 color",
+  "harmonySoundPopTrait2": "Softer attack with a little width in repeated previews",
+  "harmonySoundPopTrait3": "Gentle humanization so loops feel less grid-locked",
+  "harmonySoundPopExpansion1": "Bright pop keys or layered piano-synth asset",
+  "harmonySoundPopExpansion2": "Wider stereo voicing playback for chorus lift",
+  "harmonySoundJazzTrait1": "Shorter hold to keep cadence motion readable",
+  "harmonySoundJazzTrait2": "Faster broken-preview feel for guide-tone hearing",
+  "harmonySoundJazzTrait3": "More touch variation to suggest shell and rootless comping",
+  "harmonySoundJazzExpansion1": "Dry upright or mellow electric-piano instrument family",
+  "harmonySoundJazzExpansion2": "Track-aware comping presets for shell and rootless drills",
+  "harmonySoundClassicalTrait1": "Centered sustain for function and cadence clarity",
+  "harmonySoundClassicalTrait2": "Low randomness to keep voice-leading stable",
+  "harmonySoundClassicalTrait3": "More direct block playback for harmonic arrival",
+  "harmonySoundClassicalExpansion1": "Direct acoustic piano profile with less ambient spread",
+  "harmonySoundClassicalExpansion2": "Dedicated cadence and sequence preview voicings",
+  "explanationSectionTitle": "Why this works",
+  "explanationReasonSection": "Why this result",
+  "explanationConfidenceHigh": "High confidence",
+  "explanationConfidenceMedium": "Plausible reading",
+  "explanationConfidenceLow": "Treat as a tentative reading",
+  "explanationAmbiguityLow": "Most of the progression points in one direction, but a light alternate reading is still possible.",
+  "explanationAmbiguityMedium": "More than one plausible reading is still in play, so context matters here.",
+  "explanationAmbiguityHigh": "Several readings are competing, so treat this as a cautious, context-dependent explanation.",
+  "explanationCautionParser": "Some chord symbols were normalized before analysis.",
+  "explanationCautionAmbiguous": "There is more than one reasonable reading here.",
+  "explanationCautionAlternateKey": "A nearby key center also fits part of this progression.",
+  "explanationAlternativeSection": "Other readings",
+  "explanationAlternativeKeyLabel": "Alternate key: {keyLabel}",
+  "@explanationAlternativeKeyLabel": {
+    "placeholders": {
+      "keyLabel": {}
+    }
+  },
+  "explanationAlternativeKeyBody": "The harmonic pull is still valid, but another key center also explains some of the same chords.",
+  "explanationAlternativeReadingLabel": "Alternate reading: {romanNumeral}",
+  "@explanationAlternativeReadingLabel": {
+    "placeholders": {
+      "romanNumeral": {}
+    }
+  },
+  "explanationAlternativeReadingBody": "This is another possible interpretation rather than a single definitive label.",
+  "explanationListeningSection": "Listening focus",
+  "explanationListeningGuideToneTitle": "Follow the 3rds and 7ths",
+  "explanationListeningGuideToneBody": "Listen for the smallest inner-line motion as the cadence resolves.",
+  "explanationListeningDominantColorTitle": "Listen for the dominant color",
+  "explanationListeningDominantColorBody": "Notice how the tension on the dominant wants to release, even before the final arrival lands.",
+  "explanationListeningBackdoorTitle": "Hear the softer backdoor pull",
+  "explanationListeningBackdoorBody": "Listen for the subdominant-minor color leading home by color and voice leading rather than a plain V-I push.",
+  "explanationListeningBorrowedColorTitle": "Hear the color shift",
+  "explanationListeningBorrowedColorBody": "Notice how the borrowed chord darkens or brightens the loop before it returns home.",
+  "explanationListeningBassMotionTitle": "Follow the bass motion",
+  "explanationListeningBassMotionBody": "Track how the bass note reshapes momentum, even when the upper harmony stays closely related.",
+  "explanationListeningCadenceTitle": "Hear the arrival",
+  "explanationListeningCadenceBody": "Pay attention to which chord feels like the point of rest and how the approach prepares it.",
+  "explanationListeningAmbiguityTitle": "Compare the competing readings",
+  "explanationListeningAmbiguityBody": "Try hearing the same chord once for its local pull and once for its larger key-center role.",
+  "explanationPerformanceSection": "Performance focus",
+  "explanationPerformancePopTitle": "Keep the hook singable",
+  "explanationPerformancePopBody": "Favor clear top notes, repeated contour, and open voicings that support the vocal line.",
+  "explanationPerformanceJazzTitle": "Target guide tones first",
+  "explanationPerformanceJazzBody": "Outline the 3rd and 7th before adding extra tensions or reharm color.",
+  "explanationPerformanceJazzShellTitle": "Start with shell tones",
+  "explanationPerformanceJazzShellBody": "Place the root, 3rd, and 7th cleanly first so the cadence stays easy to hear.",
+  "explanationPerformanceJazzRootlessTitle": "Let the 3rd and 7th carry the shape",
+  "explanationPerformanceJazzRootlessBody": "Keep the guide tones stable, then add 9 or 13 only if the line still resolves clearly.",
+  "explanationPerformanceClassicalTitle": "Keep the voices disciplined",
+  "explanationPerformanceClassicalBody": "Prioritize stable spacing, functional arrivals, and stepwise motion where possible.",
+  "explanationPerformanceDominantColorTitle": "Add tension after the target is clear",
+  "explanationPerformanceDominantColorBody": "Land the guide tones first, then treat 9, 13, or altered color as decoration rather than the main signal.",
+  "explanationPerformanceAmbiguityTitle": "Anchor the most stable tones",
+  "explanationPerformanceAmbiguityBody": "If the reading is ambiguous, emphasize the likely resolution tones before leaning into the more colorful option.",
+  "explanationPerformanceVoicingTitle": "Voicing cue",
+  "explanationPerformanceMelodyTitle": "Melody cue",
+  "explanationPerformanceMelodyBody": "Lean on the structural target notes, then let passing tones fill the space around them.",
+  "explanationReasonFunctionalResolutionLabel": "Functional pull",
+  "explanationReasonFunctionalResolutionBody": "The chords line up as tonic, predominant, and dominant functions rather than isolated sonorities.",
+  "explanationReasonGuideToneSmoothnessLabel": "Guide-tone motion",
+  "explanationReasonGuideToneSmoothnessBody": "The inner voices move efficiently, which strengthens the sense of direction.",
+  "explanationReasonBorrowedColorLabel": "Borrowed color",
+  "explanationReasonBorrowedColorBody": "A parallel-mode borrowing adds contrast without fully leaving the home key.",
+  "explanationReasonSecondaryDominantLabel": "Secondary dominant pull",
+  "explanationReasonSecondaryDominantBody": "This dominant points strongly toward a local target chord instead of only the tonic.",
+  "explanationReasonTritoneSubLabel": "Tritone-sub color",
+  "explanationReasonTritoneSubBody": "The dominant color is preserved while the bass motion shifts to a substitute route.",
+  "explanationReasonDominantColorLabel": "Dominant tension",
+  "explanationReasonDominantColorBody": "Altered or extended dominant color strengthens the pull toward the next chord without changing the whole key reading.",
+  "explanationReasonBackdoorMotionLabel": "Backdoor motion",
+  "explanationReasonBackdoorMotionBody": "This reading leans on subdominant-minor or backdoor motion, so the resolution feels softer but still directed.",
+  "explanationReasonCadentialStrengthLabel": "Cadential shape",
+  "explanationReasonCadentialStrengthBody": "The phrase ends with a stronger arrival than a neutral loop continuation.",
+  "explanationReasonVoiceLeadingStabilityLabel": "Stable voice leading",
+  "explanationReasonVoiceLeadingStabilityBody": "The selected voicing keeps common tones or resolves tendency tones cleanly.",
+  "explanationReasonSingableContourLabel": "Singable contour",
+  "explanationReasonSingableContourBody": "The line favors memorable motion over angular, highly technical shapes.",
+  "explanationReasonSlashBassLiftLabel": "Bass-motion lift",
+  "explanationReasonSlashBassLiftBody": "The bass note changes the momentum even when the harmony stays closely related.",
+  "explanationReasonTurnaroundGravityLabel": "Turnaround gravity",
+  "explanationReasonTurnaroundGravityBody": "This pattern creates forward pull by cycling through familiar jazz resolution points.",
+  "explanationReasonInversionDisciplineLabel": "Inversion control",
+  "explanationReasonInversionDisciplineBody": "The inversion choice supports smoother outer-voice motion and clearer cadence behavior.",
+  "explanationReasonAmbiguityWindowLabel": "Competing readings",
+  "explanationReasonAmbiguityWindowBody": "Some of the same notes support more than one harmonic role, so context decides which reading feels stronger.",
+  "explanationReasonChromaticLineLabel": "Chromatic line",
+  "explanationReasonChromaticLineBody": "A chromatic bass or inner-line connection helps explain why this chord fits despite the extra color.",
+  "explanationTrackContextPop": "In a pop context, this reading leans toward loop gravity, color contrast, and a singable top line.",
+  "explanationTrackContextJazz": "In a jazz context, this is one plausible reading that highlights guide tones, cadence pull, and usable dominant color.",
+  "explanationTrackContextClassical": "In a classical context, this reading leans toward function, inversion awareness, and cadence strength.",
+  "studyHarmonyTrackFocusSectionTitle": "This track emphasizes",
+  "studyHarmonyTrackLessFocusSectionTitle": "This track treats more lightly",
+  "studyHarmonyTrackRecommendedForSectionTitle": "Recommended for",
+  "studyHarmonyTrackSoundSectionTitle": "Sound profile",
+  "studyHarmonyTrackSoundAssetPlaceholder": "Current release uses the shared piano asset. This profile prepares future track-specific sound choices.",
+  "studyHarmonyTrackSoundInstrumentLabel": "Current instrument: {instrument}",
+  "@studyHarmonyTrackSoundInstrumentLabel": {
+    "placeholders": {
+      "instrument": {}
+    }
+  },
+  "studyHarmonyTrackSoundPlaybackLabel": "Recommended preview pattern: {pattern}",
+  "@studyHarmonyTrackSoundPlaybackLabel": {
+    "placeholders": {
+      "pattern": {}
+    }
+  },
+  "studyHarmonyTrackSoundPlaybackTraitsTitle": "Playback character",
+  "studyHarmonyTrackSoundExpansionTitle": "Expansion path",
+  "studyHarmonyTrackPopFocus1": "Diatonic loop gravity and hook-friendly repetition",
+  "studyHarmonyTrackPopFocus2": "Borrowed-color lifts such as iv, bVII, or IVMaj7",
+  "studyHarmonyTrackPopFocus3": "Slash-bass and pedal-bass motion that supports pre-chorus lift",
+  "studyHarmonyTrackPopLess1": "Dense jazz reharmonization and advanced substitute dominants",
+  "studyHarmonyTrackPopLess2": "Rootless voicing systems and heavy altered-dominant language",
+  "studyHarmonyTrackPopRecommendedFor": "Writers, producers, and players who want modern pop or ballad harmony that sounds usable quickly.",
+  "studyHarmonyTrackPopTheoryTone": "Practical, song-first, and color-aware without overloading the learner with jargon.",
+  "studyHarmonyTrackPopHeroHeadline": "Build hook-friendly loops",
+  "studyHarmonyTrackPopHeroBody": "This track teaches loop gravity, restrained borrowed color, and bass movement that lifts a section without losing clarity.",
+  "studyHarmonyTrackPopQuickPracticeCue": "Start with the signature loop chapter, then listen for how the bass and borrowed color reshape the same hook.",
+  "studyHarmonyTrackPopSoundLabel": "Soft / open / modern",
+  "studyHarmonyTrackPopSoundSummary": "Balanced piano now, with future room for brighter pop keys and wider stereo voicings.",
+  "studyHarmonyTrackJazzFocus1": "Guide-tone hearing and shell-to-rootless voicing growth",
+  "studyHarmonyTrackJazzFocus2": "Major ii-V-I, minor ii泥?V-i, and turnaround behavior",
+  "studyHarmonyTrackJazzFocus3": "Dominant color, tensions, tritone sub, and backdoor entry points",
+  "studyHarmonyTrackJazzLess1": "Purely song-loop repetition without cadence awareness",
+  "studyHarmonyTrackJazzLess2": "Classical inversion literacy as a primary objective",
+  "studyHarmonyTrackJazzRecommendedFor": "Players who want to hear and use functional jazz harmony without jumping straight into maximal reharm complexity.",
+  "studyHarmonyTrackJazzTheoryTone": "Contextual, confidence-aware, and careful about calling one reading the only correct jazz answer.",
+  "studyHarmonyTrackJazzHeroHeadline": "Hear the line inside the chords",
+  "studyHarmonyTrackJazzHeroBody": "This track turns jazz harmony into manageable steps: guide tones first, then cadence families, then tasteful dominant color.",
+  "studyHarmonyTrackJazzQuickPracticeCue": "Start with guide tones and shell voicings, then revisit the same cadence with rootless color.",
+  "studyHarmonyTrackJazzSoundLabel": "Dry / warm / EP-ready",
+  "studyHarmonyTrackJazzSoundSummary": "Shared piano for now, with placeholders for drier attacks and future electric-piano friendly playback.",
+  "studyHarmonyTrackClassicalFocus1": "Tonic / predominant / dominant function and cadence types",
+  "studyHarmonyTrackClassicalFocus2": "Inversion literacy, including first inversion and cadential 6/4 behavior",
+  "studyHarmonyTrackClassicalFocus3": "Voice-leading stability, sequence, and functional modulation basics",
+  "studyHarmonyTrackClassicalLess1": "Heavy tension stacking, quartal color, and upper-structure thinking",
+  "studyHarmonyTrackClassicalLess2": "Loop-driven pop repetition as the main learning frame",
+  "studyHarmonyTrackClassicalRecommendedFor": "Learners who want clear functional hearing, inversion awareness, and disciplined voice leading.",
+  "studyHarmonyTrackClassicalTheoryTone": "Structured, function-first, and phrased in a way that supports listening as well as label recognition.",
+  "studyHarmonyTrackClassicalHeroHeadline": "Hear function and cadence clearly",
+  "studyHarmonyTrackClassicalHeroBody": "This track emphasizes functional arrival, inversion control, and phrase endings that feel architecturally clear.",
+  "studyHarmonyTrackClassicalQuickPracticeCue": "Start with cadence lab drills, then compare how inversions change the same function.",
+  "studyHarmonyTrackClassicalSoundLabel": "Clear / acoustic / focused",
+  "studyHarmonyTrackClassicalSoundSummary": "Shared piano for now, with room for a more direct acoustic profile in later releases.",
+  "studyHarmonyPopChapterSignatureLoopsTitle": "Signature Pop Loops",
+  "studyHarmonyPopChapterSignatureLoopsDescription": "Build practical pop instincts with hook gravity, borrowed lift, and bass motion that feels arrangement-ready.",
+  "studyHarmonyPopLessonHookGravityTitle": "Hook Gravity",
+  "studyHarmonyPopLessonHookGravityDescription": "Hear why modern four-chord loops stay catchy even when the harmony is simple.",
+  "studyHarmonyPopLessonBorrowedLiftTitle": "Borrowed Lift",
+  "studyHarmonyPopLessonBorrowedLiftDescription": "Experience restrained borrowed-color chords that brighten or darken a section without derailing the hook.",
+  "studyHarmonyPopLessonBassMotionTitle": "Bass Motion",
+  "studyHarmonyPopLessonBassMotionDescription": "Use slash-bass and line motion to create lift while the upper harmony stays familiar.",
+  "studyHarmonyPopLessonBossTitle": "Pre-Chorus Lift Checkpoint",
+  "studyHarmonyPopLessonBossDescription": "Combine loop gravity, borrowed color, and bass motion in one song-ready pop slice.",
+  "studyHarmonyJazzChapterGuideToneLabTitle": "Guide-Tone Lab",
+  "studyHarmonyJazzChapterGuideToneLabDescription": "Move from clear major ii-V-I hearing into shell voicings, minor cadences, rootless color, and careful reharm entry points.",
+  "studyHarmonyJazzLessonGuideTonesTitle": "Guide-Tone Hearing",
+  "studyHarmonyJazzLessonGuideTonesDescription": "Track the 3rds and 7ths that define a clear major ii-V-I before adding extra color.",
+  "studyHarmonyJazzLessonShellVoicingsTitle": "Shell Voicings",
+  "studyHarmonyJazzLessonShellVoicingsDescription": "Keep the cadence clear with lean shell shapes and simple turnaround motion.",
+  "studyHarmonyJazzLessonMinorCadenceTitle": "Minor Cadence",
+  "studyHarmonyJazzLessonMinorCadenceDescription": "Recognize how minor ii泥?V-i motion feels and why the dominant sounds more urgent there.",
+  "studyHarmonyJazzLessonRootlessVoicingsTitle": "Rootless Voicings",
+  "studyHarmonyJazzLessonRootlessVoicingsDescription": "Hear the same turnaround after the bass drops out of the voicing and the color tones carry more weight.",
+  "studyHarmonyJazzLessonDominantColorTitle": "Dominant Tension",
+  "studyHarmonyJazzLessonDominantColorDescription": "Add 9ths, 13ths, sus, or altered pull without losing the cadence target.",
+  "studyHarmonyJazzLessonBackdoorCadenceTitle": "Tritone and Backdoor",
+  "studyHarmonyJazzLessonBackdoorCadenceDescription": "Compare substitute-dominant and backdoor arrivals as plausible jazz routes into the same tonic.",
+  "studyHarmonyJazzLessonBossTitle": "Turnaround Checkpoint",
+  "studyHarmonyJazzLessonBossDescription": "Mix major ii-V-I, minor ii泥?V-i, rootless color, and careful reharm so the cadence target still stays readable.",
+  "studyHarmonyClassicalChapterCadenceLabTitle": "Cadence Lab",
+  "studyHarmonyClassicalChapterCadenceLabDescription": "Strengthen functional hearing with cadences, inversions, and carefully controlled secondary dominants.",
+  "studyHarmonyClassicalLessonCadenceTitle": "Cadence Function",
+  "studyHarmonyClassicalLessonCadenceDescription": "Sort tonic, predominant, and dominant behavior by how each chord prepares or completes the phrase.",
+  "studyHarmonyClassicalLessonInversionTitle": "Inversion Control",
+  "studyHarmonyClassicalLessonInversionDescription": "Hear how inversions change the bass line and the stability of an arrival.",
+  "studyHarmonyClassicalLessonSecondaryDominantTitle": "Functional Secondary Dominants",
+  "studyHarmonyClassicalLessonSecondaryDominantDescription": "Treat secondary dominants as directed functional events instead of generic color chords.",
+  "studyHarmonyClassicalLessonBossTitle": "Arrival Checkpoint",
+  "studyHarmonyClassicalLessonBossDescription": "Combine cadence shape, inversion awareness, and secondary-dominant pull in one controlled phrase.",
+  "studyHarmonyPlayStyleLabel": "{playStyle, select, competitor{Competitor} collector{Collector} explorer{Explorer} stabilizer{Stabilizer} balanced{Balanced} other{Balanced}}",
+  "@studyHarmonyPlayStyleLabel": {
+    "placeholders": {
+      "playStyle": {
+        "type": "String"
+      }
+    }
+  },
+  "studyHarmonyRewardFocusLabel": "{focus, select, mastery{Focus: Mastery} achievements{Focus: Achievements} cosmetics{Focus: Cosmetics} currency{Focus: Currency} collection{Focus: Collection} other{Focus}}",
+  "@studyHarmonyRewardFocusLabel": {
+    "placeholders": {
+      "focus": {
+        "type": "String"
+      }
+    }
+  },
+  "studyHarmonyNextUnlockProgressLabel": "Next {rewardTitle} {progress}%",
+  "@studyHarmonyNextUnlockProgressLabel": {
+    "placeholders": {
+      "rewardTitle": {
+        "type": "String"
+      },
+      "progress": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyCurrencyBalanceLabel": "{currencyTitle} {amount}",
+  "@studyHarmonyCurrencyBalanceLabel": {
+    "placeholders": {
+      "currencyTitle": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyCurrencyGrantLabel": "{currencyTitle} +{amount}",
+  "@studyHarmonyCurrencyGrantLabel": {
+    "placeholders": {
+      "currencyTitle": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyDifficultyLaneLabel": "{lane, select, recovery{Recovery Lane} groove{Groove Lane} push{Push Lane} clutch{Clutch Lane} legend{Legend Lane} other{Practice Lane}}",
+  "@studyHarmonyDifficultyLaneLabel": {
+    "placeholders": {
+      "lane": {
+        "type": "String"
+      }
+    }
+  },
+  "studyHarmonyPressureTierLabel": "{tier, select, calm{Calm Pressure} steady{Steady Pressure} hot{Hot Pressure} charged{Charged Pressure} overdrive{Overdrive} other{Pressure}}",
+  "@studyHarmonyPressureTierLabel": {
+    "placeholders": {
+      "tier": {
+        "type": "String"
+      }
+    }
+  },
+  "studyHarmonyForgivenessTierLabel": "{tier, select, strict{Strict Windows} tight{Tight Windows} balanced{Balanced Windows} kind{Kind Windows} generous{Generous Windows} other{Timing Windows}}",
+  "@studyHarmonyForgivenessTierLabel": {
+    "placeholders": {
+      "tier": {
+        "type": "String"
+      }
+    }
+  },
+  "studyHarmonyComboGoalLabel": "Combo Goal {comboTarget}",
+  "@studyHarmonyComboGoalLabel": {
+    "placeholders": {
+      "comboTarget": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyRuntimeTuningSummary": "Lives {lives} | Goal {goal}",
+  "@studyHarmonyRuntimeTuningSummary": {
+    "placeholders": {
+      "lives": {
+        "type": "int"
+      },
+      "goal": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyCoachLabel": "{style, select, supportive{Supportive Coach} structured{Structured Coach} challengeForward{Challenge Coach} analytical{Analytical Coach} restorative{Restorative Coach} other{Coach}}",
+  "@studyHarmonyCoachLabel": {
+    "placeholders": {
+      "style": {
+        "type": "String"
+      }
+    }
+  },
+  "studyHarmonyCoachLine": "{style, select, supportive{Protect flow first and let confidence compound.} structured{Follow the structure and the gains will stick.} challengeForward{Lean into the pressure and push for a sharper run.} analytical{Read the weak point and refine it with precision.} restorative{This run is about rebuilding rhythm without tilt.} other{Keep the next run focused and intentional.}}",
+  "@studyHarmonyCoachLine": {
+    "placeholders": {
+      "style": {
+        "type": "String"
+      }
+    }
+  },
+  "studyHarmonyPacingSegmentLabel": "{segment, select, warmup{Warmup} tension{Tension} release{Release} reward{Reward} other{Segment}} {minutes}m",
+  "@studyHarmonyPacingSegmentLabel": {
+    "placeholders": {
+      "segment": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyPacingSummaryLabel": "Pacing {segments}",
+  "@studyHarmonyPacingSummaryLabel": {
+    "placeholders": {
+      "segments": {
+        "type": "String"
+      }
+    }
+  },
+  "studyHarmonyArcadeRiskLabel": "{risk, select, forgiving{Low Risk} balanced{Balanced Risk} tense{High Tension} punishing{Punishing Risk} other{Arcade Risk}}",
+  "@studyHarmonyArcadeRiskLabel": {
+    "placeholders": {
+      "risk": {
+        "type": "String"
+      }
+    }
+  },
+  "studyHarmonyArcadeRewardStyleLabel": "{style, select, currency{Currency Loop} cosmetic{Cosmetic Hunt} title{Title Hunt} trophy{Trophy Run} bundle{Bundle Rewards} prestige{Prestige Rewards} other{Reward Loop}}",
+  "@studyHarmonyArcadeRewardStyleLabel": {
+    "placeholders": {
+      "style": {
+        "type": "String"
+      }
+    }
+  },
+  "studyHarmonyArcadeRuntimeComboBonusLabel": "Combo bonus every {count}",
+  "@studyHarmonyArcadeRuntimeComboBonusLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyArcadeRuntimeMissCostLabel": "Miss costs {lives}",
+  "@studyHarmonyArcadeRuntimeMissCostLabel": {
+    "placeholders": {
+      "lives": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyArcadeRuntimeModifierPulses": "Modifier pulses",
+  "studyHarmonyArcadeRuntimeGhostPressure": "Ghost pressure",
+  "studyHarmonyArcadeRuntimeShopBiasedLoot": "Shop-biased loot",
+  "studyHarmonyArcadeRuntimeSteadyRuleset": "Steady ruleset",
+  "studyHarmonyShopStateLabel": "{state, select, alreadyPurchased{Already purchased} readyToBuy{Ready to buy} progressLocked{Progress locked} other{Shop state}}",
+  "@studyHarmonyShopStateLabel": {
+    "placeholders": {
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "studyHarmonyShopActionLabel": "{action, select, buy{Buy} equipped{Equipped} equip{Equip} other{Shop action}}",
+  "@studyHarmonyShopActionLabel": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "melodyCurrentLineFeelTitle": "Current line feel",
+  "melodyLinePersonalityTitle": "Line personality",
+  "melodyLinePersonalityBody": "These four sliders shape why guided, standard, and advanced can feel different even before you change the harmony.",
+  "melodySyncopationBiasTitle": "Syncopation Bias",
+  "melodySyncopationBiasBody": "Leans toward offbeat starts, anticipations, and rhythmic lift.",
+  "melodyColorRealizationBiasTitle": "Color Realization Bias",
+  "melodyColorRealizationBiasBody": "Lets the melody pick up featured tensions and color tones more often.",
+  "melodyNoveltyTargetTitle": "Novelty Target",
+  "melodyNoveltyTargetBody": "Reduces exact repeats and nudges the line toward fresher interval shapes.",
+  "melodyMotifVariationBiasTitle": "Motif Variation Bias",
+  "melodyMotifVariationBiasBody": "Turns motif reuse into sequence, tail changes, and rhythmic variation.",
+  "studyHarmonyArcadeRulesTitle": "Arcade Rules",
+  "studyHarmonySessionLengthLabel": "{minutes} min run",
+  "@studyHarmonySessionLengthLabel": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyRewardKindLabel": "{kind, select, achievement{Achievement} title{Title} cosmetic{Cosmetic} shopItem{Shop Unlock} other{Reward}}",
+  "@studyHarmonyRewardKindLabel": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "studyHarmonyArcadeRuntimeMissLifeLabel": "Misses cost {lives} hearts",
+  "@studyHarmonyArcadeRuntimeMissLifeLabel": {
+    "placeholders": {
+      "lives": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyArcadeRuntimeMissProgressLabel": "Misses push progress back by {amount}",
+  "@studyHarmonyArcadeRuntimeMissProgressLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyArcadeRuntimeComboProgressLabel": "Every {threshold} combo adds +{amount} progress",
+  "@studyHarmonyArcadeRuntimeComboProgressLabel": {
+    "placeholders": {
+      "threshold": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyArcadeRuntimeComboLifeLabel": "Every {threshold} combo adds +{amount} heart",
+  "@studyHarmonyArcadeRuntimeComboLifeLabel": {
+    "placeholders": {
+      "threshold": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyArcadeRuntimeComboResetLabel": "Misses reset combo",
+  "studyHarmonyArcadeRuntimeComboDropLabel": "Misses cut combo by {amount}",
+  "@studyHarmonyArcadeRuntimeComboDropLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "studyHarmonyArcadeRuntimeChoicesReshuffleLabel": "Choices reshuffle",
+  "studyHarmonyArcadeRuntimeMissedReplayLabel": "Missed prompts replay",
+  "studyHarmonyArcadeRuntimeUniqueCycleLabel": "No prompt repeats",
+  "studyHarmonyRuntimeBundleClearBonusTitle": "Clear Bonus",
+  "studyHarmonyRuntimeBundlePrecisionBonusTitle": "Precision Bonus",
+  "studyHarmonyRuntimeBundleComboBonusTitle": "Combo Bonus",
+  "studyHarmonyRuntimeBundleModeBonusTitle": "Mode Bonus",
+  "studyHarmonyRuntimeBundleMasteryBonusTitle": "Mastery Bonus",
+  "melodyQuickPresetGuideLineLabel": "Guide Line",
+  "melodyQuickPresetSongLineLabel": "Song Line",
+  "melodyQuickPresetColorLineLabel": "Color Line",
+  "melodyQuickPresetGuideCompactLabel": "Guide",
+  "melodyQuickPresetSongCompactLabel": "Song",
+  "melodyQuickPresetColorCompactLabel": "Color",
+  "melodyQuickPresetGuideShort": "steady guide notes",
+  "melodyQuickPresetSongShort": "singable contour",
+  "melodyQuickPresetColorShort": "color-forward line",
+  "melodyQuickPresetPanelTitle": "Melody Presets",
+  "melodyQuickPresetPanelCompactTitle": "Line Presets",
+  "melodyQuickPresetOffLabel": "Off",
+  "melodyQuickPresetCompactOffLabel": "Line Off",
+  "melodyMetricDensityLabel": "Density",
+  "melodyMetricStyleLabel": "Style",
+  "melodyMetricSyncLabel": "Sync",
+  "melodyMetricColorLabel": "Color",
+  "melodyMetricNoveltyLabel": "Novelty",
+  "melodyMetricMotifLabel": "Motif",
+  "melodyMetricChromaticLabel": "Chromatic",
+  "practiceFirstRunWelcomeTitle": "Your first chord is ready",
+  "practiceFirstRunWelcomeBodyEmpty": "A beginner-friendly starting profile is already applied. Listen first, then swipe the card to explore the next chord.",
+  "practiceFirstRunWelcomeBodyReady": "{chordLabel} is ready to go. Listen first, then swipe the card to explore what comes next. You can still open the setup assistant to personalize the start.",
+  "@practiceFirstRunWelcomeBodyReady": {
+    "placeholders": {
+      "chordLabel": {}
+    }
+  },
+  "practiceFirstRunSetupButton": "Personalize",
+  "musicNotationLocale": "Music notation language",
+  "musicNotationLocaleHelp": "Controls the language used for optional Roman numeral and chord-text assists.",
+  "musicNotationLocaleUiDefault": "Match app language",
+  "musicNotationLocaleEnglish": "English",
+  "noteNamingStyle": "Note naming",
+  "noteNamingStyleHelp": "Switches displayed note and key names without changing harmonic logic.",
+  "noteNamingStyleEnglish": "English letters",
+  "noteNamingStyleLatin": "Do Re Mi",
+  "showRomanNumeralAssist": "Show Roman numeral assist",
+  "showRomanNumeralAssistHelp": "Adds a short explanation next to Roman numeral labels.",
+  "showChordTextAssist": "Show chord text assist",
+  "showChordTextAssistHelp": "Adds a short text explanation for chord quality and tensions.",
+  "premiumUnlockTitle": "Chordest Premium",
+  "premiumUnlockBody": "A one-time purchase permanently unlocks Smart Generator and advanced harmonic color controls. Free Generator, Analyzer, metronome, and language support stay available.",
+  "premiumUnlockRequestedFeatureTitle": "Requested in this flow",
+  "premiumUnlockOfflineCacheTitle": "Using your last confirmed unlock",
+  "premiumUnlockOfflineCacheBody": "The store is unavailable right now, so the app is using your last confirmed premium unlock cache.",
+  "premiumUnlockFreeTierTitle": "Free",
+  "premiumUnlockFreeTierLineGenerator": "Basic Generator, chord display, inversions, slash bass, and core metronome",
+  "premiumUnlockFreeTierLineAnalyzer": "Conservative Analyzer with confidence and ambiguity warnings",
+  "premiumUnlockFreeTierLineMetronome": "Language, theme, setup assistant, and standard practice settings",
+  "premiumUnlockPremiumTierTitle": "Premium unlock",
+  "premiumUnlockPremiumLineSmartGenerator": "Smart Generator mode for progression-aware generation in selected keys",
+  "premiumUnlockPremiumLineHarmonyColors": "Secondary dominants, substitute dominants, modal interchange, and advanced tensions",
+  "premiumUnlockPremiumLineAdvancedSmartControls": "Modulation intensity, jazz preset, and source profile controls for Smart Generator",
+  "premiumUnlockBuyButton": "Unlock permanently ({priceLabel})",
+  "@premiumUnlockBuyButton": {
+    "placeholders": {
+      "priceLabel": {}
+    }
+  },
+  "premiumUnlockBuyButtonUnavailable": "Unlock permanently",
+  "premiumUnlockRestoreButton": "Restore purchase",
+  "premiumUnlockKeepFreeButton": "Keep using free",
+  "premiumUnlockStoreFallbackBody": "Store product info is not available right now. Free features keep working, and you can retry or restore later.",
+  "premiumUnlockStorePriceHint": "Price comes from the store. The app does not hardcode a fixed price.",
+  "premiumUnlockStoreUnavailableTitle": "Store unavailable",
+  "premiumUnlockStoreUnavailableBody": "The store connection is unavailable right now. Free features still work.",
+  "premiumUnlockProductUnavailableTitle": "Product not ready",
+  "premiumUnlockProductUnavailableBody": "Premium product info is unavailable right now. Please try again later.",
+  "premiumUnlockPurchaseSuccessTitle": "Premium unlocked",
+  "premiumUnlockPurchaseSuccessBody": "Your permanent premium unlock is now active on this device.",
+  "premiumUnlockRestoreSuccessTitle": "Purchase restored",
+  "premiumUnlockRestoreSuccessBody": "Your premium unlock was restored from the store.",
+  "premiumUnlockRestoreNotFoundTitle": "Nothing to restore",
+  "premiumUnlockRestoreNotFoundBody": "No matching premium unlock was found for this store account.",
+  "premiumUnlockPurchaseCancelledTitle": "Purchase canceled",
+  "premiumUnlockPurchaseCancelledBody": "No charge was made. Free features are still available.",
+  "premiumUnlockPurchasePendingTitle": "Purchase pending",
+  "premiumUnlockPurchasePendingBody": "The store marked this purchase as pending. Premium unlock will activate after confirmation.",
+  "premiumUnlockPurchaseFailedTitle": "Purchase failed",
+  "premiumUnlockPurchaseFailedBody": "The purchase could not be completed. Please try again later.",
+  "premiumUnlockAlreadyOwned": "Premium unlocked",
+  "premiumUnlockAlreadyOwnedTitle": "Already unlocked",
+  "premiumUnlockAlreadyOwnedBody": "This store account already has the premium unlock.",
+  "premiumUnlockHighlightSmartGenerator": "Smart Generator mode and its deeper progression controls are part of the premium unlock.",
+  "premiumUnlockHighlightAdvancedHarmony": "Non-diatonic color options and advanced tensions are part of the premium unlock.",
+  "premiumUnlockCardTitle": "Premium unlock",
+  "premiumUnlockCardBodyUnlocked": "Your one-time premium unlock is active.",
+  "premiumUnlockCardBodyLocked": "Unlock Smart Generator and advanced harmonic color controls with one purchase.",
+  "premiumUnlockCardButton": "View premium",
+  "premiumUnlockGeneratorHint": "Smart Generator and advanced harmonic colors unlock with a one-time premium purchase.",
+  "premiumUnlockSettingsHintTitle": "Premium controls",
+  "premiumUnlockSettingsHintBody": "Smart Generator, non-diatonic color controls, and advanced tensions are part of the one-time premium unlock.",
+  "accountTitle": "Account",
+  "accountCardSignedOutBody": "Sign in to link premium to your account and restore it on your other devices.",
+  "accountCardSignedInBody": "Signed in as {email}. Premium sync and restore now follow this account.",
+  "@accountCardSignedInBody": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "accountCardUnavailableBody": "Account features are not configured in this build yet. Add Firebase runtime configuration to enable sign-in.",
+  "accountOpenButton": "Sign in",
+  "accountManageButton": "Manage account",
+  "accountEmailLabel": "Email",
+  "accountPasswordLabel": "Password",
+  "accountSignInButton": "Sign in",
+  "accountCreateButton": "Create account",
+  "accountSwitchToCreateButton": "Create a new account",
+  "accountSwitchToSignInButton": "I already have an account",
+  "accountForgotPasswordButton": "Reset password",
+  "accountSignOutButton": "Sign out",
+  "accountMessageSignedIn": "You're signed in.",
+  "accountMessageSignedUp": "Your account was created and signed in.",
+  "accountMessageSignedOut": "You signed out of this account.",
+  "accountMessagePasswordResetSent": "Password reset email sent.",
+  "accountMessageInvalidCredentials": "Check your email and password and try again.",
+  "accountMessageEmailInUse": "That email is already in use.",
+  "accountMessageWeakPassword": "Use a stronger password to create this account.",
+  "accountMessageUserNotFound": "No account was found for that email.",
+  "accountMessageTooManyRequests": "Too many attempts right now. Please try again later.",
+  "accountMessageNetworkError": "The network request failed. Please check your connection.",
+  "accountMessageAuthUnavailable": "Account sign-in is not configured in this build yet.",
+  "accountMessageUnknownError": "The account request could not be completed.",
+  "accountDeleteButton": "Delete account",
+  "accountDeleteDialogTitle": "Delete account?",
+  "accountDeleteDialogBody": "This permanently deletes the Chordest account for {email} and removes synced premium data. Store purchase history stays with your store account.",
+  "@accountDeleteDialogBody": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "accountDeletePasswordHelper": "Enter your current password to confirm this deletion request.",
+  "accountDeleteConfirmButton": "Delete permanently",
+  "accountDeleteCancelButton": "Cancel",
+  "accountDeletePasswordRequired": "Enter your current password to delete this account.",
+  "accountMessageDeleted": "Your account and synced premium data were deleted.",
+  "accountMessageDeleteRequiresRecentLogin": "For safety, enter your current password and try again.",
+  "accountMessageDataDeletionFailed": "We couldn't remove your synced account data. Please try again.",
+  "premiumUnlockAccountSyncTitle": "Account sync",
+  "premiumUnlockAccountSyncSignedOutBody": "You can keep using premium locally, but signing in lets this unlock follow your account to other devices.",
+  "premiumUnlockAccountSyncSignedInBody": "Premium purchases and restores will sync to {email} when this account is signed in.",
+  "@premiumUnlockAccountSyncSignedInBody": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "premiumUnlockAccountSyncUnavailableBody": "Account sync is not configured in this build yet, so premium currently stays local to this device.",
+  "premiumUnlockAccountOpenButton": "Account"
+}

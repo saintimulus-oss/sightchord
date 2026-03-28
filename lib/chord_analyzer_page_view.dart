@@ -6,13 +6,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'audio/harmony_audio_models.dart';
 import 'audio/harmony_audio_service.dart';
 import 'audio/chordest_audio_scope.dart';
+import 'billing/billing_scope.dart';
+import 'chord_analyzer_history_store.dart';
 import 'l10n/app_localizations.dart';
+import 'music/chord_theory.dart';
 import 'music/explanation_models.dart';
 import 'music/progression_analysis_models.dart';
 import 'music/progression_analyzer.dart';
 import 'music/progression_explanation_bundle_builder.dart';
 import 'music/progression_explainer.dart';
 import 'music/progression_variation_generator.dart';
+import 'practice_home_page.dart';
 import 'release_feature_flags.dart';
 import 'settings/practice_settings.dart';
 import 'settings/settings_controller.dart';
@@ -26,10 +30,14 @@ class ChordAnalyzerPage extends StatefulWidget {
     super.key,
     this.inputPlatformOverride,
     this.controller,
+    this.initialInput,
+    this.autoAnalyzeOnStart = false,
   });
 
   final TargetPlatform? inputPlatformOverride;
   final AppSettingsController? controller;
+  final String? initialInput;
+  final bool autoAnalyzeOnStart;
 
   @override
   State<ChordAnalyzerPage> createState() => _ChordAnalyzerPageState();
@@ -70,6 +78,10 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   bool _copyFeedbackVisible = false;
   bool _inputHelpDialogOpen = false;
   bool _displaySettingsSheetOpen = false;
+  final AnalyzerInputHistoryStore _historyStore =
+      const AnalyzerInputHistoryStore();
+  List<String> _recentInputs = const <String>[];
+  List<String> _pinnedInputs = const <String>[];
   final FocusNode _shortcutFocusNode = FocusNode(
     debugLabel: 'analyzerShortcutFocus',
   );
@@ -89,8 +101,29 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     final settings = widget.controller?.settings ?? PracticeSettings();
     _localExplanationDetailLevel = settings.progressionExplanationDetailLevel;
     _localHighlightTheme = settings.progressionHighlightTheme;
+    final initialInput = _normalizedDraft(widget.initialInput ?? '');
+    if (initialInput.isNotEmpty) {
+      _lastSavedDraft = initialInput;
+      _controller.value = TextEditingValue(
+        text: initialInput,
+        selection: TextSelection.collapsed(offset: initialInput.length),
+      );
+      if (widget.autoAnalyzeOnStart) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) {
+            return;
+          }
+          unawaited(_analyze());
+        });
+      }
+    }
     _controller.addListener(_handleDraftChanged);
-    unawaited(_restoreDraft());
+    if (initialInput.isEmpty) {
+      unawaited(_restoreDraft());
+    } else {
+      unawaited(_persistDraft(initialInput));
+    }
+    unawaited(_restoreQuickEntries());
   }
 
   Future<void> _analyze() async {
@@ -135,6 +168,9 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
       _errorKey = nextErrorKey;
       _isAnalyzing = false;
     });
+    if (nextAnalysis != null) {
+      unawaited(_rememberQuickEntry(input));
+    }
   }
 
   @override
@@ -228,6 +264,43 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     await preferences.setString(_draftPreferenceKey, draft);
   }
 
+  Future<void> _restoreQuickEntries() async {
+    final entries = await _historyStore.load();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _recentInputs = entries.recent;
+      _pinnedInputs = entries.pinned;
+    });
+  }
+
+  Future<void> _rememberQuickEntry(String input) async {
+    final entries = await _historyStore.remember(input);
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _recentInputs = entries.recent;
+      _pinnedInputs = entries.pinned;
+    });
+  }
+
+  Future<void> _togglePinnedProgression() async {
+    final progression = _normalizedDraft(_analysis?.input ?? _controller.text);
+    if (progression.isEmpty) {
+      return;
+    }
+    final entries = await _historyStore.togglePinned(progression);
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _recentInputs = entries.recent;
+      _pinnedInputs = entries.pinned;
+    });
+  }
+
   bool _resetCopyFeedback() {
     _copyFeedbackTimer?.cancel();
     _copyFeedbackTimer = null;
@@ -269,6 +342,92 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   Future<void> _applyExampleAndAnalyze(String progression) async {
     _applyExample(progression);
     await _analyze();
+  }
+
+  bool _usesKoreanUiCopy(BuildContext context) {
+    return Localizations.localeOf(context).languageCode == 'ko';
+  }
+
+  String _pinnedSectionTitle(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '고정한 진행' : 'Pinned progressions';
+  }
+
+  String _recentSectionTitle(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '최근 분석' : 'Recent analyses';
+  }
+
+  String _pinButtonLabel(BuildContext context, {required bool pinned}) {
+    if (_usesKoreanUiCopy(context)) {
+      return pinned ? '고정 해제' : '진행 고정';
+    }
+    return pinned ? 'Unpin' : 'Pin';
+  }
+
+  String _pinButtonTooltip(BuildContext context, {required bool pinned}) {
+    if (_usesKoreanUiCopy(context)) {
+      return pinned ? '이 진행의 고정을 해제합니다.' : '이 진행을 고정합니다.';
+    }
+    return pinned
+        ? 'Remove this progression from pinned items.'
+        : 'Pin this progression for quick reuse.';
+  }
+
+  String _resumeProgressionTooltip(
+    BuildContext context,
+    String progression, {
+    required bool pinned,
+  }) {
+    if (_usesKoreanUiCopy(context)) {
+      return pinned
+          ? '고정한 진행을 다시 분석합니다.\n$progression'
+          : '최근 분석한 진행을 다시 엽니다.\n$progression';
+    }
+    return pinned
+        ? 'Analyze this pinned progression again.\n$progression'
+        : 'Reopen this recent analysis.\n$progression';
+  }
+
+  String _practiceThisKeyLabel(BuildContext context) {
+    return _usesKoreanUiCopy(context) ? '이 키로 연습' : 'Practice this key';
+  }
+
+  String _practiceThisKeyTooltip(
+    BuildContext context,
+    AppLocalizations l10n,
+    ProgressionAnalysis analysis,
+  ) {
+    final keyLabel = _explainer.keyLabel(l10n, analysis.primaryKey.keyCenter);
+    if (_usesKoreanUiCopy(context)) {
+      return '$keyLabel 키로 생성기를 엽니다. (G)';
+    }
+    return 'Open the generator in $keyLabel. (G)';
+  }
+
+  Future<void> _openGeneratorFromAnalysis() async {
+    final analysis = _analysis;
+    final controller = widget.controller;
+    if (analysis == null || controller == null) {
+      return;
+    }
+    final nextSettings = controller.settings.copyWith(
+      guidedSetupCompleted: true,
+      activeKeyCenters: <KeyCenter>{analysis.primaryKey.keyCenter},
+    );
+    await controller.update(nextSettings);
+    if (!mounted) {
+      return;
+    }
+    final initialPremiumUnlocked =
+        BillingScope.maybeOf(context)?.isPremiumUnlocked ?? false;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => MyHomePage(
+          title: 'Chordest',
+          controller: controller,
+          initialPremiumUnlocked: initialPremiumUnlocked,
+        ),
+      ),
+    );
   }
 
   String _analyzerQuickStartHint(BuildContext context) =>
@@ -920,6 +1079,12 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
             unawaited(_copyAnalyzedProgression());
             return KeyEventResult.handled;
           }
+          if (event.logicalKey == LogicalKeyboardKey.keyG &&
+              _analysis != null &&
+              widget.controller != null) {
+            unawaited(_openGeneratorFromAnalysis());
+            return KeyEventResult.handled;
+          }
           if (event.logicalKey != LogicalKeyboardKey.escape) {
             return KeyEventResult.ignored;
           }
@@ -1083,6 +1248,12 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     required bool hasInput,
   }) {
     final hasAnalysis = _analysis != null;
+    final currentProgression = _normalizedDraft(
+      _analysis?.input ?? _controller.text,
+    );
+    final isPinned =
+        currentProgression.isNotEmpty &&
+        _pinnedInputs.contains(currentProgression);
     final canAnalyze = hasInput && !_isAnalyzing;
     final canClear =
         hasInput || hasAnalysis || _errorKey != null || _variations.isNotEmpty;
@@ -1121,6 +1292,30 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
               label: Text(materialL10n.clearButtonTooltip),
             ),
           ),
+          if (currentProgression.isNotEmpty)
+            Tooltip(
+              message: _pinButtonTooltip(context, pinned: isPinned),
+              child: OutlinedButton.icon(
+                key: const ValueKey('analyzer-pin-progression-button'),
+                onPressed: _isAnalyzing ? null : _togglePinnedProgression,
+                icon: Icon(
+                  isPinned ? Icons.push_pin_rounded : Icons.push_pin_outlined,
+                ),
+                label: Text(_pinButtonLabel(context, pinned: isPinned)),
+              ),
+            ),
+          if (hasAnalysis && widget.controller != null)
+            Tooltip(
+              message: _practiceThisKeyTooltip(context, l10n, _analysis!),
+              child: OutlinedButton.icon(
+                key: const ValueKey(
+                  'analyzer-open-generator-from-analysis-button',
+                ),
+                onPressed: _openGeneratorFromAnalysis,
+                icon: const Icon(Icons.play_lesson_rounded),
+                label: Text(_practiceThisKeyLabel(context)),
+              ),
+            ),
           if (hasAnalysis)
             Tooltip(
               message: '${materialL10n.copyButtonLabel} (Ctrl/Cmd+C)',
@@ -1189,6 +1384,9 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
   ) {
     final analysis = _analysis;
     final materialL10n = MaterialLocalizations.of(context);
+    final recentOnlyInputs = _recentInputs
+        .where((input) => !_pinnedInputs.contains(input))
+        .toList(growable: false);
 
     return DecoratedBox(
       decoration: _analyzerPanelDecoration(colorScheme, accent: true),
@@ -1285,6 +1483,76 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
                   ),
               ],
             ),
+            if (_pinnedInputs.isNotEmpty) ...[
+              SizedBox(height: compactLayout ? 12 : 14),
+              Text(
+                _pinnedSectionTitle(context),
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final progression in _pinnedInputs)
+                    Tooltip(
+                      message: _resumeProgressionTooltip(
+                        context,
+                        progression,
+                        pinned: true,
+                      ),
+                      child: ActionChip(
+                        key: ValueKey('analyzer-pinned-$progression'),
+                        avatar: const Icon(Icons.push_pin_rounded, size: 18),
+                        label: Text(progression),
+                        onPressed: _isAnalyzing
+                            ? null
+                            : () => unawaited(
+                                _applyExampleAndAnalyze(progression),
+                              ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+            if (recentOnlyInputs.isNotEmpty) ...[
+              SizedBox(height: compactLayout ? 12 : 14),
+              Text(
+                _recentSectionTitle(context),
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final progression in recentOnlyInputs)
+                    Tooltip(
+                      message: _resumeProgressionTooltip(
+                        context,
+                        progression,
+                        pinned: false,
+                      ),
+                      child: ActionChip(
+                        key: ValueKey('analyzer-recent-$progression'),
+                        avatar: const Icon(Icons.history_rounded, size: 18),
+                        label: Text(progression),
+                        onPressed: _isAnalyzing
+                            ? null
+                            : () => unawaited(
+                                _applyExampleAndAnalyze(progression),
+                              ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
             SizedBox(height: compactLayout ? 12 : 16),
             ValueListenableBuilder<TextEditingValue>(
               valueListenable: _controller,

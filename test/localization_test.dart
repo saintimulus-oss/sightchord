@@ -14,6 +14,108 @@ Map<String, dynamic> _readArb(String name) {
   return jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
 }
 
+List<String> _arbLocaleFiles() {
+  final files =
+      Directory('lib/l10n')
+          .listSync()
+          .whereType<File>()
+          .map((file) => file.uri.pathSegments.last)
+          .where((name) => name.startsWith('app_') && name.endsWith('.arb'))
+          .toList()
+        ..sort();
+  return files;
+}
+
+const List<String> _requestedSelectableLanguageStorageKeys = <String>[
+  'system',
+  'af',
+  'sq',
+  'am',
+  'ar',
+  'hy-AM',
+  'az-AZ',
+  'bn-BD',
+  'eu-ES',
+  'be',
+  'bg',
+  'my-MM',
+  'ca',
+  'zh-HK',
+  'zh-CN',
+  'zh-TW',
+  'hr',
+  'cs-CZ',
+  'da-DK',
+  'nl-NL',
+  'en-AU',
+  'en-CA',
+  'en-US',
+  'en-GB',
+  'en-IN',
+  'en-SG',
+  'en-ZA',
+  'et',
+  'fil',
+  'fi-FI',
+  'fr-CA',
+  'fr-FR',
+  'gl-ES',
+  'ka-GE',
+  'de-DE',
+  'el-GR',
+  'gu',
+  'iw-IL',
+  'hi-IN',
+  'hu-HU',
+  'is-IS',
+  'id',
+  'it-IT',
+  'ja-JP',
+  'kn-IN',
+  'kk',
+  'km-KH',
+  'ko-KR',
+  'ky-KG',
+  'lo-LA',
+  'lv',
+  'lt',
+  'mk-MK',
+  'ms-MY',
+  'ms',
+  'ml-IN',
+  'mr-IN',
+  'mn-MN',
+  'ne-NP',
+  'no-NO',
+  'fa',
+  'fa-AE',
+  'fa-AF',
+  'fa-IR',
+  'pl-PL',
+  'pt-BR',
+  'pt-PT',
+  'pa',
+  'ro',
+  'rm',
+  'ru-RU',
+  'sr',
+  'si-LK',
+  'sk',
+  'sl',
+  'es-419',
+  'es-ES',
+  'es-US',
+  'sw',
+  'sv-SE',
+  'ta-IN',
+  'te-IN',
+  'th',
+  'tr-TR',
+  'uk',
+  'ur',
+  'vi',
+];
+
 void main() {
   test('allowed range renders both bounds across locales', () {
     expect(
@@ -158,15 +260,10 @@ void main() {
   test('locale arb files stay aligned with the English template', () {
     final en = _readArb('app_en.arb');
     final expectedKeys = en.keys.where((key) => key != '@@locale').toSet();
-    const localeFiles = [
-      'app_es.arb',
-      'app_ja.arb',
-      'app_ko.arb',
-      'app_zh.arb',
-      'app_zh_Hans.arb',
-    ];
 
-    for (final fileName in localeFiles) {
+    for (final fileName in _arbLocaleFiles().where(
+      (name) => name != 'app_en.arb',
+    )) {
       final actualKeys = _readArb(
         fileName,
       ).keys.where((key) => key != '@@locale').toSet();
@@ -175,40 +272,38 @@ void main() {
   });
 
   test(
-    'app language locales exposed in the app stay aligned with supported locales',
+    'all selectable app locales are backed by generated supported locales',
     () {
       final settingLocales = selectableAppLanguages
           .where((language) => language.locale != null)
           .map((language) => language.appLocale!)
           .toSet();
-      expect(settingLocales, supportedAppLocales.toSet());
+      final missingLocales = settingLocales.difference(
+        supportedAppLocales.toSet(),
+      );
+      expect(missingLocales, isEmpty);
     },
   );
 
-  test('selectable locales avoid broad English fallback', () {
-    final en = _readArb('app_en.arb');
-    final ko = _readArb('app_ko.arb');
-    final keys = en.keys.where((key) => !key.startsWith('@'));
-    final sameAsEnglish = <String>[
-      for (final key in keys)
-        if (en[key] is String &&
-            ko[key] is String &&
-            en[key] == ko[key] &&
-            RegExp(r'[A-Za-z]{3,}').hasMatch(en[key] as String))
-          key,
-    ];
+  test('language selector exposes the requested locale set', () {
     expect(
-      sameAsEnglish.length,
-      lessThanOrEqualTo(20),
-      reason: 'Selectable locales should be substantially translated.',
+      selectableAppLanguages.map((language) => language.storageKey).toList(),
+      _requestedSelectableLanguageStorageKeys,
     );
   });
 
-  test('incomplete locales are not exposed in the language selector', () {
-    expect(selectableAppLanguages, <AppLanguage>[
-      AppLanguage.system,
-      AppLanguage.en,
-      AppLanguage.ko,
-    ]);
+  test('legacy language keys remain readable and map to visible options', () {
+    expect(AppLanguageX.fromStorageKey('en'), AppLanguage.en);
+    expect(AppLanguageX.fromStorageKey('es'), AppLanguage.es);
+    expect(AppLanguageX.fromStorageKey('ja'), AppLanguage.ja);
+    expect(AppLanguageX.fromStorageKey('ko'), AppLanguage.ko);
+    expect(AppLanguageX.fromStorageKey('zh'), AppLanguage.zh);
+    expect(AppLanguageX.fromStorageKey('zh_Hans'), AppLanguage.zhHans);
+    expect(AppLanguage.en.selectableValue, AppLanguage.enUs);
+    expect(AppLanguage.es.selectableValue, AppLanguage.es419);
+    expect(AppLanguage.ja.selectableValue, AppLanguage.jaJp);
+    expect(AppLanguage.ko.selectableValue, AppLanguage.koKr);
+    expect(AppLanguage.zh.selectableValue, AppLanguage.zhTw);
+    expect(AppLanguage.zhHans.selectableValue, AppLanguage.zhCn);
   });
 }

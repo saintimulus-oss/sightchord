@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../auth/account_scope.dart';
+import '../auth/account_sheet.dart';
 import '../billing/billing_models.dart';
 import '../billing/billing_scope.dart';
 import '../billing/paywall_sheet.dart';
@@ -19,12 +21,14 @@ class MainMenuSettingsSheet extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final billing = BillingScope.of(context);
+    final account = AccountScope.of(context);
 
     return AnimatedBuilder(
-      animation: Listenable.merge(<Listenable>[controller, billing]),
+      animation: Listenable.merge(<Listenable>[controller, billing, account]),
       builder: (context, _) {
         final settings = controller.settings;
         final billingState = billing.state;
+        final accountState = account.state;
         return SafeArea(
           child: SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(
@@ -58,6 +62,7 @@ class MainMenuSettingsSheet extends StatelessWidget {
                 DropdownButtonFormField<AppLanguage>(
                   key: const ValueKey('main-language-selector'),
                   initialValue: settings.language.selectableValue,
+                  isExpanded: true,
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(),
                     labelText: l10n.language,
@@ -66,7 +71,10 @@ class MainMenuSettingsSheet extends StatelessWidget {
                       .map(
                         (language) => DropdownMenuItem<AppLanguage>(
                           value: language,
-                          child: Text(_languageLabel(l10n, language)),
+                          child: Text(
+                            _languageLabel(l10n, language),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       )
                       .toList(growable: false),
@@ -107,6 +115,58 @@ class MainMenuSettingsSheet extends StatelessWidget {
                       ),
                     );
                   },
+                ),
+                const SizedBox(height: 18),
+                SizedBox(
+                  key: const ValueKey('main-account-card'),
+                  width: double.infinity,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: theme.colorScheme.outlineVariant,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.accountTitle,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            !accountState.isConfigured
+                                ? l10n.accountCardUnavailableBody
+                                : accountState.isSignedIn
+                                ? l10n.accountCardSignedInBody(
+                                    accountState.currentUser!.displayLabel,
+                                  )
+                                : l10n.accountCardSignedOutBody,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              height: 1.35,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          FilledButton(
+                            key: const ValueKey('main-account-open-button'),
+                            onPressed: () => showAccountSheet(context),
+                            child: Text(
+                              accountState.isSignedIn
+                                  ? l10n.accountManageButton
+                                  : l10n.accountOpenButton,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 18),
                 SizedBox(

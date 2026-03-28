@@ -20,7 +20,11 @@ This checklist is the final manual pass before pressing submit in Google Play Co
 - Upload the signed `.aab`.
 - Enroll in Play App Signing.
 - Complete App content declarations.
+- Provision the dedicated reviewer premium account with
+  `dart run tool/provision_reviewer_account.dart`.
+- Fill `App access` using `store/google-play/reviewer-access.generated.txt`.
 - Complete the Data safety form.
+- Add the data deletion URL `https://saintimulus-oss.github.io/delete-account.html` if Play Console requests it.
 - Complete content rating.
 - Add the support URL and privacy policy URL.
 - Add the short description and full description from the `store/` folder.
@@ -40,7 +44,7 @@ This checklist is the final manual pass before pressing submit in Google Play Co
 - Add subtitle, keywords, description, promotional text, and review notes from the `store/` folder.
 - Upload iPhone screenshots and any iPad screenshots if you want iPad distribution.
 - Add TestFlight internal testers and validate a release build on real hardware.
-- Add final review notes that explain the app is local-first and does not require an account.
+- Add final review notes that explain the app is local-first, that core flows do not require an account, and that optional email/password sign-in exists for account-linked premium sync.
 
 ## Real-Device Validation
 

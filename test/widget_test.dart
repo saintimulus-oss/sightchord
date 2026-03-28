@@ -3,11 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chordest/app.dart';
+import 'package:chordest/auth/account_sheet.dart';
 import 'package:chordest/audio/harmony_audio_models.dart';
 import 'package:chordest/audio/harmony_audio_service.dart';
 import 'package:chordest/billing/billing_controller.dart';
 import 'package:chordest/billing/billing_models.dart';
 import 'package:chordest/billing/billing_store.dart';
+import 'package:chordest/chord_analyzer_history_store.dart';
+import 'package:chordest/favorite_start_store.dart';
 import 'package:chordest/l10n/app_localizations.dart';
 import 'package:chordest/music/chord_anchor_loop.dart';
 import 'package:chordest/music/chord_theory.dart';
@@ -485,6 +488,41 @@ void main() {
     return sideChordText(tester, 'next-chord-text');
   }
 
+  String? lookAheadChordText(WidgetTester tester) {
+    return sideChordText(tester, 'lookahead-chord-text');
+  }
+
+  String analyzerInputText(WidgetTester tester) {
+    return tester
+            .widget<TextField>(
+              find.byKey(const ValueKey('analyzer-input-field')),
+            )
+            .controller
+            ?.text ??
+        '';
+  }
+
+  void installClipboardMock({String? initialText}) {
+    var clipboardText = initialText;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          switch (call.method) {
+            case 'Clipboard.setData':
+              clipboardText =
+                  (call.arguments as Map<Object?, Object?>)['text'] as String?;
+              return null;
+            case 'Clipboard.getData':
+              return <String, Object?>{'text': clipboardText};
+            default:
+              return null;
+          }
+        });
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+  }
+
   int? activeBeatIndex(WidgetTester tester) {
     return tester
         .widget<BeatIndicatorRow>(find.byType(BeatIndicatorRow))
@@ -606,6 +644,559 @@ void main() {
     );
   });
 
+  testWidgets('main menu shows saved practice summary chips', (
+    WidgetTester tester,
+  ) async {
+    await pumpMainMenuWithSettings(
+      tester,
+      PracticeSettings(
+        guidedSetupCompleted: true,
+        settingsComplexityMode: SettingsComplexityMode.advanced,
+        melodyGenerationEnabled: true,
+        bpm: 84,
+        activeKeyCenters: {KeyCenter(tonicName: 'C', mode: KeyMode.major)},
+      ),
+      completeGuidedSetup: false,
+    );
+
+    expect(find.byKey(const ValueKey('main-status-mode-chip')), findsOneWidget);
+    expect(find.byKey(const ValueKey('main-status-keys-chip')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('main-status-melody-chip')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('main-status-bpm-chip')), findsOneWidget);
+  });
+
+  testWidgets('main menu quick actions open account and premium sheets', (
+    WidgetTester tester,
+  ) async {
+    await pumpMainMenuWithSettings(tester, PracticeSettings());
+
+    expect(
+      find.byKey(const ValueKey('main-open-account-button')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('main-open-premium-button')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('main-open-account-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AccountSheet), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AccountSheet),
+        matching: find.byType(FilledButton),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('main-open-premium-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('premium-buy-button')), findsOneWidget);
+    expect(find.byKey(const ValueKey('premium-close-button')), findsOneWidget);
+  });
+
+  testWidgets('main menu quick starts launch targeted profiles', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpMainMenuWithController(
+      tester,
+      PracticeSettings(
+        guidedSetupCompleted: true,
+        settingsComplexityMode: SettingsComplexityMode.advanced,
+        melodyGenerationEnabled: false,
+        chordLanguageLevel: ChordLanguageLevel.fullExtensions,
+        romanPoolPreset: RomanPoolPreset.expandedColor,
+        maxVoicingNotes: 5,
+        bpm: 120,
+        activeKeyCenters: {
+          const KeyCenter(tonicName: 'D', mode: KeyMode.major),
+        },
+      ),
+      completeGuidedSetup: false,
+    );
+
+    expect(
+      find.byKey(const ValueKey('main-quick-start-calm-button')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('main-quick-start-song-button')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('main-quick-start-fuller-button')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('main-quick-start-calm-button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('current-chord-text')), findsOneWidget);
+    expect(
+      controller.settings.settingsComplexityMode,
+      SettingsComplexityMode.guided,
+    );
+    expect(controller.settings.maxVoicingNotes, 3);
+    expect(controller.settings.bpm, lessThanOrEqualTo(72));
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('current-chord-text')), findsOneWidget);
+    expect(controller.settings.melodyGenerationEnabled, isTrue);
+    expect(controller.settings.melodyPlaybackMode, MelodyPlaybackMode.both);
+    expect(controller.settings.bpm, greaterThanOrEqualTo(84));
+  });
+
+  testWidgets(
+    'favorite starts save from the generator and reopen from the main menu',
+    (WidgetTester tester) async {
+      final controller = await pumpMainMenuWithController(
+        tester,
+        PracticeSettings(
+          guidedSetupCompleted: true,
+          settingsComplexityMode: SettingsComplexityMode.advanced,
+          activeKeyCenters: {
+            const KeyCenter(tonicName: 'A', mode: KeyMode.minor),
+          },
+          melodyGenerationEnabled: true,
+          melodyDensity: MelodyDensity.active,
+          melodyStyle: MelodyStyle.colorful,
+          melodyPlaybackMode: MelodyPlaybackMode.both,
+          autoPlayMelodyWithChords: true,
+          autoPlayChordChanges: true,
+          chordLanguageLevel: ChordLanguageLevel.fullExtensions,
+          romanPoolPreset: RomanPoolPreset.functionalJazz,
+          maxVoicingNotes: 5,
+          lookAheadDepth: 2,
+          voicingComplexity: VoicingComplexity.modern,
+          allowTensions: true,
+          bpm: 92,
+        ),
+        completeGuidedSetup: false,
+      );
+
+      await openChordGenerator(tester);
+      await tester.tap(
+        find.byKey(const ValueKey('practice-open-favorite-starts-button')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const ValueKey('favorite-start-slot-0-save-button')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('practice-undo-snackbar-action')),
+        findsOneWidget,
+      );
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+
+      await controller.update(
+        PracticeSettings(
+          guidedSetupCompleted: true,
+          settingsComplexityMode: SettingsComplexityMode.guided,
+          activeKeyCenters: {
+            const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+          },
+          melodyGenerationEnabled: false,
+          bpm: 60,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('main-open-favorite-start-1-button')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('main-open-favorite-start-1-button')),
+          matching: find.text('A min Melody'),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey('main-open-favorite-start-1-button')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('current-chord-text')), findsOneWidget);
+      expect(
+        controller.settings.activeKeyCenters,
+        contains(const KeyCenter(tonicName: 'A', mode: KeyMode.minor)),
+      );
+      expect(
+        controller.settings.settingsComplexityMode,
+        SettingsComplexityMode.advanced,
+      );
+      expect(controller.settings.melodyGenerationEnabled, isTrue);
+      expect(controller.settings.bpm, 92);
+    },
+  );
+
+  testWidgets('favorite starts can be renamed and persist custom labels', (
+    WidgetTester tester,
+  ) async {
+    await pumpMainMenuWithSettings(
+      tester,
+      PracticeSettings(
+        guidedSetupCompleted: true,
+        activeKeyCenters: {
+          const KeyCenter(tonicName: 'E', mode: KeyMode.minor),
+        },
+        melodyGenerationEnabled: true,
+        bpm: 78,
+      ),
+      completeGuidedSetup: false,
+    );
+
+    await openChordGenerator(tester);
+    await tester.tap(
+      find.byKey(const ValueKey('practice-open-favorite-starts-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('favorite-start-slot-0-save-button')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey('practice-open-favorite-starts-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('favorite-start-slot-0-rename-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('favorite-start-slot-0-name-field')),
+      'Late Night',
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('favorite-start-slot-0-name-save-button')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('main-open-favorite-start-1-button')),
+        matching: find.text('Late Night'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.pumpWidget(
+      MyApp(
+        controller: AppSettingsController(
+          initialSettings: PracticeSettings(guidedSetupCompleted: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('main-open-favorite-start-1-button')),
+        matching: find.text('Late Night'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('favorite starts persist and support keyboard reopening', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      FavoriteStartStore.slot2Key: FavoriteStartPreset.fromSettings(
+        PracticeSettings(
+          guidedSetupCompleted: true,
+          settingsComplexityMode: SettingsComplexityMode.standard,
+          activeKeyCenters: {
+            const KeyCenter(tonicName: 'F', mode: KeyMode.major),
+          },
+          melodyGenerationEnabled: true,
+          melodyDensity: MelodyDensity.balanced,
+          melodyStyle: MelodyStyle.lyrical,
+          bpm: 88,
+        ),
+      ).toStorageString(),
+    });
+
+    final controller = await pumpMainMenuWithController(
+      tester,
+      PracticeSettings(
+        guidedSetupCompleted: true,
+        activeKeyCenters: {
+          const KeyCenter(tonicName: 'C', mode: KeyMode.major),
+        },
+        bpm: 60,
+      ),
+      completeGuidedSetup: false,
+    );
+
+    expect(
+      find.byKey(const ValueKey('main-open-favorite-start-2-button')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('main-open-favorite-start-2-button')),
+        matching: find.text('F maj Melody'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('current-chord-text')), findsOneWidget);
+    expect(
+      controller.settings.activeKeyCenters,
+      contains(const KeyCenter(tonicName: 'F', mode: KeyMode.major)),
+    );
+    expect(controller.settings.melodyGenerationEnabled, isTrue);
+    expect(controller.settings.bpm, 88);
+  });
+
+  testWidgets('favorite starts can be cleared from the generator sheet', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      FavoriteStartStore.slot1Key: FavoriteStartPreset.fromSettings(
+        PracticeSettings(
+          guidedSetupCompleted: true,
+          activeKeyCenters: {
+            const KeyCenter(tonicName: 'D', mode: KeyMode.major),
+          },
+          bpm: 74,
+        ),
+      ).toStorageString(),
+    });
+
+    await pumpMainMenuWithSettings(
+      tester,
+      PracticeSettings(guidedSetupCompleted: true),
+      completeGuidedSetup: false,
+    );
+
+    expect(
+      find.byKey(const ValueKey('main-open-favorite-start-1-button')),
+      findsOneWidget,
+    );
+
+    await openChordGenerator(tester);
+    await tester.tap(
+      find.byKey(const ValueKey('practice-open-favorite-starts-button')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey('favorite-start-slot-0-clear-button')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('main-open-favorite-start-1-button')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('recent practice sessions reopen from the main menu', (
+    WidgetTester tester,
+  ) async {
+    await pumpMainMenuWithSettings(tester, PracticeSettings());
+
+    await openChordGenerator(tester);
+    await advanceChord(tester);
+
+    final resumedCurrent = currentChordText(tester);
+    final resumedPrevious = previousChordText(tester);
+    final resumedNext = nextChordText(tester);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('main-open-recent-practice-button')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('main-open-recent-practice-button')),
+        matching: find.textContaining('Resume'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('main-open-recent-practice-button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(currentChordText(tester), resumedCurrent);
+    expect(previousChordText(tester), resumedPrevious);
+    expect(nextChordText(tester), resumedNext);
+  });
+
+  testWidgets('recent practice sessions persist and support keyboard resume', (
+    WidgetTester tester,
+  ) async {
+    await pumpMainMenuWithSettings(tester, PracticeSettings());
+
+    await openChordGenerator(tester);
+    await advanceChord(tester);
+    await advanceChord(tester);
+
+    final resumedCurrent = currentChordText(tester);
+    final resumedNext = nextChordText(tester);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    await tester.pumpWidget(
+      MyApp(
+        controller: AppSettingsController(
+          initialSettings: PracticeSettings(guidedSetupCompleted: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('main-open-recent-practice-button')),
+      findsOneWidget,
+    );
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyR);
+    await tester.pumpAndSettle();
+
+    expect(currentChordText(tester), resumedCurrent);
+    expect(nextChordText(tester), resumedNext);
+  });
+
+  testWidgets(
+    'main menu recent copies reopen persisted history and support keyboard access',
+    (WidgetTester tester) async {
+      installClipboardMock(initialText: 'stale');
+      await pumpMainMenuWithSettings(tester, PracticeSettings());
+
+      await openChordGenerator(tester);
+      final current = currentChordText(tester);
+
+      await tester.tap(
+        find.byKey(const ValueKey('practice-open-copy-tools-button')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('practice-copy-current-chord-button')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+
+      await pumpMainMenuWithSettings(tester, PracticeSettings());
+
+      expect(
+        find.byKey(const ValueKey('main-open-recent-copies-button')),
+        findsOneWidget,
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyC);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('main-recent-copy-history-sheet')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('main-recent-copy-entry-0-button')),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey('main-recent-copy-entry-0-button')),
+      );
+      await tester.pumpAndSettle();
+
+      final clipboard = await Clipboard.getData(Clipboard.kTextPlain);
+      expect(clipboard?.text, current);
+    },
+  );
+
+  testWidgets(
+    'main menu setup assistant quick action opens the setup flow directly',
+    (WidgetTester tester) async {
+      final controller = await pumpMainMenuWithController(
+        tester,
+        PracticeSettings(),
+        completeGuidedSetup: false,
+      );
+
+      expect(
+        find.byKey(const ValueKey('main-open-setup-assistant-button')),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey('main-open-setup-assistant-button')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('setup-assistant-sheet')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('practice-first-run-welcome-card')),
+        findsNothing,
+      );
+      expect(controller.settings.guidedSetupCompleted, isTrue);
+    },
+  );
+
+  testWidgets('main menu keyboard shortcuts open generator and analyzer', (
+    WidgetTester tester,
+  ) async {
+    await pumpMainMenuWithSettings(tester, PracticeSettings());
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('current-chord-text')), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('analyzer-input-field')), findsOneWidget);
+  });
+
   testWidgets('app shell keeps main settings and practice advance flow wired', (
     WidgetTester tester,
   ) async {
@@ -631,6 +1222,450 @@ void main() {
     expect(currentChordText(tester), isNotEmpty);
     expect(currentChordText(tester), isNot(equals(beforeAdvance)));
     expect(find.byKey(const ValueKey('previous-chord-text')), findsOneWidget);
+  });
+
+  testWidgets('practice keyboard shortcuts navigate chords and open settings', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(tester, PracticeSettings());
+
+    final initialChord = currentChordText(tester);
+    expect(initialChord, isNotEmpty);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+
+    final advancedChord = currentChordText(tester);
+    expect(advancedChord, isNotEmpty);
+    expect(advancedChord, isNot(equals(initialChord)));
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+    await tester.pumpAndSettle();
+
+    expect(currentChordText(tester), equals(initialChord));
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyS);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('language-selector')), findsOneWidget);
+  });
+
+  testWidgets(
+    'practice keyboard shortcuts preview audio and switch complexity modes',
+    (WidgetTester tester) async {
+      final audio = _SpyHarmonyAudioService();
+      final controller = await pumpAppWithAudioService(
+        tester,
+        PracticeSettings(metronomeEnabled: false),
+        harmonyAudioService: audio,
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyP);
+      await tester.pumpAndSettle();
+
+      expect(audio.playedCompositeClips, isNotEmpty);
+      expect(audio.playedLabels.last.$1, HarmonyPlaybackPattern.block);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
+      await tester.pumpAndSettle();
+
+      expect(
+        controller.settings.settingsComplexityMode,
+        SettingsComplexityMode.advanced,
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+      await tester.pumpAndSettle();
+
+      expect(
+        controller.settings.settingsComplexityMode,
+        SettingsComplexityMode.guided,
+      );
+    },
+  );
+
+  testWidgets('practice shortcut help opens from the app bar and keyboard', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(tester, PracticeSettings());
+
+    await tester.tap(
+      find.byKey(const ValueKey('practice-open-shortcuts-help-button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Shift+P'), findsOneWidget);
+    expect(find.text('1 / 2 / 3'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const ValueKey('practice-shortcuts-help-close-button')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyH);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Right / Space'), findsOneWidget);
+    expect(find.text('A'), findsOneWidget);
+  });
+
+  testWidgets('practice copy tools and shortcuts copy visible content', (
+    WidgetTester tester,
+  ) async {
+    installClipboardMock(initialText: 'stale');
+    await pumpAppWithSettings(tester, PracticeSettings());
+
+    final current = currentChordText(tester);
+    final next = nextChordText(tester);
+    final lookAhead = lookAheadChordText(tester);
+
+    await tester.tap(
+      find.byKey(const ValueKey('practice-open-copy-tools-button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('practice-copy-current-chord-button')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('practice-copy-visible-loop-button')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('practice-copy-current-chord-button')),
+    );
+    await tester.pumpAndSettle();
+
+    var clipboard = await Clipboard.getData(Clipboard.kTextPlain);
+    expect(clipboard?.text, current);
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyC);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.pumpAndSettle();
+
+    clipboard = await Clipboard.getData(Clipboard.kTextPlain);
+    final expectedLoop = <String?>[
+      current,
+      next,
+      lookAhead,
+    ].whereType<String>().where((label) => label.isNotEmpty).join(' -> ');
+    expect(clipboard?.text, expectedLoop);
+  });
+
+  testWidgets('practice copy tools show recent history and can recopy text', (
+    WidgetTester tester,
+  ) async {
+    installClipboardMock(initialText: 'stale');
+    await pumpAppWithSettings(tester, PracticeSettings());
+
+    final current = currentChordText(tester);
+    final next = nextChordText(tester);
+    final lookAhead = lookAheadChordText(tester);
+    final expectedLoop = <String?>[
+      current,
+      next,
+      lookAhead,
+    ].whereType<String>().where((label) => label.isNotEmpty).join(' -> ');
+
+    await tester.tap(
+      find.byKey(const ValueKey('practice-open-copy-tools-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('practice-copy-current-chord-button')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyC);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey('practice-open-copy-tools-button')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('practice-recent-copy-entry-0-button')),
+      180,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('practice-recent-copy-section')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('practice-recent-copy-entry-0-button')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('practice-recent-copy-entry-1-button')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('practice-recent-copy-entry-0-button')),
+        matching: find.text('Visible loop'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('practice-recent-copy-entry-0-button')),
+        matching: find.text(expectedLoop),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('practice-recent-copy-entry-1-button')),
+    );
+    await tester.pumpAndSettle();
+
+    final clipboard = await Clipboard.getData(Clipboard.kTextPlain);
+    expect(clipboard?.text, current);
+  });
+
+  testWidgets('practice quick analyzer opens with the visible loop prefilled', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(tester, PracticeSettings());
+
+    final current = currentChordText(tester);
+    final next = nextChordText(tester);
+    final lookAhead = lookAheadChordText(tester);
+    final expectedProgression = <String?>[
+      current,
+      next,
+      lookAhead,
+    ].whereType<String>().where((label) => label.isNotEmpty).join(' | ');
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('practice-open-analyzer-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('practice-open-analyzer-button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('analyzer-input-field')), findsOneWidget);
+    expect(analyzerInputText(tester), expectedProgression);
+    expect(find.byKey(const ValueKey('analyzer-results-card')), findsOneWidget);
+  });
+
+  testWidgets('practice keyboard shortcut A opens analyzer from the loop', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(tester, PracticeSettings());
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('analyzer-input-field')), findsOneWidget);
+    expect(find.byKey(const ValueKey('analyzer-results-card')), findsOneWidget);
+  });
+
+  testWidgets('practice easier nudge updates settings and supports undo', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithExactSettings(
+      tester,
+      PracticeSettings(
+        guidedSetupCompleted: true,
+        settingsComplexityMode: SettingsComplexityMode.advanced,
+        chordLanguageLevel: ChordLanguageLevel.fullExtensions,
+        romanPoolPreset: RomanPoolPreset.expandedColor,
+        maxVoicingNotes: 5,
+        lookAheadDepth: 2,
+        voicingComplexity: VoicingComplexity.modern,
+      ),
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('practice-nudge-easier-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('practice-nudge-easier-button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      controller.settings.settingsComplexityMode,
+      SettingsComplexityMode.guided,
+    );
+    expect(
+      controller.settings.chordLanguageLevel,
+      ChordLanguageLevel.safeExtensions,
+    );
+    expect(controller.settings.romanPoolPreset, RomanPoolPreset.functionalJazz);
+    expect(controller.settings.maxVoicingNotes, 4);
+    expect(controller.settings.lookAheadDepth, 1);
+    expect(controller.settings.voicingComplexity, VoicingComplexity.basic);
+    expect(
+      find.byKey(const ValueKey('practice-undo-snackbar-action')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('practice-undo-snackbar-action')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      controller.settings.settingsComplexityMode,
+      SettingsComplexityMode.advanced,
+    );
+    expect(
+      controller.settings.chordLanguageLevel,
+      ChordLanguageLevel.fullExtensions,
+    );
+    expect(controller.settings.romanPoolPreset, RomanPoolPreset.expandedColor);
+    expect(controller.settings.maxVoicingNotes, 5);
+    expect(controller.settings.lookAheadDepth, 2);
+  });
+
+  testWidgets(
+    'practice richer nudge stays in free-safe settings and can undo',
+    (WidgetTester tester) async {
+      final controller = await pumpAppWithExactSettings(
+        tester,
+        PracticeSettings(
+          guidedSetupCompleted: true,
+          settingsComplexityMode: SettingsComplexityMode.guided,
+          chordLanguageLevel: ChordLanguageLevel.triadsOnly,
+          romanPoolPreset: RomanPoolPreset.corePrimary,
+          maxVoicingNotes: 3,
+          lookAheadDepth: 1,
+          voicingComplexity: VoicingComplexity.basic,
+        ),
+      );
+
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('practice-nudge-richer-button')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('practice-nudge-richer-button')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('premium-buy-button')), findsNothing);
+      expect(
+        controller.settings.settingsComplexityMode,
+        SettingsComplexityMode.guided,
+      );
+      expect(
+        controller.settings.chordLanguageLevel,
+        ChordLanguageLevel.seventhChords,
+      );
+      expect(controller.settings.romanPoolPreset, RomanPoolPreset.coreDiatonic);
+      expect(controller.settings.maxVoicingNotes, 4);
+      expect(controller.settings.lookAheadDepth, 2);
+      expect(controller.settings.allowTensions, isFalse);
+      expect(
+        find.byKey(const ValueKey('practice-undo-snackbar-action')),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey('practice-undo-snackbar-action')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        controller.settings.chordLanguageLevel,
+        ChordLanguageLevel.triadsOnly,
+      );
+      expect(controller.settings.romanPoolPreset, RomanPoolPreset.corePrimary);
+      expect(controller.settings.maxVoicingNotes, 3);
+      expect(controller.settings.lookAheadDepth, 1);
+    },
+  );
+
+  testWidgets('reset generated chords can be undone from the snackbar', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithSettings(tester, PracticeSettings());
+
+    await advanceChord(tester);
+
+    final beforeResetCurrent = currentChordText(tester);
+    final beforeResetPrevious = previousChordText(tester);
+
+    expect(beforeResetCurrent, isNotEmpty);
+    expect(beforeResetPrevious, isNotEmpty);
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('practice-reset-generated-chords-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('practice-reset-generated-chords-button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('practice-undo-snackbar-action')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('practice-undo-snackbar-action')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(currentChordText(tester), equals(beforeResetCurrent));
+    expect(previousChordText(tester), equals(beforeResetPrevious));
+  });
+
+  testWidgets('complexity quick changes can be undone from the snackbar', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithController(
+      tester,
+      PracticeSettings(guidedSetupCompleted: true),
+    );
+
+    expect(
+      controller.settings.settingsComplexityMode,
+      SettingsComplexityMode.standard,
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('practice-complexity-chip-advanced')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('practice-complexity-chip-advanced')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      controller.settings.settingsComplexityMode,
+      SettingsComplexityMode.advanced,
+    );
+    expect(
+      find.byKey(const ValueKey('practice-undo-snackbar-action')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('practice-undo-snackbar-action')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      controller.settings.settingsComplexityMode,
+      SettingsComplexityMode.standard,
+    );
   });
 
   testWidgets('new users land on a ready chord with beginner-safe defaults', (
@@ -775,6 +1810,203 @@ void main() {
     expect(find.byKey(const ValueKey('analyzer-result-dialog')), findsNothing);
   });
 
+  testWidgets('analyzer saves recent history and main menu can reopen it', (
+    WidgetTester tester,
+  ) async {
+    await pumpMainMenuWithSettings(tester, PracticeSettings());
+
+    await openChordAnalyzer(tester);
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('analyzer-example-Dm7, G7 | ? Am')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('analyzer-example-Dm7, G7 | ? Am')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('analyzer-recent-Dm7, G7 | ? Am')),
+      findsOneWidget,
+    );
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('main-open-recent-analyzer-button')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('main-open-recent-analyzer-button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(analyzerInputText(tester), 'Dm7, G7 | ? Am');
+    expect(find.byKey(const ValueKey('analyzer-results-card')), findsOneWidget);
+  });
+
+  testWidgets('analyzer pinned progressions persist and show on relaunch', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      AnalyzerInputHistoryStore.pinnedInputsKey: <String>['Dm7 | G7 | Cmaj7'],
+      AnalyzerInputHistoryStore.recentInputsKey: <String>[
+        'Dm7 | G7 | Cmaj7',
+        'Am7 | D7 | Gmaj7',
+      ],
+    });
+
+    await pumpMainMenuWithSettings(tester, PracticeSettings());
+    await openChordAnalyzer(tester);
+
+    expect(
+      find.byKey(const ValueKey('analyzer-pinned-Dm7 | G7 | Cmaj7')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('analyzer-recent-Am7 | D7 | Gmaj7')),
+      findsOneWidget,
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('analyzer-pinned-Dm7 | G7 | Cmaj7')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('analyzer-pinned-Dm7 | G7 | Cmaj7')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(analyzerInputText(tester), 'Dm7 | G7 | Cmaj7');
+    expect(find.byKey(const ValueKey('analyzer-results-card')), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('main-open-pinned-analyzer-button')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('analyzer pin button toggles the current progression', (
+    WidgetTester tester,
+  ) async {
+    await pumpMainMenuWithSettings(tester, PracticeSettings());
+    await openChordAnalyzer(tester);
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('analyzer-example-Dm7, G7 | ? Am')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('analyzer-example-Dm7, G7 | ? Am')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('analyzer-pin-progression-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('analyzer-pin-progression-button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('analyzer-pinned-Dm7, G7 | ? Am')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('analyzer-pin-progression-button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('analyzer-pinned-Dm7, G7 | ? Am')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('analyzer can open the generator with the detected key', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpMainMenuWithController(
+      tester,
+      PracticeSettings(
+        activeKeyCenters: {
+          const KeyCenter(tonicName: 'D', mode: KeyMode.major),
+        },
+      ),
+    );
+
+    await openChordAnalyzer(tester);
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('analyzer-example-Dm7, G7 | ? Am')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('analyzer-example-Dm7, G7 | ? Am')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('analyzer-results-card')), findsOneWidget);
+
+    await tester.ensureVisible(
+      find.byKey(
+        const ValueKey('analyzer-open-generator-from-analysis-button'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(
+        const ValueKey('analyzer-open-generator-from-analysis-button'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('current-chord-text')), findsOneWidget);
+    expect(controller.settings.activeKeyCenters, hasLength(1));
+    expect(controller.settings.activeKeyCenters.single.tonicName, equals('A'));
+    expect(controller.settings.activeKeyCenters.single.mode, KeyMode.minor);
+  });
+
+  testWidgets('analyzer keyboard shortcut can open the generator', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpMainMenuWithController(
+      tester,
+      PracticeSettings(
+        activeKeyCenters: {
+          const KeyCenter(tonicName: 'D', mode: KeyMode.major),
+        },
+      ),
+    );
+
+    await openChordAnalyzer(tester);
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('analyzer-example-Dm7, G7 | ? Am')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('analyzer-example-Dm7, G7 | ? Am')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('analyzer-results-card')), findsOneWidget);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyG);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('current-chord-text')), findsOneWidget);
+    expect(controller.settings.activeKeyCenters, hasLength(1));
+    expect(controller.settings.activeKeyCenters.single.tonicName, equals('A'));
+    expect(controller.settings.activeKeyCenters.single.mode, KeyMode.minor);
+  });
+
   testWidgets(
     'settings drawer hides setup mode chips and keeps advanced entry',
     (WidgetTester tester) async {
@@ -874,10 +2106,10 @@ void main() {
     );
     await tester.tap(find.byKey(const ValueKey('main-language-selector')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('\uD55C\uAD6D\uC5B4').last);
+    await tester.tap(find.text('English (United Kingdom)').last);
     await tester.pumpAndSettle();
 
-    expect(controller.settings.language, AppLanguage.ko);
+    expect(controller.settings.language, AppLanguage.enGb);
     expect(controller.settings.metronomeEnabled, isFalse);
   });
 
@@ -936,6 +2168,48 @@ void main() {
 
     expect(find.byKey(const ValueKey('premium-buy-button')), findsOneWidget);
     expect(find.byKey(const ValueKey('premium-close-button')), findsOneWidget);
+  });
+
+  testWidgets('complexity quick chips switch generator mode immediately', (
+    WidgetTester tester,
+  ) async {
+    final controller = await pumpAppWithController(
+      tester,
+      PracticeSettings(
+        activeKeyCenters: {MusicTheory.keyCenterFor('C')},
+        settingsComplexityMode: SettingsComplexityMode.standard,
+      ),
+    );
+
+    expect(
+      tester
+          .widget<ChoiceChip>(
+            find.byKey(const ValueKey('practice-complexity-chip-standard')),
+          )
+          .selected,
+      isTrue,
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('practice-complexity-chip-advanced')),
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('practice-complexity-chip-advanced')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      controller.settings.settingsComplexityMode,
+      SettingsComplexityMode.advanced,
+    );
+    expect(
+      tester
+          .widget<ChoiceChip>(
+            find.byKey(const ValueKey('practice-complexity-chip-advanced')),
+          )
+          .selected,
+      isTrue,
+    );
   });
 
   testWidgets('hides Roman-numeral tension controls in free mode', (
@@ -3443,7 +4717,7 @@ void main() {
     expect(find.text('\uBA54\uD2B8\uB85C\uB188'), findsWidgets);
   });
 
-  testWidgets('unsupported saved locales fall back to English copy', (
+  testWidgets('legacy zh saved locale resolves to traditional Chinese copy', (
     WidgetTester tester,
   ) async {
     tester.binding.platformDispatcher.localeTestValue = const Locale('zh');
@@ -3461,10 +4735,10 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();
 
-    expect(find.text('Settings'), findsWidgets);
-    expect(find.text('Metronome'), findsWidgets);
-    expect(find.text('Metronome Sound'), findsOneWidget);
-    expect(find.text('\u8A2D\u5B9A'), findsNothing);
+    expect(find.text('\u8A2D\u5B9A'), findsWidgets);
+    expect(find.text('\u7BC0\u62CD\u5668'), findsWidgets);
+    expect(find.text('\u7BC0\u62CD\u5668\u97F3\u8272'), findsOneWidget);
+    expect(find.text('Settings'), findsNothing);
   });
 }
 
@@ -3479,10 +4753,14 @@ class _TestBillingStore extends BillingStore {
   }
 
   @override
-  Future<BillingStoreSnapshot> loadSnapshot() async => snapshot;
+  Future<BillingStoreSnapshot> loadSnapshot({String? accountId}) async =>
+      snapshot;
 
   @override
-  Future<void> saveSnapshot(BillingStoreSnapshot nextSnapshot) async {
+  Future<void> saveSnapshot(
+    BillingStoreSnapshot nextSnapshot, {
+    String? accountId,
+  }) async {
     snapshot = nextSnapshot;
   }
 }

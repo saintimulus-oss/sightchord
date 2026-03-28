@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../auth/account_scope.dart';
+import '../auth/account_sheet.dart';
 import '../l10n/app_localizations.dart';
 import 'billing_controller.dart';
 import 'billing_models.dart';
@@ -56,11 +58,13 @@ class _PremiumPaywallSheetState extends State<PremiumPaywallSheet> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final account = AccountScope.of(context);
     return AnimatedBuilder(
-      animation: widget.billing,
+      animation: Listenable.merge(<Listenable>[widget.billing, account]),
       builder: (context, _) {
         final state = widget.billing.state;
         final product = widget.billing.premiumProduct;
+        final accountState = account.state;
         final buyLabel = product != null
             ? l10n.premiumUnlockBuyButton(product.priceLabel)
             : l10n.premiumUnlockBuyButtonUnavailable;
@@ -100,6 +104,18 @@ class _PremiumPaywallSheetState extends State<PremiumPaywallSheet> {
                     body: highlightLabel,
                   ),
                 ],
+                const SizedBox(height: 12),
+                _InlineInfoCard(
+                  icon: Icons.person_outline_rounded,
+                  title: l10n.premiumUnlockAccountSyncTitle,
+                  body: !accountState.isConfigured
+                      ? l10n.premiumUnlockAccountSyncUnavailableBody
+                      : accountState.isSignedIn
+                      ? l10n.premiumUnlockAccountSyncSignedInBody(
+                          accountState.currentUser!.displayLabel,
+                        )
+                      : l10n.premiumUnlockAccountSyncSignedOutBody,
+                ),
                 const SizedBox(height: 16),
                 if (state.usesCachedEntitlement)
                   _InlineInfoCard(
@@ -165,6 +181,11 @@ class _PremiumPaywallSheetState extends State<PremiumPaywallSheet> {
                           ? null
                           : widget.billing.restorePurchases,
                       child: Text(l10n.premiumUnlockRestoreButton),
+                    ),
+                    OutlinedButton(
+                      key: const ValueKey('premium-account-button'),
+                      onPressed: () => showAccountSheet(context),
+                      child: Text(l10n.premiumUnlockAccountOpenButton),
                     ),
                     OutlinedButton(
                       key: const ValueKey('premium-close-button'),

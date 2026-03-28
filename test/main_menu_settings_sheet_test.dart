@@ -1,3 +1,7 @@
+import 'package:chordest/auth/account_auth_service.dart';
+import 'package:chordest/auth/account_controller.dart';
+import 'package:chordest/auth/account_models.dart';
+import 'package:chordest/auth/account_scope.dart';
 import 'package:chordest/billing/billing_controller.dart';
 import 'package:chordest/billing/billing_scope.dart';
 import 'package:chordest/l10n/app_localizations.dart';
@@ -21,18 +25,25 @@ void main() {
     final settingsController = AppSettingsController(
       initialSettings: PracticeSettings(language: AppLanguage.en),
     );
+    final accountController = AccountController(
+      service: _TestAccountAuthService(),
+    );
     final billingController = BillingController.noop();
     addTearDown(settingsController.dispose);
+    addTearDown(accountController.dispose);
     addTearDown(billingController.dispose);
 
     await tester.pumpWidget(
       MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: BillingScope(
-          controller: billingController,
-          child: Scaffold(
-            body: MainMenuSettingsSheet(controller: settingsController),
+        home: AccountScope(
+          controller: accountController,
+          child: BillingScope(
+            controller: billingController,
+            child: Scaffold(
+              body: MainMenuSettingsSheet(controller: settingsController),
+            ),
           ),
         ),
       ),
@@ -48,4 +59,47 @@ void main() {
 
     expect(premiumCardWidth, moreOrLessEquals(languageWidth, epsilon: 0.01));
   });
+}
+
+class _TestAccountAuthService implements AccountAuthService {
+  @override
+  AppAccountUser? get currentUser => null;
+
+  @override
+  Stream<AppAccountUser?> get authStateChanges =>
+      const Stream<AppAccountUser?>.empty();
+
+  @override
+  Future<bool> initialize() async => false;
+
+  @override
+  Future<AppAccountUser> register({
+    required String email,
+    required String password,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> deleteAccount({String? currentPassword}) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail({required String email}) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppAccountUser> signIn({
+    required String email,
+    required String password,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> signOut() {
+    throw UnimplementedError();
+  }
 }

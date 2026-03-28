@@ -179,6 +179,25 @@
   "keyCenterLabelStyleClassicalCase": "C:/c:",
   "allowV7sus4": "Permitir V7sus4 (V7, V7/x)",
   "allowTensions": "Permitir tensiones",
+  "chordTypeFilters": "Tipos de acordes",
+  "chordTypeFiltersHelp": "Elige que tipos de acordes pueden aparecer en el generador.",
+  "chordTypeFiltersSelection": "{selected} / {total} activados",
+  "@chordTypeFiltersSelection": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "chordTypeGroupTriads": "Triadas",
+  "chordTypeGroupSevenths": "Septimas",
+  "chordTypeGroupSixthsAndAddedTone": "Sextas y notas anadidas",
+  "chordTypeGroupDominantVariants": "Variantes dominantes",
+  "chordTypeRequiresKeyMode": "V7sus4 solo esta disponible cuando se selecciona al menos una tonalidad.",
+  "chordTypeKeepOneEnabled": "Manten al menos un tipo de acorde activado.",
   "tensionHelp": "Perfil número romano y chips seleccionados únicamente",
   "inversions": "Inversiones",
   "enableInversions": "Habilitar inversiones",
@@ -2096,25 +2115,6 @@
   "studyHarmonyLessonBlueHourHorizonDescription": "Mantenga el punto de llegada real mientras dos posibles horizontes siguen apareciendo y desapareciendo.",
   "studyHarmonyLessonBlueHourBossTitle": "Jefe de linternas gemelas",
   "studyHarmonyLessonBlueHourBossDescription": "Un jefe final de hora azul que obliga a cambios rápidos entre el centro, la función, el color prestado y la reparación de acordes faltantes.",
-  "chordTypeFilters": "Tipos de acordes",
-  "chordTypeFiltersHelp": "Elige que tipos de acordes pueden aparecer en el generador.",
-  "chordTypeFiltersSelection": "{selected} / {total} activados",
-  "@chordTypeFiltersSelection": {
-    "placeholders": {
-      "selected": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "chordTypeGroupTriads": "Triadas",
-  "chordTypeGroupSevenths": "Septimas",
-  "chordTypeGroupSixthsAndAddedTone": "Sextas y notas anadidas",
-  "chordTypeGroupDominantVariants": "Variantes dominantes",
-  "chordTypeRequiresKeyMode": "V7sus4 solo esta disponible cuando se selecciona al menos una tonalidad.",
-  "chordTypeKeepOneEnabled": "Manten al menos un tipo de acorde activado.",
   "anchorLoopTitle": "Anchor Loop",
   "anchorLoopHelp": "Fix specific cycle slots so the same chord returns every cycle while the other slots can still be generated around it.",
   "anchorLoopCycleLength": "Cycle Length (bars)",
@@ -2772,8 +2772,7 @@
   "showRomanNumeralAssist": "Mostrar ayuda de números romanos",
   "showRomanNumeralAssistHelp": "Añade una breve explicación junto a las etiquetas de números romanos.",
   "showChordTextAssist": "Mostrar ayuda de texto de acordes",
-  "showChordTextAssistHelp": "Añade una breve explicación sobre la cualidad del acorde y sus tensiones."
-  ,
+  "showChordTextAssistHelp": "Añade una breve explicación sobre la cualidad del acorde y sus tensiones.",
   "premiumUnlockTitle": "Chordest Premium",
   "premiumUnlockBody": "A one-time purchase permanently unlocks Smart Generator and advanced harmonic color controls. Free Generator, Analyzer, metronome, and language support stay available.",
   "premiumUnlockRequestedFeatureTitle": "Requested in this flow",
@@ -2825,5 +2824,61 @@
   "premiumUnlockCardButton": "View premium",
   "premiumUnlockGeneratorHint": "Smart Generator and advanced harmonic colors unlock with a one-time premium purchase.",
   "premiumUnlockSettingsHintTitle": "Premium controls",
-  "premiumUnlockSettingsHintBody": "Smart Generator, non-diatonic color controls, and advanced tensions are part of the one-time premium unlock."
+  "premiumUnlockSettingsHintBody": "Smart Generator, non-diatonic color controls, and advanced tensions are part of the one-time premium unlock.",
+  "accountTitle": "Account",
+  "accountCardSignedOutBody": "Sign in to link premium to your account and restore it on your other devices.",
+  "accountCardSignedInBody": "Signed in as {email}. Premium sync and restore now follow this account.",
+  "@accountCardSignedInBody": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "accountCardUnavailableBody": "Account features are not configured in this build yet. Add Firebase runtime configuration to enable sign-in.",
+  "accountOpenButton": "Sign in",
+  "accountManageButton": "Manage account",
+  "accountEmailLabel": "Email",
+  "accountPasswordLabel": "Password",
+  "accountSignInButton": "Sign in",
+  "accountCreateButton": "Create account",
+  "accountSwitchToCreateButton": "Create a new account",
+  "accountSwitchToSignInButton": "I already have an account",
+  "accountForgotPasswordButton": "Reset password",
+  "accountSignOutButton": "Sign out",
+  "accountMessageSignedIn": "You're signed in.",
+  "accountMessageSignedUp": "Your account was created and signed in.",
+  "accountMessageSignedOut": "You signed out of this account.",
+  "accountMessagePasswordResetSent": "Password reset email sent.",
+  "accountMessageInvalidCredentials": "Check your email and password and try again.",
+  "accountMessageEmailInUse": "That email is already in use.",
+  "accountMessageWeakPassword": "Use a stronger password to create this account.",
+  "accountMessageUserNotFound": "No account was found for that email.",
+  "accountMessageTooManyRequests": "Too many attempts right now. Please try again later.",
+  "accountMessageNetworkError": "The network request failed. Please check your connection.",
+  "accountMessageAuthUnavailable": "Account sign-in is not configured in this build yet.",
+  "accountMessageUnknownError": "The account request could not be completed.",
+  "accountDeleteButton": "Delete account",
+  "accountDeleteDialogTitle": "Delete account?",
+  "accountDeleteDialogBody": "This permanently deletes the Chordest account for {email} and removes synced premium data. Store purchase history stays with your store account.",
+  "@accountDeleteDialogBody": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "accountDeletePasswordHelper": "Enter your current password to confirm this deletion request.",
+  "accountDeleteConfirmButton": "Delete permanently",
+  "accountDeleteCancelButton": "Cancel",
+  "accountDeletePasswordRequired": "Enter your current password to delete this account.",
+  "accountMessageDeleted": "Your account and synced premium data were deleted.",
+  "accountMessageDeleteRequiresRecentLogin": "For safety, enter your current password and try again.",
+  "accountMessageDataDeletionFailed": "We couldn't remove your synced account data. Please try again.",
+  "premiumUnlockAccountSyncTitle": "Account sync",
+  "premiumUnlockAccountSyncSignedOutBody": "You can keep using premium locally, but signing in lets this unlock follow your account to other devices.",
+  "premiumUnlockAccountSyncSignedInBody": "Premium purchases and restores will sync to {email} when this account is signed in.",
+  "@premiumUnlockAccountSyncSignedInBody": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "premiumUnlockAccountSyncUnavailableBody": "Account sync is not configured in this build yet, so premium currently stays local to this device.",
+  "premiumUnlockAccountOpenButton": "Account"
 }

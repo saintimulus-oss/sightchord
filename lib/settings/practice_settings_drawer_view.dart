@@ -434,6 +434,7 @@ class _PracticeSettingsDrawerState extends State<PracticeSettingsDrawer> {
         DropdownButtonFormField<AppLanguage>(
           key: const ValueKey('language-selector'),
           initialValue: settings.language.selectableValue,
+          isExpanded: true,
           decoration: InputDecoration(
             border: const OutlineInputBorder(),
             labelText: l10n.language,
@@ -443,7 +444,10 @@ class _PracticeSettingsDrawerState extends State<PracticeSettingsDrawer> {
               .map(
                 (language) => DropdownMenuItem<AppLanguage>(
                   value: language,
-                  child: Text(_languageLabel(l10n, language)),
+                  child: Text(
+                    _languageLabel(l10n, language),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               )
               .toList(growable: false),

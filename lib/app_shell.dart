@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'auth/account_controller.dart';
+import 'auth/account_scope.dart';
 import 'audio/harmony_audio_service.dart';
 import 'audio/chordest_audio_scope.dart';
 import 'billing/billing_controller.dart';
@@ -18,11 +20,14 @@ class MyApp extends StatefulWidget {
   MyApp({
     super.key,
     AppSettingsController? controller,
+    AccountController? accountController,
     BillingController? billingController,
     StudyHarmonyProgressController? studyHarmonyProgressController,
     HarmonyAudioService? harmonyAudioService,
   }) : controller = controller ?? AppSettingsController(),
        _ownsController = controller == null,
+       accountController = accountController ?? AccountController.live(),
+       _ownsAccountController = accountController == null,
        billingController = billingController ?? BillingController.noop(),
        _ownsBillingController = billingController == null,
        studyHarmonyProgressController =
@@ -34,6 +39,8 @@ class MyApp extends StatefulWidget {
 
   final AppSettingsController controller;
   final bool _ownsController;
+  final AccountController accountController;
+  final bool _ownsAccountController;
   final BillingController billingController;
   final bool _ownsBillingController;
   final StudyHarmonyProgressController studyHarmonyProgressController;
@@ -41,7 +48,7 @@ class MyApp extends StatefulWidget {
   final HarmonyAudioService harmonyAudioService;
   final bool _ownsHarmonyAudioService;
 
-  static const List<Locale> supportedLocales = supportedAppLocales;
+  static final List<Locale> supportedLocales = supportedAppLocales;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -51,17 +58,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   static const Color _accentPurple = Color(0xFF6E56CF);
   static const Color _lightBackground = Color(0xFFFFFFFF);
   static const Color _darkBackground = Color(0xFF15171C);
+  String? _lastAttachedAccountId;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    unawaited(widget.billingController.initialize());
-    unawaited(
-      widget.billingController.synchronize(
-        reason: BillingRefreshReason.startup,
-      ),
-    );
+    widget.accountController.addListener(_handleAccountStateChanged);
+    unawaited(_primeBillingState());
   }
 
   @override
@@ -75,6 +79,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    widget.accountController.removeListener(_handleAccountStateChanged);
     if (widget._ownsHarmonyAudioService) {
       unawaited(widget.harmonyAudioService.dispose());
     }
@@ -84,10 +89,42 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     if (widget._ownsBillingController) {
       widget.billingController.dispose();
     }
+    if (widget._ownsAccountController) {
+      widget.accountController.dispose();
+    }
     if (widget._ownsController) {
       widget.controller.dispose();
     }
     super.dispose();
+  }
+
+  Future<void> _primeBillingState() async {
+    await Future.wait<void>([
+      widget.accountController.initialize(),
+      widget.billingController.initialize(),
+    ]);
+    await _syncBillingAccount(force: true);
+    await widget.billingController.synchronize(
+      reason: BillingRefreshReason.startup,
+    );
+  }
+
+  void _handleAccountStateChanged() {
+    unawaited(_syncBillingAccount());
+  }
+
+  Future<void> _syncBillingAccount({bool force = false}) async {
+    final accountId = widget.accountController.state.currentUser?.id;
+    if (!force && accountId == _lastAttachedAccountId) {
+      return;
+    }
+    _lastAttachedAccountId = accountId;
+    await widget.billingController.setAccount(accountId);
+    if (!force) {
+      await widget.billingController.synchronize(
+        reason: BillingRefreshReason.manual,
+      );
+    }
   }
 
   ThemeData _buildTheme(Brightness brightness) {
@@ -330,23 +367,26 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       builder: (context, _) {
         return ChordestAudioScope(
           harmonyAudio: widget.harmonyAudioService,
-          child: BillingScope(
-            controller: widget.billingController,
-            child: MaterialApp(
-              title: 'Chordest',
-              debugShowCheckedModeBanner: false,
-              locale: widget.controller.settings.appLocale,
-              supportedLocales: MyApp.supportedLocales,
-              localizationsDelegates: [
-                AppLocalizations.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              themeMode: widget.controller.settings.themeMode,
-              theme: _buildTheme(Brightness.light),
-              darkTheme: _buildTheme(Brightness.dark),
-              home: MainMenuPage(controller: widget.controller),
+          child: AccountScope(
+            controller: widget.accountController,
+            child: BillingScope(
+              controller: widget.billingController,
+              child: MaterialApp(
+                title: 'Chordest',
+                debugShowCheckedModeBanner: false,
+                locale: widget.controller.settings.appLocale,
+                supportedLocales: MyApp.supportedLocales,
+                localizationsDelegates: [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                themeMode: widget.controller.settings.themeMode,
+                theme: _buildTheme(Brightness.light),
+                darkTheme: _buildTheme(Brightness.dark),
+                home: MainMenuPage(controller: widget.controller),
+              ),
             ),
           ),
         );

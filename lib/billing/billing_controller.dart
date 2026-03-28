@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 
+import 'account_entitlement_store.dart';
 import 'billing_gateway.dart';
 import 'billing_gateway_factory.dart';
 import 'billing_models.dart';
@@ -14,19 +15,26 @@ class BillingController extends ChangeNotifier {
   BillingController({
     BillingGateway? gateway,
     BillingStore? store,
+    AccountEntitlementStore? accountEntitlementStore,
     DateTime Function()? now,
   }) : _gateway = gateway ?? createBillingGateway(),
        _store = store ?? const BillingStore(),
+       _accountEntitlementStore =
+           accountEntitlementStore ?? const NoopAccountEntitlementStore(),
        _now = now ?? DateTime.now;
 
   factory BillingController.live({BillingStore? store}) {
-    return BillingController(store: store);
+    return BillingController(
+      store: store,
+      accountEntitlementStore: const FirestoreAccountEntitlementStore(),
+    );
   }
 
   factory BillingController.noop({BillingStore? store}) {
     return BillingController(
       gateway: const NoopBillingGateway(),
       store: store,
+      accountEntitlementStore: const NoopAccountEntitlementStore(),
     );
   }
 
@@ -34,20 +42,25 @@ class BillingController extends ChangeNotifier {
 
   final BillingGateway _gateway;
   final BillingStore _store;
+  final AccountEntitlementStore _accountEntitlementStore;
   final DateTime Function() _now;
 
   BillingState _state = const BillingState();
   StreamSubscription<List<BillingPurchase>>? _purchaseSubscription;
   Future<void>? _ongoingSync;
+  Future<void>? _initializeFuture;
   bool _initialized = false;
   bool _isDisposed = false;
   bool _notifyScheduled = false;
   _RestoreContext? _pendingRestoreContext;
   final Set<String> _handledPurchaseKeys = <String>{};
+  String? _accountId;
+  int _accountRequestRevision = 0;
 
   BillingState get state => _state;
 
   bool get isPremiumUnlocked => _state.isPremiumUnlocked;
+  String? get accountId => _accountId;
 
   BillingProduct? get premiumProduct =>
       _state.productForId(kPremiumUnlockProductId);
@@ -56,7 +69,24 @@ class BillingController extends ChangeNotifier {
     if (_initialized) {
       return;
     }
-    _purchaseSubscription = _gateway.purchaseStream.listen(
+    final inFlight = _initializeFuture;
+    if (inFlight != null) {
+      await inFlight;
+      return;
+    }
+    final initializeFuture = _performInitialize();
+    _initializeFuture = initializeFuture;
+    try {
+      await initializeFuture;
+    } finally {
+      if (identical(_initializeFuture, initializeFuture)) {
+        _initializeFuture = null;
+      }
+    }
+  }
+
+  Future<void> _performInitialize() async {
+    _purchaseSubscription ??= _gateway.purchaseStream.listen(
       _handlePurchaseUpdates,
       onError: (Object error, StackTrace stackTrace) {
         if (_isDisposed) {
@@ -72,20 +102,66 @@ class BillingController extends ChangeNotifier {
         );
       },
     );
-    _initialized = true;
     BillingStoreSnapshot snapshot;
     try {
-      snapshot = await _store.loadSnapshot();
+      snapshot = await _store.loadSnapshot(accountId: _accountId);
     } catch (_) {
+      _initialized = true;
       _notifySafely();
       return;
     }
     if (_isDisposed) {
       return;
     }
+    _initialized = true;
     _state = _state.copyWith(
       entitlements: snapshot.entitlements,
       lastSyncAt: snapshot.lastSyncAt,
+    );
+    _notifySafely();
+  }
+
+  Future<void> setAccount(String? accountId) async {
+    await initialize();
+    final normalizedAccountId = _normalizeAccountId(accountId);
+    if (_accountId == normalizedAccountId) {
+      return;
+    }
+
+    final requestRevision = ++_accountRequestRevision;
+    _accountId = normalizedAccountId;
+    _handledPurchaseKeys.clear();
+
+    BillingStoreSnapshot localSnapshot;
+    try {
+      localSnapshot = await _store.loadSnapshot(accountId: _accountId);
+    } catch (_) {
+      localSnapshot = const BillingStoreSnapshot();
+    }
+    if (_isStaleAccountRequest(requestRevision, normalizedAccountId)) {
+      return;
+    }
+
+    var resolvedSnapshot = localSnapshot;
+    final activeAccountId = normalizedAccountId;
+    if (activeAccountId != null) {
+      resolvedSnapshot = await _hydrateAccountSnapshot(
+        accountId: activeAccountId,
+        localSnapshot: localSnapshot,
+      );
+    }
+
+    if (_isStaleAccountRequest(requestRevision, normalizedAccountId)) {
+      return;
+    }
+
+    _state = BillingState(
+      entitlements: resolvedSnapshot.entitlements,
+      products: _state.products,
+      storeStatus: _state.storeStatus,
+      isCatalogLoading: false,
+      operation: const BillingOperation.idle(),
+      lastSyncAt: resolvedSnapshot.lastSyncAt,
     );
     _notifySafely();
   }
@@ -107,7 +183,10 @@ class BillingController extends ChangeNotifier {
       }
     }
 
-    final sync = _runSynchronize(reason: reason, attemptRestore: attemptRestore);
+    final sync = _runSynchronize(
+      reason: reason,
+      attemptRestore: attemptRestore,
+    );
     _ongoingSync = sync;
     try {
       await sync;
@@ -204,6 +283,25 @@ class BillingController extends ChangeNotifier {
       reason: BillingRefreshReason.manual,
       attemptRestore: true,
     );
+  }
+
+  Future<void> deleteAccountData(String accountId) async {
+    final normalizedAccountId = _normalizeAccountId(accountId);
+    if (normalizedAccountId == null) {
+      return;
+    }
+    try {
+      await _store.deleteSnapshot(accountId: normalizedAccountId);
+    } catch (_) {}
+    if (_accountId != normalizedAccountId || _isDisposed) {
+      return;
+    }
+    _state = _state.copyWith(
+      entitlements: const <AppEntitlement, BillingEntitlementRecord>{},
+      lastSyncAt: null,
+      operation: const BillingOperation.idle(),
+    );
+    _notifySafely();
   }
 
   void dismissMessage() {
@@ -443,7 +541,9 @@ class BillingController extends ChangeNotifier {
           );
           break;
         case BillingGatewayPurchaseStatus.purchased:
-          final isNewPurchaseKey = _handledPurchaseKeys.add(purchase.purchaseKey);
+          final isNewPurchaseKey = _handledPurchaseKeys.add(
+            purchase.purchaseKey,
+          );
           if (isNewPurchaseKey || !isPremiumUnlocked) {
             await _grantPremiumUnlock(
               source: BillingEntitlementSource.purchase,
@@ -473,7 +573,9 @@ class BillingController extends ChangeNotifier {
           }
           break;
         case BillingGatewayPurchaseStatus.restored:
-          final isNewPurchaseKey = _handledPurchaseKeys.add(purchase.purchaseKey);
+          final isNewPurchaseKey = _handledPurchaseKeys.add(
+            purchase.purchaseKey,
+          );
           if (isNewPurchaseKey || !isPremiumUnlocked) {
             await _grantPremiumUnlock(
               source: BillingEntitlementSource.restore,
@@ -637,9 +739,11 @@ class BillingController extends ChangeNotifier {
   }
 
   Future<void> _persistSnapshot() {
-    return _store.save(
-      _state.entitlements,
-      lastSyncAt: _state.lastSyncAt,
+    return _saveSnapshot(
+      BillingStoreSnapshot(
+        entitlements: _state.entitlements,
+        lastSyncAt: _state.lastSyncAt,
+      ),
     );
   }
 
@@ -683,6 +787,117 @@ class BillingController extends ChangeNotifier {
         notifyListeners();
       }
     });
+  }
+
+  Future<BillingStoreSnapshot> _hydrateAccountSnapshot({
+    required String accountId,
+    required BillingStoreSnapshot localSnapshot,
+  }) async {
+    var snapshot = localSnapshot;
+    if (snapshot.entitlements.isEmpty) {
+      try {
+        final guestSnapshot = await _store.loadSnapshot();
+        if (guestSnapshot.entitlements.isNotEmpty) {
+          snapshot = guestSnapshot;
+        }
+      } catch (_) {}
+    }
+
+    final remoteSnapshot = await _safeFetchRemoteSnapshot(accountId);
+    if (remoteSnapshot != null) {
+      snapshot = _mergeSnapshots(snapshot, remoteSnapshot);
+    }
+
+    if (_isDisposed) {
+      return snapshot;
+    }
+
+    try {
+      await _store.saveSnapshot(snapshot, accountId: accountId);
+    } catch (_) {}
+    return snapshot;
+  }
+
+  Future<BillingStoreSnapshot?> _safeFetchRemoteSnapshot(
+    String accountId,
+  ) async {
+    try {
+      return await _accountEntitlementStore.fetchSnapshot(accountId);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _saveSnapshot(BillingStoreSnapshot snapshot) async {
+    final activeAccountId = _accountId;
+    try {
+      await _store.saveSnapshot(snapshot, accountId: activeAccountId);
+    } catch (_) {}
+    if (activeAccountId == null) {
+      return;
+    }
+    try {
+      await _accountEntitlementStore.saveSnapshot(activeAccountId, snapshot);
+    } catch (_) {}
+  }
+
+  BillingStoreSnapshot _mergeSnapshots(
+    BillingStoreSnapshot first,
+    BillingStoreSnapshot second,
+  ) {
+    final merged = <AppEntitlement, BillingEntitlementRecord>{};
+    final keys = <AppEntitlement>{
+      ...first.entitlements.keys,
+      ...second.entitlements.keys,
+    };
+    for (final entitlement in keys) {
+      final current = first.entitlements[entitlement];
+      final candidate = second.entitlements[entitlement];
+      if (current == null) {
+        merged[entitlement] = candidate!;
+        continue;
+      }
+      if (candidate == null) {
+        merged[entitlement] = current;
+        continue;
+      }
+      final currentStamp = current.lastVerifiedAt ?? current.updatedAt;
+      final candidateStamp = candidate.lastVerifiedAt ?? candidate.updatedAt;
+      merged[entitlement] = candidateStamp.isAfter(currentStamp)
+          ? candidate
+          : current;
+    }
+    final lastSyncAt = _latestDate(first.lastSyncAt, second.lastSyncAt);
+    return BillingStoreSnapshot(
+      entitlements: Map<AppEntitlement, BillingEntitlementRecord>.unmodifiable(
+        merged,
+      ),
+      lastSyncAt: lastSyncAt,
+    );
+  }
+
+  DateTime? _latestDate(DateTime? first, DateTime? second) {
+    if (first == null) {
+      return second;
+    }
+    if (second == null) {
+      return first;
+    }
+    return second.isAfter(first) ? second : first;
+  }
+
+  String? _normalizeAccountId(String? accountId) {
+    final trimmed = accountId?.trim();
+    if (trimmed == null || trimmed.isEmpty) {
+      return null;
+    }
+    return trimmed;
+  }
+
+  bool _isStaleAccountRequest(int requestRevision, String? accountId) {
+    return _isDisposed ||
+        requestRevision != _accountRequestRevision ||
+        _accountId != accountId;
   }
 
   @override

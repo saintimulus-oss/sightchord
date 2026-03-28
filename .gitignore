@@ -81,6 +81,7 @@ chord_test.log
 flutter_*.log
 /narrow_overflow.log
 /recheck_test_output.log
+/store/google-play/reviewer-access.generated.txt
 scratch*
 /scratch_test*.txt
 /lib.zip

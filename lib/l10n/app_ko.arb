@@ -179,6 +179,25 @@
   "keyCenterLabelStyleClassicalCase": "C: / c:",
   "allowV7sus4": "V7sus4 허용 (V7, V7/x)",
   "allowTensions": "텐션 허용",
+  "chordTypeFilters": "코드 종류",
+  "chordTypeFiltersHelp": "생성기에 표시할 코드 종류를 선택하세요.",
+  "chordTypeFiltersSelection": "{selected} / {total} 활성화",
+  "@chordTypeFiltersSelection": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "chordTypeGroupTriads": "트라이어드",
+  "chordTypeGroupSevenths": "세븐스",
+  "chordTypeGroupSixthsAndAddedTone": "식스/부가음",
+  "chordTypeGroupDominantVariants": "도미넌트 변형",
+  "chordTypeRequiresKeyMode": "V7sus4는 키를 하나 이상 선택했을 때만 사용할 수 있습니다.",
+  "chordTypeKeepOneEnabled": "최소 한 가지 코드 종류는 켜 두어야 합니다.",
   "tensionHelp": "로마 숫자 프로필과 선택한 칩만 사용",
   "inversions": "전위",
   "enableInversions": "전위 사용",
@@ -2096,25 +2115,6 @@
   "studyHarmonyLessonBlueHourHorizonDescription": "두 개의 도착점이 번갈아 보이는 상황에서도 진짜 귀착 지점을 끝까지 유지합니다.",
   "studyHarmonyLessonBlueHourBossTitle": "트윈 랜턴즈 보스",
   "studyHarmonyLessonBlueHourBossDescription": "중심 조성, 기능, 차용 색채, 빈칸 코드 복원을 황혼 속도로 빠르게 교차시키는 최종 블루 아워 보스입니다.",
-  "chordTypeFilters": "코드 종류",
-  "chordTypeFiltersHelp": "생성기에 표시할 코드 종류를 선택하세요.",
-  "chordTypeFiltersSelection": "{selected} / {total} 활성화",
-  "@chordTypeFiltersSelection": {
-    "placeholders": {
-      "selected": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "chordTypeGroupTriads": "트라이어드",
-  "chordTypeGroupSevenths": "세븐스",
-  "chordTypeGroupSixthsAndAddedTone": "식스/부가음",
-  "chordTypeGroupDominantVariants": "도미넌트 변형",
-  "chordTypeRequiresKeyMode": "V7sus4는 키를 하나 이상 선택했을 때만 사용할 수 있습니다.",
-  "chordTypeKeepOneEnabled": "최소 한 가지 코드 종류는 켜 두어야 합니다.",
   "anchorLoopTitle": "앵커 루프",
   "anchorLoopHelp": "특정 cycle slot의 코드를 고정해 두고, 나머지 slot만 그 주변 문맥에 맞게 생성합니다.",
   "anchorLoopCycleLength": "사이클 길이(마디)",
@@ -2772,8 +2772,7 @@
   "showRomanNumeralAssist": "로마 숫자 보조 표시",
   "showRomanNumeralAssistHelp": "로마 숫자 라벨 옆에 짧은 설명을 덧붙입니다.",
   "showChordTextAssist": "코드 텍스트 보조 표시",
-  "showChordTextAssistHelp": "코드 성격과 텐션을 짧은 텍스트로 설명해 줍니다."
-  ,
+  "showChordTextAssistHelp": "코드 성격과 텐션을 짧은 텍스트로 설명해 줍니다.",
   "premiumUnlockTitle": "Chordest Premium",
   "premiumUnlockBody": "한 번 구매하면 Smart Generator와 고급 화성 컬러 제어가 영구 해금됩니다. 기본 Generator, Analyzer, 메트로놈, 언어 지원은 계속 무료로 사용할 수 있습니다.",
   "premiumUnlockRequestedFeatureTitle": "지금 열려고 한 기능",
@@ -2825,5 +2824,61 @@
   "premiumUnlockCardButton": "프리미엄 보기",
   "premiumUnlockGeneratorHint": "Smart Generator와 고급 화성 컬러는 1회 구매형 프리미엄 해금으로 열립니다.",
   "premiumUnlockSettingsHintTitle": "프리미엄 제어 항목",
-  "premiumUnlockSettingsHintBody": "Smart Generator, 비다이아토닉 컬러 제어, 고급 tension은 1회 구매형 프리미엄 해금에 포함됩니다."
+  "premiumUnlockSettingsHintBody": "Smart Generator, 비다이아토닉 컬러 제어, 고급 tension은 1회 구매형 프리미엄 해금에 포함됩니다.",
+  "accountTitle": "계정",
+  "accountCardSignedOutBody": "로그인하면 프리미엄을 계정에 연결하고 다른 기기에서도 복원할 수 있습니다.",
+  "accountCardSignedInBody": "{email} 계정으로 로그인되어 있습니다. 이제 프리미엄 동기화와 복원이 이 계정을 기준으로 동작합니다.",
+  "@accountCardSignedInBody": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "accountCardUnavailableBody": "이 빌드에는 아직 계정 기능이 설정되지 않았습니다. 로그인 기능을 쓰려면 Firebase 런타임 설정이 필요합니다.",
+  "accountOpenButton": "로그인",
+  "accountManageButton": "계정 관리",
+  "accountEmailLabel": "이메일",
+  "accountPasswordLabel": "비밀번호",
+  "accountSignInButton": "로그인",
+  "accountCreateButton": "계정 만들기",
+  "accountSwitchToCreateButton": "새 계정 만들기",
+  "accountSwitchToSignInButton": "이미 계정이 있어요",
+  "accountForgotPasswordButton": "비밀번호 재설정",
+  "accountSignOutButton": "로그아웃",
+  "accountMessageSignedIn": "로그인되었습니다.",
+  "accountMessageSignedUp": "계정이 만들어졌고 바로 로그인되었습니다.",
+  "accountMessageSignedOut": "이 계정에서 로그아웃했습니다.",
+  "accountMessagePasswordResetSent": "비밀번호 재설정 이메일을 보냈습니다.",
+  "accountMessageInvalidCredentials": "이메일과 비밀번호를 확인한 뒤 다시 시도해 주세요.",
+  "accountMessageEmailInUse": "이미 사용 중인 이메일입니다.",
+  "accountMessageWeakPassword": "계정을 만들려면 더 강한 비밀번호를 사용해 주세요.",
+  "accountMessageUserNotFound": "해당 이메일로 등록된 계정을 찾지 못했습니다.",
+  "accountMessageTooManyRequests": "지금은 시도가 너무 많습니다. 잠시 후 다시 시도해 주세요.",
+  "accountMessageNetworkError": "네트워크 요청에 실패했습니다. 연결 상태를 확인해 주세요.",
+  "accountMessageAuthUnavailable": "이 빌드에는 아직 계정 로그인 기능이 설정되지 않았습니다.",
+  "accountMessageUnknownError": "계정 요청을 완료하지 못했습니다.",
+  "accountDeleteButton": "계정 삭제",
+  "accountDeleteDialogTitle": "계정을 삭제할까요?",
+  "accountDeleteDialogBody": "{email} 계정과 연결된 Chordest 계정을 영구적으로 삭제하고, 동기화된 프리미엄 데이터도 함께 지웁니다. 스토어 구매 기록은 Google Play 또는 App Store 계정에 남습니다.",
+  "@accountDeleteDialogBody": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "accountDeletePasswordHelper": "삭제를 확인하려면 현재 비밀번호를 입력해 주세요.",
+  "accountDeleteConfirmButton": "영구 삭제",
+  "accountDeleteCancelButton": "취소",
+  "accountDeletePasswordRequired": "이 계정을 삭제하려면 현재 비밀번호를 입력해 주세요.",
+  "accountMessageDeleted": "계정과 동기화된 프리미엄 데이터가 삭제되었습니다.",
+  "accountMessageDeleteRequiresRecentLogin": "보안을 위해 현재 비밀번호를 다시 입력한 뒤 삭제를 시도해 주세요.",
+  "accountMessageDataDeletionFailed": "동기화된 계정 데이터를 지우지 못했습니다. 잠시 후 다시 시도해 주세요.",
+  "premiumUnlockAccountSyncTitle": "계정 동기화",
+  "premiumUnlockAccountSyncSignedOutBody": "프리미엄을 이 기기에서 계속 쓸 수는 있지만, 로그인하면 이 잠금 해제가 계정을 따라 다른 기기에도 이어집니다.",
+  "premiumUnlockAccountSyncSignedInBody": "{email} 계정으로 로그인되어 있을 때 프리미엄 구매와 복원이 이 계정에 동기화됩니다.",
+  "@premiumUnlockAccountSyncSignedInBody": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "premiumUnlockAccountSyncUnavailableBody": "이 빌드에는 아직 계정 동기화가 설정되지 않아 프리미엄이 현재 기기에만 저장됩니다.",
+  "premiumUnlockAccountOpenButton": "계정"
 }

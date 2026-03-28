@@ -14,6 +14,45 @@ class BillingStoreSnapshot {
 
   final Map<AppEntitlement, BillingEntitlementRecord> entitlements;
   final DateTime? lastSyncAt;
+
+  bool get isEmpty => entitlements.isEmpty && lastSyncAt == null;
+
+  Map<String, Object?> toJson() {
+    return <String, Object?>{
+      'version': 2,
+      'lastSyncAt': lastSyncAt?.toIso8601String(),
+      'records': entitlements.values
+          .map((record) => record.toJson())
+          .toList(growable: false),
+    };
+  }
+
+  static BillingStoreSnapshot fromJson(Map<Object?, Object?> json) {
+    final records = json['records'];
+    if (records is! List) {
+      return const BillingStoreSnapshot();
+    }
+    final next = <AppEntitlement, BillingEntitlementRecord>{};
+    for (final item in records) {
+      if (item is! Map) {
+        continue;
+      }
+      final normalized = <String, Object?>{
+        for (final entry in item.entries) '${entry.key}': entry.value,
+      };
+      final record = BillingEntitlementRecord.fromJson(normalized);
+      if (record == null) {
+        continue;
+      }
+      next[record.entitlement] = record;
+    }
+    return BillingStoreSnapshot(
+      entitlements: Map<AppEntitlement, BillingEntitlementRecord>.unmodifiable(
+        next,
+      ),
+      lastSyncAt: DateTime.tryParse(json['lastSyncAt'] as String? ?? ''),
+    );
+  }
 }
 
 class BillingStore {
@@ -26,48 +65,33 @@ class BillingStore {
 
   final BillingPreferencesLoader _preferencesLoader;
 
-  Future<BillingStoreSnapshot> loadSnapshot() async {
+  Future<BillingStoreSnapshot> loadSnapshot({String? accountId}) async {
     final preferences = await _preferencesLoader();
-    final raw = preferences.getString(billingStateKey);
+    final raw = preferences.getString(_storageKey(accountId));
     if (raw == null || raw.isEmpty) {
-      return _loadLegacySnapshot(preferences);
+      return accountId == null
+          ? _loadLegacySnapshot(preferences)
+          : const BillingStoreSnapshot();
     }
     try {
       final decoded = jsonDecode(raw);
       if (decoded is! Map) {
-        return _loadLegacySnapshot(preferences);
+        return accountId == null
+            ? _loadLegacySnapshot(preferences)
+            : const BillingStoreSnapshot();
       }
-      final records = decoded['records'];
-      if (records is! List) {
-        return _loadLegacySnapshot(preferences);
-      }
-      final next = <AppEntitlement, BillingEntitlementRecord>{};
-      for (final item in records) {
-        if (item is! Map) {
-          continue;
-        }
-        final normalized = <String, Object?>{
-          for (final entry in item.entries) '${entry.key}': entry.value,
-        };
-        final record = BillingEntitlementRecord.fromJson(normalized);
-        if (record == null) {
-          continue;
-        }
-        next[record.entitlement] = record;
-      }
-      return BillingStoreSnapshot(
-        entitlements: Map<AppEntitlement, BillingEntitlementRecord>.unmodifiable(
-          next,
-        ),
-        lastSyncAt: DateTime.tryParse(decoded['lastSyncAt'] as String? ?? ''),
-      );
+      return BillingStoreSnapshot.fromJson(decoded);
     } catch (_) {
-      return _loadLegacySnapshot(preferences);
+      return accountId == null
+          ? _loadLegacySnapshot(preferences)
+          : const BillingStoreSnapshot();
     }
   }
 
-  Future<Map<AppEntitlement, BillingEntitlementRecord>> load() async {
-    return (await loadSnapshot()).entitlements;
+  Future<Map<AppEntitlement, BillingEntitlementRecord>> load({
+    String? accountId,
+  }) async {
+    return (await loadSnapshot(accountId: accountId)).entitlements;
   }
 
   Future<BillingStoreSnapshot> _loadLegacySnapshot(
@@ -112,22 +136,33 @@ class BillingStore {
 
   Future<void> save(
     Map<AppEntitlement, BillingEntitlementRecord> entitlements,
-    {DateTime? lastSyncAt}
+    {DateTime? lastSyncAt, String? accountId}
   ) async {
     await saveSnapshot(
       BillingStoreSnapshot(entitlements: entitlements, lastSyncAt: lastSyncAt),
+      accountId: accountId,
     );
   }
 
-  Future<void> saveSnapshot(BillingStoreSnapshot snapshot) async {
+  Future<void> saveSnapshot(
+    BillingStoreSnapshot snapshot, {
+    String? accountId,
+  }) async {
     final preferences = await _preferencesLoader();
-    final payload = jsonEncode(<String, Object?>{
-      'version': 2,
-      'lastSyncAt': snapshot.lastSyncAt?.toIso8601String(),
-      'records': snapshot.entitlements.values
-          .map((record) => record.toJson())
-          .toList(growable: false),
-    });
-    await preferences.setString(billingStateKey, payload);
+    final payload = jsonEncode(snapshot.toJson());
+    await preferences.setString(_storageKey(accountId), payload);
+  }
+
+  Future<void> deleteSnapshot({String? accountId}) async {
+    final preferences = await _preferencesLoader();
+    await preferences.remove(_storageKey(accountId));
+  }
+
+  String _storageKey(String? accountId) {
+    final trimmed = accountId?.trim();
+    if (trimmed == null || trimmed.isEmpty) {
+      return billingStateKey;
+    }
+    return '${billingStateKey}_${Uri.encodeComponent(trimmed)}';
   }
 }

@@ -5,10 +5,75 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_af.dart';
+import 'app_localizations_am.dart';
+import 'app_localizations_ar.dart';
+import 'app_localizations_az.dart';
+import 'app_localizations_be.dart';
+import 'app_localizations_bg.dart';
+import 'app_localizations_bn.dart';
+import 'app_localizations_ca.dart';
+import 'app_localizations_cs.dart';
+import 'app_localizations_da.dart';
+import 'app_localizations_de.dart';
+import 'app_localizations_el.dart';
 import 'app_localizations_en.dart';
 import 'app_localizations_es.dart';
+import 'app_localizations_et.dart';
+import 'app_localizations_eu.dart';
+import 'app_localizations_fa.dart';
+import 'app_localizations_fi.dart';
+import 'app_localizations_fil.dart';
+import 'app_localizations_fr.dart';
+import 'app_localizations_gl.dart';
+import 'app_localizations_gu.dart';
+import 'app_localizations_he.dart';
+import 'app_localizations_hi.dart';
+import 'app_localizations_hr.dart';
+import 'app_localizations_hu.dart';
+import 'app_localizations_hy.dart';
+import 'app_localizations_id.dart';
+import 'app_localizations_is.dart';
+import 'app_localizations_it.dart';
 import 'app_localizations_ja.dart';
+import 'app_localizations_ka.dart';
+import 'app_localizations_kk.dart';
+import 'app_localizations_km.dart';
+import 'app_localizations_kn.dart';
 import 'app_localizations_ko.dart';
+import 'app_localizations_ky.dart';
+import 'app_localizations_lo.dart';
+import 'app_localizations_lt.dart';
+import 'app_localizations_lv.dart';
+import 'app_localizations_mk.dart';
+import 'app_localizations_ml.dart';
+import 'app_localizations_mn.dart';
+import 'app_localizations_mr.dart';
+import 'app_localizations_ms.dart';
+import 'app_localizations_my.dart';
+import 'app_localizations_ne.dart';
+import 'app_localizations_nl.dart';
+import 'app_localizations_no.dart';
+import 'app_localizations_pa.dart';
+import 'app_localizations_pl.dart';
+import 'app_localizations_pt.dart';
+import 'app_localizations_rm.dart';
+import 'app_localizations_ro.dart';
+import 'app_localizations_ru.dart';
+import 'app_localizations_si.dart';
+import 'app_localizations_sk.dart';
+import 'app_localizations_sl.dart';
+import 'app_localizations_sq.dart';
+import 'app_localizations_sr.dart';
+import 'app_localizations_sv.dart';
+import 'app_localizations_sw.dart';
+import 'app_localizations_ta.dart';
+import 'app_localizations_te.dart';
+import 'app_localizations_th.dart';
+import 'app_localizations_tr.dart';
+import 'app_localizations_uk.dart';
+import 'app_localizations_ur.dart';
+import 'app_localizations_vi.dart';
 import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
@@ -97,12 +162,135 @@ abstract class AppLocalizations {
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
+    Locale('af'),
+    Locale('am'),
+    Locale('ar'),
+    Locale('az'),
+    Locale('az', 'AZ'),
+    Locale('be'),
+    Locale('bg'),
+    Locale('bn'),
+    Locale('bn', 'BD'),
+    Locale('ca'),
+    Locale('cs'),
+    Locale('cs', 'CZ'),
+    Locale('da'),
+    Locale('da', 'DK'),
+    Locale('de'),
+    Locale('de', 'DE'),
+    Locale('el'),
+    Locale('el', 'GR'),
     Locale('en'),
+    Locale('en', 'AU'),
+    Locale('en', 'CA'),
+    Locale('en', 'GB'),
+    Locale('en', 'IN'),
+    Locale('en', 'SG'),
+    Locale('en', 'US'),
+    Locale('en', 'ZA'),
     Locale('es'),
+    Locale('es', '419'),
+    Locale('es', 'ES'),
+    Locale('es', 'US'),
+    Locale('et'),
+    Locale('eu'),
+    Locale('eu', 'ES'),
+    Locale('fa'),
+    Locale('fa', 'AE'),
+    Locale('fa', 'AF'),
+    Locale('fa', 'IR'),
+    Locale('fi'),
+    Locale('fi', 'FI'),
+    Locale('fil'),
+    Locale('fr'),
+    Locale('fr', 'CA'),
+    Locale('fr', 'FR'),
+    Locale('gl'),
+    Locale('gl', 'ES'),
+    Locale('gu'),
+    Locale('he'),
+    Locale('he', 'IL'),
+    Locale('hi'),
+    Locale('hi', 'IN'),
+    Locale('hr'),
+    Locale('hu'),
+    Locale('hu', 'HU'),
+    Locale('hy'),
+    Locale('hy', 'AM'),
+    Locale('id'),
+    Locale('is'),
+    Locale('is', 'IS'),
+    Locale('it'),
+    Locale('it', 'IT'),
     Locale('ja'),
+    Locale('ja', 'JP'),
+    Locale('ka'),
+    Locale('ka', 'GE'),
+    Locale('kk'),
+    Locale('km'),
+    Locale('km', 'KH'),
+    Locale('kn'),
+    Locale('kn', 'IN'),
     Locale('ko'),
+    Locale('ko', 'KR'),
+    Locale('ky'),
+    Locale('ky', 'KG'),
+    Locale('lo'),
+    Locale('lo', 'LA'),
+    Locale('lt'),
+    Locale('lv'),
+    Locale('mk'),
+    Locale('mk', 'MK'),
+    Locale('ml'),
+    Locale('ml', 'IN'),
+    Locale('mn'),
+    Locale('mn', 'MN'),
+    Locale('mr'),
+    Locale('mr', 'IN'),
+    Locale('ms'),
+    Locale('ms', 'MY'),
+    Locale('my'),
+    Locale('my', 'MM'),
+    Locale('ne'),
+    Locale('ne', 'NP'),
+    Locale('nl'),
+    Locale('nl', 'NL'),
+    Locale('no'),
+    Locale('no', 'NO'),
+    Locale('pa'),
+    Locale('pl'),
+    Locale('pl', 'PL'),
+    Locale('pt'),
+    Locale('pt', 'BR'),
+    Locale('pt', 'PT'),
+    Locale('rm'),
+    Locale('ro'),
+    Locale('ru'),
+    Locale('ru', 'RU'),
+    Locale('si'),
+    Locale('si', 'LK'),
+    Locale('sk'),
+    Locale('sl'),
+    Locale('sq'),
+    Locale('sr'),
+    Locale('sv'),
+    Locale('sv', 'SE'),
+    Locale('sw'),
+    Locale('ta'),
+    Locale('ta', 'IN'),
+    Locale('te'),
+    Locale('te', 'IN'),
+    Locale('th'),
+    Locale('tr'),
+    Locale('tr', 'TR'),
+    Locale('uk'),
+    Locale('ur'),
+    Locale('vi'),
     Locale('zh'),
+    Locale('zh', 'CN'),
+    Locale('zh', 'HK'),
     Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+    Locale('zh', 'TW'),
   ];
 
   /// No description provided for @settings.
@@ -654,7 +842,7 @@ abstract class AppLocalizations {
   /// No description provided for @setupAssistantNotationDelta.
   ///
   /// In en, this message translates to:
-  /// **'CΔ7 style'**
+  /// **'C?7 style'**
   String get setupAssistantNotationDelta;
 
   /// No description provided for @setupAssistantDifficultyTriads.
@@ -2412,7 +2600,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyHarmonyResultBestLine.
   ///
   /// In en, this message translates to:
-  /// **'Best {rank} · {stars} stars'**
+  /// **'Best {rank} 쨌 {stars} stars'**
   String studyHarmonyResultBestLine(Object rank, int stars);
 
   /// No description provided for @studyHarmonyResultDailyStreakLine.
@@ -3903,7 +4091,7 @@ abstract class AppLocalizations {
   /// No description provided for @chordAnalyzerVariationMinorCadenceBody.
   ///
   /// In en, this message translates to:
-  /// **'Keeps the minor cadence intact but leans into ii첩-Valt-i color.'**
+  /// **'Keeps the minor cadence intact but leans into ii泥?Valt-i color.'**
   String get chordAnalyzerVariationMinorCadenceBody;
 
   /// No description provided for @chordAnalyzerVariationColorLiftTitle.
@@ -6147,7 +6335,7 @@ abstract class AppLocalizations {
   /// Title for the first legacy prototype level.
   ///
   /// In en, this message translates to:
-  /// **'Prototype Level 1 · Do / Mi / Sol'**
+  /// **'Prototype Level 1 쨌 Do / Mi / Sol'**
   String get studyHarmonyPrototypeLevel1Title;
 
   /// Description for the first legacy prototype level.
@@ -6159,7 +6347,7 @@ abstract class AppLocalizations {
   /// Title for the second legacy prototype level.
   ///
   /// In en, this message translates to:
-  /// **'Prototype Level 2 · Do / Re / Mi / Sol / La'**
+  /// **'Prototype Level 2 쨌 Do / Re / Mi / Sol / La'**
   String get studyHarmonyPrototypeLevel2Title;
 
   /// Description for the second legacy prototype level.
@@ -6171,7 +6359,7 @@ abstract class AppLocalizations {
   /// Title for the third legacy prototype level.
   ///
   /// In en, this message translates to:
-  /// **'Prototype Level 3 · Do / Re / Mi / Fa / Sol / La / Ti / Do'**
+  /// **'Prototype Level 3 쨌 Do / Re / Mi / Fa / Sol / La / Ti / Do'**
   String get studyHarmonyPrototypeLevel3Title;
 
   /// Description for the third legacy prototype level.
@@ -7707,7 +7895,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyHarmonyTrackJazzFocus2.
   ///
   /// In en, this message translates to:
-  /// **'Major ii-V-I, minor iiø-V-i, and turnaround behavior'**
+  /// **'Major ii-V-I, minor ii첩-V-i, and turnaround behavior'**
   String get studyHarmonyTrackJazzFocus2;
 
   /// No description provided for @studyHarmonyTrackJazzFocus3.
@@ -7947,7 +8135,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyHarmonyJazzLessonMinorCadenceDescription.
   ///
   /// In en, this message translates to:
-  /// **'Recognize how minor iiø-V-i motion feels and why the dominant sounds more urgent there.'**
+  /// **'Recognize how minor ii첩-V-i motion feels and why the dominant sounds more urgent there.'**
   String get studyHarmonyJazzLessonMinorCadenceDescription;
 
   /// No description provided for @studyHarmonyJazzLessonRootlessVoicingsTitle.
@@ -7995,7 +8183,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyHarmonyJazzLessonBossDescription.
   ///
   /// In en, this message translates to:
-  /// **'Mix major ii-V-I, minor iiø-V-i, rootless color, and careful reharm so the cadence target still stays readable.'**
+  /// **'Mix major ii-V-I, minor ii첩-V-i, rootless color, and careful reharm so the cadence target still stays readable.'**
   String get studyHarmonyJazzLessonBossDescription;
 
   /// No description provided for @studyHarmonyClassicalChapterCadenceLabTitle.
@@ -8867,6 +9055,252 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Smart Generator, non-diatonic color controls, and advanced tensions are part of the one-time premium unlock.'**
   String get premiumUnlockSettingsHintBody;
+
+  /// No description provided for @accountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get accountTitle;
+
+  /// No description provided for @accountCardSignedOutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to link premium to your account and restore it on your other devices.'**
+  String get accountCardSignedOutBody;
+
+  /// No description provided for @accountCardSignedInBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in as {email}. Premium sync and restore now follow this account.'**
+  String accountCardSignedInBody(Object email);
+
+  /// No description provided for @accountCardUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Account features are not configured in this build yet. Add Firebase runtime configuration to enable sign-in.'**
+  String get accountCardUnavailableBody;
+
+  /// No description provided for @accountOpenButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get accountOpenButton;
+
+  /// No description provided for @accountManageButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage account'**
+  String get accountManageButton;
+
+  /// No description provided for @accountEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get accountEmailLabel;
+
+  /// No description provided for @accountPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get accountPasswordLabel;
+
+  /// No description provided for @accountSignInButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get accountSignInButton;
+
+  /// No description provided for @accountCreateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get accountCreateButton;
+
+  /// No description provided for @accountSwitchToCreateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a new account'**
+  String get accountSwitchToCreateButton;
+
+  /// No description provided for @accountSwitchToSignInButton.
+  ///
+  /// In en, this message translates to:
+  /// **'I already have an account'**
+  String get accountSwitchToSignInButton;
+
+  /// No description provided for @accountForgotPasswordButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password'**
+  String get accountForgotPasswordButton;
+
+  /// No description provided for @accountSignOutButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get accountSignOutButton;
+
+  /// No description provided for @accountMessageSignedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re signed in.'**
+  String get accountMessageSignedIn;
+
+  /// No description provided for @accountMessageSignedUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account was created and signed in.'**
+  String get accountMessageSignedUp;
+
+  /// No description provided for @accountMessageSignedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'You signed out of this account.'**
+  String get accountMessageSignedOut;
+
+  /// No description provided for @accountMessagePasswordResetSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset email sent.'**
+  String get accountMessagePasswordResetSent;
+
+  /// No description provided for @accountMessageInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your email and password and try again.'**
+  String get accountMessageInvalidCredentials;
+
+  /// No description provided for @accountMessageEmailInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'That email is already in use.'**
+  String get accountMessageEmailInUse;
+
+  /// No description provided for @accountMessageWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a stronger password to create this account.'**
+  String get accountMessageWeakPassword;
+
+  /// No description provided for @accountMessageUserNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No account was found for that email.'**
+  String get accountMessageUserNotFound;
+
+  /// No description provided for @accountMessageTooManyRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts right now. Please try again later.'**
+  String get accountMessageTooManyRequests;
+
+  /// No description provided for @accountMessageNetworkError.
+  ///
+  /// In en, this message translates to:
+  /// **'The network request failed. Please check your connection.'**
+  String get accountMessageNetworkError;
+
+  /// No description provided for @accountMessageAuthUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Account sign-in is not configured in this build yet.'**
+  String get accountMessageAuthUnavailable;
+
+  /// No description provided for @accountMessageUnknownError.
+  ///
+  /// In en, this message translates to:
+  /// **'The account request could not be completed.'**
+  String get accountMessageUnknownError;
+
+  /// No description provided for @accountDeleteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get accountDeleteButton;
+
+  /// No description provided for @accountDeleteDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account?'**
+  String get accountDeleteDialogTitle;
+
+  /// No description provided for @accountDeleteDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This permanently deletes the Chordest account for {email} and removes synced premium data. Store purchase history stays with your store account.'**
+  String accountDeleteDialogBody(Object email);
+
+  /// No description provided for @accountDeletePasswordHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current password to confirm this deletion request.'**
+  String get accountDeletePasswordHelper;
+
+  /// No description provided for @accountDeleteConfirmButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete permanently'**
+  String get accountDeleteConfirmButton;
+
+  /// No description provided for @accountDeleteCancelButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get accountDeleteCancelButton;
+
+  /// No description provided for @accountDeletePasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current password to delete this account.'**
+  String get accountDeletePasswordRequired;
+
+  /// No description provided for @accountMessageDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account and synced premium data were deleted.'**
+  String get accountMessageDeleted;
+
+  /// No description provided for @accountMessageDeleteRequiresRecentLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'For safety, enter your current password and try again.'**
+  String get accountMessageDeleteRequiresRecentLogin;
+
+  /// No description provided for @accountMessageDataDeletionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t remove your synced account data. Please try again.'**
+  String get accountMessageDataDeletionFailed;
+
+  /// No description provided for @premiumUnlockAccountSyncTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account sync'**
+  String get premiumUnlockAccountSyncTitle;
+
+  /// No description provided for @premiumUnlockAccountSyncSignedOutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can keep using premium locally, but signing in lets this unlock follow your account to other devices.'**
+  String get premiumUnlockAccountSyncSignedOutBody;
+
+  /// No description provided for @premiumUnlockAccountSyncSignedInBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium purchases and restores will sync to {email} when this account is signed in.'**
+  String premiumUnlockAccountSyncSignedInBody(Object email);
+
+  /// No description provided for @premiumUnlockAccountSyncUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Account sync is not configured in this build yet, so premium currently stays local to this device.'**
+  String get premiumUnlockAccountSyncUnavailableBody;
+
+  /// No description provided for @premiumUnlockAccountOpenButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get premiumUnlockAccountOpenButton;
 }
 
 class _AppLocalizationsDelegate
@@ -8879,8 +9313,78 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'es', 'ja', 'ko', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+    'af',
+    'am',
+    'ar',
+    'az',
+    'be',
+    'bg',
+    'bn',
+    'ca',
+    'cs',
+    'da',
+    'de',
+    'el',
+    'en',
+    'es',
+    'et',
+    'eu',
+    'fa',
+    'fi',
+    'fil',
+    'fr',
+    'gl',
+    'gu',
+    'he',
+    'hi',
+    'hr',
+    'hu',
+    'hy',
+    'id',
+    'is',
+    'it',
+    'ja',
+    'ka',
+    'kk',
+    'km',
+    'kn',
+    'ko',
+    'ky',
+    'lo',
+    'lt',
+    'lv',
+    'mk',
+    'ml',
+    'mn',
+    'mr',
+    'ms',
+    'my',
+    'ne',
+    'nl',
+    'no',
+    'pa',
+    'pl',
+    'pt',
+    'rm',
+    'ro',
+    'ru',
+    'si',
+    'sk',
+    'sl',
+    'sq',
+    'sr',
+    'sv',
+    'sw',
+    'ta',
+    'te',
+    'th',
+    'tr',
+    'uk',
+    'ur',
+    'vi',
+    'zh',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -8899,16 +9403,530 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       }
   }
 
+  // Lookup logic when language+country codes are specified.
+  switch (locale.languageCode) {
+    case 'az':
+      {
+        switch (locale.countryCode) {
+          case 'AZ':
+            return AppLocalizationsAzAz();
+        }
+        break;
+      }
+    case 'bn':
+      {
+        switch (locale.countryCode) {
+          case 'BD':
+            return AppLocalizationsBnBd();
+        }
+        break;
+      }
+    case 'cs':
+      {
+        switch (locale.countryCode) {
+          case 'CZ':
+            return AppLocalizationsCsCz();
+        }
+        break;
+      }
+    case 'da':
+      {
+        switch (locale.countryCode) {
+          case 'DK':
+            return AppLocalizationsDaDk();
+        }
+        break;
+      }
+    case 'de':
+      {
+        switch (locale.countryCode) {
+          case 'DE':
+            return AppLocalizationsDeDe();
+        }
+        break;
+      }
+    case 'el':
+      {
+        switch (locale.countryCode) {
+          case 'GR':
+            return AppLocalizationsElGr();
+        }
+        break;
+      }
+    case 'en':
+      {
+        switch (locale.countryCode) {
+          case 'AU':
+            return AppLocalizationsEnAu();
+          case 'CA':
+            return AppLocalizationsEnCa();
+          case 'GB':
+            return AppLocalizationsEnGb();
+          case 'IN':
+            return AppLocalizationsEnIn();
+          case 'SG':
+            return AppLocalizationsEnSg();
+          case 'US':
+            return AppLocalizationsEnUs();
+          case 'ZA':
+            return AppLocalizationsEnZa();
+        }
+        break;
+      }
+    case 'es':
+      {
+        switch (locale.countryCode) {
+          case '419':
+            return AppLocalizationsEs419();
+          case 'ES':
+            return AppLocalizationsEsEs();
+          case 'US':
+            return AppLocalizationsEsUs();
+        }
+        break;
+      }
+    case 'eu':
+      {
+        switch (locale.countryCode) {
+          case 'ES':
+            return AppLocalizationsEuEs();
+        }
+        break;
+      }
+    case 'fa':
+      {
+        switch (locale.countryCode) {
+          case 'AE':
+            return AppLocalizationsFaAe();
+          case 'AF':
+            return AppLocalizationsFaAf();
+          case 'IR':
+            return AppLocalizationsFaIr();
+        }
+        break;
+      }
+    case 'fi':
+      {
+        switch (locale.countryCode) {
+          case 'FI':
+            return AppLocalizationsFiFi();
+        }
+        break;
+      }
+    case 'fr':
+      {
+        switch (locale.countryCode) {
+          case 'CA':
+            return AppLocalizationsFrCa();
+          case 'FR':
+            return AppLocalizationsFrFr();
+        }
+        break;
+      }
+    case 'gl':
+      {
+        switch (locale.countryCode) {
+          case 'ES':
+            return AppLocalizationsGlEs();
+        }
+        break;
+      }
+    case 'he':
+      {
+        switch (locale.countryCode) {
+          case 'IL':
+            return AppLocalizationsHeIl();
+        }
+        break;
+      }
+    case 'hi':
+      {
+        switch (locale.countryCode) {
+          case 'IN':
+            return AppLocalizationsHiIn();
+        }
+        break;
+      }
+    case 'hu':
+      {
+        switch (locale.countryCode) {
+          case 'HU':
+            return AppLocalizationsHuHu();
+        }
+        break;
+      }
+    case 'hy':
+      {
+        switch (locale.countryCode) {
+          case 'AM':
+            return AppLocalizationsHyAm();
+        }
+        break;
+      }
+    case 'is':
+      {
+        switch (locale.countryCode) {
+          case 'IS':
+            return AppLocalizationsIsIs();
+        }
+        break;
+      }
+    case 'it':
+      {
+        switch (locale.countryCode) {
+          case 'IT':
+            return AppLocalizationsItIt();
+        }
+        break;
+      }
+    case 'ja':
+      {
+        switch (locale.countryCode) {
+          case 'JP':
+            return AppLocalizationsJaJp();
+        }
+        break;
+      }
+    case 'ka':
+      {
+        switch (locale.countryCode) {
+          case 'GE':
+            return AppLocalizationsKaGe();
+        }
+        break;
+      }
+    case 'km':
+      {
+        switch (locale.countryCode) {
+          case 'KH':
+            return AppLocalizationsKmKh();
+        }
+        break;
+      }
+    case 'kn':
+      {
+        switch (locale.countryCode) {
+          case 'IN':
+            return AppLocalizationsKnIn();
+        }
+        break;
+      }
+    case 'ko':
+      {
+        switch (locale.countryCode) {
+          case 'KR':
+            return AppLocalizationsKoKr();
+        }
+        break;
+      }
+    case 'ky':
+      {
+        switch (locale.countryCode) {
+          case 'KG':
+            return AppLocalizationsKyKg();
+        }
+        break;
+      }
+    case 'lo':
+      {
+        switch (locale.countryCode) {
+          case 'LA':
+            return AppLocalizationsLoLa();
+        }
+        break;
+      }
+    case 'mk':
+      {
+        switch (locale.countryCode) {
+          case 'MK':
+            return AppLocalizationsMkMk();
+        }
+        break;
+      }
+    case 'ml':
+      {
+        switch (locale.countryCode) {
+          case 'IN':
+            return AppLocalizationsMlIn();
+        }
+        break;
+      }
+    case 'mn':
+      {
+        switch (locale.countryCode) {
+          case 'MN':
+            return AppLocalizationsMnMn();
+        }
+        break;
+      }
+    case 'mr':
+      {
+        switch (locale.countryCode) {
+          case 'IN':
+            return AppLocalizationsMrIn();
+        }
+        break;
+      }
+    case 'ms':
+      {
+        switch (locale.countryCode) {
+          case 'MY':
+            return AppLocalizationsMsMy();
+        }
+        break;
+      }
+    case 'my':
+      {
+        switch (locale.countryCode) {
+          case 'MM':
+            return AppLocalizationsMyMm();
+        }
+        break;
+      }
+    case 'ne':
+      {
+        switch (locale.countryCode) {
+          case 'NP':
+            return AppLocalizationsNeNp();
+        }
+        break;
+      }
+    case 'nl':
+      {
+        switch (locale.countryCode) {
+          case 'NL':
+            return AppLocalizationsNlNl();
+        }
+        break;
+      }
+    case 'no':
+      {
+        switch (locale.countryCode) {
+          case 'NO':
+            return AppLocalizationsNoNo();
+        }
+        break;
+      }
+    case 'pl':
+      {
+        switch (locale.countryCode) {
+          case 'PL':
+            return AppLocalizationsPlPl();
+        }
+        break;
+      }
+    case 'pt':
+      {
+        switch (locale.countryCode) {
+          case 'BR':
+            return AppLocalizationsPtBr();
+          case 'PT':
+            return AppLocalizationsPtPt();
+        }
+        break;
+      }
+    case 'ru':
+      {
+        switch (locale.countryCode) {
+          case 'RU':
+            return AppLocalizationsRuRu();
+        }
+        break;
+      }
+    case 'si':
+      {
+        switch (locale.countryCode) {
+          case 'LK':
+            return AppLocalizationsSiLk();
+        }
+        break;
+      }
+    case 'sv':
+      {
+        switch (locale.countryCode) {
+          case 'SE':
+            return AppLocalizationsSvSe();
+        }
+        break;
+      }
+    case 'ta':
+      {
+        switch (locale.countryCode) {
+          case 'IN':
+            return AppLocalizationsTaIn();
+        }
+        break;
+      }
+    case 'te':
+      {
+        switch (locale.countryCode) {
+          case 'IN':
+            return AppLocalizationsTeIn();
+        }
+        break;
+      }
+    case 'tr':
+      {
+        switch (locale.countryCode) {
+          case 'TR':
+            return AppLocalizationsTrTr();
+        }
+        break;
+      }
+    case 'zh':
+      {
+        switch (locale.countryCode) {
+          case 'CN':
+            return AppLocalizationsZhCn();
+          case 'HK':
+            return AppLocalizationsZhHk();
+          case 'TW':
+            return AppLocalizationsZhTw();
+        }
+        break;
+      }
+  }
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'af':
+      return AppLocalizationsAf();
+    case 'am':
+      return AppLocalizationsAm();
+    case 'ar':
+      return AppLocalizationsAr();
+    case 'az':
+      return AppLocalizationsAz();
+    case 'be':
+      return AppLocalizationsBe();
+    case 'bg':
+      return AppLocalizationsBg();
+    case 'bn':
+      return AppLocalizationsBn();
+    case 'ca':
+      return AppLocalizationsCa();
+    case 'cs':
+      return AppLocalizationsCs();
+    case 'da':
+      return AppLocalizationsDa();
+    case 'de':
+      return AppLocalizationsDe();
+    case 'el':
+      return AppLocalizationsEl();
     case 'en':
       return AppLocalizationsEn();
     case 'es':
       return AppLocalizationsEs();
+    case 'et':
+      return AppLocalizationsEt();
+    case 'eu':
+      return AppLocalizationsEu();
+    case 'fa':
+      return AppLocalizationsFa();
+    case 'fi':
+      return AppLocalizationsFi();
+    case 'fil':
+      return AppLocalizationsFil();
+    case 'fr':
+      return AppLocalizationsFr();
+    case 'gl':
+      return AppLocalizationsGl();
+    case 'gu':
+      return AppLocalizationsGu();
+    case 'he':
+      return AppLocalizationsHe();
+    case 'hi':
+      return AppLocalizationsHi();
+    case 'hr':
+      return AppLocalizationsHr();
+    case 'hu':
+      return AppLocalizationsHu();
+    case 'hy':
+      return AppLocalizationsHy();
+    case 'id':
+      return AppLocalizationsId();
+    case 'is':
+      return AppLocalizationsIs();
+    case 'it':
+      return AppLocalizationsIt();
     case 'ja':
       return AppLocalizationsJa();
+    case 'ka':
+      return AppLocalizationsKa();
+    case 'kk':
+      return AppLocalizationsKk();
+    case 'km':
+      return AppLocalizationsKm();
+    case 'kn':
+      return AppLocalizationsKn();
     case 'ko':
       return AppLocalizationsKo();
+    case 'ky':
+      return AppLocalizationsKy();
+    case 'lo':
+      return AppLocalizationsLo();
+    case 'lt':
+      return AppLocalizationsLt();
+    case 'lv':
+      return AppLocalizationsLv();
+    case 'mk':
+      return AppLocalizationsMk();
+    case 'ml':
+      return AppLocalizationsMl();
+    case 'mn':
+      return AppLocalizationsMn();
+    case 'mr':
+      return AppLocalizationsMr();
+    case 'ms':
+      return AppLocalizationsMs();
+    case 'my':
+      return AppLocalizationsMy();
+    case 'ne':
+      return AppLocalizationsNe();
+    case 'nl':
+      return AppLocalizationsNl();
+    case 'no':
+      return AppLocalizationsNo();
+    case 'pa':
+      return AppLocalizationsPa();
+    case 'pl':
+      return AppLocalizationsPl();
+    case 'pt':
+      return AppLocalizationsPt();
+    case 'rm':
+      return AppLocalizationsRm();
+    case 'ro':
+      return AppLocalizationsRo();
+    case 'ru':
+      return AppLocalizationsRu();
+    case 'si':
+      return AppLocalizationsSi();
+    case 'sk':
+      return AppLocalizationsSk();
+    case 'sl':
+      return AppLocalizationsSl();
+    case 'sq':
+      return AppLocalizationsSq();
+    case 'sr':
+      return AppLocalizationsSr();
+    case 'sv':
+      return AppLocalizationsSv();
+    case 'sw':
+      return AppLocalizationsSw();
+    case 'ta':
+      return AppLocalizationsTa();
+    case 'te':
+      return AppLocalizationsTe();
+    case 'th':
+      return AppLocalizationsTh();
+    case 'tr':
+      return AppLocalizationsTr();
+    case 'uk':
+      return AppLocalizationsUk();
+    case 'ur':
+      return AppLocalizationsUr();
+    case 'vi':
+      return AppLocalizationsVi();
     case 'zh':
       return AppLocalizationsZh();
   }

@@ -1,0 +1,24 @@
+This file is the operator template for Google Play reviewer access notes.
+
+Do not paste this file into Play Console after account-linked premium ships.
+
+Before submission:
+1. Provision the dedicated reviewer premium account with `dart run tool/provision_reviewer_account.dart`.
+2. Open `store/google-play/reviewer-access.generated.txt`.
+3. Paste that generated file into `Policy and programs > App content > App access`.
+
+Why this changed:
+- Core app flows still do not require sign-in.
+- Premium is now account-linked.
+- Google reviewers need a dedicated pre-seeded premium account to actually use premium features, not just reach the paywall.
+
+Required inputs for the provisioning step:
+- `FIREBASE_WEB_API_KEY`
+- `FIREBASE_PROJECT_ID`
+- reviewer email
+- reviewer password
+
+The generated note tells reviewers:
+- where to sign in: `Main Menu > Settings > Account`
+- where to verify premium: `Main Menu > Settings > Chordest Premium`
+- how to test account deletion separately with a throwaway account

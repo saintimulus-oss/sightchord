@@ -179,6 +179,25 @@
   "keyCenterLabelStyleClassicalCase": "C： / C：",
   "allowV7sus4": "允許 V7sus4（V7、V7/x）",
   "allowTensions": "允許緊張",
+  "chordTypeFilters": "和弦種類",
+  "chordTypeFiltersHelp": "選擇產生器中可出現的和弦種類。",
+  "chordTypeFiltersSelection": "已啟用 {selected} / {total}",
+  "@chordTypeFiltersSelection": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "chordTypeGroupTriads": "三和弦",
+  "chordTypeGroupSevenths": "七和弦",
+  "chordTypeGroupSixthsAndAddedTone": "六和弦與附加音",
+  "chordTypeGroupDominantVariants": "屬功能變體",
+  "chordTypeRequiresKeyMode": "只有選擇至少一個調性時才能使用 V7sus4。",
+  "chordTypeKeepOneEnabled": "至少保留一種和弦種類為啟用狀態。",
   "tensionHelp": "僅 羅馬數字 設定檔和選定晶片",
   "inversions": "倒轉",
   "enableInversions": "啟用反轉",
@@ -2096,25 +2115,6 @@
   "studyHarmonyLessonBlueHourHorizonDescription": "保持真正的到達點，同時兩個可能的地平線不斷進出。",
   "studyHarmonyLessonBlueHourBossTitle": "雙燈籠老闆",
   "studyHarmonyLessonBlueHourBossDescription": "最後的藍色時刻 Boss 強制快速交換中心、功能、借用的顏色和缺少的和弦修復。",
-  "chordTypeFilters": "和弦種類",
-  "chordTypeFiltersHelp": "選擇產生器中可出現的和弦種類。",
-  "chordTypeFiltersSelection": "已啟用 {selected} / {total}",
-  "@chordTypeFiltersSelection": {
-    "placeholders": {
-      "selected": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "chordTypeGroupTriads": "三和弦",
-  "chordTypeGroupSevenths": "七和弦",
-  "chordTypeGroupSixthsAndAddedTone": "六和弦與附加音",
-  "chordTypeGroupDominantVariants": "屬功能變體",
-  "chordTypeRequiresKeyMode": "只有選擇至少一個調性時才能使用 V7sus4。",
-  "chordTypeKeepOneEnabled": "至少保留一種和弦種類為啟用狀態。",
   "anchorLoopTitle": "Anchor Loop",
   "anchorLoopHelp": "Fix specific cycle slots so the same chord returns every cycle while the other slots can still be generated around it.",
   "anchorLoopCycleLength": "Cycle Length (bars)",
@@ -2772,8 +2772,7 @@
   "showRomanNumeralAssist": "顯示羅馬數字輔助",
   "showRomanNumeralAssistHelp": "在羅馬數字標籤旁加入簡短說明。",
   "showChordTextAssist": "顯示和弦文字輔助",
-  "showChordTextAssistHelp": "為和弦性質與張力加入簡短文字說明。"
-  ,
+  "showChordTextAssistHelp": "為和弦性質與張力加入簡短文字說明。",
   "premiumUnlockTitle": "Chordest Premium",
   "premiumUnlockBody": "A one-time purchase permanently unlocks Smart Generator and advanced harmonic color controls. Free Generator, Analyzer, metronome, and language support stay available.",
   "premiumUnlockRequestedFeatureTitle": "Requested in this flow",
@@ -2825,5 +2824,61 @@
   "premiumUnlockCardButton": "View premium",
   "premiumUnlockGeneratorHint": "Smart Generator and advanced harmonic colors unlock with a one-time premium purchase.",
   "premiumUnlockSettingsHintTitle": "Premium controls",
-  "premiumUnlockSettingsHintBody": "Smart Generator, non-diatonic color controls, and advanced tensions are part of the one-time premium unlock."
+  "premiumUnlockSettingsHintBody": "Smart Generator, non-diatonic color controls, and advanced tensions are part of the one-time premium unlock.",
+  "accountTitle": "Account",
+  "accountCardSignedOutBody": "Sign in to link premium to your account and restore it on your other devices.",
+  "accountCardSignedInBody": "Signed in as {email}. Premium sync and restore now follow this account.",
+  "@accountCardSignedInBody": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "accountCardUnavailableBody": "Account features are not configured in this build yet. Add Firebase runtime configuration to enable sign-in.",
+  "accountOpenButton": "Sign in",
+  "accountManageButton": "Manage account",
+  "accountEmailLabel": "Email",
+  "accountPasswordLabel": "Password",
+  "accountSignInButton": "Sign in",
+  "accountCreateButton": "Create account",
+  "accountSwitchToCreateButton": "Create a new account",
+  "accountSwitchToSignInButton": "I already have an account",
+  "accountForgotPasswordButton": "Reset password",
+  "accountSignOutButton": "Sign out",
+  "accountMessageSignedIn": "You're signed in.",
+  "accountMessageSignedUp": "Your account was created and signed in.",
+  "accountMessageSignedOut": "You signed out of this account.",
+  "accountMessagePasswordResetSent": "Password reset email sent.",
+  "accountMessageInvalidCredentials": "Check your email and password and try again.",
+  "accountMessageEmailInUse": "That email is already in use.",
+  "accountMessageWeakPassword": "Use a stronger password to create this account.",
+  "accountMessageUserNotFound": "No account was found for that email.",
+  "accountMessageTooManyRequests": "Too many attempts right now. Please try again later.",
+  "accountMessageNetworkError": "The network request failed. Please check your connection.",
+  "accountMessageAuthUnavailable": "Account sign-in is not configured in this build yet.",
+  "accountMessageUnknownError": "The account request could not be completed.",
+  "accountDeleteButton": "Delete account",
+  "accountDeleteDialogTitle": "Delete account?",
+  "accountDeleteDialogBody": "This permanently deletes the Chordest account for {email} and removes synced premium data. Store purchase history stays with your store account.",
+  "@accountDeleteDialogBody": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "accountDeletePasswordHelper": "Enter your current password to confirm this deletion request.",
+  "accountDeleteConfirmButton": "Delete permanently",
+  "accountDeleteCancelButton": "Cancel",
+  "accountDeletePasswordRequired": "Enter your current password to delete this account.",
+  "accountMessageDeleted": "Your account and synced premium data were deleted.",
+  "accountMessageDeleteRequiresRecentLogin": "For safety, enter your current password and try again.",
+  "accountMessageDataDeletionFailed": "We couldn't remove your synced account data. Please try again.",
+  "premiumUnlockAccountSyncTitle": "Account sync",
+  "premiumUnlockAccountSyncSignedOutBody": "You can keep using premium locally, but signing in lets this unlock follow your account to other devices.",
+  "premiumUnlockAccountSyncSignedInBody": "Premium purchases and restores will sync to {email} when this account is signed in.",
+  "@premiumUnlockAccountSyncSignedInBody": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "premiumUnlockAccountSyncUnavailableBody": "Account sync is not configured in this build yet, so premium currently stays local to this device.",
+  "premiumUnlockAccountOpenButton": "Account"
 }

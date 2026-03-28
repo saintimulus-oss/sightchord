@@ -12,6 +12,8 @@ import 'audio/chordest_audio_scope.dart';
 import 'billing/billing_scope.dart';
 import 'billing/paywall_sheet.dart';
 import 'billing/premium_feature_access.dart';
+import 'chord_analyzer_page.dart';
+import 'favorite_start_store.dart';
 import 'l10n/app_localizations.dart';
 import 'music/chord_formatting.dart';
 import 'music/notation_presentation.dart';
@@ -32,6 +34,8 @@ import 'practice/widgets/practice_page_sections.dart';
 import 'practice/widgets/practice_transport_strip.dart';
 import 'ui/chordest_ui_tokens.dart';
 import 'music/voicing_models.dart';
+import 'recent_copy_store.dart';
+import 'recent_practice_session_store.dart';
 import 'release_feature_flags.dart';
 import 'settings/practice_settings.dart';
 import 'settings/practice_settings_effects.dart';
@@ -58,18 +62,38 @@ class _PracticeHistoryEntry {
   final int melodyGenerationSeed;
 }
 
+class _PracticeResetSnapshot {
+  const _PracticeResetSnapshot({
+    required this.sessionState,
+    required this.melodyState,
+    required this.currentBeat,
+    required this.melodyGenerationSeed,
+    required this.history,
+  });
+
+  final PracticeSessionState sessionState;
+  final PracticeMelodyQueueState melodyState;
+  final int? currentBeat;
+  final int melodyGenerationSeed;
+  final List<_PracticeHistoryEntry> history;
+}
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({
     super.key,
     required this.title,
     required this.controller,
     this.initialPremiumUnlocked = false,
+    this.openSetupAssistantOnStart = false,
+    this.initialRecentSessionSnapshot,
     this.onOpenStudyHarmony,
   });
 
   final String title;
   final AppSettingsController controller;
   final bool initialPremiumUnlocked;
+  final bool openSetupAssistantOnStart;
+  final RecentPracticeSessionSnapshot? initialRecentSessionSnapshot;
   final VoidCallback? onOpenStudyHarmony;
 
   @override
@@ -104,11 +128,21 @@ class _MyHomePageState extends State<MyHomePage> {
   int _melodyGenerationSeed = 0;
   final List<_PracticeHistoryEntry> _practiceHistory =
       <_PracticeHistoryEntry>[];
+  final FavoriteStartStore _favoriteStartStore = const FavoriteStartStore();
+  final RecentCopyHistoryStore _recentCopyHistoryStore =
+      const RecentCopyHistoryStore();
+  final RecentPracticeSessionStore _recentPracticeSessionStore =
+      const RecentPracticeSessionStore();
+  FavoriteStartSlots _favoriteStartSlots = const FavoriteStartSlots();
 
-  PracticeSettings get _settings => sanitizePracticeSettingsForEntitlement(
-    widget.controller.settings,
-    premiumUnlocked: _isPremiumUnlocked,
-  );
+  PracticeSettings _resolvedSettings({bool allowContextLookup = true}) =>
+      sanitizePracticeSettingsForEntitlement(
+        widget.controller.settings,
+        premiumUnlocked: allowContextLookup
+            ? _isPremiumUnlocked
+            : _premiumUnlockedSnapshot,
+      );
+  PracticeSettings get _settings => _resolvedSettings();
   bool get _isPremiumUnlocked {
     if (!_billingScopeReady) {
       return _premiumUnlockedSnapshot;
@@ -119,6 +153,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     return _premiumUnlockedSnapshot;
   }
+
   int get _beatsPerBar => _settings.beatsPerBar;
   PracticeTransportState get _transportState =>
       _practiceTransportController.state;
@@ -149,9 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
   VoidCallback? get _studyHarmonyEntryPoint =>
       kEnableStudyHarmonyEntryPoints ? widget.onOpenStudyHarmony : null;
 
-  Future<void> _openPremiumPaywall({
-    PremiumFeature? highlightedFeature,
-  }) {
+  Future<void> _openPremiumPaywall({PremiumFeature? highlightedFeature}) {
     return showPremiumPaywallSheet(
       context,
       highlightedFeature: highlightedFeature,
@@ -215,15 +248,26 @@ class _MyHomePageState extends State<MyHomePage> {
     _syncTransportBindings();
     unawaited(_initAudio());
     if (_isSetupAssistantRequired) {
-      _showFirstRunWelcomeCard = true;
+      _showFirstRunWelcomeCard = !widget.openSetupAssistantOnStart;
       _applySettings(
         PracticeSettingsFactory.beginnerSafePreset(baseSettings: _settings),
         reseed: true,
         syncBpmText: true,
       );
+    } else if (widget.initialRecentSessionSnapshot case final snapshot?) {
+      _restoreInitialRecentSession(snapshot);
     } else {
       _initializePracticeSession();
     }
+    if (widget.openSetupAssistantOnStart) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        unawaited(_runSetupAssistant(mandatory: _isSetupAssistantRequired));
+      });
+    }
+    unawaited(_restoreFavoriteStartSlots());
   }
 
   void _initializePracticeSession() {
@@ -231,6 +275,27 @@ class _MyHomePageState extends State<MyHomePage> {
     _syncTransportBindings();
     _rebuildMelodyQueue();
     _queueHarmonyPreviewPrefetch();
+    unawaited(_persistRecentPracticeSessionSnapshot());
+  }
+
+  void _restoreInitialRecentSession(RecentPracticeSessionSnapshot snapshot) {
+    _practiceSessionController.restoreState(snapshot.toSessionState());
+    _practiceSessionController.refreshForSettings(
+      settings: _settings,
+      forceLookAheadRefresh: true,
+    );
+    _syncTransportBindings();
+    _melodyState = _settings.melodyGenerationEnabled
+        ? snapshot.melodyState
+        : const PracticeMelodyQueueState();
+    _melodyGenerationSeed = snapshot.melodyGenerationSeed;
+    _practiceTransportController.setCurrentBeat(
+      _settings.usesLegacyBarTiming
+          ? null
+          : _normalizeBeatForSettings(_settings, snapshot.currentBeat),
+    );
+    _queueHarmonyPreviewPrefetch();
+    unawaited(_persistRecentPracticeSessionSnapshot());
   }
 
   Future<void> _runSetupAssistant({required bool mandatory}) async {
@@ -270,6 +335,78 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _showFirstRunWelcomeCard = false;
     });
+  }
+
+  Future<void> _restoreFavoriteStartSlots() async {
+    final slots = await _favoriteStartStore.load();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _favoriteStartSlots = slots;
+    });
+  }
+
+  Future<void> _replaceFavoriteStartSlot(
+    int index,
+    FavoriteStartPreset? preset,
+  ) async {
+    final slots = await _favoriteStartStore.setSlot(index, preset);
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _favoriteStartSlots = slots;
+    });
+  }
+
+  RecentPracticeSessionSnapshot? _buildRecentPracticeSessionSnapshot({
+    bool allowContextLookup = true,
+  }) {
+    if (!_practiceSessionInitialized) {
+      return null;
+    }
+    final settings = _resolvedSettings(allowContextLookup: allowContextLookup);
+    return RecentPracticeSessionSnapshot(
+      queueState: PracticeChordQueueState(
+        previousEvent: _queueState.previousEvent,
+        currentEvent: _queueState.currentEvent,
+        nextEvent: _queueState.nextEvent,
+        lookAheadEvent: _queueState.lookAheadEvent,
+      ),
+      melodyState: PracticeMelodyQueueState(
+        previousEvent: _melodyState.previousEvent,
+        currentEvent: _melodyState.currentEvent,
+        nextEvent: _melodyState.nextEvent,
+        lookAheadEvent: _melodyState.lookAheadEvent,
+      ),
+      currentBeat: settings.usesLegacyBarTiming ? null : _currentBeat,
+      melodyGenerationSeed: _melodyGenerationSeed,
+      savedAt: DateTime.now(),
+    );
+  }
+
+  Future<void> _persistRecentPracticeSessionSnapshot({
+    bool allowContextLookup = true,
+  }) async {
+    final snapshot = _buildRecentPracticeSessionSnapshot(
+      allowContextLookup: allowContextLookup,
+    );
+    if (snapshot == null) {
+      return;
+    }
+    try {
+      await _recentPracticeSessionStore.save(snapshot);
+    } catch (error, stackTrace) {
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stackTrace,
+          library: 'chordest',
+          context: ErrorDescription('while saving recent practice session'),
+        ),
+      );
+    }
   }
 
   @override
@@ -474,7 +611,9 @@ class _MyHomePageState extends State<MyHomePage> {
       premiumUnlocked: _isPremiumUnlocked,
     );
     if (!_isPremiumUnlocked && requestedPremium.isNotEmpty) {
-      unawaited(_openPremiumPaywall(highlightedFeature: requestedPremium.first));
+      unawaited(
+        _openPremiumPaywall(highlightedFeature: requestedPremium.first),
+      );
     }
     final previousSettings = _settings;
     if (PracticeSettingsEffects.harmonyAudioChanged(
@@ -520,6 +659,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _syncTransportBindings(settings: resolvedSettings);
     });
     _queueHarmonyPreviewPrefetch();
+    unawaited(_persistRecentPracticeSessionSnapshot());
     unawaited(
       _practiceTransportController.handleSettingsChanged(
         previousSettings: previousSettings,
@@ -1035,6 +1175,40 @@ class _MyHomePageState extends State<MyHomePage> {
     _queueHarmonyPreviewPrefetch();
   }
 
+  _PracticeResetSnapshot _captureResetSnapshot() {
+    return _PracticeResetSnapshot(
+      sessionState: _sessionState,
+      melodyState: _melodyState,
+      currentBeat: _currentBeat,
+      melodyGenerationSeed: _melodyGenerationSeed,
+      history: List<_PracticeHistoryEntry>.from(_practiceHistory),
+    );
+  }
+
+  void _restoreResetSnapshot(_PracticeResetSnapshot snapshot) {
+    if (!mounted) {
+      return;
+    }
+    _chordSwipeSurfaceKey.currentState?.cancelTransition();
+    _stopAutoplayAndHarmonyPreview();
+    setState(() {
+      _practiceSessionController.restoreState(snapshot.sessionState);
+      _melodyState = snapshot.melodyState;
+      _melodyGenerationSeed = snapshot.melodyGenerationSeed;
+      _practiceHistory
+        ..clear()
+        ..addAll(snapshot.history);
+      _syncTransportBindings();
+      _practiceTransportController.setCurrentBeat(
+        _settings.usesLegacyBarTiming
+            ? null
+            : _normalizeBeatForSettings(_settings, snapshot.currentBeat),
+      );
+    });
+    _queueHarmonyPreviewPrefetch();
+    unawaited(_persistRecentPracticeSessionSnapshot());
+  }
+
   void _recordPracticeHistory() {
     if (_practiceHistory.length == _practiceHistoryLimit) {
       _practiceHistory.removeAt(0);
@@ -1057,6 +1231,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _melodyGenerationSeed += 1;
       _rebuildMelodyQueue();
     });
+    unawaited(_persistRecentPracticeSessionSnapshot());
   }
 
   void _restorePreviousChord({bool playAutoPreview = false}) {
@@ -1087,6 +1262,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (shouldRestartAutoLoop) {
       _practiceTransportController.rescheduleAutoplay();
     }
+    unawaited(_persistRecentPracticeSessionSnapshot());
   }
 
   ConcreteVoicing? _authoritativeSelectedVoicing() {
@@ -1186,6 +1362,7 @@ class _MyHomePageState extends State<MyHomePage> {
         currentBeat: _manualBeatStateForEvent(_currentChordEvent),
       );
     });
+    unawaited(_persistRecentPracticeSessionSnapshot());
     if (playAutoPreview) {
       unawaited(_playAutoChordChangeForCurrentEvent());
     }
@@ -1199,6 +1376,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _promoteChordQueue();
     });
+    unawaited(_persistRecentPracticeSessionSnapshot());
     if (!chordPlaybackHandled) {
       unawaited(_playAutoChordChangeForCurrentEvent());
     }
@@ -1247,12 +1425,15 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!_practiceSessionInitialized) {
       return;
     }
+    final resetSnapshot = _captureResetSnapshot();
     _chordSwipeSurfaceKey.currentState?.cancelTransition();
     _stopAutoplayAndHarmonyPreview();
     setState(() {
       _melodyGenerationSeed += 1;
       _reseedChordQueue();
     });
+    unawaited(_persistRecentPracticeSessionSnapshot());
+    _showResetUndoSnackBar(resetSnapshot);
   }
 
   void _stopAutoplayAndHarmonyPreview({bool resetBeat = true}) {
@@ -1317,6 +1498,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
+    unawaited(_persistRecentPracticeSessionSnapshot(allowContextLookup: false));
     _bpmController.dispose();
     unawaited(_practiceTransportController.shutdown());
     _practiceTransportController.dispose();
