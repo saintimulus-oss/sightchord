@@ -3,32 +3,18 @@ import 'package:flutter/services.dart';
 
 const _mainMenuContentMaxWidth = 560.0;
 
-class MainMenuQuickAction {
-  const MainMenuQuickAction({
+class MainMenuTopAction {
+  const MainMenuTopAction({
     required this.buttonKey,
     required this.icon,
-    required this.label,
-    this.tooltip,
+    required this.tooltip,
     required this.onPressed,
   });
 
   final Key buttonKey;
   final IconData icon;
-  final String label;
-  final String? tooltip;
+  final String tooltip;
   final VoidCallback onPressed;
-}
-
-class MainMenuStatusChip {
-  const MainMenuStatusChip({
-    required this.chipKey,
-    required this.icon,
-    required this.label,
-  });
-
-  final Key chipKey;
-  final IconData icon;
-  final String label;
 }
 
 class MainMenuView extends StatelessWidget {
@@ -41,9 +27,7 @@ class MainMenuView extends StatelessWidget {
     required this.generatorSubtitle,
     required this.analyzerTitle,
     required this.analyzerSubtitle,
-    this.statusChips = const <MainMenuStatusChip>[],
-    this.quickActions = const <MainMenuQuickAction>[],
-    this.shortcutBindings = const <ShortcutActivator, VoidCallback>{},
+    this.topActions = const <MainMenuTopAction>[],
     required this.onOpenSettings,
     required this.onOpenGenerator,
     required this.onOpenAnalyzer,
@@ -56,9 +40,7 @@ class MainMenuView extends StatelessWidget {
   final String generatorSubtitle;
   final String analyzerTitle;
   final String analyzerSubtitle;
-  final List<MainMenuStatusChip> statusChips;
-  final List<MainMenuQuickAction> quickActions;
-  final Map<ShortcutActivator, VoidCallback> shortcutBindings;
+  final List<MainMenuTopAction> topActions;
   final VoidCallback onOpenSettings;
   final VoidCallback onOpenGenerator;
   final VoidCallback onOpenAnalyzer;
@@ -76,7 +58,6 @@ class MainMenuView extends StatelessWidget {
         const SingleActivator(LogicalKeyboardKey.keyA): onOpenAnalyzer,
         const SingleActivator(LogicalKeyboardKey.keyS): onOpenSettings,
         const SingleActivator(LogicalKeyboardKey.comma): onOpenSettings,
-        ...shortcutBindings,
       },
       child: Focus(
         autofocus: true,
@@ -132,8 +113,7 @@ class MainMenuView extends StatelessWidget {
                             title: title,
                             body: intro,
                             settingsLabel: settingsLabel,
-                            statusChips: statusChips,
-                            quickActions: quickActions,
+                            topActions: topActions,
                             onSettingsPressed: onOpenSettings,
                           ),
                           const SizedBox(height: 20),
@@ -193,16 +173,14 @@ class _MainMenuHeroCard extends StatelessWidget {
     required this.title,
     required this.body,
     required this.settingsLabel,
-    required this.statusChips,
-    required this.quickActions,
+    required this.topActions,
     required this.onSettingsPressed,
   });
 
   final String title;
   final String body;
   final String settingsLabel;
-  final List<MainMenuStatusChip> statusChips;
-  final List<MainMenuQuickAction> quickActions;
+  final List<MainMenuTopAction> topActions;
   final VoidCallback onSettingsPressed;
 
   @override
@@ -233,6 +211,19 @@ class _MainMenuHeroCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
+                for (final action in topActions) ...[
+                  IconButton(
+                    key: action.buttonKey,
+                    onPressed: action.onPressed,
+                    tooltip: action.tooltip,
+                    style: IconButton.styleFrom(
+                      backgroundColor: colorScheme.surfaceContainerLow,
+                      foregroundColor: colorScheme.onSurface,
+                    ),
+                    icon: Icon(action.icon),
+                  ),
+                  const SizedBox(width: 8),
+                ],
                 IconButton(
                   key: const ValueKey('main-open-settings-button'),
                   onPressed: onSettingsPressed,
@@ -248,103 +239,16 @@ class _MainMenuHeroCard extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               body,
-              maxLines: 3,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              softWrap: false,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
                 height: 1.4,
               ),
             ),
-            if (statusChips.isNotEmpty) ...[
-              const SizedBox(height: 14),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  for (final chip in statusChips)
-                    _MainMenuStatusChipView(chip: chip),
-                ],
-              ),
-            ],
-            if (quickActions.isNotEmpty) ...[
-              const SizedBox(height: 14),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  for (final action in quickActions)
-                    _MainMenuQuickActionButton(action: action),
-                ],
-              ),
-            ],
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _MainMenuStatusChipView extends StatelessWidget {
-  const _MainMenuStatusChipView({required this.chip});
-
-  final MainMenuStatusChip chip;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return DecoratedBox(
-      key: chip.chipKey,
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(chip.icon, size: 16, color: colorScheme.primary),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                chip.label,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _MainMenuQuickActionButton extends StatelessWidget {
-  const _MainMenuQuickActionButton({required this.action});
-
-  final MainMenuQuickAction action;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return Tooltip(
-      message: action.tooltip ?? action.label,
-      child: OutlinedButton.icon(
-        key: action.buttonKey,
-        onPressed: action.onPressed,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: colorScheme.onSurface,
-          backgroundColor: colorScheme.surface.withValues(alpha: 0.72),
-          side: BorderSide(color: colorScheme.outlineVariant),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        ),
-        icon: Icon(action.icon, size: 18),
-        label: Text(action.label, overflow: TextOverflow.ellipsis),
       ),
     );
   }
@@ -444,8 +348,9 @@ class _MainActionButton extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         subtitle,
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                        softWrap: false,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: subtitleColor,
                           height: 1.35,

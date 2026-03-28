@@ -2208,55 +2208,6 @@ extension _PracticeHomePageUi on _MyHomePageState {
               spacing: 10,
               runSpacing: 10,
               children: [
-                for (final mode in SettingsComplexityMode.values)
-                  ChoiceChip(
-                    key: ValueKey('practice-complexity-chip-${mode.name}'),
-                    label: Text(mode.localizedLabel(l10n)),
-                    selected: _settings.settingsComplexityMode == mode,
-                    onSelected: (selected) {
-                      if (!selected) {
-                        return;
-                      }
-                      _applyQuickComplexityMode(mode);
-                    },
-                  ),
-              ],
-            ),
-            SizedBox(height: compact ? 12 : 14),
-            Text(
-              _quickMovesTitle(context),
-              style: ChordestUiTokens.overlineStyle(theme),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                OutlinedButton.icon(
-                  key: const ValueKey('practice-open-analyzer-button'),
-                  onPressed: _openAnalyzerFromVisibleLoop,
-                  icon: const Icon(Icons.insights_rounded),
-                  label: Text(_analyzeVisibleLoopLabel(context)),
-                ),
-                OutlinedButton.icon(
-                  key: const ValueKey('practice-nudge-easier-button'),
-                  onPressed: _nudgeTowardEasier,
-                  icon: const Icon(Icons.south_west_rounded),
-                  label: Text(_nudgeEasierLabel(context)),
-                ),
-                OutlinedButton.icon(
-                  key: const ValueKey('practice-nudge-richer-button'),
-                  onPressed: _nudgeTowardRicher,
-                  icon: const Icon(Icons.north_east_rounded),
-                  label: Text(_nudgeRicherLabel(context)),
-                ),
-              ],
-            ),
-            SizedBox(height: compact ? 12 : 14),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
                 OutlinedButton.icon(
                   key: const ValueKey('practice-key-selector-button'),
                   onPressed: _openKeyCenterPicker,

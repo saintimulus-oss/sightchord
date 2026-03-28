@@ -39,7 +39,7 @@ void main() {
         'A long intro that should stay readable even when the display is narrow.',
       ),
     );
-    expect(introText.maxLines, 3);
+    expect(introText.maxLines, 1);
     expect(introText.overflow, TextOverflow.ellipsis);
 
     final generatorSubtitleText = tester.widget<Text>(
@@ -47,7 +47,7 @@ void main() {
         'Generator subtitle that should stay readable without being forced into a single line.',
       ),
     );
-    expect(generatorSubtitleText.maxLines, 2);
+    expect(generatorSubtitleText.maxLines, 1);
     expect(generatorSubtitleText.overflow, TextOverflow.ellipsis);
 
     final analyzerTitleText = tester.widget<Text>(
