@@ -115,6 +115,104 @@ class _HubRecommendationCopy {
   final List<String> footerLabels;
 }
 
+class _HubOverviewTile extends StatelessWidget {
+  const _HubOverviewTile({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.body,
+    this.chips = const <String>[],
+  });
+
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final String? body;
+  final List<String> chips;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return DecoratedBox(
+      decoration: _hubPanelDecoration(colorScheme),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Icon(icon, color: colorScheme.onPrimaryContainer),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      if (subtitle case final supporting?) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          supporting,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (body case final copy?) ...[
+              const SizedBox(height: 12),
+              Text(
+                copy,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  height: 1.4,
+                ),
+              ),
+            ],
+            if (chips.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final chip in chips)
+                    Chip(
+                      label: Text(chip),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class StudyHarmonyPage extends StatefulWidget {
   const StudyHarmonyPage({
     super.key,
@@ -231,6 +329,27 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                 random: Random(recommendation.seedValue!),
               );
     _openLesson(context, sessionLesson, course, controllerFactory);
+  }
+
+  Future<void> _openRecommendationEntry(
+    BuildContext context,
+    AppLocalizations l10n,
+    StudyHarmonyLessonRecommendation recommendation,
+    StudyHarmonyCourseDefinition course,
+  ) async {
+    if (recommendation.sessionMode == StudyHarmonySessionMode.daily) {
+      final prepared = await widget.progressController
+          .prepareDailyChallengeRecommendationForCourse(course);
+      if (!mounted || !context.mounted || prepared == null) {
+        return;
+      }
+      _openRecommendation(context, l10n, prepared, course);
+      return;
+    }
+    if (!mounted || !context.mounted) {
+      return;
+    }
+    _openRecommendation(context, l10n, recommendation, course);
   }
 
   void _openArcadeMode(
@@ -405,6 +524,492 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
           ),
         );
       },
+    );
+  }
+
+  Future<void> _showHubOverviewSheet(
+    BuildContext context, {
+    required String sheetKey,
+    required String title,
+    String? body,
+    required List<Widget> children,
+  }) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        final media = MediaQuery.of(sheetContext);
+        return SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              12,
+              20,
+              24 + media.viewInsets.bottom,
+            ),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 760),
+                child: Column(
+                  key: ValueKey(sheetKey),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: Theme.of(sheetContext).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.w800),
+                    ),
+                    if (body case final summary?) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        summary,
+                        style: Theme.of(sheetContext).textTheme.bodyLarge
+                            ?.copyWith(
+                              color: Theme.of(
+                                sheetContext,
+                              ).colorScheme.onSurfaceVariant,
+                              height: 1.45,
+                            ),
+                      ),
+                    ],
+                    const SizedBox(height: 20),
+                    ...children,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _openPlayerDeckOverviewSheet(
+    BuildContext context, {
+    required AppLocalizations l10n,
+    required String localeTag,
+    required StudyHarmonyPlayStyle playStyle,
+    required StudyHarmonyAdaptivePlan adaptivePlan,
+    required List<StudyHarmonyTitleDefinition> ownedTitles,
+    required List<StudyHarmonyCosmeticDefinition> ownedCosmetics,
+    required StudyHarmonyTitleDefinition? equippedTitle,
+    required List<StudyHarmonyCosmeticDefinition> equippedCosmetics,
+    required StudyHarmonyRewardCandidate? leadTitle,
+    required StudyHarmonyRewardCandidate? leadCosmetic,
+    required List<StudyHarmonyRewardCandidate> upcomingRewards,
+  }) async {
+    final featuredTitle = equippedTitle == null
+        ? null
+        : studyHarmonyRewardTitleForLocale(
+            localeTag,
+            rewardId: equippedTitle.id,
+            fallbackTitle: equippedTitle.title,
+          );
+    final featuredTitleDescription = equippedTitle == null
+        ? null
+        : studyHarmonyRewardDescriptionForLocale(
+            localeTag,
+            rewardId: equippedTitle.id,
+            fallbackDescription: equippedTitle.description,
+          );
+    final featuredCosmeticTitle = equippedCosmetics.isEmpty
+        ? null
+        : studyHarmonyRewardTitleForLocale(
+            localeTag,
+            rewardId: equippedCosmetics.first.id,
+            fallbackTitle: equippedCosmetics.first.title,
+          );
+    final ownedTitleLabels = ownedTitles
+        .take(3)
+        .map(
+          (title) => studyHarmonyRewardTitleForLocale(
+            localeTag,
+            rewardId: title.id,
+            fallbackTitle: title.title,
+          ),
+        )
+        .toList(growable: false);
+    final ownedCosmeticLabels = ownedCosmetics
+        .take(4)
+        .map(
+          (cosmetic) => studyHarmonyRewardTitleForLocale(
+            localeTag,
+            rewardId: cosmetic.id,
+            fallbackTitle: cosmetic.title,
+          ),
+        )
+        .toList(growable: false);
+    final highlightReward = leadTitle ?? leadCosmetic;
+    final equippedChip = featuredTitle == null
+        ? null
+        : l10n.studyHarmonyShopActionLabel('equipped');
+    final equippedCosmeticChip = featuredCosmeticTitle == null
+        ? null
+        : l10n.studyHarmonyShopActionLabel('equipped');
+
+    await _showHubOverviewSheet(
+      context,
+      sheetKey: 'study-harmony-player-deck-sheet',
+      title: l10n.studyHarmonyPlayerDeckTitle,
+      body: featuredTitleDescription ?? _coachLine(l10n, adaptivePlan),
+      children: [
+        _HubOverviewTile(
+          key: const ValueKey('study-harmony-player-deck-summary-tile'),
+          icon: Icons.person_rounded,
+          title: featuredTitle ?? _playStyleLabel(l10n, playStyle),
+          subtitle:
+              featuredCosmeticTitle ??
+              _coachLabel(l10n, adaptivePlan.coachStyle),
+          body: featuredTitleDescription ?? _coachLine(l10n, adaptivePlan),
+          chips: <String>[
+            _rewardFocusLabel(l10n, adaptivePlan.rewardEmphasis.primaryFocus),
+            l10n.studyHarmonyGameEconomyTitlesOwned(ownedTitles.length),
+            l10n.studyHarmonyGameEconomyCosmeticsOwned(ownedCosmetics.length),
+            ?equippedChip,
+          ],
+        ),
+        if (ownedTitleLabels.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          _HubOverviewTile(
+            key: const ValueKey('study-harmony-player-deck-titles-tile'),
+            icon: Icons.workspace_premium_rounded,
+            title: l10n.studyHarmonyGameEconomyTitlesOwned(ownedTitles.length),
+            subtitle:
+                featuredTitle ??
+                studyHarmonyRewardTitleForLocale(
+                  localeTag,
+                  rewardId: ownedTitles.first.id,
+                  fallbackTitle: ownedTitles.first.title,
+                ),
+            body: ownedTitleLabels.join(' · '),
+            chips: <String>[?featuredTitle],
+          ),
+        ],
+        if (ownedCosmeticLabels.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          _HubOverviewTile(
+            key: const ValueKey('study-harmony-player-deck-cosmetics-tile'),
+            icon: Icons.auto_awesome_rounded,
+            title: l10n.studyHarmonyGameEconomyCosmeticsOwned(
+              ownedCosmetics.length,
+            ),
+            subtitle:
+                featuredCosmeticTitle ??
+                studyHarmonyRewardTitleForLocale(
+                  localeTag,
+                  rewardId: ownedCosmetics.first.id,
+                  fallbackTitle: ownedCosmetics.first.title,
+                ),
+            body: ownedCosmeticLabels.join(' · '),
+            chips: <String>[?equippedCosmeticChip],
+          ),
+        ],
+        if (highlightReward != null) ...[
+          const SizedBox(height: 12),
+          _HubOverviewTile(
+            key: const ValueKey('study-harmony-player-deck-highlight-tile'),
+            icon: Icons.flag_rounded,
+            title: studyHarmonyRewardTitleForLocale(
+              localeTag,
+              rewardId: highlightReward.id,
+              fallbackTitle: highlightReward.title,
+            ),
+            subtitle: _nextUnlockShortLabel(l10n, localeTag, highlightReward),
+            body: studyHarmonyRewardDescriptionForLocale(
+              localeTag,
+              rewardId: highlightReward.id,
+              fallbackDescription: highlightReward.description,
+            ),
+            chips: <String>[
+              l10n.studyHarmonyRewardKindLabel(highlightReward.kind.name),
+            ],
+          ),
+        ],
+        if (upcomingRewards.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          _HubOverviewTile(
+            key: const ValueKey('study-harmony-player-deck-next-unlock-tile'),
+            icon: Icons.lock_open_rounded,
+            title: _nextUnlockShortLabel(
+              l10n,
+              localeTag,
+              upcomingRewards.first,
+            ),
+            subtitle: studyHarmonyRewardTitleForLocale(
+              localeTag,
+              rewardId: upcomingRewards.first.id,
+              fallbackTitle: upcomingRewards.first.title,
+            ),
+            body: studyHarmonyRewardDescriptionForLocale(
+              localeTag,
+              rewardId: upcomingRewards.first.id,
+              fallbackDescription: upcomingRewards.first.description,
+            ),
+            chips: <String>[
+              for (final reward in upcomingRewards.take(3))
+                studyHarmonyRewardTitleForLocale(
+                  localeTag,
+                  rewardId: reward.id,
+                  fallbackTitle: reward.title,
+                ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _openEconomyWalletSheet(
+    BuildContext context, {
+    required AppLocalizations l10n,
+    required String localeTag,
+    required Map<String, int> rewardBalances,
+    required int ownedTitleCount,
+    required int ownedCosmeticCount,
+    required int shopPurchaseCount,
+    required List<StudyHarmonyRewardCandidate> upcomingRewards,
+  }) async {
+    const walletCurrencies = <StudyHarmonyCurrencyId>[
+      'currency.studyCoin',
+      'currency.starShard',
+      'currency.focusToken',
+      'currency.rerollToken',
+      'currency.streakShield',
+    ];
+
+    await _showHubOverviewSheet(
+      context,
+      sheetKey: 'study-harmony-wallet-sheet',
+      title: l10n.studyHarmonyGameEconomyTitle,
+      body: l10n.studyHarmonyGameEconomyBody,
+      children: [
+        _HubOverviewTile(
+          key: const ValueKey('study-harmony-wallet-summary-tile'),
+          icon: Icons.wallet_giftcard_rounded,
+          title: _currencyBalanceLabel(
+            localeTag,
+            'currency.studyCoin',
+            rewardBalances['currency.studyCoin'] ?? 0,
+          ),
+          subtitle: _currencyBalanceLabel(
+            localeTag,
+            'currency.starShard',
+            rewardBalances['currency.starShard'] ?? 0,
+          ),
+          body: l10n.studyHarmonyGameEconomyShopPurchases(shopPurchaseCount),
+          chips: <String>[
+            l10n.studyHarmonyGameEconomyTitlesOwned(ownedTitleCount),
+            l10n.studyHarmonyGameEconomyCosmeticsOwned(ownedCosmeticCount),
+          ],
+        ),
+        for (final currencyId in walletCurrencies.skip(2)) ...[
+          const SizedBox(height: 12),
+          _HubOverviewTile(
+            key: ValueKey('study-harmony-wallet-$currencyId'),
+            icon: Icons.paid_rounded,
+            title: _currencyBalanceLabel(
+              localeTag,
+              currencyId,
+              rewardBalances[currencyId] ?? 0,
+            ),
+            subtitle: studyHarmonyCurrencyTitleForLocale(localeTag, currencyId),
+          ),
+        ],
+        if (upcomingRewards.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          _HubOverviewTile(
+            key: const ValueKey('study-harmony-wallet-next-reward-tile'),
+            icon: Icons.card_giftcard_rounded,
+            title: _nextUnlockShortLabel(
+              l10n,
+              localeTag,
+              upcomingRewards.first,
+            ),
+            subtitle: studyHarmonyRewardTitleForLocale(
+              localeTag,
+              rewardId: upcomingRewards.first.id,
+              fallbackTitle: upcomingRewards.first.title,
+            ),
+            body: studyHarmonyRewardDescriptionForLocale(
+              localeTag,
+              rewardId: upcomingRewards.first.id,
+              fallbackDescription: upcomingRewards.first.description,
+            ),
+            chips: <String>[
+              l10n.studyHarmonyRewardKindLabel(upcomingRewards.first.kind.name),
+              for (final reward in upcomingRewards.skip(1).take(2))
+                studyHarmonyRewardTitleForLocale(
+                  localeTag,
+                  rewardId: reward.id,
+                  fallbackTitle: reward.title,
+                ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _openMetaPreviewSheet(
+    BuildContext context, {
+    required AppLocalizations l10n,
+    required String localeTag,
+    required StudyHarmonyCourseDefinition course,
+    required int clearedLessons,
+    required int totalLessons,
+    required int dueReviews,
+    required int dailyStreak,
+    required StudyHarmonyLeagueProgressView leagueProgress,
+    required StudyHarmonyLeagueXpBoostProgressView leagueXpBoost,
+    required StudyHarmonyLessonRecommendation? leagueBoostRecommendation,
+    required StudyHarmonyQuestChestProgressView questChestStatus,
+    required StudyHarmonyLessonRecommendation? questChestActionRecommendation,
+    required StudyHarmonyMonthlyTourProgressView monthlyTour,
+    required StudyHarmonyDuetPactProgressView duetPact,
+    required StudyHarmonyLessonRecommendation? duetPactRecommendation,
+    required bool dailyCompletedToday,
+    required Map<String, int> rewardBalances,
+    required List<StudyHarmonyRewardCandidate> upcomingRewards,
+  }) async {
+    final nextReward = upcomingRewards.isEmpty ? null : upcomingRewards.first;
+
+    await _showHubOverviewSheet(
+      context,
+      sheetKey: 'study-harmony-meta-preview-sheet',
+      title: l10n.studyHarmonyHubMetaPreviewTitle,
+      body: l10n.studyHarmonyHubMetaPreviewBody,
+      children: [
+        _HubOverviewTile(
+          key: const ValueKey('study-harmony-meta-preview-summary-tile'),
+          icon: Icons.lock_clock_rounded,
+          title: l10n.studyHarmonyHubMetaPreviewHeadline,
+          subtitle: course.title,
+          body: l10n.studyHarmonyHubMetaPreviewBody,
+          chips: <String>[
+            l10n.studyHarmonyHubLessonsProgress(clearedLessons, totalLessons),
+            if (dueReviews > 0)
+              l10n.studyHarmonyProgressReviewsReady(dueReviews),
+            if (dailyStreak > 0) l10n.studyHarmonyProgressStreak(dailyStreak),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _HubOverviewTile(
+          key: const ValueKey('study-harmony-meta-preview-league-tile'),
+          icon: Icons.emoji_events_rounded,
+          title: l10n.studyHarmonyLeagueCardTitle,
+          subtitle: leagueProgress.maxTier
+              ? l10n.studyHarmonyLeagueScoreLabel(leagueProgress.score)
+              : l10n.studyHarmonyLeagueProgressLabel(
+                  leagueProgress.score,
+                  leagueProgress.nextTarget!,
+                ),
+          body: _leagueHint(
+            l10n,
+            progress: leagueProgress,
+            leagueXpBoost: leagueXpBoost,
+            boostRecommendation: leagueBoostRecommendation,
+          ),
+          chips: <String>[
+            if (!leagueProgress.maxTier)
+              l10n.studyHarmonyLeagueNextTierLabel(
+                _leagueTierLabel(l10n, leagueProgress.nextTier!),
+              ),
+            if (leagueXpBoost.active)
+              l10n.studyHarmonyLeagueBoostReadyLabel(leagueXpBoost.chargeCount),
+            if (leagueBoostRecommendation != null)
+              l10n.studyHarmonyLeagueBoostLabel(
+                _sessionModeLabel(l10n, leagueBoostRecommendation.sessionMode),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _HubOverviewTile(
+          key: const ValueKey('study-harmony-meta-preview-quest-tile'),
+          icon: Icons.card_giftcard_rounded,
+          title: l10n.studyHarmonyQuestChestTitle,
+          subtitle: _questChestHeadline(l10n, questChestStatus, leagueXpBoost),
+          body: _questChestBody(l10n, questChestStatus, leagueXpBoost),
+          chips: <String>[
+            l10n.studyHarmonyQuestChestProgressLabel(
+              questChestStatus.openedToday
+                  ? questChestStatus.totalQuestCount
+                  : questChestStatus.completedQuestCount,
+              questChestStatus.totalQuestCount,
+            ),
+            if (!questChestStatus.openedToday &&
+                questChestActionRecommendation != null)
+              l10n.studyHarmonyQuestChestBoostLabel(
+                _sessionModeLabel(
+                  l10n,
+                  questChestActionRecommendation.sessionMode,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _HubOverviewTile(
+          key: const ValueKey('study-harmony-meta-preview-tour-tile'),
+          icon: Icons.map_rounded,
+          title: l10n.studyHarmonyTourTitle,
+          subtitle: _monthlyTourHeadline(l10n, monthlyTour),
+          body: _monthlyTourBody(l10n, monthlyTour),
+          chips: _monthlyTourFooterLabels(l10n, monthlyTour),
+        ),
+        const SizedBox(height: 12),
+        _HubOverviewTile(
+          key: const ValueKey('study-harmony-meta-preview-duet-tile'),
+          icon: Icons.favorite_rounded,
+          title: l10n.studyHarmonyDuetTitle,
+          subtitle: _duetPactHeadline(l10n, duetPact),
+          body: _duetPactBody(
+            l10n,
+            duetPact,
+            dailyCompletedToday: dailyCompletedToday,
+          ),
+          chips: <String>[
+            duetPact.activeToday
+                ? l10n.studyHarmonyDuetSpotlightDone
+                : l10n.studyHarmonyDuetSpotlightMissing,
+            l10n.studyHarmonyDuetTargetLabel(
+              duetPact.currentStreak,
+              duetPact.nextTarget,
+            ),
+            if (duetPactRecommendation != null)
+              l10n.studyHarmonyLeagueBoostLabel(
+                _sessionModeLabel(l10n, duetPactRecommendation.sessionMode),
+              ),
+          ],
+        ),
+        if (nextReward != null) ...[
+          const SizedBox(height: 12),
+          _HubOverviewTile(
+            key: const ValueKey('study-harmony-meta-preview-reward-tile'),
+            icon: Icons.wallet_giftcard_rounded,
+            title: l10n.studyHarmonyGameEconomyTitle,
+            subtitle: _nextUnlockShortLabel(l10n, localeTag, nextReward),
+            body: studyHarmonyRewardDescriptionForLocale(
+              localeTag,
+              rewardId: nextReward.id,
+              fallbackDescription: nextReward.description,
+            ),
+            chips: <String>[
+              l10n.studyHarmonyRewardKindLabel(nextReward.kind.name),
+              _currencyBalanceLabel(
+                localeTag,
+                'currency.studyCoin',
+                rewardBalances['currency.studyCoin'] ?? 0,
+              ),
+              _currencyBalanceLabel(
+                localeTag,
+                'currency.starShard',
+                rewardBalances['currency.starShard'] ?? 0,
+              ),
+            ],
+          ),
+        ],
+      ],
     );
   }
 
@@ -733,6 +1338,11 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
               quickRoutineRecommendation ??
               reviewRecommendation ??
               dailyRecommendation;
+          final heroRecommendationCopy = _buildHeroRecommendationCopy(
+            l10n,
+            recommendation: primaryRecommendation,
+            runtimeTuning: runtimeTuning,
+          );
 
           return LayoutBuilder(
             builder: (context, constraints) {
@@ -793,8 +1403,18 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                   : trackRecommendationProfile.heroHeadline,
                               body: selectedTrackDescription,
                               metrics: heroMetrics,
-                              recommendationCopy: null,
-                              recommendationOnPressed: null,
+                              recommendationCopy: heroRecommendationCopy,
+                              recommendationOnPressed:
+                                  primaryRecommendation == null
+                                  ? null
+                                  : () async {
+                                      await _openRecommendationEntry(
+                                        context,
+                                        l10n,
+                                        primaryRecommendation,
+                                        course,
+                                      );
+                                    },
                             ),
                           ),
                           const SizedBox(height: 24),
@@ -907,8 +1527,22 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                         in pedagogyProfile.focusPoints.take(2))
                                       focus,
                                   ],
-                                  onPressed: null,
-                                  showAction: false,
+                                  actionLabel:
+                                      whyItMattersRecommendation == null
+                                      ? null
+                                      : l10n.studyHarmonyHubPlayNowAction,
+                                  onPressed: whyItMattersRecommendation == null
+                                      ? null
+                                      : () async {
+                                          await _openRecommendationEntry(
+                                            context,
+                                            l10n,
+                                            whyItMattersRecommendation,
+                                            course,
+                                          );
+                                        },
+                                  showAction:
+                                      whyItMattersRecommendation != null,
                                 ),
                               ),
                               SizedBox(
@@ -954,27 +1588,7 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                   onPressed: quickRoutineRecommendation == null
                                       ? null
                                       : () async {
-                                          if (quickRoutineRecommendation
-                                                  .sessionMode ==
-                                              StudyHarmonySessionMode.daily) {
-                                            final prepared = await widget
-                                                .progressController
-                                                .prepareDailyChallengeRecommendationForCourse(
-                                                  course,
-                                                );
-                                            if (!context.mounted ||
-                                                prepared == null) {
-                                              return;
-                                            }
-                                            _openRecommendation(
-                                              context,
-                                              l10n,
-                                              prepared,
-                                              course,
-                                            );
-                                            return;
-                                          }
-                                          _openRecommendation(
+                                          await _openRecommendationEntry(
                                             context,
                                             l10n,
                                             quickRoutineRecommendation,
@@ -1076,8 +1690,34 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                   l10n.studyHarmonyHubNextLessonTitle,
                                   l10n.studyHarmonyHubQuickPracticeTitle,
                                 ],
-                                onPressed: null,
-                                showAction: false,
+                                actionLabel:
+                                    l10n.studyHarmonyPlayerDeckOverviewAction,
+                                onPressed: () async {
+                                  await _openMetaPreviewSheet(
+                                    context,
+                                    l10n: l10n,
+                                    localeTag: localeTag,
+                                    course: course,
+                                    clearedLessons: clearedLessons,
+                                    totalLessons: totalLessons,
+                                    dueReviews: dueReviews,
+                                    dailyStreak: dailyStreak,
+                                    leagueProgress: leagueProgress,
+                                    leagueXpBoost: leagueXpBoost,
+                                    leagueBoostRecommendation:
+                                        leagueBoostRecommendation,
+                                    questChestStatus: questChestStatus,
+                                    questChestActionRecommendation:
+                                        questChestActionRecommendation,
+                                    monthlyTour: monthlyTour,
+                                    duetPact: duetPact,
+                                    duetPactRecommendation:
+                                        duetPactRecommendation,
+                                    dailyCompletedToday: dailyCompletedToday,
+                                    rewardBalances: rewardBalances,
+                                    upcomingRewards: upcomingRewards,
+                                  );
+                                },
                               ),
                             ),
                           ] else ...[
@@ -1245,8 +1885,22 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                     ],
                                     actionLabel: l10n
                                         .studyHarmonyPlayerDeckOverviewAction,
-                                    onPressed: null,
-                                    showAction: false,
+                                    onPressed: () async {
+                                      await _openPlayerDeckOverviewSheet(
+                                        context,
+                                        l10n: l10n,
+                                        localeTag: localeTag,
+                                        playStyle: adaptiveProfile.playStyle,
+                                        adaptivePlan: adaptivePlan,
+                                        ownedTitles: ownedTitles,
+                                        ownedCosmetics: ownedCosmetics,
+                                        equippedTitle: equippedTitle,
+                                        equippedCosmetics: equippedCosmetics,
+                                        leadTitle: leadTitle,
+                                        leadCosmetic: leadCosmetic,
+                                        upcomingRewards: upcomingRewards,
+                                      );
+                                    },
                                   ),
                                 ),
                                 SizedBox(
@@ -1345,8 +1999,21 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                     ],
                                     actionLabel: l10n
                                         .studyHarmonyGameEconomyWalletAction,
-                                    onPressed: null,
-                                    showAction: false,
+                                    onPressed: () async {
+                                      await _openEconomyWalletSheet(
+                                        context,
+                                        l10n: l10n,
+                                        localeTag: localeTag,
+                                        rewardBalances: rewardBalances,
+                                        ownedTitleCount: ownedTitles.length,
+                                        ownedCosmeticCount:
+                                            ownedCosmetics.length,
+                                        shopPurchaseCount: widget
+                                            .progressController
+                                            .shopPurchaseCount(),
+                                        upcomingRewards: upcomingRewards,
+                                      );
+                                    },
                                   ),
                                 ),
                               ],
@@ -2021,19 +2688,10 @@ class _StudyHarmonyPageState extends State<StudyHarmonyPage> {
                                     onPressed: dailyRecommendation == null
                                         ? null
                                         : () async {
-                                            final prepared = await widget
-                                                .progressController
-                                                .prepareDailyChallengeRecommendationForCourse(
-                                                  course,
-                                                );
-                                            if (!context.mounted ||
-                                                prepared == null) {
-                                              return;
-                                            }
-                                            _openRecommendation(
+                                            await _openRecommendationEntry(
                                               context,
                                               l10n,
-                                              prepared,
+                                              dailyRecommendation,
                                               course,
                                             );
                                           },
@@ -3429,6 +4087,45 @@ IconData _chapterMasteryIcon(StudyHarmonyChapterMasteryTier tier) {
     StudyHarmonyChapterMasteryTier.silver => Icons.military_tech_rounded,
     StudyHarmonyChapterMasteryTier.gold => Icons.workspace_premium_rounded,
     StudyHarmonyChapterMasteryTier.legendary => Icons.auto_awesome_rounded,
+  };
+}
+
+_HubRecommendationCopy? _buildHeroRecommendationCopy(
+  AppLocalizations l10n, {
+  required StudyHarmonyLessonRecommendation? recommendation,
+  required StudyHarmonyRuntimeTuning runtimeTuning,
+}) {
+  if (recommendation == null) {
+    return null;
+  }
+  return _HubRecommendationCopy(
+    icon: _sessionModeIcon(recommendation.sessionMode),
+    title: recommendation.sessionMode == StudyHarmonySessionMode.daily
+        ? l10n.studyHarmonyHubQuickPracticeTitle
+        : l10n.studyHarmonyHubNextLessonTitle,
+    headline: recommendation.lesson.title,
+    supportingLabel: recommendation.chapter.title,
+    body: _recommendationBody(l10n, recommendation),
+    actionLabel: recommendation.sessionMode == StudyHarmonySessionMode.daily
+        ? l10n.studyHarmonyHubKeepMomentumAction
+        : l10n.studyHarmonyHubPlayNowAction,
+    footerLabels: <String>[
+      _sessionModeLabel(l10n, recommendation.sessionMode),
+      _runtimeTuningSummary(l10n, runtimeTuning),
+    ],
+  );
+}
+
+IconData _sessionModeIcon(StudyHarmonySessionMode mode) {
+  return switch (mode) {
+    StudyHarmonySessionMode.review => Icons.refresh_rounded,
+    StudyHarmonySessionMode.daily => Icons.wb_sunny_rounded,
+    StudyHarmonySessionMode.focus => Icons.flash_on_rounded,
+    StudyHarmonySessionMode.relay => Icons.alt_route_rounded,
+    StudyHarmonySessionMode.bossRush => Icons.whatshot_rounded,
+    StudyHarmonySessionMode.legend => Icons.workspace_premium_rounded,
+    StudyHarmonySessionMode.lesson => Icons.play_circle_fill_rounded,
+    StudyHarmonySessionMode.legacyLevel => Icons.play_circle_fill_rounded,
   };
 }
 

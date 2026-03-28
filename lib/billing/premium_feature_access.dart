@@ -1,4 +1,5 @@
 import '../music/chord_theory.dart';
+import '../release_feature_flags.dart';
 import '../settings/practice_settings.dart';
 
 enum PremiumFeature { smartGenerator, advancedHarmony }
@@ -28,6 +29,18 @@ PracticeSettings sanitizePracticeSettingsForEntitlement(
   if (premiumUnlocked) {
     return settings;
   }
+  if (!settings.smartGeneratorMode &&
+      !settings.secondaryDominantEnabled &&
+      !settings.substituteDominantEnabled &&
+      !settings.modalInterchangeEnabled &&
+      settings.modulationIntensity == ModulationIntensity.low &&
+      settings.jazzPreset == JazzPreset.standardsCore &&
+      settings.sourceProfile == SourceProfile.fakebookStandard &&
+      !settings.smartDiagnosticsEnabled &&
+      !settings.allowTensions &&
+      settings.selectedTensionOptions.isEmpty) {
+    return settings;
+  }
   return settings.copyWith(
     smartGeneratorMode: false,
     secondaryDominantEnabled: false,
@@ -39,5 +52,17 @@ PracticeSettings sanitizePracticeSettingsForEntitlement(
     smartDiagnosticsEnabled: false,
     allowTensions: false,
     selectedTensionOptions: const <String>{},
+  );
+}
+
+PracticeSettings sanitizePracticeSettingsForAvailability(
+  PracticeSettings settings, {
+  required bool premiumUnlocked,
+}) {
+  return sanitizePracticeSettingsForFeatureFlags(
+    sanitizePracticeSettingsForEntitlement(
+      settings,
+      premiumUnlocked: premiumUnlocked,
+    ),
   );
 }

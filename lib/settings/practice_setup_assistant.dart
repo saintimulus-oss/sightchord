@@ -70,15 +70,25 @@ class _PracticeSetupAssistantSheetState
   int _stepIndex = 0;
   bool _playingPreview = false;
 
-  PracticeSettings get _resolvedPreviewSettings =>
-      sanitizePracticeSettingsForEntitlement(
-        _previewSettingsOverride ??
-            PracticeSettingsFactory.fromGeneratorProfile(
-              _profile,
-              baseSettings: widget.currentSettings,
-            ),
+  PracticeSettings get _accessibleCurrentSettings =>
+      sanitizePracticeSettingsForAvailability(
+        widget.currentSettings,
         premiumUnlocked: widget.premiumUnlocked,
       );
+
+  PracticeSettings _sanitizeSettings(PracticeSettings settings) =>
+      sanitizePracticeSettingsForAvailability(
+        settings,
+        premiumUnlocked: widget.premiumUnlocked,
+      );
+
+  PracticeSettings get _resolvedPreviewSettings => _sanitizeSettings(
+    _previewSettingsOverride ??
+        PracticeSettingsFactory.fromGeneratorProfile(
+          _profile,
+          baseSettings: _accessibleCurrentSettings,
+        ),
+  );
 
   PracticeSetupPreview get _preview => PracticeSetupPreviewBuilder.fromSettings(
     settings: _resolvedPreviewSettings,
@@ -93,7 +103,7 @@ class _PracticeSetupAssistantSheetState
   void initState() {
     super.initState();
     _profile = PracticeSettingsFactory.profileFromSettings(
-      widget.currentSettings,
+      _accessibleCurrentSettings,
     );
   }
 
@@ -149,8 +159,10 @@ class _PracticeSetupAssistantSheetState
 
   void _skipAssistant() {
     _finishWithSettings(
-      PracticeSettingsFactory.beginnerSafePreset(
-        baseSettings: widget.currentSettings,
+      _sanitizeSettings(
+        PracticeSettingsFactory.beginnerSafePreset(
+          baseSettings: _accessibleCurrentSettings,
+        ),
       ),
     );
   }
@@ -167,9 +179,8 @@ class _PracticeSetupAssistantSheetState
     PracticeSettings Function(PracticeSettings current) transform,
   ) {
     setState(() {
-      final adjustedSettings = sanitizePracticeSettingsForEntitlement(
+      final adjustedSettings = _sanitizeSettings(
         transform(_resolvedPreviewSettings),
-        premiumUnlocked: widget.premiumUnlocked,
       );
       _previewSettingsOverride = adjustedSettings;
       _profile = PracticeSettingsFactory.profileFromSettings(adjustedSettings);
@@ -181,10 +192,7 @@ class _PracticeSetupAssistantSheetState
     PracticeSettings Function(PracticeSettings current) transform,
   ) {
     final current = _resolvedPreviewSettings;
-    final adjusted = sanitizePracticeSettingsForEntitlement(
-      transform(current),
-      premiumUnlocked: widget.premiumUnlocked,
-    );
+    final adjusted = _sanitizeSettings(transform(current));
     return adjusted.settingsComplexityMode != current.settingsComplexityMode ||
         adjusted.preferredSuggestionKind != current.preferredSuggestionKind ||
         adjusted.chordLanguageLevel != current.chordLanguageLevel ||

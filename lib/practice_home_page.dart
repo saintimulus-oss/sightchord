@@ -136,7 +136,7 @@ class _MyHomePageState extends State<MyHomePage> {
   FavoriteStartSlots _favoriteStartSlots = const FavoriteStartSlots();
 
   PracticeSettings _resolvedSettings({bool allowContextLookup = true}) =>
-      sanitizePracticeSettingsForEntitlement(
+      sanitizePracticeSettingsForAvailability(
         widget.controller.settings,
         premiumUnlocked: allowContextLookup
             ? _isPremiumUnlocked
@@ -606,7 +606,7 @@ class _MyHomePageState extends State<MyHomePage> {
     bool syncBpmText = false,
   }) {
     final requestedPremium = requestedPremiumFeatures(nextSettings);
-    final resolvedSettings = sanitizePracticeSettingsForEntitlement(
+    final resolvedSettings = sanitizePracticeSettingsForAvailability(
       nextSettings,
       premiumUnlocked: _isPremiumUnlocked,
     );

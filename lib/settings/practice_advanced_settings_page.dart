@@ -69,6 +69,12 @@ class _PracticeAdvancedSettingsPageState
       : HarmonySoundProfileSelection.values
             .where((value) => value != HarmonySoundProfileSelection.trackAware)
             .toList(growable: false);
+  List<_AdvancedSettingsCategory> get _visibleCategories => [
+    for (final category in _AdvancedSettingsCategory.values)
+      if (kEnableMelodyGenerationEntryPoints ||
+          category != _AdvancedSettingsCategory.melody)
+        category,
+  ];
   HarmonySoundProfileSelection get _selectedVisibleHarmonySoundProfile =>
       !kEnableStudyHarmonyEntryPoints &&
           _settings.harmonySoundProfileSelection ==
@@ -97,7 +103,7 @@ class _PracticeAdvancedSettingsPageState
 
   void _applySettings(PracticeSettings nextSettings, {bool reseed = false}) {
     final requestedPremium = requestedPremiumFeatures(nextSettings);
-    final resolvedSettings = sanitizePracticeSettingsForEntitlement(
+    final resolvedSettings = sanitizePracticeSettingsForAvailability(
       nextSettings,
       premiumUnlocked: _isPremiumUnlocked,
     );
@@ -621,19 +627,22 @@ class _PracticeAdvancedSettingsPageState
               );
             },
           ),
-          const SizedBox(height: 12),
-          SwitchListTile.adaptive(
-            key: const ValueKey('auto-play-melody-toggle'),
-            contentPadding: EdgeInsets.zero,
-            title: Text(l10n.autoPlayMelodyWithChords),
-            subtitle: Text(l10n.autoPlayMelodyWithChordsPlaceholder),
-            value: _settings.autoPlayMelodyWithChords,
-            onChanged: (value) {
-              dispatcher.apply(
-                (current) => current.copyWith(autoPlayMelodyWithChords: value),
-              );
-            },
-          ),
+          if (kEnableMelodyGenerationEntryPoints) ...[
+            const SizedBox(height: 12),
+            SwitchListTile.adaptive(
+              key: const ValueKey('auto-play-melody-toggle'),
+              contentPadding: EdgeInsets.zero,
+              title: Text(l10n.autoPlayMelodyWithChords),
+              subtitle: Text(l10n.autoPlayMelodyWithChordsPlaceholder),
+              value: _settings.autoPlayMelodyWithChords,
+              onChanged: (value) {
+                dispatcher.apply(
+                  (current) =>
+                      current.copyWith(autoPlayMelodyWithChords: value),
+                );
+              },
+            ),
+          ],
         ],
       ),
     ];
@@ -1978,13 +1987,16 @@ class _PracticeAdvancedSettingsPageState
     final colorScheme = theme.colorScheme;
     final size = MediaQuery.sizeOf(context);
     final compactLayout = size.width < 980;
-    final categories = _AdvancedSettingsCategory.values;
+    final categories = _visibleCategories;
+    final selectedCategory = categories.contains(_selectedCategory)
+        ? _selectedCategory
+        : categories.first;
     final dispatcher = PracticeSettingsDispatcher(
       settings: _settings,
       onApplySettings: _applySettings,
     );
     final panelChildren = _buildCategoryPanelChildren(
-      category: _selectedCategory,
+      category: selectedCategory,
       l10n: l10n,
       theme: theme,
       colorScheme: colorScheme,
@@ -2089,7 +2101,7 @@ class _PracticeAdvancedSettingsPageState
                                                   icon: _categoryIcon(category),
                                                   selected:
                                                       category ==
-                                                      _selectedCategory,
+                                                      selectedCategory,
                                                   compact: compactLayout,
                                                   onPressed: () {
                                                     setState(() {
@@ -2152,9 +2164,7 @@ class _PracticeAdvancedSettingsPageState
                                             child: Padding(
                                               padding: const EdgeInsets.all(12),
                                               child: Icon(
-                                                _categoryIcon(
-                                                  _selectedCategory,
-                                                ),
+                                                _categoryIcon(selectedCategory),
                                                 color: colorScheme.primary,
                                               ),
                                             ),
@@ -2168,7 +2178,7 @@ class _PracticeAdvancedSettingsPageState
                                                 Text(
                                                   _categoryLabel(
                                                     l10n,
-                                                    _selectedCategory,
+                                                    selectedCategory,
                                                   ),
                                                   style: theme
                                                       .textTheme
@@ -2182,7 +2192,7 @@ class _PracticeAdvancedSettingsPageState
                                                 Text(
                                                   _categoryDescription(
                                                     l10n,
-                                                    _selectedCategory,
+                                                    selectedCategory,
                                                   ),
                                                   style: theme
                                                       .textTheme

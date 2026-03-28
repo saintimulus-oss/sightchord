@@ -199,11 +199,6 @@ extension _PracticeHomePageUi on _MyHomePageState {
     FavoriteStartPreset preset,
   ) {
     final resolved = preset.applyTo(_settings);
-    final melody = !resolved.melodyGenerationEnabled
-        ? l10n.melodyQuickPresetCompactOffLabel
-        : PracticeSettingsFactory.quickMelodyPresetForSettings(
-            resolved,
-          ).compactLocalizedLabel(l10n);
     final orderedKeyCenters = <KeyCenter>[
       for (final mode in KeyMode.values)
         for (final center in MusicTheory.orderedKeyCentersForMode(mode))
@@ -223,8 +218,17 @@ extension _PracticeHomePageUi on _MyHomePageState {
                 ),
               )
               .join(' | ');
+    final melodySummary = kEnableMelodyGenerationEntryPoints
+        ? !resolved.melodyGenerationEnabled
+              ? l10n.melodyQuickPresetCompactOffLabel
+              : PracticeSettingsFactory.quickMelodyPresetForSettings(
+                  resolved,
+                ).compactLocalizedLabel(l10n)
+        : null;
     return '${resolved.settingsComplexityMode.localizedLabel(l10n)} | '
-        '$keyLabel | $melody | ${resolved.bpm} ${l10n.bpmLabel}';
+        '$keyLabel'
+        '${melodySummary == null ? '' : ' | $melodySummary'}'
+        ' | ${resolved.bpm} ${l10n.bpmLabel}';
   }
 
   Future<void> _saveCurrentFavoriteStartToSlot(int index) async {
@@ -787,7 +791,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
     required String successMessage,
     required String noChangeMessage,
   }) {
-    final resolvedSettings = sanitizePracticeSettingsForEntitlement(
+    final resolvedSettings = sanitizePracticeSettingsForAvailability(
       nextSettings,
       premiumUnlocked: _isPremiumUnlocked,
     );
@@ -1966,7 +1970,9 @@ extension _PracticeHomePageUi on _MyHomePageState {
     return PracticeGeneratorControls(
       compact: compact,
       currentChordAvailable: _currentChord != null,
-      melodyGenerationEnabled: _settings.melodyGenerationEnabled,
+      melodyGenerationEnabled:
+          kEnableMelodyGenerationEntryPoints &&
+          _settings.melodyGenerationEnabled,
       autoPlayChordChanges: _settings.autoPlayChordChanges,
       autoPlayPattern: _settings.autoPlayPattern,
       currentMelodyPreviewText: _previewTextForMelodyEvent(_currentMelodyEvent),
@@ -2248,12 +2254,13 @@ extension _PracticeHomePageUi on _MyHomePageState {
                   selected: _settings.voicingSuggestionsEnabled,
                   onSelected: _toggleQuickVoicingSuggestions,
                 ),
-                _GeneratorQuickSettingChip(
-                  chipKey: const ValueKey('melody-generation-toggle'),
-                  label: _quickMelodyToggleLabel(l10n, compact: compact),
-                  selected: _settings.melodyGenerationEnabled,
-                  onSelected: _toggleQuickMelodyGeneration,
-                ),
+                if (kEnableMelodyGenerationEntryPoints)
+                  _GeneratorQuickSettingChip(
+                    chipKey: const ValueKey('melody-generation-toggle'),
+                    label: _quickMelodyToggleLabel(l10n, compact: compact),
+                    selected: _settings.melodyGenerationEnabled,
+                    onSelected: _toggleQuickMelodyGeneration,
+                  ),
                 if (showExpandedGeneratorControls)
                   _GeneratorQuickSettingChip(
                     chipKey: const ValueKey('non-diatonic-toggle'),
@@ -2279,7 +2286,8 @@ extension _PracticeHomePageUi on _MyHomePageState {
                   ),
               ],
             ),
-            if (_settings.melodyGenerationEnabled) ...[
+            if (kEnableMelodyGenerationEntryPoints &&
+                _settings.melodyGenerationEnabled) ...[
               SizedBox(height: compact ? 12 : 14),
               Container(
                 height: 1,

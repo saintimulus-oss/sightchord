@@ -306,4 +306,56 @@ void main() {
     expect(AppLanguage.zh.selectableValue, AppLanguage.zhTw);
     expect(AppLanguage.zhHans.selectableValue, AppLanguage.zhCn);
   });
+
+  test(
+    'language-only legacy keys resolve to visible regional options when needed',
+    () {
+      const expectedRegionalFallbacks = <String, AppLanguage>{
+        'hy': AppLanguage.hyAm,
+        'az': AppLanguage.azAz,
+        'bn': AppLanguage.bnBd,
+        'cs': AppLanguage.csCz,
+        'da': AppLanguage.daDk,
+        'de': AppLanguage.deDe,
+        'el': AppLanguage.elGr,
+        'eu': AppLanguage.euEs,
+        'fr': AppLanguage.frFr,
+        'gl': AppLanguage.glEs,
+        'he': AppLanguage.iwIl,
+        'hi': AppLanguage.hiIn,
+        'hu': AppLanguage.huHu,
+        'is': AppLanguage.isIs,
+        'it': AppLanguage.itIt,
+        'ka': AppLanguage.kaGe,
+        'km': AppLanguage.kmKh,
+        'kn': AppLanguage.knIn,
+        'ky': AppLanguage.kyKg,
+        'lo': AppLanguage.loLa,
+        'mk': AppLanguage.mkMk,
+        'ml': AppLanguage.mlIn,
+        'mn': AppLanguage.mnMn,
+        'mr': AppLanguage.mrIn,
+        'my': AppLanguage.myMm,
+        'ne': AppLanguage.neNp,
+        'nl': AppLanguage.nlNl,
+        'no': AppLanguage.noNo,
+        'pl': AppLanguage.plPl,
+        'pt': AppLanguage.ptPt,
+        'ru': AppLanguage.ruRu,
+        'si': AppLanguage.siLk,
+        'sv': AppLanguage.svSe,
+        'ta': AppLanguage.taIn,
+        'te': AppLanguage.teIn,
+        'tr': AppLanguage.trTr,
+      };
+
+      expectedRegionalFallbacks.forEach((storageKey, expectedLanguage) {
+        expect(
+          AppLanguageX.fromStorageKey(storageKey),
+          expectedLanguage,
+          reason: '$storageKey should keep opening a visible language choice.',
+        );
+      });
+    },
+  );
 }

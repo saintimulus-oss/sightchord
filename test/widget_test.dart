@@ -19,7 +19,6 @@ import 'package:chordest/music/voicing_models.dart';
 import 'package:chordest/practice/practice_transport_controller.dart';
 import 'package:chordest/settings/practice_settings.dart';
 import 'package:chordest/settings/practice_advanced_settings_page.dart';
-import 'package:chordest/settings/practice_settings_factory.dart';
 import 'package:chordest/settings/settings_controller.dart';
 import 'package:chordest/widgets/beat_indicator_row.dart';
 import 'package:chordest/widgets/mini_keyboard.dart';
@@ -821,7 +820,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('A min Melody'), findsOneWidget);
+      expect(find.text('A min Chords'), findsOneWidget);
 
       await tester.tap(
         find.byKey(const ValueKey('favorite-start-slot-0-apply-button')),
@@ -837,7 +836,7 @@ void main() {
         controller.settings.settingsComplexityMode,
         SettingsComplexityMode.advanced,
       );
-      expect(controller.settings.melodyGenerationEnabled, isTrue);
+      expect(controller.settings.melodyGenerationEnabled, isFalse);
       expect(controller.settings.bpm, 92);
     },
   );
@@ -930,7 +929,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('F maj Melody'), findsOneWidget);
+    expect(find.text('F maj Chords'), findsOneWidget);
 
     await tester.ensureVisible(
       find.byKey(const ValueKey('favorite-start-slot-1-apply-button')),
@@ -946,7 +945,7 @@ void main() {
       controller.settings.activeKeyCenters,
       contains(const KeyCenter(tonicName: 'F', mode: KeyMode.major)),
     );
-    expect(controller.settings.melodyGenerationEnabled, isTrue);
+    expect(controller.settings.melodyGenerationEnabled, isFalse);
     expect(controller.settings.bpm, 88);
   });
 
@@ -3377,7 +3376,7 @@ void main() {
       expect(beatCount(tester), 3);
       expect(
         find.byKey(const ValueKey('practice-regenerate-melody-button')),
-        findsOneWidget,
+        findsNothing,
       );
       expect(
         iconForButton(tester, 'practice-autoplay-button'),
@@ -3549,69 +3548,33 @@ void main() {
     expect(controller.settings.metronomeUseAccentSound, isTrue);
   });
 
-  testWidgets('advanced settings update melody generation controls', (
+  testWidgets('advanced settings hide melody generation controls', (
     WidgetTester tester,
   ) async {
     final controller = await pumpAppWithController(tester, PracticeSettings());
 
-    await openAdvancedGeneratorSettings(tester, category: 'melody');
+    await openAdvancedGeneratorSettings(tester);
 
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('melody-generation-enabled-toggle')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(
-      find.byKey(const ValueKey('melody-generation-enabled-toggle')),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('melody-density-dropdown')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('melody-density-dropdown')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Active').last);
-    await tester.pumpAndSettle();
-
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('melody-style-dropdown')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('melody-style-dropdown')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Bebop').last);
-    await tester.pumpAndSettle();
-
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('allow-chromatic-approaches-toggle')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(
-      find.byKey(const ValueKey('allow-chromatic-approaches-toggle')),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('melody-playback-mode-dropdown')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(
-      find.byKey(const ValueKey('melody-playback-mode-dropdown')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Melody only').last);
-    await tester.pumpAndSettle();
-
-    expect(controller.settings.melodyGenerationEnabled, isTrue);
-    expect(controller.settings.autoPlayMelodyWithChords, isTrue);
-    expect(controller.settings.melodyDensity, MelodyDensity.active);
-    expect(controller.settings.melodyStyle, MelodyStyle.bebop);
-    expect(controller.settings.allowChromaticApproaches, isTrue);
     expect(
-      controller.settings.melodyPlaybackMode,
-      MelodyPlaybackMode.melodyOnly,
+      find.byKey(const ValueKey('advanced-settings-tab-melody')),
+      findsNothing,
     );
+    expect(find.byKey(const ValueKey('auto-play-melody-toggle')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('melody-generation-enabled-toggle')),
+      findsNothing,
+    );
+    expect(find.byKey(const ValueKey('melody-density-dropdown')), findsNothing);
+    expect(find.byKey(const ValueKey('melody-style-dropdown')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('allow-chromatic-approaches-toggle')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('melody-playback-mode-dropdown')),
+      findsNothing,
+    );
+    expect(controller.settings.melodyGenerationEnabled, isFalse);
   });
 
   testWidgets('advanced settings anchor editor saves enabled anchor slots', (
@@ -3708,110 +3671,63 @@ void main() {
     }
   });
 
-  testWidgets('melody quick toggle reveals regenerate and playback controls', (
+  testWidgets('melody quick controls stay hidden on the generator surface', (
     WidgetTester tester,
   ) async {
-    final controller = await pumpAppWithController(tester, PracticeSettings());
+    await pumpAppWithController(
+      tester,
+      PracticeSettings(melodyGenerationEnabled: true),
+    );
 
     expect(
       find.byKey(const ValueKey('practice-regenerate-melody-button')),
       findsNothing,
     );
 
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('melody-generation-toggle')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('melody-generation-toggle')));
-    await tester.pumpAndSettle();
-
-    expect(controller.settings.melodyGenerationEnabled, isTrue);
-    expect(controller.settings.autoPlayMelodyWithChords, isTrue);
     expect(
-      find.byKey(const ValueKey('practice-regenerate-melody-button')),
-      findsOneWidget,
+      find.byKey(const ValueKey('melody-generation-toggle')),
+      findsNothing,
     );
     expect(
       find.byKey(const ValueKey('melody-playback-mode-both')),
-      findsOneWidget,
+      findsNothing,
     );
   });
 
-  testWidgets('melody quick preset chips apply distinct line settings', (
-    WidgetTester tester,
-  ) async {
-    final controller = await pumpAppWithController(tester, PracticeSettings());
-
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('melody-generation-toggle')),
-    );
-    await tester.tap(find.byKey(const ValueKey('melody-generation-toggle')));
-    await tester.pumpAndSettle();
-
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('melody-preset-guideLine')),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(const ValueKey('melody-preset-guideLine')));
-    await tester.pumpAndSettle();
-
-    expect(controller.settings.melodyGenerationEnabled, isTrue);
-    expect(
-      PracticeSettingsFactory.quickMelodyPresetForSettings(controller.settings),
-      MelodyQuickPreset.guideLine,
-    );
-    expect(controller.settings.syncopationBias, lessThan(0.2));
-    expect(controller.settings.colorRealizationBias, lessThan(0.2));
-    expect(find.textContaining('steady guide notes'), findsWidgets);
-
-    await tester.tap(find.byKey(const ValueKey('melody-preset-songLine')));
-    await tester.pumpAndSettle();
-
-    expect(
-      PracticeSettingsFactory.quickMelodyPresetForSettings(controller.settings),
-      MelodyQuickPreset.songLine,
-    );
-    expect(controller.settings.allowChromaticApproaches, isTrue);
-    expect(controller.settings.syncopationBias, greaterThan(0.3));
-    expect(controller.settings.noveltyTarget, greaterThan(0.5));
-    expect(find.textContaining('singable contour'), findsWidgets);
-
-    await tester.tap(find.byKey(const ValueKey('melody-preset-colorLine')));
-    await tester.pumpAndSettle();
-
-    expect(
-      PracticeSettingsFactory.quickMelodyPresetForSettings(controller.settings),
-      MelodyQuickPreset.colorLine,
-    );
-    expect(controller.settings.melodyDensity, MelodyDensity.active);
-    expect(controller.settings.colorRealizationBias, greaterThan(0.8));
-    expect(controller.settings.motifVariationBias, greaterThan(0.85));
-    expect(find.textContaining('color-forward line'), findsWidgets);
-
-    await tester.tap(find.byKey(const ValueKey('melody-preset-off')));
-    await tester.pumpAndSettle();
-
-    expect(controller.settings.melodyGenerationEnabled, isFalse);
-  });
-
-  testWidgets('melody preset copy stays readable in Korean locale', (
+  testWidgets('melody preset chips are hidden from quick settings', (
     WidgetTester tester,
   ) async {
     await pumpAppWithController(
       tester,
-      PracticeSettings(language: AppLanguage.ko),
+      PracticeSettings(melodyGenerationEnabled: true),
     );
 
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('melody-generation-toggle')),
+    expect(find.byKey(const ValueKey('melody-preset-guideLine')), findsNothing);
+    expect(find.byKey(const ValueKey('melody-preset-songLine')), findsNothing);
+    expect(find.byKey(const ValueKey('melody-preset-colorLine')), findsNothing);
+    expect(find.byKey(const ValueKey('melody-preset-off')), findsNothing);
+  });
+
+  testWidgets('melody preset copy is hidden in Korean locale too', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppWithController(
+      tester,
+      PracticeSettings(language: AppLanguage.ko, melodyGenerationEnabled: true),
     );
-    await tester.tap(find.byKey(const ValueKey('melody-generation-toggle')));
-    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('melody-generation-toggle')),
+      findsNothing,
+    );
+    expect(find.byKey(const ValueKey('melody-preset-guideLine')), findsNothing);
+    expect(find.textContaining('Line Presets'), findsNothing);
+    /*
 
     expect(find.text('멜로디 프리셋'), findsWidgets);
     expect(find.textContaining('가이드'), findsWidgets);
     expect(find.textContaining('안정적인 가이드 톤 중심'), findsWidgets);
+    */
   });
 
   testWidgets('transport uses separate play, pause, speaker, and reset icons', (
@@ -3858,13 +3774,14 @@ void main() {
   });
 
   testWidgets(
-    'auto-play chord changes also carry melody when line mode is on',
+    'auto-play chord changes fall back to chord-only preview when melody is gated off',
     (WidgetTester tester) async {
       final audio = _SpyHarmonyAudioService();
       await pumpAppWithAudioService(
         tester,
         PracticeSettings(
           autoPlayChordChanges: true,
+          autoPlayMelodyWithChords: true,
           melodyGenerationEnabled: true,
           metronomeEnabled: false,
         ),
@@ -3875,7 +3792,7 @@ void main() {
 
       expect(audio.playedCompositeClips, isNotEmpty);
       expect(audio.playedCompositeClips.last.chordClip, isNotNull);
-      expect(audio.playedCompositeClips.last.melodyClip, isNotNull);
+      expect(audio.playedCompositeClips.last.melodyClip, isNull);
     },
   );
 
@@ -3923,7 +3840,7 @@ void main() {
     expect(audio.playedLabels, isEmpty);
   });
 
-  testWidgets('melody playback mode routes preview audio correctly', (
+  testWidgets('manual preview ignores legacy melody playback mode settings', (
     WidgetTester tester,
   ) async {
     final audio = _SpyHarmonyAudioService();
@@ -3942,16 +3859,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(audio.playedCompositeClips, isNotEmpty);
-    expect(audio.playedCompositeClips.last.chordClip, isNull);
-    expect(audio.playedCompositeClips.last.melodyClip, isNotNull);
-
-    await tester.tap(find.byKey(const ValueKey('melody-playback-mode-both')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('practice-play-chord-button')));
-    await tester.pumpAndSettle();
-
     expect(audio.playedCompositeClips.last.chordClip, isNotNull);
-    expect(audio.playedCompositeClips.last.melodyClip, isNotNull);
+    expect(audio.playedCompositeClips.last.melodyClip, isNull);
+    expect(
+      find.byKey(const ValueKey('melody-playback-mode-both')),
+      findsNothing,
+    );
   });
 
   testWidgets(
@@ -3984,43 +3897,34 @@ void main() {
     },
   );
 
-  testWidgets('combined playback keeps the melody louder than the chord bed', (
-    WidgetTester tester,
-  ) async {
-    final audio = _SpyHarmonyAudioService();
-    await pumpAppWithAudioService(
-      tester,
-      PracticeSettings(
-        melodyGenerationEnabled: true,
-        melodyPlaybackMode: MelodyPlaybackMode.both,
-        metronomeEnabled: false,
-      ),
-      harmonyAudioService: audio,
-    );
+  testWidgets(
+    'combined playback legacy settings still produce chord-only clips',
+    (WidgetTester tester) async {
+      final audio = _SpyHarmonyAudioService();
+      await pumpAppWithAudioService(
+        tester,
+        PracticeSettings(
+          melodyGenerationEnabled: true,
+          melodyPlaybackMode: MelodyPlaybackMode.both,
+          metronomeEnabled: false,
+        ),
+        harmonyAudioService: audio,
+      );
 
-    await advanceChord(tester);
-    await tester.tap(find.byKey(const ValueKey('practice-play-chord-button')));
-    await tester.pumpAndSettle();
+      await advanceChord(tester);
+      await tester.tap(
+        find.byKey(const ValueKey('practice-play-chord-button')),
+      );
+      await tester.pumpAndSettle();
 
-    final clip = audio.playedCompositeClips.last;
-    final chordClip = clip.chordClip;
-    final melodyClip = clip.melodyClip;
+      final clip = audio.playedCompositeClips.last;
+      final chordClip = clip.chordClip;
 
-    expect(chordClip, isNotNull);
-    expect(melodyClip, isNotNull);
-    expect(melodyClip!.notes, isNotEmpty);
-
-    final maxChordGain = chordClip!.notes
-        .map((note) => note.gain)
-        .reduce((left, right) => left > right ? left : right);
-    final maxMelodyGain = melodyClip.notes
-        .map((note) => note.gain)
-        .reduce((left, right) => left > right ? left : right);
-
-    expect(maxChordGain, lessThan(0.85));
-    expect(maxMelodyGain, greaterThan(maxChordGain));
-    expect(melodyClip.notes.every((note) => note.velocity > 92), isTrue);
-  });
+      expect(chordClip, isNotNull);
+      expect(clip.melodyClip, isNull);
+      expect(chordClip!.notes, isNotEmpty);
+    },
+  );
 
   testWidgets('bpm input accepts three digits and hides the range helper', (
     WidgetTester tester,
@@ -4414,57 +4318,44 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('advanced melody settings expose line personality sliders', (
-    WidgetTester tester,
-  ) async {
-    var latest = PracticeSettings(melodyGenerationEnabled: true);
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: PracticeAdvancedSettingsPage(
-          settings: latest,
-          onApplySettings: (nextSettings, {bool reseed = false}) {
-            latest = nextSettings;
-          },
+  testWidgets(
+    'advanced settings hide the melody tab for legacy melody settings',
+    (WidgetTester tester) async {
+      var latest = PracticeSettings(melodyGenerationEnabled: true);
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: PracticeAdvancedSettingsPage(
+            settings: latest,
+            onApplySettings: (nextSettings, {bool reseed = false}) {
+              latest = nextSettings;
+            },
+          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    await tester.tap(
-      find.byKey(const ValueKey('advanced-settings-tab-melody')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(
-      find.byKey(const ValueKey('syncopation-bias-slider')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey('color-realization-bias-slider')),
-      findsOneWidget,
-    );
-    expect(find.byKey(const ValueKey('novelty-target-slider')), findsOneWidget);
-    expect(
-      find.byKey(const ValueKey('motif-variation-bias-slider')),
-      findsOneWidget,
-    );
-
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('syncopation-bias-slider')),
-    );
-    await tester.pumpAndSettle();
-
-    final syncSlider = find.descendant(
-      of: find.byKey(const ValueKey('syncopation-bias-slider')),
-      matching: find.byType(Slider),
-    );
-    await tester.drag(syncSlider, const Offset(160, 0));
-    await tester.pumpAndSettle();
-
-    expect(latest.syncopationBias, greaterThan(0.42));
-  });
+      expect(
+        find.byKey(const ValueKey('advanced-settings-tab-melody')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('syncopation-bias-slider')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('color-realization-bias-slider')),
+        findsNothing,
+      );
+      expect(find.byKey(const ValueKey('novelty-target-slider')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('motif-variation-bias-slider')),
+        findsNothing,
+      );
+      expect(latest.melodyGenerationEnabled, isTrue);
+    },
+  );
 
   testWidgets('korean localization renders metronome sound copy', (
     WidgetTester tester,

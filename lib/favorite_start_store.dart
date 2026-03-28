@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'music/chord_theory.dart';
+import 'release_feature_flags.dart';
 import 'settings/inversion_settings.dart';
 import 'settings/practice_settings.dart';
 
@@ -245,7 +246,10 @@ class FavoriteStartPreset {
         '${_compactKeyLabel(orderedKeyCenters.first)} +'
             '${orderedKeyCenters.length - 1}',
     };
-    final textureLabel = melodyGenerationEnabled ? 'Melody' : 'Chords';
+    final textureLabel =
+        kEnableMelodyGenerationEntryPoints && melodyGenerationEnabled
+        ? 'Melody'
+        : 'Chords';
     return '$keyLabel $textureLabel';
   }
 
@@ -286,38 +290,40 @@ class FavoriteStartPreset {
   }
 
   PracticeSettings applyTo(PracticeSettings baseSettings) {
-    return baseSettings.copyWith(
-      guidedSetupCompleted: true,
-      settingsComplexityMode: settingsComplexityMode,
-      chordLanguageLevel: chordLanguageLevel,
-      romanPoolPreset: romanPoolPreset,
-      activeKeyCenters: activeKeyCenters,
-      melodyGenerationEnabled: melodyGenerationEnabled,
-      melodyDensity: melodyDensity,
-      melodyStyle: melodyStyle,
-      melodyPlaybackMode: melodyPlaybackMode,
-      autoPlayMelodyWithChords: autoPlayMelodyWithChords,
-      autoPlayChordChanges: autoPlayChordChanges,
-      chordSymbolStyle: chordSymbolStyle,
-      allowV7sus4: allowV7sus4,
-      allowTensions: allowTensions,
-      enabledChordQualities: enabledChordQualities,
-      selectedTensionOptions: selectedTensionOptions,
-      smartGeneratorMode: smartGeneratorMode,
-      secondaryDominantEnabled: secondaryDominantEnabled,
-      substituteDominantEnabled: substituteDominantEnabled,
-      modalInterchangeEnabled: modalInterchangeEnabled,
-      modulationIntensity: modulationIntensity,
-      jazzPreset: jazzPreset,
-      sourceProfile: sourceProfile,
-      voicingSuggestionsEnabled: voicingSuggestionsEnabled,
-      voicingDisplayMode: voicingDisplayMode,
-      voicingComplexity: voicingComplexity,
-      allowRootlessVoicings: allowRootlessVoicings,
-      maxVoicingNotes: maxVoicingNotes,
-      lookAheadDepth: lookAheadDepth,
-      bpm: bpm,
-      inversionSettings: inversionSettings,
+    return sanitizePracticeSettingsForFeatureFlags(
+      baseSettings.copyWith(
+        guidedSetupCompleted: true,
+        settingsComplexityMode: settingsComplexityMode,
+        chordLanguageLevel: chordLanguageLevel,
+        romanPoolPreset: romanPoolPreset,
+        activeKeyCenters: activeKeyCenters,
+        melodyGenerationEnabled: melodyGenerationEnabled,
+        melodyDensity: melodyDensity,
+        melodyStyle: melodyStyle,
+        melodyPlaybackMode: melodyPlaybackMode,
+        autoPlayMelodyWithChords: autoPlayMelodyWithChords,
+        autoPlayChordChanges: autoPlayChordChanges,
+        chordSymbolStyle: chordSymbolStyle,
+        allowV7sus4: allowV7sus4,
+        allowTensions: allowTensions,
+        enabledChordQualities: enabledChordQualities,
+        selectedTensionOptions: selectedTensionOptions,
+        smartGeneratorMode: smartGeneratorMode,
+        secondaryDominantEnabled: secondaryDominantEnabled,
+        substituteDominantEnabled: substituteDominantEnabled,
+        modalInterchangeEnabled: modalInterchangeEnabled,
+        modulationIntensity: modulationIntensity,
+        jazzPreset: jazzPreset,
+        sourceProfile: sourceProfile,
+        voicingSuggestionsEnabled: voicingSuggestionsEnabled,
+        voicingDisplayMode: voicingDisplayMode,
+        voicingComplexity: voicingComplexity,
+        allowRootlessVoicings: allowRootlessVoicings,
+        maxVoicingNotes: maxVoicingNotes,
+        lookAheadDepth: lookAheadDepth,
+        bpm: bpm,
+        inversionSettings: inversionSettings,
+      ),
     );
   }
 

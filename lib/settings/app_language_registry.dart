@@ -756,6 +756,12 @@ final Map<String, AppLanguage> _languageByStorageKey = <String, AppLanguage>{
       _normalizeStorageKey(alias): entry.key,
 };
 
+const Map<String, AppLanguage> _preferredSelectableLanguageByBaseKey =
+    <String, AppLanguage>{'fr': AppLanguage.frFr, 'pt': AppLanguage.ptPt};
+
+final Map<String, AppLanguage> _languageByLegacyBaseKey =
+    _buildLanguageByLegacyBaseKey();
+
 extension AppLanguageX on AppLanguage {
   _AppLanguageMetadata get _metadata => _appLanguageMetadata[this]!;
 
@@ -785,9 +791,41 @@ extension AppLanguageX on AppLanguage {
     if (value == null) {
       return AppLanguage.system;
     }
-    return _languageByStorageKey[_normalizeStorageKey(value)] ??
+    final normalizedValue = _normalizeStorageKey(value);
+    return _languageByStorageKey[normalizedValue] ??
+        _languageByLegacyBaseKey[normalizedValue] ??
         AppLanguage.system;
   }
+}
+
+Map<String, AppLanguage> _buildLanguageByLegacyBaseKey() {
+  final candidatesByBaseKey = <String, List<AppLanguage>>{};
+  for (final entry in _appLanguageMetadata.entries) {
+    final locale = entry.value.locale;
+    if (locale == null || !selectableAppLanguages.contains(entry.key)) {
+      continue;
+    }
+    final baseKey = _normalizeStorageKey(locale.languageCode);
+    if (_languageByStorageKey.containsKey(baseKey)) {
+      continue;
+    }
+    candidatesByBaseKey
+        .putIfAbsent(baseKey, () => <AppLanguage>[])
+        .add(entry.key);
+  }
+
+  final resolved = <String, AppLanguage>{};
+  for (final entry in candidatesByBaseKey.entries) {
+    final preferredLanguage = _preferredSelectableLanguageByBaseKey[entry.key];
+    if (preferredLanguage != null) {
+      resolved[entry.key] = preferredLanguage;
+      continue;
+    }
+    if (entry.value.length == 1) {
+      resolved[entry.key] = entry.value.single;
+    }
+  }
+  return resolved;
 }
 
 String _normalizeStorageKey(String value) {

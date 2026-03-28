@@ -461,6 +461,45 @@ void main() {
     },
   );
 
+  testWidgets('early meta preview card opens a locked systems overview sheet', (
+    WidgetTester tester,
+  ) async {
+    await pumpStudyHarmonyPage(tester);
+
+    final metaPreviewCard = find.byKey(
+      const ValueKey('study-harmony-meta-preview'),
+    );
+    expect(metaPreviewCard, findsOneWidget);
+
+    await tester.ensureVisible(metaPreviewCard);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(of: metaPreviewCard, matching: find.byType(FilledButton)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('study-harmony-meta-preview-sheet')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('study-harmony-meta-preview-summary-tile')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('study-harmony-meta-preview-league-tile')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('study-harmony-meta-preview-quest-tile')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('study-harmony-meta-preview-tour-tile')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('study harmony Korean locale keeps the director card readable', (
     WidgetTester tester,
   ) async {
@@ -797,6 +836,93 @@ void main() {
       findsOneWidget,
     );
     expect(find.byKey(const ValueKey('study-harmony-lives')), findsOneWidget);
+  });
+
+  testWidgets(
+    'hero recommendation and why it matters cards open recommended sessions',
+    (WidgetTester tester) async {
+      await pumpStudyHarmonyPage(
+        tester,
+        progressSnapshot: buildProgressedHubSnapshot(),
+      );
+
+      final heroRecommendationCard = find.byKey(
+        const ValueKey('study-harmony-hero-recommendation-card'),
+      );
+      expect(heroRecommendationCard, findsOneWidget);
+
+      await tester.tap(
+        find.descendant(
+          of: heroRecommendationCard,
+          matching: find.byType(FilledButton),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StudyHarmonySessionPage), findsOneWidget);
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+
+      final whyCard = find.byKey(
+        const ValueKey('study-harmony-quickstart-why-card'),
+      );
+      await tester.ensureVisible(whyCard);
+      await tester.tap(
+        find.descendant(of: whyCard, matching: find.byType(FilledButton)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StudyHarmonySessionPage), findsOneWidget);
+    },
+  );
+
+  testWidgets('player deck and wallet cards open overview sheets', (
+    WidgetTester tester,
+  ) async {
+    await pumpStudyHarmonyPage(
+      tester,
+      progressSnapshot: buildProgressedHubSnapshot(),
+    );
+
+    final playerCard = find.byKey(const ValueKey('study-harmony-player-card'));
+    await tester.ensureVisible(playerCard);
+    await tester.tap(
+      find.descendant(of: playerCard, matching: find.byType(FilledButton)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('study-harmony-player-deck-sheet')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('study-harmony-player-deck-summary-tile')),
+      findsOneWidget,
+    );
+
+    Navigator.of(
+      tester.element(
+        find.byKey(const ValueKey('study-harmony-player-deck-sheet')),
+      ),
+    ).pop();
+    await tester.pumpAndSettle();
+
+    final walletCard = find.byKey(const ValueKey('study-harmony-economy-card'));
+    await tester.ensureVisible(walletCard);
+    await tester.tap(
+      find.descendant(of: walletCard, matching: find.byType(FilledButton)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('study-harmony-wallet-sheet')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('study-harmony-wallet-summary-tile')),
+      findsOneWidget,
+    );
   });
 
   testWidgets(

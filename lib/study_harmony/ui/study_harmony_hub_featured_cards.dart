@@ -95,6 +95,9 @@ class _HubHeroCard extends StatelessWidget {
               final featuredCard = copy == null
                   ? const SizedBox.shrink()
                   : _HubActionCard(
+                      key: const ValueKey(
+                        'study-harmony-hero-recommendation-card',
+                      ),
                       icon: copy.icon,
                       title: copy.title,
                       headline: copy.headline,
