@@ -60,7 +60,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
           behavior: SnackBarBehavior.floating,
           action: SnackBarAction(
             key: const ValueKey('practice-undo-snackbar-action'),
-            label: 'Undo',
+            label: AppLocalizations.of(context)!.undoLabel,
             onPressed: onUndo,
           ),
         ),
@@ -108,13 +108,11 @@ extension _PracticeHomePageUi on _MyHomePageState {
   }
 
   String _favoriteStartsTitle(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '利먭꺼李얘린 ?쒖옉' : 'Favorite starts';
+    return AppLocalizations.of(context)!.favoriteStartsTitle;
   }
 
   String _favoriteStartSlotTitle(BuildContext context, int index) {
-    return _usesKoreanUiCopy(context)
-        ? '利먭꺼李얘린 ${index + 1}'
-        : 'Favorite ${index + 1}';
+    return AppLocalizations.of(context)!.favoriteStartSlotTitle(index + 1);
   }
 
   String _favoriteStartLabel(FavoriteStartPreset preset) {
@@ -122,49 +120,39 @@ extension _PracticeHomePageUi on _MyHomePageState {
   }
 
   String _favoriteStartEmptyMessage(BuildContext context) {
-    return _usesKoreanUiCopy(context)
-        ? '?꾩쭅 ??ν맂 ?쒖옉 ?ㅼ젙???놁뼱??'
-        : 'No saved start preset yet.';
+    return AppLocalizations.of(context)!.favoriteStartEmptyMessage;
   }
 
   String _favoriteStartSaveLabel(
     BuildContext context, {
     required bool hasPreset,
   }) {
-    if (_usesKoreanUiCopy(context)) {
-      return hasPreset ? '?덉옱 ?ㅼ젙?쇰줈 ?묐뜲?댄듃' : '?꾩옱 ?ㅼ젙 ??ν븯湲?';
-    }
-    return hasPreset ? 'Update' : 'Save current';
+    final l10n = AppLocalizations.of(context)!;
+    return hasPreset ? l10n.favoriteStartUpdateLabel : l10n.favoriteStartSaveLabel;
   }
 
   String _favoriteStartApplyLabel(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '諛붾줈 ?곸슜' : 'Apply';
+    return AppLocalizations.of(context)!.favoriteStartApplyLabel;
   }
 
   String _favoriteStartRenameLabel(BuildContext context) {
-    return 'Rename';
+    return AppLocalizations.of(context)!.favoriteStartRenameLabel;
   }
 
   String _favoriteStartClearLabel(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '?ㅼ뭅 鍮꾩슦湲?' : 'Clear';
+    return AppLocalizations.of(context)!.favoriteStartClearLabel;
   }
 
   String _favoriteStartSavedMessage(BuildContext context, int index) {
-    return _usesKoreanUiCopy(context)
-        ? '${index + 1}踰?利먭꺼李얘린???꾩옱 ?ㅼ젙?쇰? ??ν뻽?댁슂.'
-        : 'Saved the current setup to Favorite ${index + 1}.';
+    return AppLocalizations.of(context)!.favoriteStartSavedMessage(index + 1);
   }
 
   String _favoriteStartAppliedMessage(BuildContext context, int index) {
-    return _usesKoreanUiCopy(context)
-        ? '${index + 1}踰?利먭꺼李얘린濡??ㅼ젙??諛붾줈 ?곸슜?덉뼱??'
-        : 'Applied Favorite ${index + 1}.';
+    return AppLocalizations.of(context)!.favoriteStartAppliedMessage(index + 1);
   }
 
   String _favoriteStartClearedMessage(BuildContext context, int index) {
-    return _usesKoreanUiCopy(context)
-        ? '${index + 1}踰?利먭꺼李얘린瑜?鍮꿉뼱?덉뼱??'
-        : 'Cleared Favorite ${index + 1}.';
+    return AppLocalizations.of(context)!.favoriteStartClearedMessage(index + 1);
   }
 
   String _favoriteStartRenamedMessage(
@@ -172,15 +160,16 @@ extension _PracticeHomePageUi on _MyHomePageState {
     int index,
     FavoriteStartPreset preset,
   ) {
-    return 'Updated Favorite ${index + 1} to "${preset.displayLabel}".';
+    return AppLocalizations.of(context)!
+        .favoriteStartRenamedMessage(index + 1, preset.displayLabel);
   }
 
   String _favoriteStartRenameDialogTitle(BuildContext context, int index) {
-    return 'Name Favorite ${index + 1}';
+    return AppLocalizations.of(context)!.favoriteStartRenameDialogTitle(index + 1);
   }
 
   String _favoriteStartRenameDialogHelper(BuildContext context) {
-    return 'Leave this blank to use the automatic label.';
+    return AppLocalizations.of(context)!.favoriteStartRenameDialogHelper;
   }
 
   String _favoriteStartRenameFieldHint(
@@ -191,7 +180,7 @@ extension _PracticeHomePageUi on _MyHomePageState {
   }
 
   String _favoriteStartRenameConfirmLabel(BuildContext context) {
-    return 'Save name';
+    return AppLocalizations.of(context)!.favoriteStartRenameConfirmLabel;
   }
 
   String _favoriteStartSummary(
@@ -552,33 +541,31 @@ extension _PracticeHomePageUi on _MyHomePageState {
   }
 
   String _copyToolsTitle(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '복사 도구' : 'Copy tools';
+    return AppLocalizations.of(context)!.copyToolsTitle;
   }
 
   String _copyCurrentChordLabel(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '현재 코드 복사' : 'Copy current chord';
+    return AppLocalizations.of(context)!.copyCurrentChordLabel;
   }
 
   String _copyVisibleLoopLabel(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '보이는 루프 복사' : 'Copy visible loop';
+    return AppLocalizations.of(context)!.copyVisibleLoopLabel;
   }
 
   String _copyMelodyPreviewLabel(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '멜로디 미리보기 복사' : 'Copy melody preview';
+    return AppLocalizations.of(context)!.copyMelodyPreviewLabel;
   }
 
   String _recentCopiesTitle(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '최근 복사' : 'Recent copies';
+    return AppLocalizations.of(context)!.recentCopiesTitle;
   }
 
   String _recentCopyKindLabel(BuildContext context, RecentCopyKind kind) {
+    final l10n = AppLocalizations.of(context)!;
     return switch (kind) {
-      RecentCopyKind.currentChord =>
-        _usesKoreanUiCopy(context) ? '현재 코드' : 'Current chord',
-      RecentCopyKind.visibleLoop =>
-        _usesKoreanUiCopy(context) ? '보이는 루프' : 'Visible loop',
-      RecentCopyKind.melodyPreview =>
-        _usesKoreanUiCopy(context) ? '멜로디 미리보기' : 'Melody preview',
+      RecentCopyKind.currentChord => l10n.recentCopyCurrentChordLabel,
+      RecentCopyKind.visibleLoop => l10n.recentCopyVisibleLoopLabel,
+      RecentCopyKind.melodyPreview => l10n.recentCopyMelodyPreviewLabel,
     };
   }
 
@@ -591,85 +578,63 @@ extension _PracticeHomePageUi on _MyHomePageState {
   }
 
   String _analyzeVisibleLoopLabel(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '보이는 루프 분석하기' : 'Analyze visible loop';
+    return AppLocalizations.of(context)!.analyzeVisibleLoopLabel;
   }
 
   String _quickMovesTitle(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '빠른 다음 동작' : 'Quick moves';
+    return AppLocalizations.of(context)!.quickMovesTitle;
   }
 
   String _nudgeEasierLabel(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '더 쉽게' : 'Make easier';
+    return AppLocalizations.of(context)!.nudgeEasierLabel;
   }
 
   String _nudgeRicherLabel(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '더 풍성하게' : 'Make richer';
+    return AppLocalizations.of(context)!.nudgeRicherLabel;
   }
 
   String _nothingToCopyMessage(BuildContext context) {
-    return _usesKoreanUiCopy(context)
-        ? '아직 복사할 내용이 없어요.'
-        : 'There is nothing to copy yet.';
+    return AppLocalizations.of(context)!.nothingToCopyMessage;
   }
 
   String _noRecentCopiesMessage(BuildContext context) {
-    return _usesKoreanUiCopy(context)
-        ? '최근에 복사한 내용이 아직 없어요.'
-        : 'There is no recent copied text yet.';
+    return AppLocalizations.of(context)!.noRecentCopiesMessage;
   }
 
   String _nothingToAnalyzeMessage(BuildContext context) {
-    return _usesKoreanUiCopy(context)
-        ? '아직 분석할 흐름이 없어요.'
-        : 'There is no visible loop to analyze yet.';
+    return AppLocalizations.of(context)!.nothingToAnalyzeMessage;
   }
 
   String _copiedCurrentChordMessage(BuildContext context) {
-    return _usesKoreanUiCopy(context)
-        ? '현재 코드를 복사했어요.'
-        : 'Copied the current chord.';
+    return AppLocalizations.of(context)!.copiedCurrentChordMessage;
   }
 
   String _copiedVisibleLoopMessage(BuildContext context) {
-    return _usesKoreanUiCopy(context)
-        ? '보이는 루프를 복사했어요.'
-        : 'Copied the visible loop.';
+    return AppLocalizations.of(context)!.copiedVisibleLoopMessage;
   }
 
   String _copiedMelodyPreviewMessage(BuildContext context) {
-    return _usesKoreanUiCopy(context)
-        ? '멜로디 미리보기를 복사했어요.'
-        : 'Copied the melody preview.';
+    return AppLocalizations.of(context)!.copiedMelodyPreviewMessage;
   }
 
   String _copiedRecentCopyMessage(BuildContext context) {
-    return _usesKoreanUiCopy(context)
-        ? '최근 복사 내용을 다시 복사했어요.'
-        : 'Copied from recent history.';
+    return AppLocalizations.of(context)!.copiedRecentCopyMessage;
   }
 
   String _nudgedEasierMessage(BuildContext context) {
-    return _usesKoreanUiCopy(context)
-        ? '조금 더 쉬운 방향으로 맞췄어요.'
-        : 'Shifted toward an easier profile.';
+    return AppLocalizations.of(context)!.nudgedEasierMessage;
   }
 
   String _nudgedRicherMessage(BuildContext context) {
-    return _usesKoreanUiCopy(context)
-        ? '조금 더 풍성한 방향으로 맞췄어요.'
-        : 'Shifted toward a richer profile.';
+    return AppLocalizations.of(context)!.nudgedRicherMessage;
   }
 
   String _alreadyEasyMessage(BuildContext context) {
-    return _usesKoreanUiCopy(context)
-        ? '이미 가장 쉬운 쪽에 가까워요.'
-        : 'This is already near the easiest setting.';
+    return AppLocalizations.of(context)!.alreadyEasierMessage;
   }
 
   String _alreadyRicherMessage(BuildContext context) {
-    return _usesKoreanUiCopy(context)
-        ? '이미 충분히 풍성한 쪽이에요.'
-        : 'This is already near the richest quick setting.';
+    return AppLocalizations.of(context)!.alreadyRicherMessage;
   }
 
   List<String> _visibleChordLoopLabels() {
@@ -697,8 +662,9 @@ extension _PracticeHomePageUi on _MyHomePageState {
     if (currentPreview.isEmpty && nextPreview.isEmpty) {
       return '';
     }
-    final currentLabel = _usesKoreanUiCopy(context) ? '현재' : 'Current';
-    final nextLabel = _usesKoreanUiCopy(context) ? '다음' : 'Next';
+    final l10n = AppLocalizations.of(context)!;
+    final currentLabel = l10n.currentChordLabel;
+    final nextLabel = l10n.nextChordLabel;
     final lines = <String>[
       if (currentPreview.isNotEmpty) '$currentLabel: $currentPreview',
       if (nextPreview.isNotEmpty) '$nextLabel: $nextPreview',
@@ -1658,91 +1624,6 @@ extension _PracticeHomePageUi on _MyHomePageState {
     _applyQuickMelodyPresetSelection(_currentQuickMelodyPreset.next);
   }
 
-  bool _usesKoreanUiCopy(BuildContext context) {
-    return Localizations.localeOf(context).languageCode == 'ko';
-  }
-
-  String _melodyPresetOffLabel(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '끔' : 'Off';
-  }
-
-  String _compactMelodyOffLabel(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '라인 끔' : 'Line Off';
-  }
-
-  String _localizedQuickMelodyPresetLabel(
-    BuildContext context,
-    AppLocalizations l10n,
-    MelodyQuickPreset preset, {
-    bool compact = false,
-  }) {
-    if (_usesKoreanUiCopy(context)) {
-      return switch ((preset, compact)) {
-        (MelodyQuickPreset.guideLine, true) => '가이드',
-        (MelodyQuickPreset.songLine, true) => '송',
-        (MelodyQuickPreset.colorLine, true) => '컬러',
-        (MelodyQuickPreset.guideLine, false) => '가이드 라인',
-        (MelodyQuickPreset.songLine, false) => '송 라인',
-        (MelodyQuickPreset.colorLine, false) => '컬러 라인',
-      };
-    }
-    if (compact) {
-      return switch (preset) {
-        MelodyQuickPreset.guideLine => 'Guide',
-        MelodyQuickPreset.songLine => 'Song',
-        MelodyQuickPreset.colorLine => 'Color',
-      };
-    }
-    return preset.localizedLabel(l10n);
-  }
-
-  String _localizedQuickMelodyShortDescription(
-    BuildContext context,
-    MelodyQuickPreset preset,
-  ) {
-    if (_usesKoreanUiCopy(context)) {
-      return switch (preset) {
-        MelodyQuickPreset.guideLine => '안정적인 가이드 음과 차분한 리듬',
-        MelodyQuickPreset.songLine => '따라 부르기 쉬운 선율과 적당한 움직임',
-        MelodyQuickPreset.colorLine => '컬러 음을 적극적으로 쓰는 역동적인 라인',
-      };
-    }
-    return preset.shortDescription();
-  }
-
-  String _melodyPresetPanelTitle(
-    BuildContext context, {
-    required bool compact,
-  }) {
-    if (_usesKoreanUiCopy(context)) {
-      return compact ? '라인 프리셋' : '멜로디 프리셋';
-    }
-    return compact ? 'Line Presets' : 'Melody Presets';
-  }
-
-  String _melodyMetricLabel(BuildContext context, String label) {
-    if (!_usesKoreanUiCopy(context)) {
-      return label;
-    }
-    return switch (label) {
-      'Density' => '밀도',
-      'Style' => '스타일',
-      'Sync' => '싱코페이션',
-      'Color' => '컬러',
-      'Novelty' => '새로움',
-      'Motif' => '모티프',
-      'Chromatic' => '반음계',
-      _ => label,
-    };
-  }
-
-  String _melodyOnOffLabel(BuildContext context, bool value) {
-    if (_usesKoreanUiCopy(context)) {
-      return value ? '켜짐' : '끔';
-    }
-    return value ? 'On' : 'Off';
-  }
-
   String _melodyPresetOffLabelText(BuildContext context) {
     return AppLocalizations.of(context)!.melodyQuickPresetOffLabel;
   }
@@ -2328,29 +2209,6 @@ extension _PracticeHomePageUi on _MyHomePageState {
       title: l10n.setupAssistantPreparingTitle,
       body: l10n.setupAssistantPreparingBody,
     );
-  }
-
-  String _firstRunWelcomeTitle(BuildContext context) {
-    return _usesKoreanUiCopy(context)
-        ? '첫 코드가 바로 준비됐어요'
-        : 'Your first chord is ready';
-  }
-
-  String _firstRunWelcomeBody(BuildContext context, String chordLabel) {
-    if (_usesKoreanUiCopy(context)) {
-      if (chordLabel.isEmpty) {
-        return '지금은 쉬운 시작 프로필이 적용돼 있어요. 코드 재생으로 먼저 들어보고, 카드를 좌우로 넘겨 다음 코드를 살펴보세요.';
-      }
-      return '$chordLabel 코드가 바로 준비됐어요. 먼저 들어보고, 카드를 좌우로 넘겨 다음 코드를 살펴보세요. 더 내 취향에 맞게 시작하고 싶다면 설정 도우미를 열어도 됩니다.';
-    }
-    if (chordLabel.isEmpty) {
-      return 'A beginner-friendly starting profile is already applied. Listen first, then swipe the card to explore the next chord.';
-    }
-    return '$chordLabel is ready to go. Listen first, then swipe the card to explore what comes next. You can still open the setup assistant to personalize the start.';
-  }
-
-  String _firstRunSetupButtonLabel(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '맞춤 설정' : 'Personalize';
   }
 
   String _firstRunWelcomeTitleText(BuildContext context) {

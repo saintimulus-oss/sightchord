@@ -344,32 +344,24 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     await _analyze();
   }
 
-  bool _usesKoreanUiCopy(BuildContext context) {
-    return Localizations.localeOf(context).languageCode == 'ko';
-  }
-
   String _pinnedSectionTitle(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '고정한 진행' : 'Pinned progressions';
+    return AppLocalizations.of(context)!.chordAnalyzerPinnedSectionTitle;
   }
 
   String _recentSectionTitle(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '최근 분석' : 'Recent analyses';
+    return AppLocalizations.of(context)!.chordAnalyzerRecentSectionTitle;
   }
 
   String _pinButtonLabel(BuildContext context, {required bool pinned}) {
-    if (_usesKoreanUiCopy(context)) {
-      return pinned ? '고정 해제' : '진행 고정';
-    }
-    return pinned ? 'Unpin' : 'Pin';
+    final l10n = AppLocalizations.of(context)!;
+    return pinned ? l10n.chordAnalyzerUnpinLabel : l10n.chordAnalyzerPinLabel;
   }
 
   String _pinButtonTooltip(BuildContext context, {required bool pinned}) {
-    if (_usesKoreanUiCopy(context)) {
-      return pinned ? '이 진행의 고정을 해제합니다.' : '이 진행을 고정합니다.';
-    }
+    final l10n = AppLocalizations.of(context)!;
     return pinned
-        ? 'Remove this progression from pinned items.'
-        : 'Pin this progression for quick reuse.';
+        ? l10n.chordAnalyzerUnpinTooltip
+        : l10n.chordAnalyzerPinTooltip;
   }
 
   String _resumeProgressionTooltip(
@@ -377,18 +369,14 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     String progression, {
     required bool pinned,
   }) {
-    if (_usesKoreanUiCopy(context)) {
-      return pinned
-          ? '고정한 진행을 다시 분석합니다.\n$progression'
-          : '최근 분석한 진행을 다시 엽니다.\n$progression';
-    }
+    final l10n = AppLocalizations.of(context)!;
     return pinned
-        ? 'Analyze this pinned progression again.\n$progression'
-        : 'Reopen this recent analysis.\n$progression';
+        ? l10n.chordAnalyzerPinnedProgressionTooltip(progression)
+        : l10n.chordAnalyzerRecentProgressionTooltip(progression);
   }
 
   String _practiceThisKeyLabel(BuildContext context) {
-    return _usesKoreanUiCopy(context) ? '이 키로 연습' : 'Practice this key';
+    return AppLocalizations.of(context)!.chordAnalyzerPracticeThisKeyLabel;
   }
 
   String _practiceThisKeyTooltip(
@@ -397,10 +385,7 @@ class _ChordAnalyzerPageState extends State<ChordAnalyzerPage> {
     ProgressionAnalysis analysis,
   ) {
     final keyLabel = _explainer.keyLabel(l10n, analysis.primaryKey.keyCenter);
-    if (_usesKoreanUiCopy(context)) {
-      return '$keyLabel 키로 생성기를 엽니다. (G)';
-    }
-    return 'Open the generator in $keyLabel. (G)';
+    return l10n.chordAnalyzerPracticeThisKeyTooltip(keyLabel);
   }
 
   Future<void> _openGeneratorFromAnalysis() async {

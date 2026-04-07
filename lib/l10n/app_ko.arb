@@ -2880,5 +2880,108 @@
     }
   },
   "premiumUnlockAccountSyncUnavailableBody": "이 빌드에는 아직 계정 동기화가 설정되지 않아 프리미엄이 현재 기기에만 저장됩니다.",
-  "premiumUnlockAccountOpenButton": "계정"
+  "premiumUnlockAccountOpenButton": "계정",
+
+  "undoLabel": "실행 취소",
+
+  "favoriteStartsTitle": "즐겨찾기 시작",
+  "favoriteStartSlotTitle": "즐겨찾기 {displayIndex}번",
+  "@favoriteStartSlotTitle": {
+    "placeholders": {
+      "displayIndex": { "type": "int" }
+    }
+  },
+  "favoriteStartEmptyMessage": "아직 저장된 시작 설정이 없어요.",
+  "favoriteStartSaveLabel": "현재 설정 저장",
+  "favoriteStartUpdateLabel": "업데이트",
+  "favoriteStartApplyLabel": "불러와 적용",
+  "favoriteStartRenameLabel": "이름 변경",
+  "favoriteStartClearLabel": "비우기",
+  "favoriteStartSavedMessage": "{displayIndex}번 즐겨찾기에 현재 설정을 저장했어요.",
+  "@favoriteStartSavedMessage": {
+    "placeholders": {
+      "displayIndex": { "type": "int" }
+    }
+  },
+  "favoriteStartAppliedMessage": "{displayIndex}번 즐겨찾기를 불러와 적용했어요.",
+  "@favoriteStartAppliedMessage": {
+    "placeholders": {
+      "displayIndex": { "type": "int" }
+    }
+  },
+  "favoriteStartClearedMessage": "{displayIndex}번 즐겨찾기를 비웠어요.",
+  "@favoriteStartClearedMessage": {
+    "placeholders": {
+      "displayIndex": { "type": "int" }
+    }
+  },
+  "favoriteStartRenamedMessage": "{displayIndex}번 즐겨찾기 이름을 \"{label}\"으로 바꿨어요.",
+  "@favoriteStartRenamedMessage": {
+    "placeholders": {
+      "displayIndex": { "type": "int" },
+      "label": {}
+    }
+  },
+  "favoriteStartRenameDialogTitle": "{displayIndex}번 즐겨찾기 이름 바꾸기",
+  "@favoriteStartRenameDialogTitle": {
+    "placeholders": {
+      "displayIndex": { "type": "int" }
+    }
+  },
+  "favoriteStartRenameDialogHelper": "비워두면 자동 이름이 사용돼요.",
+  "favoriteStartRenameConfirmLabel": "이름 저장",
+
+  "copyToolsTitle": "복사 도구",
+  "copyCurrentChordLabel": "현재 코드 복사",
+  "copyVisibleLoopLabel": "보이는 루프 복사",
+  "copyMelodyPreviewLabel": "멜로디 미리보기 복사",
+  "recentCopiesTitle": "최근 복사",
+  "recentCopyCurrentChordLabel": "현재 코드",
+  "recentCopyVisibleLoopLabel": "보이는 루프",
+  "recentCopyMelodyPreviewLabel": "멜로디 미리보기",
+  "nothingToCopyMessage": "아직 복사할 내용이 없어요.",
+  "noRecentCopiesMessage": "최근에 복사한 내용이 아직 없어요.",
+  "copiedCurrentChordMessage": "현재 코드를 복사했어요.",
+  "copiedVisibleLoopMessage": "보이는 루프를 복사했어요.",
+  "copiedMelodyPreviewMessage": "멜로디 미리보기를 복사했어요.",
+  "copiedRecentCopyMessage": "최근 복사 내용을 다시 복사했어요.",
+
+  "analyzeVisibleLoopLabel": "보이는 루프 분석하기",
+  "quickMovesTitle": "빠른 다음 동작",
+  "nudgeEasierLabel": "더 쉽게",
+  "nudgeRicherLabel": "더 풍성하게",
+  "nothingToAnalyzeMessage": "아직 분석할 루프가 없어요.",
+  "nudgedEasierMessage": "조금 더 쉬운 방향으로 맞췄어요.",
+  "nudgedRicherMessage": "조금 더 풍성한 방향으로 맞췄어요.",
+  "alreadyEasierMessage": "이미 가장 쉬운 쪽에 가까워요.",
+  "alreadyRicherMessage": "이미 충분히 풍성한 쪽이에요.",
+
+  "currentChordLabel": "현재",
+  "nextChordLabel": "다음",
+
+  "chordAnalyzerPinnedSectionTitle": "고정한 진행",
+  "chordAnalyzerRecentSectionTitle": "최근 분석",
+  "chordAnalyzerPinLabel": "진행 고정",
+  "chordAnalyzerUnpinLabel": "고정 해제",
+  "chordAnalyzerPinTooltip": "이 진행을 고정합니다.",
+  "chordAnalyzerUnpinTooltip": "이 진행의 고정을 해제합니다.",
+  "chordAnalyzerPinnedProgressionTooltip": "고정한 진행을 다시 분석합니다.\n{progression}",
+  "@chordAnalyzerPinnedProgressionTooltip": {
+    "placeholders": {
+      "progression": {}
+    }
+  },
+  "chordAnalyzerRecentProgressionTooltip": "최근 분석한 진행을 다시 엽니다.\n{progression}",
+  "@chordAnalyzerRecentProgressionTooltip": {
+    "placeholders": {
+      "progression": {}
+    }
+  },
+  "chordAnalyzerPracticeThisKeyLabel": "이 키로 연습",
+  "chordAnalyzerPracticeThisKeyTooltip": "{keyLabel} 키로 생성기를 엽니다. (G)",
+  "@chordAnalyzerPracticeThisKeyTooltip": {
+    "placeholders": {
+      "keyLabel": {}
+    }
+  }
 }
