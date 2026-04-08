@@ -2880,5 +2880,114 @@
     }
   },
   "premiumUnlockAccountSyncUnavailableBody": "Account sync is not configured in this build yet, so premium currently stays local to this device.",
-  "premiumUnlockAccountOpenButton": "Account"
+  "premiumUnlockAccountOpenButton": "Account",
+  "undoLabel": "Undo",
+  "favoriteStartsTitle": "Favorite starts",
+  "favoriteStartSlotTitle": "Favorite {displayIndex}",
+  "@favoriteStartSlotTitle": {
+    "placeholders": {
+      "displayIndex": {
+        "type": "int"
+      }
+    }
+  },
+  "favoriteStartEmptyMessage": "No saved start preset yet.",
+  "favoriteStartSaveLabel": "Save current",
+  "favoriteStartUpdateLabel": "Update",
+  "favoriteStartApplyLabel": "Apply",
+  "favoriteStartRenameLabel": "Rename",
+  "favoriteStartClearLabel": "Clear",
+  "favoriteStartSavedMessage": "Saved the current setup to Favorite {displayIndex}.",
+  "@favoriteStartSavedMessage": {
+    "placeholders": {
+      "displayIndex": {
+        "type": "int"
+      }
+    }
+  },
+  "favoriteStartAppliedMessage": "Applied Favorite {displayIndex}.",
+  "@favoriteStartAppliedMessage": {
+    "placeholders": {
+      "displayIndex": {
+        "type": "int"
+      }
+    }
+  },
+  "favoriteStartClearedMessage": "Cleared Favorite {displayIndex}.",
+  "@favoriteStartClearedMessage": {
+    "placeholders": {
+      "displayIndex": {
+        "type": "int"
+      }
+    }
+  },
+  "favoriteStartRenamedMessage": "Updated Favorite {displayIndex} to \"{label}\".",
+  "@favoriteStartRenamedMessage": {
+    "placeholders": {
+      "displayIndex": {
+        "type": "int"
+      },
+      "label": {}
+    }
+  },
+  "favoriteStartRenameDialogTitle": "Name Favorite {displayIndex}",
+  "@favoriteStartRenameDialogTitle": {
+    "placeholders": {
+      "displayIndex": {
+        "type": "int"
+      }
+    }
+  },
+  "favoriteStartRenameDialogHelper": "Leave this blank to use the automatic label.",
+  "favoriteStartRenameConfirmLabel": "Save name",
+  "copyToolsTitle": "Copy tools",
+  "copyCurrentChordLabel": "Copy current chord",
+  "copyVisibleLoopLabel": "Copy visible loop",
+  "copyMelodyPreviewLabel": "Copy melody preview",
+  "recentCopiesTitle": "Recent copies",
+  "recentCopyCurrentChordLabel": "Current chord",
+  "recentCopyVisibleLoopLabel": "Visible loop",
+  "recentCopyMelodyPreviewLabel": "Melody preview",
+  "nothingToCopyMessage": "There is nothing to copy yet.",
+  "noRecentCopiesMessage": "There is no recent copied text yet.",
+  "copiedCurrentChordMessage": "Copied the current chord.",
+  "copiedVisibleLoopMessage": "Copied the visible loop.",
+  "copiedMelodyPreviewMessage": "Copied the melody preview.",
+  "copiedRecentCopyMessage": "Copied from recent history.",
+  "analyzeVisibleLoopLabel": "Analyze visible loop",
+  "quickMovesTitle": "Quick moves",
+  "nudgeEasierLabel": "Make easier",
+  "nudgeRicherLabel": "Make richer",
+  "nothingToAnalyzeMessage": "There is no visible loop to analyze yet.",
+  "nudgedEasierMessage": "Shifted toward an easier profile.",
+  "nudgedRicherMessage": "Shifted toward a richer profile.",
+  "alreadyEasierMessage": "This is already near the easiest setting.",
+  "alreadyRicherMessage": "This is already near the richest quick setting.",
+  "currentChordLabel": "Current",
+  "nextChordLabel": "Next",
+  "chordAnalyzerPinnedSectionTitle": "Pinned progressions",
+  "chordAnalyzerRecentSectionTitle": "Recent analyses",
+  "chordAnalyzerPinLabel": "Pin",
+  "chordAnalyzerUnpinLabel": "Unpin",
+  "chordAnalyzerPinTooltip": "Pin this progression for quick reuse.",
+  "chordAnalyzerUnpinTooltip": "Remove this progression from pinned items.",
+  "chordAnalyzerPinnedProgressionTooltip": "Analyze this pinned progression again.\n{progression}",
+  "@chordAnalyzerPinnedProgressionTooltip": {
+    "placeholders": {
+      "progression": {}
+    }
+  },
+  "chordAnalyzerRecentProgressionTooltip": "Reopen this recent analysis.\n{progression}",
+  "@chordAnalyzerRecentProgressionTooltip": {
+    "placeholders": {
+      "progression": {}
+    }
+  },
+  "chordAnalyzerPracticeThisKeyLabel": "Practice this key",
+  "chordAnalyzerPracticeThisKeyTooltip": "Open the generator in {keyLabel}. (G)",
+  "@chordAnalyzerPracticeThisKeyTooltip": {
+    "placeholders": {
+      "keyLabel": {}
+    }
+  }
 }
