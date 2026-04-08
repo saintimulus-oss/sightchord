@@ -5415,6 +5415,177 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premiumUnlockAccountOpenButton => '계정';
+
+  @override
+  String get undoLabel => '실행 취소';
+
+  @override
+  String get favoriteStartsTitle => '즐겨찾기 시작';
+
+  @override
+  String favoriteStartSlotTitle(int displayIndex) {
+    return '즐겨찾기 $displayIndex번';
+  }
+
+  @override
+  String get favoriteStartEmptyMessage => '아직 저장된 시작 설정이 없어요.';
+
+  @override
+  String get favoriteStartSaveLabel => '현재 설정 저장';
+
+  @override
+  String get favoriteStartUpdateLabel => '업데이트';
+
+  @override
+  String get favoriteStartApplyLabel => '불러와 적용';
+
+  @override
+  String get favoriteStartRenameLabel => '이름 변경';
+
+  @override
+  String get favoriteStartClearLabel => '비우기';
+
+  @override
+  String favoriteStartSavedMessage(int displayIndex) {
+    return '$displayIndex번 즐겨찾기에 현재 설정을 저장했어요.';
+  }
+
+  @override
+  String favoriteStartAppliedMessage(int displayIndex) {
+    return '$displayIndex번 즐겨찾기를 불러와 적용했어요.';
+  }
+
+  @override
+  String favoriteStartClearedMessage(int displayIndex) {
+    return '$displayIndex번 즐겨찾기를 비웠어요.';
+  }
+
+  @override
+  String favoriteStartRenamedMessage(int displayIndex, Object label) {
+    return '$displayIndex번 즐겨찾기 이름을 \"$label\"으로 바꿨어요.';
+  }
+
+  @override
+  String favoriteStartRenameDialogTitle(int displayIndex) {
+    return '$displayIndex번 즐겨찾기 이름 바꾸기';
+  }
+
+  @override
+  String get favoriteStartRenameDialogHelper => '비워두면 자동 이름이 사용돼요.';
+
+  @override
+  String get favoriteStartRenameConfirmLabel => '이름 저장';
+
+  @override
+  String get copyToolsTitle => '복사 도구';
+
+  @override
+  String get copyCurrentChordLabel => '현재 코드 복사';
+
+  @override
+  String get copyVisibleLoopLabel => '보이는 루프 복사';
+
+  @override
+  String get copyMelodyPreviewLabel => '멜로디 미리보기 복사';
+
+  @override
+  String get recentCopiesTitle => '최근 복사';
+
+  @override
+  String get recentCopyCurrentChordLabel => '현재 코드';
+
+  @override
+  String get recentCopyVisibleLoopLabel => '보이는 루프';
+
+  @override
+  String get recentCopyMelodyPreviewLabel => '멜로디 미리보기';
+
+  @override
+  String get nothingToCopyMessage => '아직 복사할 내용이 없어요.';
+
+  @override
+  String get noRecentCopiesMessage => '최근에 복사한 내용이 아직 없어요.';
+
+  @override
+  String get copiedCurrentChordMessage => '현재 코드를 복사했어요.';
+
+  @override
+  String get copiedVisibleLoopMessage => '보이는 루프를 복사했어요.';
+
+  @override
+  String get copiedMelodyPreviewMessage => '멜로디 미리보기를 복사했어요.';
+
+  @override
+  String get copiedRecentCopyMessage => '최근 복사 내용을 다시 복사했어요.';
+
+  @override
+  String get analyzeVisibleLoopLabel => '보이는 루프 분석하기';
+
+  @override
+  String get quickMovesTitle => '빠른 다음 동작';
+
+  @override
+  String get nudgeEasierLabel => '더 쉽게';
+
+  @override
+  String get nudgeRicherLabel => '더 풍성하게';
+
+  @override
+  String get nothingToAnalyzeMessage => '아직 분석할 루프가 없어요.';
+
+  @override
+  String get nudgedEasierMessage => '조금 더 쉬운 방향으로 맞췄어요.';
+
+  @override
+  String get nudgedRicherMessage => '조금 더 풍성한 방향으로 맞췄어요.';
+
+  @override
+  String get alreadyEasierMessage => '이미 가장 쉬운 쪽에 가까워요.';
+
+  @override
+  String get alreadyRicherMessage => '이미 충분히 풍성한 쪽이에요.';
+
+  @override
+  String get currentChordLabel => '현재';
+
+  @override
+  String get nextChordLabel => '다음';
+
+  @override
+  String get chordAnalyzerPinnedSectionTitle => '고정한 진행';
+
+  @override
+  String get chordAnalyzerRecentSectionTitle => '최근 분석';
+
+  @override
+  String get chordAnalyzerPinLabel => '진행 고정';
+
+  @override
+  String get chordAnalyzerUnpinLabel => '고정 해제';
+
+  @override
+  String get chordAnalyzerPinTooltip => '이 진행을 고정합니다.';
+
+  @override
+  String get chordAnalyzerUnpinTooltip => '이 진행의 고정을 해제합니다.';
+
+  @override
+  String chordAnalyzerPinnedProgressionTooltip(Object progression) {
+    return '고정한 진행을 다시 분석합니다.\n$progression';
+  }
+
+  @override
+  String chordAnalyzerRecentProgressionTooltip(Object progression) {
+    return '최근 분석한 진행을 다시 엽니다.\n$progression';
+  }
+
+  @override
+  String get chordAnalyzerPracticeThisKeyLabel => '이 키로 연습';
+
+  @override
+  String chordAnalyzerPracticeThisKeyTooltip(Object keyLabel) {
+    return '$keyLabel 키로 생성기를 엽니다. (G)';
+  }
 }
 
 /// The translations for Korean, as used in Republic of Korea (`ko_KR`).

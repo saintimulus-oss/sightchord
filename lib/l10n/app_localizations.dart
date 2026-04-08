@@ -9301,6 +9301,312 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Account'**
   String get premiumUnlockAccountOpenButton;
+
+  /// No description provided for @undoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undoLabel;
+
+  /// No description provided for @favoriteStartsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite starts'**
+  String get favoriteStartsTitle;
+
+  /// No description provided for @favoriteStartSlotTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite {displayIndex}'**
+  String favoriteStartSlotTitle(int displayIndex);
+
+  /// No description provided for @favoriteStartEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved start preset yet.'**
+  String get favoriteStartEmptyMessage;
+
+  /// No description provided for @favoriteStartSaveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Save current'**
+  String get favoriteStartSaveLabel;
+
+  /// No description provided for @favoriteStartUpdateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get favoriteStartUpdateLabel;
+
+  /// No description provided for @favoriteStartApplyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get favoriteStartApplyLabel;
+
+  /// No description provided for @favoriteStartRenameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get favoriteStartRenameLabel;
+
+  /// No description provided for @favoriteStartClearLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get favoriteStartClearLabel;
+
+  /// No description provided for @favoriteStartSavedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved the current setup to Favorite {displayIndex}.'**
+  String favoriteStartSavedMessage(int displayIndex);
+
+  /// No description provided for @favoriteStartAppliedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied Favorite {displayIndex}.'**
+  String favoriteStartAppliedMessage(int displayIndex);
+
+  /// No description provided for @favoriteStartClearedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleared Favorite {displayIndex}.'**
+  String favoriteStartClearedMessage(int displayIndex);
+
+  /// No description provided for @favoriteStartRenamedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated Favorite {displayIndex} to \"{label}\".'**
+  String favoriteStartRenamedMessage(int displayIndex, Object label);
+
+  /// No description provided for @favoriteStartRenameDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Name Favorite {displayIndex}'**
+  String favoriteStartRenameDialogTitle(int displayIndex);
+
+  /// No description provided for @favoriteStartRenameDialogHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave this blank to use the automatic label.'**
+  String get favoriteStartRenameDialogHelper;
+
+  /// No description provided for @favoriteStartRenameConfirmLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Save name'**
+  String get favoriteStartRenameConfirmLabel;
+
+  /// No description provided for @copyToolsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy tools'**
+  String get copyToolsTitle;
+
+  /// No description provided for @copyCurrentChordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy current chord'**
+  String get copyCurrentChordLabel;
+
+  /// No description provided for @copyVisibleLoopLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy visible loop'**
+  String get copyVisibleLoopLabel;
+
+  /// No description provided for @copyMelodyPreviewLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy melody preview'**
+  String get copyMelodyPreviewLabel;
+
+  /// No description provided for @recentCopiesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent copies'**
+  String get recentCopiesTitle;
+
+  /// No description provided for @recentCopyCurrentChordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current chord'**
+  String get recentCopyCurrentChordLabel;
+
+  /// No description provided for @recentCopyVisibleLoopLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Visible loop'**
+  String get recentCopyVisibleLoopLabel;
+
+  /// No description provided for @recentCopyMelodyPreviewLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Melody preview'**
+  String get recentCopyMelodyPreviewLabel;
+
+  /// No description provided for @nothingToCopyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'There is nothing to copy yet.'**
+  String get nothingToCopyMessage;
+
+  /// No description provided for @noRecentCopiesMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no recent copied text yet.'**
+  String get noRecentCopiesMessage;
+
+  /// No description provided for @copiedCurrentChordMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied the current chord.'**
+  String get copiedCurrentChordMessage;
+
+  /// No description provided for @copiedVisibleLoopMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied the visible loop.'**
+  String get copiedVisibleLoopMessage;
+
+  /// No description provided for @copiedMelodyPreviewMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied the melody preview.'**
+  String get copiedMelodyPreviewMessage;
+
+  /// No description provided for @copiedRecentCopyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied from recent history.'**
+  String get copiedRecentCopyMessage;
+
+  /// No description provided for @analyzeVisibleLoopLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze visible loop'**
+  String get analyzeVisibleLoopLabel;
+
+  /// No description provided for @quickMovesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick moves'**
+  String get quickMovesTitle;
+
+  /// No description provided for @nudgeEasierLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Make easier'**
+  String get nudgeEasierLabel;
+
+  /// No description provided for @nudgeRicherLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Make richer'**
+  String get nudgeRicherLabel;
+
+  /// No description provided for @nothingToAnalyzeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no visible loop to analyze yet.'**
+  String get nothingToAnalyzeMessage;
+
+  /// No description provided for @nudgedEasierMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Shifted toward an easier profile.'**
+  String get nudgedEasierMessage;
+
+  /// No description provided for @nudgedRicherMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Shifted toward a richer profile.'**
+  String get nudgedRicherMessage;
+
+  /// No description provided for @alreadyEasierMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This is already near the easiest setting.'**
+  String get alreadyEasierMessage;
+
+  /// No description provided for @alreadyRicherMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This is already near the richest quick setting.'**
+  String get alreadyRicherMessage;
+
+  /// No description provided for @currentChordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get currentChordLabel;
+
+  /// No description provided for @nextChordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get nextChordLabel;
+
+  /// No description provided for @chordAnalyzerPinnedSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned progressions'**
+  String get chordAnalyzerPinnedSectionTitle;
+
+  /// No description provided for @chordAnalyzerRecentSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent analyses'**
+  String get chordAnalyzerRecentSectionTitle;
+
+  /// No description provided for @chordAnalyzerPinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin'**
+  String get chordAnalyzerPinLabel;
+
+  /// No description provided for @chordAnalyzerUnpinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpin'**
+  String get chordAnalyzerUnpinLabel;
+
+  /// No description provided for @chordAnalyzerPinTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin this progression for quick reuse.'**
+  String get chordAnalyzerPinTooltip;
+
+  /// No description provided for @chordAnalyzerUnpinTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this progression from pinned items.'**
+  String get chordAnalyzerUnpinTooltip;
+
+  /// No description provided for @chordAnalyzerPinnedProgressionTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze this pinned progression again.\n{progression}'**
+  String chordAnalyzerPinnedProgressionTooltip(Object progression);
+
+  /// No description provided for @chordAnalyzerRecentProgressionTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen this recent analysis.\n{progression}'**
+  String chordAnalyzerRecentProgressionTooltip(Object progression);
+
+  /// No description provided for @chordAnalyzerPracticeThisKeyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice this key'**
+  String get chordAnalyzerPracticeThisKeyLabel;
+
+  /// No description provided for @chordAnalyzerPracticeThisKeyTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the generator in {keyLabel}. (G)'**
+  String chordAnalyzerPracticeThisKeyTooltip(Object keyLabel);
 }
 
 class _AppLocalizationsDelegate

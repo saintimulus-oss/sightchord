@@ -5577,4 +5577,180 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get premiumUnlockAccountOpenButton => 'Account';
+
+  @override
+  String get undoLabel => 'Undo';
+
+  @override
+  String get favoriteStartsTitle => 'Favorite starts';
+
+  @override
+  String favoriteStartSlotTitle(int displayIndex) {
+    return 'Favorite $displayIndex';
+  }
+
+  @override
+  String get favoriteStartEmptyMessage => 'No saved start preset yet.';
+
+  @override
+  String get favoriteStartSaveLabel => 'Save current';
+
+  @override
+  String get favoriteStartUpdateLabel => 'Update';
+
+  @override
+  String get favoriteStartApplyLabel => 'Apply';
+
+  @override
+  String get favoriteStartRenameLabel => 'Rename';
+
+  @override
+  String get favoriteStartClearLabel => 'Clear';
+
+  @override
+  String favoriteStartSavedMessage(int displayIndex) {
+    return 'Saved the current setup to Favorite $displayIndex.';
+  }
+
+  @override
+  String favoriteStartAppliedMessage(int displayIndex) {
+    return 'Applied Favorite $displayIndex.';
+  }
+
+  @override
+  String favoriteStartClearedMessage(int displayIndex) {
+    return 'Cleared Favorite $displayIndex.';
+  }
+
+  @override
+  String favoriteStartRenamedMessage(int displayIndex, Object label) {
+    return 'Updated Favorite $displayIndex to \"$label\".';
+  }
+
+  @override
+  String favoriteStartRenameDialogTitle(int displayIndex) {
+    return 'Name Favorite $displayIndex';
+  }
+
+  @override
+  String get favoriteStartRenameDialogHelper =>
+      'Leave this blank to use the automatic label.';
+
+  @override
+  String get favoriteStartRenameConfirmLabel => 'Save name';
+
+  @override
+  String get copyToolsTitle => 'Copy tools';
+
+  @override
+  String get copyCurrentChordLabel => 'Copy current chord';
+
+  @override
+  String get copyVisibleLoopLabel => 'Copy visible loop';
+
+  @override
+  String get copyMelodyPreviewLabel => 'Copy melody preview';
+
+  @override
+  String get recentCopiesTitle => 'Recent copies';
+
+  @override
+  String get recentCopyCurrentChordLabel => 'Current chord';
+
+  @override
+  String get recentCopyVisibleLoopLabel => 'Visible loop';
+
+  @override
+  String get recentCopyMelodyPreviewLabel => 'Melody preview';
+
+  @override
+  String get nothingToCopyMessage => 'There is nothing to copy yet.';
+
+  @override
+  String get noRecentCopiesMessage => 'There is no recent copied text yet.';
+
+  @override
+  String get copiedCurrentChordMessage => 'Copied the current chord.';
+
+  @override
+  String get copiedVisibleLoopMessage => 'Copied the visible loop.';
+
+  @override
+  String get copiedMelodyPreviewMessage => 'Copied the melody preview.';
+
+  @override
+  String get copiedRecentCopyMessage => 'Copied from recent history.';
+
+  @override
+  String get analyzeVisibleLoopLabel => 'Analyze visible loop';
+
+  @override
+  String get quickMovesTitle => 'Quick moves';
+
+  @override
+  String get nudgeEasierLabel => 'Make easier';
+
+  @override
+  String get nudgeRicherLabel => 'Make richer';
+
+  @override
+  String get nothingToAnalyzeMessage =>
+      'There is no visible loop to analyze yet.';
+
+  @override
+  String get nudgedEasierMessage => 'Shifted toward an easier profile.';
+
+  @override
+  String get nudgedRicherMessage => 'Shifted toward a richer profile.';
+
+  @override
+  String get alreadyEasierMessage =>
+      'This is already near the easiest setting.';
+
+  @override
+  String get alreadyRicherMessage =>
+      'This is already near the richest quick setting.';
+
+  @override
+  String get currentChordLabel => 'Current';
+
+  @override
+  String get nextChordLabel => 'Next';
+
+  @override
+  String get chordAnalyzerPinnedSectionTitle => 'Pinned progressions';
+
+  @override
+  String get chordAnalyzerRecentSectionTitle => 'Recent analyses';
+
+  @override
+  String get chordAnalyzerPinLabel => 'Pin';
+
+  @override
+  String get chordAnalyzerUnpinLabel => 'Unpin';
+
+  @override
+  String get chordAnalyzerPinTooltip => 'Pin this progression for quick reuse.';
+
+  @override
+  String get chordAnalyzerUnpinTooltip =>
+      'Remove this progression from pinned items.';
+
+  @override
+  String chordAnalyzerPinnedProgressionTooltip(Object progression) {
+    return 'Analyze this pinned progression again.\n$progression';
+  }
+
+  @override
+  String chordAnalyzerRecentProgressionTooltip(Object progression) {
+    return 'Reopen this recent analysis.\n$progression';
+  }
+
+  @override
+  String get chordAnalyzerPracticeThisKeyLabel => 'Practice this key';
+
+  @override
+  String chordAnalyzerPracticeThisKeyTooltip(Object keyLabel) {
+    return 'Open the generator in $keyLabel. (G)';
+  }
 }
