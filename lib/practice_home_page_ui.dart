@@ -579,18 +579,6 @@ extension _PracticeHomePageUi on _MyHomePageState {
     return AppLocalizations.of(context)!.analyzeVisibleLoopLabel;
   }
 
-  String _quickMovesTitle(BuildContext context) {
-    return AppLocalizations.of(context)!.quickMovesTitle;
-  }
-
-  String _nudgeEasierLabel(BuildContext context) {
-    return AppLocalizations.of(context)!.nudgeEasierLabel;
-  }
-
-  String _nudgeRicherLabel(BuildContext context) {
-    return AppLocalizations.of(context)!.nudgeRicherLabel;
-  }
-
   String _nothingToCopyMessage(BuildContext context) {
     return AppLocalizations.of(context)!.nothingToCopyMessage;
   }
@@ -617,22 +605,6 @@ extension _PracticeHomePageUi on _MyHomePageState {
 
   String _copiedRecentCopyMessage(BuildContext context) {
     return AppLocalizations.of(context)!.copiedRecentCopyMessage;
-  }
-
-  String _nudgedEasierMessage(BuildContext context) {
-    return AppLocalizations.of(context)!.nudgedEasierMessage;
-  }
-
-  String _nudgedRicherMessage(BuildContext context) {
-    return AppLocalizations.of(context)!.nudgedRicherMessage;
-  }
-
-  String _alreadyEasyMessage(BuildContext context) {
-    return AppLocalizations.of(context)!.alreadyEasierMessage;
-  }
-
-  String _alreadyRicherMessage(BuildContext context) {
-    return AppLocalizations.of(context)!.alreadyRicherMessage;
   }
 
   List<String> _visibleChordLoopLabels() {
@@ -747,49 +719,6 @@ extension _PracticeHomePageUi on _MyHomePageState {
           autoAnalyzeOnStart: true,
         ),
       ),
-    );
-  }
-
-  void _applyQuickNudge({
-    required PracticeSettings nextSettings,
-    required String successMessage,
-    required String noChangeMessage,
-  }) {
-    final resolvedSettings = sanitizePracticeSettingsForAvailability(
-      nextSettings,
-      premiumUnlocked: _isPremiumUnlocked,
-    );
-    if (resolvedSettings == _settings) {
-      _showInfoSnackBar(noChangeMessage);
-      return;
-    }
-    final previousSettings = _settings;
-    _applySettings(resolvedSettings, reseed: true);
-    _showUndoSnackBar(
-      message: successMessage,
-      onUndo: () {
-        _applySettings(
-          previousSettings,
-          reseed: true,
-          syncBpmText: previousSettings.bpm != _settings.bpm,
-        );
-      },
-    );
-  }
-
-  void _nudgeTowardEasier() {
-    _applyQuickNudge(
-      nextSettings: PracticeSettingsFactory.nudgeTowardEasier(_settings),
-      successMessage: _nudgedEasierMessage(context),
-      noChangeMessage: _alreadyEasyMessage(context),
-    );
-  }
-
-  void _nudgeTowardRicher() {
-    _applyQuickNudge(
-      nextSettings: PracticeSettingsFactory.nudgeTowardJazzier(_settings),
-      successMessage: _nudgedRicherMessage(context),
-      noChangeMessage: _alreadyRicherMessage(context),
     );
   }
 
@@ -1580,26 +1509,6 @@ extension _PracticeHomePageUi on _MyHomePageState {
   MelodyQuickPreset get _currentQuickMelodyPreset =>
       PracticeSettingsFactory.quickMelodyPresetForSettings(_settings);
 
-  MelodyPresetDescriptor? get _currentQuickMelodyDescriptor =>
-      !_settings.melodyGenerationEnabled
-      ? null
-      : PracticeSettingsFactory.describeActiveMelodySettings(_settings);
-
-  String _quickMelodyToggleLabel(
-    AppLocalizations l10n, {
-    bool compact = false,
-  }) {
-    final value = !_settings.melodyGenerationEnabled
-        ? _melodyPresetOffLabelText(context)
-        : _quickMelodyPresetLabel(context, l10n, _currentQuickMelodyPreset);
-    if (compact) {
-      return !_settings.melodyGenerationEnabled
-          ? _compactMelodyOffLabelText(context)
-          : value;
-    }
-    return '${l10n.melodyGenerationTitle}: $value';
-  }
-
   void _applyQuickMelodyPresetSelection(MelodyQuickPreset preset) {
     _applySettings(
       PracticeSettingsFactory.applyQuickMelodyPreset(_settings, preset),
@@ -1641,6 +1550,21 @@ extension _PracticeHomePageUi on _MyHomePageState {
         : preset.localizedLabel(l10n);
   }
 
+  String _quickMelodyToggleLabel(
+    AppLocalizations l10n, {
+    bool compact = false,
+  }) {
+    final value = !_settings.melodyGenerationEnabled
+        ? _melodyPresetOffLabelText(context)
+        : _quickMelodyPresetLabel(context, l10n, _currentQuickMelodyPreset);
+    if (compact) {
+      return !_settings.melodyGenerationEnabled
+          ? _compactMelodyOffLabelText(context)
+          : value;
+    }
+    return '${l10n.melodyGenerationTitle}: $value';
+  }
+
   String _quickMelodyPresetShortDescription(
     BuildContext context,
     MelodyQuickPreset preset,
@@ -1656,25 +1580,6 @@ extension _PracticeHomePageUi on _MyHomePageState {
     return compact
         ? l10n.melodyQuickPresetPanelCompactTitle
         : l10n.melodyQuickPresetPanelTitle;
-  }
-
-  String _melodyMetricLabelText(BuildContext context, String label) {
-    final l10n = AppLocalizations.of(context)!;
-    return switch (label) {
-      'Density' => l10n.melodyMetricDensityLabel,
-      'Style' => l10n.melodyMetricStyleLabel,
-      'Sync' => l10n.melodyMetricSyncLabel,
-      'Color' => l10n.melodyMetricColorLabel,
-      'Novelty' => l10n.melodyMetricNoveltyLabel,
-      'Motif' => l10n.melodyMetricMotifLabel,
-      'Chromatic' => l10n.melodyMetricChromaticLabel,
-      _ => label,
-    };
-  }
-
-  String _melodyOnOffText(BuildContext context, bool value) {
-    final l10n = AppLocalizations.of(context)!;
-    return value ? l10n.enabled : l10n.disabled;
   }
 
   Widget _buildMelodyPresetSelector(
@@ -1876,41 +1781,6 @@ extension _PracticeHomePageUi on _MyHomePageState {
     );
   }
 
-  Widget _buildMelodyPlaybackSection(
-    BuildContext context, {
-    required bool compact,
-  }) {
-    return PracticeGeneratorControls(
-      compact: compact,
-      currentChordAvailable: _currentChord != null,
-      melodyGenerationEnabled: true,
-      autoPlayChordChanges: _settings.autoPlayChordChanges,
-      autoPlayPattern: _settings.autoPlayPattern,
-      currentMelodyPreviewText: _previewTextForMelodyEvent(_currentMelodyEvent),
-      nextMelodyPreviewText: _previewTextForMelodyEvent(_nextMelodyEvent),
-      melodyPlaybackMode: _settings.melodyPlaybackMode,
-      bpmController: _bpmController,
-      onPlayChord: () {},
-      onToggleBlockAutoplay: () {},
-      onPlayArpeggio: () {},
-      onToggleArpeggioAutoplay: () {},
-      onRegenerateMelody: _regenerateCurrentMelody,
-      onAdjustBpm: _adjustBpm,
-      onBpmChanged: _handleBpmChanged,
-      onBpmSubmitted: (_) => _normalizeBpm(),
-      onBpmTapOutside: (_) => _normalizeBpm(),
-      onSelectMelodyPlaybackMode: (mode) =>
-          _applySettings(_settings.copyWith(melodyPlaybackMode: mode)),
-    );
-  }
-
-  Widget _buildMelodyPlaybackModeSelector(
-    BuildContext context, {
-    required bool compact,
-  }) {
-    return const SizedBox.shrink();
-  }
-
   Widget _buildTransportStrip(BuildContext context, {required bool compact}) {
     final l10n = AppLocalizations.of(context)!;
     return PracticeTransportStrip(
@@ -2021,10 +1891,6 @@ extension _PracticeHomePageUi on _MyHomePageState {
         );
       },
     );
-  }
-
-  Widget _buildCompactGeneratorQuickSettingsPanel(BuildContext context) {
-    return _buildGeneratorQuickSettingsPanel(context);
   }
 
   Widget _buildGeneratorQuickSettingsPanel(BuildContext context) {
@@ -2413,276 +2279,6 @@ extension _PracticeHomePageUi on _MyHomePageState {
   }
 }
 
-class _TransportToggleButton extends StatelessWidget {
-  const _TransportToggleButton({
-    required this.running,
-    required this.startTooltip,
-    required this.pauseTooltip,
-    this.compact = false,
-    required this.onPressed,
-  });
-
-  final bool running;
-  final String startTooltip;
-  final String pauseTooltip;
-  final bool compact;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return IconButton(
-      key: const ValueKey('practice-autoplay-button'),
-      tooltip: running ? pauseTooltip : startTooltip,
-      onPressed: onPressed,
-      style: IconButton.styleFrom(
-        backgroundColor: running
-            ? theme.colorScheme.primary
-            : theme.colorScheme.surfaceContainerLow,
-        foregroundColor: running
-            ? theme.colorScheme.onPrimary
-            : theme.colorScheme.onSurface,
-        minimumSize: Size.square(compact ? 40 : 46),
-        side: BorderSide(
-          color: running
-              ? theme.colorScheme.primary
-              : theme.colorScheme.outlineVariant,
-        ),
-      ),
-      icon: Icon(
-        running ? Icons.pause_rounded : Icons.play_arrow_rounded,
-        size: compact ? 22 : 24,
-      ),
-    );
-  }
-}
-
-class _TransportResetButton extends StatelessWidget {
-  const _TransportResetButton({
-    required this.tooltip,
-    this.compact = false,
-    required this.onPressed,
-  });
-
-  final String tooltip;
-  final bool compact;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return IconButton(
-      key: const ValueKey('practice-reset-generated-chords-button'),
-      tooltip: tooltip,
-      onPressed: onPressed,
-      style: IconButton.styleFrom(
-        backgroundColor: theme.colorScheme.surfaceContainerLow,
-        foregroundColor: theme.colorScheme.onSurface,
-        minimumSize: Size.square(compact ? 40 : 46),
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
-      ),
-      icon: Icon(Icons.stop_rounded, size: compact ? 22 : 24),
-    );
-  }
-}
-
-class _TransportMeterButton extends StatelessWidget {
-  const _TransportMeterButton({
-    required this.label,
-    required this.tooltip,
-    this.compact = false,
-    required this.onPressed,
-  });
-
-  final String label;
-  final String tooltip;
-  final bool compact;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Tooltip(
-      message: tooltip,
-      child: OutlinedButton.icon(
-        key: const ValueKey('practice-time-signature-button'),
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          minimumSize: Size(0, compact ? 40 : 46),
-          padding: EdgeInsets.symmetric(
-            horizontal: compact ? 8 : 12,
-            vertical: compact ? 8 : 10,
-          ),
-          side: BorderSide(color: theme.colorScheme.outlineVariant),
-        ),
-        icon: Icon(Icons.music_note_rounded, size: compact ? 16 : 20),
-        label: Text(
-          label,
-          style: theme.textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PreviewControlButton extends StatelessWidget {
-  const _PreviewControlButton({
-    required this.buttonKey,
-    required this.icon,
-    required this.tooltip,
-    required this.onPressed,
-    this.onLongPress,
-    this.badgeIcon,
-    this.compact = false,
-  });
-
-  final Key buttonKey;
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback? onPressed;
-  final VoidCallback? onLongPress;
-  final IconData? badgeIcon;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final enabled = onPressed != null || onLongPress != null;
-    final size = compact ? 46.0 : 54.0;
-    final backgroundColor = enabled
-        ? theme.colorScheme.surface
-        : theme.colorScheme.surfaceContainerLow;
-    final foregroundColor = enabled
-        ? theme.colorScheme.onSurface
-        : theme.colorScheme.onSurfaceVariant;
-
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        key: buttonKey,
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          onLongPress: onLongPress,
-          borderRadius: BorderRadius.circular(compact ? 18 : 20),
-          child: Ink(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(compact ? 18 : 20),
-              border: Border.all(color: theme.colorScheme.outlineVariant),
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Icon(icon, size: compact ? 24 : 28, color: foregroundColor),
-                if (badgeIcon != null)
-                  Positioned(
-                    top: compact ? 5 : 6,
-                    right: compact ? 5 : 6,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(compact ? 2 : 2.5),
-                        child: Icon(
-                          badgeIcon,
-                          size: compact ? 10 : 12,
-                          color: theme.colorScheme.onPrimary,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _MelodyPreviewStrip extends StatelessWidget {
-  const _MelodyPreviewStrip({
-    required this.currentText,
-    required this.nextText,
-    required this.currentLabel,
-    required this.nextLabel,
-    this.compact = false,
-  });
-
-  final String currentText;
-  final String nextText;
-  final String currentLabel;
-  final String nextLabel;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    Widget buildColumn(String label, String text) {
-      return Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style:
-                  (compact
-                          ? theme.textTheme.labelSmall
-                          : theme.textTheme.labelMedium)
-                      ?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w700,
-                      ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              text.isEmpty ? '...' : text,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style:
-                  (compact
-                          ? theme.textTheme.bodySmall
-                          : theme.textTheme.bodyMedium)
-                      ?.copyWith(fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-      ),
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          compact ? 12 : 14,
-          compact ? 10 : 12,
-          compact ? 12 : 14,
-          compact ? 10 : 12,
-        ),
-        child: Row(
-          children: [
-            buildColumn(currentLabel, currentText),
-            SizedBox(width: compact ? 10 : 12),
-            buildColumn(nextLabel, nextText),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _BpmControlCluster extends StatefulWidget {
   const _BpmControlCluster({
     required this.bpmController,
@@ -3016,35 +2612,6 @@ class _GeneratorQuickSettingChip extends StatelessWidget {
   }
 }
 
-class _MelodyMetricChip extends StatelessWidget {
-  const _MelodyMetricChip({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        child: Text(
-          '$label $value',
-          style: theme.textTheme.labelMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _InlineVoicingSuggestionCard extends StatelessWidget {
   const _InlineVoicingSuggestionCard({
     required this.suggestion,
@@ -3259,158 +2826,6 @@ class _InlineVoicingSuggestionCard extends StatelessWidget {
                   ),
                 ],
               ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CompactQuickActionTile extends StatelessWidget {
-  const _CompactQuickActionTile({
-    required this.buttonKey,
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.onPressed,
-  });
-
-  final Key buttonKey;
-  final IconData icon;
-  final String label;
-  final String value;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        key: buttonKey,
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(18),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface.withValues(alpha: 0.78),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.88),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Icon(icon, size: 17, color: theme.colorScheme.primary),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        value,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          height: 1.1,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CompactQuickToggleButton extends StatelessWidget {
-  const _CompactQuickToggleButton({
-    this.buttonKey,
-    required this.icon,
-    required this.label,
-    required this.selected,
-    required this.onPressed,
-  });
-
-  final Key? buttonKey;
-  final IconData icon;
-  final String label;
-  final bool selected;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final backgroundColor = selected
-        ? colorScheme.primaryContainer.withValues(alpha: 0.78)
-        : colorScheme.surface.withValues(alpha: 0.72);
-    final foregroundColor = selected
-        ? colorScheme.primary
-        : colorScheme.onSurface;
-
-    return Tooltip(
-      message: label,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          key: buttonKey,
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(16),
-          child: Ink(
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: selected
-                    ? colorScheme.primary.withValues(alpha: 0.25)
-                    : colorScheme.outlineVariant.withValues(alpha: 0.84),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 9),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 136, minWidth: 92),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(icon, size: 17, color: foregroundColor),
-                    const SizedBox(height: 6),
-                    Text(
-                      label,
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: foregroundColor,
-                        fontWeight: FontWeight.w700,
-                        height: 1.15,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
           ),
         ),
